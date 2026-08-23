@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+tts/NobulousSet.json
+tts/NobulousSet_LOCALTEST.json
+tts/REQUIRED_IMAGES.txt
+generator/out/

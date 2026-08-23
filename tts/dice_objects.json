@@ -1,0 +1,635 @@
+[
+ {
+  "Name": "Custom_Dice",
+  "Nickname": "Pink",
+  "CustomImage": {
+   "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/14218216143837416660/1F0143CC1C1897339BC6759DBE0A398D5D176A00/",
+   "ImageSecondaryURL": "",
+   "ImageScalar": 1.0,
+   "WidthScale": 0.0,
+   "CustomDice": {
+    "Type": 1
+   }
+  },
+  "Transform": {
+   "posX": -5.49997044,
+   "posY": 1.29020035,
+   "posZ": 1.99992323,
+   "rotX": 7.17768762e-06,
+   "rotY": 359.986145,
+   "rotZ": 1.0865162e-05,
+   "scaleX": 1.0,
+   "scaleY": 1.0,
+   "scaleZ": 1.0
+  },
+  "ColorDiffuse": {
+   "r": 1.0,
+   "g": 1.0,
+   "b": 1.0
+  },
+  "Description": ""
+ },
+ {
+  "Name": "Custom_Dice",
+  "Nickname": "Purple",
+  "CustomImage": {
+   "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/10466857528114449405/C1C4C3D7480F7F2610191D41EB5DA81805DEB44D/",
+   "ImageSecondaryURL": "",
+   "ImageScalar": 1.0,
+   "WidthScale": 0.0,
+   "CustomDice": {
+    "Type": 1
+   }
+  },
+  "Transform": {
+   "posX": 0.0,
+   "posY": -3.57627869e-07,
+   "posZ": -0.99999994,
+   "rotX": -2.798324e-07,
+   "rotY": 359.9861,
+   "rotZ": 6.14422243e-06,
+   "scaleX": 1.0,
+   "scaleY": 1.0,
+   "scaleZ": 1.0
+  },
+  "ColorDiffuse": {
+   "r": 1.0,
+   "g": 1.0,
+   "b": 1.0
+  },
+  "Description": ""
+ },
+ {
+  "Name": "Custom_Dice",
+  "Nickname": "Purple",
+  "CustomImage": {
+   "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/10466857528114449405/C1C4C3D7480F7F2610191D41EB5DA81805DEB44D/",
+   "ImageSecondaryURL": "",
+   "ImageScalar": 1.0,
+   "WidthScale": 0.0,
+   "CustomDice": {
+    "Type": 1
+   }
+  },
+  "Transform": {
+   "posX": 1.0,
+   "posY": -1.1920929e-07,
+   "posZ": -1.0,
+   "rotX": 2.56808175e-06,
+   "rotY": 359.9861,
+   "rotZ": -3.953151e-06,
+   "scaleX": 1.0,
+   "scaleY": 1.0,
+   "scaleZ": 1.0
+  },
+  "ColorDiffuse": {
+   "r": 1.0,
+   "g": 1.0,
+   "b": 1.0
+  },
+  "Description": ""
+ },
+ {
+  "Name": "Custom_Dice",
+  "Nickname": "Purple",
+  "CustomImage": {
+   "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/10466857528114449405/C1C4C3D7480F7F2610191D41EB5DA81805DEB44D/",
+   "ImageSecondaryURL": "",
+   "ImageScalar": 1.0,
+   "WidthScale": 0.0,
+   "CustomDice": {
+    "Type": 1
+   }
+  },
+  "Transform": {
+   "posX": 0.0,
+   "posY": -2.38418579e-07,
+   "posZ": -1.99999988,
+   "rotX": 4.60579349e-06,
+   "rotY": 359.9861,
+   "rotZ": 2.5199447e-06,
+   "scaleX": 1.0,
+   "scaleY": 1.0,
+   "scaleZ": 1.0
+  },
+  "ColorDiffuse": {
+   "r": 1.0,
+   "g": 1.0,
+   "b": 1.0
+  },
+  "Description": ""
+ },
+ {
+  "Name": "Custom_Dice",
+  "Nickname": "Purple",
+  "CustomImage": {
+   "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/10466857528114449405/C1C4C3D7480F7F2610191D41EB5DA81805DEB44D/",
+   "ImageSecondaryURL": "",
+   "ImageScalar": 1.0,
+   "WidthScale": 0.0,
+   "CustomDice": {
+    "Type": 1
+   }
+  },
+  "Transform": {
+   "posX": 1.0,
+   "posY": -1.1920929e-07,
+   "posZ": -2.00000024,
+   "rotX": 1.42208337e-05,
+   "rotY": 359.9861,
+   "rotZ": 1.50241522e-06,
+   "scaleX": 1.0,
+   "scaleY": 1.0,
+   "scaleZ": 1.0
+  },
+  "ColorDiffuse": {
+   "r": 1.0,
+   "g": 1.0,
+   "b": 1.0
+  },
+  "Description": ""
+ },
+ {
+  "Name": "Custom_Dice",
+  "Nickname": "Blue",
+  "CustomImage": {
+   "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/9797907300106335232/4EC6347E75365F0D12712CBC4726F0FCEA5AC105/",
+   "ImageSecondaryURL": "",
+   "ImageScalar": 1.0,
+   "WidthScale": 0.0,
+   "CustomDice": {
+    "Type": 1
+   }
+  },
+  "Transform": {
+   "posX": 0.0,
+   "posY": -1.1920929e-07,
+   "posZ": -3.00000024,
+   "rotX": 5.492362e-07,
+   "rotY": 359.9861,
+   "rotZ": 3.17394415e-06,
+   "scaleX": 1.0,
+   "scaleY": 1.0,
+   "scaleZ": 1.0
+  },
+  "ColorDiffuse": {
+   "r": 1.0,
+   "g": 1.0,
+   "b": 1.0
+  },
+  "Description": ""
+ },
+ {
+  "Name": "Custom_Dice",
+  "Nickname": "Blue",
+  "CustomImage": {
+   "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/9797907300106335232/4EC6347E75365F0D12712CBC4726F0FCEA5AC105/",
+   "ImageSecondaryURL": "",
+   "ImageScalar": 1.0,
+   "WidthScale": 0.0,
+   "CustomDice": {
+    "Type": 1
+   }
+  },
+  "Transform": {
+   "posX": 1.0,
+   "posY": -3.57627869e-07,
+   "posZ": -3.00000024,
+   "rotX": 8.469001e-06,
+   "rotY": 359.9861,
+   "rotZ": -3.845328e-06,
+   "scaleX": 1.0,
+   "scaleY": 1.0,
+   "scaleZ": 1.0
+  },
+  "ColorDiffuse": {
+   "r": 1.0,
+   "g": 1.0,
+   "b": 1.0
+  },
+  "Description": ""
+ },
+ {
+  "Name": "Custom_Dice",
+  "Nickname": "Blue",
+  "CustomImage": {
+   "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/9797907300106335232/4EC6347E75365F0D12712CBC4726F0FCEA5AC105/",
+   "ImageSecondaryURL": "",
+   "ImageScalar": 1.0,
+   "WidthScale": 0.0,
+   "CustomDice": {
+    "Type": 1
+   }
+  },
+  "Transform": {
+   "posX": 0.0,
+   "posY": -7.15255737e-07,
+   "posZ": -4.0,
+   "rotX": 7.95851e-06,
+   "rotY": 359.9861,
+   "rotZ": -1.699642e-06,
+   "scaleX": 1.0,
+   "scaleY": 1.0,
+   "scaleZ": 1.0
+  },
+  "ColorDiffuse": {
+   "r": 1.0,
+   "g": 1.0,
+   "b": 1.0
+  },
+  "Description": ""
+ },
+ {
+  "Name": "Custom_Dice",
+  "Nickname": "Blue",
+  "CustomImage": {
+   "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/9797907300106335232/4EC6347E75365F0D12712CBC4726F0FCEA5AC105/",
+   "ImageSecondaryURL": "",
+   "ImageScalar": 1.0,
+   "WidthScale": 0.0,
+   "CustomDice": {
+    "Type": 1
+   }
+  },
+  "Transform": {
+   "posX": 1.00000191,
+   "posY": -2.38418579e-07,
+   "posZ": -4.00000429,
+   "rotX": -1.499628e-06,
+   "rotY": 359.9861,
+   "rotZ": 1.56758631e-06,
+   "scaleX": 1.0,
+   "scaleY": 1.0,
+   "scaleZ": 1.0
+  },
+  "ColorDiffuse": {
+   "r": 1.0,
+   "g": 1.0,
+   "b": 1.0
+  },
+  "Description": ""
+ },
+ {
+  "Name": "Custom_Dice",
+  "Nickname": "Green",
+  "CustomImage": {
+   "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/10058254210660794925/2D49F2852D1B48B5948C41548907040C084BACF8/",
+   "ImageSecondaryURL": "",
+   "ImageScalar": 1.0,
+   "WidthScale": 0.0,
+   "CustomDice": {
+    "Type": 1
+   }
+  },
+  "Transform": {
+   "posX": 0.0,
+   "posY": -2.38418579e-07,
+   "posZ": -5.0,
+   "rotX": 5.68055657e-06,
+   "rotY": 359.9861,
+   "rotZ": 5.35625134e-07,
+   "scaleX": 1.0,
+   "scaleY": 1.0,
+   "scaleZ": 1.0
+  },
+  "ColorDiffuse": {
+   "r": 1.0,
+   "g": 1.0,
+   "b": 1.0
+  },
+  "Description": ""
+ },
+ {
+  "Name": "Custom_Dice",
+  "Nickname": "Green",
+  "CustomImage": {
+   "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/10058254210660794925/2D49F2852D1B48B5948C41548907040C084BACF8/",
+   "ImageSecondaryURL": "",
+   "ImageScalar": 1.0,
+   "WidthScale": 0.0,
+   "CustomDice": {
+    "Type": 1
+   }
+  },
+  "Transform": {
+   "posX": 1.0,
+   "posY": -9.536743e-07,
+   "posZ": -5.0,
+   "rotX": 1.31045272e-06,
+   "rotY": 359.9861,
+   "rotZ": 6.9189573e-06,
+   "scaleX": 1.0,
+   "scaleY": 1.0,
+   "scaleZ": 1.0
+  },
+  "ColorDiffuse": {
+   "r": 1.0,
+   "g": 1.0,
+   "b": 1.0
+  },
+  "Description": ""
+ },
+ {
+  "Name": "Custom_Dice",
+  "Nickname": "Green",
+  "CustomImage": {
+   "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/10058254210660794925/2D49F2852D1B48B5948C41548907040C084BACF8/",
+   "ImageSecondaryURL": "",
+   "ImageScalar": 1.0,
+   "WidthScale": 0.0,
+   "CustomDice": {
+    "Type": 1
+   }
+  },
+  "Transform": {
+   "posX": 1.90734863e-06,
+   "posY": -1.1920929e-07,
+   "posZ": -6.00000429,
+   "rotX": 2.15418868e-06,
+   "rotY": 359.9861,
+   "rotZ": -6.94564562e-07,
+   "scaleX": 1.0,
+   "scaleY": 1.0,
+   "scaleZ": 1.0
+  },
+  "ColorDiffuse": {
+   "r": 1.0,
+   "g": 1.0,
+   "b": 1.0
+  },
+  "Description": ""
+ },
+ {
+  "Name": "Custom_Dice",
+  "Nickname": "Green",
+  "CustomImage": {
+   "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/10058254210660794925/2D49F2852D1B48B5948C41548907040C084BACF8/",
+   "ImageSecondaryURL": "",
+   "ImageScalar": 1.0,
+   "WidthScale": 0.0,
+   "CustomDice": {
+    "Type": 1
+   }
+  },
+  "Transform": {
+   "posX": 1.00000191,
+   "posY": -1.1920929e-07,
+   "posZ": -6.00000429,
+   "rotX": 1.57626346e-06,
+   "rotY": 359.9861,
+   "rotZ": 2.8988527e-06,
+   "scaleX": 1.0,
+   "scaleY": 1.0,
+   "scaleZ": 1.0
+  },
+  "ColorDiffuse": {
+   "r": 1.0,
+   "g": 1.0,
+   "b": 1.0
+  },
+  "Description": ""
+ },
+ {
+  "Name": "Custom_Dice",
+  "Nickname": "Yellow",
+  "CustomImage": {
+   "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/16128516314398154992/9334B276DED4F08F7BF8A505167A1F4065833EE4/",
+   "ImageSecondaryURL": "",
+   "ImageScalar": 1.0,
+   "WidthScale": 0.0,
+   "CustomDice": {
+    "Type": 1
+   }
+  },
+  "Transform": {
+   "posX": -1.43051147e-06,
+   "posY": -1.1920929e-07,
+   "posZ": -6.99999571,
+   "rotX": -4.756008e-05,
+   "rotY": 359.9861,
+   "rotZ": -1.47368992e-05,
+   "scaleX": 1.0,
+   "scaleY": 1.0,
+   "scaleZ": 1.0
+  },
+  "ColorDiffuse": {
+   "r": 1.0,
+   "g": 1.0,
+   "b": 1.0
+  },
+  "Description": ""
+ },
+ {
+  "Name": "Custom_Dice",
+  "Nickname": "Yellow",
+  "CustomImage": {
+   "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/16128516314398154992/9334B276DED4F08F7BF8A505167A1F4065833EE4/",
+   "ImageSecondaryURL": "",
+   "ImageScalar": 1.0,
+   "WidthScale": 0.0,
+   "CustomDice": {
+    "Type": 1
+   }
+  },
+  "Transform": {
+   "posX": 1.00000191,
+   "posY": -1.1920929e-07,
+   "posZ": -7.00000429,
+   "rotX": -2.41555927e-06,
+   "rotY": 359.986145,
+   "rotZ": -2.062868e-07,
+   "scaleX": 1.0,
+   "scaleY": 1.0,
+   "scaleZ": 1.0
+  },
+  "ColorDiffuse": {
+   "r": 1.0,
+   "g": 1.0,
+   "b": 1.0
+  },
+  "Description": ""
+ },
+ {
+  "Name": "Custom_Dice",
+  "Nickname": "Yellow",
+  "CustomImage": {
+   "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/16128516314398154992/9334B276DED4F08F7BF8A505167A1F4065833EE4/",
+   "ImageSecondaryURL": "",
+   "ImageScalar": 1.0,
+   "WidthScale": 0.0,
+   "CustomDice": {
+    "Type": 1
+   }
+  },
+  "Transform": {
+   "posX": -1.43051147e-06,
+   "posY": -2.38418579e-07,
+   "posZ": -7.99999571,
+   "rotX": -4.165204e-05,
+   "rotY": 359.986084,
+   "rotZ": -2.96160238e-06,
+   "scaleX": 1.0,
+   "scaleY": 1.0,
+   "scaleZ": 1.0
+  },
+  "ColorDiffuse": {
+   "r": 1.0,
+   "g": 1.0,
+   "b": 1.0
+  },
+  "Description": ""
+ },
+ {
+  "Name": "Custom_Dice",
+  "Nickname": "Yellow",
+  "CustomImage": {
+   "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/16128516314398154992/9334B276DED4F08F7BF8A505167A1F4065833EE4/",
+   "ImageSecondaryURL": "",
+   "ImageScalar": 1.0,
+   "WidthScale": 0.0,
+   "CustomDice": {
+    "Type": 1
+   }
+  },
+  "Transform": {
+   "posX": 0.999998569,
+   "posY": -2.38418579e-07,
+   "posZ": -7.99999571,
+   "rotX": -4.710891e-05,
+   "rotY": 359.986084,
+   "rotZ": -9.375404e-06,
+   "scaleX": 1.0,
+   "scaleY": 1.0,
+   "scaleZ": 1.0
+  },
+  "ColorDiffuse": {
+   "r": 1.0,
+   "g": 1.0,
+   "b": 1.0
+  },
+  "Description": ""
+ },
+ {
+  "Name": "Custom_Dice",
+  "Nickname": "Recovery",
+  "CustomImage": {
+   "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/9743925563253686460/CD4E23F4A32C8D9977296AF838F49FB2B206BCA0/",
+   "ImageSecondaryURL": "",
+   "ImageScalar": 1.0,
+   "WidthScale": 0.0,
+   "CustomDice": {
+    "Type": 1
+   }
+  },
+  "Transform": {
+   "posX": 3.99988651,
+   "posY": -1.1920929e-07,
+   "posZ": -3.000389,
+   "rotX": -0.000297214836,
+   "rotY": 0.44735834,
+   "rotZ": 5.24733368e-05,
+   "scaleX": 1.0,
+   "scaleY": 1.0,
+   "scaleZ": 1.0
+  },
+  "ColorDiffuse": {
+   "r": 1.0,
+   "g": 1.0,
+   "b": 1.0
+  },
+  "Description": ""
+ },
+ {
+  "Name": "Custom_Dice",
+  "Nickname": "Strategy",
+  "CustomImage": {
+   "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/11855320163630526362/BA23B32ABB0DE41A4C5CD511565960146267234F/",
+   "ImageSecondaryURL": "",
+   "ImageScalar": 1.0,
+   "WidthScale": 0.0,
+   "CustomDice": {
+    "Type": 1
+   }
+  },
+  "Transform": {
+   "posX": 4.0,
+   "posY": -2.38418579e-07,
+   "posZ": -2.00000024,
+   "rotX": 6.87363945e-06,
+   "rotY": 359.9861,
+   "rotZ": 5.83648443e-07,
+   "scaleX": 1.0,
+   "scaleY": 1.0,
+   "scaleZ": 1.0
+  },
+  "ColorDiffuse": {
+   "r": 1.0,
+   "g": 1.0,
+   "b": 1.0
+  },
+  "Description": ""
+ },
+ {
+  "Name": "Custom_Dice",
+  "Nickname": "Health",
+  "CustomImage": {
+   "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/18140073746493133383/73C0B4DA4051AA3EFFB4313377B8CB1AC61267E9/",
+   "ImageSecondaryURL": "",
+   "ImageScalar": 1.0,
+   "WidthScale": 0.0,
+   "CustomDice": {
+    "Type": 1
+   }
+  },
+  "Transform": {
+   "posX": 4.0,
+   "posY": -2.38418579e-07,
+   "posZ": -1.00000024,
+   "rotX": 5.509752e-06,
+   "rotY": 359.9861,
+   "rotZ": 4.25791768e-06,
+   "scaleX": 1.0,
+   "scaleY": 1.0,
+   "scaleZ": 1.0
+  },
+  "ColorDiffuse": {
+   "r": 1.0,
+   "g": 1.0,
+   "b": 1.0
+  },
+  "Description": ""
+ },
+ {
+  "Name": "Custom_Token",
+  "Nickname": "Chip",
+  "CustomImage": {
+   "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/11042356679006841390/83BCE9BED9E0CB33ABC5FA2189CCFB42D8114D6E/",
+   "ImageSecondaryURL": "",
+   "ImageScalar": 1.0,
+   "WidthScale": 0.0,
+   "CustomToken": {
+    "Thickness": 0.2,
+    "MergeDistancePixels": 15.0,
+    "StandUp": false,
+    "Stackable": false
+   }
+  },
+  "Transform": {
+   "posX": 5.49997044,
+   "posY": -0.23020041,
+   "posZ": 13.0000763,
+   "rotX": 2.77925164e-06,
+   "rotY": 180.0,
+   "rotZ": 180.0,
+   "scaleX": 1.05,
+   "scaleY": 1.0,
+   "scaleZ": 1.05
+  },
+  "ColorDiffuse": {
+   "r": 1.0,
+   "g": 1.0,
+   "b": 1.0
+  },
+  "Description": ""
+ }
+]

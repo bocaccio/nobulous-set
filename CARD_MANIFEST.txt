@@ -1,0 +1,142 @@
+THE NOBULOUS SET — CARD FILES  (rev 14)
+Generated from Compendium v22 / AoS v10 / NAP v0.9c / BAT v0.6 / NRJ v0.24
+
+CHANGES IN THIS REVISION
+  - NAP Tasks: full-width green REQUEST band across the top of the middle
+    section, full-width red DEMAND band (rotated 180) across the bottom.
+  - NAP Task titles wrap to two rows on the left spine, clear of the corner.
+  - Top-left corner stack, top to bottom: subject icon, recovery-colour dot,
+    skulls.  Subject icons: Anatomy (heart, maroon), Engineering (gear, blue),
+    Procedure (scalpel, purple), Theory (book, olive).  Non-Credit Tasks have
+    no subject icon.
+  - Every NAP deck is now landscape.  Opportunity band gold, Setback band blue,
+    Final Exam band black.
+  - Morning / Afternoon / Evening set in 30pt over the tinted slot colour.
+  - Final Exam cards carry the subject icon beside the recovery dot, matching the
+    corner stack on the Credit Tasks.
+  - NAP Task cards: Request and Demand text enlarged to 9pt / 23pt numerals, the
+    Demand block moved flush to its band, and a hairline rule added at the middle
+    to separate the two sides.
+  - One die-colour palette across the whole set, on every NAP recovery dot and
+    every AoS required-colour dot:
+        Yellow #e8b93a   Green #4f9c62   Blue #4a86c8   Purple #8d5bb0   Red #c0392b
+  - AoS header bands now follow the source deck colours: Routine #315c49,
+    Specialized #4c4a75, Unstable #7a3838, Advanced #8a5a20, Limitation #2f5966,
+    Technician #3f5260, Element mat #555555.
+  - AoS body text, element numerals and headings enlarged.
+  - AoS element allocation mats are portrait with a large empty placement box.
+  - Long card titles step down in size so they stay on one line.
+  - The Assembly / Tyrant card is removed.  Splices stack beside the Encounter
+    deck and become the Tyrant's Upgrades when it awakens; the Tyrant's Health,
+    REC and dice pool are in the rulebook.
+  - NRJ cards now match their base-game analogue rather than using one NRJ colour:
+      Experimental Protocols and Research Notes  BAT green
+      Unauthorized Modifications                 BAT category colours + UNAUTHORIZED strip
+      Impostor Tasks                             NAP purple
+      Following Setbacks                         NAP setback blue
+      Devious Opportunities                      NAP opportunity gold
+      Nobulous Interference, Backdoor Routines   AoS rust
+      Corrupted Limitations                      AoS limitation teal
+      Imposter Scenarios                         coloured by domain: Knowledge purple,
+                                                 Physical green, Cover-Up rust
+    Every NRJ card names its tier in the footer.
+  - The four AoS Program decks are now genuinely two-sided: Stable on the face,
+    the matching Overheated on the back of the same card.
+      TTS  : tick "Unique Backs" in the Custom Deck dialog and load
+             <deck>_TTS.png as the face and <deck>_TTS_back.png as the back.
+      Print: each deck's PnP pages alternate front page / back page with the
+             back columns mirrored, so duplex printing on long-edge flip puts
+             Overheated behind its own Stable face.
+  - Every NRJ card carries a solid #1f4e6b band along its foot reading NOBULOUS
+    RESEARCH JOURNAL.  Face-up, the module cards can be riffled out of any base
+    deck in one pass.
+  - Impostor Tasks now use the base NAP Task layout: name on the left spine,
+    subject icon in the corner, green REQUEST band above and red DEMAND band
+    below, and GRANTS NO CREDIT on the right spine where a Task's penalty sits.
+  - BAT band colours by function: Encounters, Lab Rats and Assembly keep the
+    green house colour; Upgrades and Specimens are coloured by category
+    (Power #8a3d2e, Mobility #2c6e63, Defense #3c5a8a, Senses #6b4a8a);
+    Specimens add a gold SPECIMEN strip and a warm card tint; Tyrant Attacks
+    use #4a1f1f with a cool tint.
+
+PRINT AND PLAY (Letter)
+  NobulousSet_BAT_PnP.pdf   BAT
+  NobulousSet_NAP_PnP.pdf   NAP
+  NobulousSet_AoS_PnP.pdf   AoS
+  NobulousSet_NRJ_PnP.pdf   NRJ modules + Imposter Scenarios
+
+TWO-SIDED CARDS
+  These decks are genuinely double-sided.  In TTS tick "Unique Backs" and load
+  <deck>_TTS.png as the face and <deck>_TTS_back.png as the back.  In print, the
+  PnP pages alternate front page / mirrored back page for long-edge duplex.
+      BAT_Rats          4 cards   Side A face / Side B back
+      NAP_Apprentices   3 cards   two Apprentices per card
+      AoS_Technicians   3 cards   two Technicians per card
+      AoS_Routine / Specialized / Unstable / Advanced
+                        8 cards each   Stable face / Overheated back
+
+DECK SHEETS AND BACKS
+  DECK                           GRID    ORIENT     BACK
+  AoS_Advanced                   8x1     portrait   AoS_Advanced_TTS_back.png  (Unique Backs)
+  AoS_ElementMats                5x1     portrait   (none - mats)
+  AoS_Limitations                6x1     portrait   CardBack_AoS_Limitation
+  AoS_Routine                    8x1     portrait   AoS_Routine_TTS_back.png  (Unique Backs)
+  AoS_Specialized                8x1     portrait   AoS_Specialized_TTS_back.png  (Unique Backs)
+  AoS_Technicians                3x1     landscape  AoS_Technicians_TTS_back.png  (Unique Backs)
+  AoS_Unstable                   8x1     portrait   AoS_Unstable_TTS_back.png  (Unique Backs)
+  BAT_Encounters                 10x2    portrait   CardBack_BAT_Encounter
+  BAT_Rats                       4x1     landscape  BAT_Rats_TTS_back.png  (Unique Backs)
+  BAT_Specimens                  8x1     portrait   CardBack_BAT_Upgrade
+  BAT_TyrantAttacks              7x1     portrait   CardBack_BAT_TyrantAttack
+  BAT_Upgrades                   10x2    portrait   CardBack_BAT_Upgrade
+  NAP_Apprentices                3x1     landscape  NAP_Apprentices_TTS_back.png  (Unique Backs)
+  NAP_FinalExams                 10x2    landscape  CardBack_NAP_FinalExam
+  NAP_Opportunities              6x1     landscape  CardBack_NAP_Assignment
+  NAP_Setbacks                   6x1     landscape  CardBack_NAP_Assignment
+  NAP_SlotsFINF                  4x1     landscape  CardBack_NAP_Assignment
+  NAP_Tasks                      10x3    landscape  CardBack_NAP_Assignment
+  NRJ_AoS_BackdoorRoutines       6x1     portrait   CardBack_NRJ_BackdoorRoutine
+  NRJ_AoS_CorruptedLimitations   6x1     portrait   CardBack_AoS_Limitation
+  NRJ_AoS_Interference           6x1     portrait   CardBack_NRJ_Interference
+  NRJ_BAT_Modifications          6x1     portrait   CardBack_BAT_Upgrade
+  NRJ_BAT_Protocols              6x1     portrait   CardBack_NRJ_Protocol
+  NRJ_BAT_ResearchNotes          6x1     portrait   CardBack_NRJ_ResearchNote
+  NRJ_ImposterScenarios          10x3    portrait   CardBack_NRJ_CouncilTest
+  NRJ_NAP_DeviousOpportunities   6x1     landscape  CardBack_NAP_Assignment
+  NRJ_NAP_FollowingSetbacks      4x1     landscape  CardBack_NAP_Assignment
+  NRJ_NAP_ImpostorTasks          4x1     landscape  CardBack_NAP_Assignment
+
+CARD BACKS
+  BAT   CardBack_BAT_Encounter        Encounter deck
+        CardBack_BAT_Upgrade          Upgrade deck (regular Upgrades + Specimens)
+        CardBack_BAT_TyrantAttack     Tyrant Attack deck
+  NAP   CardBack_NAP_Assignment       Assignment deck (Tasks, Opportunities,
+                                      Setbacks, FINF)
+        CardBack_NAP_FinalExam        Final Exams - reads FINAL EXAM / SET ASIDE
+                                      AT SETUP so the deck is pulled before play
+  AoS   CardBack_AoS_Limitation       the only AoS back.  Programs and Advanced
+                                      Programs are two-sided, Technicians are
+                                      two-sided, element mats are mats.
+  NRJ   CardBack_NRJ_Protocol         Experimental Protocols
+        CardBack_NRJ_ResearchNote     Research Notes
+        CardBack_NRJ_Interference     Nobulous Interference
+        CardBack_NRJ_BackdoorRoutine  Backdoor Routines
+        CardBack_NRJ_CouncilTest      24 Imposter Scenarios
+
+  NRJ cards that are shuffled into a base deck take that deck's back, or they
+  would be identifiable face-down:
+        Unauthorized Modifications          -> CardBack_BAT_Upgrade
+        Corrupted Limitations               -> CardBack_AoS_Limitation
+        Impostor Tasks, Following Setbacks,
+        Devious Opportunities               -> CardBack_NAP_Assignment
+  Their NRJ identity is carried on the face instead, by the foot band reading
+  NOBULOUS RESEARCH JOURNAL.
+
+DICE
+  Use the 20 Strong Dice and Chip saved object: 4 Purple, 4 Blue, 4 Green,
+  4 Yellow, 1 Red, plus the Health, Strategy and Recovery stat dice.
+
+NOTES
+  NAP Tasks carry Request and Demand on one landscape card; rotate 180 degrees
+  to switch sides.  They are not two-sided cards.
+  18 skulls across the 26 base Tasks: 3 cards carry 2, 12 carry 1.
