@@ -17,8 +17,9 @@ GH_USER, GH_REPO, GH_REF = "YOUR-GITHUB-USERNAME", "nobulous-set", "main"
 CDN = "https://cdn.jsdelivr.net/gh/%s/%s@%s/images"      # cached, fast, recommended
 RAW = "https://raw.githubusercontent.com/%s/%s/%s/images"  # works, uncached
 BASE_URL = ""
-OUT = os.environ.get("TTS_OUT", "/home/claude/tts/NobulousSet.json")
-SHEETS = os.environ.get("TTS_SHEETS", "/home/claude/cards/out")
+_HERE = os.path.dirname(os.path.abspath(__file__))
+OUT = os.environ.get("TTS_OUT", os.path.join(_HERE, "NobulousSet.json"))
+SHEETS = os.environ.get("TTS_SHEETS", os.path.join(_HERE, os.pardir, "images"))
 
 rng = random.Random(20260823)
 USED = set()
@@ -90,7 +91,7 @@ def panel():
 
 
 def dice_objects():
-    src = json.load(open('/home/claude/cards/dice_objects.json'))
+    src = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'dice_objects.json')))
     out = []
     lay = {'Purple': (-16, -14), 'Blue': (-14, -14), 'Green': (-12, -14),
            'Yellow': (-10, -14), 'Pink': (-8, -14),
