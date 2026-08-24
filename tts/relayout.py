@@ -49,17 +49,23 @@ def zone_of(x, z):
 
 def load(path):
     d = json.load(open(path, encoding='utf-8'))
-    items = []
+    items, loose = [], []
     for o in d['ObjectStates']:
-        if o.get('Name') not in ('Deck', 'Card', 'CardCustom'):
-            continue
         nick = o.get('Nickname') or ''
-        if not nick:
-            continue
         t = o['Transform']
-        items.append({'nick': nick, 'label': base_label(nick),
-                      'x': t['posX'], 'z': t['posZ'], 'y': t['posY']})
-    return d, items
+        name = o.get('Name')
+        if name in ('Deck', 'Card', 'CardCustom') and nick:
+            items.append({'nick': nick, 'label': base_label(nick),
+                          'x': t['posX'], 'z': t['posZ'], 'y': t['posY']})
+        elif name in ('Custom_Dice', 'Custom_Token', 'Custom_Tile'):
+            # Dice, the chip and the panel are placed by hand and never
+            # re-spaced -- they are furniture, not part of the card layout.
+            loose.append({'name': name, 'nick': 'Red' if nick == 'Pink' else nick,
+                          'x': round(t['posX'], 2), 'y': round(t['posY'], 2),
+                          'z': round(t['posZ'], 2),
+                          'rot': (round(t['rotX']), round(t['rotY']), round(t['rotZ'])),
+                          'scale': round(t['scaleX'], 2)})
+    return d, items, loose
 
 
 def regrid(items):
@@ -162,7 +168,7 @@ def regrid(items):
 
 def main():
     src = sys.argv[1]
-    save, items = load(src)
+    save, items, loose = load(src)
     regrid(items)
 
     out = os.path.join(HERE, 'layout.py')
@@ -177,8 +183,16 @@ def main():
         for it in sorted(items, key=lambda i: (i['zone'], -i['nz'], i['nx'])):
             f.write("    %-28r: (%7.2f, %7.2f),   # %s\n"
                     % (it['nick'], it['nx'], it['nz'], it['zone']))
-        f.write('}\n')
-    print('wrote', out, '-', len(items), 'placements')
+        f.write('}\n\n')
+        f.write('# Furniture: exact hand-placed positions, never re-spaced.\n')
+        f.write('# (name, nickname, x, y, z, rot, scale)\n')
+        f.write('LOOSE = [\n')
+        for o in loose:
+            f.write("    (%r, %r, %s, %s, %s, %r, %s),\n"
+                    % (o['name'], o['nick'], o['x'], o['y'], o['z'],
+                       o['rot'], o['scale']))
+        f.write(']\n')
+    print('wrote', out, '-', len(items), 'placements,', len(loose), 'furniture')
 
     for zone in sorted({i['zone'] for i in items}):
         g = [i for i in items if i['zone'] == zone]

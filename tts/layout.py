@@ -39,3 +39,30 @@ POS = {
     'Corrupted Limitations'     : (  15.98,  -10.30),   # NRJ
     'Backdoor Routines'         : (  20.28,  -10.30),   # NRJ
 }
+
+# Furniture: exact hand-placed positions, never re-spaced.
+# (name, nickname, x, y, z, rot, scale)
+LOOSE = [
+    ('Custom_Tile', 'Control Panel', 0.0, 0.96, 14.0, (0, 180, 0), 3.4),
+    ('Custom_Dice', 'Red', -16.07, 1.29, 0.13, (0, 360, 0), 1.0),
+    ('Custom_Dice', 'Purple', -16.07, 1.29, -0.87, (0, 360, 0), 1.0),
+    ('Custom_Dice', 'Purple', -15.07, 1.29, -0.87, (0, 360, 0), 1.0),
+    ('Custom_Dice', 'Purple', -16.07, 1.29, -1.87, (0, 360, 0), 1.0),
+    ('Custom_Dice', 'Purple', -15.07, 1.29, -1.87, (0, 360, 0), 1.0),
+    ('Custom_Dice', 'Blue', -16.07, 1.29, -2.87, (0, 360, 0), 1.0),
+    ('Custom_Dice', 'Blue', -15.07, 1.29, -2.87, (0, 360, 0), 1.0),
+    ('Custom_Dice', 'Blue', -16.07, 1.29, -3.87, (0, 360, 0), 1.0),
+    ('Custom_Dice', 'Blue', -15.07, 1.29, -3.87, (0, 360, 0), 1.0),
+    ('Custom_Dice', 'Green', -16.07, 1.29, -4.87, (0, 360, 0), 1.0),
+    ('Custom_Dice', 'Green', -15.07, 1.29, -4.87, (0, 360, 0), 1.0),
+    ('Custom_Dice', 'Green', -16.07, 1.29, -5.87, (0, 360, 0), 1.0),
+    ('Custom_Dice', 'Green', -15.07, 1.29, -5.87, (0, 360, 0), 1.0),
+    ('Custom_Dice', 'Yellow', -16.07, 1.29, -6.87, (0, 360, 0), 1.0),
+    ('Custom_Dice', 'Yellow', -15.07, 1.29, -6.87, (0, 360, 0), 1.0),
+    ('Custom_Dice', 'Yellow', -16.07, 1.29, -7.87, (0, 360, 0), 1.0),
+    ('Custom_Dice', 'Yellow', -15.07, 1.29, -7.87, (0, 360, 0), 1.0),
+    ('Custom_Dice', 'Recovery', -12.07, 1.29, -2.88, (0, 0, 0), 1.0),
+    ('Custom_Dice', 'Strategy', -12.07, 1.29, -1.87, (0, 360, 0), 1.0),
+    ('Custom_Dice', 'Health', -12.07, 1.29, -0.87, (0, 360, 0), 1.0),
+    ('Custom_Token', 'Chip', -8.93, 1.06, 1.45, (0, 180, 0), 0.85),
+]
