@@ -1,0 +1,86 @@
+"""Blank cover cards for the AoS Program and Advanced Program decks.
+
+Those decks are genuinely two-sided (Stable face / Overheated back), so a
+face-down deck still shows a real card. These covers sit on top to hide it.
+
+Standalone: needs only pillow, not the WeasyPrint toolchain the other
+generators use. Writes straight into ../images.
+
+    python build_covers.py
+"""
+import os
+from PIL import Image, ImageDraw, ImageFont
+
+OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, "images")
+
+W, H = 500, 700                      # matches every other portrait card back
+BG = (47, 89, 102)                   # AoS teal, sampled from CardBack_AoS_Limitation
+TITLE = (255, 255, 255)
+LABEL = (213, 221, 224)
+MUTED = (116, 144, 153)
+
+# Band geometry, measured off CardBack_AoS_Limitation.png so the covers sit in
+# the same family as the rest of the deck backs.
+TITLE_TOP, TITLE_CAP = 286, 34       # "AoS"
+LABEL_TOP, LABEL_CAP = 345, 15       # deck name, letter-spaced
+RULE_Y, RULE_W, RULE_H = 384, 174, 2
+FOOT_TOP, FOOT_CAP, FOOT_W = 407, 12, 200
+
+FONT = r"C:\Windows\Fonts\arialbd.ttf"
+
+
+def fit(cap_px):
+    """Font whose cap height is cap_px, found by measurement not by guessing."""
+    for size in range(8, 120):
+        f = ImageFont.truetype(FONT, size)
+        if f.getbbox("H")[3] - f.getbbox("H")[1] >= cap_px:
+            return f
+    raise RuntimeError("no font size reached cap height %d" % cap_px)
+
+
+def spaced(draw, text, font, top, colour, target_w=None, max_w=430):
+    """Draw letter-spaced text centred on the card.
+
+    target_w stretches the tracking to a measured width; it is clamped so a
+    long label cannot run off the card edge.
+    """
+    widths = [font.getbbox(c)[2] - font.getbbox(c)[0] for c in text]
+    base = sum(widths)
+    gaps = max(len(text) - 1, 1)
+    track = 0.0
+    if target_w:
+        track = (min(target_w, max_w) - base) / gaps
+        track = max(track, 0.0)
+    total = base + track * gaps
+    if total > max_w:                       # too wide even with no tracking
+        return spaced(draw, text, fit(font.size * max_w / total), top, colour,
+                      None, max_w)
+    x = (W - total) / 2.0
+    for c, w in zip(text, widths):
+        draw.text((x - font.getbbox(c)[0], top - font.getbbox("H")[1]), c,
+                  font=font, fill=colour)
+        x += w + track
+
+
+def cover(label, filename):
+    im = Image.new("RGB", (W, H), BG)
+    d = ImageDraw.Draw(im)
+
+    f_title = fit(TITLE_CAP)
+    tw = d.textlength("AoS", font=f_title)
+    d.text(((W - tw) / 2, TITLE_TOP - f_title.getbbox("H")[1]), "AoS",
+           font=f_title, fill=TITLE)
+
+    spaced(d, label, fit(LABEL_CAP), LABEL_TOP, LABEL, target_w=141 + 14 * len(label))
+    d.rectangle([(W - RULE_W) // 2, RULE_Y,
+                 (W + RULE_W) // 2, RULE_Y + RULE_H - 1], fill=MUTED)
+    spaced(d, "THE NOBULOUS SET", fit(FOOT_CAP), FOOT_TOP, MUTED, target_w=FOOT_W)
+
+    path = os.path.normpath(os.path.join(OUT, filename))
+    im.save(path)
+    print("wrote", path, "%dx%d" % im.size)
+
+
+if __name__ == "__main__":
+    cover("PROGRAM", "CardBack_AoS_Program.png")
+    cover("ADVANCED PROGRAM", "CardBack_AoS_Advanced.png")
