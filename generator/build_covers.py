@@ -81,6 +81,60 @@ def cover(label, filename):
     print("wrote", path, "%dx%d" % im.size)
 
 
+# --- setup panel backdrop -------------------------------------------------
+# The nameplate art is 2.83:1, so a tile using it has very little vertical
+# room; buttons placed more than ~0.18 local from its centre fall off the
+# plate. The setup wizard gets its own near-square surface instead.
+PANEL_W, PANEL_H = 1200, 1200
+PANEL_BG = (17, 15, 13)
+PANEL_INNER = (26, 23, 20)
+PANEL_GOLD = (212, 167, 44)
+
+
+def setup_panel(filename="SetupPanel.png"):
+    im = Image.new("RGB", (PANEL_W, PANEL_H), PANEL_BG)
+    d = ImageDraw.Draw(im)
+    m = 40
+    d.rounded_rectangle([m, m, PANEL_W - m, PANEL_H - m], radius=34,
+                        fill=PANEL_INNER, outline=PANEL_GOLD, width=6)
+    f = fit(30)
+    t = "SET UP A GAME"
+    widths = [f.getbbox(c)[2] - f.getbbox(c)[0] for c in t]
+    track = 14.0
+    total = sum(widths) + track * (len(t) - 1)
+    x = (PANEL_W - total) / 2.0
+    for c, w in zip(t, widths):
+        d.text((x - f.getbbox(c)[0], 96 - f.getbbox("H")[1]), c, font=f,
+               fill=PANEL_GOLD)
+        x += w + track
+    path = os.path.normpath(os.path.join(OUT, filename))
+    im.save(path)
+    print("wrote", path, "%dx%d" % im.size)
+
+
+def nameplate(filename="Nameplate.png"):
+    """The nameplate plus room to put buttons under it.
+
+    ControlPanel.png is 2.83:1, so a stretched tile using it has a local Z
+    range of only about +/-0.18 -- a single shallow row. Padding it out to a
+    gentler aspect gives the buttons a second row to sit on without changing
+    the plate artwork itself.
+    """
+    plate = Image.open(os.path.normpath(os.path.join(OUT, "ControlPanel.png")))
+    W = plate.width
+    H = int(W / 1.55)                       # local z becomes about +/-0.32
+    im = Image.new("RGB", (W, H), PANEL_BG)
+    im.paste(plate.convert("RGB"), (0, 0))
+    d = ImageDraw.Draw(im)
+    d.rounded_rectangle([160, plate.height - 20, W - 160, H - 40], radius=28,
+                        fill=PANEL_INNER, outline=PANEL_GOLD, width=4)
+    path = os.path.normpath(os.path.join(OUT, filename))
+    im.save(path)
+    print("wrote", path, "%dx%d" % im.size)
+
+
 if __name__ == "__main__":
     cover("PROGRAM", "CardBack_AoS_Program.png")
     cover("ADVANCED PROGRAM", "CardBack_AoS_Advanced.png")
+    setup_panel()
+    nameplate()

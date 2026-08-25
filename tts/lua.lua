@@ -14,23 +14,29 @@ STATE = { phase = 'setup', game = nil, difficulty = 'Standard',
           tiers = { false, false, false },
           splices = 0, credits = 0, suspicion = 0, attempts = 0, backdoors = 0 }
 
-BANK, PANEL, BUSY = nil, nil, false
+BANK, PANEL, SETUP, BUSY = nil, nil, nil, false
 
 FACE_DOWN, FACE_UP = { 0, 180, 180 }, { 0, 180, 0 }
 DECK_Y = 2.0
 
--- The panel sits in the middle of the table while you set up, then moves clear
--- so the cards can be dealt into that space.
-PANEL_SETUP = { 0, 1.02, 0 }
-PANEL_PLAY  = { 0, 1.02, 15.5 }
+-- Where the setup surface goes when it is out of the way. Below the table, so
+-- the middle is clear for the cards.
+SETUP_SHOWN, SETUP_HIDDEN = { 0, 1.02, 0 }, { 0, -12, 0 }
 
--- Button geometry, in tile-local units. The tile spans about +/-0.5, and the
--- panel is scaled 3.4, so anything much past 0.45 lands off the table. Widths
--- and heights are thousandths of a local unit; keep W below the column pitch
--- or the buttons overlap. Adjust here, not in the layout below.
-BTN_W, BTN_H, BTN_FONT = 200, 55, 45
-LBL_FONT = 40
-COL, ROW = 0.22, 0.17          -- pitch between columns / rows
+-- Button geometry. A tile with Stretch takes its image aspect, so local extent
+-- is NOT +/-0.5 on both axes: the nameplate art is 2.83:1, giving it roughly
+-- +/-0.5 across but only +/-0.18 up the plate. The setup art is square, so it
+-- has the full range both ways. Both tiles are scaled 8, so a local pitch of
+-- 0.16 is about 1.3 units of table between button centres.
+--
+-- If buttons still crowd each other, raise the pitches or lower the widths --
+-- everything below is expressed in these numbers.
+-- Sizes are deliberately small relative to the pitches. The exact local size
+-- TTS gives a button of width W is not something this script can measure, and
+-- the first attempt at this crowded badly, so everything below is spaced to
+-- stay clear even if a button turns out twice as wide as assumed.
+BTN_W, BTN_H, BTN_FONT, LBL_FONT = 120, 45, 30, 26
+NAME_ROW_A, NAME_ROW_B = -0.06, -0.22   -- the two rows under the plate art
 
 TIER_NAMES = { 'I Agenda', 'II Contamination', 'III Exploitation' }
 
@@ -418,7 +424,7 @@ function startGame()
 
   returnAll(function()
     resetCounters()
-    movePanel(PANEL_PLAY)
+    showSetup(false)
     local finish = function()
       STATE.phase = 'playing'
       BUSY = false
@@ -435,7 +441,7 @@ function packUp()
   if BUSY then return end
   BUSY = true
   returnAll(function(n)
-    movePanel(PANEL_SETUP)
+    showSetup(true)
     STATE.phase = 'setup'
     STATE.game = nil
     resetCounters()
@@ -446,105 +452,118 @@ function packUp()
 end
 
 -- ---------------------------------------------------------------- panel
-function movePanel(pos)
-  if not PANEL then return end
-  PANEL.setLock(false)
-  PANEL.setPositionSmooth(pos, false, true)
-  Wait.time(function() if PANEL then PANEL.setLock(true) end end, 1.0)
+function showSetup(visible)
+  if not SETUP then return end
+  SETUP.setLock(false)
+  SETUP.setPosition(visible and SETUP_SHOWN or SETUP_HIDDEN)
+  Wait.time(function() if SETUP then SETUP.setLock(true) end end, 0.5)
 end
 
-function refreshPanel()
+--- Buttons on a tile are placed in local space, and the tile carries a 180
+-- degree Y rotation which mirrors both axes. Everything below is written in
+-- reading order -- x left to right, z top to bottom -- and negated here.
+function mkBtn(tile)
+  return function(label, fn, x, z, w, col)
+    tile.createButton({ click_function = fn, function_owner = self, label = label,
+      position = { -x, 0.2, -z }, width = w or BTN_W, height = BTN_H,
+      font_size = BTN_FONT, color = col or { 0.16, 0.15, 0.13 },
+      font_color = { 1, 1, 1 } })
+  end
+end
+
+function mkLbl(tile)
+  return function(text, x, z, w)
+    tile.createButton({ click_function = 'nop', function_owner = self, label = text,
+      position = { -x, 0.2, -z }, width = w or BTN_W, height = BTN_H,
+      font_size = LBL_FONT, color = { 0.93, 0.91, 0.85 },
+      font_color = { 0.13, 0.11, 0.09 } })
+  end
+end
+
+--- The nameplate. Always at the top of the table, all game.
+-- Two rows sit under the plate art. Widths here are small relative to the
+-- gaps on purpose: this row is the most crowded thing in the mod, and it is
+-- laid out to stay clear even if a button is twice as wide as assumed.
+function refreshNameplate()
   if not PANEL then return end
   PANEL.clearButtons()
+  local btn, lbl = mkBtn(PANEL), mkLbl(PANEL)
+  local A, B = NAME_ROW_A, NAME_ROW_B
 
-  -- The tile carries a 180 degree Y rotation, which mirrors local x and z.
-  -- Buttons are written below in natural reading coordinates -- x left to
-  -- right, z top to bottom -- and negated here so they land the right way up.
-  local function at(x, z) return { -x, 0.2, -z } end
+  btn('Select a New Game', 'btnNewGame', -0.29, A, 150, { 0.42, 0.18, 0.15 })
+  if STATE.phase ~= 'playing' then return end
 
-  local function btn(label, fn, x, z, w, col)
-    PANEL.createButton({ click_function = fn, function_owner = self, label = label,
-      position = at(x, z), width = w or BTN_W, height = BTN_H,
-      font_size = BTN_FONT,
-      color = col or { 0.16, 0.15, 0.13 }, font_color = { 1, 1, 1 } })
+  --- label / minus / plus, as one group starting at x
+  local function counter(text, minusFn, plusFn, x, z, w, d1, d2)
+    lbl(text, x, z, w or 130)
+    btn('-', minusFn, x + (d1 or 0.26), z, 70)
+    btn('+', plusFn, x + (d2 or 0.44), z, 70)
   end
-  local function lbl(text, x, z, w)
-    PANEL.createButton({ click_function = 'nop', function_owner = self, label = text,
-      position = at(x, z), width = w or BTN_W, height = BTN_H,
-      font_size = LBL_FONT,
-      color = { 0.93, 0.91, 0.85 }, font_color = { 0.13, 0.11, 0.09 } })
-  end
-
-  local ON, OFF = { 0.17, 0.37, 0.29 }, { 0.24, 0.23, 0.21 }
-  lbl('THE NOBULOUS SET', 0, 0.36, 700)
-
-  if STATE.phase == 'setup' then
-    local function gameBtn(code, label, x)
-      btn((STATE.game == code and '> ' or '') .. label, 'pick' .. code,
-          x, 0.18, 200, STATE.game == code and ON or OFF)
-    end
-    gameBtn('BAT', 'BAT', -0.33)
-    gameBtn('NAP', 'NAP', -0.11)
-    gameBtn('AoS', 'AoS', 0.11)
-    gameBtn('IMP', 'Imposter', 0.33)
-
-    -- Difficulty drives nothing in NAP or Imposter, so it greys out there.
-    if STATE.game == 'BAT' or STATE.game == 'AoS' then
-      lbl(STATE.difficulty, -0.32, 0.01, 200)
-      btn('difficulty', 'btnDiff', -0.09, 0.01, 220)
-      local note = (STATE.game == 'AoS') and AOS_PROGRAM[STATE.difficulty]
-                   or ('Tyrant ' .. BAT_HEALTH[STATE.difficulty] .. ' / ' ..
-                       BAT_SPECIMENS[STATE.difficulty] .. ' Spec')
-      lbl(note, 0.26, 0.01, 440)
-    else
-      lbl(STATE.game and 'no difficulty setting' or 'choose a game',
-          0, 0.01, 620)
-    end
-
-    btn((tierOn(1) and '* ' or '') .. 'NRJ I', 'tier1', -0.30, -0.16, 250,
-        tierOn(1) and ON or OFF)
-    btn((tierOn(2) and '* ' or '') .. 'NRJ II', 'tier2', 0.00, -0.16, 250,
-        tierOn(2) and ON or OFF)
-    btn((tierOn(3) and '* ' or '') .. 'NRJ III', 'tier3', 0.30, -0.16, 250,
-        tierOn(3) and ON or OFF)
-
-    btn(STATE.game and ('START ' .. STATE.game) or 'choose a game',
-        'btnStart', 0, -0.35, 480,
-        STATE.game and { 0.17, 0.37, 0.29 } or { 0.3, 0.28, 0.25 })
-    return
-  end
-
-  -- ---- playing
-  lbl(STATE.game .. ((STATE.game == 'BAT' or STATE.game == 'AoS')
-                     and ('  ' .. STATE.difficulty) or '')
-              .. (anyTier() and '  NRJ' or ''), -0.30, 0.18, 300)
-  btn('Pack up', 'btnPack', -0.01, 0.18, 220, { 0.42, 0.18, 0.15 })
-  btn('Reset', 'btnReset', 0.24, 0.18, 220)
 
   local g = STATE.game
   if g == 'BAT' then
-    lbl('Splices ' .. STATE.splices .. ' / 5', -0.33, -0.02, 240)
-    btn('-', 'splMinus', -0.15, -0.02, 90)
-    btn('+', 'splPlus', -0.04, -0.02, 90)
-    lbl('Tyrant ' .. BAT_HEALTH[STATE.difficulty], 0.22, -0.02, 280)
-    if STATE.splices >= 5 then lbl('TYRANT AWAKE', 0, -0.24, 480) end
+    counter('Splices ' .. STATE.splices .. ' / 5', 'splMinus', 'splPlus', -0.35, B)
+    lbl('Tyrant ' .. BAT_HEALTH[STATE.difficulty], 0.36, B, 130)
   elseif g == 'NAP' then
-    lbl('Credits ' .. STATE.credits .. ' / 6', -0.33, -0.02, 240)
-    btn('-', 'crMinus', -0.15, -0.02, 90)
-    btn('+', 'crPlus', -0.04, -0.02, 90)
-    if STATE.credits >= 6 then lbl('FINAL EXAM', 0.22, -0.02, 280) end
+    counter('Credits ' .. STATE.credits .. ' / 6', 'crMinus', 'crPlus', -0.35, B)
+    if STATE.credits >= 6 then lbl('FINAL EXAM', 0.36, B, 130) end
   elseif g == 'AoS' then
-    lbl('Backdoors ' .. STATE.backdoors .. ' / 2', -0.30, -0.02, 300)
-    btn('-', 'bdMinus', -0.06, -0.02, 90)
-    btn('+', 'bdPlus', 0.05, -0.02, 90)
+    counter('Backdoors ' .. STATE.backdoors .. ' / 2', 'bdMinus', 'bdPlus',
+            -0.33, B, 150)
   else
-    lbl('Attempts ' .. STATE.attempts .. ' / 9', -0.36, -0.02, 220)
-    btn('-', 'atMinus', -0.19, -0.02, 80)
-    btn('+', 'atPlus', -0.09, -0.02, 80)
-    lbl('Suspicion ' .. STATE.suspicion, 0.10, -0.02, 220)
-    btn('-', 'suMinus', 0.27, -0.02, 80)
-    btn('+', 'suPlus', 0.37, -0.02, 80)
+    -- Imposter tracks two things, so they take a row each.
+    counter('Att ' .. STATE.attempts .. ' / 9', 'atMinus', 'atPlus', 0.00, A,
+            110, 0.22, 0.38)
+    counter('Susp ' .. STATE.suspicion, 'suMinus', 'suPlus', -0.35, B, 110)
   end
+end
+
+--- The setup wizard, in the middle of the table. Hidden during play.
+function refreshSetup()
+  if not SETUP then return end
+  SETUP.clearButtons()
+  if STATE.phase == 'playing' then return end
+
+  local btn, lbl = mkBtn(SETUP), mkLbl(SETUP)
+  local ON, OFF = { 0.17, 0.37, 0.29 }, { 0.24, 0.23, 0.21 }
+
+  -- game: a 2x2 block, so each button gets room on both axes
+  local function gameBtn(code, label, x, z)
+    btn((STATE.game == code and '> ' or '') .. label, 'pick' .. code, x, z,
+        BTN_W, STATE.game == code and ON or OFF)
+  end
+  lbl('Choose a game', 0, 0.34, 200)
+  gameBtn('BAT', 'BAT', -0.14, 0.20)
+  gameBtn('NAP', 'NAP', 0.14, 0.20)
+  gameBtn('AoS', 'AoS', -0.14, 0.06)
+  gameBtn('IMP', 'Imposter', 0.14, 0.06)
+
+  -- difficulty: drives nothing in NAP or Imposter, so it greys out there
+  if STATE.game == 'BAT' or STATE.game == 'AoS' then
+    btn(STATE.difficulty, 'btnDiff', -0.16, -0.10, BTN_W)
+    local note = (STATE.game == 'AoS') and AOS_PROGRAM[STATE.difficulty]
+                 or ('Tyrant ' .. BAT_HEALTH[STATE.difficulty] .. ' / ' ..
+                     BAT_SPECIMENS[STATE.difficulty] .. ' Spec')
+    lbl(note, 0.17, -0.10, 140)
+  elseif STATE.game then
+    lbl('no difficulty setting', 0, -0.10, 200)
+  end
+
+  btn((tierOn(1) and '* ' or '') .. 'NRJ I', 'tier1', -0.30, -0.26,
+      130, tierOn(1) and ON or OFF)
+  btn((tierOn(2) and '* ' or '') .. 'NRJ II', 'tier2', 0, -0.26,
+      130, tierOn(2) and ON or OFF)
+  btn((tierOn(3) and '* ' or '') .. 'NRJ III', 'tier3', 0.30, -0.26,
+      130, tierOn(3) and ON or OFF)
+
+  btn(STATE.game and ('START ' .. STATE.game) or 'choose a game above',
+      'btnStart', 0, -0.42, 200,
+      STATE.game and { 0.17, 0.37, 0.29 } or { 0.3, 0.28, 0.25 })
+end
+
+function refreshPanel()
+  refreshNameplate()
+  refreshSetup()
 end
 
 -- ---------------------------------------------------------------- clicks
@@ -577,6 +596,7 @@ function tier2() setTier(2) end
 function tier3() setTier(3) end
 
 function btnStart() startGame() end
+function btnNewGame() packUp() end
 function btnPack() packUp() end
 function btnReset() resetCounters() end
 function splPlus() bump('splices', 1, 'Splices') end
@@ -595,6 +615,7 @@ function locate()
   for _, o in ipairs(getAllObjects()) do
     local n = o.getName()
     if n == 'Control Panel' then PANEL = o end
+    if n == 'Setup Panel' then SETUP = o end
     if n == 'Card Bank' then BANK = o end
   end
 end
@@ -608,7 +629,7 @@ function onLoad(saved)
   locate()
   Wait.frames(function()
     locate()
-    movePanel(STATE.phase == 'playing' and PANEL_PLAY or PANEL_SETUP)
+    showSetup(STATE.phase ~= 'playing')
     refreshPanel()
   end, 30)
 end
