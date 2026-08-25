@@ -33,6 +33,16 @@ NAMEPLATE_POS, NAMEPLATE_SCALE = (0.0, 1.02, 20.0), 5.0
 SETUP_POS, SETUP_SCALE = (0.0, 1.02, 0.0), 5.0
 
 
+# An object's XML UI calls its handler on that object's own script, so each
+# panel carries this stub and forwards to the global dispatcher, which owns
+# all the state.
+FORWARD_LUA = """\
+function uiButton(player, value, id)
+  Global.call('uiClick', { id = id, value = value })
+end
+"""
+
+
 def guid():
     while True:
         g = ''.join(rng.choice('0123456789abcdef') for _ in range(6))
@@ -108,6 +118,7 @@ def panel():
                             (0, 180, 0), NAMEPLATE_SCALE),
             "Nickname": "Control Panel",
             "Description": "The Nobulous Set",
+            "LuaScript": FORWARD_LUA,
             "ColorDiffuse": {"r": 0.93, "g": 0.91, "b": 0.85},
             "Locked": True, "Grid": False, "Snap": False,
             "CustomImage": {"ImageURL": url("Nameplate.png"), "ImageSecondaryURL": "",
@@ -126,6 +137,7 @@ def setup_panel():
                             (0, 180, 0), SETUP_SCALE),
             "Nickname": "Setup Panel",
             "Description": "Choose a game, set the options, then Start Game",
+            "LuaScript": FORWARD_LUA,
             "ColorDiffuse": {"r": 1.0, "g": 1.0, "b": 1.0},
             "Locked": True, "Grid": False, "Snap": False,
             "CustomImage": {"ImageURL": url("SetupPanel.png"), "ImageSecondaryURL": "",

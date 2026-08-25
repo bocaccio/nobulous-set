@@ -475,111 +475,161 @@ function showSetup(visible)
   Wait.time(function() if SETUP then SETUP.setLock(true) end end, 0.5)
 end
 
---- Buttons sit in the tile's local space, x left to right and z bottom to
--- top, matching the artwork. The tile's 180 degree Y rotation turns the image
--- and its buttons together, so no axis flip is applied here -- an earlier
--- version negated both and produced a mirrored panel.
-function mkBtn(tile)
-  return function(label, fn, x, z, w, col)
-    tile.createButton({ click_function = fn, function_owner = self, label = label,
-      position = { x, 0.2, z }, width = w or BTN_W, height = BTN_H,
-      font_size = BTN_FONT, color = col or { 0.16, 0.15, 0.13 },
-      font_color = { 1, 1, 1 } })
-  end
+--=====================================================================
+-- The panels are XML UI, not createButton. A classic button draws its
+-- label into a texture which the tile's scale then magnifies, so the text
+-- goes soft as you zoom in, and a long label is shrunk to fit rather than
+-- given room. XML renders real text and lays out by width, which is what
+-- these panels need now the games are spelled out in full.
+--
+-- If a panel floats at the wrong height or reads mirrored, UI_LIFT and
+-- UI_SPIN are the two numbers to adjust.
+--=====================================================================
+UI_LIFT = 12          -- how far the panel sits above the tile face
+UI_SPIN = '0 0 180'   -- rights the text against the tile's own rotation
+
+GAME_NAMES = {
+  BAT = 'Build-A-Tyrant',
+  NAP = 'Nobulous Apprenticeship Program',
+  AoS = 'Automaton of Shale',
+  IMP = 'Imposter Scenario',
+}
+GAME_ORDER = { 'BAT', 'NAP', 'AoS', 'IMP' }
+
+C_PICKED  = '#2f6b52'
+C_IDLE    = '#2b2724'
+C_TIER_ON = '#6f5bbd'      -- the tiers get their own colour, on and off
+C_TIER    = '#3b3560'
+C_OFF     = '#3a3530'
+C_TEXT    = '#f2ede2'
+C_GOLD    = '#d4a72c'
+
+function esc(t)
+  t = string.gsub(t, '&', '&amp;')
+  t = string.gsub(t, '<', '&lt;')
+  return (string.gsub(t, '>', '&gt;'))
 end
 
-function mkLbl(tile)
-  return function(text, x, z, w)
-    tile.createButton({ click_function = 'nop', function_owner = self, label = text,
-      position = { x, 0.2, z }, width = w or BTN_W, height = BTN_H,
-      font_size = LBL_FONT, color = { 0.93, 0.91, 0.85 },
-      font_color = { 0.13, 0.11, 0.09 } })
-  end
+function attrs(t)
+  local out = {}
+  for k, v in pairs(t) do table.insert(out, k .. '="' .. tostring(v) .. '"') end
+  table.sort(out)
+  return table.concat(out, ' ')
 end
 
---- The nameplate. Always at the top of the table, all game.
-function refreshNameplate()
-  if not PANEL then return end
-  PANEL.clearButtons()
-  local btn, lbl = mkBtn(PANEL), mkLbl(PANEL)
-  local A, B = NAME_ROW_A, NAME_ROW_B
-
-  btn('Select a New Game', 'btnNewGame', -0.30, A, 190, { 0.42, 0.18, 0.15 })
-  if STATE.phase ~= 'playing' then return end
-
-  --- label, then minus and plus to its right
-  local function counter(text, minusFn, plusFn, x, z, w)
-    lbl(text, x, z, w or 150)
-    btn('-', minusFn, x + 0.25, z, 80)
-    btn('+', plusFn, x + 0.43, z, 80)
-  end
-
-  local g = STATE.game
-  if g == 'BAT' then
-    lbl('Splices ' .. STATE.splices .. ' / 5', 0.02, A, 90)
-    btn('-', 'splMinus', 0.20, A, 80)
-    btn('+', 'splPlus', 0.38, A, 80)
-    local buff = STATE.tyrant - BAT_BASE_HP
-    counter('Tyrant ' .. STATE.tyrant .. (buff > 0 and ('  +' .. buff) or ''),
-            'hpMinus', 'hpPlus', -0.34, B)
-    if STATE.splices >= 5 then lbl('AWAKE', 0.36, B, 120) end
-  elseif g == 'NAP' then
-    lbl('NAP', 0.22, A, 200)
-    counter('Credits ' .. STATE.credits .. ' / 6', 'crMinus', 'crPlus', -0.34, B)
-    if STATE.credits >= 6 then lbl('FINAL EXAM', 0.36, B, 120) end
-  elseif g == 'AoS' then
-    lbl('AoS  ' .. STATE.difficulty, 0.22, A, 200)
-    counter('Backdoors ' .. STATE.backdoors .. ' / 2', 'bdMinus', 'bdPlus', -0.34, B)
-  else
-    -- Imposter tracks two counters, so one goes up on the top row.
-    lbl('Att ' .. STATE.attempts .. ' / 9', 0.02, A, 90)
-    btn('-', 'atMinus', 0.20, A, 80)
-    btn('+', 'atPlus', 0.38, A, 80)
-    counter('Susp ' .. STATE.suspicion, 'suMinus', 'suPlus', -0.34, B)
-  end
+function tag(name, a, inner)
+  if inner == nil then return '<' .. name .. ' ' .. attrs(a) .. '/>' end
+  return '<' .. name .. ' ' .. attrs(a) .. '>' .. inner .. '</' .. name .. '>'
 end
 
---- The setup wizard, in the middle of the table. Hidden during play.
+function xbtn(id, text, colour, extra)
+  local a = { id = id, onClick = 'uiButton', color = colour,
+              textColor = C_TEXT, fontSize = 34 }
+  for k, v in pairs(extra or {}) do a[k] = v end
+  return tag('Button', a, esc(text))
+end
+
+function xtext(text, size, colour, extra)
+  local a = { fontSize = size or 30, color = colour or C_TEXT,
+              alignment = 'MiddleLeft' }
+  for k, v in pairs(extra or {}) do a[k] = v end
+  return tag('Text', a, esc(text))
+end
+
+function panelWrap(inner, w, h)
+  return tag('Panel', { position = '0 0 -' .. UI_LIFT, rotation = UI_SPIN,
+                        width = w, height = h, scale = '0.34 0.34 0.34',
+                        color = '#00000000' }, inner)
+end
+
+--- The setup wizard: a column of games, each with its options beside it.
 function refreshSetup()
   if not SETUP then return end
-  SETUP.clearButtons()
-  if STATE.phase == 'playing' then return end
+  if STATE.phase == 'playing' then SETUP.UI.setXml('') return end
 
-  local btn, lbl = mkBtn(SETUP), mkLbl(SETUP)
-  local ON, OFF = { 0.17, 0.37, 0.29 }, { 0.24, 0.23, 0.21 }
+  local rows = {}
+  table.insert(rows, tag('Text', { fontSize = 46, color = C_GOLD,
+      alignment = 'MiddleCenter', preferredHeight = 78 }, 'SET UP A GAME'))
 
-  -- The plate art already reads SET UP A GAME, so no heading is needed here.
-  local function gameBtn(code, label, x)
-    btn((STATE.game == code and '> ' or '') .. label, 'pick' .. code, x, ROW_1,
-        BTN_W, STATE.game == code and ON or OFF)
+  for _, code in ipairs(GAME_ORDER) do
+    local picked = (STATE.game == code)
+    local left = xbtn('pick' .. code, GAME_NAMES[code],
+                      picked and C_PICKED or C_IDLE, { flexibleWidth = 58 })
+
+    -- The chosen game's options sit to the right of its own button.
+    local right
+    if not picked then
+      right = tag('Panel', { flexibleWidth = 42, color = '#00000000' }, '')
+    elseif code == 'BAT' or code == 'AoS' then
+      local note = (code == 'AoS') and AOS_PROGRAM[STATE.difficulty]
+                   or ('20 +' .. BAT_BUFF[STATE.difficulty] .. ' Buff, ' ..
+                       BAT_SPECIMENS[STATE.difficulty] .. ' Specimens')
+      right = tag('HorizontalLayout', { flexibleWidth = 42, spacing = 8 },
+                  xbtn('btnDiff', STATE.difficulty, C_OFF,
+                       { preferredWidth = 160 }) ..
+                  xtext(note, 26, C_TEXT, { flexibleWidth = 1 }))
+    else
+      right = tag('Panel', { flexibleWidth = 42, color = '#00000000' },
+                  xtext('no difficulty setting', 26, '#9a9288'))
+    end
+    table.insert(rows, tag('HorizontalLayout',
+        { preferredHeight = 86, spacing = 14 }, left .. right))
   end
-  gameBtn('BAT', 'BAT', -0.36)
-  gameBtn('NAP', 'NAP', -0.12)
-  gameBtn('AoS', 'AoS', 0.12)
-  gameBtn('IMP', 'IMP', 0.36)
 
-  -- Difficulty on the left, what it means on the right. It drives nothing in
-  -- NAP or Imposter, so it is left off entirely there.
-  if STATE.game == 'BAT' or STATE.game == 'AoS' then
-    btn(STATE.difficulty, 'btnDiff', -0.20, ROW_2, 170)
-    local note = (STATE.game == 'AoS') and AOS_PROGRAM[STATE.difficulty]
-                 or ('+' .. BAT_BUFF[STATE.difficulty] .. ' Buff  ' ..
-                     BAT_SPECIMENS[STATE.difficulty] .. ' Spec')
-    lbl(note, 0.22, ROW_2, 210)
-  elseif STATE.game then
-    lbl('no difficulty setting', 0, ROW_2, 260)
+  local tiers = {}
+  for n = 1, 3 do
+    table.insert(tiers, xbtn('tier' .. n,
+        (tierOn(n) and '* ' or '') .. 'NRJ ' .. TIER_NAMES[n],
+        tierOn(n) and C_TIER_ON or C_TIER, { flexibleWidth = 1 }))
+  end
+  table.insert(rows, tag('HorizontalLayout',
+      { preferredHeight = 78, spacing = 14 }, table.concat(tiers)))
+
+  table.insert(rows, xbtn('btnStart',
+      STATE.game and ('START ' .. GAME_NAMES[STATE.game]) or 'Choose a game above',
+      STATE.game and C_PICKED or C_OFF,
+      { preferredHeight = 92, fontSize = 40 }))
+
+  SETUP.UI.setXml(panelWrap(tag('VerticalLayout',
+      { padding = '34 34 28 28', spacing = 14 }, table.concat(rows)), 1080, 1080))
+end
+
+--- The nameplate: Select a New Game, plus the counters once play starts.
+function refreshNameplate()
+  if not PANEL then return end
+  local cells = { xbtn('btnNewGame', 'Select a New Game', '#7a3028',
+                       { preferredWidth = 300, fontSize = 32 }) }
+
+  local function counter(text, id, w)
+    return tag('HorizontalLayout', { spacing = 6, preferredWidth = w or 300 },
+        xtext(text, 30, C_TEXT, { flexibleWidth = 1, alignment = 'MiddleRight' })
+        .. xbtn(id .. 'Minus', '-', C_OFF, { preferredWidth = 56 })
+        .. xbtn(id .. 'Plus', '+', C_OFF, { preferredWidth = 56 }))
   end
 
-  btn((tierOn(1) and '* ' or '') .. 'NRJ I', 'tier1', -0.30, ROW_3, 140,
-      tierOn(1) and ON or OFF)
-  btn((tierOn(2) and '* ' or '') .. 'NRJ II', 'tier2', 0, ROW_3, 140,
-      tierOn(2) and ON or OFF)
-  btn((tierOn(3) and '* ' or '') .. 'NRJ III', 'tier3', 0.30, ROW_3, 140,
-      tierOn(3) and ON or OFF)
+  if STATE.phase == 'playing' then
+    local g = STATE.game
+    if g == 'BAT' then
+      local buff = STATE.tyrant - BAT_BASE_HP
+      table.insert(cells, counter('Splices ' .. STATE.splices .. ' / 5', 'spl'))
+      table.insert(cells, counter('Tyrant ' .. STATE.tyrant ..
+          (buff > 0 and ('  +' .. buff .. ' Buff') or ''), 'hp', 380))
+    elseif g == 'NAP' then
+      table.insert(cells, counter('Credits ' .. STATE.credits .. ' / 6', 'cr'))
+      if STATE.credits >= 6 then
+        table.insert(cells, xtext('FINAL EXAM', 30, C_GOLD,
+                                  { preferredWidth = 180 }))
+      end
+    elseif g == 'AoS' then
+      table.insert(cells, counter('Backdoors ' .. STATE.backdoors .. ' / 2', 'bd'))
+    else
+      table.insert(cells, counter('Attempts ' .. STATE.attempts .. ' / 9', 'at'))
+      table.insert(cells, counter('Suspicion ' .. STATE.suspicion, 'su'))
+    end
+  end
 
-  btn(STATE.game and ('START ' .. STATE.game) or 'choose a game', 'btnStart',
-      0, ROW_4, 260,
-      STATE.game and { 0.17, 0.37, 0.29 } or { 0.3, 0.28, 0.25 })
+  PANEL.UI.setXml(panelWrap(tag('HorizontalLayout',
+      { padding = '30 30 16 22', spacing = 18 }, table.concat(cells)), 1180, 320))
 end
 
 function refreshPanel()
@@ -587,12 +637,34 @@ function refreshPanel()
   refreshSetup()
 end
 
+--- Every XML button routes here through the panel's forwarding stub.
+function uiClick(params)
+  local id = params and params.id
+  if not id then return end
+  if id == 'btnStart' then startGame() return end
+  if id == 'btnNewGame' then packUp() return end
+  if id == 'btnDiff' then btnDiff() return end
+  for _, code in ipairs(GAME_ORDER) do
+    if id == 'pick' .. code then STATE.game = code; refreshPanel() return end
+  end
+  for n = 1, 3 do
+    if id == 'tier' .. n then setTier(n) return end
+  end
+  local counters = {
+    splMinus = { 'splices', -1, 'Splices' }, splPlus = { 'splices', 1, 'Splices' },
+    crMinus = { 'credits', -1, 'Credits' }, crPlus = { 'credits', 1, 'Credits' },
+    bdMinus = { 'backdoors', -1, 'Backdoor Routines' },
+    bdPlus = { 'backdoors', 1, 'Backdoor Routines' },
+    atMinus = { 'attempts', -1, 'Attempts' }, atPlus = { 'attempts', 1, 'Attempts' },
+    suMinus = { 'suspicion', -1, 'Suspicion' }, suPlus = { 'suspicion', 1, 'Suspicion' },
+    hpMinus = { 'tyrant', -1, 'Tyrant Health' },
+    hpPlus = { 'tyrant', 1, 'Tyrant Health' },
+  }
+  local c = counters[id]
+  if c then bump(c[1], c[2], c[3]) end
+end
+
 -- ---------------------------------------------------------------- clicks
-function nop() end
-function pickBAT() STATE.game = 'BAT'; refreshPanel() end
-function pickNAP() STATE.game = 'NAP'; refreshPanel() end
-function pickAoS() STATE.game = 'AoS'; refreshPanel() end
-function pickIMP() STATE.game = 'IMP'; refreshPanel() end
 
 function btnDiff()
   local order = { 'Easy', 'Standard', 'Hard' }
@@ -612,26 +684,8 @@ function setTier(n)
   end
   refreshPanel()
 end
-function tier1() setTier(1) end
-function tier2() setTier(2) end
-function tier3() setTier(3) end
 
-function btnStart() startGame() end
-function btnNewGame() packUp() end
 function btnPack() packUp() end
-function btnReset() resetCounters() end
-function splPlus() bump('splices', 1, 'Splices') end
-function splMinus() bump('splices', -1, 'Splices') end
-function crPlus() bump('credits', 1, 'Credits') end
-function crMinus() bump('credits', -1, 'Credits') end
-function bdPlus() bump('backdoors', 1, 'Backdoor Routines') end
-function bdMinus() bump('backdoors', -1, 'Backdoor Routines') end
-function hpPlus() bump('tyrant', 1, 'Tyrant Health') end
-function hpMinus() bump('tyrant', -1, 'Tyrant Health') end
-function atPlus() bump('attempts', 1, 'Attempts') end
-function atMinus() bump('attempts', -1, 'Attempts') end
-function suPlus() bump('suspicion', 1, 'Suspicion') end
-function suMinus() bump('suspicion', -1, 'Suspicion') end
 
 -- ---------------------------------------------------------------- lifecycle
 function locate()
