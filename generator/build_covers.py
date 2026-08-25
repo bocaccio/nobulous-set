@@ -85,7 +85,7 @@ def cover(label, filename):
 # The nameplate art is 2.83:1, so a tile using it has very little vertical
 # room; buttons placed more than ~0.18 local from its centre fall off the
 # plate. The setup wizard gets its own near-square surface instead.
-PANEL_W, PANEL_H = 1200, 1200
+PANEL_W, PANEL_H = 1400, 1400
 PANEL_BG = (17, 15, 13)
 PANEL_INNER = (26, 23, 20)
 PANEL_GOLD = (212, 167, 44)
@@ -122,7 +122,7 @@ def nameplate(filename="Nameplate.png"):
     """
     plate = Image.open(os.path.normpath(os.path.join(OUT, "ControlPanel.png")))
     W = plate.width
-    H = int(W / 1.55)                       # local z becomes about +/-0.32
+    H = int(W / 1.23)                       # local z becomes about +/-0.41
     im = Image.new("RGB", (W, H), PANEL_BG)
     im.paste(plate.convert("RGB"), (0, 0))
     d = ImageDraw.Draw(im)

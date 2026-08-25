@@ -29,8 +29,8 @@ BANK_POS = (-13.0, 1.5, 20.0)        # beside the nameplate, clear of the cards
 
 # The nameplate sits at the top all game. The setup surface sits in the middle
 # and is hidden once play starts, so the cards can be dealt into that space.
-NAMEPLATE_POS, NAMEPLATE_SCALE = (0.0, 1.02, 20.0), 8.0
-SETUP_POS, SETUP_SCALE = (0.0, 1.02, 0.0), 8.0
+NAMEPLATE_POS, NAMEPLATE_SCALE = (0.0, 1.02, 20.0), 5.0
+SETUP_POS, SETUP_SCALE = (0.0, 1.02, 0.0), 5.0
 
 
 def guid():
@@ -145,6 +145,16 @@ def dice_objects():
     for name, nick, x, y, z, rot, scale in layout.LOOSE:
         if name != 'Custom_Tile':
             queue.setdefault(nick, []).append((x, y, z, rot, scale))
+
+    # The dial sits just above the block of coloured dice, not off beside the
+    # cards, so it is derived from where those dice actually ended up.
+    colour = [q for n, q in queue.items()
+              if n in ('Red', 'Purple', 'Blue', 'Green', 'Yellow')]
+    spots = [p for q in colour for p in q]
+    if spots:
+        cx = (min(p[0] for p in spots) + max(p[0] for p in spots)) / 2.0
+        cz = max(p[2] for p in spots) + 1.6
+        queue['Chip'] = [(round(cx, 2), 1.1, round(cz, 2), (0, 180, 0), 0.85)]
 
     out, spare_z = [], -20.0
     for o in src:
