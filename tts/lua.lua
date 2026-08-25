@@ -19,6 +19,19 @@ BANK, PANEL, BUSY = nil, nil, false
 FACE_DOWN, FACE_UP = { 0, 180, 180 }, { 0, 180, 0 }
 DECK_Y = 2.0
 
+-- The panel sits in the middle of the table while you set up, then moves clear
+-- so the cards can be dealt into that space.
+PANEL_SETUP = { 0, 1.02, 0 }
+PANEL_PLAY  = { 0, 1.02, 15.5 }
+
+-- Button geometry, in tile-local units. The tile spans about +/-0.5, and the
+-- panel is scaled 3.4, so anything much past 0.45 lands off the table. Widths
+-- and heights are thousandths of a local unit; keep W below the column pitch
+-- or the buttons overlap. Adjust here, not in the layout below.
+BTN_W, BTN_H, BTN_FONT = 200, 55, 45
+LBL_FONT = 40
+COL, ROW = 0.22, 0.17          -- pitch between columns / rows
+
 TIER_NAMES = { 'I Agenda', 'II Contamination', 'III Exploitation' }
 
 -- Program deck by difficulty, and the two BAT dials.
@@ -405,6 +418,7 @@ function startGame()
 
   returnAll(function()
     resetCounters()
+    movePanel(PANEL_PLAY)
     local finish = function()
       STATE.phase = 'playing'
       BUSY = false
@@ -421,6 +435,7 @@ function packUp()
   if BUSY then return end
   BUSY = true
   returnAll(function(n)
+    movePanel(PANEL_SETUP)
     STATE.phase = 'setup'
     STATE.game = nil
     resetCounters()
@@ -431,93 +446,104 @@ function packUp()
 end
 
 -- ---------------------------------------------------------------- panel
+function movePanel(pos)
+  if not PANEL then return end
+  PANEL.setLock(false)
+  PANEL.setPositionSmooth(pos, false, true)
+  Wait.time(function() if PANEL then PANEL.setLock(true) end end, 1.0)
+end
+
 function refreshPanel()
   if not PANEL then return end
   PANEL.clearButtons()
-  local y = 0.2
+
+  -- The tile carries a 180 degree Y rotation, which mirrors local x and z.
+  -- Buttons are written below in natural reading coordinates -- x left to
+  -- right, z top to bottom -- and negated here so they land the right way up.
+  local function at(x, z) return { -x, 0.2, -z } end
 
   local function btn(label, fn, x, z, w, col)
     PANEL.createButton({ click_function = fn, function_owner = self, label = label,
-      position = { x, y, z }, width = w or 900, height = 260, font_size = 130,
+      position = at(x, z), width = w or BTN_W, height = BTN_H,
+      font_size = BTN_FONT,
       color = col or { 0.16, 0.15, 0.13 }, font_color = { 1, 1, 1 } })
   end
   local function lbl(text, x, z, w)
     PANEL.createButton({ click_function = 'nop', function_owner = self, label = text,
-      position = { x, y, z }, width = w or 900, height = 220, font_size = 110,
+      position = at(x, z), width = w or BTN_W, height = BTN_H,
+      font_size = LBL_FONT,
       color = { 0.93, 0.91, 0.85 }, font_color = { 0.13, 0.11, 0.09 } })
   end
 
   local ON, OFF = { 0.17, 0.37, 0.29 }, { 0.24, 0.23, 0.21 }
-  lbl('THE NOBULOUS SET', 0, -4.3, 2600)
+  lbl('THE NOBULOUS SET', 0, 0.36, 700)
 
   if STATE.phase == 'setup' then
     local function gameBtn(code, label, x)
-      btn((STATE.game == code and '> ' or '') .. label, 'pick' .. code, x, -3.3,
-          1100, STATE.game == code and ON or OFF)
+      btn((STATE.game == code and '> ' or '') .. label, 'pick' .. code,
+          x, 0.18, 200, STATE.game == code and ON or OFF)
     end
-    gameBtn('BAT', 'BAT', -1.7)
-    gameBtn('NAP', 'NAP', -0.55)
-    gameBtn('AoS', 'AoS', 0.6)
-    gameBtn('IMP', 'Imposter', 1.75)
+    gameBtn('BAT', 'BAT', -0.33)
+    gameBtn('NAP', 'NAP', -0.11)
+    gameBtn('AoS', 'AoS', 0.11)
+    gameBtn('IMP', 'Imposter', 0.33)
 
     -- Difficulty drives nothing in NAP or Imposter, so it greys out there.
-    local usesDiff = (STATE.game == 'BAT' or STATE.game == 'AoS')
-    if usesDiff then
-      lbl('Difficulty  ' .. STATE.difficulty, -1.1, -2.4, 1500)
-      btn('cycle', 'btnDiff', 0.35, -2.4, 700)
-      if STATE.game == 'AoS' then
-        lbl(AOS_PROGRAM[STATE.difficulty], 1.6, -2.4, 1700)
-      else
-        lbl('Tyrant ' .. BAT_HEALTH[STATE.difficulty] ..
-            ' / ' .. BAT_SPECIMENS[STATE.difficulty] .. ' Spec', 1.6, -2.4, 1700)
-      end
+    if STATE.game == 'BAT' or STATE.game == 'AoS' then
+      lbl(STATE.difficulty, -0.32, 0.01, 200)
+      btn('difficulty', 'btnDiff', -0.09, 0.01, 220)
+      local note = (STATE.game == 'AoS') and AOS_PROGRAM[STATE.difficulty]
+                   or ('Tyrant ' .. BAT_HEALTH[STATE.difficulty] .. ' / ' ..
+                       BAT_SPECIMENS[STATE.difficulty] .. ' Spec')
+      lbl(note, 0.26, 0.01, 440)
     else
-      lbl(STATE.game and 'Difficulty  n/a for this game' or
-          'Choose a game', -0.3, -2.4, 2200)
+      lbl(STATE.game and 'no difficulty setting' or 'choose a game',
+          0, 0.01, 620)
     end
 
-    lbl('NRJ', -2.0, -1.5, 500)
-    for n = 1, 3 do
-      btn((tierOn(n) and '* ' or '') .. TIER_NAMES[n], 'tier' .. n,
-          -1.25 + (n - 1) * 1.15, -1.5, 1100, tierOn(n) and ON or OFF)
-    end
+    btn((tierOn(1) and '* ' or '') .. 'NRJ I', 'tier1', -0.30, -0.16, 250,
+        tierOn(1) and ON or OFF)
+    btn((tierOn(2) and '* ' or '') .. 'NRJ II', 'tier2', 0.00, -0.16, 250,
+        tierOn(2) and ON or OFF)
+    btn((tierOn(3) and '* ' or '') .. 'NRJ III', 'tier3', 0.30, -0.16, 250,
+        tierOn(3) and ON or OFF)
 
-    btn(STATE.game and ('START ' .. STATE.game) or 'Choose a game',
-        'btnStart', 0, -0.6, 1800,
+    btn(STATE.game and ('START ' .. STATE.game) or 'choose a game',
+        'btnStart', 0, -0.35, 480,
         STATE.game and { 0.17, 0.37, 0.29 } or { 0.3, 0.28, 0.25 })
     return
   end
 
   -- ---- playing
-  lbl(STATE.game .. '  ' ..
-      ((STATE.game == 'BAT' or STATE.game == 'AoS') and STATE.difficulty or '') ..
-      (anyTier() and '  NRJ' or ''), -1.2, -3.3, 1600)
-  btn('Pack up', 'btnPack', 0.6, -3.3, 1100, { 0.42, 0.18, 0.15 })
-  btn('Reset counters', 'btnReset', 1.8, -3.3, 1300)
+  lbl(STATE.game .. ((STATE.game == 'BAT' or STATE.game == 'AoS')
+                     and ('  ' .. STATE.difficulty) or '')
+              .. (anyTier() and '  NRJ' or ''), -0.30, 0.18, 300)
+  btn('Pack up', 'btnPack', -0.01, 0.18, 220, { 0.42, 0.18, 0.15 })
+  btn('Reset', 'btnReset', 0.24, 0.18, 220)
 
   local g = STATE.game
   if g == 'BAT' then
-    lbl('Splices  ' .. STATE.splices .. ' / 5', -1.2, -2.2, 1400)
-    btn('-', 'splMinus', -0.25, -2.2, 320)
-    btn('+', 'splPlus', 0.15, -2.2, 320)
-    lbl('Tyrant Health ' .. BAT_HEALTH[STATE.difficulty], 1.3, -2.2, 1600)
-    if STATE.splices >= 5 then lbl('TYRANT AWAKE', 0, -1.3, 1600) end
+    lbl('Splices ' .. STATE.splices .. ' / 5', -0.33, -0.02, 240)
+    btn('-', 'splMinus', -0.15, -0.02, 90)
+    btn('+', 'splPlus', -0.04, -0.02, 90)
+    lbl('Tyrant ' .. BAT_HEALTH[STATE.difficulty], 0.22, -0.02, 280)
+    if STATE.splices >= 5 then lbl('TYRANT AWAKE', 0, -0.24, 480) end
   elseif g == 'NAP' then
-    lbl('Credits  ' .. STATE.credits .. ' / 6', -1.2, -2.2, 1400)
-    btn('-', 'crMinus', -0.25, -2.2, 320)
-    btn('+', 'crPlus', 0.15, -2.2, 320)
-    if STATE.credits >= 6 then lbl('FINAL EXAM', 1.3, -2.2, 1400) end
+    lbl('Credits ' .. STATE.credits .. ' / 6', -0.33, -0.02, 240)
+    btn('-', 'crMinus', -0.15, -0.02, 90)
+    btn('+', 'crPlus', -0.04, -0.02, 90)
+    if STATE.credits >= 6 then lbl('FINAL EXAM', 0.22, -0.02, 280) end
   elseif g == 'AoS' then
-    lbl('Backdoors  ' .. STATE.backdoors .. ' / 2', -0.9, -2.2, 1600)
-    btn('-', 'bdMinus', 0.35, -2.2, 320)
-    btn('+', 'bdPlus', 0.75, -2.2, 320)
+    lbl('Backdoors ' .. STATE.backdoors .. ' / 2', -0.30, -0.02, 300)
+    btn('-', 'bdMinus', -0.06, -0.02, 90)
+    btn('+', 'bdPlus', 0.05, -0.02, 90)
   else
-    lbl('Attempts  ' .. STATE.attempts .. ' / 9', -1.5, -2.2, 1300)
-    btn('-', 'atMinus', -0.62, -2.2, 320)
-    btn('+', 'atPlus', -0.22, -2.2, 320)
-    lbl('Suspicion  ' .. STATE.suspicion, 1.1, -2.2, 1500)
-    btn('-', 'suMinus', 0.2, -2.2, 320)
-    btn('+', 'suPlus', 0.6, -2.2, 320)
+    lbl('Attempts ' .. STATE.attempts .. ' / 9', -0.36, -0.02, 220)
+    btn('-', 'atMinus', -0.19, -0.02, 80)
+    btn('+', 'atPlus', -0.09, -0.02, 80)
+    lbl('Suspicion ' .. STATE.suspicion, 0.10, -0.02, 220)
+    btn('-', 'suMinus', 0.27, -0.02, 80)
+    btn('+', 'suPlus', 0.37, -0.02, 80)
   end
 end
 
@@ -580,7 +606,11 @@ function onLoad(saved)
   end
   if type(STATE.tiers) ~= 'table' then STATE.tiers = { false, false, false } end
   locate()
-  Wait.frames(function() locate(); refreshPanel() end, 30)
+  Wait.frames(function()
+    locate()
+    movePanel(STATE.phase == 'playing' and PANEL_PLAY or PANEL_SETUP)
+    refreshPanel()
+  end, 30)
 end
 
 function onSave()

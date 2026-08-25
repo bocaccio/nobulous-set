@@ -96,10 +96,12 @@ def build_deck(d, deck_id, pos, scale=1.0):
 
 
 def panel():
-    px, py, pz, prot, pscale = 0, 0.96, 14, (0, 180, 0), 3.4
+    # Starts in the middle of the table, where the setup wizard is used; the
+    # Lua moves it clear once a game starts so cards can be dealt there.
+    px, py, pz, prot, pscale = 0.0, 1.02, 0.0, (0, 180, 0), 3.4
     for name, nick, x, y, z, rot, scale in layout.LOOSE:
         if nick == 'Control Panel':
-            px, py, pz, prot, pscale = x, y, z, rot, scale
+            prot, pscale = rot, scale
     return {"GUID": guid(), "Name": "Custom_Tile",
             "Transform": xf(px, py, pz, prot, pscale),
             "Nickname": "Control Panel",

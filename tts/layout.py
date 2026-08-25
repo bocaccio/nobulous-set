@@ -5,39 +5,39 @@ PORTRAIT_SCALE = 1.4
 
 # label -> (x, z); loose cards keep their numbered nickname
 POS = {
-    'Technicians'               : (  -9.00,  -16.00),   # AoS
-    'Limitations'               : (  -4.00,  -16.00),   # AoS
-    'Specialized Programs'      : (   0.30,  -16.00),   # AoS
-    'Advanced Programs'         : ( -11.09,  -21.70),   # AoS
-    'Element Mats 1'            : (  -6.79,  -21.70),   # AoS
-    'Element Mats 2'            : (  -2.49,  -21.70),   # AoS
-    'Element Mats 3'            : (   1.81,  -21.70),   # AoS
-    'Element Mats 4'            : (   6.11,  -21.70),   # AoS
-    'Element Mats 5'            : (  10.41,  -21.70),   # AoS
-    'Lab Rats (A / B)'          : (  -7.91,   16.81),   # BAT
-    'Encounters'                : (  -2.91,   16.81),   # BAT
-    'Upgrades'                  : (   1.39,   16.81),   # BAT
-    'Specimens'                 : (   5.69,   16.81),   # BAT
-    'Tyrant Attacks'            : (   9.99,   16.81),   # BAT
-    'Council Test Scenarios'    : (  24.58,  -10.30),   # IMP
-    'Final Exams'               : (  -5.01,    9.00),   # NAP
-    'Opportunities'             : (   0.69,    9.00),   # NAP
-    'Setbacks'                  : (   6.39,    9.00),   # NAP
-    'Time Slots + FINF 4'       : ( -15.28,    4.70),   # NAP
-    'Apprentices'               : (  -9.58,    4.70),   # NAP
-    'Tasks'                     : (  -3.88,    4.70),   # NAP
-    'Time Slots + FINF 1'       : (  -4.40,    0.40),   # NAP
-    'Time Slots + FINF 2'       : (  -4.33,   -4.60),   # NAP
-    'Time Slots + FINF 3'       : (  -4.36,  -10.30),   # NAP
-    'Devious Opportunities'     : (  12.35,    0.40),   # NRJ
-    'Impostor Tasks'            : (  18.05,    0.40),   # NRJ
-    'Following Setbacks'        : (  23.75,    0.40),   # NRJ
-    'Experimental Protocols'    : (  10.78,   -4.60),   # NRJ
-    'Unauthorized Modifications': (  15.08,   -4.60),   # NRJ
-    'Research Notes'            : (  19.38,   -4.60),   # NRJ
-    'Nobulous Interference'     : (  11.68,  -10.30),   # NRJ
-    'Corrupted Limitations'     : (  15.98,  -10.30),   # NRJ
-    'Backdoor Routines'         : (  20.28,  -10.30),   # NRJ
+    'Technicians'               : (  -8.66,    2.85),   # AoS
+    'Limitations'               : (  -3.66,    2.85),   # AoS
+    'Specialized Programs'      : (   0.64,    2.85),   # AoS
+    'Advanced Programs'         : ( -10.75,   -2.85),   # AoS
+    'Element Mats 1'            : (  -6.45,   -2.85),   # AoS
+    'Element Mats 2'            : (  -2.15,   -2.85),   # AoS
+    'Element Mats 3'            : (   2.15,   -2.85),   # AoS
+    'Element Mats 4'            : (   6.45,   -2.85),   # AoS
+    'Element Mats 5'            : (  10.75,   -2.85),   # AoS
+    'Lab Rats (A / B)'          : (  -8.60,    0.00),   # BAT
+    'Encounters'                : (  -3.60,    0.00),   # BAT
+    'Upgrades'                  : (   0.70,    0.00),   # BAT
+    'Specimens'                 : (   5.00,    0.00),   # BAT
+    'Tyrant Attacks'            : (   9.30,    0.00),   # BAT
+    'Council Test Scenarios'    : (   0.00,    0.00),   # IMP
+    'Final Exams'               : (  -0.56,    9.65),   # NAP
+    'Opportunities'             : (   5.13,    9.65),   # NAP
+    'Setbacks'                  : (  10.84,    9.65),   # NAP
+    'Time Slots + FINF 4'       : ( -10.83,    5.35),   # NAP
+    'Apprentices'               : (  -5.13,    5.35),   # NAP
+    'Tasks'                     : (   0.57,    5.35),   # NAP
+    'Time Slots + FINF 1'       : (   0.04,    1.05),   # NAP
+    'Time Slots + FINF 2'       : (   0.12,   -3.95),   # NAP
+    'Time Slots + FINF 3'       : (   0.08,   -9.65),   # NAP
+    'Nobulous Interference'     : (  12.02,    8.55),   # NRJ
+    'Corrupted Limitations'     : (  16.32,    8.55),   # NRJ
+    'Backdoor Routines'         : (  20.62,    8.55),   # NRJ
+    'Devious Opportunities'     : (  16.80,    1.05),   # NRJ
+    'Impostor Tasks'            : (  22.50,    1.05),   # NRJ
+    'Following Setbacks'        : (  28.20,    1.05),   # NRJ
+    'Experimental Protocols'    : (  10.09,  -21.41),   # NRJ
+    'Unauthorized Modifications': (  14.39,  -21.41),   # NRJ
+    'Research Notes'            : (  18.69,  -21.41),   # NRJ
 }
 
 # Furniture: exact hand-placed positions, never re-spaced.

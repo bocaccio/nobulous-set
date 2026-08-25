@@ -38,6 +38,51 @@ def footprint(label):
     return (CARD_H, CARD_W) if LAND.get(label) else (CARD_W, CARD_H)
 
 
+# Which game each deck belongs to. The arranged save lays all four out side by
+# side so the coordinates can be read off in one pass; in play only one game is
+# ever on the table, so each is recentred on PLAY_CENTRE below.
+GAME_OF = {}
+for _d in DECKS:
+    GAME_OF[_d['label']] = _d['game']
+GAME_OF.update({
+    'Experimental Protocols': 'BAT', 'Unauthorized Modifications': 'BAT',
+    'Research Notes': 'BAT',
+    'Impostor Tasks': 'NAP', 'Following Setbacks': 'NAP',
+    'Devious Opportunities': 'NAP',
+    'Nobulous Interference': 'AoS', 'Corrupted Limitations': 'AoS',
+    'Backdoor Routines': 'AoS',
+    'Council Test Scenarios': 'IMP',
+})
+
+PLAY_CENTRE = (0.0, 0.0)
+
+# The NRJ module decks sit in their own block in the arranged save. They are
+# excluded from the centring maths so a base game centres on its own cards, and
+# the modules keep their relative offset beside it.
+NRJ_MODULES = {'Experimental Protocols', 'Unauthorized Modifications',
+               'Research Notes', 'Impostor Tasks', 'Following Setbacks',
+               'Devious Opportunities', 'Nobulous Interference',
+               'Corrupted Limitations', 'Backdoor Routines'}
+
+
+def recentre(items):
+    """Slide each game so its own cards sit at the middle of the table."""
+    for game in sorted({GAME_OF.get(i['label']) for i in items}):
+        if not game:
+            continue
+        grp = [i for i in items if GAME_OF.get(i['label']) == game]
+        core = [i for i in grp if i['label'] not in NRJ_MODULES] or grp
+        cx = (min(i['nx'] - footprint(i['label'])[0] / 2 for i in core) +
+              max(i['nx'] + footprint(i['label'])[0] / 2 for i in core)) / 2.0
+        cz = (min(i['nz'] - footprint(i['label'])[1] / 2 for i in core) +
+              max(i['nz'] + footprint(i['label'])[1] / 2 for i in core)) / 2.0
+        dx, dz = PLAY_CENTRE[0] - cx, PLAY_CENTRE[1] - cz
+        for i in grp:
+            i['nx'] = round(i['nx'] + dx, 2)
+            i['nz'] = round(i['nz'] + dz, 2)
+    return items
+
+
 def zone_of(x, z):
     """Reporting only -- the layout itself is never grouped by zone."""
     if z > 12:                 return 'BAT'
@@ -170,6 +215,7 @@ def main():
     src = sys.argv[1]
     save, items, loose = load(src)
     regrid(items)
+    recentre(items)
 
     out = os.path.join(HERE, 'layout.py')
     with open(out, 'w', encoding='utf-8', newline='\n') as f:
