@@ -51,8 +51,29 @@ AOS_PROGRAM = { Easy = 'Routine Programs', Standard = 'Specialized Programs',
 -- counts the total down, so a game can start anywhere -- 8 Buff is the stated
 -- ceiling for anyone who wants it, but nothing here enforces a limit.
 BAT_BASE_HP = 20
-BAT_BUFF = { Easy = 0, Standard = 2, Hard = 4 }
-BAT_SPECIMENS = { Easy = 2, Standard = 3, Hard = 4 }
+BAT_BUFF = { Easy = 0, Standard = 2, Hard = 4, Brutal = 6 }
+BAT_SPECIMENS = { Easy = 2, Standard = 3, Hard = 4, Brutal = 4 }
+BAT_WINRATE = { Easy = '~84%', Standard = '~78%', Hard = '~70%', Brutal = '~60%' }
+
+-- The two games mean different things by difficulty, and no longer offer the
+-- same choices: BAT gained Brutal with the Buff HP rules, while AoS has only
+-- the three Program decks.
+DIFFICULTIES = {
+  BAT = { 'Easy', 'Standard', 'Hard', 'Brutal' },
+  AoS = { 'Easy', 'Standard', 'Hard' },
+}
+
+function difficulties()
+  return DIFFICULTIES[STATE.game] or DIFFICULTIES.BAT
+end
+
+--- Keep the setting inside the chosen game's range, so switching from BAT on
+-- Brutal to AoS cannot ask for a Program deck that does not exist.
+function clampDifficulty()
+  local ok = difficulties()
+  for _, v in ipairs(ok) do if v == STATE.difficulty then return end end
+  STATE.difficulty = ok[#ok]
+end
 
 function tyrantStart()
   return BAT_BASE_HP + (BAT_BUFF[STATE.difficulty] or 0)
@@ -582,7 +603,8 @@ function refreshSetup()
     elseif code == 'BAT' or code == 'AoS' then
       local note = (code == 'AoS') and AOS_PROGRAM[STATE.difficulty]
                    or ('20 +' .. BAT_BUFF[STATE.difficulty] .. ' Buff, ' ..
-                       BAT_SPECIMENS[STATE.difficulty] .. ' Specimens')
+                       BAT_SPECIMENS[STATE.difficulty] .. ' Specimens, ' ..
+                       BAT_WINRATE[STATE.difficulty])
       right = tag('HorizontalLayout', { flexibleWidth = 42, spacing = 8 },
                   xbtn('btnDiff', STATE.difficulty, C_OFF,
                        { preferredWidth = 160 }) ..
@@ -664,7 +686,12 @@ function uiClick(params)
   if id == 'btnNewGame' then packUp() return end
   if id == 'btnDiff' then btnDiff() return end
   for _, code in ipairs(GAME_ORDER) do
-    if id == 'pick' .. code then STATE.game = code; refreshPanel() return end
+    if id == 'pick' .. code then
+      STATE.game = code
+      clampDifficulty()
+      refreshPanel()
+      return
+    end
   end
   for n = 1, 3 do
     if id == 'tier' .. n then setTier(n) return end
@@ -686,10 +713,10 @@ end
 -- ---------------------------------------------------------------- clicks
 
 function btnDiff()
-  local order = { 'Easy', 'Standard', 'Hard' }
+  local order = difficulties()
   local i = 1
   for k, v in ipairs(order) do if v == STATE.difficulty then i = k end end
-  STATE.difficulty = order[(i % 3) + 1]
+  STATE.difficulty = order[(i % #order) + 1]
   refreshPanel()
 end
 

@@ -17,7 +17,7 @@ sys.path.insert(0, HERE)
 from decks import DECKS
 
 COMBOS = [('BAT', 'Easy', (0, 0, 0)), ('BAT', 'Standard', (1, 0, 0)),
-          ('BAT', 'Hard', (1, 1, 1)), ('NAP', 'Standard', (0, 0, 0)),
+          ('BAT', 'Hard', (1, 1, 1)), ('BAT', 'Brutal', (1, 1, 1)), ('NAP', 'Standard', (0, 0, 0)),
           ('NAP', 'Standard', (1, 0, 0)), ('NAP', 'Standard', (1, 1, 1)),
           ('AoS', 'Easy', (0, 0, 0)), ('AoS', 'Standard', (0, 1, 0)),
           ('AoS', 'Hard', (1, 1, 1)), ('IMP', 'Standard', (0, 0, 0))]
