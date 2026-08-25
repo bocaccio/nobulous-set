@@ -103,6 +103,15 @@ end
 
 --- Move n cards off the top of src into target, then continue.
 function moveCards(src, target, n, done)
+  if not (src and target) then if done then done() end return end
+  -- Taking every card would leave the deck as a single Card, which cannot be
+  -- taken from. Tier I does exactly this: all 4 Following Setbacks.
+  local have = src.getQuantity and src.getQuantity() or -1
+  if have >= 0 and n >= have then
+    target.putObject(src)
+    Wait.frames(function() if done then done() end end, 10)
+    return
+  end
   local moved = 0
   local function step()
     if moved >= n or src == nil then
@@ -118,6 +127,29 @@ function moveCards(src, target, n, done)
     end, 4)
   end
   step()
+end
+
+--- Deal a deck out card by card to the given spots.
+-- Once a deck is down to its last card TTS replaces it with a plain Card
+-- object, and takeObject on a card is an error -- so the final one is moved
+-- rather than taken.
+function dealOut(deck, spots, done)
+  if not deck then if done then done() end return end
+  local i = 0
+  local function one()
+    i = i + 1
+    if i > #spots then if done then done() end return end
+    if i == #spots then
+      deck.setLock(false)
+      deck.setPositionSmooth(spots[i], false, true)
+      deck.setRotationSmooth(FACE_UP, false, true)
+      Wait.time(function() if done then done() end end, 0.6)
+      return
+    end
+    deck.takeObject({ position = spots[i], rotation = FACE_UP, smooth = false })
+    Wait.frames(one, 8)
+  end
+  one()
 end
 
 --- Run a list of functions one after another, each receiving `next`.
@@ -151,8 +183,11 @@ function returnAll(done)
   local n = 0
   for _, o in ipairs(getAllObjects()) do
     local t = o.type
-    if (t == 'Deck' or t == 'Card' or t == 'Tile') and o ~= PANEL and o ~= BANK then
-      -- Tiles that are not the panel are the AoS covers.
+    if (t == 'Deck' or t == 'Card' or t == 'Tile')
+       and o ~= PANEL and o ~= SETUP and o ~= BANK then
+      -- Tiles that are not the two panels are the AoS covers. Missing SETUP
+      -- here put the setup panel itself into the bank on Start Game, which
+      -- took the UI with it.
       o.setLock(false)
       BANK.putObject(o)
       n = n + 1
@@ -288,20 +323,11 @@ function setupNAP(done)
     -- Time Slots and the FINF track card, dealt face up to their own spots
     function(next)
       draw('Time Slots + FINF', spot('Time Slots + FINF 1'), FACE_UP, function(deck)
-        if not deck then next() return end
-        local i = 0
-        local function one()
-          i = i + 1
-          if i > 4 then Wait.frames(next, 10) return end
-          local p = spot('Time Slots + FINF ' .. i, { -4.4, DECK_Y, 1.4 })
-          if i == 4 or deck.remainder then
-            deck.takeObject({ position = p, rotation = FACE_UP, smooth = false })
-          else
-            deck.takeObject({ position = p, rotation = FACE_UP, smooth = false })
-          end
-          Wait.frames(one, 8)
+        local spots = {}
+        for i = 1, 4 do
+          spots[i] = spot('Time Slots + FINF ' .. i, { -4.4, DECK_Y, 1.4 })
         end
-        one()
+        dealOut(deck, spots, next)
       end)
     end,
   }, function()
@@ -347,16 +373,9 @@ function setupAoS(done)
     -- five Element Mats, face up
     function(next)
       draw('Element Mats', spot('Element Mats 1'), FACE_UP, function(deck)
-        if not deck then next() return end
-        local i = 0
-        local function one()
-          i = i + 1
-          if i > 5 then Wait.frames(next, 10) return end
-          deck.takeObject({ position = spot('Element Mats ' .. i),
-                            rotation = FACE_UP, smooth = false })
-          Wait.frames(one, 8)
-        end
-        one()
+        local spots = {}
+        for i = 1, 5 do spots[i] = spot('Element Mats ' .. i) end
+        dealOut(deck, spots, next)
       end)
     end,
     -- covers on the two two-sided decks

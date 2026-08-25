@@ -25,11 +25,13 @@ SHEETS = os.environ.get("TTS_SHEETS", os.path.join(_HERE, os.pardir, "images"))
 rng = random.Random(20260823)
 USED = set()
 
-BANK_POS = (-13.0, 1.5, 20.0)        # beside the nameplate, clear of the cards
+BANK_POS = (-15.0, 1.5, 15.0)        # beside the nameplate, clear of the cards
 
 # The nameplate sits at the top all game. The setup surface sits in the middle
 # and is hidden once play starts, so the cards can be dealt into that space.
-NAMEPLATE_POS, NAMEPLATE_SCALE = (0.0, 1.02, 20.0), 5.0
+# z=20 put the nameplate under the table rail. 15 clears it while
+# staying above the deepest row a game deals to (about z=12).
+NAMEPLATE_POS, NAMEPLATE_SCALE = (0.0, 1.02, 15.0), 5.0
 SETUP_POS, SETUP_SCALE = (0.0, 1.02, 0.0), 5.0
 
 
@@ -128,19 +130,22 @@ def panel():
 
 
 def setup_panel():
-    """The wizard surface, in the middle of the table. The nameplate art is
-    2.83:1, so a tile using it has almost no vertical room -- this one is
-    square, giving the buttons somewhere to sit in both axes. The Lua clears
-    and hides it once a game starts, freeing the middle for the cards."""
+    """Anchor for the setup wizard's XML, in the middle of the table.
+
+    Deliberately invisible: a transparent image and zero alpha. The XML draws
+    its own buttons, so a tile behind them is just a black slab in the middle
+    of the table. The Lua drops this below the table once a game starts,
+    taking the UI with it and freeing the middle for the cards.
+    """
     return {"GUID": guid(), "Name": "Custom_Tile",
             "Transform": xf(SETUP_POS[0], SETUP_POS[1], SETUP_POS[2],
                             (0, 180, 0), SETUP_SCALE),
             "Nickname": "Setup Panel",
             "Description": "Choose a game, set the options, then Start Game",
             "LuaScript": FORWARD_LUA,
-            "ColorDiffuse": {"r": 1.0, "g": 1.0, "b": 1.0},
+            "ColorDiffuse": {"r": 1.0, "g": 1.0, "b": 1.0, "a": 0.0},
             "Locked": True, "Grid": False, "Snap": False,
-            "CustomImage": {"ImageURL": url("SetupPanel.png"), "ImageSecondaryURL": "",
+            "CustomImage": {"ImageURL": url("Transparent.png"), "ImageSecondaryURL": "",
                             "ImageScalar": 1.0, "WidthScale": 0.0,
                             "CustomTile": {"Type": 3, "Thickness": 0.1,
                                            "Stackable": False, "Stretch": True}}}
@@ -323,7 +328,7 @@ def main():
     need.add('ControlPanel.png')
     need.add('CardBack_AoS_Program.png')
     need.add('CardBack_AoS_Advanced.png')
-    need.add('SetupPanel.png')
+    need.add('Transparent.png')
     need.add('Nameplate.png')
     with open(os.path.join(os.path.dirname(OUT), 'REQUIRED_IMAGES.txt'), 'w') as f:
         f.write("Upload these to BASE_URL, keeping the filenames:\n\n")
