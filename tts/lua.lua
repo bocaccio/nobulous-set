@@ -12,7 +12,8 @@
 
 STATE = { phase = 'setup', game = nil, difficulty = 'Standard',
           tiers = { false, false, false },
-          splices = 0, credits = 0, suspicion = 0, attempts = 0, backdoors = 0 }
+          splices = 0, credits = 0, suspicion = 0, attempts = 0, backdoors = 0,
+          tyrant = 20 }
 
 BANK, PANEL, SETUP, BUSY = nil, nil, nil, false
 
@@ -42,11 +43,20 @@ NAME_ROW_A, NAME_ROW_B = -0.06, -0.29
 
 TIER_NAMES = { 'I Agenda', 'II Contamination', 'III Exploitation' }
 
--- Program deck by difficulty, and the two BAT dials.
 AOS_PROGRAM = { Easy = 'Routine Programs', Standard = 'Specialized Programs',
                 Hard = 'Unstable Programs' }
-BAT_HEALTH  = { Easy = 20, Standard = 22, Hard = 24 }
+
+-- The Tyrant's base Health is always 20. Harder modes add Buff Health on top,
+-- which has to come off before any normal Health does. The tracker below just
+-- counts the total down, so a game can start anywhere -- 8 Buff is the stated
+-- ceiling for anyone who wants it, but nothing here enforces a limit.
+BAT_BASE_HP = 20
+BAT_BUFF = { Easy = 0, Standard = 2, Hard = 4 }
 BAT_SPECIMENS = { Easy = 2, Standard = 3, Hard = 4 }
+
+function tyrantStart()
+  return BAT_BASE_HP + (BAT_BUFF[STATE.difficulty] or 0)
+end
 
 -- ---------------------------------------------------------------- helpers
 function say(msg) broadcastToAll(msg, { 0.9, 0.86, 0.75 }) end
@@ -130,6 +140,7 @@ end
 function resetCounters()
   STATE.splices, STATE.credits = 0, 0
   STATE.suspicion, STATE.attempts, STATE.backdoors = 0, 0, 0
+  STATE.tyrant = tyrantStart()
   refreshPanel()
 end
 
@@ -152,8 +163,9 @@ end
 
 -- ---------------------------------------------------------------- setups
 function setupBAT(done)
-  local hp = BAT_HEALTH[STATE.difficulty]
+  local buff = BAT_BUFF[STATE.difficulty] or 0
   local spec = BAT_SPECIMENS[STATE.difficulty]
+  STATE.tyrant = tyrantStart()
   local upgrades, specimens, mods
 
   chain({
@@ -203,8 +215,10 @@ function setupBAT(done)
     end,
   }, function()
     STATE.splices = 0
-    local msg = 'BAT ready -- ' .. STATE.difficulty .. '. Tyrant Health ' .. hp ..
-                '. ' .. spec .. ' Specimens shuffled into the Upgrade deck.'
+    local msg = 'BAT ready -- ' .. STATE.difficulty .. '. Tyrant Health ' ..
+                BAT_BASE_HP .. (buff > 0 and (' + ' .. buff ..
+                ' Buff (remove Buff first)') or '') .. '. ' .. spec ..
+                ' Specimens shuffled into the Upgrade deck.'
     if tierOn(2) then msg = msg .. ' The 6 Modifications went in too.' end
     say(msg)
     if done then done() end
@@ -502,9 +516,13 @@ function refreshNameplate()
 
   local g = STATE.game
   if g == 'BAT' then
-    lbl('BAT  ' .. STATE.difficulty, 0.22, A, 200)
-    counter('Splices ' .. STATE.splices .. ' / 5', 'splMinus', 'splPlus', -0.34, B)
-    lbl('Tyrant ' .. BAT_HEALTH[STATE.difficulty], 0.36, B, 120)
+    lbl('Splices ' .. STATE.splices .. ' / 5', 0.02, A, 90)
+    btn('-', 'splMinus', 0.20, A, 80)
+    btn('+', 'splPlus', 0.38, A, 80)
+    local buff = STATE.tyrant - BAT_BASE_HP
+    counter('Tyrant ' .. STATE.tyrant .. (buff > 0 and ('  +' .. buff) or ''),
+            'hpMinus', 'hpPlus', -0.34, B)
+    if STATE.splices >= 5 then lbl('AWAKE', 0.36, B, 120) end
   elseif g == 'NAP' then
     lbl('NAP', 0.22, A, 200)
     counter('Credits ' .. STATE.credits .. ' / 6', 'crMinus', 'crPlus', -0.34, B)
@@ -545,7 +563,7 @@ function refreshSetup()
   if STATE.game == 'BAT' or STATE.game == 'AoS' then
     btn(STATE.difficulty, 'btnDiff', -0.20, ROW_2, 170)
     local note = (STATE.game == 'AoS') and AOS_PROGRAM[STATE.difficulty]
-                 or (BAT_HEALTH[STATE.difficulty] .. ' HP  ' ..
+                 or ('+' .. BAT_BUFF[STATE.difficulty] .. ' Buff  ' ..
                      BAT_SPECIMENS[STATE.difficulty] .. ' Spec')
     lbl(note, 0.22, ROW_2, 210)
   elseif STATE.game then
@@ -608,6 +626,8 @@ function crPlus() bump('credits', 1, 'Credits') end
 function crMinus() bump('credits', -1, 'Credits') end
 function bdPlus() bump('backdoors', 1, 'Backdoor Routines') end
 function bdMinus() bump('backdoors', -1, 'Backdoor Routines') end
+function hpPlus() bump('tyrant', 1, 'Tyrant Health') end
+function hpMinus() bump('tyrant', -1, 'Tyrant Health') end
 function atPlus() bump('attempts', 1, 'Attempts') end
 function atMinus() bump('attempts', -1, 'Attempts') end
 function suPlus() bump('suspicion', 1, 'Suspicion') end

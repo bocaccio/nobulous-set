@@ -220,7 +220,11 @@ def notebook():
          "Specimen), choose the active Rat, commit, roll, resolve, recover.\n\n"
          "Success: take one revealed Upgrade (max 3 per Rat).\n"
          "Failure: Splice the stronger revealed Upgrade into the Tyrant.\n"
-         "Five Splices awakens the Tyrant. Health 20 / 22 / 24.\n\n"
+         "Five Splices awakens the Tyrant.\n\n"
+         "Tyrant Health is always 20. Harder modes add Buff Health on top --\n"
+         "+2 on Standard, +4 on Hard, up to +8 -- and every Buff must be\n"
+         "removed before any normal Health comes off. The Control Panel\n"
+         "tracks the total; set it with the - / + buttons for other values.\n\n"
          "Borrowing: 0 Upgrades any colour, 1 no Purple, 2 Green/Yellow,\n"
          "3 Yellow only. Roll the borrowed die after; on a miss it is banished.\n\n"
          "Red is set aside after use and placed on a non-active Rat next turn."),
