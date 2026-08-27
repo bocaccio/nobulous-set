@@ -88,10 +88,25 @@ function anyTier()
   return tierOn(1) or tierOn(2) or tierOn(3)
 end
 
+-- Where a game sits on the table, over and above its layout. BAT was placed
+-- by hand and sits around z = -4.5; NAP's own bounding box centres on 0, which
+-- reads as too high next to it. Applied at placement so it stays idempotent
+-- and can be retuned from the Scripting window.
+GAME_NUDGE = {
+  BAT = { 0, 0 },
+  NAP = { 0, -4.5 },
+  AoS = { 0, 0 },
+  IMP = { 0, 0 },
+}
+
 function spot(label, fallback)
+  local n = GAME_NUDGE[STATE.game] or { 0, 0 }
   local p = LAYOUT[label]
-  if p then return { p[1], DECK_Y, p[2] } end
-  return fallback or { 0, DECK_Y, 0 }
+  if p then return { p[1] + n[1], DECK_Y, p[2] + n[2] } end
+  if fallback then
+    return { fallback[1] + n[1], fallback[2], fallback[3] + n[2] }
+  end
+  return { n[1], DECK_Y, n[2] }
 end
 
 --- Find one entry in the bank by nickname. Returns its guid, or nil.
@@ -534,7 +549,7 @@ UI_LIFT = 12          -- how far the panel sits above the tile face
 -- How far down the nameplate the Select a New Game button sits. Positive is
 -- down; -200 put it off the top of the table and 200 was too low. To retune
 -- without a rebuild: Scripting window, edit this line, Save & Play.
-NAME_UI_DROP = 110
+NAME_UI_DROP = 80
 SETUP_UI_SCALE = 0.34 -- the setup tile is full size again
 UI_SPIN = '0 0 180'   -- rights the text against the tile's own rotation
 
@@ -670,7 +685,7 @@ function refreshNameplate()
       { padding = '30 30 18 24' },
       spacer ..
       xbtn('btnNewGame', 'Select a New Game', '#7a3028',
-           { preferredWidth = 120, preferredHeight = 38, fontSize = 15 }) ..
+           { preferredWidth = 100, preferredHeight = 32, fontSize = 13 }) ..
       spacer), 1180, 320, 0.34, NAME_UI_DROP))
 end
 
@@ -679,7 +694,8 @@ end
 TRACK_SLOTS = {
   BAT = { { 'Splices', 'splices', 'spl', '/ 5' },
           { 'Tyrant HP', 'tyrant', 'hp', '' } },
-  NAP = { { 'Credits', 'credits', 'cr', '/ 6' } },
+  -- NAP tracks Credits on the table, so the tracker stays hidden for it.
+  NAP = nil,
   AoS = { { 'Backdoors', 'backdoors', 'bd', '/ 2' } },
   IMP = { { 'Attempts', 'attempts', 'at', '/ 9' },
           { 'Suspicion', 'suspicion', 'su', '' } },
