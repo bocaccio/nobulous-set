@@ -92,21 +92,17 @@ PANEL_GOLD = (212, 167, 44)
 
 
 def setup_panel(filename="SetupPanel.png"):
+    """Backing panel for the setup wizard.
+
+    The wizard's XML draws its own heading, so nothing is painted here -- just
+    the frame. A transparent image on a tile renders as a black slab rather
+    than disappearing, so the tile is given something worth looking at instead.
+    """
     im = Image.new("RGB", (PANEL_W, PANEL_H), PANEL_BG)
     d = ImageDraw.Draw(im)
     m = 40
     d.rounded_rectangle([m, m, PANEL_W - m, PANEL_H - m], radius=34,
                         fill=PANEL_INNER, outline=PANEL_GOLD, width=6)
-    f = fit(30)
-    t = "SET UP A GAME"
-    widths = [f.getbbox(c)[2] - f.getbbox(c)[0] for c in t]
-    track = 14.0
-    total = sum(widths) + track * (len(t) - 1)
-    x = (PANEL_W - total) / 2.0
-    for c, w in zip(t, widths):
-        d.text((x - f.getbbox(c)[0], 96 - f.getbbox("H")[1]), c, font=f,
-               fill=PANEL_GOLD)
-        x += w + track
     path = os.path.normpath(os.path.join(OUT, filename))
     im.save(path)
     print("wrote", path, "%dx%d" % im.size)

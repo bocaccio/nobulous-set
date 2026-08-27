@@ -532,7 +532,7 @@ end
 --=====================================================================
 UI_LIFT = 12          -- how far the panel sits above the tile face
 NAME_UI_DROP = 200    -- shifts the nameplate row into the bordered area
-SETUP_UI_SCALE = 34   -- matches the speck the setup UI is anchored to
+SETUP_UI_SCALE = 0.34 -- the setup tile is full size again
 UI_SPIN = '0 0 180'   -- rights the text against the tile's own rotation
 
 GAME_NAMES = {
@@ -591,10 +591,11 @@ end
 -- scales down, and comes out the same size with nothing behind it.
 --
 -- drop shifts the contents down the tile, for art whose usable area is not
--- centred. Flip the sign here if it moves the wrong way.
+-- centred. Positive y is down here: negating it sent the button up off the
+-- table.
 function panelWrap(inner, w, h, uiScale, drop)
   uiScale = uiScale or 0.34
-  local y = -(drop or 0)
+  local y = (drop or 0)
   return tag('Panel', { position = '0 ' .. y .. ' -' .. UI_LIFT,
                         rotation = UI_SPIN, width = w, height = h,
                         scale = uiScale .. ' ' .. uiScale .. ' ' .. uiScale,

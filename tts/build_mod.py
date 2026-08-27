@@ -32,10 +32,9 @@ BANK_POS = (-15.0, 1.5, 15.0)        # beside the nameplate, clear of the cards
 # z=20 put the nameplate under the table rail. 15 clears it while
 # staying above the deepest row a game deals to (about z=12).
 NAMEPLATE_POS, NAMEPLATE_SCALE = (0.0, 1.02, 15.0), 5.0
-# A speck, not a tile: a transparent image on a real tile still renders as
-# a black slab, so the anchor is shrunk away and the UI scales up to match
-# (SETUP_UI_SCALE in lua.lua). 5.0 * 0.34 == 0.05 * 34.
-SETUP_POS, SETUP_SCALE = (0.0, 1.02, 0.0), 0.05
+# Shrinking this to a speck and scaling its UI up did not hold the buttons'
+# size -- they all but vanished -- so it stays a real tile with real art.
+SETUP_POS, SETUP_SCALE = (0.0, 1.02, 0.0), 5.0
 
 # The play tracker, sized to stay shorter than a landscape card (3.5 units).
 # Its art is 3:1, so the height is a third of the width; 2.5 keeps it under
@@ -152,9 +151,9 @@ def setup_panel():
             "Nickname": "Setup Panel",
             "Description": "Choose a game, set the options, then Start Game",
             "LuaScript": FORWARD_LUA,
-            "ColorDiffuse": {"r": 1.0, "g": 1.0, "b": 1.0, "a": 0.0},
+            "ColorDiffuse": {"r": 1.0, "g": 1.0, "b": 1.0},
             "Locked": True, "Grid": False, "Snap": False,
-            "CustomImage": {"ImageURL": url("Transparent.png"), "ImageSecondaryURL": "",
+            "CustomImage": {"ImageURL": url("SetupPanel.png"), "ImageSecondaryURL": "",
                             "ImageScalar": 1.0, "WidthScale": 0.0,
                             "CustomTile": {"Type": 3, "Thickness": 0.1,
                                            "Stackable": False, "Stretch": True}}}
@@ -364,7 +363,7 @@ def main():
     need.add('ControlPanel.png')
     need.add('CardBack_AoS_Program.png')
     need.add('CardBack_AoS_Advanced.png')
-    need.add('Transparent.png')
+    need.add('SetupPanel.png')
     need.add('Tracker.png')
     need.add('Nameplate.png')
     with open(os.path.join(os.path.dirname(OUT), 'REQUIRED_IMAGES.txt'), 'w') as f:
