@@ -644,10 +644,15 @@ end
 -- live on the tracker now.
 function refreshNameplate()
   if not PANEL then return end
+  -- Spacers either side keep the button at its own size and centred, rather
+  -- than stretching to fill the row.
+  local spacer = tag('Panel', { flexibleWidth = 1, color = '#00000000' }, '')
   PANEL.UI.setXml(panelWrap(tag('HorizontalLayout',
-      { padding = '30 30 16 22', spacing = 18 },
+      { padding = '30 30 18 24' },
+      spacer ..
       xbtn('btnNewGame', 'Select a New Game', '#7a3028',
-           { preferredWidth = 300, fontSize = 32 })), 1180, 320))
+           { preferredWidth = 150, preferredHeight = 44, fontSize = 17 }) ..
+      spacer), 1180, 320))
 end
 
 -- Two slots, labelled for whichever game is running. Games that track only one
