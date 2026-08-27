@@ -133,8 +133,31 @@ def nameplate(filename="Nameplate.png"):
     print("wrote", path, "%dx%d" % im.size)
 
 
+def tracker(filename="Tracker.png"):
+    """Two blank slots for the play tracker.
+
+    The Workshop tracker this replaces had its labels painted into the image,
+    which fixed it to one game. These slots are empty and the XML writes the
+    labels, so the same tile reads Splices / Tyrant HP for BAT and Attempts /
+    Suspicion for the Imposter. 3:1 keeps it shorter than a landscape card.
+    """
+    W, H = 1536, 512
+    im = Image.new("RGB", (W, H), (8, 8, 8))
+    d = ImageDraw.Draw(im)
+    pad, gap = 26, 22
+    slot_w = (W - pad * 2 - gap) // 2
+    for i in range(2):
+        x0 = pad + i * (slot_w + gap)
+        d.rounded_rectangle([x0, pad, x0 + slot_w, H - pad], radius=26,
+                            fill=(0, 0, 0), outline=(150, 150, 150), width=4)
+    path = os.path.normpath(os.path.join(OUT, filename))
+    im.save(path)
+    print("wrote", path, "%dx%d" % im.size)
+
+
 if __name__ == "__main__":
     cover("PROGRAM", "CardBack_AoS_Program.png")
     cover("ADVANCED PROGRAM", "CardBack_AoS_Advanced.png")
     setup_panel()
     nameplate()
+    tracker()

@@ -15,7 +15,7 @@ STATE = { phase = 'setup', game = nil, difficulty = 'Standard',
           splices = 0, credits = 0, suspicion = 0, attempts = 0, backdoors = 0,
           tyrant = 20 }
 
-BANK, PANEL, SETUP, BUSY = nil, nil, nil, false
+BANK, PANEL, SETUP, TRACKER, BUSY = nil, nil, nil, nil, false
 
 FACE_DOWN, FACE_UP = { 0, 180, 180 }, { 0, 180, 0 }
 DECK_Y = 2.0
@@ -205,7 +205,7 @@ function returnAll(done)
   for _, o in ipairs(getAllObjects()) do
     local t = o.type
     if (t == 'Deck' or t == 'Card' or t == 'Tile')
-       and o ~= PANEL and o ~= SETUP and o ~= BANK then
+       and o ~= PANEL and o ~= SETUP and o ~= TRACKER and o ~= BANK then
       -- Tiles that are not the two panels are the AoS covers. Missing SETUP
       -- here put the setup panel itself into the bank on Start Game, which
       -- took the UI with it.
@@ -225,8 +225,13 @@ function setupBAT(done)
   local upgrades, specimens, mods
 
   chain({
-    function(next) draw('Lab Rats (A / B)', spot('Lab Rats (A / B)'), FACE_UP,
-                        function() next() end) end,
+    function(next)
+      draw('Lab Rats (A / B)', spot('Lab Rats (A / B) 1'), FACE_UP, function(deck)
+        local spots = {}
+        for i = 1, 4 do spots[i] = spot('Lab Rats (A / B) ' .. i) end
+        dealOut(deck, spots, next)
+      end)
+    end,
     function(next) draw('Encounters', spot('Encounters'), FACE_DOWN,
                         function() next() end) end,
     function(next) draw('Tyrant Attacks', spot('Tyrant Attacks'), FACE_DOWN,
@@ -635,47 +640,66 @@ function refreshSetup()
       { padding = '34 34 28 28', spacing = 14 }, table.concat(rows)), 1080, 1080))
 end
 
---- The nameplate: Select a New Game, plus the counters once play starts.
+--- The nameplate. Title and Select a New Game, nothing else -- the counters
+-- live on the tracker now.
 function refreshNameplate()
   if not PANEL then return end
-  local cells = { xbtn('btnNewGame', 'Select a New Game', '#7a3028',
-                       { preferredWidth = 300, fontSize = 32 }) }
-
-  local function counter(text, id, w)
-    return tag('HorizontalLayout', { spacing = 6, preferredWidth = w or 300 },
-        xtext(text, 30, C_TEXT, { flexibleWidth = 1, alignment = 'MiddleRight' })
-        .. xbtn(id .. 'Minus', '-', C_OFF, { preferredWidth = 56 })
-        .. xbtn(id .. 'Plus', '+', C_OFF, { preferredWidth = 56 }))
-  end
-
-  if STATE.phase == 'playing' then
-    local g = STATE.game
-    if g == 'BAT' then
-      local buff = STATE.tyrant - BAT_BASE_HP
-      table.insert(cells, counter('Splices ' .. STATE.splices .. ' / 5', 'spl'))
-      table.insert(cells, counter('Tyrant ' .. STATE.tyrant ..
-          (buff > 0 and ('  +' .. buff .. ' Buff') or ''), 'hp', 380))
-    elseif g == 'NAP' then
-      table.insert(cells, counter('Credits ' .. STATE.credits .. ' / 6', 'cr'))
-      if STATE.credits >= 6 then
-        table.insert(cells, xtext('FINAL EXAM', 30, C_GOLD,
-                                  { preferredWidth = 180 }))
-      end
-    elseif g == 'AoS' then
-      table.insert(cells, counter('Backdoors ' .. STATE.backdoors .. ' / 2', 'bd'))
-    else
-      table.insert(cells, counter('Attempts ' .. STATE.attempts .. ' / 9', 'at'))
-      table.insert(cells, counter('Suspicion ' .. STATE.suspicion, 'su'))
-    end
-  end
-
   PANEL.UI.setXml(panelWrap(tag('HorizontalLayout',
-      { padding = '30 30 16 22', spacing = 18 }, table.concat(cells)), 1180, 320))
+      { padding = '30 30 16 22', spacing = 18 },
+      xbtn('btnNewGame', 'Select a New Game', '#7a3028',
+           { preferredWidth = 300, fontSize = 32 })), 1180, 320))
+end
+
+-- Two slots, labelled for whichever game is running. Games that track only one
+-- thing leave the second slot empty.
+TRACK_SLOTS = {
+  BAT = { { 'Splices', 'splices', 'spl', '/ 5' },
+          { 'Tyrant HP', 'tyrant', 'hp', '' } },
+  NAP = { { 'Credits', 'credits', 'cr', '/ 6' } },
+  AoS = { { 'Backdoors', 'backdoors', 'bd', '/ 2' } },
+  IMP = { { 'Attempts', 'attempts', 'at', '/ 9' },
+          { 'Suspicion', 'suspicion', 'su', '' } },
+}
+
+--- The play tracker: one slot per counter, sitting over the painted frame.
+function refreshTracker()
+  if not TRACKER then return end
+  local slots = STATE.phase == 'playing' and TRACK_SLOTS[STATE.game] or nil
+  if not slots then
+    TRACKER.UI.setXml('')
+    return
+  end
+
+  local cells = {}
+  for i = 1, 2 do
+    local s = slots[i]
+    local inner
+    if s then
+      local suffix = s[4] ~= '' and (' ' .. s[4]) or ''
+      inner = tag('VerticalLayout', { spacing = 2 },
+          xtext(s[1], 30, '#b8b2a6', { alignment = 'MiddleCenter',
+                                       preferredHeight = 34 }) ..
+          tag('HorizontalLayout', { spacing = 8, preferredHeight = 62 },
+              xbtn(s[3] .. 'Minus', '-', '#3a3530', { preferredWidth = 62 }) ..
+              xtext(STATE[s[2]] .. suffix, 46, C_TEXT,
+                    { alignment = 'MiddleCenter', flexibleWidth = 1 }) ..
+              xbtn(s[3] .. 'Plus', '+', '#3a3530', { preferredWidth = 62 })))
+    else
+      inner = ''
+    end
+    table.insert(cells, tag('Panel',
+        { flexibleWidth = 1, color = '#00000000' }, inner))
+  end
+
+  TRACKER.UI.setXml(panelWrap(tag('HorizontalLayout',
+      { padding = '34 34 26 26', spacing = 26 }, table.concat(cells)),
+      1536, 512))
 end
 
 function refreshPanel()
   refreshNameplate()
   refreshSetup()
+  refreshTracker()
 end
 
 --- Every XML button routes here through the panel's forwarding stub.
@@ -739,6 +763,7 @@ function locate()
     local n = o.getName()
     if n == 'Control Panel' then PANEL = o end
     if n == 'Setup Panel' then SETUP = o end
+    if n == 'Tracker' then TRACKER = o end
     if n == 'Card Bank' then BANK = o end
   end
 end

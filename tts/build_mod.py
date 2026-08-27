@@ -34,6 +34,12 @@ BANK_POS = (-15.0, 1.5, 15.0)        # beside the nameplate, clear of the cards
 NAMEPLATE_POS, NAMEPLATE_SCALE = (0.0, 1.02, 15.0), 5.0
 SETUP_POS, SETUP_SCALE = (0.0, 1.02, 0.0), 5.0
 
+# The play tracker, sized to stay shorter than a landscape card (3.5 units).
+# Its art is 3:1, so the height is a third of the width; 2.5 keeps it under
+# that ceiling across the plausible range of tile base sizes. Position is
+# where Jon put it in the BAT layout.
+TRACKER_POS, TRACKER_SCALE = (20.1, 1.02, 4.4), 2.5
+
 
 # An object's XML UI calls its handler on that object's own script, so each
 # panel carries this stub and forwards to the global dispatcher, which owns
@@ -151,6 +157,28 @@ def setup_panel():
                                            "Stackable": False, "Stretch": True}}}
 
 
+def tracker():
+    """Two counters that follow whichever game is running.
+
+    Replaces the Workshop tracker, whose three labels -- Damage Dealt, Healing,
+    Dmg Mitigated -- were painted into its image and so could not be retitled.
+    Here the slots are blank and the global script writes the labels and values
+    as XML, which also keeps the text crisp.
+    """
+    return {"GUID": guid(), "Name": "Custom_Tile",
+            "Transform": xf(TRACKER_POS[0], TRACKER_POS[1], TRACKER_POS[2],
+                            (0, 180, 0), TRACKER_SCALE),
+            "Nickname": "Tracker",
+            "Description": "Counters for the current game",
+            "LuaScript": FORWARD_LUA,
+            "ColorDiffuse": {"r": 1.0, "g": 1.0, "b": 1.0},
+            "Locked": True, "Grid": False, "Snap": False,
+            "CustomImage": {"ImageURL": url("Tracker.png"), "ImageSecondaryURL": "",
+                            "ImageScalar": 1.0, "WidthScale": 0.0,
+                            "CustomTile": {"Type": 0, "Thickness": 0.1,
+                                           "Stackable": False, "Stretch": True}}}
+
+
 def dice_objects():
     """Dice and the chip, at the exact positions Jon arranged in TTS.
 
@@ -165,9 +193,9 @@ def dice_objects():
 
     # The dial sits just above the block of coloured dice, not off beside the
     # cards, so it is derived from where those dice actually ended up.
-    colour = [q for n, q in queue.items()
-              if n in ('Red', 'Purple', 'Blue', 'Green', 'Yellow')]
-    spots = [p for q in colour for p in q]
+    # Above everything, not just the coloured block -- the stat dice sit at
+    # the top of the column now.
+    spots = [p for q in queue.values() for p in q]
     if spots:
         cx = (min(p[0] for p in spots) + max(p[0] for p in spots)) / 2.0
         cz = max(p[2] for p in spots) + 1.6
@@ -307,7 +335,7 @@ def main():
                         ('CardBack_AoS_Advanced.png', 'Advanced Cover')):
         stored.append(cover(name, image, (0.0, 2.6, 0.0), layout.PORTRAIT_SCALE))
 
-    objects = [panel(), setup_panel(), bank(stored, BANK_POS)]
+    objects = [panel(), setup_panel(), tracker(), bank(stored, BANK_POS)]
     objects += dice_objects()
 
     save = {
@@ -334,6 +362,7 @@ def main():
     need.add('CardBack_AoS_Program.png')
     need.add('CardBack_AoS_Advanced.png')
     need.add('Transparent.png')
+    need.add('Tracker.png')
     need.add('Nameplate.png')
     with open(os.path.join(os.path.dirname(OUT), 'REQUIRED_IMAGES.txt'), 'w') as f:
         f.write("Upload these to BASE_URL, keeping the filenames:\n\n")

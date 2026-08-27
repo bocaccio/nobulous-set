@@ -4,7 +4,9 @@ Jon arranges the decks in TTS; this reads those positions, applies the portrait
 card scale-up, then re-spaces each row so the gaps are uniform. Output is
 layout.py, which build_mod.py and lua.lua both consume.
 
-    python relayout.py "<path to TS_Save_36.json>"
+    python relayout.py "<save>"              re-space and recentre everything
+    python relayout.py "<save>" --merge      take this save's positions as-is,
+                                             keeping the other games' layouts
 
 Card footprints in table units. TTS derives a custom card's width from its
 image aspect at a fixed height, so a 700x500 landscape sheet renders wider than
@@ -102,7 +104,9 @@ def load(path):
         if name in ('Deck', 'Card', 'CardCustom') and nick:
             items.append({'nick': nick, 'label': base_label(nick),
                           'x': t['posX'], 'z': t['posZ'], 'y': t['posY']})
-        elif name in ('Custom_Dice', 'Custom_Token', 'Custom_Tile'):
+        elif name in ('Custom_Dice', 'Custom_Token', 'Custom_Tile') and nick:
+            # Unnamed tiles are things placed by hand, like the tracker, which
+            # the build positions itself.
             # Dice, the chip and the panel are placed by hand and never
             # re-spaced -- they are furniture, not part of the card layout.
             loose.append({'name': name, 'nick': 'Red' if nick == 'Pink' else nick,
@@ -213,9 +217,26 @@ def regrid(items):
 
 def main():
     src = sys.argv[1]
+    merge = '--merge' in sys.argv
     save, items, loose = load(src)
-    regrid(items)
-    recentre(items)
+
+    if merge:
+        # A save taken mid-game holds only the game on the table; everything
+        # else is in the bank. Those positions are already final -- arranged by
+        # hand at the right scale -- so they are taken verbatim and folded into
+        # the existing layout rather than re-spaced or recentred.
+        import layout as existing
+        merged = dict(existing.POS)
+        for it in items:
+            merged[it['nick']] = (round(it['x'], 2), round(it['z'], 2))
+        items = [{'nick': k, 'label': base_label(k), 'nx': v[0], 'nz': v[1],
+                  'x': v[0], 'z': v[1], 'zone': zone_of(v[0], v[1])}
+                 for k, v in merged.items()]
+        if not loose:
+            loose = list(existing.LOOSE)
+    else:
+        regrid(items)
+        recentre(items)
 
     out = os.path.join(HERE, 'layout.py')
     with open(out, 'w', encoding='utf-8', newline='\n') as f:
