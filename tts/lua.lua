@@ -531,7 +531,10 @@ end
 -- UI_SPIN are the two numbers to adjust.
 --=====================================================================
 UI_LIFT = 12          -- how far the panel sits above the tile face
-NAME_UI_DROP = 200    -- shifts the nameplate row into the bordered area
+-- How far down the nameplate the Select a New Game button sits. Positive is
+-- down; -200 put it off the top of the table and 200 was too low. To retune
+-- without a rebuild: Scripting window, edit this line, Save & Play.
+NAME_UI_DROP = 110
 SETUP_UI_SCALE = 0.34 -- the setup tile is full size again
 UI_SPIN = '0 0 180'   -- rights the text against the tile's own rotation
 
