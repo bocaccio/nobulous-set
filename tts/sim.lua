@@ -11,7 +11,13 @@ function mkObj(nick, qty, kind)
   o.getPosition = function() return Vector(o.pos[1] or 0, o.pos[2] or 0, o.pos[3] or 0) end
   o.setLock = function(v) o.locked = v end
   o.setPosition = function(p) o.pos = p end
-  o.setPositionSmooth = function(p) o.pos = p end
+  o.setPositionSmooth = function(p)
+    if o.dead then
+      table.insert(ERRORS, 'moved a destroyed object: ' .. o.nick)
+      return
+    end
+    o.pos = p
+  end
   o.setRotationSmooth = function() end
   o.shuffle = function()
     if o.type ~= 'Deck' then
@@ -30,7 +36,18 @@ function mkObj(nick, qty, kind)
       return nil
     end
     o.qty = o.qty - 1
-    if o.qty <= 1 then o.type = 'Card' end      -- TTS collapses a 1-card deck
+    -- TTS destroys a deck once one card is left; the reference goes dead and
+    -- the last card is a new object sitting where the deck was.
+    if o.qty <= 1 then
+      o.type = 'Card'
+      o.dead = true
+      local last = mkObj(o.nick .. ' [last]', 1, 'Card')
+      last.pos = o.pos
+      for i, y in ipairs(OBJECTS) do
+        if y == o then table.remove(OBJECTS, i) break end
+      end
+      table.insert(OBJECTS, last)
+    end
     local c = mkObj(o.nick .. ' [card]', 1, 'Card')
     if p and p.position then c.pos = p.position end
     table.insert(OBJECTS, c)

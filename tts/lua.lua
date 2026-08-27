@@ -151,20 +151,20 @@ function moveCards(src, target, n, done)
 end
 
 --- Deal a deck out card by card to the given spots.
--- Once a deck is down to its last card TTS replaces it with a plain Card
--- object, and takeObject on a card is an error -- so the final one is moved
--- rather than taken.
+--
+-- The deck arrives already sitting on spots[1], so this only takes cards to
+-- the other spots and lets the last one stay where the deck was. TTS destroys
+-- a deck the moment it drops to a single card, which makes the reference dead:
+-- an earlier version took three cards and then tried to move the deck to the
+-- fourth spot, so that card never moved and sat under spot one -- four Lab
+-- Rats, three visible.
 function dealOut(deck, spots, done)
-  if not deck then if done then done() end return end
-  local i = 0
+  if not deck or #spots == 0 then if done then done() end return end
+  local i = 1
   local function one()
     i = i + 1
-    if i > #spots then if done then done() end return end
-    if i == #spots then
-      deck.setLock(false)
-      deck.setPositionSmooth(spots[i], false, true)
-      deck.setRotationSmooth(FACE_UP, false, true)
-      Wait.time(function() if done then done() end end, 0.6)
+    if i > #spots then
+      if done then done() end
       return
     end
     deck.takeObject({ position = spots[i], rotation = FACE_UP, smooth = false })
