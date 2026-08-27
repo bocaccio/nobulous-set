@@ -531,6 +531,8 @@ end
 -- UI_SPIN are the two numbers to adjust.
 --=====================================================================
 UI_LIFT = 12          -- how far the panel sits above the tile face
+NAME_UI_DROP = 200    -- shifts the nameplate row into the bordered area
+SETUP_UI_SCALE = 34   -- matches the speck the setup UI is anchored to
 UI_SPIN = '0 0 180'   -- rights the text against the tile's own rotation
 
 GAME_NAMES = {
@@ -581,9 +583,21 @@ function xtext(text, size, colour, extra)
   return tag('Text', a, esc(text))
 end
 
-function panelWrap(inner, w, h)
-  return tag('Panel', { position = '0 0 -' .. UI_LIFT, rotation = UI_SPIN,
-                        width = w, height = h, scale = '0.34 0.34 0.34',
+--- Wrap a panel's contents.
+--
+-- uiScale is the UI's own scale, which multiplies the tile's. The setup
+-- anchor is a speck rather than a tile -- a transparent image on a tile still
+-- renders as a black slab -- so its UI scales up by the same factor the tile
+-- scales down, and comes out the same size with nothing behind it.
+--
+-- drop shifts the contents down the tile, for art whose usable area is not
+-- centred. Flip the sign here if it moves the wrong way.
+function panelWrap(inner, w, h, uiScale, drop)
+  uiScale = uiScale or 0.34
+  local y = -(drop or 0)
+  return tag('Panel', { position = '0 ' .. y .. ' -' .. UI_LIFT,
+                        rotation = UI_SPIN, width = w, height = h,
+                        scale = uiScale .. ' ' .. uiScale .. ' ' .. uiScale,
                         color = '#00000000' }, inner)
 end
 
@@ -637,7 +651,8 @@ function refreshSetup()
       { preferredHeight = 92, fontSize = 40 }))
 
   SETUP.UI.setXml(panelWrap(tag('VerticalLayout',
-      { padding = '34 34 28 28', spacing = 14 }, table.concat(rows)), 1080, 1080))
+      { padding = '34 34 28 28', spacing = 14 }, table.concat(rows)),
+      1080, 1080, SETUP_UI_SCALE))
 end
 
 --- The nameplate. Title and Select a New Game, nothing else -- the counters
@@ -651,8 +666,8 @@ function refreshNameplate()
       { padding = '30 30 18 24' },
       spacer ..
       xbtn('btnNewGame', 'Select a New Game', '#7a3028',
-           { preferredWidth = 150, preferredHeight = 44, fontSize = 17 }) ..
-      spacer), 1180, 320))
+           { preferredWidth = 120, preferredHeight = 38, fontSize = 15 }) ..
+      spacer), 1180, 320, 0.34, NAME_UI_DROP))
 end
 
 -- Two slots, labelled for whichever game is running. Games that track only one
