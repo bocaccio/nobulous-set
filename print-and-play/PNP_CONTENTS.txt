@@ -1,0 +1,45 @@
+PRINT AND PLAY CONTENTS
+Letter paper, 9 cards per page (3 x 3), poker size 63.5 x 88.9 mm.
+Pages of landscape cards are themselves landscape - print at 100%,
+scale to fit OFF, and let the printer auto-rotate.
+
+Sections marked DUPLEX are genuinely two-sided: their pages alternate
+front / back with the back columns mirrored. Print those sheets
+double-sided, flip on the LONG edge.
+
+NobulousSet_BAT_PnP.pdf  (10 pages)
+  p1   BAT_Encounters                 20 Encounters                      3 page(s)
+  p4   BAT_Upgrades                   16 Upgrades                        2 page(s)
+  p6   BAT_Specimens                  8 Specimens                        1 page(s)
+  p7   BAT_TyrantAttacks              7 Tyrant Attacks                   1 page(s)
+  p8   BAT_Rats                       4 Lab Rats (A / B)                 DUPLEX 1 sheet(s)
+  p10  BAT_BuffHP                     1 Buff HP track                    1 page(s)
+
+NobulousSet_NAP_PnP.pdf  (10 pages)
+  p1   NAP_Tasks                      26 Tasks                           3 page(s)
+  p4   NAP_Opportunities              6 Opportunities                    1 page(s)
+  p5   NAP_Setbacks                   6 Setbacks                         1 page(s)
+  p6   NAP_FinalExams                 12 Final Exams                     2 page(s)
+  p8   NAP_SlotsFINF                  3 Time Slots + FINF                1 page(s)
+  p9   NAP_Apprentices                6 Apprentices on 3 cards           DUPLEX 1 sheet(s)
+
+NobulousSet_AoS_PnP.pdf  (12 pages)
+  p1   AoS_Limitations                6 Limitations                      1 page(s)
+  p2   AoS_ElementMats                5 Element mats                     1 page(s)
+  p3   AoS_Routine                    8 Routine Programs                 DUPLEX 1 sheet(s)
+  p5   AoS_Specialized                8 Specialized Programs             DUPLEX 1 sheet(s)
+  p7   AoS_Unstable                   8 Unstable Programs                DUPLEX 1 sheet(s)
+  p9   AoS_Advanced                   8 Advanced Programs                DUPLEX 1 sheet(s)
+  p11  AoS_Technicians                6 Technicians on 3 cards           DUPLEX 1 sheet(s)
+
+NobulousSet_NRJ_PnP.pdf  (12 pages)
+  p1   NRJ_BAT_Protocols              6 Experimental Protocols           1 page(s)
+  p2   NRJ_BAT_Modifications          6 Unauthorized Modifications       1 page(s)
+  p3   NRJ_BAT_ResearchNotes          6 Research Notes                   1 page(s)
+  p4   NRJ_NAP_ImpostorTasks          4 Impostor Tasks                   1 page(s)
+  p5   NRJ_NAP_FollowingSetbacks      4 Following Setbacks               1 page(s)
+  p6   NRJ_NAP_DeviousOpportunities   6 Devious Opportunities            1 page(s)
+  p7   NRJ_AoS_Interference           6 Nobulous Interference            1 page(s)
+  p8   NRJ_AoS_CorruptedLimitations   6 Corrupted Limitations            1 page(s)
+  p9   NRJ_AoS_BackdoorRoutines       6 Backdoor Routines                1 page(s)
+  p10  NRJ_ImposterScenarios          24 Council Test Scenarios          3 page(s)

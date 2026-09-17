@@ -1,0 +1,123 @@
+@page {
+  size: Letter;
+  margin: 14mm 13mm 14mm 13mm;
+  @bottom-center {
+    content: counter(page);
+    font: 8pt "DejaVu Sans", sans-serif;
+    color: #8a8578;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  font-family: "DejaVu Serif", Georgia, serif;
+  font-size: 8.6pt;
+  line-height: 1.36;
+  color: #241f1a;
+  margin: 0;
+}
+.cover {
+  column-span: all;
+  border-bottom: 2.5pt solid var(--accent);
+  padding-bottom: 5mm;
+  margin-bottom: 5mm;
+}
+.eyebrow {
+  font-family: "DejaVu Sans", sans-serif;
+  font-size: 7.5pt;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: bold;
+}
+h1 {
+  font-family: "DejaVu Sans", sans-serif;
+  font-size: 22pt;
+  line-height: 1.05;
+  margin: 2mm 0 1.5mm;
+  color: #1a1713;
+}
+.tagline { font-style: italic; font-size: 10pt; color: #5c554a; margin: 0; }
+.blurb { margin: 3mm 0 0; font-size: 8.8pt; max-width: 62%; }
+
+.body { column-count: 2; column-gap: 7mm; }
+h2 {
+  font-family: "DejaVu Sans", sans-serif;
+  font-size: 10pt;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: #fff;
+  background: var(--accent);
+  padding: 1.6mm 2.4mm;
+  margin: 4mm 0 2mm;
+  break-after: avoid;
+}
+h2:first-child { margin-top: 0; }
+h3 {
+  font-family: "DejaVu Sans", sans-serif;
+  font-size: 8.7pt;
+  margin: 3mm 0 1mm;
+  color: var(--accent);
+  break-after: avoid;
+}
+p { margin: 0 0 2mm; }
+ul, ol { margin: 0 0 2.4mm; padding-left: 4.6mm; }
+li { margin-bottom: 1.1mm; }
+b, strong { color: #0f0d0a; }
+em { color: #4a4239; }
+
+.box {
+  background: #f4f1e8;
+  border-left: 2.2pt solid var(--accent);
+  padding: 2.4mm 3mm;
+  margin: 0 0 3mm;
+  break-inside: avoid;
+}
+.box .lbl {
+  font-family: "DejaVu Sans", sans-serif;
+  font-size: 7pt;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: bold;
+  display: block;
+  margin-bottom: 1.2mm;
+}
+.warn { background: #fbf0e6; border-left-color: #a5502a; }
+.warn .lbl { color: #a5502a; }
+
+table { width: 100%; border-collapse: collapse; margin: 0 0 3mm; font-size: 8pt; break-inside: avoid; }
+th {
+  font-family: "DejaVu Sans", sans-serif;
+  font-size: 7pt;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  text-align: left;
+  border-bottom: 1pt solid var(--accent);
+  padding: 1mm 1.4mm;
+  color: var(--accent);
+}
+td { padding: 1mm 1.4mm; border-bottom: .4pt solid #ddd8cc; vertical-align: top; }
+td:first-child { font-weight: bold; white-space: nowrap; }
+
+ol.seq { counter-reset: s; list-style: none; padding-left: 0; }
+ol.seq > li {
+  counter-increment: s;
+  padding-left: 6.5mm;
+  position: relative;
+  margin-bottom: 1.6mm;
+}
+ol.seq > li::before {
+  content: counter(s);
+  position: absolute; left: 0; top: .2mm;
+  width: 4.6mm; height: 4.6mm;
+  background: var(--accent); color: #fff;
+  font-family: "DejaVu Sans", sans-serif; font-size: 6.8pt; font-weight: bold;
+  text-align: center; line-height: 4.6mm;
+  border-radius: 50%;
+}
+.dice { font-family: "DejaVu Sans", sans-serif; font-size: 7.6pt; }
+.sw { display: inline-block; width: 2.6mm; height: 2.6mm; border-radius: 50%; border: .4pt solid #6b6459; vertical-align: -.3mm; margin-right: .6mm; }
+.Y { background: #e8b93a; } .G { background: #4f9c62; } .B { background: #4a86c8; }
+.P { background: #8d5bb0; } .R { background: #c0392b; }
+.foot { column-span: all; border-top: .8pt solid #ccc6b8; margin-top: 5mm; padding-top: 2mm;
+        font-size: 7pt; color: #8a8578; font-family: "DejaVu Sans", sans-serif; }

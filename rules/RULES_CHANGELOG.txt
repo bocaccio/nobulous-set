@@ -1,0 +1,261 @@
+THE NOBULOUS SET — RULEBOOK AUDIT
+Rulebooks checked line by line against Compendium v22, the printed card decks
+(BAT v0.6, NAP v0.9c, AoS v10, NRJ v0.24) and the calibrated simulators
+(bat.py, nap.py, aos.py, finale.py).  Everything below was MISSING or WRONG in
+the previous PDFs and is now printed.
+
+
+BAT — Build-a-Tyrant
+--------------------
+1.  THE TYRANT BATTLE HAD NO DICE PROCEDURE AT ALL.  The old text said who gets
+    attacked and that Upgrades absorb damage, and stopped.  It never said where
+    the Rats' dice come from, how many they roll, how the Tyrant decides how
+    many dice IT rolls, or how the fight ends.  Now printed in full:
+      - Battle pool: every personal die still in the game, from all four Rats,
+        available and exhausted alike, swept into one shared pool, all
+        available.  Banished dice stay gone.
+      - Rats commit UP TO 6 DICE per round and REROLL EACH MISS ONCE (STR 2).
+      - After the round, dice equal to the attacking Rat's REC + 1 return to the
+        pool from the ones just committed.  The rest are exhausted for good.
+        Nothing else refills the pool — the battle is a countdown, which is why
+        it runs about five rounds.
+      - The Tyrant rolls a number of its six dice equal to the HIGHEST VALUE
+        among the Splices it still holds; 2 if it holds none.  Its dice never
+        exhaust; it rolls fresh every round.
+      - Damage order into the Tyrant: Defense Splices, remaining Splices, Buff
+        HP, Health.  Each Splice soaks up to its Value, then is destroyed, and
+        the overflow carries on.
+      - Round order: untap, choose attacker, commit and roll, optionally tap one
+        Upgrade, apply damage, recover, then the Tyrant's attack.
+      - A Rat at 0 Health is knocked out, discards its Upgrades and cannot be
+        chosen again; its Upgrades become campaign candidates.
+2.  "UPGRADE VALUE" was used six times and never defined.  New Upgrades section:
+    category, Value, tap effect; Value is the tie-break during the build and the
+    damage the card absorbs during the battle; the 3-per-Rat limit includes
+    Specimens; the Tyrant never taps a Defense Upgrade for an attack.
+3.  Tyrant "REC 3" removed.  It was inherited from the old Assembly card and is
+    meaningless — the Tyrant's dice do not exhaust.
+
+3a. THE TYRANT'S DICE WERE NEVER RANDOM, AND ITS POOL WAS TWO THIRDS FICTION.
+    The simulator committed the Tyrant's dice strongest-first out of a list
+    written P P B B G Y.  The count is the highest Value among the Splices it
+    still holds; Upgrade Values stop at 4, and 78% of attacks come after the
+    biggest Splices are destroyed, so the count is 2 most of the time.  Measured
+    over 19,203 attacks the old rule rolled Purple 89.8%, Blue 10.2%, Green
+    0.0%, Yellow 0.0%.  A "fixed printed order" fix was tested and still left
+    Yellow at 0.4%.  The Tyrant now DRAWS ITS DICE BLIND from a bag or cup,
+    which is the only rule under which all four colours appear (33/33/17/17).
+    It costs the Tyrant 18% of its damage per attack, so the Buff HP ladder is
+    re-pegged: Easy 2, Standard 4, Hard 6, Brutal 8, Nobulous 8+2, for
+    86/76/67/58/52 percent.  BAT ships 2 Buff HP cards; only Nobulous uses the
+    second.  A Tier III campaign re-run confirms the finale is unaffected
+    (71.5% -> 72.3%).
+
+3b. THE TYRANT'S SPLICES WERE PURE ARMOUR.  Every Upgrade prints a tap effect,
+    and the Tyrant never used one - its five Splices were a wall of numbers.
+    Now the FRONTMOST Splice applies its effect on every Tyrant attack: free,
+    automatic, never tapped, and read off the card's PRINTED Value so damage
+    already marked on it does not weaken the effect.  Killing that Splice is
+    how you switch it off.  Cost to the Rats: 4-10 points, growing with
+    difficulty.  Combined with blind dice draws (+8) it cancels almost exactly,
+    so the ORIGINAL Buff HP table 0/2/4/6/8 is restored and reads
+    87/77/66/60/50 percent.
+    Rejected on measurement: a 'tap' version where using the effect stops that
+    Splice absorbing (the Tyrant has no reason not to tap every round, so its
+    front Splice becomes indestructible - 15% win rate at the top rung), and a
+    'skip Defense Splices' version (identical numbers, extra exception).
+
+3c. BUFF HP IS A 12-SPACE TRACK ON ONE CARD.  The Health die walks the Splice
+    row, sitting on whichever card is being damaged and showing how much it has
+    taken; when the row is spent the die moves onto the track and counts down,
+    then onto Health.  One die runs the whole Tyrant, so the Tyrant side needs
+    no other markers (measured: at most 1 partially-damaged Splice, ever).
+3d. RAT UPGRADES DO NOT ACCUMULATE DAMAGE.  A Tyrant attack either meets an
+    Upgrade's Value and destroys it - the excess carrying on to the next Upgrade
+    under the same test - or it cannot meet any remaining Upgrade and stops
+    there, reaching no Health.  No Rat card is ever part-damaged.  Only the
+    Tyrant's Splices accumulate, and the Health die walking its row tracks them.
+    Across 60,000 battles the worst case anywhere on the table is ONE
+    part-damaged Splice and ZERO Rat Upgrades: the whole game runs on the 20
+    Strong dice, the cards and the Chip, with nothing else on the table.
+    The ladder re-pegs to Buff 0/3/6/9/12 for 89/79/66/56/45 percent.
+
+3e. BUFF HP MOVED TO THE FRONT OF THE TYRANT'S ROW.  Damage order is now Buff
+    HP, Defense Splices, remaining Splices, Health, and the Health die starts on
+    the track at setup and only ever moves right.  This is a difficulty change,
+    not a re-ordering: while you carve the Buff off, the Splices shelter behind
+    it, so the Tyrant's frontmost-Splice effect and its dice count both stay at
+    full strength.  Measured at Buff 9, the Tyrant commits 2.49 dice an attack
+    against 2.18 with Buff HP at the back, and the shift is worth -4.7 points at
+    Standard rising to -19.3 at the old Buff 12.  Each point of Buff HP is now
+    worth about twice what it was, so the ladder returns to 0/2/4/6/8 for
+    89/79/66/54/45 percent.  Tier III campaign 71.9% at Standard.
+
+3f. THE SIMULATOR'S UPGRADE DECK WAS INVENTED.  Regular Upgrades were generated
+    as random Values 2-3 and Specimens as random 3-4.  The printed deck is fixed
+    and EVERY SPECIMEN IS VALUE 5; regular Values run 2,3,3,4 / 2,2,3,3 /
+    2,3,3,4 / 2,3,2,4 by category.  'Defense' was also being guessed from an
+    even Value rather than read from the card.  Every BAT number before this was
+    measured against a deck that does not exist.
+
+3g. THE SPLICE ROW IS SHUFFLED, and DIFFICULTY IS ONE NUMBER.  Sorting the row
+    (Defense first, by type, by type then Value) all measured within 2 points of
+    a full shuffle, so the row is randomised.  Sweeping the whole Specimens x
+    Buff HP grid against the 84/78/70/60/51 target ladder found that setting
+    both levers to the SAME number hits every rung within 2.4 points:
+        Easy 2/2 84%, Standard 3/3 76%, Hard 4/4 69%, Brutal 5/5 61%,
+        Nobulous 6/6 53%, and it keeps going - 7/7 is about 47%.
+    Tier III campaign 71.8% at Standard, back on the 8/9/10 finale calibration.
+
+3h. SPLICES ARE A FACE-UP STACK DURING PLAY, SHUFFLED INTO A ROW AT THE BATTLE.
+    Setup leaves room for the Splice stack beside the Tyrant Attack deck; each
+    Splice is added to it.  At the battle, lay the Buff HP card with the Health
+    die on the difficulty number, shuffle the five Splices into a row, then set
+    the Health dial to 20 at the right-hand end.
+    Order is a presentation choice, not a balance one: splice order, category
+    order, Value order and a full shuffle all sit within about a point.  But the
+    Upgrade deck is richest at the start, so Splices arrive big first - the
+    first Spliced averages Value 3.89 and the fifth 2.94.  Left in that order
+    every fight peaks in round one and tapers.  Shuffled, it does not.
+
+3i. RESOLVED — RED PLAYS IN THE BATTLE, AS A TRADE.  Red was never in the
+    battle pool because the simulator stores it as a flag on whoever holds it
+    rather than as one of that Rat's dice.  The rule adopted: Red is ALWAYS
+    available to the attacking Rat and committed on top of the six pool dice,
+    free and without exhausting - but only if that Rat does NOT tap an Upgrade
+    that round.  Worth +2 to +2.8 points.
+    A tap is usually more raw damage (Value-1, so 1 to 4) than Red's 7/6, so Red
+    is the weapon of a Rat with nothing left worth tapping.  Playing the choice
+    purely for damage puts Red on 5-11% of rounds; playing it to keep armour
+    untapped puts it on 30-49% - and the two land WITHIN ONE POINT of each other
+    at every rung, so the rule cannot be misplayed into a bad outcome.
+    Rejected on measurement:
+      - freely available every round (worth +6 to +12; moves the whole ladder)
+      - every other round, as in the Splice Phase (55% of rounds, +6 to +12)
+      - pinned to the leftmost undamaged Splice until it dies: the row dies fast,
+        so Red returns on 77% of rounds - MORE generous than a cooldown
+      - pinned to the rightmost undamaged Splice: 74% falling to 57%, never
+        actually scarce, and an extra sentence to explain
+      - folded into the shared pool as an ordinary die: only +2, and it loses
+        the property that makes Red interesting - not costing a pool die
+    Ladder returns to consecutive numbers: Easy 2, Standard 3, Hard 4, Brutal 5,
+    Nobulous 6, for 85/78/70/63/55 percent, extending to 7 (~49%) and 8 (~42%).
+
+3k. RED IS SET ASIDE, NOT EXHAUSTED - now stated outright.  The simulator has
+    always treated battle Red this way (it is never added to the committed dice,
+    so it never enters the recovery slice), but the rulebook said only that it
+    was committed "for free".  Measured alternative, rejected: Red exhausting
+    and being recovered through the normal REC step - which in practice costs
+    one pool die per use, since a player always recovers the best die.  That is
+    worth -0.6 to a damage-first player but -4 to -6 to one protecting armour,
+    and it opens a 3 to 6 point gap between the two play styles where the
+    set-aside rule keeps them within one point.  Red already pays by costing you
+    the tap; charging twice turns the die that cannot miss into the die you
+    should not touch.
+
+3l. THE LADDER IS NOW PEGGED TO THE PARENT GAME.  The 20 Strong community stats
+    sheet - 952 logged games - reports Solar Sentinels 49%, Too Many Bones 54%,
+    Hoplomachus: Victorum 53%, and 53% across every deck.  20 Strong is designed
+    as a coin flip.  BAT's Standard had been sitting at 78%.
+        Easy 4 ~70%, Standard 5 ~63%, Hard 6 ~56%, Brutal 7 ~49%, Nobulous 8 ~42%
+    Standard sits deliberately above the parent game's 53%: the simulator plays
+    near-optimally every turn and never misreads a card, so a human's first-play
+    rate will be lower than these figures.  The gap between the two is the one
+    number simulation cannot supply - table reports should close it.
+    Eight Specimens is the ceiling, so past Nobulous only Buff HP rises; the
+    track runs to 12, where the Tyrant wins about three games in four.
+    The NRJ tiers interleave between the rungs (Tier II is worth -6 to -7), so
+    the combined surface offers about fifteen settings from 70% down to 36%.
+
+3j. STAT DICE ASSIGNED.  Strategy die marks the active Lab Rat in both phases.
+    Health die runs the Tyrant track.  The Recovery die is not used.
+
+
+NAP — Nobulous Apprenticeship Program
+------------------------------------
+4.  FINF WAS NEVER EXPLAINED.  Setup said "set the FINF track to -1" and the
+    card was never mentioned again.  Full section added: choose a setting before
+    play; +1/+2/+3 shuffles FINF into the deck and adds Assignments to the next
+    one, two or three Time Slots (ignore their Skulls, never exceed 4 in the
+    row); -1/-2/-3 is that many uses per game, each removing a non-Final-Exam
+    Assignment from the current row and exhausting its stored dice; not used in
+    the Final Exam.
+5.  HOW THE APPRENTICESHIP ENDS was missing.  It ends at 6 Credits OR when the
+    Assignment deck runs out — both lead to the Final Exam.
+6.  THE LOSS CONDITION was missing.  Health 0 = immediate loss, apprenticeship
+    or exams.
+7.  The unselected revealed Assignment is DISCARDED, and if the row already
+    holds 4 both revealed cards are discarded and nothing is taken.
+8.  The row PERSISTS across Time Slots.  The old text implied a fresh row.
+9.  DEMAND TIMING was wrong.  Correct: at the end of a Time Slot, unresolved
+    Assignments flip to Demand at no cost; an Assignment ALREADY on Demand and
+    still unresolved inflicts its printed penalty, and again every slot it
+    survives.
+10. The colour-matching rule governs STORING PROGRESS as well as completing.
+11. Required Effort is waived when no legal commitment is possible.
+12. A Credit Task completed on its DEMAND side still earns its Credit.
+13. Opportunity effects reaching into the next Time Slot override restrictions
+    printed on the Task cards they apply to.
+
+    OPEN QUESTION FOR YOU — Slacker's passive reads "the first time each Day you
+    VOLUNTARILY DRAW AN ADDITIONAL ASSIGNMENT".  No such action exists in the
+    compendium, on the reference sheet, or in the simulator, so I have not
+    invented one.  Either the rule was dropped (and Slacker's passive needs
+    rewording) or it should read something like "you may take BOTH revealed
+    Assignments if the row has space".  The second reading also explains the
+    end-of-day discard's stated purpose.
+    MEASURED, so the option is costed if you reinstate it: taking the second
+    revealed Assignment is a trap, not a gift.  Used greedily it costs 20+ points
+    (base game 32.4% -> 11.6%); used sparingly - only into a nearly empty row,
+    only for a Credit Task in a subject you still need - it still costs 6 to 12
+    (32.4% -> 21.0%, Slacker 48.7% -> 42.6%).  The row caps at 4, STR caps
+    completions at 2 a slot, and every unresolved card flips to Demand and bleeds
+    you.  Reinstating the rule would not be a giveaway; Slacker's Skull-ignore
+    would be a small discount on a bad deal.
+
+
+AoS — Automaton of Shale
+------------------------
+14. "RECOVER DICE EQUAL TO YOUR REC AT THE END OF EVERY PROGRAM" was missing
+    entirely.  Without it REC 3 does nothing outside Advanced Programming and
+    the game is unplayable as written.
+15. DICE RETURN.  The old text listed the exhaustion penalties without ever
+    saying the base case: when an element resolves its dice go BACK to the
+    available pool, except the ones the gradient burns.  Allocation is not
+    spending.
+16. THE EXTRA STR ROLL is a FULL REROLL of one element's dice, replacing the
+    previous result — better or worse.  Previously described only as "an extra
+    roll".
+17. PROGRAM REWARDS were printed on all 24 Program cards and never explained.
+    Now: claim the printed reward on completing a Program with NO failed
+    elements; Advanced Programs have none.  The six rewards are listed.
+18. DECK CYCLING defined: a cycle is one shuffled pass through the remaining
+    deck; set-aside and reward-removed Programs leave it permanently; the
+    endgame starts after the third cycle or when the deck empties.
+19. LOSS CONDITION added (Health 0), and the Health cap of 6.
+20. An element may be given ZERO dice; it then simply fails.
+21. Crit = 2 successes stated (it was only in the BAT book).
+
+
+NRJ — Nobulous Research Journal
+-------------------------------
+22. TIER I NAP said "replace the 3 base Setbacks with the 4 Following
+    Setbacks".  The calibrated configuration is 3 OF THE 4, chosen at random,
+    in place of the 3 base Setbacks — one Following Setback sits out each game,
+    mirroring how the base Setbacks work.  Fixed.  (The compendium says "the 4"
+    in §6.2; the simulator's settled FOLLOW_MODE is replace3, and the -3/-12/-6
+    tier deltas were measured with 3.)
+23. The Imposter starts with ALL 17 DICE — never stated.
+24. Finale loss condition added: Health 0 ends the finale; you replay the
+    finale, not the campaign.
+25. STR 2 in the finale spelled out as one roll plus one reroll of misses;
+    Crit = 2.
+26. Research Notes and Backdoor Routines: said where they live (face-up beside
+    the table), that the claim condition and the one-shot use are both printed
+    on the card, and that each can be claimed once.
+
+VERIFIED CORRECT, NO CHANGE
+    NAP Tier II Impostor Tasks do REPLACE a Credit Task of the same subject, and
+    Tier III Devious Opportunities do REPLACE the six base Opportunities.  The
+    compendium's looser "add" wording in §6.2 does not match the simulator; the
+    rulebook already had it right.

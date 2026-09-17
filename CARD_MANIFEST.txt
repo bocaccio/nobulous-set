@@ -1,0 +1,448 @@
+THE NOBULOUS SET — CARD FILES  (rev 28)
+Generated from Compendium v22 / AoS v10 / NAP v0.9c / BAT v0.6 / NRJ v0.24
+
+CHANGES IN THIS REVISION
+  - LADDER RE-PEGGED AGAINST THE PARENT GAME.  The 20 Strong community stats
+    sheet (952 logged games) puts the published decks at Solar Sentinels 49%,
+    Too Many Bones 54%, Hoplomachus: Victorum 53% - 49-54% over 577 games on the
+    three flagship decks, 53% across all of them.  20 Strong is designed as a
+    coin flip, and BAT's Standard was sitting 25 points above it.
+        Easy      4 / 4   ~70%
+        Standard  5 / 5   ~63%
+        Hard      6 / 6   ~56%
+        Brutal    7 / 7   ~49%
+        Nobulous  8 / 8   ~42%
+    Standard lands a little above the parent game on purpose: the simulator
+    plays a near-optimal commitment policy every turn, so a human's first-play
+    rate will sit below these numbers.
+    Track gold spaces re-marked 4 to 8.  Eight Specimens is the ceiling, so past
+    Nobulous only Buff HP rises; the track runs to 12, where the Tyrant wins
+    about three games in four.
+  - The full difficulty surface, with the NRJ tiers interleaving between rungs:
+                      no NRJ   Tier I   Tier II   Tier III
+        Easy     4     70.4%    68.9%    62.6%     68.2%
+        Standard 5     62.6%    60.9%    55.1%     60.9%
+        Hard     6     55.7%    54.0%    47.7%     55.9%
+        Brutal   7     47.6%    46.4%    40.7%     49.1%
+        Nobulous 8     42.1%    40.0%    36.3%     44.4%
+    Tier II is worth about -6 to -7, so it sits roughly midway between two
+    difficulty numbers - fifteen usable settings from 70% down to 36%.
+  - Tier III campaign: finale 73.2% with BAT at Standard, BAT replays 0.66.
+
+EARLIER (rev 26)
+  - RED IN THE BATTLE IS A TRADE, NOT A TIMER.  It is always available to the
+    attacking Rat and committed on top of the six pool dice, free and without
+    exhausting - but ONLY if that Rat does not tap an Upgrade that round.
+    Worth only +2 to +2.8 points, against +6 to +12 for a freely available Red.
+    A tap is usually more raw damage (Value-1, so 1 to 4) than Red's 7/6, so Red
+    becomes the weapon of a Rat with nothing left to tap.
+    Two ways of playing the choice were measured - purely for damage (Red on
+    5-11% of rounds) and to protect armour (30-49%) - and they land WITHIN ONE
+    POINT of each other at every rung.  The rule is robust to how well it is
+    played, which is worth more than either number.
+    Rejected on measurement: Red pinned to the leftmost undamaged Splice until
+    that Splice dies (the row dies fast, so Red returns on 77% of rounds - more
+    generous than a cooldown, not less); pinned to the rightmost (74% falling to
+    57%, never scarce, extra rule to explain); every-other-round (55%, worth
+    +6 to +12 and needs the whole ladder moved).
+  - LADDER BACK TO CONSECUTIVE NUMBERS:
+        Easy 2/2 ~85%   Standard 3/3 ~78%   Hard 4/4 ~70%
+        Brutal 5/5 ~63%   Nobulous 6/6 ~55%
+    Even 7-8 point steps, and it extends: 7 is about 49%, 8 about 42%.
+  - Tier III campaign: 69.1% with BAT at Standard, 73.1% at Brutal.
+
+EARLIER (rev 25)
+  - RED PLAYS IN THE TYRANT BATTLE, exactly as it does in the Splice Phase.  It
+    was never swept into the shared pool because the simulator stores Red as a
+    flag on whoever holds it rather than as one of that Rat's dice - an artefact,
+    not a decision.  The attacking Rat now commits Red if it holds it, on top of
+    the six pool dice, then sets it aside and places it on a non-attacking Rat,
+    so it returns about every other round.  It never costs a die from the pool.
+    Worth +6 to +12 points, growing with difficulty: it cannot miss, it is free,
+    and it does not move the countdown.  (Folding Red into the pool as an
+    ordinary die was tested and is worth only +2; counting it against the
+    six-dice cap costs about a point against committing it on top.)
+  - LADDER RE-PEGGED.  Still one number used twice, but the numbers move up:
+        Easy      3 / 3   ~85%
+        Standard  4 / 4   ~79%
+        Hard      5 / 5   ~72%
+        Brutal    7 / 7   ~59%
+        Nobulous  8 / 8   ~53%
+    Eight is the ceiling - there are only eight Specimen cards.
+  - STAT DICE ASSIGNED.  The Strategy die marks the active Lab Rat in both
+    phases.  The Health die runs the Tyrant track.  The Recovery die is not used.
+  - Tier III campaign: 73.8% with BAT at Standard, 68.8% at Brutal-ish (N=6).
+
+EARLIER (rev 24)
+  - SPLICES ARE A FACE-UP STACK DURING PLAY, SHUFFLED INTO A ROW AT THE BATTLE.
+    Reverts rev 23's build-as-you-go track.  At the battle: lay the Buff HP card
+    with the Health die on the difficulty number, shuffle the five Splices into
+    a row beside it, then set the Health dial to 20 at the right-hand end.
+    The reason is shape, not balance.  Splice order and every sorted arrangement
+    sit within about a point of each other, but the Upgrade deck is richest at
+    the start, so Splices arrive big first - first Spliced averages Value 3.89,
+    fifth 2.94.  Left in that order the Tyrant leads with its heaviest card and
+    tapers, so every fight peaks in round one.  Shuffling removes the pattern.
+  - The difficulty table is unchanged: it was measured with a shuffled row.
+        Easy 2/2 ~84%   Standard 3/3 ~76%   Hard 4/4 ~69%
+        Brutal 5/5 ~61%   Nobulous 6/6 ~53%
+
+EARLIER (rev 23)
+  - THE TYRANT TRACK IS BUILT DURING PLAY, NOT AT THE BATTLE.  At setup the Buff
+    HP card goes beside the Tyrant Attack deck with the Health die on the
+    difficulty number; every Splice is then laid in the rightmost open spot.  At
+    5 Splices the Health dial is set to 20 and placed at the right-hand end.
+    The row is therefore Buff HP, the Splices in the order they were spliced,
+    Health - no sorting and no shuffling step at all.
+  - Measured: splice order is NOT arbitrary.  The Upgrade deck is richest at the
+    start, so the first card Spliced averages Value 3.89 and the fifth 2.94.
+    The Tyrant leads with its heaviest Splice, which hits hardest and dies
+    first, and that is worth +0.4 to +1.5 points to the Rats against a shuffled
+    row.  Inside the ladder's tolerance, so no re-peg: the difficulty table
+    stands at 84 / 76 / 69 / 61 / 53 percent.
+
+EARLIER (rev 22)
+  - DIFFICULTY IS NOW A SINGLE NUMBER.  Specimens and Buff HP are always equal:
+        Easy      2 / 2   ~84%
+        Standard  3 / 3   ~76%
+        Hard      4 / 4   ~69%
+        Brutal    5 / 5   ~61%
+        Nobulous  6 / 6   ~53%
+    Found by sweeping the whole 7 x 11 Specimens-by-Buff-HP grid against the
+    target ladder 84/78/70/60/51; every rung lands within 2.4 points, and the
+    pattern keeps going (7/7 is about 47%).
+  - THE SPLICE ROW IS SHUFFLED.  Defense-first, by type, and by type-then-Value
+    all measured within 2 points of a full shuffle, so the row is simply
+    randomised - one fewer setup instruction and no two Tyrants look alike.
+    Only smallest-Splice-first is measurably worse for the Rats.
+  - Tier III campaign back on target: 71.8% with BAT at Standard, 66.2% at Hard.
+    The rev 21 drift is gone; Standard's extra Buff HP absorbed it.
+
+EARLIER (rev 21)
+  - THE SIMULATOR WAS USING A FICTIONAL UPGRADE DECK.  It generated regular
+    Upgrades as random Values 2-3 and Specimens as random 3-4.  The printed deck
+    is fixed, has categories, and EVERY SPECIMEN IS VALUE 5:
+        Power     Serrated Claws 2, Reinforced Jaw 3, Capacitor Muscles 3,
+                  Piercing Horn 4
+        Mobility  Spring-Loaded Legs 2, Prehensile Tail 2, Tripwire Tendons 3,
+                  Evasive Reflexes 3
+        Defense   Thickened Hide 2, Layered Carapace 3, Chromatic Plating 3,
+                  Reactive Shell 4
+        Senses    Acute Hearing 2, Predatory Focus 3, Rapid Metabolism 2,
+                  Neural Overclock 4
+        Specimens all 8 are Value 5
+    Every BAT figure before rev 21 was measured against the invented deck.  The
+    real one is stronger for the Rats: mean regular Value 2.81 against 2.5, and
+    a Value 5 Specimen is superb all-or-nothing armour in a Rat's hands.
+    'Defense' is now read from the card's category instead of being guessed from
+    an even Value.
+  - LADDER RE-PEGGED on the corrected deck:
+        Easy      2 Specimens   Buff 0   ~89%
+        Standard  3 Specimens   Buff 2   ~80%
+        Hard      4 Specimens   Buff 4   ~69%
+        Brutal    4 Specimens   Buff 6   ~60%
+        Nobulous  5 Specimens   Buff 8   ~50%
+    Nobulous takes a fifth Specimen because 4 Specimens at Buff 8 lands at 52%
+    and leaves only a 6-point step from Brutal.
+  - SPLICE ROW ORDER MEASURED AND IT BARELY MATTERS.  Defense first, fully
+    random, by type, and by type-then-Value all sit within 2 points of each
+    other.  Only lowest-Value-first is meaningfully worse for the Rats: it keeps
+    the Tyrant's largest Splice alive longest, so its dice count stays up
+    (2.80 dice an attack against 2.70).  Defense first is kept as the printed
+    rule on thematic grounds; the rulebook says the rest is the player's choice.
+  - Tier III campaign: 76.9% with BAT at Standard, 70.3% at Hard.  The Standard
+    figure has drifted about 5 points above the 8/9/10 finale calibration
+    because the corrected deck banks richer BAT carryover (retained cards 2.38,
+    retained Specimens 0.66).  Flagged, not yet re-tuned.
+
+EARLIER (rev 20)
+  - BUFF HP MOVES TO THE FRONT OF THE TYRANT'S ROW.  Damage now goes Buff HP,
+    Defense Splices, remaining Splices, Health.  The Health die starts on the
+    Buff HP track at setup and only ever moves right.
+    This is a real difficulty change, not a re-ordering: Buff HP shelters the
+    Splices, so the Tyrant's frontmost-Splice effect AND its dice count stay at
+    full strength for the whole time you are carving the Buff off.  Measured at
+    Buff 9: 2.49 dice per Tyrant attack against 2.18 with Buff HP at the back.
+    Each point of Buff HP is worth roughly twice what it was.
+  - BUFF HP LADDER RE-PEGGED BACK TO 0 / 2 / 4 / 6 / 8:
+        Easy      2 Specimens   Buff 0   ~89%
+        Standard  3 Specimens   Buff 2   ~79%
+        Hard      4 Specimens   Buff 4   ~66%
+        Brutal    4 Specimens   Buff 6   ~54%
+        Nobulous  4 Specimens   Buff 8   ~45%
+    Track gold spaces are 2/4/6/8; the track still runs to 12 as headroom.
+  - Tier III campaign: finale 71.9% with BAT at Standard, 69.4% at Hard.
+
+EARLIER (rev 19)
+  - RAT UPGRADES NO LONGER TAKE ACCUMULATED DAMAGE.  A Tyrant attack either meets
+    an Upgrade's Value and destroys it, with the excess carrying on under the
+    same test, or it cannot meet any remaining Upgrade and stops there.  No Rat
+    card is ever part-damaged.  The Tyrant's Splices still accumulate, tracked
+    by the Health die walking its row.
+    Measured across 60,000 battles: the worst case anywhere on the table is ONE
+    partially-damaged Tyrant Splice and ZERO Rat Upgrades, so the Health die
+    covers the entire battle and the game needs no tokens, counters or notes -
+    just the 20 Strong dice, the cards and the Chip.
+  - BUFF HP LADDER RE-PEGGED TO 0 / 3 / 6 / 9 / 12, using the 12-space track:
+        Easy      2 Specimens   Buff  0   ~89%
+        Standard  3 Specimens   Buff  3   ~79%
+        Hard      4 Specimens   Buff  6   ~66%
+        Brutal    4 Specimens   Buff  9   ~56%
+        Nobulous  4 Specimens   Buff 12   ~45%
+    Even 10-13 point steps, and the gold spaces on the track are 3, 6, 9, 12.
+  - Tier III campaign re-run: finale 71.2% with BAT at Standard, 72.5% at Hard.
+    Unchanged.
+
+EARLIER (rev 18)
+  - THE TYRANT NOW USES ITS SPLICES.  Its FRONTMOST Splice applies its effect on
+    every Tyrant attack - free, automatic, no tapping - and it uses the card's
+    PRINTED Value, so damage already marked on that card does not weaken it.
+    Until now the Tyrant's Splices were pure armour and their printed effects
+    were never used at all.  Modelled as the Rats' own tap abstraction, Value-1
+    extra damage, this costs the Rats 4-10 points and the cost grows with
+    difficulty.  A 'tap' variant was tested and rejected: with no cost to
+    tapping, the Tyrant would tap every round and its frontmost Splice could
+    never be destroyed.  Reading past Defense Splices instead of using the
+    frontmost measured identically, so the simple rule wins.
+  - BUFF HP IS ONE CARD AGAIN, a 12-space track.  Put the Health die on the
+    difficulty's number and step it down one space per damage.  The Health die
+    also walks the Splice row before that, sitting on whichever card is being
+    damaged - one die runs the entire Tyrant, and the dial and the second card
+    are both gone.
+  - THE ORIGINAL BUFF HP LADDER IS RESTORED.  Random Tyrant dice gave the Rats
+    about +8 points and the frontmost-Splice effect takes about -8 back, so the
+    table reads exactly as first published:
+        Easy      2 Specimens   Buff 0   ~87%
+        Standard  3 Specimens   Buff 2   ~77%
+        Hard      4 Specimens   Buff 4   ~66%
+        Brutal    4 Specimens   Buff 6   ~60%
+        Nobulous  4 Specimens   Buff 8   ~50%
+    At 3 Specimens the curve is 84 / 81 / 77 / 73 / 69 / 64 / 60 / 57 / 52 for
+    Buff 0-8, within a point of the original figures at every rung.
+  - Tier III campaign re-run end to end: finale 73.1% against a 72.8% baseline,
+    retained cards 2.25 against 2.23.  Unchanged.
+
+EARLIER (rev 17)
+  - TYRANT DICE FIX.  The Tyrant commits a number of dice equal to the highest
+    Value among the Splices it still holds; it now draws them AT RANDOM from
+    its pool of 2 Purple / 2 Blue / 1 Green / 1 Yellow.  Previously the
+    simulator took them strongest-first, and because Upgrade Values stop at 4
+    and most attacks come after the biggest Splices are destroyed, it rolled
+    Purple 89.8 percent of the time and Green or Yellow NEVER.  Two thirds of
+    the printed pool had never been simulated.
+    Blind drawing costs the Tyrant about 18 percent of its damage per attack
+    (2.19 -> 1.79 expected successes) and is worth +5 to +11 points to the Rats,
+    so the whole Buff HP ladder is re-pegged below.
+  - BUFF HP LADDER RE-PEGGED, and BAT_BuffHP is now a 2-CARD deck.
+        Easy      2 Specimens   Buff 2     ~86%
+        Standard  3 Specimens   Buff 4     ~76%
+        Hard      4 Specimens   Buff 6     ~67%
+        Brutal    4 Specimens   Buff 8     ~58%
+        Nobulous  4 Specimens   Buff 8 + 2 ~52%   (both cards)
+    Only Nobulous needs the second card.  It costs no extra PnP pages - the
+    duplex sheet had room.
+  - End-to-end Tier III campaign re-run to confirm the change does not disturb
+    the finale: 71.5% -> 72.3%, mean retained cards 2.19 -> 2.20, Specimens
+    retained 0.60 -> 0.60.  Re-pegging preserves the Research Pool exactly.
+
+EARLIER (rev 16)
+  - PRINT AND PLAY REBUILT AT 9 CARDS PER PAGE (3 x 3) instead of 6.  Pages of
+    landscape cards are themselves landscape, so 3 x 3 fits at full poker size
+    with a 0.25in margin on every side.  Faint crop ticks mark every cut line.
+    Page counts: BAT 15 -> 11, NAP 14 -> 10, AoS 17 -> 12, NRJ 17 -> 12.
+  - The Buff HP dial is now included in NobulousSet_BAT_PnP.pdf (pages 10-11,
+    duplex).  It was previously only in its own BAT_BuffHP_PnP.pdf.
+  - Duplex back pages now mirror about the centre of the full 3-wide grid
+    rather than about the cards present in that row.  The old behaviour put
+    the backs of a part-filled row one or two columns out of register.
+  - PNP_CONTENTS.txt lists every section, its page range and whether it is a
+    duplex run.
+  - pack.py builds the four per-game PnP files from the per-deck PDFs, so the
+    combined files can be regenerated rather than assembled by hand.
+  - All four rulebooks revised against Compendium v22 - see RULES_CHANGELOG.txt.
+
+EARLIER (rev 15)
+  - NAP Tasks: full-width green REQUEST band across the top of the middle
+    section, full-width red DEMAND band (rotated 180) across the bottom.
+  - NAP Task titles wrap to two rows on the left spine, clear of the corner.
+  - Top-left corner stack, top to bottom: subject icon, recovery-colour dot,
+    skulls.  Subject icons: Anatomy (heart, maroon), Engineering (gear, blue),
+    Procedure (scalpel, purple), Theory (book, olive).  Non-Credit Tasks have
+    no subject icon.
+  - Every NAP deck is now landscape.  Opportunity band gold, Setback band blue,
+    Final Exam band black.
+  - Morning / Afternoon / Evening set in 30pt over the tinted slot colour.
+  - Final Exam cards carry the subject icon beside the recovery dot, matching the
+    corner stack on the Credit Tasks.
+  - NAP Task cards: Request and Demand text enlarged to 9pt / 23pt numerals, the
+    Demand block moved flush to its band, and a hairline rule added at the middle
+    to separate the two sides.
+  - One die-colour palette across the whole set, on every NAP recovery dot and
+    every AoS required-colour dot:
+        Yellow #e8b93a   Green #4f9c62   Blue #4a86c8   Purple #8d5bb0   Red #c0392b
+  - AoS header bands now follow the source deck colours: Routine #315c49,
+    Specialized #4c4a75, Unstable #7a3838, Advanced #8a5a20, Limitation #2f5966,
+    Technician #3f5260, Element mat #555555.
+  - AoS body text, element numerals and headings enlarged.
+  - AoS element allocation mats are portrait with a large empty placement box.
+  - Long card titles step down in size so they stay on one line.
+  - The Assembly / Tyrant card is removed.  Splices stack beside the Encounter
+    deck and become the Tyrant's Upgrades when it awakens; the Tyrant's Health,
+    REC and dice pool are in the rulebook.
+  - NRJ cards now match their base-game analogue rather than using one NRJ colour:
+      Experimental Protocols and Research Notes  BAT green
+      Unauthorized Modifications                 BAT category colours + UNAUTHORIZED strip
+      Impostor Tasks                             NAP purple
+      Following Setbacks                         NAP setback blue
+      Devious Opportunities                      NAP opportunity gold
+      Nobulous Interference, Backdoor Routines   AoS rust
+      Corrupted Limitations                      AoS limitation teal
+      Imposter Scenarios                         coloured by domain: Knowledge purple,
+                                                 Physical green, Cover-Up rust
+    Every NRJ card names its tier in the footer.
+  - The four AoS Program decks are now genuinely two-sided: Stable on the face,
+    the matching Overheated on the back of the same card.
+      TTS  : tick "Unique Backs" in the Custom Deck dialog and load
+             <deck>_TTS.png as the face and <deck>_TTS_back.png as the back.
+      Print: each deck's PnP pages alternate front page / back page with the
+             back columns mirrored, so duplex printing on long-edge flip puts
+             Overheated behind its own Stable face.
+  - Every NRJ card carries a solid #1f4e6b band along its foot reading NOBULOUS
+    RESEARCH JOURNAL.  Face-up, the module cards can be riffled out of any base
+    deck in one pass.
+  - Impostor Tasks now use the base NAP Task layout: name on the left spine,
+    subject icon in the corner, green REQUEST band above and red DEMAND band
+    below, and GRANTS NO CREDIT on the right spine where a Task's penalty sits.
+  - BAT band colours by function: Encounters, Lab Rats and Assembly keep the
+    green house colour; Upgrades and Specimens are coloured by category
+    (Power #8a3d2e, Mobility #2c6e63, Defense #3c5a8a, Senses #6b4a8a);
+    Specimens add a gold SPECIMEN strip and a warm card tint; Tyrant Attacks
+    use #4a1f1f with a cool tint.
+
+PRINT AND PLAY (Letter)
+  NobulousSet_BAT_PnP.pdf   BAT
+  NobulousSet_NAP_PnP.pdf   NAP
+  NobulousSet_AoS_PnP.pdf   AoS
+  NobulousSet_NRJ_PnP.pdf   NRJ modules + Imposter Scenarios
+
+TWO-SIDED CARDS
+  These decks are genuinely double-sided.  In TTS tick "Unique Backs" and load
+  <deck>_TTS.png as the face and <deck>_TTS_back.png as the back.  In print, the
+  PnP pages alternate front page / mirrored back page for long-edge duplex.
+      BAT_Rats          4 cards   Side A face / Side B back
+      NAP_Apprentices   3 cards   two Apprentices per card
+      AoS_Technicians   3 cards   two Technicians per card
+      AoS_Routine / Specialized / Unstable / Advanced
+                        8 cards each   Stable face / Overheated back
+
+DECK SHEETS AND BACKS
+  DECK                           GRID    ORIENT     BACK
+  AoS_Advanced                   8x1     portrait   AoS_Advanced_TTS_back.png  (Unique Backs)
+  AoS_ElementMats                5x1     portrait   (none - mats)
+  AoS_Limitations                6x1     portrait   CardBack_AoS_Limitation
+  AoS_Routine                    8x1     portrait   AoS_Routine_TTS_back.png  (Unique Backs)
+  AoS_Specialized                8x1     portrait   AoS_Specialized_TTS_back.png  (Unique Backs)
+  AoS_Technicians                3x1     landscape  AoS_Technicians_TTS_back.png  (Unique Backs)
+  AoS_Unstable                   8x1     portrait   AoS_Unstable_TTS_back.png  (Unique Backs)
+  BAT_BuffHP                     1x1     portrait   CardBack_BAT_BuffHP
+  BAT_Encounters                 10x2    portrait   CardBack_BAT_Encounter
+  BAT_Rats                       4x1     landscape  BAT_Rats_TTS_back.png  (Unique Backs)
+  BAT_Specimens                  8x1     portrait   CardBack_BAT_Upgrade
+  BAT_TyrantAttacks              7x1     portrait   CardBack_BAT_TyrantAttack
+  BAT_Upgrades                   10x2    portrait   CardBack_BAT_Upgrade
+  NAP_Apprentices                3x1     landscape  NAP_Apprentices_TTS_back.png  (Unique Backs)
+  NAP_FinalExams                 10x2    landscape  CardBack_NAP_FinalExam
+  NAP_Opportunities              6x1     landscape  CardBack_NAP_Assignment
+  NAP_Setbacks                   6x1     landscape  CardBack_NAP_Assignment
+  NAP_SlotsFINF                  4x1     landscape  CardBack_NAP_Assignment
+  NAP_Tasks                      10x3    landscape  CardBack_NAP_Assignment
+  NRJ_AoS_BackdoorRoutines       6x1     portrait   CardBack_NRJ_BackdoorRoutine
+  NRJ_AoS_CorruptedLimitations   6x1     portrait   CardBack_AoS_Limitation
+  NRJ_AoS_Interference           6x1     portrait   CardBack_NRJ_Interference
+  NRJ_BAT_Modifications          6x1     portrait   CardBack_BAT_Upgrade
+  NRJ_BAT_Protocols              6x1     portrait   CardBack_NRJ_Protocol
+  NRJ_BAT_ResearchNotes          6x1     portrait   CardBack_NRJ_ResearchNote
+  NRJ_ImposterScenarios          10x3    portrait   CardBack_NRJ_CouncilTest
+  NRJ_NAP_DeviousOpportunities   6x1     landscape  CardBack_NAP_Assignment
+  NRJ_NAP_FollowingSetbacks      4x1     landscape  CardBack_NAP_Assignment
+  NRJ_NAP_ImpostorTasks          4x1     landscape  CardBack_NAP_Assignment
+
+CARD BACKS
+  BAT   CardBack_BAT_Encounter        Encounter deck
+        CardBack_BAT_Upgrade          Upgrade deck (regular Upgrades + Specimens)
+        CardBack_BAT_TyrantAttack     Tyrant Attack deck
+        CardBack_BAT_BuffHP           Buff HP track (a mat; never shuffled)
+  NAP   CardBack_NAP_Assignment       Assignment deck (Tasks, Opportunities,
+                                      Setbacks, FINF)
+        CardBack_NAP_FinalExam        Final Exams - reads FINAL EXAM / SET ASIDE
+                                      AT SETUP so the deck is pulled before play
+  AoS   CardBack_AoS_Limitation       the only AoS back.  Programs and Advanced
+                                      Programs are two-sided, Technicians are
+                                      two-sided, element mats are mats.
+  NRJ   CardBack_NRJ_Protocol         Experimental Protocols
+        CardBack_NRJ_ResearchNote     Research Notes
+        CardBack_NRJ_Interference     Nobulous Interference
+        CardBack_NRJ_BackdoorRoutine  Backdoor Routines
+        CardBack_NRJ_CouncilTest      24 Imposter Scenarios
+
+  NRJ cards that are shuffled into a base deck take that deck's back, or they
+  would be identifiable face-down:
+        Unauthorized Modifications          -> CardBack_BAT_Upgrade
+        Corrupted Limitations               -> CardBack_AoS_Limitation
+        Impostor Tasks, Following Setbacks,
+        Devious Opportunities               -> CardBack_NAP_Assignment
+  Their NRJ identity is carried on the face instead, by the foot band reading
+  NOBULOUS RESEARCH JOURNAL.
+
+BUFF HP AND DIFFICULTY
+  Difficulty is one number, used twice: that many Specimens in the Upgrade deck
+  and that much Buff HP on the Tyrant.  Easy 4, Standard 5, Hard 6, Brutal 7,
+  Nobulous 8, for 70 / 63 / 56 / 49 / 42 percent.
+  Buff HP sits at the FRONT of the Tyrant's damage row, ahead of its Splices.
+  BAT_BuffHP is a single one-sided track card with 12 spaces, gold at 4-8.  Put
+  the Health die on the difficulty number when the battle starts; it steps one
+  space per point of damage, then walks down the Splice row and onto Health.
+
+DICE
+  Use the 20 Strong Dice and Chip saved object: 4 Purple, 4 Blue, 4 Green,
+  4 Yellow, 1 Red, plus the Health, Strategy and Recovery stat dice.
+
+NOTES
+  NAP Tasks carry Request and Demand on one landscape card; rotate 180 degrees
+  to switch sides.  They are not two-sided cards.
+  18 skulls across the 26 base Tasks: 3 cards carry 2, 12 carry 1.
+
+
+REV 28 — RULEBOOK EDIT
+----------------------
+Removed design rationale from all four rulebooks.  The rulebooks now state only
+how to play; no explanation of why a rule is the way it is.  Deleted or trimmed:
+
+BAT   - "The NRJ tiers sit between these rungs..." (difficulty table note)
+      - "Why a separate track" callout box (Buff-HP-first rationale) — deleted
+      - "at 12 the Tyrant wins about three games in four" (win-rate aside)
+      - closing clause of "Two kinds of armor": "That is why the whole battle
+        runs on one die: the Tyrant is a slab you grind down..."
+NAP   - closing clause of "Special Recovery": "Choosing which card becomes
+        Primary is therefore choosing which colour you get back in bulk..."
+      - End of Day: "The apprenticeship is finite: work you never took is work
+        that disappears."
+      - exam pool: "Neglected subjects are thinly represented but brutal..."
+        and "Which exams you faced is a direct record of which subjects..."
+AoS   - closing clause of "Dice come back unless you are punished": "Exhaustion
+        in AoS is a penalty, not a cost, which is why the gradient is the whole
+        game."
+      - Program Rewards: "The two 'remove this Program' cards are the sharpest
+        decision in the game..."
+      - Carrying forward: "A clean AoS run changes the TEXTURE of the finale..."
+NRJ   - "This is where the campaign pays off" callout box — deleted
+      - "Failure compounds: the more the Council has seen..." (Suspicion box)
+      - "Deciding what a Scenario is worth is the point."
+
+Callouts that are RULES, not rationale, were kept: Success, Failure, Two kinds
+of armor (trimmed), How the apprenticeship ends, Special Recovery (trimmed),
+Skulls, Required colours, If you cannot supply a required colour, Dice come back
+unless you are punished (trimmed), Catastrophic Failure, The tiers are not
+difficulty levels, Impostor Tasks, Suspicion is uncapped (trimmed).
+
+The removed rationale is preserved in rules/RULES_CHANGELOG.txt.
