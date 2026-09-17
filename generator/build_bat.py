@@ -1,31 +1,30 @@
 import sys; sys.path.insert(0, '/home/claude/cards')
-from gen import render_deck, render_duplex, make_back, elements, LANDSCAPE
+from gen import render_deck, render_duplex, make_back, elements, LANDSCAPE, PORTRAIT
 
 SPEC_FTR = 'If at least one revealed Upgrade is a Specimen, +1 Target total.'
 TAP_FTR = 'Tap to use. A tapped Upgrade cannot absorb damage.'
 
-ENCOUNTERS = [
-    ("Basic Calibration", 2, "No additional effect."),
-    ("Fine Manipulation", 2, "At least one applied hit must be Yellow."),
-    ("Structural Integrity", 3, "No additional effect."),
-    ("Precision Assembly", 3, "No additional effect."),
-    ("Performance Trial", 3, "No additional effect."),
-    ("Load Bearing", 3, "At least one applied hit must be Purple."),
-    ("Diagnostics", 3, "At least one applied hit must be Blue."),
-    ("Rapid Response", 3, "At least one applied hit must be Green."),
-    ("Full Spectrum Test", 3, "Applied hits must include at least 3 different colors."),
-    ("Limited Workspace", 3, "Commit no more than 2 dice initially."),
-    ("Resource Constraint", 3, "Red cannot be used."),
-    ("Independent Work", 3, "You cannot borrow a die."),
-    ("Prototype Shortage", 3, "During your second Strategy phase, you may commit no additional dice."),
-    ("Unreliable Equipment", 3, "One committed die of your choice cannot be rerolled during this Encounter."),
-    ("Color Blind", 3, "Before committing, choose one color. Dice of that color cannot be used this Encounter."),
-    ("Stress Test", 4, "No additional effect."),
-    ("Exhaustive Testing", 4, "Recover 1 fewer die this turn, minimum 0."),
-    ("Nobulous' Deadline", 4, "No additional effect."),
-    ("Risky Shortcut", 4, "Before committing, you may reduce Target by 1. If you do and borrow a die, "
-                          "that borrowed die is automatically banished."),
-    ("What Could Go Wrong?", 5, "No additional effect."),
+EXPERIMENTS = [
+    ("Baseline Calibration", 2, "Flip the active Lab Rat to its other side. That side remains active until another effect flips it.", "Every breakthrough begins by proving the researcher probably still works."),
+    ("Fine Motor Trial", 2, "A Yellow die must be committed to this Experiment. If unable to do so, increase the Target by 1.", "Tiny claws. Tiny screws. Absolutely no margin for error."),
+    ("Structural Stress Trial", 3, "Reveal 1 additional Upgrade for this Experiment. Resolve the normal Upgrade choice using all revealed options.", "Nobulous calls the third prototype a control. Nobody asks what it controls."),
+    ("Contaminated Tissue", 3, "Discard the revealed Upgrades and reveal 2 new Upgrades. These become the Upgrades for this Experiment.", "The sample was sterile until Nobulous explained his definition of sterile."),
+    ("Performance Trial", 3, "Discard the top 2 cards of the Experiment deck face down without resolving them.", "The schedule has been accelerated by removing the parts involving caution."),
+    ("Load-Bearing Trial", 3, "A Purple die must be committed to this Experiment. If unable to do so, discard this Experiment and draw another one, replacing any revealed Upgrades.", "Add weight until something fails. Preferably not the researcher."),
+    ("Diagnostic Trial", 3, "If you commit a Blue die to this Experiment, you may look at the next Experiment and return it to the top of the deck.", "The instruments say everything is fine. The smoke has submitted a dissenting report."),
+    ("Rapid Response Trial", 3, "A Green die must be committed to this Experiment. If unable to do so, discard the stronger revealed Upgrade and continue the Experiment.", "There is no time to do it right, only time to make it testable."),
+    ("Full-Spectrum Trial", 3, "Committed dice must include 3 different colors.", "Nobulous requested versatility. The equipment requested mercy."),
+    ("Workspace Efficiency Study", 3, "You may only commit two dice to this Experiment.", "Four researchers. One bench. Zero lessons learned."),
+    ("Restricted Materials Trial", 3, "Place the Red die on the active Rat. Red cannot be used for this Experiment.", "The best reagent is unavailable for reasons marked administrative."),
+    ("Independent Performance Trial", 3, "You cannot borrow a die during this Experiment.", "Collaboration introduces confounds. Nobulous has generously removed collaboration."),
+    ("Resource Depletion Study", 3, "During your second Strategy phase, you may commit no additional dice.", "There was a second prototype. Past tense."),
+    ("Reliability Trial", 3, "Hits and Crits on Purple and Blue dice in the first Strategy phase must be rerolled.", "It only fails when you need it, which is remarkably consistent."),
+    ("Reagent Exclusion Trial", 3, "Randomly select one available die belonging to the active Rat. That die cannot be committed to this Experiment.", "Science advances rapidly once you stop checking the labels."),
+    ("Containment Failure", 4, "You may choose to reduce the Target by 2. If you do, before committing, roll a Yellow die. On a hit or Crit, banish one available Blue die. Otherwise, banish that Yellow die.", "The blast shield performed exactly as specified. The blast did not."),
+    ("Endurance Trial", 4, "STR is 1 for this Experiment.", "The experiment is repeatable. Unfortunately, so is the overtime."),
+    ("Field Retrofit Trial", 4, "If successful, you may swap one of the active Rat's Upgrades with one of the revealed Upgrades. Specimens cannot be swapped.", "The replacement fits perfectly once you stop asking what it replaced."),
+    ("Methodological Optimization", 4, "You may reduce the Target to 0. If you do, take the weaker revealed Upgrade and Splice the stronger revealed Upgrade into the Prototyrant. If tied, choose which to take.", "Why test both prototypes when the Prototyrant can test the better one?"),
+    ("Degraded Tissue Study", 4, "If successful, reduce the Prototyrant's Health dial by 2.", "The tissue is weaker than projected. Nobulous has classified this as progress."),
 ]
 
 UPGRADES = [
@@ -93,22 +92,24 @@ ATTACK_ACC = '#4a1f1f'
 SPEC_GOLD = '#b08a2e'
 
 
-def C(title, sub, body, ftr='', warn=False, acc=None, tint=None):
+def C(title, sub, body, ftr='', warn=False, acc=None, tint=None, flavor=''):
     f = ('<div class="ftr%s">%s</div>' % (' warn' if warn else '', ftr)) if ftr else ''
     cls = ' xlong' if len(title) > 30 else (' long' if len(title) > 19 else '')
     st = ' style="--a:%s"' % acc if acc else ''
     bs = ' style="background:%s"' % tint if tint else ''
+    flavor_html = ('<div style="font-size:8.6pt;font-style:italic;text-align:center;'
+                   'line-height:1.25;margin:1mm 0">%s</div>' % flavor) if flavor else ''
     return ('<div class="card"%s><div class="hdr"><div class="t%s">%s</div><div class="s">%s</div></div>'
-            '<div class="body"%s>%s<div class="spacer"></div>%s</div></div>'
-            % (st, cls, title, sub, bs, body, f))
+            '<div class="body"%s>%s<div class="spacer"></div>%s%s</div></div>'
+            % (st, cls, title, sub, bs, body, flavor_html, f))
 
 
 cards = []
-for n, t, e in ENCOUNTERS:
-    cards.append(C(n, "Build-a-Tyrant Encounter",
+for n, t, e, flavor in EXPERIMENTS:
+    cards.append(C(n, "Build-a-Tyrant Experiment",
                    '<div class="big">%d</div><div class="biglbl">Target</div>'
-                   '<div class="txt c">%s</div>' % (t, e), SPEC_FTR))
-print("Encounters", render_deck('BAT_Encounters', cards, 'BAT'))
+                   '<div class="txt c">%s</div>' % (t, e), SPEC_FTR, flavor=flavor))
+print("Experiments", render_deck('BAT_Encounters', cards, 'BAT'))
 
 cards = [C(n, s, '<div class="big">%d</div><div class="biglbl">Value</div><div class="txt">%s</div>' % (v, e),
            TAP_FTR, acc=CAT[s.split(' - ')[1]]) for n, s, v, e in UPGRADES]
@@ -141,6 +142,49 @@ sides_a = [ratcard(*r) for r in RATS[0::2]]
 sides_b = [ratcard(*r) for r in RATS[1::2]]
 print("Rats", render_duplex('BAT_Rats', sides_a, sides_b, 'BAT', LANDSCAPE), 'two-sided')
 
+
+# ---- Buff HP dial: 1-4 on one face, 5-8 on the other -----------------------
+# ---- Buff HP: a 12-space track. Put the Health die on the difficulty's number
+#      and step it down one space per point of damage.
+TRACK_CSS = ('.trk{position:absolute;left:3.2mm;right:3.2mm;top:22mm;bottom:4mm;'
+             'display:flex;flex-direction:column;justify-content:space-between}'
+             '.trow{display:flex;justify-content:space-between}'
+             '.trow.last{justify-content:center}'
+             '.sp{width:15mm;height:11mm;border:.9pt solid #b8b0a0;border-radius:1.4mm;'
+             'background:#f2eee2;display:flex;align-items:center;justify-content:center;'
+             'font-size:15pt;font-weight:bold;color:#2c5f4a;line-height:1}'
+             '.sp.zero{background:#2c5f4a;color:#fbf9f3;border-color:#2c5f4a;font-size:9pt;'
+             'letter-spacing:.06em}'
+             '.sp.mark{border-width:1.8pt;border-color:#8a6d1f;background:#f7efd8}')
+
+
+def track():
+    rows = []
+    order = [12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+    marks = {8, 7, 6, 5, 4}                   # the five difficulty starts
+    cells = []
+    for v in order:
+        if v == 0:
+            cells.append('<div class="sp zero">DEAD</div>')
+        else:
+            cells.append('<div class="sp%s">%d</div>'
+                         % (' mark' if v in marks else '', v))
+    for i in range(0, len(cells), 3):
+        chunk = cells[i:i + 3]
+        cls = 'trow last' if len(chunk) < 3 else 'trow'
+        rows.append('<div class="%s">%s</div>' % (cls, ''.join(chunk)))
+    return '<div class="trk">%s</div>' % ''.join(rows)
+
+
+HEAD = ('<div class="hdr"><div class="t">Buff HP</div>'
+        '<div class="s">Tyrant &middot; remove before Health</div></div>'
+        '<div style="position:absolute;top:14.5mm;left:3.2mm;right:3.2mm;font-size:5.3pt;'
+        'line-height:1.25;color:#6b6459;text-align:center">Place the Health die on your '
+        'difficulty&rsquo;s number, then move it one space per damage.</div>')
+
+buff = ['<div class="card">' + HEAD + track() + '</div>']
+print("Buff HP track", render_deck('BAT_BuffHP', buff, 'BAT', PORTRAIT, TRACK_CSS))
+make_back('CardBack_BAT_BuffHP', 'BAT', 'Buff HP', '#2c5f4a')
 
 make_back('CardBack_BAT_Encounter', 'BAT', 'Encounter', '#2c5f4a')
 make_back('CardBack_BAT_Upgrade', 'BAT', 'Upgrade &middot; Specimen', '#2c5f4a')
