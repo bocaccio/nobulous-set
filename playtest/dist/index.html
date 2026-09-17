@@ -46,12 +46,13 @@
     </section>
 
     <section id="screen-bat" class="game-screen hidden suite-screen">
-      <div class="suite-heading panel"><div><p class="kicker">Build-a-Tyrant</p><h2>BAT playtest table</h2><p id="batOverlay" class="overlay-note"></p></div><div class="compact-actions"><a class="button-link ghost" href="assets/BAT_Rulebook.pdf" target="_blank">Full BAT rules</a><button data-new-game="bat" class="danger ghost">New BAT test</button></div></div>
-      <div class="suite-controls panel"><label>Difficulty<select id="batDifficulty"><option>Easy</option><option selected>Standard</option><option>Hard</option><option>Brutal</option><option>Nobulous</option></select></label><label>Active Rat<select id="batRat"><option>Rummage</option><option>Fidget</option><option>Whiz</option><option>Mottle</option></select></label><button id="batDraw" class="primary">Reveal encounter + upgrades</button><button id="batBattle">Begin Tyrant battle</button></div>
+      <div class="suite-heading panel"><div><p class="kicker">Build-a-Tyrant</p><h2>BAT playtest table</h2><p id="batOverlay" class="overlay-note"></p></div><div class="compact-actions"><a class="button-link ghost" href="assets/BAT_Rulebook.pdf" target="_blank" title="Rules PDF predates the current Experiment card text">BAT rules PDF</a><button data-new-game="bat" class="danger ghost">New BAT test</button></div></div>
+      <div class="suite-controls panel"><label>Difficulty<select id="batDifficulty"><option>Easy</option><option selected>Standard</option><option>Hard</option><option>Brutal</option><option>Nobulous</option></select></label><label>Active Rat<select id="batRat"><option>Rummage</option><option>Fidget</option><option>Whiz</option><option>Mottle</option></select></label><button id="batDraw" class="primary">Reveal Experiment + Upgrades</button><button id="batBattle">Begin Tyrant battle</button></div>
       <div class="suite-stats panel" id="batStats"></div>
-      <section class="panel bat-team-panel"><div class="section-head"><div><p class="kicker">The laboratory team</p><h2>Lab Rats and personal dice</h2></div><p class="hint">Choose a Rat by tapping its panel. Tap available dice to commit; tap exhausted dice to recover manually. Red can be moved to any Rat.</p></div><div id="batRats" class="bat-rats"></div></section>
-      <div class="suite-cards panel"><article><p class="mini-label">Encounter</p><div id="batEncounter" class="suite-card portrait placeholder-card"><span>Reveal an Encounter</span></div><div id="batEncounterText" class="card-caption"></div></article><article><p class="mini-label">Upgrade A</p><div id="batUpgradeA" class="suite-card portrait placeholder-card"><span>Upgrade A</span></div></article><article><p class="mini-label">Upgrade B</p><div id="batUpgradeB" class="suite-card portrait placeholder-card"><span>Upgrade B</span></div></article></div>
-      <div class="resolution panel"><h3>Resolve this Encounter</h3><div class="compact-actions"><button id="batSuccessA" class="primary">Success · keep A</button><button id="batSuccessB" class="primary">Success · keep B</button><button id="batFail" class="danger">Failure · splice stronger</button></div><label>Notes<textarea id="batNotes" rows="3" placeholder="Restriction, borrow, decision quality…"></textarea></label></div>
+      <div class="panel bat-effect" id="batEffect" aria-live="polite"></div>
+      <section class="panel bat-team-panel"><div class="section-head"><div><p class="kicker">The laboratory team</p><h2>Lab Rats and personal dice</h2></div><p class="hint">Choose a Rat by tapping its panel. Tap available dice to commit; after a roll, tap eligible misses to reroll. Recover exhausted dice between Experiments. Red can be moved to any Rat.</p></div><div id="batRats" class="bat-rats"></div></section>
+      <div class="suite-cards bat-cards panel"><article><p class="mini-label">Experiment</p><div id="batEncounter" class="suite-card portrait placeholder-card"><span>Reveal an Experiment</span></div><div id="batEncounterText" class="card-caption"></div></article><article><p class="mini-label">Upgrade A</p><div id="batUpgradeA" class="suite-card portrait placeholder-card"><span>Upgrade A</span></div></article><article><p class="mini-label">Upgrade B</p><div id="batUpgradeB" class="suite-card portrait placeholder-card"><span>Upgrade B</span></div></article><article id="batUpgradeCPanel" class="hidden"><p class="mini-label">Upgrade C</p><div id="batUpgradeC" class="suite-card portrait placeholder-card"><span>Upgrade C</span></div></article></div>
+      <div class="resolution panel"><h3>Resolve this Experiment</h3><div class="compact-actions"><button id="batSuccessA" class="primary">Success · keep A</button><button id="batSuccessB" class="primary">Success · keep B</button><button id="batSuccessC" class="primary hidden">Success · keep C</button><button id="batFail" class="danger">Failure · splice stronger</button></div><label>Notes<textarea id="batNotes" rows="3" placeholder="Restriction, borrow, decision quality…"></textarea></label></div>
       <div id="batRoller" class="roller panel"></div>
     </section>
 
@@ -197,6 +198,8 @@
 
   <div id="toast" role="status" aria-live="polite"></div>
   <script src="app.js"></script>
+  <script src="bat_experiments.js"></script>
   <script src="suite.js"></script>
+  <script src="bat.js"></script>
 </body>
 </html>

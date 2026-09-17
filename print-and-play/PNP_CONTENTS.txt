@@ -8,7 +8,7 @@ front / back with the back columns mirrored. Print those sheets
 double-sided, flip on the LONG edge.
 
 NobulousSet_BAT_PnP.pdf  (10 pages)
-  p1   BAT_Encounters                 20 Encounters                      3 page(s)
+  p1   BAT_Encounters                 20 Experiments                     3 page(s)
   p4   BAT_Upgrades                   16 Upgrades                        2 page(s)
   p6   BAT_Specimens                  8 Specimens                        1 page(s)
   p7   BAT_TyrantAttacks              7 Tyrant Attacks                   1 page(s)
