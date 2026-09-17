@@ -1,6 +1,6 @@
 """Render the authoritative BAT Experiments when WeasyPrint is unavailable.
 
-This updates only the Experiment sprite and the first three BAT print-and-play
+This updates only the Experiment sprite and the BAT Experiment print-and-play
 pages. Other BAT card families keep their existing artwork and PDF pages.
 """
 
@@ -107,13 +107,16 @@ def draw_card(pdf, x, y, name, target, effect, flavor):
                    x + CARD_W / 2, y + 15, 0, "Arial", 6.7, "#485247")
 
 
-def render_pages(data):
+def render_pages(data, cards_per_page):
     stream = BytesIO()
     pdf = canvas.Canvas(stream, pagesize=(612, 792))
-    for page in range(3):
-        for slot, row in enumerate(data[page * 9:(page + 1) * 9]):
+    rows = cards_per_page // 3
+    page_count = (len(data) + cards_per_page - 1) // cards_per_page
+    for page in range(page_count):
+        for slot, row in enumerate(data[page * cards_per_page:(page + 1) * cards_per_page]):
             col, grid_row = slot % 3, slot // 3
-            draw_card(pdf, 36 + col * CARD_W, 18 + (2 - grid_row) * CARD_H, *row)
+            y = (18 if rows == 3 else 252) + (rows - 1 - grid_row) * CARD_H
+            draw_card(pdf, 36 + col * CARD_W, y, *row)
         pdf.showPage()
     pdf.save()
     stream.seek(0)
@@ -147,13 +150,19 @@ def main():
     fonts()
     data = experiments()
     existing = PdfReader(str(PNP))
-    if len(existing.pages) != 10:
-        raise ValueError("BAT PnP page count changed; review merge before replacing pages")
-    replacement = render_pages(data)
+    if len(existing.pages) == 10:
+        start, old_count, per_page = 0, 3, 9
+    elif len(existing.pages) == 15:
+        start, old_count, per_page = 2, 4, 6
+    else:
+        raise ValueError("Unknown BAT PnP layout; review before replacing pages")
+    replacement = render_pages(data, per_page)
     writer = PdfWriter()
+    for page in existing.pages[:start]:
+        writer.add_page(page)
     for page in replacement.pages:
         writer.add_page(page)
-    for page in existing.pages[3:]:
+    for page in existing.pages[start + old_count:]:
         writer.add_page(page)
     with tempfile.TemporaryDirectory() as folder:
         temp = Path(folder)
