@@ -44,14 +44,14 @@ BAT — Build-a-Tyrant
     over 19,203 attacks the old rule rolled Purple 89.8%, Blue 10.2%, Green
     0.0%, Yellow 0.0%.  A "fixed printed order" fix was tested and still left
     Yellow at 0.4%.  The Tyrant now DRAWS ITS DICE BLIND from a bag or cup,
-    which is the only rule under which all four colours appear (33/33/17/17).
+    which is the only rule under which all four colors appear (33/33/17/17).
     It costs the Tyrant 18% of its damage per attack, so the Buff HP ladder is
     re-pegged: Easy 2, Standard 4, Hard 6, Brutal 8, Nobulous 8+2, for
     86/76/67/58/52 percent.  BAT ships 2 Buff HP cards; only Nobulous uses the
     second.  A Tier III campaign re-run confirms the finale is unaffected
     (71.5% -> 72.3%).
 
-3b. THE TYRANT'S SPLICES WERE PURE ARMOUR.  Every Upgrade prints a tap effect,
+3b. THE TYRANT'S SPLICES WERE PURE ARMOR.  Every Upgrade prints a tap effect,
     and the Tyrant never used one - its five Splices were a wall of numbers.
     Now the FRONTMOST Splice applies its effect on every Tyrant attack: free,
     automatic, never tapped, and read off the card's PRINTED Value so damage
@@ -100,7 +100,7 @@ BAT — Build-a-Tyrant
 
 3g. THE SPLICE ROW IS SHUFFLED, and DIFFICULTY IS ONE NUMBER.  Sorting the row
     (Defense first, by type, by type then Value) all measured within 2 points of
-    a full shuffle, so the row is randomised.  Sweeping the whole Specimens x
+    a full shuffle, so the row is randomized.  Sweeping the whole Specimens x
     Buff HP grid against the 84/78/70/60/51 target ladder found that setting
     both levers to the SAME number hits every rung within 2.4 points:
         Easy 2/2 84%, Standard 3/3 76%, Hard 4/4 69%, Brutal 5/5 61%,
@@ -126,7 +126,7 @@ BAT — Build-a-Tyrant
     that round.  Worth +2 to +2.8 points.
     A tap is usually more raw damage (Value-1, so 1 to 4) than Red's 7/6, so Red
     is the weapon of a Rat with nothing left worth tapping.  Playing the choice
-    purely for damage puts Red on 5-11% of rounds; playing it to keep armour
+    purely for damage puts Red on 5-11% of rounds; playing it to keep armor
     untapped puts it on 30-49% - and the two land WITHIN ONE POINT of each other
     at every rung, so the rule cannot be misplayed into a bad outcome.
     Rejected on measurement:
@@ -147,7 +147,7 @@ BAT — Build-a-Tyrant
     was committed "for free".  Measured alternative, rejected: Red exhausting
     and being recovered through the normal REC step - which in practice costs
     one pool die per use, since a player always recovers the best die.  That is
-    worth -0.6 to a damage-first player but -4 to -6 to one protecting armour,
+    worth -0.6 to a damage-first player but -4 to -6 to one protecting armor,
     and it opens a 3 to 6 point gap between the two play styles where the
     set-aside rule keeps them within one point.  Red already pays by costing you
     the tap; charging twice turns the die that cannot miss into the die you
@@ -191,7 +191,7 @@ NAP — Nobulous Apprenticeship Program
     Assignments flip to Demand at no cost; an Assignment ALREADY on Demand and
     still unresolved inflicts its printed penalty, and again every slot it
     survives.
-10. The colour-matching rule governs STORING PROGRESS as well as completing.
+10. The color-matching rule governs STORING PROGRESS as well as completing.
 11. Required Effort is waived when no legal commitment is possible.
 12. A Credit Task completed on its DEMAND side still earns its Credit.
 13. Opportunity effects reaching into the next Time Slot override restrictions

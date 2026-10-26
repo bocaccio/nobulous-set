@@ -1,11 +1,14 @@
 import sys; sys.path.insert(0, '/home/claude/cards')
-from gen import render_deck, render_duplex, make_back, DOT_NAP as DOT, LANDSCAPE, PORTRAIT, skulls, subj_icon
+from gen import render_deck, render_duplex, make_back, hdr_fit, DOT_NAP as DOT, LANDSCAPE, PORTRAIT, skulls, subj_icon
+
+# Every NAP card built through C() is landscape.
+CARD_SIZE = LANDSCAPE
 
 ANA, ENG, PRO, THE = 'Anatomy', 'Engineering', 'Procedure', 'Theory'
 
 # name, subject, dot, skulls, ReqTarget, req effect, DemTarget, dem effect, penalty
 TASKS = [
- ("Organize the Specimen Cabinet", THE,'Y',0,2,"Exact Work: If completed with exactly 2 successes, recover 1 committed die.",3,"Nobulous Can't Find Anything: One Crit rolled here counts as 1 success.","Exhaust 1 available die."),
+ ("Organize the Specimen Cabinet", THE,'Y',0,2,"If completed with exactly 2 successes across all committed dice this strategy phase, recover 1 committed die.",3,"Nobulous Can't Find Anything: One Crit rolled here counts as 1 success.","Exhaust 1 available die."),
  ("Prepare the Tissue Samples", ANA,'G',1,3,"Clean Cuts: If completed using 3 or fewer dice, recover 1 committed die.",5,"Samples Are Degrading: Stored progress here loses 1 success at the end of the Time Slot.","Lose 1 Health."),
  ("Calibrate the Neural Imager", ENG,'B',1,4,"Fine Calibration: One Blue Crit counts as 3 successes here.",5,"Emergency Calibration: Blue Crits count as 1 success here.","Exhaust 2 available dice."),
  ("Stabilize the Prototype Brain", ANA,'P',2,5,"Stable Pattern: If dice of 3+ colors contribute, add 1 success.",7,"Neural Cascade: No more than 2 dice may be stored here.","Lose 1 Health."),
@@ -33,57 +36,100 @@ TASKS = [
  ("Sharpen the Surgical Implements", None,'P',0,4,"Razor Edge: If completed using a Crit, recover 1 committed die.",5,"Dull Again: Crits count as 1 success here.","Exhaust 2 available dice."),
 ]
 
-OPPS = [("Take an Unauthorized Break",'Y',4,"Gain 1 Health."),
-        ("Raid the Supply Closet",'Y',4,"Recover up to 2 exhausted dice of different colors."),
-        ("Borrow Better Instruments",'Y',5,"Gain +1 STR during the next Time Slot only."),
-        ("Study Nobulous' Notes",'Y',5,"Gain +1 REC during the next Time Slot only."),
-        ("Salvage Useful Components",'G',4,"Recover up to 3 exhausted dice; none may be Red or Purple."),
-        ("Practice on a Spare Brain",'G',5,"During the next Time Slot, one Crit of your choice counts as 3 successes.")]
+# name, dot, successes, effect, flavor
+OPPS = [("Take an Unauthorized Break",'Y',3,"Spend: cancel 1 Health loss.",
+         "Nobulous noticed. It has been added to your file."),
+        ("Raid the Supply Closet",'Y',3,"Spend: one die counts as any color for one roll.",
+         "Most of it is labeled. Very little of it is labeled correctly."),
+        ("Borrow Better Instruments",'Y',4,"Spend: add 1 success to a roll.",
+         "Return them before Nobulous notices. Nobulous always notices."),
+        ("Study Nobulous' Notes",'Y',4,"Spend: reduce one Assignment's remaining need by 2.",
+         "Half the margins are equations. The other half are grudges."),
+        ("Salvage Useful Components",'G',3,"Spend: add 2 successes to an Assignment, without rolling.",
+         "One apprentice's scrap is another apprentice's promotion."),
+        ("Practice on a Spare Brain",'G',4,"Spend: one Crit counts as 3 successes.",
+         "It was a spare. Nobody asked the brain.")]
 
-SETBACKS = [("Power Failure",'Y',6),("Contaminated Workbench",'G',6),("Jammed Centrifuge",'G',7),
-            ("Broken Neural Imager",'B',7),("Escaped Specimen",'B',8),("Automaton Malfunction",'P',8)]
-SB_TEXT = ("No other Assignment may be worked until this Setback is resolved.<br><br>"
+# name, dot, successes, flavor
+SETBACKS = [("Power Failure",'Y',6,"Somewhere in the dark, something in a vat starts breathing faster."),
+            ("Contaminated Workbench",'G',6,"Nobody admits to eating lunch here. The evidence disagrees."),
+            ("Jammed Centrifuge",'G',7,"The centrifuge stopped spinning. The samples did not."),
+            ("Broken Neural Imager",'B',7,"It still shows images. None of them are of the brain."),
+            ("Escaped Specimen",'B',8,"It left a trail. It also left a note."),
+            ("Automaton Malfunction",'P',8,"It is sweeping the ceiling with tremendous dedication.")]
+SB_TEXT = ("No other Assignment may be worked until this Setback is resolved. "
            "At the start of this Time Slot, if this Setback has no stored dice, exhaust 1 available die.")
 
+# name, subject, dot, base successes, requirement, flavor
 EXAMS = [
- ("Cranial Integrity Inspection", ANA,'B',5,"Commit dice of at least 3 different colors."),
- ("Fine Motor Assessment", ANA,'Y',6,"At least 1 Yellow and 1 Blue die must contribute."),
- ("Physiological Stress Test", ANA,'P',6,"At least 2 Blue/Purple dice total must contribute."),
- ("Council Etiquette Simulation", THE,'G',5,"Red cannot be committed; use at least 3 colors."),
- ("Identity Recall Demonstration", THE,'P',6,"At least 1 Blue and 1 Purple die must contribute."),
- ("Final Impostor Examination", THE,'Y',7,"Use at least 4 different colors. A Red Crit counts as 1 success."),
- ("Neural Response Screening", ENG,'G',5,"At least 1 Crit must contribute to complete this Assignment."),
- ("Adaptive Reasoning Trial", ENG,'B',6,"Commit at least 4 dice. One Yellow Crit counts as 3 successes."),
- ("Council Recognition Drill", ENG,'B',6,"Red cannot be committed. At least 1 Purple die must contribute."),
- ("Procedural Knowledge Review", PRO,'Y',6,"Red cannot be committed; use at least 3 different colors."),
- ("Unexpected Policy Debate", PRO,'P',7,"Commit at least 4 dice from at least 3 different colors."),
- ("Nobulous' Comprehensive Review", PRO,'G',7,"Commit at least 5 dice from at least 3 different colors."),
+ ("Cranial Integrity Inspection", ANA,'B',5,"Commit dice of at least 3 different colors.",
+  "The Council taps your skull. It is supposed to sound like that."),
+ ("Fine Motor Assessment", ANA,'Y',6,"At least 1 Yellow and 1 Blue die must contribute.",
+  "Thread the needle. The needle is in a specimen that is still moving."),
+ ("Physiological Stress Test", ANA,'P',6,"At least 2 Blue/Purple dice total must contribute.",
+  "Your pulse is being monitored. So is the examiner's."),
+ ("Council Etiquette Simulation", THE,'G',5,"Red cannot be committed; use at least 3 colors.",
+  "Bow to the eldest member. Do not ask which one is the eldest."),
+ ("Identity Recall Demonstration", THE,'P',6,"At least 1 Blue and 1 Purple die must contribute.",
+  "State your name. Say it like you have always had it."),
+ ("Final Impostor Examination", THE,'Y',7,"Use at least 4 different colors. A Red Crit counts as 1 success.",
+  "Every answer is correct. That is what makes the Council suspicious."),
+ ("Neural Response Screening", ENG,'G',5,"At least 1 Crit must contribute to complete this Assignment.",
+  "Electrodes on, lights off. Try not to think anything incriminating."),
+ ("Adaptive Reasoning Trial", ENG,'B',6,"Commit at least 4 dice. One Yellow Crit counts as 3 successes.",
+  "The rules change halfway through. So does the examiner."),
+ ("Council Recognition Drill", ENG,'B',6,"Red cannot be committed. At least 1 Purple die must contribute.",
+  "Match every face to a name. Some of the faces have been replaced."),
+ ("Procedural Knowledge Review", PRO,'Y',6,"Red cannot be committed; use at least 3 different colors.",
+  "Recite the procedure. Nobulous wrote it in a hurry and in the wrong order."),
+ ("Unexpected Policy Debate", PRO,'P',7,"Commit at least 4 dice from at least 3 different colors.",
+  "Nobody scheduled this debate. Everybody brought notes."),
+ ("Nobulous' Comprehensive Review", PRO,'G',7,"Commit at least 5 dice from at least 3 different colors.",
+  "Nobulous has prepared questions. Nobulous has also prepared excuses."),
 ]
 
+# name, when the ability applies, ability. One ability per Apprentice.
 APPS = [
- ("Prodigy","Once per Time Slot, when using two dice of the same color as wild, only one of those dice must roll a success.","Reroll one die showing no successes."),
- ("Slacker","The first time each Day you voluntarily draw an additional Assignment, ignore one Skull on that card.","Discard one non-Setback, non-Final-Exam Assignment from the current Time Slot. Exhaust any dice stored on it."),
- ("Technician","A Setback with at least one stored die allows you to work on one other Assignment during that Time Slot.","Recover one die stored on a Setback to your available pool; its stored successes remain."),
- ("Savant","During special recovery, recover all but 1 exhausted die of the special color and recover 1 exhausted die of an adjacent color.","After special color recovery, recover one additional exhausted die of the indicated color."),
- ("Opportunist","When you complete an Assignment on its Request side, recover 1 exhausted die of that Assignment's recovery-color dot.","After revealing an Opportunity, you may discard it and draw another Assignment. Resolve Skulls normally."),
- ("Lab Rat","The first time each Day you would lose Health, you may exhaust one available die instead.","Gain 1 Health. Maximum Health: 3."),
+ ("Prodigy", "Once per Time Slot",
+  "When using two dice of the same color as wild, only one of those dice must roll a success."),
+ ("Slacker", "Passive",
+  "Your Time Slot rows hold a maximum of 3 Assignments instead of 4."),
+ ("Technician", "Passive",
+  "When you complete a Setback, recover 2 exhausted dice."),
+ ("Savant", "Passive",
+  "During special recovery, recover all but 1 exhausted die of the special color and recover 1 exhausted die of an adjacent color."),
+ ("Opportunist", "Passive",
+  "When you complete an Assignment on its Request side, recover 1 exhausted die of that Assignment's recovery-color dot."),
+ ("Lab Rat", "Once per Day",
+  "The first time you would lose Health, you may exhaust one available die instead."),
 ]
 
 
-def C(title, sub, body, ftr='', warn=False, acc=None, bg=None):
+
+def C(title, sub, body, ftr='', warn=False, acc=None, bg=None, flavor=''):
     f = ('<div class="ftr%s">%s</div>' % (' warn' if warn else '', ftr)) if ftr else ''
+    # Flavor text sits at the bottom of the card, just above the footer.
+    fl = ('<div style="font-size:7.4pt;font-style:italic;text-align:center;line-height:1.25;'
+          'color:#6f675a;margin:1.2mm 0 1mm">%s</div>' % flavor) if flavor else ''
     st = ' style="--a:%s"' % acc if acc else ''
     bs = ' style="background:%s"' % bg if bg else ''
     cls = ' xlong' if len(title) > 30 else (' long' if len(title) > 19 else '')
-    return ('<div class="card"%s><div class="hdr"><div class="t%s">%s</div><div class="s">%s</div></div>'
-            '<div class="body"%s>%s<div class="spacer"></div>%s</div></div>'
-            % (st, cls, title, sub, bs, body, f))
+    fit = hdr_fit(title, cls, CARD_SIZE)
+    return ('<div class="card"%s><div class="hdr"%s><div class="t%s">%s</div><div class="s">%s</div></div>'
+            '<div class="body"%s>%s<div class="spacer"></div>%s%s</div></div>'
+            % (st, ' style="%s"' % fit if fit else '', cls, title, sub, bs, body, fl, f))
 
 
 def dotspan(c):
     return '<span style="display:inline-block;width:2.8mm;height:2.8mm;border-radius:50%%;' \
            'background:%s;border:.4pt solid #6b6459;vertical-align:-.4mm"></span>' % DOT[c]
 
+
+# Card backs first: the deck PnPs interleave them behind the fronts.
+make_back('CardBack_NAP_Assignment', 'NAP', 'Assignment', '#6b3f8c', LANDSCAPE)
+make_back('CardBack_NAP_FinalExam', 'Final Exam', 'Set aside at setup', '#241f1a', LANDSCAPE)
+make_back('CardBack_NAP_TimeSlot', 'NAP', 'Time Slot \u00b7 FINF', '#9f3f23', LANDSCAPE)
+print("card backs done")
 
 # ---- Tasks: landscape, spine layout ----
 cards = []
@@ -118,24 +164,25 @@ for n, subj, dot, sk, rt, rx, dt, dx, pen in TASKS:
            '<div class="band d180" style="background:#a8332c">Demand</div>'
            '</div>' % (rt, rx, dt, dx))
     cards.append('<div class="card">%s%s%s</div>' % (left, mid, right))
-print("Tasks", render_deck('NAP_Tasks', cards, 'NAP', LANDSCAPE))
+print("Tasks", render_deck('NAP_Tasks', cards, 'NAP', LANDSCAPE, back='CardBack_NAP_Assignment'))
 
 cards = [C(n, "Opportunity &middot; Optional",
            '<div class="row" style="gap:3mm;align-items:center">%s'
            '<div style="font-size:24pt;font-weight:bold;color:#9a7410;line-height:1">%d</div>'
            '<div style="font-size:6.4pt;letter-spacing:.14em;text-transform:uppercase;color:#8a8272">'
            'Successes</div></div><div class="txt">%s</div>' % (dotspan(d), s_, e),
-           'No storage. Last chance: if unresolved again, discard this Opportunity.',
-           acc='#c79a1e') for n, d, s_, e in OPPS]
-print("Opportunities", render_deck('NAP_Opportunities', cards, 'NAP', LANDSCAPE))
+           'No storage. When completed, keep this card and spend it once, at any time. '
+           'Last chance: if unresolved again, discard this Opportunity.',
+           acc='#c79a1e', flavor=fl) for n, d, s_, e, fl in OPPS]
+print("Opportunities", render_deck('NAP_Opportunities', cards, 'NAP', LANDSCAPE, back='CardBack_NAP_Assignment'))
 
 cards = [C(n, "Setback &middot; Mandatory",
            '<div class="row" style="gap:3mm;align-items:center">%s'
            '<div style="font-size:24pt;font-weight:bold;color:#2f6ba8;line-height:1">%d</div>'
            '<div style="font-size:6.4pt;letter-spacing:.14em;text-transform:uppercase;color:#8a8272">'
-           'Successes</div></div><div class="txt">%s</div>' % (dotspan(d), s_, SB_TEXT),
-           '', acc='#2f6ba8') for n, d, s_ in SETBACKS]
-print("Setbacks", render_deck('NAP_Setbacks', cards, 'NAP', LANDSCAPE))
+           'Successes</div></div>' % (dotspan(d), s_),
+           SB_TEXT, acc='#2f6ba8', flavor=fl) for n, d, s_, fl in SETBACKS]
+print("Setbacks", render_deck('NAP_Setbacks', cards, 'NAP', LANDSCAPE, back='CardBack_NAP_Assignment'))
 
 cards = [C(n, "Final Exam &middot; " + subj,
            '<div class="row" style="gap:2.6mm;align-items:center">%s%s'
@@ -144,18 +191,16 @@ cards = [C(n, "Final Exam &middot; " + subj,
            'Base successes</div></div>'
            '<div class="txt sm">Reduce this target by 1 for each %s Credit you earned.</div>'
            '<div class="txt">%s</div>' % (subj_icon(subj, '5.2mm'), dotspan(d), t, subj, e),
-           '', acc='#241f1a')
-         for n, subj, d, t, e in EXAMS]
-print("Final Exams", render_deck('NAP_FinalExams', cards, 'NAP', LANDSCAPE))
+           '', acc='#241f1a', flavor=fl)
+         for n, subj, d, t, e, fl in EXAMS]
+print("Final Exams", render_deck('NAP_FinalExams', cards, 'NAP', LANDSCAPE, back='CardBack_NAP_FinalExam'))
 
-def appcard(n, p, o):
+def appcard(n, when, ability):
     return C(n, "Apprentice",
              '<div class="txt c" style="font-size:9.4pt;font-weight:bold;margin-top:.6mm">'
              'HP 2 &nbsp;|&nbsp; STR 2 &nbsp;|&nbsp; REC 2</div>'
-             '<div class="sub" style="margin-top:2.4mm">Passive</div>'
-             '<div class="txt" style="margin-top:.4mm">%s</div>'
-             '<div class="sub" style="margin-top:2.4mm">Once per Day</div>'
-             '<div class="txt" style="margin-top:.4mm">%s</div>' % (p, o),
+             '<div class="sub" style="margin-top:3.4mm">%s</div>'
+             '<div class="txt" style="margin-top:.6mm">%s</div>' % (when, ability),
              'Choose one Apprentice card and one side at setup.')
 
 
@@ -165,31 +210,44 @@ print("Apprentices", render_duplex('NAP_Apprentices', app_a, app_b, 'NAP', LANDS
 
 TAIL = ('After exhausting non-stored dice, complete special color recovery. Then set the dial to the '
         'Primary Assignment dot and move it to the next Time Slot.')
-SLOTS = [("Morning", "#f6e6b8", "Perform the recovery shown on the dial. No special color recovery on Day 1 Morning."),
-         ("Afternoon", "#d8ecd4", "Perform the recovery shown on the dial."),
-         ("Evening", "#e0daf0", "Perform the recovery shown on the dial.")]
+SLOTS = [("Morning", "#9f3f23", "Perform the recovery shown on the dial. No special color recovery on Day 1 Morning."),
+         ("Afternoon", "#086c70", "Perform the recovery shown on the dial."),
+         ("Evening", "#363c82", "Perform the recovery shown on the dial.")]
 cards = []
-for nm, tint, lead in SLOTS:
-    cards.append('<div class="card"><div class="body" style="background:%s;padding:3mm 4mm;'
-                 'align-items:center;justify-content:center;text-align:center">'
-                 '<div style="font-size:30pt;font-weight:bold;letter-spacing:.04em;color:#241f1a;'
-                 'line-height:1">%s</div>'
-                 '<div style="font-size:6.2pt;letter-spacing:.24em;text-transform:uppercase;'
-                 'color:#6b6459;margin-top:1.6mm">Time Slot</div>'
-                 '<div style="font-size:8pt;line-height:1.3;margin-top:3.4mm;max-width:70mm">%s</div>'
-                 '<div style="font-size:7pt;line-height:1.26;margin-top:2.2mm;max-width:74mm;color:#4a4239">'
-                 '%s</div></div></div>' % (tint, nm, lead, TAIL))
-cards.append(C("Following in Nobulous' Footsteps", "FINF &middot; Standard difficulty -1",
-   '<div class="sub" style="margin-top:.4mm">Increase (+1 / +2 / +3)</div>'
-   '<div class="txt sm" style="margin-top:.4mm">Shuffle FINF into the Assignment deck. When drawn, place it '
-   'before the Primary. +1 adds 1 Assignment to the next Time Slot; +2 adds 1 to each of the next 2; +3 adds 1 '
-   'to each of the next 3. Ignore Skulls on Assignments added by FINF. Maximum 4 Assignments per row.</div>'
-   '<div class="sub" style="margin-top:2mm">Reduce (-1 / -2 / -3)</div>'
-   '<div class="txt sm" style="margin-top:.4mm">Choose before play. You have 1, 2, or 3 uses per game. Rotate '
-   'FINF after each use. Remove any non-Final-Exam Assignment from the current row and exhaust its stored dice. '
-   'FINF is not used during the Final Exam.</div>', '', acc='#7a2f52'))
-print("Slots + FINF", render_deck('NAP_SlotsFINF', cards, 'NAP', LANDSCAPE))
+for nm, band, lead in SLOTS:
+    cards.append('<div class="card" style="background:#fbf9f3;border-color:#b8b0a0">'
+                 '<div style="height:20mm;background:%s;border-bottom:1mm solid #ffffff33;'
+                 'display:flex;align-items:center;justify-content:space-between;padding:0 5mm;color:white">'
+                 '<span style="font-size:6.5pt;font-weight:bold;letter-spacing:.16em">TIME SLOT</span>'
+                 '<strong style="font-family:DejaVu Serif,serif;font-size:21pt;line-height:1">%s</strong></div>'
+                 '<div style="flex:1;padding:4mm 5mm;display:flex;flex-direction:column;'
+                 'justify-content:center;color:#2a2119">'
+                 '<div style="color:#6b3f8c;font-size:6.5pt;font-weight:bold;letter-spacing:.12em;'
+                 'text-transform:uppercase;margin-bottom:2mm">%s</div>'
+                 '<div style="font-size:8pt;font-weight:bold;line-height:1.28">%s</div>'
+                 '<div style="font-size:6.5pt;line-height:1.25;color:#655b4e;margin-top:2mm">%s</div>'
+                 '</div></div>' % (band, nm,
+                 {'Morning':'Start the day','Afternoon':'Continue the work','Evening':'Close the day'}[nm],
+                 lead, TAIL))
+# Three FINF cards, numbered for the Time Slot they act on.
+FINF_SLOTS = [(1, 'Morning', '#9f3f23'), (2, 'Afternoon', '#086c70'), (3, 'Evening', '#363c82')]
+for number, slot, band in FINF_SLOTS:
+    cards.append(C("Following in Nobulous' Footsteps",
+       "FINF %d &middot; %s" % (number, slot),
+       '<div class="row" style="gap:4mm;align-items:center;margin-top:1mm">'
+       '<div style="width:14mm;height:14mm;border-radius:50%%;background:%s;color:#fff;'
+       'display:flex;align-items:center;justify-content:center;font-size:19pt;font-weight:bold">%d</div>'
+       '<div style="font-size:8.6pt;font-weight:bold;letter-spacing:.1em;text-transform:uppercase;'
+       'color:#655b4e">%s</div></div>'
+       '<div class="sub" style="margin-top:2.6mm">Increase</div>'
+       '<div class="txt" style="margin-top:.4mm">Add an Assignment to the specified Time Slot.</div>'
+       '<div class="sub" style="margin-top:2.2mm">Reduce</div>'
+       '<div class="txt" style="margin-top:.4mm">Remove a non-Final-Exam card from the specified '
+       'Time Slot.</div>' % (band, number, slot),
+       'Not used during the Final Exam.', acc='#7a2f52'))
 
-make_back('CardBack_NAP_Assignment', 'NAP', 'Assignment', '#6b3f8c', LANDSCAPE)
-make_back('CardBack_NAP_FinalExam', 'Final Exam', 'Set aside at setup', '#241f1a', LANDSCAPE)
-print("backs done")
+print("Slots + FINF", render_deck('NAP_SlotsFINF', cards, 'NAP', LANDSCAPE,
+            # FINF shuffles into the Assignment deck, so it takes that back.
+            back=['CardBack_NAP_TimeSlot'] * len(SLOTS)
+                 + ['CardBack_NAP_Assignment'] * len(FINF_SLOTS)))
+

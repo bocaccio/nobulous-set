@@ -10,7 +10,7 @@ Set BASE_URL below to the folder that will contain them, keeping the filenames.
 import json, os, sys, random
 
 sys.path.insert(0, os.path.dirname(__file__))
-from decks import DECKS, GAME_COLOUR
+from decks import DECKS, GAME_COLOR
 
 # Where the images live. Set with --user / --repo / --ref, or edit GH_USER.
 GH_USER, GH_REPO, GH_REF = "YOUR-GITHUB-USERNAME", "nobulous-set", "main"
@@ -60,7 +60,7 @@ def build_deck(d, deck_id, pos):
     for i in range(d['count']):
         contained.append(card(deck_id, i, '%s %d' % (d['label'], i + 1)))
         ids.append(deck_id * 100 + i)
-    r, g, b = GAME_COLOUR[d['game']]
+    r, g, b = GAME_COLOR[d['game']]
     obj = {"GUID": guid(), "Name": "Deck" if d['count'] > 1 else "CardCustom",
            "Transform": xf(pos[0], pos[1], pos[2], (0, 180, 180)),
            "Nickname": d['label'],
@@ -130,9 +130,10 @@ def notebook():
          "Failure: Splice the stronger revealed Upgrade into the Tyrant.\n"
          "Five Splices awakens the Tyrant.\n\n"
          "The Tyrant always has 20 Health. Difficulty adds Buff HP, removed first:\n"
-         "Difficulty is ONE number, used twice: that many Specimens in the Upgrade\n"
-         "deck and that much Buff HP. Easy 4, Standard 5, Hard 6, Brutal 7,\n"
-         "Nobulous 8. Buff HP sits at the FRONT of the Tyrant's row, ahead of its\n"
+         "Difficulty sets two numbers: how many Specimens go into the Upgrade\n"
+         "deck, and the Tyrant's starting Buff HP. Easy 5 Specimens and 3 Buff,\n"
+         "Standard 6 and 4, Hard 7 and 7, Nobulous 8 and 11. Buff HP sits at the\n"
+         "FRONT of the Tyrant's row, ahead of its\n"
          "Splices, which are shuffled into a random order. Put the Health die on the\n"
          "difficulty number; it steps right through Buff HP, the Splices, then Health.\n\n"
          "The Tyrant draws its dice AT RANDOM from 2 Purple / 2 Blue / 1 Green /\n"
@@ -142,7 +143,7 @@ def notebook():
          "Tyrant Splices accumulate damage (the Health die tracks it). Rat Upgrades\n"
          "do NOT: an attack either meets an Upgrade's Value and destroys it, or it\n"
          "stops. No Rat card is ever part-damaged.\n\n"
-         "Borrowing: 0 Upgrades any colour, 1 no Purple, 2 Green/Yellow,\n"
+         "Borrowing: 0 Upgrades any color, 1 no Purple, 2 Green/Yellow,\n"
          "3 Yellow only. Roll the borrowed die after; on a miss it is banished.\n\n"
          "Red is set aside after use and placed on a non-active Rat next turn.\n"
          "In the BATTLE Red is always available instead: commit it on top of the\n"
@@ -152,18 +153,18 @@ def notebook():
         ("NAP quick reference",
          "Three Time Slots a day. Reveal 2 Assignments, choose the Primary;\n"
          "a Setback must be taken. The Primary's dot queues the next slot's\n"
-         "Special Recovery colour.\n\n"
+         "Special Recovery color.\n\n"
          "STR = rolls in the slot AND the cap on completions in the slot.\n"
          "Unresolved Assignments flip to Demand and stay in the row.\n"
          "6 Credits reaches the Final Exam. Draw 3 from the weighted pool.\n"
          "Lose 1 Health per success short. Survive all three to win."),
         ("AoS quick reference",
          "1 Reveal the Program.\n"
-         "2 Commit required-colour dice -- these lock to their element.\n"
-         "3 Reveal the Limitation. It withholds from the REMAINING pool.\n"
+         "2 Reveal the Limitation. Withheld dice sit out this Program.\n"
+         "3 Commit required-color dice -- these lock to their element.\n"
          "4 Finish the allocation.  5 Execute.\n\n"
-         "Cannot supply a required colour: lose 1 Health, do not execute,\n"
-         "treat as failed.  Red never satisfies a required colour.\n\n"
+         "Cannot supply a required color: lose 1 Health, do not execute,\n"
+         "treat as failed.  Red never satisfies a required color.\n\n"
          "Exact Target: recover 2. +1 over: free. +2 or more: burn 1.\n"
          "Fail: burn all. Extra STR roll: burn that element's dice anyway.\n"
          "Two or more failed elements in one Program: lose 1 Health."),

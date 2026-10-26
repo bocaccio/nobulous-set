@@ -1,45 +1,45 @@
 PRINT AND PLAY CONTENTS
 Letter paper, 9 cards per page (3 x 3), poker size 63.5 x 88.9 mm.
-Pages of landscape cards are themselves landscape - print at 100%,
-scale to fit OFF, and let the printer auto-rotate.
+Print at 100%, scale to fit OFF.
 
-Sections marked DUPLEX are genuinely two-sided: their pages alternate
-front / back with the back columns mirrored. Print those sheets
-double-sided, flip on the LONG edge.
+Pages alternate fronts and backs, labelled in the bottom margin:
+Page 1 - Front, then Page 1 - Back for those same nine cards. The
+back columns are mirrored, so print double-sided and flip on the
+LONG edge.
 
-NobulousSet_BAT_PnP.pdf  (10 pages)
-  p1   BAT_Encounters                 20 Experiments                     3 page(s)
-  p4   BAT_Upgrades                   16 Upgrades                        2 page(s)
-  p6   BAT_Specimens                  8 Specimens                        1 page(s)
-  p7   BAT_TyrantAttacks              7 Tyrant Attacks                   1 page(s)
-  p8   BAT_Rats                       4 Lab Rats (A / B)                 DUPLEX 1 sheet(s)
-  p10  BAT_BuffHP                     1 Buff HP track                    1 page(s)
+NobulousSet_BAT_PnP.pdf  (14 pages)
+  Page 1   9 cards  Encounters 1-9
+  Page 2   9 cards  Encounters 10-18
+  Page 3   9 cards  Encounters 19-20, Upgrades 1-7
+  Page 4   9 cards  Upgrades 8-16
+  Page 5   9 cards  Specimens 1-8, Tyrant Attacks 1
+  Page 6   9 cards  Tyrant Attacks 2-7, Buff HP track 1, Lab Rats (A / B) 1-2
+  Page 7   2 cards  Lab Rats (A / B) 3-4
 
-NobulousSet_NAP_PnP.pdf  (10 pages)
-  p1   NAP_Tasks                      26 Tasks                           3 page(s)
-  p4   NAP_Opportunities              6 Opportunities                    1 page(s)
-  p5   NAP_Setbacks                   6 Setbacks                         1 page(s)
-  p6   NAP_FinalExams                 12 Final Exams                     2 page(s)
-  p8   NAP_SlotsFINF                  3 Time Slots + FINF                1 page(s)
-  p9   NAP_Apprentices                6 Apprentices on 3 cards           DUPLEX 1 sheet(s)
+NobulousSet_NAP_PnP.pdf  (14 pages)
+  Page 1   9 cards  Tasks 1-9
+  Page 2   9 cards  Tasks 10-18
+  Page 3   9 cards  Tasks 19-26, Opportunities 1
+  Page 4   9 cards  Opportunities 2-6, Setbacks 1-4
+  Page 5   9 cards  Setbacks 5-6, Final Exams 1-7
+  Page 6   9 cards  Final Exams 8-12, Apprentices (2 per card) 1-3, Time Slots + FINF 1
+  Page 7   5 cards  Time Slots + FINF 2-6
 
 NobulousSet_AoS_PnP.pdf  (12 pages)
-  p1   AoS_Limitations                6 Limitations                      1 page(s)
-  p2   AoS_ElementMats                5 Element mats                     1 page(s)
-  p3   AoS_Routine                    8 Routine Programs                 DUPLEX 1 sheet(s)
-  p5   AoS_Specialized                8 Specialized Programs             DUPLEX 1 sheet(s)
-  p7   AoS_Unstable                   8 Unstable Programs                DUPLEX 1 sheet(s)
-  p9   AoS_Advanced                   8 Advanced Programs                DUPLEX 1 sheet(s)
-  p11  AoS_Technicians                6 Technicians on 3 cards           DUPLEX 1 sheet(s)
+  Page 1   9 cards  Limitations 1-6, Routine Programs 1-3
+  Page 2   9 cards  Routine Programs 4-8, Specialized Programs 1-4
+  Page 3   9 cards  Specialized Programs 5-8, Unstable Programs 1-5
+  Page 4   9 cards  Unstable Programs 6-8, Advanced Programs 1-6
+  Page 5   9 cards  Advanced Programs 7-8, Technicians (2 per card) 1-3, Element mats 1-4
+  Page 6   1 cards  Element mats 5
 
-NobulousSet_NRJ_PnP.pdf  (12 pages)
-  p1   NRJ_BAT_Protocols              6 Experimental Protocols           1 page(s)
-  p2   NRJ_BAT_Modifications          6 Unauthorized Modifications       1 page(s)
-  p3   NRJ_BAT_ResearchNotes          6 Research Notes                   1 page(s)
-  p4   NRJ_NAP_ImpostorTasks          4 Impostor Tasks                   1 page(s)
-  p5   NRJ_NAP_FollowingSetbacks      4 Following Setbacks               1 page(s)
-  p6   NRJ_NAP_DeviousOpportunities   6 Devious Opportunities            1 page(s)
-  p7   NRJ_AoS_Interference           6 Nobulous Interference            1 page(s)
-  p8   NRJ_AoS_CorruptedLimitations   6 Corrupted Limitations            1 page(s)
-  p9   NRJ_AoS_BackdoorRoutines       6 Backdoor Routines                1 page(s)
-  p10  NRJ_ImposterScenarios          24 Council Test Scenarios          3 page(s)
+NobulousSet_NRJ_PnP.pdf  (18 pages)
+  Page 1   9 cards  Experimental Protocols 1-6, Unauthorized Modifications 1-3
+  Page 2   9 cards  Unauthorized Modifications 4-6, Research Notes 1-6
+  Page 3   9 cards  Impostor Tasks 1-4, Following Setbacks 1-4, Devious Opportunities 1
+  Page 4   9 cards  Devious Opportunities 2-6, Nobulous Interference 1-4
+  Page 5   9 cards  Nobulous Interference 5-6, Corrupted Limitations 1-6, Backdoor Routines 1
+  Page 6   9 cards  Backdoor Routines 2-6, Council Test Scenarios 1-4
+  Page 7   9 cards  Council Test Scenarios 5-13
+  Page 8   9 cards  Council Test Scenarios 14-22
+  Page 9   2 cards  Council Test Scenarios 23-24

@@ -32,20 +32,25 @@
 <h2>Setup</h2>
 <ol class="seq">
   <li>Choose a Technician. All six begin at <b>2 HP / 2 STR / 3 REC</b> and differ only in ability.</li>
-  <li>Choose one Program deck &mdash; this is your difficulty:
+  <li>Build your Program deck &mdash; this is your difficulty. Take the stated number of Programs at random
+    from each of the three decks, shuffle the <b>8</b> together, and return the rest to the box:
     <table>
-      <tr><th>Deck</th><th>Character</th></tr>
-      <tr><td>Routine</td><td>The teaching deck.</td></tr>
-      <tr><td>Specialized</td><td>The intended experience.</td></tr>
-      <tr><td>Unstable</td><td>Experimental. Currently very hard.</td></tr>
-    </table></li>
+      <tr><th>Level</th><th>Routine</th><th>Specialized</th><th>Unstable</th></tr>
+      <tr><td>Easy</td><td>4</td><td>4</td><td>&mdash;</td></tr>
+      <tr><td><b>Standard</b></td><td><b>3</b></td><td><b>4</b></td><td><b>1</b></td></tr>
+      <tr><td>Hard</td><td>2</td><td>3</td><td>3</td></tr>
+      <tr><td>Nobulous</td><td>&mdash;</td><td>4</td><td>4</td></tr>
+    </table>
+    Each step up trades a Routine Program for a harder one. Routine Programs ask for three elements at
+    low Targets, Unstable ones four at high Targets, and Specialized sits between. All three decks pay the
+    same spread of rewards, so the mix changes the workload and nothing else.</li>
   <li>Shuffle the 6 Limitations into a face&#8209;down deck.</li>
   <li>Shuffle the 8 Advanced Programs and set them aside for the finale.</li>
   <li>Lay out the element mats. All 17 dice start available.</li>
 </ol>
 
 <h2>Object of the game</h2>
-<p>Cycle your Program deck three times, then face three Advanced Programs. Finish Advanced Programming with at
+<p>Cycle your 8&#8209;card Program deck three times, then face three Advanced Programs. Finish Advanced Programming with at
 least 1 Health to win. <b>If your Health reaches 0 at any point you lose.</b> Health can be raised by Program
 Rewards but never above 6.</p>
 
@@ -60,10 +65,10 @@ Reward removes them, so later cycles are shorter. After the third cycle &mdash; 
 <ol class="seq">
   <li><b>Reveal the Program.</b> It shows a row of elements, each with a Target, and one element ringed as the
       overheat marker.</li>
-  <li><b>Commit required&#8209;colour dice.</b> Every coloured dot beside an element requires one available die
-      of that colour to be placed on that element <em>now</em>. These dice are locked there.</li>
-  <li><b>Reveal the Limitation.</b> It withholds dice from your <em>remaining</em> pool or imposes a constraint.
-      Dice already locked to required&#8209;colour dots are untouched.</li>
+  <li><b>Reveal the Limitation.</b> It withholds dice from your available pool or imposes a constraint.
+      Withheld dice cannot be used in this Program at all &mdash; not even for a required color.</li>
+  <li><b>Commit required&#8209;color dice.</b> Every colored dot beside an element requires one available die
+      of that color to be placed on that element <em>now</em>. These dice are locked there.</li>
   <li><b>Finish the allocation.</b> Distribute the rest of your available dice across the elements. An element
       may be left with no dice at all &mdash; it then simply fails.</li>
   <li><b>Execute.</b> Roll each element and resolve it. A hit is 1 success, a Crit is 2.</li>
@@ -71,32 +76,33 @@ Reward removes them, so later cycles are shorter. After the third cycle &mdash; 
 </ol>
 
 <div class="box">
-  <span class="lbl">Required colours</span>
-  Red can never satisfy a required&#8209;colour dot. A required die counts normally toward its element&rsquo;s
-  Target &mdash; it just has to be that colour and it has to be placed before you know what Nobulous is about to
-  take away.
+  <span class="lbl">Required colors</span>
+  Red can never satisfy a required&#8209;color dot. A required die counts normally toward its element&rsquo;s
+  Target &mdash; it just has to be that color, and it has to come from the dice the Limitation left you.
 </div>
 <div class="box warn">
-  <span class="lbl">If you cannot supply a required colour</span>
-  Do not reveal a Limitation and do not execute the Program. <b>Lose 1 Health.</b> Treat the Program as failed
-  for Stable/Overheated progression, then move on. Running your colours dry has a real cost.
+  <span class="lbl">If you cannot supply a required color</span>
+  Do not execute the Program. <b>Lose 1 Health.</b> Return any withheld dice, discard the Limitation, and treat
+  the Program as failed for Stable/Overheated progression, then move on. Running your colors dry &mdash; or
+  letting a Shortage do it for you &mdash; has a real cost.
 </div>
 
 <h3>Requirement density</h3>
 <table>
-  <tr><th>Deck</th><th>Required&#8209;colour dots per card</th></tr>
+  <tr><th>Deck</th><th>Required&#8209;color dots per card</th></tr>
   <tr><td>Routine</td><td>1</td></tr>
   <tr><td>Specialized</td><td>2</td></tr>
   <tr><td>Unstable</td><td>1</td></tr>
   <tr><td>Advanced</td><td>2</td></tr>
 </table>
-<p>The same required colours appear on both faces of a Program card.</p>
+<p>The same required colors appear on both faces of a Program card.</p>
 
 <h3>Limitations</h3>
 <ul>
-  <li>Reveal exactly <b>1</b> Limitation per Program, always after required&#8209;colour dice are committed.</li>
-  <li>Yellow / Green / Blue / Purple Shortage: withhold 2 dice of that colour from the remaining pool.</li>
-  <li>Diversity Protocol: withhold 2 dice of different non&#8209;Red colours.</li>
+  <li>Reveal exactly <b>1</b> Limitation per Program, always right after the Program and before any
+      required&#8209;color dice are committed.</li>
+  <li>Yellow / Green / Blue / Purple Shortage: withhold 2 available dice of that color.</li>
+  <li>Diversity Protocol: withhold 2 dice of different non&#8209;Red colors.</li>
   <li>Red Quarantine: withhold the Red die.</li>
   <li>Withheld dice return to your pool when the Program ends. Discard the Limitation after that Program.</li>
 </ul>
@@ -156,7 +162,7 @@ though one failure costs no Health.</p>
 <h2>Advanced Programming</h2>
 <ul>
   <li>Select 3 Advanced Programs. They are longer &mdash; 4 or 5 elements &mdash; and each carries 2
-      required&#8209;colour dots resolved by the normal pre&#8209;allocation rule.</li>
+      required&#8209;color dots resolved by the normal pre&#8209;allocation rule.</li>
   <li>Recover between Advanced Programs.</li>
   <li><b>Tucking:</b> set&#8209;aside Programs may be tucked under the left or right edge of an Advanced Program;
       the exposed edge Target adds an element. If the marked overheated element is first or last, that edge must

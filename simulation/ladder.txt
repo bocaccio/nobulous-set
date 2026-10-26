@@ -1,0 +1,8 @@
+difficulty        A        B   target
+Easy          69.5%    69.5%      70%
+Standard      62.6%    62.6%      63%
+Hard          56.9%    54.4%      56%
+Brutal        50.3%    46.5%      49%
+Nobulous      43.7%    41.0%      42%
+A: 3/5/6/8/10  mean |error| 1.0 pts, span 2.2
+B: 3/5/7/9/11  mean |error| 1.2 pts, span 2.1

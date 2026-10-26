@@ -1,7 +1,10 @@
 import sys; sys.path.insert(0, '/home/claude/cards')
-from gen import render_deck, make_back, DOT, LANDSCAPE, PORTRAIT, subj_icon
+from gen import render_deck, make_back, hdr_fit, DOT, LANDSCAPE, PORTRAIT, subj_icon
 
-# Match each NRJ card to its base-game analogue.
+# The shape of the cards being built, for header measurement.
+CARD_SIZE = PORTRAIT
+
+# Match each NRJ card to its base-game analog.
 BAT_H, NAP_H, AOS_H = '#2c5f4a', '#6b3f8c', '#8a3d2e'
 CAT = {'Power': '#8a3d2e', 'Mobility': '#2c6e63', 'Defense': '#3c5a8a', 'Senses': '#6b4a8a'}
 NAP_SETBACK, NAP_OPP = '#2f6ba8', '#c79a1e'
@@ -15,11 +18,25 @@ def C(title, sub, body, ftr='', warn=False, acc=None, tint=None):
     cls = ' xlong' if len(title) > 30 else (' long' if len(title) > 19 else '')
     st = ' style="--a:%s"' % acc if acc else ''
     bs = ' style="background:%s"' % tint if tint else ''
-    return ('<div class="card nrj"%s><div class="hdr"><div class="t%s">%s</div>'
+    hs = hdr_fit(title, cls, CARD_SIZE)
+    return ('<div class="card nrj"%s><div class="hdr"%s><div class="t%s">%s</div>'
             '<div class="s">%s</div></div>'
             '<div class="body"%s>%s<div class="spacer"></div>%s</div>'
             '<div class="nrjtag">Nobulous Research Journal</div></div>'
-            % (st, cls, title, sub, bs, body, f))
+            % (st, ' style="%s"' % hs if hs else '', cls, title, sub, bs, body, f))
+
+
+def dotspan(c):
+    return '<span style="display:inline-block;width:2.8mm;height:2.8mm;border-radius:50%%;' \
+           'background:%s;border:.4pt solid #6b6459;vertical-align:-.4mm"></span>' % DOT[c]
+
+
+def successes_row(dot, count, color):
+    """Same shape as the NAP Opportunity / Setback cards."""
+    return ('<div class="row" style="gap:3mm;align-items:center">%s'
+            '<div style="font-size:24pt;font-weight:bold;color:%s;line-height:1">%d</div>'
+            '<div style="font-size:6.4pt;letter-spacing:.14em;text-transform:uppercase;color:#8a8272">'
+            'Successes</div></div>' % (dotspan(dot), color, count))
 
 
 def T(x, cls='txt'):
@@ -28,28 +45,37 @@ def T(x, cls='txt'):
 
 PROTOCOLS = [
  ("Cross-Contamination", "The first time each Rat borrows a die, it may borrow any color regardless of Upgrade count. If that die is banished, reveal the top Upgrade and Splice it into the Tyrant."),
- ("Shared Equipment Budget", "At setup, randomly select 2 personal dice from different Rats and place them in a common Equipment pool. After completing an Encounter, the active Rat may exchange one personal die with one Equipment die."),
- ("Accelerated Trials", "Encounters with printed Target 4+ have -1 Target. After completing one, exhaust 2 of the active Rat's available dice."),
+ ("Shared Equipment Budget", "At setup, randomly select 2 personal dice from different Rats and place them in a common Equipment pool. After completing an Experiment, the active Rat may exchange one personal die with one Equipment die."),
+ ("Accelerated Trials", "Experiments with printed Target 5+ have -1 Target. Exhaust 2 of the active Rat's available dice after every such attempt, whether or not it is completed."),
  ("Questionable Procurement", "Shuffle 1 additional random Specimen into the Upgrade deck. The first Specimen acquired by each Rat does not count against its 3-Upgrade limit until that Rat gains another Upgrade."),
- ("Independent Funding", "After the borrowed die's banishment check, when a Rat has lent a die to a Rat holding fewer Upgrades, the lender recovers 1 die."),
- ("Questionable Methodology", "After revealing the two Upgrades for an Encounter, you may Splice the stronger one into the Tyrant and reveal a replacement. If you do, increase the Encounter's Target by 1."),
+ ("Independent Funding", "After the borrowed die's banishment check, when a Rat has lent a die to a Rat holding fewer Upgrades, the lender recovers 1 die - but only if that Experiment was completed."),
+ ("Questionable Methodology", "After revealing the two Upgrades for an Experiment, you may Splice the stronger one into the Tyrant and reveal a replacement. If you do, reduce the Experiment's Target by 1."),
 ]
 MODS = [
  ("Extra Limbs", "Mobility &middot; Value 3", "Tap: roll 1 exhausted Green or Yellow die. While held, the holder may not borrow dice."),
- ("Secondary Brain", "Senses &middot; Value 3", "Tap before rolling: +1 STR for this Encounter/attack. While held, the holder may not use the Red die."),
+ ("Secondary Brain", "Senses &middot; Value 3", "Tap before rolling: +1 STR for this Experiment/attack. While held, the holder may not use the Red die."),
  ("Adrenal Gland", "Power &middot; Value 4", "Tap: +3 damage. While held, the holder has 1 less Health, minimum 1."),
  ("Bone Plating", "Defense &middot; Value 3", "Reduce incoming damage by 2. While held, the holder has -1 REC, minimum 1."),
  ("Redundant Organs", "Defense &middot; Value 4", "The first time the holder would be knocked out, discard this card instead; the holder remains at 1 Health. While held, the holder cannot be selected as active on consecutive turns."),
- ("Hypermetabolism", "Senses &middot; Value 3", "Tap: recover +2 dice. While held, exhaust 1 available die at the end of each Encounter the holder attempts."),
+ ("Hypermetabolism", "Senses &middot; Value 3", "Tap: recover +2 dice. While held, exhaust 1 available die at the end of each Experiment the holder attempts."),
 ]
 NOTES = [
- ("Unexpected Resilience", "Claim after a Rat completes an Encounter without committing Purple or Red.", "Once per game, recover all of that Rat's dice."),
+ ("Unexpected Resilience", "Claim after a Rat completes an Experiment without committing Purple or Red.", "Once per game, recover all of that Rat's dice."),
  ("Successful Integration", "Claim when a single Rat holds 2 Specimens.", "Once per game, ignore the +1 Target from revealing a Specimen."),
- ("Acceptable Losses", "Claim after failing 3 Encounters within the same four-Rat rotation.", "Once per game after another failure, choose which revealed Upgrade is Spliced."),
+ ("Acceptable Losses", "Claim after failing 3 Experiments within the same four-Rat rotation.", "Once per game after another failure, choose which revealed Upgrade is Spliced."),
  ("Cross-Species Compatibility", "Claim when all four Rats hold at least 2 Upgrades.", "Once during the Tyrant battle, the active Rat may tap an Upgrade held by another surviving Rat."),
- ("Controlled Failure", "Claim after deliberately committing zero dice to an Encounter.", "Once later, after revealing an Encounter, discard it and reveal the next one instead."),
- ("Red Means Go", "Claim after Red provides the success that completes an Encounter and at least one die belonging to another Rat also contributed.", "Once per game after using Red, place it directly on any non-active Rat rather than setting it aside."),
+ ("Controlled Failure", "Claim after deliberately committing zero dice to an Experiment.", "Once later, after revealing an Experiment, discard it and reveal the next one instead."),
+ ("Red Means Go", "Claim after Red provides the success that completes an Experiment and at least one die belonging to another Rat also contributed.", "Once per game after using Red, place it directly on any non-active Rat rather than setting it aside."),
 ]
+NRJ_BLUE = '#1f4e6b'
+# Card backs first: the deck PnPs interleave them behind the fronts.
+make_back('CardBack_NRJ_Protocol', 'NRJ', 'Experimental Protocol', NRJ_BLUE)
+make_back('CardBack_NRJ_ResearchNote', 'NRJ', 'Research Note', NRJ_BLUE)
+make_back('CardBack_NRJ_Interference', 'NRJ', 'Nobulous Interference', NRJ_BLUE)
+make_back('CardBack_NRJ_BackdoorRoutine', 'NRJ', 'Backdoor Routine', NRJ_BLUE)
+make_back('CardBack_NRJ_CouncilTest', 'Council Test', 'Imposter Scenario', '#4a3b6b')
+print("card backs done")
+
 prot = [C(n, "NRJ &middot; Experimental Protocol", '<div class="sub">Draw 1 at setup</div>' + T(e),
            'Tier I &mdash; Agenda.', acc=BAT_H) for n, e in PROTOCOLS]
 mods = [C(n, "NRJ &middot; " + s,
@@ -61,9 +87,9 @@ mods = [C(n, "NRJ &middot; " + s,
 notes = [C(n, "NRJ &middot; Research Note", '<div class="sub">Claim when earned</div>' + T(c) +
             '<div class="sub" style="margin-top:2.5mm">Reward</div>' + T(r),
             'Tier III &mdash; Exploitation.', acc=BAT_H) for n, c, r in NOTES]
-print("Protocols", render_deck('NRJ_BAT_Protocols', prot, 'NRJ'))
-print("Modifications", render_deck('NRJ_BAT_Modifications', mods, 'NRJ'))
-print("Research Notes", render_deck('NRJ_BAT_ResearchNotes', notes, 'NRJ'))
+print("Protocols", render_deck('NRJ_BAT_Protocols', prot, 'NRJ', back='CardBack_NRJ_Protocol'))
+print("Modifications", render_deck('NRJ_BAT_Modifications', mods, 'NRJ', back='CardBack_NRJ_Protocol'))
+print("Research Notes", render_deck('NRJ_BAT_ResearchNotes', notes, 'NRJ', back='CardBack_NRJ_ResearchNote'))
 
 
 IMPOSTOR = [
@@ -72,22 +98,34 @@ IMPOSTOR = [
  ("Emergency Specimen Handling", "Procedure", 4, 5, "Before rolling, commit at least 2 dice initially."),
  ("Containment Drill", "Theory", 4, 5, "If unresolved, exhaust 1 available die before flipping it to Demand."),
 ]
+# name, recovery-color dot, successes, effect
 FOLLOWING = [
- ("Nobulous Needs This Now", 7, "While unresolved, the first die you commit to another Assignment each Time Slot must match that Assignment's recovery-color dot."),
- ("Unscheduled Demonstration", 7, "While unresolved, you must commit at least one die here before committing dice to another Assignment."),
- ("Minor Laboratory Fire", 8, "At the end of each Time Slot this remains unresolved, exhaust 1 available die."),
- ("Where Did I Put That?", 8, "While unresolved, one die committed here cannot be recovered by Special Recovery."),
+ ("Nobulous Needs This Now", 'Y', 7, "While unresolved, the first die you commit to another Assignment each Time Slot must match that Assignment's recovery-color dot."),
+ ("Unscheduled Demonstration", 'G', 7, "While unresolved, you must commit at least one die here before committing dice to another Assignment in this Time Slot."),
+ ("Minor Laboratory Fire", 'B', 8, "At the end of each Time Slot this remains unresolved, exhaust 1 available die."),
+ ("Where Did I Put That?", 'P', 8, "While unresolved, one die committed here cannot be recovered by Special Recovery."),
 ]
+# name, recovery-color dot, successes, effect
+# name, dot, successes, effect, when: "exam" keeps the card for the Final Exam,
+# "now" resolves on completion. Tier III banks its help for the exams, where NAP
+# is actually lethal; the two immediate cards do things an exam has no room for.
 DEVIOUS = [
- ("Borrow the Master's Notes", 3, "Exhaust 2 available dice to immediately complete one Request-side non-Credit Task with printed Target 3 or less."),
- ("Raid the Supply Cabinet", 3, "If completed, immediately recover 2 exhausted dice of different colors."),
- ("Extra Credit?", 3, "Gain 1 Credit in the subject of the most recently completed Task; then reveal an additional Assignment."),
- ("Helpful Test Subject", 3, "Exhaust one available die of each of two different colors to recover 3 other exhausted dice."),
- ("Nobulous Owes You One", 4, "Retain this card. Before the Final Exam, discard it to recover 2 dice."),
- ("Definitely Curriculum-Approved", 3, "Use at least three colors. Choose the recovery color queued for the next Time Slot instead of using this card's dot."),
+ ("Borrow the Master's Notes", 'G', 3, "Exhaust 2 available dice to immediately complete one Request-side non-Credit Task with printed Target 3 or less.", "now"),
+ ("Raid the Supply Cabinet", 'Y', 3, "Final Exam: recover 3 exhausted dice of different colors before any one exam.", "exam"),
+ ("Extra Credit?", 'G', 3, "Gain 1 Credit in the subject of the most recently completed Task; then reveal an additional Assignment.", "now"),
+ ("Helpful Test Subject", 'B', 3, "Final Exam: after rolling one exam, reroll any number of failed dice.", "exam"),
+ ("Nobulous Owes You One", 'P', 4, "Final Exam: reduce one exam's Target by 3.", "exam"),
+ ("Definitely Curriculum-Approved", 'Y', 3, "Final Exam: ignore one exam's printed restriction.", "exam"),
 ]
+DEV_FOOTER = {
+ "now": "Optional. No storage. Resolve immediately. Tier III &mdash; Exploitation.",
+ "exam": "Optional. No storage. When completed, keep this card: spend it once during the "
+         "Final Exam, or discard it during the apprenticeship to ignore one Setback's "
+         "restrictions for the rest of the game. Tier III &mdash; Exploitation.",
+}
 # Impostor Tasks use the base NAP Task layout: spine name, Request band top,
 # Demand band bottom, key rule on the right spine.
+CARD_SIZE = LANDSCAPE
 imp = []
 for n, subj, rt, dt, e in IMPOSTOR:
     marks = '<div class="marks">%s</div>' % subj_icon(subj)
@@ -123,16 +161,17 @@ for n, subj, rt, dt, e in IMPOSTOR:
     imp.append('<div class="card nrj">%s%s%s'
                  '<div class="nrjtag">Nobulous Research Journal</div></div>' % (left, mid, right))
 fol = [C(n, "NRJ &middot; Following Setback",
-            '<div class="big">%d</div><div class="biglbl">Successes</div>' % t + T(e),
+            successes_row(d, t, NAP_SETBACK) + T(e),
             'Mandatory. Follows into the next Time Slot if unresolved, including Evening to the next '
             'Morning. These 4 replace the 3 base Setbacks. Tier I &mdash; Agenda.', warn=True, acc=NAP_SETBACK)
-          for n, t, e in FOLLOWING]
+          for n, d, t, e in FOLLOWING]
 dev = [C(n, "NRJ &middot; Devious Opportunity",
-            '<div class="big">%d</div><div class="biglbl">Successes</div>' % t + T(e, 'txt c'),
-            'Optional. No storage. Tier III &mdash; Exploitation.', acc=NAP_OPP) for n, t, e in DEVIOUS]
-print("Impostor Tasks", render_deck('NRJ_NAP_ImpostorTasks', imp, 'NRJ', LANDSCAPE))
-print("Following Setbacks", render_deck('NRJ_NAP_FollowingSetbacks', fol, 'NRJ', LANDSCAPE))
-print("Devious Opportunities", render_deck('NRJ_NAP_DeviousOpportunities', dev, 'NRJ', LANDSCAPE))
+            successes_row(d, t, '#9a7410') + T(e),
+            DEV_FOOTER[w], acc=NAP_OPP) for n, d, t, e, w in DEVIOUS]
+print("Impostor Tasks", render_deck('NRJ_NAP_ImpostorTasks', imp, 'NRJ', LANDSCAPE, back='CardBack_NAP_Assignment'))
+print("Following Setbacks", render_deck('NRJ_NAP_FollowingSetbacks', fol, 'NRJ', LANDSCAPE, back='CardBack_NAP_Assignment'))
+print("Devious Opportunities", render_deck('NRJ_NAP_DeviousOpportunities', dev, 'NRJ', LANDSCAPE, back='CardBack_NAP_Assignment'))
+CARD_SIZE = PORTRAIT
 
 INTF = [
  ("I Don't Have Time for This", "Begin all Programs Overheated. When an already-Overheated Program fails, cycle it to the bottom of its deck instead of setting it aside."),
@@ -161,18 +200,18 @@ BACKDOOR = [
 intf = [C(n, "NRJ &middot; Nobulous Interference", '<div class="sub">Draw 1 at setup</div>' + T(e),
            'Tier I &mdash; Agenda.', acc=AOS_H) for n, e in INTF]
 corr = [C(n, "NRJ &middot; Corrupted Limitation",
-            T("After required-color dice are committed, withhold 2 dice of a <b>randomly selected</b> color.") +
+            T("Withhold 2 available dice of a <b>randomly selected</b> color.") +
             '<div class="sub" style="margin-top:2.5mm">Corruption</div>' + T(e),
-            'Reveal after required-color dice are committed. Withheld dice come from the remaining pool. '
+            'Reveal before committing required-color dice. Withheld dice cannot be used in this Program. '
             'Tier II &mdash; Contamination.', acc=AOS_LIM) for n, e in CORRUPT]
 bkd = [C(n, "NRJ &middot; Backdoor Routine",
             '<div class="sub">Maximum 2 Backdoor Routines claimed per game</div>' + T(c) +
             '<div class="sub" style="margin-top:2.5mm">Reward</div>' + T(r),
             'Once you have claimed 2, you cannot claim more. Tier III &mdash; Exploitation.',
             warn=True, acc=AOS_H) for n, c, r in BACKDOOR]
-print("Interference", render_deck('NRJ_AoS_Interference', intf, 'NRJ'))
-print("Corrupted Limitations", render_deck('NRJ_AoS_CorruptedLimitations', corr, 'NRJ'))
-print("Backdoor Routines", render_deck('NRJ_AoS_BackdoorRoutines', bkd, 'NRJ'))
+print("Interference", render_deck('NRJ_AoS_Interference', intf, 'NRJ', back='CardBack_NRJ_Interference'))
+print("Corrupted Limitations", render_deck('NRJ_AoS_CorruptedLimitations', corr, 'NRJ', back='CardBack_AoS_Limitation'))
+print("Backdoor Routines", render_deck('NRJ_AoS_BackdoorRoutines', bkd, 'NRJ', back='CardBack_NRJ_BackdoorRoutine'))
 
 SCEN = [
  ("The Physician's Greeting", "Knowledge", "Anatomy - Relief", 8, "The first NAP card you spend here also performs its Special Recovery."),
@@ -205,12 +244,5 @@ cards = [C(n, "%s Test &middot; %s" % (dom, cat),
            'Imposter Scenario. Discounted by %s cards of the matching category.'
            % {'Knowledge': 'NAP', 'Physical': 'BAT', 'Cover-Up': 'AoS'}[dom],
            acc=DOMAIN[dom]) for n, dom, cat, t, e in SCEN]
-print("Scenarios", render_deck('NRJ_ImposterScenarios', cards, 'IMP'))
+print("Scenarios", render_deck('NRJ_ImposterScenarios', cards, 'IMP', back='CardBack_NRJ_CouncilTest'))
 
-NRJ_BLUE = '#1f4e6b'
-make_back('CardBack_NRJ_Protocol', 'NRJ', 'Experimental Protocol', NRJ_BLUE)
-make_back('CardBack_NRJ_ResearchNote', 'NRJ', 'Research Note', NRJ_BLUE)
-make_back('CardBack_NRJ_Interference', 'NRJ', 'Nobulous Interference', NRJ_BLUE)
-make_back('CardBack_NRJ_BackdoorRoutine', 'NRJ', 'Backdoor Routine', NRJ_BLUE)
-make_back('CardBack_NRJ_CouncilTest', 'Council Test', 'Imposter Scenario', '#4a3b6b')
-print("backs done")

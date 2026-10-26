@@ -74,6 +74,6 @@ DECKS = [
          land=False, game='IMP', label='Council Test Scenarios'),
 ]
 
-GAME_COLOUR = {'BAT': (0.17, 0.37, 0.29), 'NAP': (0.42, 0.25, 0.55),
+GAME_COLOR = {'BAT': (0.17, 0.37, 0.29), 'NAP': (0.42, 0.25, 0.55),
                'AoS': (0.54, 0.24, 0.18), 'NRJ': (0.12, 0.31, 0.42),
                'IMP': (0.29, 0.23, 0.42)}

@@ -1,0 +1,208 @@
+
+THE NOBULOUS SET - results by difficulty and NRJ tier
+20000 games per cell
+
+==================================================================
+NAP  Nobulous' Apprenticeship Program
+==================================================================
+  difficulty = the Credit goal; FINF held at Reduce 1
+
+                            no NRJ    Tier I   Tier II  Tier III
+  Easy (5 Credits)           51.9%     48.0%     35.3%     44.6%
+  Standard (6 Credits) *     44.0%     40.2%     30.2%     39.2%
+  Hard (7 Credits)           37.4%     33.4%     27.8%     35.8%
+  Nobulous (8 Credits)       31.9%     29.0%     27.4%     34.9%
+  
+    * Standard difficulty. Mean of the six Apprentices.
+    Tier I   3 of 4 Following Setbacks replace 3 base Setbacks
+    Tier II  4 Impostor Tasks - Mandatory, and grant no Credits
+    Tier III 6 Devious Opportunities replace the 6 base ones
+
+==================================================================
+BAT  Build-a-Tyrant
+==================================================================
+  difficulty = Specimens added / Buff HP; random Rat sides
+
+                            no NRJ    Tier I   Tier II  Tier III
+  Easy                       49.1%     50.4%     56.0%     57.1%
+  Standard                   43.1%     45.5%     49.3%     51.7%
+  Hard                       32.1%     33.8%     38.4%     39.8%
+  Nobulous                   21.0%     22.7%     25.9%     27.9%
+  
+    Tier I   1 of 6 Experimental Protocols drawn at setup
+    Tier II  6 Unauthorized Modifications in the Upgrade deck
+    Tier III 6 Research Notes claimable for one-shot rewards
+  
+    READ THE BAT CAVEAT at the foot of this table.
+
+  BAT - the Tyrant dice rule
+  difficulty   current rules  rulebook rules
+  Easy                 49.1%           52.0%
+  Standard             43.1%           46.0%
+  Hard                 32.1%           34.2%
+  Nobulous             21.0%           23.8%
+  current  = the Tyrant's six dice come out of the Rats' pool
+  rulebook = the Tyrant brings its own six, as rules/bat.html says
+
+==================================================================
+AoS  Automaton of Shale
+==================================================================
+  difficulty = the Routine/Specialized/Unstable mix
+
+                            no NRJ    Tier I   Tier II  Tier III
+  Easy  4/4/0                39.1%     28.6%     19.0%     31.0%
+  Standard  3/4/1            28.6%     19.7%     12.6%     21.5%
+  Hard  2/3/3                17.7%     11.5%      6.8%     12.9%
+  Nobulous  0/4/4             9.2%      6.1%      3.2%      6.4%
+  
+    Mean of the six Technicians.
+    Tier I   1 of 6 Nobulous Interference cards drawn at setup
+    Tier II  6 Corrupted Limitations in the Limitation deck
+    Tier III 6 Backdoor Routines, at most 2 claimed per game
+
+==================================================================
+NRJ  Imposter Scenario (the campaign finale)
+==================================================================
+  The tiers apply to the three games above, not to the finale, and
+  the finale has no difficulty dial. Its variable is the Research
+  Pool.
+
+  standalone          9.4%
+  campaign            9.4%
+
+==================================================================
+CALIBRATION - published 20 Strong titles, community-recorded
+==================================================================
+  title                      games  win rate
+  Solar Sentinels              282       49%
+  Too Many Bones               194       55%
+  Hoplomachus: Victorum        103       53%
+  Tanglewoods: Red             122       47%
+  Tanglewoods: White            49       53%
+  Tanglewoods: Gold             68       57%
+  Tanglewoods: Rose             35       31%
+  all titles                   955       53%
+
+  Source: 20 Strong Community Game Stats, read 2026-09-20.
+  A finished game in this system sits near 50%. Against that:
+    AoS  below band at every mix, and furthest below at Unstable.
+    NAP  near band at Easy, below it from Standard down.
+    BAT  in band at Easy, below it from Standard down.
+  The BAT ladder in rules/bat.html (~49/43/32/21) is this model's
+  own output - the Buff HP dial was tuned against it - so agreement
+  there is construction, not corroboration.
+
+==================================================================
+CAVEATS
+==================================================================
+
+  THE BAT TIER COLUMNS RUN THE WRONG WAY. In this model the tier modules
+  make BAT easier, which contradicts the design intent that Tier II is the
+  pressure peak. AoS and NAP both reproduce that intent, so the fault is
+  specific to the BAT model, and the reason is structural: its only real
+  loss channel is Rats being knocked out, and Upgrades are armor that stops
+  damage outright. Adding six Upgrade-class cards to the deck therefore
+  increases the armor supply, while the modules' hostile clauses live in
+  content the model omits - the Tyrant Attack deck, the frontmost-Splice
+  effect, and the Protocol clauses that turn on die-borrowing between Rats.
+  Both Modification sides ARE modeled (the Tyrant may tap one for +2, and
+  all six printed drawbacks apply while a Rat holds one); it is not enough.
+  Treat BAT's difficulty column as usable and its tier row as not.
+
+  Per-card text is the omission that remains:
+    BAT  20 Experiment effects, 16 Upgrade abilities, 7 Tyrant Attacks.
+         card_effects=True covers only the frontmost Splice firing free and
+         the Rats tapping an Upgrade. Hostile on net.
+    NRJ  18 of the 24 Scenario effects.
+  Modeled in the later passes, and no longer omissions: the six Apprentice
+  abilities and the 26 Request rewards, the six Technician abilities and the
+  six base Limitations, the Opportunity coupons, and both sides of the
+  Unauthorized Modifications.
+
+  Heroes move numbers a long way, and every bit of it is ability text. The
+  printed statlines really are identical - Technicians 2/2/3, Apprentices
+  2/2/2, both sides of each Lab Rat the same - so the spread comes entirely
+  from the abilities, which are now modeled: about 14 points between the
+  best and worst Technician, about 6 between Apprentices. This cross-tab
+  reports their mean; the per-hero tables are in RESULTS.txt, and cards.py
+  lists all twenty.
+
+  Policy sensitivity is large. NRJ moved from 3.4% to 9.2% on how it spends
+  the Research Pool, with no rules change. Prefer the shape of a column to
+  the level of any single cell.
+
+finished in 568.3s
+
+==================================================================
+PER-HERO SWEEP  (sweep.py)
+==================================================================
+
+NAP - Easy (5 Credits), FINF Reduce 1
+                           none        I       II      III
+Prodigy                   49.7%    45.1%    32.6%    41.6%
+Slacker                   50.7%    46.0%    36.1%    46.5%
+Technician                55.2%    50.6%    37.8%    46.2%
+Savant                    54.3%    51.0%    38.0%    44.9%
+Opportunist               52.6%    48.0%    33.4%    45.2%
+Lab Rat                   50.9%    47.9%    33.0%    42.0%
+
+NAP - Standard (6 Credits), FINF Reduce 1
+                           none        I       II      III
+Prodigy                   40.9%    38.2%    27.4%    35.7%
+Slacker                   43.5%    39.8%    31.6%    40.1%
+Technician                47.4%    41.6%    33.1%    40.1%
+Savant                    44.9%    41.3%    31.8%    40.6%
+Opportunist               44.0%    42.0%    30.3%    40.4%
+Lab Rat                   44.1%    39.1%    27.6%    37.7%
+
+NAP - Hard (7 Credits), FINF Reduce 1
+                           none        I       II      III
+Prodigy                   32.8%    31.1%    25.4%    33.4%
+Slacker                   38.9%    33.8%    29.9%    39.4%
+Technician                40.1%    35.6%    31.4%    35.9%
+Savant                    37.3%    34.7%    28.3%    37.2%
+Opportunist               39.0%    34.3%    26.5%    36.2%
+Lab Rat                   36.1%    31.9%    25.5%    33.3%
+
+NAP - Nobulous (8 Credits), FINF Reduce 1
+                           none        I       II      III
+Prodigy                   29.9%    25.9%    25.7%    32.4%
+Slacker                   33.6%    31.1%    29.3%    38.7%
+Technician                35.0%    33.5%    29.8%    35.9%
+Savant                    31.5%    27.3%    27.5%    35.7%
+Opportunist               32.1%    29.1%    27.0%    34.3%
+Lab Rat                   30.4%    28.0%    26.2%    32.4%
+
+BAT - win rate by difficulty, random Rat sides
+                           none        I       II      III
+Easy                      48.9%    50.8%    56.6%    57.6%
+Standard                  43.2%    44.3%    50.3%    51.2%
+Hard                      32.2%    34.2%    36.6%    39.3%
+Nobulous                  20.5%    22.9%    25.5%    29.0%
+
+BAT - Standard, each Rat side alone against no ability
+                           none        I       II      III
+careful_borrower          33.7%    35.2%    40.1%    42.2%
+tool_keeper               41.4%    42.8%    45.4%    48.2%
+jury_rig                  35.5%    37.5%    43.6%    44.4%
+fine_tuning               34.2%    36.5%    43.0%    42.3%
+self_sufficient           33.4%    36.6%    41.0%    41.5%
+prepared                  36.5%    38.5%    44.0%    46.1%
+experimental              35.9%    37.5%    42.4%    42.2%
+adaptation                35.2%    34.9%    41.5%    41.4%
+
+AoS - win rate by difficulty, mean of the six Technicians
+                           none        I       II      III
+Easy  4/4/0               38.1%    28.2%    19.7%    30.6%
+Standard  3/4/1           28.1%    19.4%    12.8%    20.2%
+Hard  2/3/3               17.5%    12.0%     6.1%    12.9%
+Nobulous  0/4/4            9.3%     5.9%     3.9%     6.3%
+
+AoS - Standard, by Technician
+                           none        I       II      III
+architect                 25.5%    14.0%    11.0%    16.1%
+debugger                  33.8%    26.3%    18.6%    28.7%
+optimizer                 37.1%    23.6%    15.2%    25.7%
+engineer                  18.6%    12.9%     8.6%    15.2%
+operator                  26.3%    18.6%    10.4%    17.7%
+compiler                  27.3%    21.2%    13.2%    18.0%

@@ -9,7 +9,7 @@
   <title>Nobulous Playtest Lab</title>
   <meta name="description" content="An iPad-first playtest lab for BAT, NAP, AoS, and the NRJ Imposter finale.">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=nobrutal3">
 </head>
 <body>
   <header class="topbar">
@@ -22,75 +22,110 @@
       <select id="gameNav" aria-label="Choose game">
         <option value="home">Choose game…</option><option value="bat">BAT</option><option value="nap">NAP</option><option value="aos">AoS</option><option value="nrj">NRJ Imposter</option>
       </select>
-      <button class="ghost aos-only" id="rulesBtn">Quick rules</button>
-      <a class="button-link ghost aos-only" href="assets/AoS_Full_Rules.pdf" target="_blank" rel="noopener">Full AoS rules</a>
-      <button class="danger ghost aos-only" id="resetBtn">New test</button>
+      <button class="ghost" id="recordBtn" aria-pressed="false">Playtest record</button>
+            <a class="button-link ghost" id="rulesLink" href="assets/AoS_Rulebook.pdf?v=fonts-1" target="_blank" rel="noopener">AoS rules PDF</a>
+      <button class="danger ghost" id="resetBtn">New test</button>
     </div>
   </header>
 
   <main>
     <section id="screen-home" class="game-screen home-screen">
       <div class="hero panel"><p class="eyebrow">20 Strong · The Nobulous Set</p><h2>Three games. One terrible idea.</h2><p>Choose a standalone experiment, or carry your research into the Council chamber.</p></div>
+      <div class="game-grid">
+        <div class="game-tile-wrap">
+          <button class="game-tile bat" data-open-game="bat"><span>BAT</span><strong>Build-a-Tyrant</strong><small>Four rats, one awakening problem.</small></button>
+          <button class="game-cards-toggle" data-cards-toggle="bat" aria-expanded="false" aria-controls="cards-bat">Show Cards</button>
+          <div class="game-cards hidden" id="cards-bat"></div>
+        </div>
+        <div class="game-tile-wrap">
+          <button class="game-tile nap" data-open-game="nap"><span>NAP</span><strong>Nobulous' Apprentice Program</strong><small>Survive the assignment queue and final exam.</small></button>
+          <button class="game-cards-toggle" data-cards-toggle="nap" aria-expanded="false" aria-controls="cards-nap">Show Cards</button>
+          <div class="game-cards hidden" id="cards-nap"></div>
+        </div>
+        <div class="game-tile-wrap">
+          <button class="game-tile aos" data-open-game="aos"><span>AoS</span><strong>Automaton of Shale</strong><small>Allocate, overheat, and program the impossible.</small></button>
+          <button class="game-cards-toggle" data-cards-toggle="aos" aria-expanded="false" aria-controls="cards-aos">Show Cards</button>
+          <div class="game-cards hidden" id="cards-aos"></div>
+        </div>
+        <div class="game-tile-wrap">
+          <button class="game-tile nrj" data-open-game="nrj"><span>NRJ</span><strong>Imposter Scenario</strong><small>Nine attempts before the Council sees through you.</small></button>
+          <button class="game-cards-toggle" data-cards-toggle="nrj" aria-expanded="false" aria-controls="cards-nrj">Show Cards</button>
+          <div class="game-cards hidden" id="cards-nrj"></div>
+        </div>
+      </div>
       <div class="nrj-config panel">
         <div><p class="kicker">Campaign overlay</p><h2>NRJ options</h2><p class="hint">Saved across all four playtest surfaces.</p></div>
         <label>Mode<select id="campaignMode"><option value="standalone">Standalone game</option><option value="campaign">NRJ campaign chapter</option></select></label>
         <label>NRJ tier<select id="nrjTier"><option value="0">None</option><option value="1">Tier I · Agenda</option><option value="2">Tier II · Contamination</option><option value="3">Tier III · Exploitation</option></select></label>
         <label>Finale pool<select id="finaleMode"><option value="sample">Generate standalone sample</option><option value="campaign">Enter campaign pool manually</option></select></label>
       </div>
-      <div class="game-grid">
-        <button class="game-tile bat" data-open-game="bat"><span>BAT</span><strong>Build-a-Tyrant</strong><small>Four rats, one awakening problem.</small></button>
-        <button class="game-tile nap" data-open-game="nap"><span>NAP</span><strong>Nobulous' Apprentice Program</strong><small>Survive the assignment queue and final exam.</small></button>
-        <button class="game-tile aos" data-open-game="aos"><span>AoS</span><strong>Automaton of Shale</strong><small>Allocate, overheat, and program the impossible.</small></button>
-        <button class="game-tile nrj" data-open-game="nrj"><span>NRJ</span><strong>Imposter Scenario</strong><small>Nine attempts before the Council sees through you.</small></button>
-      </div>
     </section>
 
     <section id="screen-bat" class="game-screen hidden suite-screen">
-      <div class="suite-heading panel"><div><p class="kicker">Build-a-Tyrant</p><h2>BAT playtest table</h2><p id="batOverlay" class="overlay-note"></p></div><div class="compact-actions"><a class="button-link ghost" href="assets/BAT_Rulebook.pdf" target="_blank" title="Rules PDF predates the current Experiment card text">BAT rules PDF</a><button data-new-game="bat" class="danger ghost">New BAT test</button></div></div>
-      <div class="suite-controls panel"><label>Difficulty<select id="batDifficulty"><option>Easy</option><option selected>Standard</option><option>Hard</option><option>Brutal</option><option>Nobulous</option></select></label><label>Active Rat<select id="batRat"><option>Rummage</option><option>Fidget</option><option>Whiz</option><option>Mottle</option></select></label><button id="batDraw" class="primary">Reveal Experiment + Upgrades</button><button id="batBattle">Begin Tyrant battle</button></div>
-      <div class="suite-stats panel" id="batStats"></div>
+      <div class="suite-heading panel"><div><p class="kicker">Build-a-Tyrant</p><h2>BAT playtest table</h2></div><div class="compact-actions"><label class="tier-pick" for="batTier">NRJ tier<select id="batTier"><option value="">Follow campaign</option><option value="0">None</option><option value="1">Tier I &middot; Agenda</option><option value="2">Tier II &middot; Contamination</option><option value="3">Tier III &middot; Exploitation</option></select></label><a class="button-link ghost" href="assets/BAT_Rulebook.pdf?v=fonts-2" target="_blank">BAT rules PDF</a><button data-new-game="bat" class="danger ghost">New BAT test</button></div></div>
+      <p id="batOverlay" class="overlay-note"></p>
+      <div class="suite-stats panel bat-stat-bar"><div class="bat-stat-controls"><label for="batDifficulty">Difficulty</label><select id="batDifficulty"><option>Easy</option><option selected>Standard</option><option>Hard</option><option>Nobulous</option></select><label for="batRat">Active Rat</label><select id="batRat"><option>Rummage</option><option>Fidget</option><option>Whiz</option><option>Mottle</option></select></div><div id="batStats" class="bat-stat-list"></div></div>
+      <section id="batModules" class="panel bat-modules hidden"></section>
       <div class="panel bat-effect" id="batEffect" aria-live="polite"></div>
-      <section class="panel bat-team-panel"><div class="section-head"><div><p class="kicker">The laboratory team</p><h2>Lab Rats and personal dice</h2></div><p class="hint">Choose a Rat by tapping its panel. Tap available dice to commit; after a roll, tap eligible misses to reroll. Recover exhausted dice between Experiments. Red can be moved to any Rat.</p></div><div id="batRats" class="bat-rats"></div></section>
-      <div class="suite-cards bat-cards panel"><article><p class="mini-label">Experiment</p><div id="batEncounter" class="suite-card portrait placeholder-card"><span>Reveal an Experiment</span></div><div id="batEncounterText" class="card-caption"></div></article><article><p class="mini-label">Upgrade A</p><div id="batUpgradeA" class="suite-card portrait placeholder-card"><span>Upgrade A</span></div></article><article><p class="mini-label">Upgrade B</p><div id="batUpgradeB" class="suite-card portrait placeholder-card"><span>Upgrade B</span></div></article><article id="batUpgradeCPanel" class="hidden"><p class="mini-label">Upgrade C</p><div id="batUpgradeC" class="suite-card portrait placeholder-card"><span>Upgrade C</span></div></article></div>
-      <div class="resolution panel"><h3>Resolve this Experiment</h3><div class="compact-actions"><button id="batSuccessA" class="primary">Success · keep A</button><button id="batSuccessB" class="primary">Success · keep B</button><button id="batSuccessC" class="primary hidden">Success · keep C</button><button id="batFail" class="danger">Failure · splice stronger</button></div><label>Notes<textarea id="batNotes" rows="3" placeholder="Restriction, borrow, decision quality…"></textarea></label></div>
+      <section class="panel bat-team-panel"><div class="section-head"><div><p class="kicker">The laboratory team</p><h2>Lab Rats and personal dice</h2></div><p class="hint">Choose a Rat by tapping its panel. Tap available dice to commit; after a roll, tap eligible misses to reroll. Recover exhausted dice between Experiments. Red can be moved to any Rat. Tap an Upgrade card to mark it used.</p></div><div id="batRats" class="bat-rats"></div></section>
+      <section class="panel bat-pool-panel" id="batPoolPanel" hidden>
+        <div class="section-head bat-battle-head"><div><p class="kicker">Tyrant battle</p><h2>Shared battle pool</h2></div><div class="bat-tyrant-steps" id="batRatSteps"></div></div>
+        <div id="batPool"></div>
+        <p class="hint bat-track-hint">Every surviving personal die, pooled. Commit up to 6 and roll; select misses and roll again to reroll them.</p>
+      </section>
+      <section class="panel bat-battle-panel" id="batBattlePanel" hidden>
+        <div class="section-head bat-battle-head"><div><p class="kicker">Tyrant battle</p><h2>Tyrant track</h2></div><div class="bat-tyrant-steps" id="batTyrantSteps"></div></div>
+        <div class="bat-track" id="batTrack"></div>
+        <p class="hint bat-track-hint">Damage runs left to right: Buff HP, then each Splice, then Health.</p>
+      </section>
+      <div class="bat-table-top">
+        <div class="suite-cards bat-cards panel"><div class="resolution bat-resolution"><h3>Resolve this Experiment</h3><div id="batBanked" class="bat-banked hidden"></div><div class="compact-actions"><button id="batSuccessA" class="primary">Success · keep A</button><button id="batSuccessB" class="primary">Success · keep B</button><button id="batSuccessC" class="primary hidden">Success · keep C</button><button id="batFail" class="danger">Failure · splice stronger</button></div></div><article><p class="mini-label">Experiment</p><div id="batEncounter" class="suite-card portrait placeholder-card"><span>Reveal an Experiment</span></div><div id="batEncounterText" class="card-caption"></div><div id="batEffectActions" class="bat-effect-actions hidden"></div></article><article><p class="mini-label">Upgrade A</p><div id="batUpgradeA" class="suite-card portrait placeholder-card"><span>Upgrade A</span></div></article><article><p class="mini-label">Upgrade B</p><div id="batUpgradeB" class="suite-card portrait placeholder-card"><span>Upgrade B</span></div></article><div id="batSwapPrompt" class="bat-swap-prompt hidden"></div><article id="batUpgradeCPanel" class="hidden"><p class="mini-label">Upgrade C</p><div id="batUpgradeC" class="suite-card portrait placeholder-card"><span>Upgrade C</span></div></article></div>
+        <section class="panel bat-splice-panel"><div class="section-head"><div><p class="kicker">Prototyrant</p><h2>Spliced Upgrades</h2></div><strong id="batSpliceCount">0 / 5</strong></div><div id="batSpliceNames" class="bat-splice-names"></div></section>
+      </div>
       <div id="batRoller" class="roller panel"></div>
     </section>
 
     <section id="screen-nap" class="game-screen hidden suite-screen">
-      <div class="suite-heading panel"><div><p class="kicker">Nobulous' Apprentice Program</p><h2>NAP playtest table</h2><p id="napOverlay" class="overlay-note"></p></div><div class="compact-actions"><a class="button-link ghost" href="assets/NAP_Rulebook.pdf" target="_blank">Full NAP rules</a><button data-new-game="nap" class="danger ghost">New NAP test</button></div></div>
-      <div class="suite-controls panel"><label>FINF<select id="napFinf"><option>−3</option><option>−2</option><option selected>−1 · Standard</option><option>+1</option><option>+2</option><option>+3</option></select></label><label>Apprentice<select id="napApprentice"><option>Prodigy</option><option>Slacker</option><option>Technician</option><option>Savant</option><option>Opportunist</option><option>Lab Rat</option></select></label><button id="napReveal" class="primary">Reveal 2 Assignments</button><button id="napAdvance">End time slot</button></div>
-      <div class="suite-stats panel" id="napStats"></div>
-      <section class="panel nap-day-panel"><div class="section-head"><div><p class="kicker">Day schedule</p><h2>All three time slots</h2></div><p class="hint">The highlighted card is the active slot. The Assignment row below persists across all three.</p></div><div id="napTimeSlots" class="nap-timeslots"></div></section>
+      <div class="suite-heading panel"><div><p class="kicker">Nobulous' Apprentice Program</p><h2>NAP playtest table</h2></div><div class="compact-actions"><a class="button-link ghost" href="assets/NAP_Rulebook.pdf?v=fonts-1" target="_blank">Full NAP rules</a><button data-new-game="nap" class="danger ghost">New NAP test</button></div></div>
+      <p id="napOverlay" class="overlay-note"></p>
+      <div class="suite-stats panel nap-stat-bar"><div class="nap-stat-controls"><label for="napCreditGoal">Difficulty</label><select id="napCreditGoal">
+          <option value="5">Easy &middot; 5 Credits</option>
+          <option value="6" selected>Standard &middot; 6 Credits</option>
+          <option value="7">Hard &middot; 7 Credits</option>
+          <option value="8">Nobulous &middot; 8 Credits</option>
+        </select><label for="napDifficulty">FINF dial</label><select id="napDifficulty">
+          <option value="inc1">Increase 1</option>
+          <option value="inc2">Increase 2</option>
+          <option value="inc3">Increase 3</option>
+          <option value="red1" selected>Reduce 1 (Standard)</option>
+          <option value="red2">Reduce 2</option>
+          <option value="red3">Reduce 3</option>
+        </select><label for="napTier">NRJ tier</label><select id="napTier"><option value="">Follow campaign</option><option value="0">None</option><option value="1">Tier I &middot; Agenda</option><option value="2">Tier II &middot; Contamination</option><option value="3">Tier III &middot; Exploitation</option></select><span id="napFinfHeld" class="nap-finf-held"></span></div><div id="napStats" class="nap-stat-list"></div></div>
+      <div class="nap-topline"><article class="panel nap-apprentice-panel"><p class="kicker">Your Apprentice</p><div id="napApprenticeCard" class="suite-card landscape nap-top-card" role="img" aria-label="Selected Apprentice card"></div><div id="napAbility" class="nap-ability"></div><label>Apprentice<select id="napApprentice"><option>Prodigy</option><option>Slacker</option><option>Technician</option><option>Savant</option><option>Opportunist</option><option>Lab Rat</option></select></label></article>
+        <section class="panel nap-piles-panel"><div class="nap-pile-switch" aria-label="Assignment piles"><button id="napDeckTab" type="button" aria-pressed="true">Assignment deck <strong id="napDeckCount">0</strong></button><button id="napDiscardTab" type="button" aria-pressed="false">Discard pile <strong id="napDiscardCount">0</strong></button></div><div id="napDeckView" class="nap-pile-view"><div class="suite-card landscape nap-top-card nap-deck-back" role="img" aria-label="NAP Assignment card back"></div><p class="nap-count-heading">Subjects remaining</p><div id="napDeckSubjectCounts" class="nap-subject-counts"></div><div id="napDeckOtherCounts" class="nap-other-counts"></div></div><div id="napDiscardView" class="nap-pile-view hidden"><p class="nap-count-heading">Discarded subjects</p><div id="napDiscardSubjectCounts" class="nap-subject-counts"></div><div id="napDiscardOtherCounts" class="nap-other-counts"></div><p class="hint">Select a card to view it. Top card: <span id="napDiscardTop">Empty</span>.</p><ol id="napDiscardList"></ol></div></section>
+        <section class="panel nap-credits-panel"><div class="nap-credits-head"><p class="kicker">Completed Credit Tasks</p><strong id="napCreditCount">0 Credits</strong></div><div id="napCreditCards" class="nap-credit-cards"></div></section></div>
+      <section class="panel nap-day-panel"><div class="section-head"><div><p class="kicker">Day schedule</p><h2>All three time slots</h2></div><p class="hint">Assignments stay beside their Time Slot across days. New cards enter at the left; each row holds four.</p></div><div id="napTimeSlots" class="nap-timeslots"></div></section>
+      <div id="napSlotActions" class="nap-slot-actions"><button id="napReveal" class="primary">Reveal 2 Assignments</button><button id="napAdvance">End time slot</button></div>
       <div id="napNotice" class="nap-notice hidden" role="status"></div>
-      <div id="napChoice" class="choice-panel panel hidden"><h3>Choose the Primary</h3><div class="suite-cards two"><article><div id="napChoiceA" class="suite-card landscape"></div><button data-nap-choice="0">Choose A</button></article><article><div id="napChoiceB" class="suite-card landscape"></div><button data-nap-choice="1">Choose B</button></article></div></div>
-      <div class="panel"><div class="section-head"><div><p class="kicker">Persistent assignment row</p><h2>Current work</h2></div><span class="hint">Tap a card action to store progress or complete it.</span></div><div id="napRow" class="assignment-row"></div></div>
+      <div id="napChoice" class="choice-panel panel hidden"><div><p class="kicker">New Assignments</p><h3>Choose the Primary</h3></div><div class="suite-cards two"><article><div id="napChoiceA" class="suite-card landscape"></div><button data-nap-choice="0">Choose A</button></article><article><div id="napChoiceB" class="suite-card landscape"></div><button data-nap-choice="1">Choose B</button></article></div></div>
+      <section id="napExam" class="panel nap-exam-panel hidden"></section>
+      <div id="napReward" class="nap-reward panel hidden" role="status"></div>
+      <section id="napCouponPanel" class="panel nap-coupon-panel hidden"><div class="section-head"><div><p class="kicker">Completed Opportunities</p><h2>Coupons in hand</h2></div><p class="hint">Each is one use. Targeted coupons appear as buttons on the Assignments themselves.</p></div><div id="napCoupons" class="nap-coupons"></div></section>
       <div id="napRoller" class="roller panel"></div>
     </section>
 
     <section id="screen-nrj" class="game-screen hidden suite-screen">
-      <div class="suite-heading panel"><div><p class="kicker">Nobulous Research Journal</p><h2>Imposter Scenario</h2><p id="nrjOverlay" class="overlay-note"></p></div><div class="compact-actions"><a class="button-link ghost" href="assets/NRJ_Campaign_Supplement.pdf" target="_blank">Full NRJ rules</a><button data-new-game="nrj" class="danger ghost">New finale</button></div></div>
-      <div class="suite-controls panel"><label>Pool setup<select id="nrjPoolMode"><option value="sample">Standalone sample (18 cards)</option><option value="campaign">Campaign pool (manual)</option></select></label><button id="nrjBuildPool">Build / reset pool</button><button id="nrjDraw" class="primary">Reveal Scenario</button><button id="nrjAvoid">Avoid with eligible AoS</button></div>
+      <div class="suite-heading panel"><div><p class="kicker">Nobulous Research Journal</p><h2>Imposter Scenario</h2></div><div class="compact-actions"><a class="button-link ghost" href="assets/NRJ_Campaign_Supplement.pdf" target="_blank">Full NRJ rules</a><button data-new-game="nrj" class="danger ghost">New finale</button></div></div>
+      <div class="suite-controls panel"><label>Pool setup<select id="nrjPoolMode"><option value="sample">Standalone sample (18 cards)</option><option value="campaign">Campaign pool (manual)</option></select></label><button id="nrjBuildPool">Build / reset pool</button><button id="nrjDraw" class="primary">Reveal Scenario</button><button id="nrjAvoid">Avoid with eligible AoS</button><p id="nrjOverlay" class="overlay-note"></p></div>
       <div class="suite-stats panel" id="nrjStats"></div>
+      <details class="discard-panel panel"><summary>Discard pile <strong id="nrjDiscardCount">0</strong><span id="nrjDiscardTop">Empty</span></summary><ol id="nrjDiscardList"></ol></details>
       <div class="nrj-layout"><article class="panel"><p class="mini-label">Council test</p><div id="nrjScenario" class="suite-card portrait placeholder-card"><span>Reveal a Scenario</span></div><div id="nrjScenarioText" class="card-caption"></div></article><section class="panel"><p class="kicker">Research Pool</p><h2>Spend reductions</h2><div class="pool-inputs"><label>NAP matching (−2)<input id="nrjNapMatch" type="number" min="0" value="0"></label><label>BAT matching (−3)<input id="nrjBatMatch" type="number" min="0" value="0"></label><label>BAT Specimen (−5)<input id="nrjSpecimen" type="number" min="0" value="0"></label><label>AoS Stable (−4)<input id="nrjAosStable" type="number" min="0" value="0"></label><label>AoS Overheated (−2)<input id="nrjAosHot" type="number" min="0" value="0"></label><label>Wrong category (−2)<input id="nrjWrong" type="number" min="0" value="0"></label></div><div class="target-readout">Modified target <strong id="nrjTarget">—</strong></div><div class="compact-actions"><button id="nrjSuccess" class="primary">Resolve success</button><button id="nrjFailHp" class="danger">Fail · lose 1 HP</button><button id="nrjFailDice" class="danger ghost">Fail · banish 2 dice</button></div></section></div>
       <div id="nrjRoller" class="roller panel"></div>
     </section>
 
     <section id="screen-aos" class="game-screen hidden">
-    <section class="setup-strip panel" aria-label="Game setup">
-      <label>Program deck
-        <select id="deckSelect">
-          <option value="Routine">Routine</option>
-          <option value="Specialized" selected>Specialized</option>
-          <option value="Unstable">Unstable</option>
-        </select>
-      </label>
-      <label>Technician
-        <select id="techSelect"></select>
-      </label>
-      <button class="primary" id="startBtn">Start playtest</button>
-      <div class="run-state" id="runState">Choose a deck and Technician.</div>
-    </section>
-
+    <div class="panel aos-tier-bar"><label class="tier-pick" for="aosTier">NRJ tier<select id="aosTier"><option value="">Follow campaign</option><option value="0">None</option><option value="1">Tier I &middot; Agenda</option><option value="2">Tier II &middot; Contamination</option><option value="3">Tier III &middot; Exploitation</option></select></label><span id="aosTierNote" class="hint"></span></div>
+    <section id="aosModules" class="panel bat-modules hidden"></section>
     <section class="stats panel" aria-label="Current stats">
       <div class="stat"><span>HP</span><button data-stat="hp" data-delta="-1">−</button><strong id="hp">2</strong><button data-stat="hp" data-delta="1">+</button></div>
       <div class="stat"><span>STR</span><button data-stat="str" data-delta="-1">−</button><strong id="str">2</strong><button data-stat="str" data-delta="1">+</button></div>
@@ -98,15 +133,27 @@
       <div class="stat readout"><span>Cycle</span><strong id="cycle">—</strong></div>
       <div class="stat readout"><span>Recovery</span><strong id="recoveryCredits">0</strong></div>
       <div class="stat readout"><span>Extra rolls</span><strong id="rerolls">0 / 1</strong></div>
+      <div class="stat readout"><span>Draw pile</span><strong id="drawPile">0</strong></div>
+      <div class="stat readout"><span>Completed</span><strong id="programsDone">0</strong></div>
     </section>
+    <p class="run-state aos-run-state" id="runState">Choose a deck and Technician, then draw the first Program.</p>
+
 
     <div class="workspace">
       <section class="card-bay panel">
         <div class="section-head">
           <div><p class="kicker">Active program</p><h2 id="programTitle">No program drawn</h2></div>
           <div class="compact-actions">
+            <label class="inline-pick" for="deckSelect">Difficulty
+              <select id="deckSelect" title="Difficulty sets how many of the 8 Programs come from Routine / Specialized / Unstable.">
+                <option value="Easy">Easy &middot; 4/4/0</option>
+                <option value="Standard" selected>Standard &middot; 3/4/1</option>
+                <option value="Hard">Hard &middot; 2/3/3</option>
+                <option value="Nobulous">Nobulous &middot; 0/4/4</option>
+              </select>
+            </label>
             <button id="flipBtn" disabled>Flip</button>
-            <button id="drawBtn" class="primary" disabled>Draw program</button>
+            <button id="drawBtn" class="primary">Start playtest</button>
           </div>
         </div>
         <div class="card-stage">
@@ -115,6 +162,8 @@
             <p class="mini-label">Limitation</p>
             <div id="limitationCard" class="sprite-card limitation-card placeholder-card"><span>Revealed with the active Program.</span></div>
             <p id="limitationFlavor" class="flavor-copy"></p>
+            <p id="limitationHint" class="hint hidden">Withhold the dice this Limitation calls for (select them in the pool, then <b>Withhold</b>; tap a withheld die to put it back), then resolve it. Dice cannot be committed until you do.</p>
+            <button id="limitationResolveBtn" class="primary hidden">Resolve Limitation</button>
           </div>
         </div>
         <div id="programControls" class="program-controls hidden">
@@ -129,7 +178,8 @@
       </section>
 
       <section class="technician-bay panel">
-        <div class="section-head"><div><p class="kicker">Technician</p><h2 id="techName">—</h2></div></div>
+        <div class="section-head"><div><p class="kicker">Technician</p><h2 id="techName">—</h2></div>
+          <label class="inline-pick">Technician<select id="techSelect"></select></label></div>
         <div class="tech-layout">
           <div id="techCard" class="sprite-card tech-card placeholder-card"><span>Choose a Technician.</span></div>
           <div><p id="techAbility" class="ability-copy"></p><div id="techAction" class="tech-action hidden"><button id="techActionBtn"></button><p id="techHint" class="hint"></p></div></div>
@@ -141,7 +191,7 @@
           <div><p class="kicker">Allocation board</p><h2>Elements</h2></div>
           <div class="element-count"><strong id="elementCount">3</strong><span>on this Program</span></div>
         </div>
-        <p class="hint">Targets are loaded from the active Program. Select available dice, then tap <b>Assign selected</b>. Before rolling, tap an assigned die to return it—or use <b>Return dice</b> to clear the element.</p>
+        <p class="hint">Targets are loaded from the active Program. Resolve the Limitation first. Then select available dice and tap <b>Commit selected</b>. Before the first roll, tap a committed die to return it, or use <b>Return dice</b> to clear the element. Once any Element rolls, commitments are locked.</p>
         <div id="elements" class="elements-grid"></div>
       </section>
 
@@ -154,7 +204,8 @@
             <button id="banishSelectedBtn">Banish</button>
           </div>
         </div>
-        <p id="diceInstruction" class="hint">Select dice to allocate or move. Tap an exhausted die while Recovery is available to recover it.</p>
+        <p id="diceInstruction" class="hint">Select dice to commit or move. When a recovery is owed, only exhausted dice can be selected: pick the number shown, then tap <b>Recover Selected Dice</b>.</p>
+        <div id="recoverBar" class="recover-bar hidden"><span id="recoverText"></span><button id="recoverSelectedBtn" class="primary">Recover Selected Dice</button></div>
         <div class="pool-zone"><h3>Available <span id="availableCount"></span></h3><div id="availableDice" class="dice-row"></div></div>
         <div class="pool-columns">
           <div class="pool-zone"><h3>Exhausted <span id="exhaustedCount"></span></h3><div id="exhaustedDice" class="dice-row"></div></div>
@@ -163,6 +214,9 @@
         </div>
       </section>
 
+    </div>
+    </section>
+  <div id="recordPanel" class="record-panel hidden">
       <section class="test-bay panel">
         <div class="section-head"><div><p class="kicker">Playtest record</p><h2>What happened?</h2></div><button id="copySummaryBtn">Copy summary</button></div>
         <div class="metric-grid" id="metrics"></div>
@@ -174,32 +228,39 @@
         <label class="notes-label">Notes<textarea id="notes" rows="4" placeholder="Record the moment, not just the verdict…"></textarea></label>
         <div class="log" id="eventLog" aria-live="polite"></div>
       </section>
-    </div>
-    </section>
+  </div>
   </main>
 
-  <dialog id="rulesDialog">
-    <div class="dialog-head"><div><p class="kicker">AoS sequence</p><h2>Quick rules</h2></div><button id="closeRulesBtn" aria-label="Close">×</button></div>
-    <ol>
-      <li>Reveal a Program and its Limitation together.</li>
-      <li>Apply the Limitation, then commit every required-color die and allocate the remaining dice.</li>
-      <li>Finish allocating all five colors, then roll each element.</li>
-      <li>Each element gets one roll. Extra STR rolls are shared across the Program and replace the entire result.</li>
-      <li>Resolve the gradient: exact Target recovers 2; +1 is free; +2 or more exhausts 1; failure exhausts all. Dice beyond Target +1 also exhaust.</li>
-      <li>Two or more failed elements cost 1 HP. Recover REC dice after every Program.</li>
-    </ol>
-    <p>The app automates dice results and deck progression but leaves card-specific abilities, required-color checks, and reward choices in your hands.</p>
-  </dialog>
-
+  
   <dialog id="cardDialog" class="card-dialog">
     <button id="closeCardBtn" class="card-close" aria-label="Close card">×</button>
     <div id="cardZoom" class="sprite-card zoom-card"></div>
   </dialog>
 
+  <div id="cardPeek" class="card-peek hidden" aria-hidden="true"></div>
+
+  <dialog id="napDiscardDialog" class="nap-discard-dialog" aria-labelledby="napDiscardCardTitle">
+    <button id="napDiscardClose" class="card-close" type="button" aria-label="Close card">×</button>
+    <h2 id="napDiscardCardTitle"></h2>
+    <div id="napDiscardCardArt" class="suite-card landscape" role="img"></div>
+    <p id="napDiscardCardType" class="hint"></p>
+  </dialog>
+
+    <dialog id="batEndDialog" class="bat-end-dialog" aria-labelledby="batEndTitle">
+    <p class="kicker" id="batEndKicker">Build-a-Tyrant</p>
+    <h2 id="batEndTitle"></h2>
+    <blockquote class="bat-end-quote"><p id="batEndQuote"></p><cite>— Nobulous</cite></blockquote>
+    <p class="bat-end-question">Do you want to play again?</p>
+    <div class="compact-actions bat-end-actions">
+      <button id="batEndYes" class="primary" type="button">Yes</button>
+      <button id="batEndNo" type="button">No</button>
+    </div>
+  </dialog>
+
   <div id="toast" role="status" aria-live="polite"></div>
-  <script src="app.js"></script>
+  <script src="app.js?v=strroll1"></script>
   <script src="bat_experiments.js"></script>
-  <script src="suite.js"></script>
-  <script src="bat.js"></script>
+  <script src="suite.js?v=strroll1"></script>
+  <script src="bat.js?v=nobrutal2"></script>
 </body>
 </html>

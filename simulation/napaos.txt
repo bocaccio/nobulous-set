@@ -1,0 +1,18 @@
+NAP  Nobulous Apprenticeship Program   20,000 games per cell
+difficulty = the FINF dial (Standard is -1)
+
+FINF              no NRJ    Tier I   Tier II  Tier III
++3                 15.7%     16.1%     10.8%     10.7%
++2                 15.9%     15.9%     11.0%     11.2%
++1                 16.9%     16.3%     11.3%     11.3%
+-1 *               18.2%     17.9%     11.9%     13.3%
+-2                 19.0%     18.3%     12.6%     13.6%
+-3                 19.3%     18.3%     12.4%     13.4%
+
+AoS  Automaton of Shale               20,000 games per cell
+difficulty = which Program deck you run
+
+deck              no NRJ    Tier I   Tier II  Tier III
+Routine            43.3%     32.5%     21.0%     39.7%
+Specialized         9.3%      6.6%      3.2%      6.7%
+Unstable            2.2%      2.0%      0.8%      1.9%

@@ -1,6 +1,6 @@
 <!DOCTYPE html><html><head><meta charset="utf-8">
 <link rel="stylesheet" href="style.css">
-<style>:root { --accent: #6b3f8c; }</style>
+<style>:root { --accent: #6b3f8c; } .subject-key-section { break-inside:avoid; } .subject-key svg { width:5mm; height:5mm; vertical-align:middle; margin-right:1.5mm; } .subject-key td:first-child { width:11mm; text-align:center; }</style>
 </head><body>
 
 <div class="cover">
@@ -14,39 +14,69 @@
 
 <div class="body">
 
-<h2>Components</h2>
-<ul>
-  <li>6 Apprentice cards</li>
-  <li>26 Task cards (double&#8209;sided: Request / Demand)</li>
-  <li>6 Setback cards</li>
-  <li>6 Opportunity cards</li>
-  <li>12 Final Exam cards (3 per subject)</li>
-  <li>1 Following in Nobulous&rsquo; Footsteps (FINF) track card, 1 Time Slot dial</li>
-  <li><b>From 20 Strong:</b> the 17 unit dice &mdash;
-      <span class="dice"><span class="sw P"></span>4 Purple, <span class="sw B"></span>4 Blue,
-      <span class="sw G"></span>4 Green, <span class="sw Y"></span>4 Yellow,
-      <span class="sw R"></span>1 Red</span></li>
-  <li><b>From 20 Strong:</b> the 3 stat dice &mdash; Health, Strategy and Recovery &mdash; and the Chip</li>
-</ul>
+<h2>Following in Nobulous&rsquo; Footsteps (FINF)</h2>
+<p>FINF is a second dial, independent of the difficulty level, and it works in two directions.
+The three FINF cards are numbered
+<b>1 Morning</b>, <b>2 Afternoon</b> and <b>3 Evening</b>. Choose one setting before you start and keep it
+for the whole game.</p>
+
+<h3>Increase &mdash; 1 / 2 / 3</h3>
+<p>Take that many FINF cards at random and <b>shuffle them into the Assignment deck</b>. They share the
+Assignment back, so they are hidden until drawn. When one is drawn, place it before the Primary selection
+for that slot and <b>add an Assignment from the top of the deck to the Time Slot the card is numbered
+for</b> &mdash; the Time Slot you are in, or another one &mdash; then
+discard the FINF card. Ignore Skulls on Assignments added by FINF, and never exceed 4 Assignments in a row.</p>
+
+<h3>Reduce &mdash; 1 / 2 / 3</h3>
+<p>Take that many FINF cards at random and <b>flip them aside, face&#8209;up</b>. Each is one use. You may
+<b>remove a non&#8209;Final&#8209;Exam card from the active Time Slot</b> only if you hold the FINF card
+numbered for that slot: spend it, exhaust every die stored on the removed card, and turn the FINF card
+face&#8209;down. Holding FINF 2, for example, lets you remove one card during an Afternoon.</p>
+
+<p>FINF is not used during the Final Exam, in either direction.</p>
+
+<h2>Difficulty</h2>
+<p>Difficulty is the <b>Credit goal</b>: how many Credits you must earn before the Final Exam. Choose a level
+before you start and keep it for the whole game.</p>
+<table>
+  <tr><th>Level</th><th>Credit goal</th></tr>
+  <tr><td>Easy</td><td>5 Credits</td></tr>
+  <tr><td><b>Standard</b></td><td><b>6 Credits</b></td></tr>
+  <tr><td>Hard</td><td>7 Credits</td></tr>
+  <tr><td>Nobulous</td><td>8 Credits</td></tr>
+</table>
+<p>Everything else is identical at every level. The FINF dial is separate and can be set at any difficulty.</p>
 
 <h2>Setup</h2>
 <ol class="seq">
   <li>Choose an Apprentice. All six begin at <b>2 HP / 2 STR / 2 REC</b>; they differ only in abilities.</li>
+  <li>Choose a difficulty: <b>Easy 5</b>, <b>Standard 6</b>, <b>Hard 7</b> or <b>Nobulous 8</b> Credits.</li>
   <li>Shuffle 3 of the 6 Setbacks into the 26 Tasks and 6 Opportunities to form the Assignment deck. Return the
       other 3 Setbacks to the box.</li>
-  <li>Set the FINF track to <b>&minus;1</b> (Standard difficulty).</li>
+  <li>Choose a FINF setting: <b>Increase 1&ndash;3</b> or <b>Reduce 1&ndash;3</b>. Standard is <b>Reduce 1</b>.
+      Take that many of the 3 FINF cards at random; return the rest to the box.</li>
   <li>Separate the 12 Final Exams. You will build the exam pool later.</li>
-  <li>Take all 17 dice as available. Set the Time Slot dial to Morning, Day 1.</li>
+  <li>Take all 17 dice as available. Place the Morning Time Slot card as active for Day 1.</li>
 </ol>
 
 <h2>Object of the game</h2>
-<p>Earn <b>6 Credits</b> to reach the Final Exam, then survive three exams with at least 1 Health remaining.
-Credits are earned by completing Credit Tasks and are never spent &mdash; a completed Task stays face&#8209;up
-as the record of that subject.</p>
+<p>Earn your <b>Credit goal</b> &mdash; 6 Credits at Standard difficulty &mdash; to reach the Final Exam,
+then survive three exams with at least 1 Health remaining.
+Credits are earned by completing Credit Tasks and are never spent &mdash; completed Tasks remain visible in their
+Time Slot until End of Day, then enter the face&#8209;up discard pile as the record of that subject.</p>
+<div class="subject-key-section"><h2>Subject icons</h2>
+<p>Task and Final Exam cards use these icons to identify their subject. A Task with no subject icon is unmarked.</p>
+<table class="subject-key">
+  <tr><th>Icon</th><th>Subject</th></tr>
+  <tr><td><svg viewBox="0 0 24 24"><path fill="#a8332c" d="M12 21.3l-1.7-1.6C5.1 15 2 12.2 2 8.7 2 5.9 4.1 3.8c1.6 0 3.1.7 4 1.9.9-1.2 2.4-1.9 4-1.9C17.9 3.8 20 5.9 20 8.7c0 3.5-3.1 6.3-8.3 11z"/></svg></td><td>Anatomy</td></tr>
+  <tr><td><svg viewBox="0 0 24 24"><path fill="#2f6ba8" d="M12 8.4a3.6 3.6 0 100 7.2 3.6 3.6 0 000-7.2zm9 4.5v-1.8l-2.2-.5a7 7 0 00-.6-1.5l1.2-1.9-1.3-1.3-1.9 1.2a7 7 0 00-1.5-.6L14.2 4h-1.8l-.5 2.5a7 7 0 00-1.5.6L8.5 5.9 7.2 7.2l1.2 1.9a7 7 0 00.6 1.5l-1.2 1.9 1.3 1.3 1.9-1.2a7 7 0 001.5.6l.5 2.4h1.8l.5-2.4a7 7 0 001.5-.6l1.9 1.2 1.3-1.3-1.2-1.9a7 7 0 00.6-1.5z"/></svg></td><td>Engineering</td></tr>
+  <tr><td><svg viewBox="0 0 24 24"><path fill="#7a4fa3" d="M20.7 3.3a1 1 0 00-1.4 0l-9 9-1.3 3.4a.6.6 0 00.8.8l3.4-1.3 9-9a1 1 0 000-1.4zM8.6 15.9l-4 4a1.4 1.4 0 102 2l4-4z"/></svg></td><td>Procedure</td></tr>
+  <tr><td><svg viewBox="0 0 24 24"><path fill="#6f7a2e" d="M4 4.4h6.2c1 0 1.8.8 1.8 1.8v13c0-.8-.8-1.4-1.8-1.4H4zm16 0h-6.2c-1 0-1.8.8-1.8 1.8v13c0-.8.8-1.4 1.8-1.4H20z"/></svg></td><td>Theory</td></tr>
+</table></div>
 <div class="box warn">
   <span class="lbl">How the apprenticeship ends</span>
-  Play Days until <b>either</b> you hold 6 Credits <b>or</b> the Assignment deck runs out. Both send you to
-  the Final Exam; arriving short of 6 Credits just costs you dice (see <em>Leaving the apprenticeship</em>).
+  Play Days until <b>either</b> you reach your Credit goal <b>or</b> the Assignment deck runs out. Both send you
+  to the Final Exam; arriving short of the goal just costs you dice (see <em>Leaving the apprenticeship</em>).
   <b>If your Health ever reaches 0 you lose immediately</b> &mdash; during the apprenticeship or during
   the exams.
 </div>
@@ -56,10 +86,10 @@ as the record of that subject.</p>
 <ol class="seq">
   <li>Perform the recovery shown on the dial for this slot. (Day 1 Morning has no special recovery.)</li>
   <li>Reveal 2 Assignments and take one into the row as your <b>Primary</b>. <b>Discard the other.</b> A
-      Setback among the two <b>must</b> be the one you take. The Primary&rsquo;s recovery&#8209;colour dot
-      sets the colour queued for the next Time Slot.</li>
+      Setback among the two <b>must</b> be the one you take. The Primary&rsquo;s recovery&#8209;color dot
+      sets the color queued for the next Time Slot.</li>
   <li>Work Assignments with Strategy rolls.</li>
-  <li>Flip every Assignment still unresolved (below), exhaust non&#8209;stored committed dice, perform
+  <li>Rotate or discard unresolved Assignments as described below, exhaust non&#8209;stored committed dice, perform
       <b>Special Recovery</b>, then normal recovery by REC. Set the dial to the Primary&rsquo;s dot and
       advance.</li>
 </ol>
@@ -70,25 +100,27 @@ reveal, discard both revealed cards and take nothing.</p>
 
 <div class="box">
   <span class="lbl">Special Recovery</span>
-  Recover <b>all</b> exhausted dice of the queued recovery colour. Then recover dice equal to your REC
+  Recover <b>all</b> exhausted dice of the queued recovery color. Then recover dice equal to your REC
   separately.
 </div>
 
 <h3>STR in NAP</h3>
-<p>STR does two jobs and resets every Time Slot. It is the number of Strategy rolls available in the slot,
-<em>and</em> the maximum number of Assignments you may complete in that slot &mdash; even if more have enough
-successes on them.</p>
+<p>STR is the number of <b>Strategy rolls</b> available in the Time Slot, and it resets every slot. That is
+all it governs. <b>It does not cap how many Assignments you may complete.</b> One roll&rsquo;s successes can be
+spread across several Assignments, and cards already holding stored progress can finish alongside them, so
+clearing more Assignments than you have Strategy rolls is normal &mdash; it is what storing progress is
+<em>for</em>.</p>
 
 <h2>Working Assignments</h2>
 <ul>
   <li>You may spread dice across as many Assignments as you like during a roll.</li>
   <li><b>Required Effort.</b> Every roll must be a real attempt: choose at least one Assignment &mdash; a
-      Setback if one is present &mdash; and commit either one die matching that Assignment&rsquo;s colour dot,
-      Red, or at least two dice of another colour. Empty rolls are illegal. <b>Waive this only if no legal
+      Setback if one is present &mdash; and commit either one die matching that Assignment&rsquo;s color dot,
+      Red, or at least two dice of another color. Empty rolls are illegal. <b>Waive this only if no legal
       commitment is possible at all.</b></li>
   <li>To <b>complete an Assignment or store progress on it</b>, the successes you apply must include a
-      successful die matching its colour dot, Red as wild, or two successful dice of the same other colour.
-      The colour rule governs storing as well as finishing &mdash; you cannot bank progress with dice that
+      successful die matching its color dot, Red as wild, or two successful dice of the same other color.
+      The color rule governs storing as well as finishing &mdash; you cannot bank progress with dice that
       could never have counted.</li>
   <li>You may spend 1 STR to remove the initial Assignment without gaining its benefit.</li>
 </ul>
@@ -96,16 +128,22 @@ successes on them.</p>
 <h3>Unresolved Assignments</h3>
 <ul>
   <li>Successful dice on an unresolved Assignment may be <b>stored as progress</b> instead of exhausted.</li>
-  <li><b>At the end of the Time Slot</b>, every Assignment in the row that is still unresolved flips to its
+  <li><b>At the end of the Time Slot</b>, every unresolved Task or Setback flips to its
       <b>Demand</b> side &mdash; higher Target. Flipping costs nothing by itself.</li>
+  <li>An unresolved Opportunity rotates <b>180 degrees</b> for one final chance in the next Time Slot.
+      Opportunities store no progress. If the rotated Opportunity is still incomplete at the end of that slot,
+      discard it without applying an effect or penalty.</li>
   <li>An Assignment that is <em>already</em> on its Demand side and still unresolved at the end of a slot
       <b>inflicts its printed Demand penalty</b>, and does so again at the end of every slot it survives.</li>
   <li>Once the next Time Slot begins, stored dice are locked to that Assignment and cannot be voluntarily
       exhausted.</li>
   <li>When an Assignment finally resolves, its committed and stored dice exhaust unless the card says otherwise.
       A Credit Task completed on its <b>Demand</b> side still earns its Credit.</li>
-  <li>Opportunity effects that reach into the next Time Slot override restrictions printed on the Task cards
-      they apply to.</li>
+  <li>Rotate every completed Task, Opportunity, or Setback <b>90 degrees clockwise</b> and leave it in its
+      Time Slot until End of Day. Resolve its completion reward before continuing. Completed cards no longer
+      count toward the limit of 4 unresolved Assignments in that row.</li>
+  <li>Completing an Opportunity never pays out on the spot: you <b>keep the card as a coupon</b>
+      (see <em>Coupons</em>).</li>
 </ul>
 
 <h3>Assignment types</h3>
@@ -113,8 +151,25 @@ successes on them.</p>
   <tr><th>Type</th><th>Role</th></tr>
   <tr><td>Task</td><td>The only source of Credits.</td></tr>
   <tr><td>Setback</td><td>Mandatory and disruptive. No Credits.</td></tr>
-  <tr><td>Opportunity</td><td>Optional and beneficial. No Credits, no penalties.</td></tr>
+  <tr><td>Opportunity</td><td>Optional. No Credits or penalties; rotate once for a final chance. Completing one
+      earns a coupon.</td></tr>
 </table>
+
+<h3>Coupons</h3>
+<p>An Opportunity pays nothing when you complete it. Instead you <b>keep the card in front of you as a
+coupon</b>. A coupon has no expiry: spend it whenever you like, on any Day, including during the Final Exam.
+Each is <b>one use</b> &mdash; spend it, apply the effect, then discard the card.</p>
+<table>
+  <tr><th>Opportunity</th><th>Spend it to&hellip;</th></tr>
+  <tr><td>Take an Unauthorized Break</td><td>Cancel 1 Health loss.</td></tr>
+  <tr><td>Raid the Supply Closet</td><td>Count one die as any color for one roll.</td></tr>
+  <tr><td>Borrow Better Instruments</td><td>Add 1 success to a roll.</td></tr>
+  <tr><td>Study Nobulous&rsquo; Notes</td><td>Reduce one Assignment&rsquo;s remaining need by 2.</td></tr>
+  <tr><td>Salvage Useful Components</td><td>Add 2 successes to an Assignment, without rolling.</td></tr>
+  <tr><td>Practice on a Spare Brain</td><td>Count one Crit as 3 successes.</td></tr>
+</table>
+<p>Coupons that add successes still obey the color rule: they add to an application that already includes a
+legal die. You may hold any number of coupons, and unspent coupons score nothing at the end of the game.</p>
 
 <div class="box warn">
   <span class="lbl">Skulls</span>
@@ -125,8 +180,8 @@ successes on them.</p>
 </div>
 
 <h2>Following in Nobulous&rsquo; Footsteps (FINF)</h2>
-<p>FINF is the difficulty dial, and it works in two directions. <b>Choose one setting before you start</b> and
-use the card at that setting for the whole game. Standard difficulty is <b>&minus;1</b>.</p>
+<p>FINF is a second dial, independent of the difficulty level. <b>Choose one setting before you start</b> and
+use the card at that setting for the whole game. The standard setting is <b>&minus;1</b>.</p>
 <h3>Increase &mdash; +1 / +2 / +3</h3>
 <p>Shuffle the FINF card into the Assignment deck. When it is drawn, place it <em>before</em> the Primary
 selection for that slot, then add Assignments from the top of the deck:</p>
@@ -143,18 +198,19 @@ from the current row</b> and exhaust every die stored on it.</p>
 <p>FINF is not used during the Final Exam, in either direction.</p>
 
 <h2>End of Day</h2>
-<p>Reveal and discard the top card of the Assignment deck. Ignore all of its text, effects and Skulls.</p>
+<p>Move all completed Assignments from the Time Slots to the face&#8209;up discard pile. Reveal and discard the
+top card of the Assignment deck. Ignore all of its text, effects and Skulls.</p>
 
 <h2>The Final Exam</h2>
 <h3>Leaving the apprenticeship</h3>
-<p>Discard unresolved Assignments and exhaust their stored dice. If you have fewer than 6 Credits, exhaust
+<p>Discard unresolved Assignments and exhaust their stored dice. If you are short of your Credit goal, exhaust
 1 available die per missing Credit in the order Red, Purple, Blue, Green, Yellow, looping as needed.</p>
 
 <h3>Preparation</h3>
 <ul>
   <li>Recover 1 exhausted die.</li>
-  <li>Recover 1 further exhausted die per Credit <em>above</em> 6. Excess&#8209;Credit recovery may not pick the
-      same colour twice.</li>
+  <li>Recover 1 further exhausted die per Credit <em>above</em> your Credit goal. Excess&#8209;Credit recovery
+      may not pick the same color twice.</li>
   <li>Perform the queued Morning recovery.</li>
 </ul>
 
@@ -171,9 +227,9 @@ from the current row</b> and exhaust every die stored on it.</p>
 <h3>Resolving the exams</h3>
 <ol class="seq">
   <li>Reduce the exam&rsquo;s base Target by 1 for each Credit you hold in that subject.</li>
-  <li>Roll against the modified Target, honouring the exam&rsquo;s printed restriction.</li>
+  <li>Roll against the modified Target, honoring the exam&rsquo;s printed restriction.</li>
   <li><b>Lose 1 Health for each success below the modified Target.</b> If you still have Health, you passed.</li>
-  <li>Perform Special Recovery using that exam card&rsquo;s own colour dot, then resolve the next exam.</li>
+  <li>Perform Special Recovery using that exam card&rsquo;s own color dot, then resolve the next exam.</li>
 </ol>
 <p>All three exams are mandatory. FINF is not used during the Final Exam. Finish all three with at least 1
 Health to win NAP.</p>

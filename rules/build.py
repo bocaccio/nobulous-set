@@ -7,21 +7,21 @@ Needs WeasyPrint:  pip install weasyprint
 On Windows WeasyPrint also needs GTK; WSL or any Linux box is far easier.
 
 The HTML files are the master copy. style.css controls every visual choice --
-typeface, the two-column body, the coloured section bars, the boxes, the tables.
+typeface, the two-column body, the colored section bars, the boxes, the tables.
 Editing text in the HTML is safe: it is ordinary prose between tags.
 
 Useful patterns already in the stylesheet:
 
-    <h2>Section bar</h2>              full-width coloured heading
-    <h3>Sub-heading</h3>             accent-coloured, no bar
+    <h2>Section bar</h2>              full-width colored heading
+    <h3>Sub-heading</h3>             accent-colored, no bar
     <ol class="seq"> <li>...         numbered steps with circled numerals
     <div class="box">                tinted callout
       <span class="lbl">Label</span> ... its small caps heading
     <div class="box warn">           the same callout in warning orange
     <table><tr><th>..  <tr><td>..    rules table
-    <span class="sw P"></span>       a coloured die pip: P B G Y R
+    <span class="sw P"></span>       a colored die pip: P B G Y R
 
-Each file sets its own accent colour in the <style> block at the top.
+Each file sets its own accent color in the <style> block at the top.
 """
 import sys, os
 from weasyprint import HTML

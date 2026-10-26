@@ -1,0 +1,6 @@
+BAT  difficulty x NRJ tier   REC+2, all 7 Attack cards, 15,000 games
+
+difficulty    no NRJ    Tier I   Tier II  Tier III |   target
+Easy           65.4%     68.5%     71.5%     73.4% |      70%
+Standard       59.1%     63.4%     65.7%     68.1% |      63%
+Hard           53.3%     56.6%     60.0%     62.3% |      56%

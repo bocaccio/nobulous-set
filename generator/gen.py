@@ -1,4 +1,7 @@
 """Card generator for The Nobulous Set."""
+import json
+import re
+import pathlib
 import os, subprocess, math
 from weasyprint import HTML
 from PIL import Image
@@ -156,9 +159,22 @@ def _crop_marks(pg, lay, card_px):
         d.line([(ox + cols * w, y), (min(pw, ox + cols * w + t), y)], fill='#9a9a9a', width=1)
 
 
+def stamp(pg, text):
+    """A small label centred in the page's bottom margin: "Page 3 - Back"."""
+    from PIL import ImageDraw, ImageFont
+    d = ImageDraw.Draw(pg)
+    size = max(11, int(.11 * DPI))
+    try:
+        font = ImageFont.truetype(str(_FONT_DIR / 'DejaVuSans.ttf'), size)
+    except OSError:
+        font = ImageFont.load_default()
+    w = d.textlength(text, font=font)
+    d.text(((pg.width - w) / 2, pg.height - int(.19 * DPI)), text, fill='#6b6459', font=font)
+
+
 def paginate(ims, mirror=False, lay=None):
     """Tile card images into Letter pages.  mirror=True flips the column order
-    about the centre of the grid, which is what a long-edge duplex flip does."""
+    about the center of the grid, which is what a long-edge duplex flip does."""
     if not ims:
         return []
     lay = lay or pnp_layout(ims[0].size)
@@ -192,9 +208,21 @@ def write_pnp(path, pages):
     c.save()
 
 
+# Bundled DejaVu fonts (repo fonts/). Without these, machines that lack DejaVu
+# (e.g. Windows) silently substitute other fonts and the cards reflow.
+_FONT_DIR = pathlib.Path(__file__).resolve().parent.parent / 'fonts'
+FONT_FACES = ''.join(
+    '@font-face { font-family: "%s"; font-weight: %s; font-style: %s; src: url("%s"); } '
+    % (fam, wt, st, (_FONT_DIR / fn).as_uri()) for fam, wt, st, fn in [
+        ("DejaVu Sans", "normal", "normal", "DejaVuSans.ttf"), ("DejaVu Sans", "bold", "normal", "DejaVuSans-Bold.ttf"),
+        ("DejaVu Sans", "normal", "italic", "DejaVuSans-Oblique.ttf"), ("DejaVu Sans", "bold", "italic", "DejaVuSans-BoldOblique.ttf"),
+        ("DejaVu Serif", "normal", "normal", "DejaVuSerif.ttf"), ("DejaVu Serif", "bold", "normal", "DejaVuSerif-Bold.ttf"),
+        ("DejaVu Serif", "normal", "italic", "DejaVuSerif-Italic.ttf"), ("DejaVu Serif", "bold", "italic", "DejaVuSerif-BoldItalic.ttf")])
+
+
 def page(inner, accent, size=PORTRAIT, extra=''):
-    return ('<!DOCTYPE html><html><head><meta charset="utf-8"><style>%s%s</style></head>'
-            '<body style="--a:%s">%s</body></html>' % (css(*size), extra, accent, inner))
+    return ('<!DOCTYPE html><html><head><meta charset="utf-8"><style>%s%s%s</style></head>'
+            '<body style="--a:%s">%s</body></html>' % (FONT_FACES, css(*size), extra, accent, inner))
 
 
 def elements(targets, dots=None, mark=None):
@@ -210,7 +238,56 @@ def elements(targets, dots=None, mark=None):
     return ''.join(out)
 
 
-def render_deck(name, cards, accent_key, size=PORTRAIT, extra=''):
+def _manifest(name, sheet_cols, sheet_rows, count, card_px, back, back_is_sheet):
+    """What pack.py needs to cut single cards back out of the TTS sheets."""
+    w, h = card_px
+    with open(os.path.join(OUT, '%s_cards.json' % name), 'w', encoding='utf-8') as fh:
+        json.dump({'name': name, 'sheet': '%s_TTS.png' % name,
+                   'cols': sheet_cols, 'rows': sheet_rows, 'count': count,
+                   'landscape': w > h, 'back': back, 'backIsSheet': back_is_sheet}, fh, indent=1)
+
+
+# A title that wraps makes the header taller, but WeasyPrint sizes the flex
+# header from one line and the body then covers the subtitle. Measuring the
+# title here and reserving the height keeps every header honest.
+HDR_PAD = (1.9, 2.0, 2.4)          # top, bottom, side (mm)
+SUB_SIZE, SUB_GAP, PT_MM = 6.4, 0.7, 25.4 / 72.0
+
+
+def title_lines(title, size_pt, width_mm):
+    """How many lines a title takes at this size, by real glyph widths."""
+    from PIL import ImageFont
+    px = max(8, int(round(size_pt * PT_MM * DPI / 25.4)))
+    try:
+        font = ImageFont.truetype(str(_FONT_DIR / 'DejaVuSans-Bold.ttf'), px)
+    except OSError:
+        return 1
+    limit = width_mm * DPI / 25.4
+    lines, line = 1, ''
+    for word in title.split():
+        trial = (line + ' ' + word).strip()
+        if font.getlength(trial) <= limit or not line:
+            line = trial
+        else:
+            lines, line = lines + 1, word
+    return lines
+
+
+def hdr_fit(title, cls='', size=PORTRAIT):
+    """'min-height:..mm' when the title wraps onto more than one line, else ''."""
+    size_pt = 8.2 if 'xlong' in cls else 9.2 if 'long' in cls else 11.0
+    plain = re.sub('<[^>]+>', ' ', title).replace('&#8209;', '-').replace('&middot;', '.')
+    lines = title_lines(plain, size_pt, size[0] - 2 * 2.0 - 2 * HDR_PAD[2])
+    if lines < 2:
+        return ''
+    return 'min-height:%.2fmm' % (HDR_PAD[0] + HDR_PAD[1] + lines * size_pt * 1.04 * PT_MM
+                                  + SUB_GAP + SUB_SIZE * 1.25 * PT_MM)
+
+
+def render_deck(name, cards, accent_key, size=PORTRAIT, extra='', back=None):
+    """One-faced deck. `back` is the stem of a card back already built by
+    make_back; the PnP then alternates a page of fronts with a page of that back,
+    mirrored, so the sheets can be printed double-sided like the duplex decks."""
     acc = ACCENT[accent_key]
     html = ''.join('<div style="page-break-after:always">%s</div>' % c for c in cards)
     p = os.path.join(OUT, '_%s.pdf' % name)
@@ -228,7 +305,31 @@ def render_deck(name, cards, accent_key, size=PORTRAIT, extra=''):
     for i, im in enumerate(ims):
         sheet.paste(im, ((i % cols) * w, (i // cols) * h))
     sheet.save(os.path.join(OUT, '%s_TTS.png' % name))
-    write_pnp(os.path.join(OUT, '%s_PnP.pdf' % name), paginate(ims))
+    lay = pnp_layout((w, h))
+    pages = paginate(ims, lay=lay)
+    if back:
+        # One back for the deck, or a list with one back per card.
+        names = list(back) if isinstance(back, (list, tuple)) else [back] * len(ims)
+        if len(names) != len(ims):
+            raise SystemExit('render_deck(%s): %d backs for %d cards' % (name, len(names), len(ims)))
+        cache, backs_for_cards = {}, []
+        for stem in names:
+            if stem not in cache:
+                bp = os.path.join(OUT, '%s.png' % stem)
+                if not os.path.exists(bp):
+                    raise SystemExit('render_deck(%s): card back %s.png is not built yet - '
+                                     'call make_back before the deck' % (name, stem))
+                bim = Image.open(bp).convert('RGB')
+                cache[stem] = bim if bim.size == (w, h) else bim.resize((w, h))
+            backs_for_cards.append(cache[stem])
+        per = lay[2] * lay[3]
+        backs = [paginate(backs_for_cards[i:i + per], mirror=True, lay=lay)[0]
+                 for i in range(0, len(ims), per)]
+        pages = [pg for pair in zip(pages, backs) for pg in pair]
+    write_pnp(os.path.join(OUT, '%s_PnP.pdf' % name), pages)
+    _manifest(name, cols, rows, len(ims), (w, h),
+              ['%s.png' % stem for stem in back] if isinstance(back, (list, tuple))
+              else ('%s.png' % back if back else None), False)
     for f in imgs:
         os.remove(os.path.join(OUT, f))
     os.remove(p)
@@ -265,7 +366,7 @@ def render_duplex(name, fronts, backs, accent_key, size=PORTRAIT, extra=''):
             sheet.paste(im, ((i % cols) * w, (i // cols) * h))
         sheet.save(os.path.join(OUT, '%s_TTS%s.png' % (name, suffix)))
     # Front page then its mirrored back page, so a long-edge duplex flip puts
-    # each back behind its own face.  The mirror is about the centre of the
+    # each back behind its own face.  The mirror is about the center of the
     # full 3-wide grid, not about the cards that happen to be present, because
     # that is where the paper actually folds.
     lay = pnp_layout((w, h))
@@ -273,17 +374,18 @@ def render_duplex(name, fronts, backs, accent_key, size=PORTRAIT, extra=''):
     backs_p = paginate(ims['b'], mirror=True, lay=lay)
     pages = [p for pair in zip(fronts_p, backs_p) for p in pair]
     write_pnp(os.path.join(OUT, '%s_PnP.pdf' % name), pages)
+    _manifest(name, cols, rows, n, (w, h), '%s_TTS_back.png' % name, True)
     return n
 
 
-def make_back(fname, title, sub, colour, size=PORTRAIT):
+def make_back(fname, title, sub, color, size=PORTRAIT):
     """One card back image.  fname is the output stem."""
     inner = ('<div class="back" style="background:%s">'
              '<div class="bt">%s</div><div class="bs">%s</div>'
              '<div style="width:22mm;height:.6pt;background:#ffffff55;margin:2.6mm 0"></div>'
              '<div style="color:#ffffff88;font-size:5pt;letter-spacing:.28em;text-transform:uppercase">'
-             'The Nobulous Set</div></div>' % (colour, title, sub))
-    doc = page(inner, colour, size)
+             'The Nobulous Set</div></div>' % (color, title, sub))
+    doc = page(inner, color, size)
     p = os.path.join(OUT, '_b.pdf')
     HTML(string=doc).write_pdf(p)
     subprocess.run(['pdftoppm', '-r', str(DPI), '-png', '-singlefile', p,

@@ -1,4 +1,7 @@
-from gen import render_deck, render_duplex, make_back, elements, LANDSCAPE, PORTRAIT
+from gen import render_deck, render_duplex, make_back, elements, hdr_fit, LANDSCAPE, PORTRAIT
+
+# The shape of the cards being built, for header measurement.
+CARD_SIZE = PORTRAIT
 from aos import ROUTINE, SPECIALIZED, UNSTABLE, ADVANCED, REQ_MAP, FLAVOR, LIMITATIONS
 
 REWARD = {'hp1': 'Gain 1 HP',
@@ -8,8 +11,10 @@ REWARD = {'hp1': 'Gain 1 HP',
           'str_up_remove': '+1 STR; remove this Program',
           'opt_placeholder': 'Banish 1 Limitation from the game.'}
 
-STABLE_FTR = 'Any failed element makes this Program Overheated.'
-OVER_FTR = 'Any failed element sets this Program aside.'
+STABLE_FTR = ('Any failed element makes this Program Overheated. '
+              '2+ failed elements: also lose 1 HP (Catastrophic Failure).')
+OVER_FTR = ('Any failed element sets this Program aside. '
+            '2+ failed elements: also lose 1 HP (Catastrophic Failure).')
 ADV_FTR = ('2+ failed elements: lose 1 HP and the next Advanced Program is Overheated. '
            '0-1 failed elements: next Advanced Program is Stable. Recover between Advanced Programs.')
 
@@ -23,15 +28,19 @@ BIG = ('.txt{font-size:9.4pt;line-height:1.3}.sub{font-size:7.2pt}.ftr{font-size
        '.el .n{width:8.6mm;height:8.6mm;line-height:8.4mm;font-size:12.5pt}'
        '.el .d{width:3.8mm;height:3.8mm}.el .sp{height:3.8mm}.bar{margin-top:4.2mm}'
        '.flavor{font-size:7.1pt;line-height:1.28;font-style:italic;color:#6f675a;'
-       'border-left:1.2pt solid var(--a);padding-left:1.5mm;margin-top:2.4mm}')
+       'margin:2.4mm 0 1.4mm}')
 
 
-def C(title, sub, body, ftr='', warn=False, acc=None):
+def C(title, sub, body, ftr='', warn=False, acc=None, flavor=''):
     f = ('<div class="ftr%s">%s</div>' % (' warn' if warn else '', ftr)) if ftr else ''
+    # Flavor text sits at the bottom of the card, just above the footer.
+    fl = '<div class="flavor">%s</div>' % flavor if flavor else ''
     st = ' style="--a:%s"' % acc if acc else ''
-    return ('<div class="card"%s><div class="hdr"><div class="t%s">%s</div><div class="s">%s</div></div>'
-            '<div class="body">%s<div class="spacer"></div>%s</div></div>'
-            % (st, (' xlong' if len(title) > 30 else (' long' if len(title) > 19 else '')), title, sub, body, f))
+    cls = ' xlong' if len(title) > 30 else (' long' if len(title) > 19 else '')
+    fit = hdr_fit(title, cls, CARD_SIZE)
+    return ('<div class="card"%s><div class="hdr"%s><div class="t%s">%s</div><div class="s">%s</div></div>'
+            '<div class="body">%s<div class="spacer"></div>%s%s</div></div>'
+            % (st, ' style="%s"' % fit if fit else '', cls, title, sub, body, fl, f))
 
 
 def program(name, targets, mark, reward, deck, overheated):
@@ -42,13 +51,12 @@ def program(name, targets, mark, reward, deck, overheated):
     dots = (list(dots) + [None] * len(t))[:len(t)]
     body = elements(t, dots, mark)
     flavor = FLAVOR[name][1 if overheated else 0]
-    body += '<div class="flavor">%s</div>' % flavor
     if reward:
         body += ('<div class="spacer"></div><div class="sub">Program Reward</div>'
                  '<div class="txt" style="margin-top:.4mm">%s</div>' % reward)
     sub = '%s &middot; %s' % (deck, 'Overheated' if overheated else 'Stable')
     ftr = (OVER_FTR if overheated else STABLE_FTR) if reward else ADV_FTR
-    return C(name, sub, body, ftr, warn=True, acc=DECK_ACCENT[deck])
+    return C(name, sub, body, ftr, warn=True, acc=DECK_ACCENT[deck], flavor=flavor)
 
 
 for deckname, data in [('Routine', ROUTINE), ('Specialized', SPECIALIZED), ('Unstable', UNSTABLE)]:
@@ -56,16 +64,20 @@ for deckname, data in [('Routine', ROUTINE), ('Specialized', SPECIALIZED), ('Uns
     over = [program(n, t, m, REWARD[r], deckname, True) for n, t, m, r in data]
     print(deckname, render_duplex('AoS_%s' % deckname, stable, over, 'AoS', PORTRAIT, BIG), 'two-sided')
 
+# Card backs first: the deck PnPs interleave them behind the fronts.
+make_back('CardBack_AoS_Limitation', 'AoS', 'Limitation', '#2f5966')
+make_back('CardBack_AoS_ElementMat', 'AoS', 'Element mat', '#555555', PORTRAIT)
+print("card backs done")
+
 stable = [program(n, t, m, None, 'Advanced', False) for n, t, m in ADVANCED]
 over = [program(n, t, m, None, 'Advanced', True) for n, t, m in ADVANCED]
 print('Advanced', render_duplex('AoS_Advanced', stable, over, 'AoS', PORTRAIT, BIG), 'two-sided')
 
-LIM_FTR = ('Reveal after required-color dice are committed. '
-           'Withheld dice come from the remaining pool.')
-cards = [C(n, "Limitation", '<div class="txt c" style="font-size:10.5pt;margin-top:9mm">%s</div>'
-           '<div class="flavor">%s</div>' % (effect, flavor),
-           LIM_FTR, acc=DECK_ACCENT['Limitation']) for n, effect, flavor in LIMITATIONS]
-print('Limitations', render_deck('AoS_Limitations', cards, 'AoS', PORTRAIT, BIG))
+LIM_FTR = ('Reveal before committing required-color dice. '
+           'Withheld dice cannot be used in this Program.')
+cards = [C(n, "Limitation", '<div class="txt c" style="font-size:10.5pt;margin-top:9mm">%s</div>' % effect,
+           LIM_FTR, acc=DECK_ACCENT['Limitation'], flavor=flavor) for n, effect, flavor in LIMITATIONS]
+print('Limitations', render_deck('AoS_Limitations', cards, 'AoS', PORTRAIT, BIG, back='CardBack_AoS_Limitation'))
 
 TECHS = [
     ("Architect", "Reconfigure", "Once per Program, before rolling an element, move up to 2 allocated dice between unresolved elements."),
@@ -84,6 +96,7 @@ def techcard(n, a_, t):
              'Choose one Technician card and one side at setup.', acc=DECK_ACCENT['Technician'])
 
 
+CARD_SIZE = LANDSCAPE
 tech_a = [techcard(*t) for t in TECHS[0::2]]
 tech_b = [techcard(*t) for t in TECHS[1::2]]
 print('Technicians', render_duplex('AoS_Technicians', tech_a, tech_b, 'AoS', LANDSCAPE, BIG), 'two-sided')
@@ -93,13 +106,11 @@ for i in range(1, 6):
     cards.append('<div class="card" style="--a:%s">'
                  '<div class="hdr"><div class="t">Element %d</div>'
                  '<div class="s">Dice Allocation</div></div>'
-                 '<div class="body" style="padding:3mm">'
-                 '<div style="flex:1;border:1pt dashed #9c9484;border-radius:2mm;'
-                 'background:#f2eee2"></div>'
+                 '<div class="body" style="padding:3mm;background:#e8e4d8">'
+                 '<div style="flex:1;border:1.2pt dashed #8d8676;border-radius:2mm;'
+                 'background:#f7f4ea;box-shadow:inset 0 0 0 1.6mm #e8e4d8"></div>'
                  '<div style="font-size:7.4pt;line-height:1.26;text-align:center;margin-top:2.4mm;'
                  'color:#4a4239">Place all dice assigned to this element here before running '
                  'the Program.</div></div></div>' % (DECK_ACCENT['Mat'], i))
-print('Element mats', render_deck('AoS_ElementMats', cards, 'AoS', PORTRAIT, BIG))
+print('Element mats', render_deck('AoS_ElementMats', cards, 'AoS', PORTRAIT, BIG, back='CardBack_AoS_ElementMat'))
 
-make_back('CardBack_AoS_Limitation', 'AoS', 'Limitation', '#2f5966')
-print('back done')

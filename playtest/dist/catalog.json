@@ -1,0 +1,1328 @@
+{
+ "bat": {
+  "title": "Build-a-Tyrant",
+  "decks": [
+   {
+    "title": "Experiments",
+    "sheet": "BAT_Encounters_TTS.png",
+    "cols": 10,
+    "rows": 2,
+    "landscape": false,
+    "cards": [
+     {
+      "name": "Baseline Calibration",
+      "kind": "Experiment card"
+     },
+     {
+      "name": "Fine Motor Trial",
+      "kind": "Experiment card"
+     },
+     {
+      "name": "Structural Stress Trial",
+      "kind": "Experiment card"
+     },
+     {
+      "name": "Contaminated Tissue",
+      "kind": "Experiment card"
+     },
+     {
+      "name": "Performance Trial",
+      "kind": "Experiment card"
+     },
+     {
+      "name": "Load-Bearing Trial",
+      "kind": "Experiment card"
+     },
+     {
+      "name": "Diagnostic Trial",
+      "kind": "Experiment card"
+     },
+     {
+      "name": "Rapid Response Trial",
+      "kind": "Experiment card"
+     },
+     {
+      "name": "Full-Spectrum Trial",
+      "kind": "Experiment card"
+     },
+     {
+      "name": "Workspace Efficiency Study",
+      "kind": "Experiment card"
+     },
+     {
+      "name": "Restricted Materials Trial",
+      "kind": "Experiment card"
+     },
+     {
+      "name": "Independent Performance Trial",
+      "kind": "Experiment card"
+     },
+     {
+      "name": "Resource Depletion Study",
+      "kind": "Experiment card"
+     },
+     {
+      "name": "Reliability Trial",
+      "kind": "Experiment card"
+     },
+     {
+      "name": "Reagent Exclusion Trial",
+      "kind": "Experiment card"
+     },
+     {
+      "name": "Containment Failure",
+      "kind": "Experiment card"
+     },
+     {
+      "name": "Endurance Trial",
+      "kind": "Experiment card"
+     },
+     {
+      "name": "Field Retrofit Trial",
+      "kind": "Experiment card"
+     },
+     {
+      "name": "Methodological Optimization",
+      "kind": "Experiment card"
+     },
+     {
+      "name": "Degraded Tissue Study",
+      "kind": "Experiment card"
+     }
+    ],
+    "back": "CardBack_BAT_Encounter.png",
+    "backIsSheet": false,
+    "backLabel": "Card back"
+   },
+   {
+    "title": "Upgrades",
+    "sheet": "BAT_Upgrades_TTS.png",
+    "cols": 10,
+    "rows": 2,
+    "landscape": false,
+    "cards": [
+     {
+      "name": "Serrated Claws",
+      "kind": "Upgrade card · Power"
+     },
+     {
+      "name": "Reinforced Jaw",
+      "kind": "Upgrade card · Power"
+     },
+     {
+      "name": "Capacitor Muscles",
+      "kind": "Upgrade card · Power"
+     },
+     {
+      "name": "Piercing Horn",
+      "kind": "Upgrade card · Power"
+     },
+     {
+      "name": "Spring-Loaded Legs",
+      "kind": "Upgrade card · Mobility"
+     },
+     {
+      "name": "Prehensile Tail",
+      "kind": "Upgrade card · Mobility"
+     },
+     {
+      "name": "Tripwire Tendons",
+      "kind": "Upgrade card · Mobility"
+     },
+     {
+      "name": "Evasive Reflexes",
+      "kind": "Upgrade card · Mobility"
+     },
+     {
+      "name": "Thickened Hide",
+      "kind": "Upgrade card · Defense"
+     },
+     {
+      "name": "Layered Carapace",
+      "kind": "Upgrade card · Defense"
+     },
+     {
+      "name": "Chromatic Plating",
+      "kind": "Upgrade card · Defense"
+     },
+     {
+      "name": "Reactive Shell",
+      "kind": "Upgrade card · Defense"
+     },
+     {
+      "name": "Acute Hearing",
+      "kind": "Upgrade card · Senses"
+     },
+     {
+      "name": "Predatory Focus",
+      "kind": "Upgrade card · Senses"
+     },
+     {
+      "name": "Rapid Metabolism",
+      "kind": "Upgrade card · Senses"
+     },
+     {
+      "name": "Neural Overclock",
+      "kind": "Upgrade card · Senses"
+     }
+    ],
+    "back": "CardBack_BAT_Upgrade.png",
+    "backIsSheet": false,
+    "backLabel": "Card back"
+   },
+   {
+    "title": "Specimens",
+    "sheet": "BAT_Specimens_TTS.png",
+    "cols": 8,
+    "rows": 1,
+    "landscape": false,
+    "cards": [
+     {
+      "name": "Titanium-Toothed Mole",
+      "kind": "Specimen card · Power"
+     },
+     {
+      "name": "Voltaic Mantis",
+      "kind": "Specimen card · Power"
+     },
+     {
+      "name": "Blink Hare",
+      "kind": "Specimen card · Mobility"
+     },
+     {
+      "name": "Ghost Gecko",
+      "kind": "Specimen card · Mobility"
+     },
+     {
+      "name": "Ironback Beetle",
+      "kind": "Specimen card · Defense"
+     },
+     {
+      "name": "Prismatic Tortoise",
+      "kind": "Specimen card · Defense"
+     },
+     {
+      "name": "Echo Bat",
+      "kind": "Specimen card · Senses"
+     },
+     {
+      "name": "Regenerator Newt",
+      "kind": "Specimen card · Senses"
+     }
+    ],
+    "back": "CardBack_BAT_Upgrade.png",
+    "backIsSheet": false,
+    "backLabel": "Card back"
+   },
+   {
+    "title": "Tyrant Attacks",
+    "sheet": "BAT_TyrantAttacks_TTS.png",
+    "cols": 7,
+    "rows": 1,
+    "landscape": false,
+    "cards": [
+     {
+      "name": "Overwhelming Mass",
+      "kind": "Tyrant Attack card"
+     },
+     {
+      "name": "Adaptive Strike",
+      "kind": "Tyrant Attack card"
+     },
+     {
+      "name": "Predatory Instinct",
+      "kind": "Tyrant Attack card"
+     },
+     {
+      "name": "Spliced Reflexes",
+      "kind": "Tyrant Attack card"
+     },
+     {
+      "name": "Terrifying Roar",
+      "kind": "Tyrant Attack card"
+     },
+     {
+      "name": "Crushing Blow",
+      "kind": "Tyrant Attack card"
+     },
+     {
+      "name": "Unstable Growth",
+      "kind": "Tyrant Attack card"
+     }
+    ],
+    "back": "CardBack_BAT_TyrantAttack.png",
+    "backIsSheet": false,
+    "backLabel": "Card back"
+   },
+   {
+    "title": "Lab Rats",
+    "sheet": "BAT_Rats_TTS.png",
+    "cols": 4,
+    "rows": 1,
+    "landscape": true,
+    "cards": [
+     {
+      "name": "Rummage",
+      "kind": "Lab Rat card · side A",
+      "backName": "Rummage"
+     },
+     {
+      "name": "Fidget",
+      "kind": "Lab Rat card · side A",
+      "backName": "Fidget"
+     },
+     {
+      "name": "Whiz",
+      "kind": "Lab Rat card · side A",
+      "backName": "Whiz"
+     },
+     {
+      "name": "Mottle",
+      "kind": "Lab Rat card · side A",
+      "backName": "Mottle"
+     }
+    ],
+    "back": "BAT_Rats_TTS_back.png",
+    "backIsSheet": true,
+    "backLabel": "Lab Rat card · side B"
+   },
+   {
+    "title": "Buff HP track",
+    "sheet": "BAT_BuffHP_TTS.png",
+    "cols": 1,
+    "rows": 1,
+    "landscape": false,
+    "cards": [
+     {
+      "name": "Buff HP track",
+      "kind": "Tyrant track card"
+     }
+    ],
+    "back": "CardBack_BAT_BuffHP.png",
+    "backIsSheet": false,
+    "backLabel": "Card back"
+   }
+  ]
+ },
+ "nap": {
+  "title": "Nobulous' Apprentice Program",
+  "decks": [
+   {
+    "title": "Assignments",
+    "sheet": "NAP_Tasks_TTS.png",
+    "cols": 10,
+    "rows": 3,
+    "landscape": true,
+    "cards": [
+     {
+      "name": "Organize the Specimen Cabinet",
+      "kind": "Assignment card · Theory"
+     },
+     {
+      "name": "Prepare the Tissue Samples",
+      "kind": "Assignment card · Anatomy"
+     },
+     {
+      "name": "Calibrate the Neural Imager",
+      "kind": "Assignment card · Engineering"
+     },
+     {
+      "name": "Stabilize the Prototype Brain",
+      "kind": "Assignment card · Anatomy"
+     },
+     {
+      "name": "Sterilize the Surgical Tools",
+      "kind": "Assignment card · Procedure"
+     },
+     {
+      "name": "Label the Neural Samples",
+      "kind": "Assignment card · Theory"
+     },
+     {
+      "name": "Monitor the Growth Vats",
+      "kind": "Assignment card · Anatomy"
+     },
+     {
+      "name": "Tune the Cranial Resonator",
+      "kind": "Assignment card · Engineering"
+     },
+     {
+      "name": "Prepare the Transplant Rig",
+      "kind": "Assignment card · Engineering"
+     },
+     {
+      "name": "Align the Memory Probes",
+      "kind": "Assignment card · Engineering"
+     },
+     {
+      "name": "Test the Cerebral Coupler",
+      "kind": "Assignment card · Engineering"
+     },
+     {
+      "name": "Recalibrate the Bone Saw",
+      "kind": "Assignment card · Procedure"
+     },
+     {
+      "name": "Prime the Synaptic Pump",
+      "kind": "Assignment card · Procedure"
+     },
+     {
+      "name": "Map the Council Brain",
+      "kind": "Assignment card · Anatomy"
+     },
+     {
+      "name": "Condition the Donor Tissue",
+      "kind": "Assignment card · Anatomy"
+     },
+     {
+      "name": "Verify the Identity Matrix",
+      "kind": "Assignment card · Theory"
+     },
+     {
+      "name": "Complete the Splice Protocol",
+      "kind": "Assignment card · Procedure"
+     },
+     {
+      "name": "Document the Procedure",
+      "kind": "Assignment card · Theory"
+     },
+     {
+      "name": "Suture the Donor Incision",
+      "kind": "Assignment card · Procedure"
+     },
+     {
+      "name": "Decode Nobulous' Lecture Notes",
+      "kind": "Assignment card · Theory"
+     },
+     {
+      "name": "Update Nobulous' Lab Notes",
+      "kind": "Assignment card · Unmarked"
+     },
+     {
+      "name": "Inventory the Spare Organs",
+      "kind": "Assignment card · Unmarked"
+     },
+     {
+      "name": "Clean the Restraint Table",
+      "kind": "Assignment card · Unmarked"
+     },
+     {
+      "name": "Reassemble the Automaton Hand",
+      "kind": "Assignment card · Unmarked"
+     },
+     {
+      "name": "Dispose of Failed Samples",
+      "kind": "Assignment card · Unmarked"
+     },
+     {
+      "name": "Sharpen the Surgical Implements",
+      "kind": "Assignment card · Unmarked"
+     }
+    ],
+    "back": "CardBack_NAP_Assignment.png",
+    "backIsSheet": false,
+    "backLabel": "Card back"
+   },
+   {
+    "title": "Opportunities",
+    "sheet": "NAP_Opportunities_TTS.png",
+    "cols": 6,
+    "rows": 1,
+    "landscape": true,
+    "cards": [
+     {
+      "name": "Take an Unauthorized Break",
+      "kind": "Opportunity card"
+     },
+     {
+      "name": "Raid the Supply Closet",
+      "kind": "Opportunity card"
+     },
+     {
+      "name": "Borrow Better Instruments",
+      "kind": "Opportunity card"
+     },
+     {
+      "name": "Study Nobulous' Notes",
+      "kind": "Opportunity card"
+     },
+     {
+      "name": "Salvage Useful Components",
+      "kind": "Opportunity card"
+     },
+     {
+      "name": "Practice on a Spare Brain",
+      "kind": "Opportunity card"
+     }
+    ],
+    "back": "CardBack_NAP_Assignment.png",
+    "backIsSheet": false,
+    "backLabel": "Card back"
+   },
+   {
+    "title": "Setbacks",
+    "sheet": "NAP_Setbacks_TTS.png",
+    "cols": 6,
+    "rows": 1,
+    "landscape": true,
+    "cards": [
+     {
+      "name": "Power Failure",
+      "kind": "Setback card"
+     },
+     {
+      "name": "Contaminated Workbench",
+      "kind": "Setback card"
+     },
+     {
+      "name": "Jammed Centrifuge",
+      "kind": "Setback card"
+     },
+     {
+      "name": "Broken Neural Imager",
+      "kind": "Setback card"
+     },
+     {
+      "name": "Escaped Specimen",
+      "kind": "Setback card"
+     },
+     {
+      "name": "Automaton Malfunction",
+      "kind": "Setback card"
+     }
+    ],
+    "back": "CardBack_NAP_Assignment.png",
+    "backIsSheet": false,
+    "backLabel": "Card back"
+   },
+   {
+    "title": "Final Exams",
+    "sheet": "NAP_FinalExams_TTS.png",
+    "cols": 10,
+    "rows": 2,
+    "landscape": true,
+    "cards": [
+     {
+      "name": "Cranial Integrity Inspection",
+      "kind": "Final Exam card · Anatomy"
+     },
+     {
+      "name": "Fine Motor Assessment",
+      "kind": "Final Exam card · Anatomy"
+     },
+     {
+      "name": "Physiological Stress Test",
+      "kind": "Final Exam card · Anatomy"
+     },
+     {
+      "name": "Council Etiquette Simulation",
+      "kind": "Final Exam card · Theory"
+     },
+     {
+      "name": "Identity Recall Demonstration",
+      "kind": "Final Exam card · Theory"
+     },
+     {
+      "name": "Final Impostor Examination",
+      "kind": "Final Exam card · Theory"
+     },
+     {
+      "name": "Neural Response Screening",
+      "kind": "Final Exam card · Engineering"
+     },
+     {
+      "name": "Adaptive Reasoning Trial",
+      "kind": "Final Exam card · Engineering"
+     },
+     {
+      "name": "Council Recognition Drill",
+      "kind": "Final Exam card · Engineering"
+     },
+     {
+      "name": "Procedural Knowledge Review",
+      "kind": "Final Exam card · Procedure"
+     },
+     {
+      "name": "Unexpected Policy Debate",
+      "kind": "Final Exam card · Procedure"
+     },
+     {
+      "name": "Nobulous' Comprehensive Review",
+      "kind": "Final Exam card · Procedure"
+     }
+    ],
+    "back": "CardBack_NAP_FinalExam.png",
+    "backIsSheet": false,
+    "backLabel": "Card back"
+   },
+   {
+    "title": "Apprentices",
+    "sheet": "NAP_Apprentices_TTS.png",
+    "cols": 3,
+    "rows": 1,
+    "landscape": true,
+    "cards": [
+     {
+      "name": "Prodigy",
+      "kind": "Apprentice card · front",
+      "backName": "Slacker"
+     },
+     {
+      "name": "Technician",
+      "kind": "Apprentice card · front",
+      "backName": "Savant"
+     },
+     {
+      "name": "Opportunist",
+      "kind": "Apprentice card · front",
+      "backName": "Lab Rat"
+     }
+    ],
+    "back": "NAP_Apprentices_TTS_back.png",
+    "backIsSheet": true,
+    "backLabel": "Apprentice card · back"
+   },
+   {
+    "title": "Time Slots and FINF",
+    "sheet": "NAP_SlotsFINF_TTS.png",
+    "cols": 6,
+    "rows": 1,
+    "landscape": true,
+    "cards": [
+     {
+      "name": "Morning",
+      "kind": "Time Slot card"
+     },
+     {
+      "name": "Afternoon",
+      "kind": "Time Slot card"
+     },
+     {
+      "name": "Evening",
+      "kind": "Time Slot card"
+     },
+     {
+      "name": "Following in Nobulous' Footsteps",
+      "kind": "FINF card · 1 Morning"
+     },
+     {
+      "name": "Following in Nobulous' Footsteps",
+      "kind": "FINF card · 2 Afternoon"
+     },
+     {
+      "name": "Following in Nobulous' Footsteps",
+      "kind": "FINF card · 3 Evening"
+     }
+    ],
+    "back": "CardBack_NAP_TimeSlot.png",
+    "backs": [
+     "CardBack_NAP_TimeSlot.png",
+     "CardBack_NAP_TimeSlot.png",
+     "CardBack_NAP_TimeSlot.png",
+     "CardBack_NAP_Assignment.png",
+     "CardBack_NAP_Assignment.png",
+     "CardBack_NAP_Assignment.png"
+    ],
+    "backIsSheet": false,
+    "backLabel": "Card back"
+   }
+  ]
+ },
+ "aos": {
+  "title": "Automaton of Shale",
+  "decks": [
+   {
+    "title": "Routine Programs",
+    "sheet": "AoS_Routine_TTS.png",
+    "cols": 8,
+    "rows": 1,
+    "landscape": false,
+    "cards": [
+     {
+      "name": "Maintain Balance",
+      "kind": "Routine Program · Stable side"
+     },
+     {
+      "name": "Lift a Heavy Object",
+      "kind": "Routine Program · Stable side"
+     },
+     {
+      "name": "Climb an Incline",
+      "kind": "Routine Program · Stable side"
+     },
+     {
+      "name": "Move at Speed",
+      "kind": "Routine Program · Stable side"
+     },
+     {
+      "name": "Navigate a Passage",
+      "kind": "Routine Program · Stable side"
+     },
+     {
+      "name": "Cross Uneven Ground",
+      "kind": "Routine Program · Stable side"
+     },
+     {
+      "name": "Manipulate an Object",
+      "kind": "Routine Program · Stable side"
+     },
+     {
+      "name": "Detect an Obstacle",
+      "kind": "Routine Program · Stable side"
+     }
+    ],
+    "back": "AoS_Routine_TTS_back.png",
+    "backIsSheet": true,
+    "backLabel": "Routine Program · Overheated side"
+   },
+   {
+    "title": "Specialized Programs",
+    "sheet": "AoS_Specialized_TTS.png",
+    "cols": 8,
+    "rows": 1,
+    "landscape": false,
+    "cards": [
+     {
+      "name": "Traverse Difficult Terrain",
+      "kind": "Specialized Program · Stable side"
+     },
+     {
+      "name": "Move Without Detection",
+      "kind": "Specialized Program · Stable side"
+     },
+     {
+      "name": "Track a Moving Subject",
+      "kind": "Specialized Program · Stable side"
+     },
+     {
+      "name": "Climb a Vertical Surface",
+      "kind": "Specialized Program · Stable side"
+     },
+     {
+      "name": "Clear an Obstacle",
+      "kind": "Specialized Program · Stable side"
+     },
+     {
+      "name": "Operate in Low Light",
+      "kind": "Specialized Program · Stable side"
+     },
+     {
+      "name": "Maintain a Pursuit",
+      "kind": "Specialized Program · Stable side"
+     },
+     {
+      "name": "Carry a Moving Load",
+      "kind": "Specialized Program · Stable side"
+     }
+    ],
+    "back": "AoS_Specialized_TTS_back.png",
+    "backIsSheet": true,
+    "backLabel": "Specialized Program · Overheated side"
+   },
+   {
+    "title": "Unstable Programs",
+    "sheet": "AoS_Unstable_TTS.png",
+    "cols": 8,
+    "rows": 1,
+    "landscape": false,
+    "cards": [
+     {
+      "name": "Navigate Without Guidance",
+      "kind": "Unstable Program · Stable side"
+     },
+     {
+      "name": "Evade Observation",
+      "kind": "Unstable Program · Stable side"
+     },
+     {
+      "name": "Overcome a Barrier",
+      "kind": "Unstable Program · Stable side"
+     },
+     {
+      "name": "Intercept a Moving Subject",
+      "kind": "Unstable Program · Stable side"
+     },
+     {
+      "name": "Maintain Control of a Load",
+      "kind": "Unstable Program · Stable side"
+     },
+     {
+      "name": "Adapt to Changing Terrain",
+      "kind": "Unstable Program · Stable side"
+     },
+     {
+      "name": "Execute a Complex Route",
+      "kind": "Unstable Program · Stable side"
+     },
+     {
+      "name": "Operate Autonomously",
+      "kind": "Unstable Program · Stable side"
+     }
+    ],
+    "back": "AoS_Unstable_TTS_back.png",
+    "backIsSheet": true,
+    "backLabel": "Unstable Program · Overheated side"
+   },
+   {
+    "title": "Advanced Programs",
+    "sheet": "AoS_Advanced_TTS.png",
+    "cols": 8,
+    "rows": 1,
+    "landscape": false,
+    "cards": [
+     {
+      "name": "Rapid Approach",
+      "kind": "Advanced Program · Stable side"
+     },
+     {
+      "name": "Unobserved Entry",
+      "kind": "Advanced Program · Stable side"
+     },
+     {
+      "name": "Subject Acquisition",
+      "kind": "Advanced Program · Stable side"
+     },
+     {
+      "name": "Difficult Extraction",
+      "kind": "Advanced Program · Stable side"
+     },
+     {
+      "name": "Autonomous Infiltration",
+      "kind": "Advanced Program · Stable side"
+     },
+     {
+      "name": "Controlled Restraint",
+      "kind": "Advanced Program · Stable side"
+     },
+     {
+      "name": "Adaptive Pursuit",
+      "kind": "Advanced Program · Stable side"
+     },
+     {
+      "name": "Council Extraction Protocol",
+      "kind": "Advanced Program · Stable side"
+     }
+    ],
+    "back": "AoS_Advanced_TTS_back.png",
+    "backIsSheet": true,
+    "backLabel": "Advanced Program · Overheated side"
+   },
+   {
+    "title": "Limitations",
+    "sheet": "AoS_Limitations_TTS.png",
+    "cols": 6,
+    "rows": 1,
+    "landscape": false,
+    "cards": [
+     {
+      "name": "Yellow Shortage",
+      "kind": "Limitation card"
+     },
+     {
+      "name": "Green Shortage",
+      "kind": "Limitation card"
+     },
+     {
+      "name": "Blue Shortage",
+      "kind": "Limitation card"
+     },
+     {
+      "name": "Purple Shortage",
+      "kind": "Limitation card"
+     },
+     {
+      "name": "Diversity Protocol",
+      "kind": "Limitation card"
+     },
+     {
+      "name": "Red Quarantine",
+      "kind": "Limitation card"
+     }
+    ],
+    "back": "CardBack_AoS_Limitation.png",
+    "backIsSheet": false,
+    "backLabel": "Card back"
+   },
+   {
+    "title": "Technicians",
+    "sheet": "AoS_Technicians_TTS.png",
+    "cols": 3,
+    "rows": 1,
+    "landscape": true,
+    "cards": [
+     {
+      "name": "Architect",
+      "kind": "Technician card · front",
+      "backName": "Debugger"
+     },
+     {
+      "name": "Optimizer",
+      "kind": "Technician card · front",
+      "backName": "Engineer"
+     },
+     {
+      "name": "Operator",
+      "kind": "Technician card · front",
+      "backName": "Compiler"
+     }
+    ],
+    "back": "AoS_Technicians_TTS_back.png",
+    "backIsSheet": true,
+    "backLabel": "Technician card · back"
+   },
+   {
+    "title": "Element mats",
+    "sheet": "AoS_ElementMats_TTS.png",
+    "cols": 5,
+    "rows": 1,
+    "landscape": false,
+    "cards": [
+     {
+      "name": "Element mat 1",
+      "kind": "Element allocation mat"
+     },
+     {
+      "name": "Element mat 2",
+      "kind": "Element allocation mat"
+     },
+     {
+      "name": "Element mat 3",
+      "kind": "Element allocation mat"
+     },
+     {
+      "name": "Element mat 4",
+      "kind": "Element allocation mat"
+     },
+     {
+      "name": "Element mat 5",
+      "kind": "Element allocation mat"
+     }
+    ],
+    "back": "CardBack_AoS_ElementMat.png",
+    "backIsSheet": false,
+    "backLabel": "Card back"
+   }
+  ]
+ },
+ "nrj": {
+  "title": "Nobulous Research Journal",
+  "decks": [
+   {
+    "title": "BAT Protocols",
+    "sheet": "NRJ_BAT_Protocols_TTS.png",
+    "cols": 6,
+    "rows": 1,
+    "landscape": false,
+    "cards": [
+     {
+      "name": "Cross-Contamination",
+      "kind": "NRJ Protocol · BAT"
+     },
+     {
+      "name": "Shared Equipment Budget",
+      "kind": "NRJ Protocol · BAT"
+     },
+     {
+      "name": "Accelerated Trials",
+      "kind": "NRJ Protocol · BAT"
+     },
+     {
+      "name": "Questionable Procurement",
+      "kind": "NRJ Protocol · BAT"
+     },
+     {
+      "name": "Independent Funding",
+      "kind": "NRJ Protocol · BAT"
+     },
+     {
+      "name": "Questionable Methodology",
+      "kind": "NRJ Protocol · BAT"
+     }
+    ],
+    "back": "CardBack_NRJ_Protocol.png",
+    "backIsSheet": false,
+    "backLabel": "Card back"
+   },
+   {
+    "title": "BAT Modifications",
+    "sheet": "NRJ_BAT_Modifications_TTS.png",
+    "cols": 6,
+    "rows": 1,
+    "landscape": false,
+    "cards": [
+     {
+      "name": "Extra Limbs",
+      "kind": "NRJ Modification · BAT"
+     },
+     {
+      "name": "Secondary Brain",
+      "kind": "NRJ Modification · BAT"
+     },
+     {
+      "name": "Adrenal Gland",
+      "kind": "NRJ Modification · BAT"
+     },
+     {
+      "name": "Bone Plating",
+      "kind": "NRJ Modification · BAT"
+     },
+     {
+      "name": "Redundant Organs",
+      "kind": "NRJ Modification · BAT"
+     },
+     {
+      "name": "Hypermetabolism",
+      "kind": "NRJ Modification · BAT"
+     }
+    ],
+    "back": "CardBack_NRJ_Protocol.png",
+    "backIsSheet": false,
+    "backLabel": "Card back"
+   },
+   {
+    "title": "BAT Research Notes",
+    "sheet": "NRJ_BAT_ResearchNotes_TTS.png",
+    "cols": 6,
+    "rows": 1,
+    "landscape": false,
+    "cards": [
+     {
+      "name": "Unexpected Resilience",
+      "kind": "Research Note · BAT"
+     },
+     {
+      "name": "Successful Integration",
+      "kind": "Research Note · BAT"
+     },
+     {
+      "name": "Acceptable Losses",
+      "kind": "Research Note · BAT"
+     },
+     {
+      "name": "Cross-Species Compatibility",
+      "kind": "Research Note · BAT"
+     },
+     {
+      "name": "Controlled Failure",
+      "kind": "Research Note · BAT"
+     },
+     {
+      "name": "Red Means Go",
+      "kind": "Research Note · BAT"
+     }
+    ],
+    "back": "CardBack_NRJ_ResearchNote.png",
+    "backIsSheet": false,
+    "backLabel": "Card back"
+   },
+   {
+    "title": "NAP Impostor Tasks",
+    "sheet": "NRJ_NAP_ImpostorTasks_TTS.png",
+    "cols": 4,
+    "rows": 1,
+    "landscape": true,
+    "cards": [
+     {
+      "name": "Neural Extraction Practicum",
+      "kind": "Impostor Task · NAP"
+     },
+     {
+      "name": "Load-Bearing Prosthetics",
+      "kind": "Impostor Task · NAP"
+     },
+     {
+      "name": "Emergency Specimen Handling",
+      "kind": "Impostor Task · NAP"
+     },
+     {
+      "name": "Containment Drill",
+      "kind": "Impostor Task · NAP"
+     }
+    ],
+    "back": "CardBack_NAP_Assignment.png",
+    "backIsSheet": false,
+    "backLabel": "Card back"
+   },
+   {
+    "title": "NAP Following Setbacks",
+    "sheet": "NRJ_NAP_FollowingSetbacks_TTS.png",
+    "cols": 4,
+    "rows": 1,
+    "landscape": true,
+    "cards": [
+     {
+      "name": "Nobulous Needs This Now",
+      "kind": "Following Setback · NAP"
+     },
+     {
+      "name": "Unscheduled Demonstration",
+      "kind": "Following Setback · NAP"
+     },
+     {
+      "name": "Minor Laboratory Fire",
+      "kind": "Following Setback · NAP"
+     },
+     {
+      "name": "Where Did I Put That?",
+      "kind": "Following Setback · NAP"
+     }
+    ],
+    "back": "CardBack_NAP_Assignment.png",
+    "backIsSheet": false,
+    "backLabel": "Card back"
+   },
+   {
+    "title": "NAP Devious Opportunities",
+    "sheet": "NRJ_NAP_DeviousOpportunities_TTS.png",
+    "cols": 6,
+    "rows": 1,
+    "landscape": true,
+    "cards": [
+     {
+      "name": "Borrow the Master's Notes",
+      "kind": "Devious Opportunity · NAP"
+     },
+     {
+      "name": "Raid the Supply Cabinet",
+      "kind": "Devious Opportunity · NAP"
+     },
+     {
+      "name": "Extra Credit?",
+      "kind": "Devious Opportunity · NAP"
+     },
+     {
+      "name": "Helpful Test Subject",
+      "kind": "Devious Opportunity · NAP"
+     },
+     {
+      "name": "Nobulous Owes You One",
+      "kind": "Devious Opportunity · NAP"
+     },
+     {
+      "name": "Definitely Curriculum-Approved",
+      "kind": "Devious Opportunity · NAP"
+     }
+    ],
+    "back": "CardBack_NAP_Assignment.png",
+    "backIsSheet": false,
+    "backLabel": "Card back"
+   },
+   {
+    "title": "AoS Interference",
+    "sheet": "NRJ_AoS_Interference_TTS.png",
+    "cols": 6,
+    "rows": 1,
+    "landscape": false,
+    "cards": [
+     {
+      "name": "I Don't Have Time for This",
+      "kind": "Nobulous Interference · AoS"
+     },
+     {
+      "name": "Legacy Hardware",
+      "kind": "Nobulous Interference · AoS"
+     },
+     {
+      "name": "Nobulous Was Here",
+      "kind": "Nobulous Interference · AoS"
+     },
+     {
+      "name": "Undocumented Dependencies",
+      "kind": "Nobulous Interference · AoS"
+     },
+     {
+      "name": "Works on My Machine",
+      "kind": "Nobulous Interference · AoS"
+     },
+     {
+      "name": "Memory Leak",
+      "kind": "Nobulous Interference · AoS"
+     }
+    ],
+    "back": "CardBack_NRJ_Interference.png",
+    "backIsSheet": false,
+    "backLabel": "Card back"
+   },
+   {
+    "title": "AoS Corrupted Limitations",
+    "sheet": "NRJ_AoS_CorruptedLimitations_TTS.png",
+    "cols": 6,
+    "rows": 1,
+    "landscape": false,
+    "cards": [
+     {
+      "name": "Uneven Architecture",
+      "kind": "Corrupted Limitation · AoS"
+     },
+     {
+      "name": "Memory Collision",
+      "kind": "Corrupted Limitation · AoS"
+     },
+     {
+      "name": "Circular Reference",
+      "kind": "Corrupted Limitation · AoS"
+     },
+     {
+      "name": "Hard-Coded Constant",
+      "kind": "Corrupted Limitation · AoS"
+     },
+     {
+      "name": "Deprecated Function",
+      "kind": "Corrupted Limitation · AoS"
+     },
+     {
+      "name": "Stack Overflow",
+      "kind": "Corrupted Limitation · AoS"
+     }
+    ],
+    "back": "CardBack_AoS_Limitation.png",
+    "backIsSheet": false,
+    "backLabel": "Card back"
+   },
+   {
+    "title": "AoS Backdoor Routines",
+    "sheet": "NRJ_AoS_BackdoorRoutines_TTS.png",
+    "cols": 6,
+    "rows": 1,
+    "landscape": false,
+    "cards": [
+     {
+      "name": "Diagnostic Port",
+      "kind": "Backdoor Routine · AoS"
+     },
+     {
+      "name": "Privilege Escalation",
+      "kind": "Backdoor Routine · AoS"
+     },
+     {
+      "name": "Resource Fork",
+      "kind": "Backdoor Routine · AoS"
+     },
+     {
+      "name": "Packet Sniffer",
+      "kind": "Backdoor Routine · AoS"
+     },
+     {
+      "name": "Garbage Collection",
+      "kind": "Backdoor Routine · AoS"
+     },
+     {
+      "name": "Root Access",
+      "kind": "Backdoor Routine · AoS"
+     }
+    ],
+    "back": "CardBack_NRJ_BackdoorRoutine.png",
+    "backIsSheet": false,
+    "backLabel": "Card back"
+   },
+   {
+    "title": "Impostor Scenarios",
+    "sheet": "NRJ_ImposterScenarios_TTS.png",
+    "cols": 10,
+    "rows": 3,
+    "landscape": false,
+    "cards": [
+     {
+      "name": "The Physician's Greeting",
+      "kind": "Council Test · Knowledge"
+     },
+     {
+      "name": "An Old Injury",
+      "kind": "Council Test · Knowledge"
+     },
+     {
+      "name": "The Chamber Mechanism",
+      "kind": "Council Test · Knowledge"
+     },
+     {
+      "name": "Failed Apparatus",
+      "kind": "Council Test · Knowledge"
+     },
+     {
+      "name": "Order of Precedence",
+      "kind": "Council Test · Knowledge"
+     },
+     {
+      "name": "The Vote",
+      "kind": "Council Test · Knowledge"
+     },
+     {
+      "name": "A Disputed Citation",
+      "kind": "Council Test · Knowledge"
+     },
+     {
+      "name": "The Long Argument",
+      "kind": "Council Test · Knowledge"
+     },
+     {
+      "name": "The Ceremonial Seal",
+      "kind": "Council Test · Physical"
+     },
+     {
+      "name": "An Unwelcome Embrace",
+      "kind": "Council Test · Physical"
+     },
+     {
+      "name": "The Narrow Stair",
+      "kind": "Council Test · Physical"
+     },
+     {
+      "name": "A Sudden Fall",
+      "kind": "Council Test · Physical"
+     },
+     {
+      "name": "The Long Session",
+      "kind": "Council Test · Physical"
+     },
+     {
+      "name": "Tainted Wine",
+      "kind": "Council Test · Physical"
+     },
+     {
+      "name": "Across the Chamber",
+      "kind": "Council Test · Physical"
+     },
+     {
+      "name": "The Darkened Corridor",
+      "kind": "Council Test · Physical"
+     },
+     {
+      "name": "Tracks in the Yard",
+      "kind": "Council Test · Cover-Up"
+     },
+     {
+      "name": "The Night Watchman's Account",
+      "kind": "Council Test · Cover-Up"
+     },
+     {
+      "name": "An Open Window",
+      "kind": "Council Test · Cover-Up"
+     },
+     {
+      "name": "Someone Was Seen",
+      "kind": "Council Test · Cover-Up"
+     },
+     {
+      "name": "Rope Burns",
+      "kind": "Council Test · Cover-Up"
+     },
+     {
+      "name": "The Sedative Ledger",
+      "kind": "Council Test · Cover-Up"
+     },
+     {
+      "name": "The Missing Hours",
+      "kind": "Council Test · Cover-Up"
+     },
+     {
+      "name": "A Second Search",
+      "kind": "Council Test · Cover-Up"
+     }
+    ],
+    "back": "CardBack_NRJ_CouncilTest.png",
+    "backIsSheet": false,
+    "backLabel": "Card back"
+   }
+  ]
+ }
+}

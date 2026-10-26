@@ -35,7 +35,7 @@ for key, title in BOOKS:
 
     body = soup.select_one('.body')
 
-    # coloured die pips carry no text; the colour is already written out
+    # colored die pips carry no text; the color is already written out
     for sw in body.select('span.sw'):
         sw.decompose()
 

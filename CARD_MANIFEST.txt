@@ -37,7 +37,7 @@ EARLIER (rev 26)
     A tap is usually more raw damage (Value-1, so 1 to 4) than Red's 7/6, so Red
     becomes the weapon of a Rat with nothing left to tap.
     Two ways of playing the choice were measured - purely for damage (Red on
-    5-11% of rounds) and to protect armour (30-49%) - and they land WITHIN ONE
+    5-11% of rounds) and to protect armor (30-49%) - and they land WITHIN ONE
     POINT of each other at every rung.  The rule is robust to how well it is
     played, which is worth more than either number.
     Rejected on measurement: Red pinned to the leftmost undamaged Splice until
@@ -113,7 +113,7 @@ EARLIER (rev 22)
     pattern keeps going (7/7 is about 47%).
   - THE SPLICE ROW IS SHUFFLED.  Defense-first, by type, and by type-then-Value
     all measured within 2 points of a full shuffle, so the row is simply
-    randomised - one fewer setup instruction and no two Tyrants look alike.
+    randomized - one fewer setup instruction and no two Tyrants look alike.
     Only smallest-Splice-first is measurably worse for the Rats.
   - Tier III campaign back on target: 71.8% with BAT at Standard, 66.2% at Hard.
     The rev 21 drift is gone; Standard's extra Buff HP absorbed it.
@@ -133,7 +133,7 @@ EARLIER (rev 21)
         Specimens all 8 are Value 5
     Every BAT figure before rev 21 was measured against the invented deck.  The
     real one is stronger for the Rats: mean regular Value 2.81 against 2.5, and
-    a Value 5 Specimen is superb all-or-nothing armour in a Rat's hands.
+    a Value 5 Specimen is superb all-or-nothing armor in a Rat's hands.
     'Defense' is now read from the card's category instead of being guessed from
     an even Value.
   - LADDER RE-PEGGED on the corrected deck:
@@ -197,8 +197,8 @@ EARLIER (rev 18)
   - THE TYRANT NOW USES ITS SPLICES.  Its FRONTMOST Splice applies its effect on
     every Tyrant attack - free, automatic, no tapping - and it uses the card's
     PRINTED Value, so damage already marked on that card does not weaken it.
-    Until now the Tyrant's Splices were pure armour and their printed effects
-    were never used at all.  Modelled as the Rats' own tap abstraction, Value-1
+    Until now the Tyrant's Splices were pure armor and their printed effects
+    were never used at all.  Modeled as the Rats' own tap abstraction, Value-1
     extra damage, this costs the Rats 4-10 points and the cost grows with
     difficulty.  A 'tap' variant was tested and rejected: with no cost to
     tapping, the Tyrant would tap every round and its frontmost Splice could
@@ -252,8 +252,8 @@ EARLIER (rev 16)
     Page counts: BAT 15 -> 11, NAP 14 -> 10, AoS 17 -> 12, NRJ 17 -> 12.
   - The Buff HP dial is now included in NobulousSet_BAT_PnP.pdf (pages 10-11,
     duplex).  It was previously only in its own BAT_BuffHP_PnP.pdf.
-  - Duplex back pages now mirror about the centre of the full 3-wide grid
-    rather than about the cards present in that row.  The old behaviour put
+  - Duplex back pages now mirror about the center of the full 3-wide grid
+    rather than about the cards present in that row.  The old behavior put
     the backs of a part-filled row one or two columns out of register.
   - PNP_CONTENTS.txt lists every section, its page range and whether it is a
     duplex run.
@@ -265,22 +265,22 @@ EARLIER (rev 15)
   - NAP Tasks: full-width green REQUEST band across the top of the middle
     section, full-width red DEMAND band (rotated 180) across the bottom.
   - NAP Task titles wrap to two rows on the left spine, clear of the corner.
-  - Top-left corner stack, top to bottom: subject icon, recovery-colour dot,
+  - Top-left corner stack, top to bottom: subject icon, recovery-color dot,
     skulls.  Subject icons: Anatomy (heart, maroon), Engineering (gear, blue),
     Procedure (scalpel, purple), Theory (book, olive).  Non-Credit Tasks have
     no subject icon.
   - Every NAP deck is now landscape.  Opportunity band gold, Setback band blue,
     Final Exam band black.
-  - Morning / Afternoon / Evening set in 30pt over the tinted slot colour.
+  - Morning / Afternoon / Evening set in 30pt over the tinted slot color.
   - Final Exam cards carry the subject icon beside the recovery dot, matching the
     corner stack on the Credit Tasks.
   - NAP Task cards: Request and Demand text enlarged to 9pt / 23pt numerals, the
     Demand block moved flush to its band, and a hairline rule added at the middle
     to separate the two sides.
-  - One die-colour palette across the whole set, on every NAP recovery dot and
-    every AoS required-colour dot:
+  - One die-color palette across the whole set, on every NAP recovery dot and
+    every AoS required-color dot:
         Yellow #e8b93a   Green #4f9c62   Blue #4a86c8   Purple #8d5bb0   Red #c0392b
-  - AoS header bands now follow the source deck colours: Routine #315c49,
+  - AoS header bands now follow the source deck colors: Routine #315c49,
     Specialized #4c4a75, Unstable #7a3838, Advanced #8a5a20, Limitation #2f5966,
     Technician #3f5260, Element mat #555555.
   - AoS body text, element numerals and headings enlarged.
@@ -289,15 +289,15 @@ EARLIER (rev 15)
   - The Assembly / Tyrant card is removed.  Splices stack beside the Encounter
     deck and become the Tyrant's Upgrades when it awakens; the Tyrant's Health,
     REC and dice pool are in the rulebook.
-  - NRJ cards now match their base-game analogue rather than using one NRJ colour:
+  - NRJ cards now match their base-game analog rather than using one NRJ color:
       Experimental Protocols and Research Notes  BAT green
-      Unauthorized Modifications                 BAT category colours + UNAUTHORIZED strip
+      Unauthorized Modifications                 BAT category colors + UNAUTHORIZED strip
       Impostor Tasks                             NAP purple
       Following Setbacks                         NAP setback blue
       Devious Opportunities                      NAP opportunity gold
       Nobulous Interference, Backdoor Routines   AoS rust
       Corrupted Limitations                      AoS limitation teal
-      Imposter Scenarios                         coloured by domain: Knowledge purple,
+      Imposter Scenarios                         colored by domain: Knowledge purple,
                                                  Physical green, Cover-Up rust
     Every NRJ card names its tier in the footer.
   - The four AoS Program decks are now genuinely two-sided: Stable on the face,
@@ -313,8 +313,8 @@ EARLIER (rev 15)
   - Impostor Tasks now use the base NAP Task layout: name on the left spine,
     subject icon in the corner, green REQUEST band above and red DEMAND band
     below, and GRANTS NO CREDIT on the right spine where a Task's penalty sits.
-  - BAT band colours by function: Encounters, Lab Rats and Assembly keep the
-    green house colour; Upgrades and Specimens are coloured by category
+  - BAT band colors by function: Encounters, Lab Rats and Assembly keep the
+    green house color; Upgrades and Specimens are colored by category
     (Power #8a3d2e, Mobility #2c6e63, Defense #3c5a8a, Senses #6b4a8a);
     Specimens add a gold SPECIMEN strip and a warm card tint; Tyrant Attacks
     use #4a1f1f with a cool tint.
@@ -424,7 +424,7 @@ BAT   - "The NRJ tiers sit between these rungs..." (difficulty table note)
       - closing clause of "Two kinds of armor": "That is why the whole battle
         runs on one die: the Tyrant is a slab you grind down..."
 NAP   - closing clause of "Special Recovery": "Choosing which card becomes
-        Primary is therefore choosing which colour you get back in bulk..."
+        Primary is therefore choosing which color you get back in bulk..."
       - End of Day: "The apprenticeship is finite: work you never took is work
         that disappears."
       - exam pool: "Neglected subjects are thinly represented but brutal..."
@@ -441,7 +441,7 @@ NRJ   - "This is where the campaign pays off" callout box — deleted
 
 Callouts that are RULES, not rationale, were kept: Success, Failure, Two kinds
 of armor (trimmed), How the apprenticeship ends, Special Recovery (trimmed),
-Skulls, Required colours, If you cannot supply a required colour, Dice come back
+Skulls, Required colors, If you cannot supply a required color, Dice come back
 unless you are punished (trimmed), Catastrophic Failure, The tiers are not
 difficulty levels, Impostor Tasks, Suspicion is uncapped (trimmed).
 
