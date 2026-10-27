@@ -7,7 +7,7 @@ import aos
 GAMES = 4000
 TIERS = ["none", "I", "II", "III"]
 APPS = ["Prodigy", "Slacker", "Technician", "Savant", "Opportunist", "Lab Rat"]
-NAP_LEVELS = [("Easy", 5), ("Standard", 6), ("Hard", 7), ("Nobulous", 8)]
+NAP_LEVELS = [(k, v) for k, v in nap.LEVELS.items()]
 
 
 def pct(x):
@@ -22,8 +22,9 @@ def header(title, cols):
 
 def nap_sweep():
     for level, credits in NAP_LEVELS:
-        nap.CREDITS_TO_LEAVE = credits
-        header("NAP - %s (%d Credits), FINF Reduce 1" % (level, credits), TIERS)
+        nap.CREDITS_TO_LEAVE, nap.SETBACKS_IN_DECK = credits
+        header("NAP - %s (%d Credits, %d Setbacks), FINF Reduce 1"
+               % ((level,) + tuple(credits)), TIERS)
         for app in APPS:
             row = [nap.run(app, "-1", GAMES, tier=t) for t in TIERS]
             print("%-22s" % app + "".join("%9s" % pct(v) for v in row))

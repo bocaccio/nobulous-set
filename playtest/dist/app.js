@@ -26,11 +26,13 @@
   // Difficulty is how many Programs come from each deck, not which deck you
   // pick. All three carry the same reward multiset, so mixing them changes
   // only the Targets and element counts.
+  // Specialized held at 3; each step up trades one Routine Program for one
+  // Unstable. Measured 45.8 / 34.0 / 24.5 / 17.5.
   const AOS_LEVELS = {
-    Easy:     [4, 4, 0],
-    Standard: [3, 4, 1],
-    Hard:     [2, 3, 3],
-    Nobulous: [0, 4, 4],
+    Easy:     [5, 3, 0],
+    Standard: [4, 3, 1],
+    Hard:     [3, 3, 2],
+    Nobulous: [2, 3, 3],
   };
   const AOS_DECK_NAMES = ["Routine", "Specialized", "Unstable"];
   // A Program knows which deck it came from, so every per-deck lookup goes
@@ -156,7 +158,7 @@
     { name: "Architect", side: "front", index: 0, ability: "Reconfigure — Once per Program, before rolling an element, move up to 2 allocated dice between unresolved elements." },
     { name: "Debugger", side: "back", index: 0, ability: "Debug — Once per Program, after failing by exactly 1 success, reroll 1 allocated die. If it still fails, exhaust that die." },
     { name: "Optimizer", side: "front", index: 1, ability: "Optimize — Once per Program, Target +1 successes may count as Optimal Implementation." },
-    { name: "Engineer", side: "back", index: 1, ability: "Redundancy — For up to 2 elements per Program, the safe allocation threshold is Target +2 instead of Target +1." },
+    { name: "Engineer", side: "back", index: 1, ability: "Redundancy — For up to 2 elements per Program, the allocation cap is Target +2 instead of Target +1." },
     { name: "Operator", side: "front", index: 2, ability: "Workaround — When a non-Red Limitation would withhold 2 dice, you may withhold 1 of those dice as another non-Red color instead." },
     { name: "Compiler", side: "back", index: 2, ability: "Compile — When spending an additional STR roll, reroll any number of dice on that element while keeping the others." }
   ];

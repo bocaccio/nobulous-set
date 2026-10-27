@@ -202,6 +202,9 @@ TIER_INDEX = {"none": 0, "I": 1, "II": 2, "III": 3}
 
 # Commit this much over the wall's Value, to cover the spread on the roll.
 THRESHOLD_MARGIN = 1.15
+# "Commit up to 6 dice from the shared battle pool." Overridable so the cap
+# itself can be measured.
+RAT_DICE_CAP = 6
 
 
 def module_active(name, tier):
@@ -1079,9 +1082,14 @@ class Game(object):
             pool[0].zone = "banished"
 
     def splice_breaks(self, s):
-        """A Splice fires its effect ONCE, as it breaks, instead of running
-        as an aura every round. The payload is a banished die of the card's
-        own color - the spliced part eats the matching equipment."""
+        """A breaking Splice banishes a die of its own color.
+
+        Its printed effect is NOT used. An earlier draft had it fire once as
+        a parting shot; that was cut because the effects are ongoing or
+        attack-time modifiers with nothing to attach to at the moment the
+        card dies - and this function never implemented it anyway, so every
+        measurement was already taken without it.
+        """
         self.last_destroyed = s.colors
         for _ in range(PROTO["break_banish"]):
             pool = self.shared_pool()
@@ -1092,6 +1100,12 @@ class Game(object):
                 return
             match = [d for d in pool if d.color in s.colors]
             (match or pool)[0].zone = "banished"
+
+    def wall_queue(self):
+        """The printed Values still standing, in the order damage meets them."""
+        if not PROTO["threshold"] or self.buff > 0:
+            return []
+        return [sp.value for sp in self.track()]
 
     def front_requirement(self):
         """What the next thing in the row needs, or None if it just chips."""
@@ -1156,7 +1170,7 @@ class Game(object):
         an Upgrade do double duty: armor, and permission to roll dice.
         """
         if self.dice_rule == "six":
-            return 6
+            return RAT_DICE_CAP
         if not rat.upgrades:
             return 2
         return min(6, max(2, max(u.value for u in rat.upgrades)))
@@ -1346,6 +1360,28 @@ class Game(object):
                         break
                 # Out of reach even at full commitment: swing anyway, because
                 # stalling just hands the Tyrant free attacks.
+                cap = want or cap
+        elif self.commit_policy == "chain":
+            # Spend to break as many consecutive walls as this throw can
+            # afford. Costs more dice than taking them one at a time, but
+            # saves rounds off the clock and Tyrant attacks.
+            walls = self.wall_queue()
+            avail = sorted(self.shared_pool(), key=lambda d: -EV[d.color])
+            if not walls:
+                cap = min(cap, rat.effective_rec() + self.battle_rec_bonus)
+            else:
+                running, targets = 0, []
+                for v in walls:
+                    running += v
+                    targets.append(running)
+                total, want = EV_REROLL["red"], None
+                reached = 0
+                for i, d in enumerate(avail[:cap], start=1):
+                    total += EV_REROLL[d.color]
+                    while reached < len(targets) and \
+                            total >= targets[reached] * THRESHOLD_MARGIN:
+                        reached += 1
+                        want = i
                 cap = want or cap
         pool = self.commit_for_splice(cap)
         if not pool and self.notes > 0:

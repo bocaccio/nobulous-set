@@ -50,11 +50,27 @@ DECKS = ["Routine", "Specialized", "Unstable"]
 
 # Difficulty is the mix of the three decks, not a choice of one: (Routine,
 # Specialized, Unstable), summing to the 8 Programs you cycle.
+# ---- dice-economy levers, all defaulting to the printed rules ----------
+# AoS's pool never runs short: a Program costs 0.45 dice net. These exist to
+# measure what would change that. See dicetension.py.
+OVERKILL_SCALE = False   # True: burn 1 die per point above Target+1
+RECOVERY_DELTA = 0       # added to the REC recovered each Program
+OPTIMAL_BONUS = 2        # dice back for landing exactly on Target
+RECOVERY_ON_CLEAN = False  # base REC only recovers on a Program with no
+                           # failed element, so a bad Program compounds
+ELEMENT_COST = 0         # dice exhausted per resolved element, win or lose:
+                         # makes allocating dice into SPENDING them, which
+                         # the printed rules explicitly say it is not
+
+
+# (Routine, Specialized, Unstable), summing to the 8 Programs you cycle.
+# Specialized is held at 3 and each step up trades one Routine Program for
+# one Unstable, so the ladder is a single substitution repeated.
 LEVELS = {
-    "Easy": (4, 4, 0),
-    "Standard": (3, 4, 1),
-    "Hard": (2, 3, 3),
-    "Nobulous": (0, 4, 4),
+    "Easy": (5, 3, 0),
+    "Standard": (4, 3, 1),
+    "Hard": (3, 3, 2),
+    "Nobulous": (2, 3, 3),
 }
 LEVEL_NAMES = ["Easy", "Standard", "Hard", "Nobulous"]
 
@@ -116,6 +132,10 @@ PUSH_REROLL = True
 # point of it. "select" is the base 20 Strong procedure - choose which dice
 # go back in the cup - and is kept only so the difference can be measured.
 REROLL_MODE = "element"
+# Counts how often each resolution branch fires, for working out which rules
+# earn their place in the rulebook. Off unless a caller clears it.
+FIRINGS = None
+
 TARGET_DELTA = 0   # flat rise on every printed element Target
 
 CORRUPT_CHANCE = 0.5
@@ -233,10 +253,13 @@ class Game(object):
         return held
 
     def allocate(self, targets):
-        """Allocate up to Target + 1 dice worth of expected successes.
+        """Fill each element to its cap.
 
-        Going past the safe threshold is what exhausts dice, so the policy
-        stops there rather than dumping the whole pool onto one Element.
+        Target + 1 is a hard cap in the rules, raised to Target + 2 on up to
+        two elements by the Engineer. It used to be a soft threshold you
+        could exceed by paying exhausted dice; that penalty fired zero times
+        in 266,000 element resolutions across all six Technicians, because
+        going past it is never worth the dice, so it became a limit.
         """
         pool = sorted(self.available, key=lambda c: -EV[c])
         plan = [[] for _ in targets]
@@ -250,8 +273,7 @@ class Game(object):
             if spare >= 2 and hard:
                 order = sorted(hard, key=lambda i: -targets[i])
                 self.wide = set(order[:min(2, spare // 2)])
-        # Exactly Target + 1 dice is free; anything beyond it starts burning
-        # dice, so fill each Element to the threshold and no further.
+        # The cap is Target + 1, and the loop below cannot exceed it.
         for i, t in enumerate(targets):
             # Undocumented Dependencies caps the first element at its Target,
             # taking away the free Target + 1 die there.
@@ -300,7 +322,7 @@ class Game(object):
         rerolls = max(0, self.str_ - 1)
         failed = 0
         leaked = 0
-        recovery = self.rec   # REC each Program, plus 2 per Optimal Element
+        recovery = max(0, self.rec + RECOVERY_DELTA)   # plus the Optimal bonus
         used_debug = used_optimize = False
         carry = 0              # link: a surplus success held for a later element
         link_spent = cache_spent = analyse_spent = False
@@ -376,19 +398,45 @@ class Game(object):
                     used_debug = True
                     total += sum(self.element_values(i, misses[:1]))
             miss = total < t
+            if FIRINGS is not None:
+                safe_n = t + (2 if i in getattr(self, "wide", set()) else 1)
+                FIRINGS["elements"] += 1
+                if miss:
+                    FIRINGS["fail (burn all)"] += 1
+                else:
+                    if used_reroll:
+                        FIRINGS["used an extra roll"] += 1
+                        if total == t:
+                            FIRINGS["extra roll AND exactly on Target"] += 1
+                    if total == t:
+                        FIRINGS["exactly on Target (Optimal, +2)"] += 1
+                    elif total == t + 1:
+                        FIRINGS["beat by exactly 1 (no penalty)"] += 1
+                    else:
+                        FIRINGS["beat by 2+ (burn 1)"] += 1
+                    if len(dice) > safe_n:
+                        FIRINGS["allocated past Target+1"] += 1
+                        if total >= t + 2:
+                            FIRINGS["  both over-rules at once"] += 1
             if miss:
                 failed += 1
             if used_reroll or miss:
                 self.exhausted += dice          # the whole Element exhausts
             else:
-                safe = t + (2 if i in getattr(self, "wide", set()) else 1)
-                excess = max(0, len(dice) - safe)
-                overkill = 1 if total >= t + 2 else 0
+                # Allocation is capped, so there is never an excess to burn;
+                # only overshooting the Target itself costs a die.
+                excess = 0
+                over = max(0, total - (t + 1))     # points past the safe band
+                overkill = over if OVERKILL_SCALE else (1 if over else 0)
                 if excess or overkill:
                     leaked += 1                 # this element over-allocated
-                burn = min(len(dice), excess + overkill)
-                self.exhausted += dice[:burn]
-                self.available += dice[burn:]   # the rest come straight back
+                burn = min(len(dice), excess + overkill + ELEMENT_COST)
+                # allocate() hands these out strongest-first, so dice[:burn]
+                # used to burn the BEST dice on the element. A player gives up
+                # the worst.
+                order = sorted(dice, key=lambda c: EV[c])
+                self.exhausted += order[:burn]
+                self.available += order[burn:]  # the rest come straight back
                 # link: bank one success from an element that cleared with room.
                 if self.tech in ("link","link2") and not link_spent and total >= t + (2 if self.tech=="link2" else 1):
                     link_spent = True
@@ -401,11 +449,11 @@ class Game(object):
                     if burn:
                         del self.exhausted[-burn:]
                 if total == t:                  # Optimal Implementation
-                    recovery += 2
+                    recovery += OPTIMAL_BONUS
                 elif (self.tech == "optimizer" and not used_optimize
                       and total == t + 1):
                     used_optimize = True        # Optimize: Target + 1 counts
-                    recovery += 2
+                    recovery += OPTIMAL_BONUS
 
         # Root Access: treat one failed element as successful. Spent to save a
         # Program from Catastrophic Failure, which is the only thing that costs
@@ -417,7 +465,15 @@ class Game(object):
         self.available += withheld
         if self.intf == "memory_leak":
             for _ in range(min(leaked, len(self.available))):
-                self.exhausted.append(self.available.pop())
+                # The weakest die, not the last in the list - which was Red.
+                worst = min(self.available, key=lambda c: EV[c])
+                self.available.remove(worst)
+                self.exhausted.append(worst)
+        if RECOVERY_ON_CLEAN and failed:
+            # The flat REC refill is what keeps the pool in equilibrium; gate
+            # it on a clean Program and a bad one leaves you short for the
+            # next, which is how scarcity compounds instead of just biting.
+            recovery = max(0, recovery - self.rec)
         for _ in range(min(recovery, len(self.exhausted))):
             self.available.append(self.exhausted.pop())
         if failed >= 2:

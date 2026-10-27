@@ -275,24 +275,45 @@ Difficulty is TWO numbers, not one. An older design used a single number for
 both Specimen count and Buff HP, and that sentence survived in places long
 after it stopped being true:
 
-| | Specimens | Buff HP | win rate |
-|---|---|---|---|
-| Easy | 5 | 3 | 49.7% |
-| Standard | 6 | 4 | 43.3% |
-| Hard | 7 | 7 | 31.9% |
-| Nobulous | 8 | 11 | 20.8% |
+The dial is now **Tyrant Health**, not Buff HP. Buff HP was an ad-hoc fix
+for a chip that only read to 20; folding it into Health removed a component
+and a lookup, and the card survives as an optional track on which any space
+is a legal start.
 
-Seven places carry the ladder, and the first pass at removing Brutal missed
-four of them. If you change it again, change all seven:
+| | Specimens | Tyrant Health | win rate |
+|---|---|---|---|
+| Easy | 5 | 9 | 55.4% |
+| Standard | 6 | 10 | 46.5% |
+| Hard | 7 | 12 | 33.4% |
+| Nobulous | 8 | 14 | 22.4% |
+
+Win rates are the no-NRJ column of the cross-tab in `simulation/RESULTS.txt`
+(rerun 2026-10-27, 20,000 games a cell): the difficulty dial alone, with no
+tier module, which is what these rows are. The tier columns and the per-Rat
+spread are in that file. A point of Tyrant Health is worth about 4 points of
+win rate, so the dial is far flatter than the finale's Health, where a point
+is worth about 21.
+
+These are about 4 points above the ladder the model reported before the
+rerun, because the +1 it carried in `TARGET_DELTA` had been adopted onto the
+cards at b57eedd and was then being charged twice. `rules/bat.html` no
+longer prints win rates - that column came out of all four rulebooks - so
+there is no printed figure to contradict these, and no second opinion
+either: the Health dial was tuned against this model.
+
+Five places carry the ladder, and the first pass at removing Brutal missed
+four of them. If you change it again, change all five:
 
 1. `simulation/bat.py` - `DIFFICULTY`, the authority.
-2. `simulation/table.py` - two hardcoded tuples.
-3. `simulation/buffsweep.py` - `SPEC`, `TARGET`, and the loop.
-4. `playtest/dist/bat.js` - `specimenCount` AND `BUFF_BY_DIFFICULTY`, which
-   are separate literals at opposite ends of the file (lines ~307 and ~805).
-5. `playtest/dist/index.html` - the `#batDifficulty` options.
-6. `rules/bat.html` - the difficulty table, then rebuild the PDF.
-7. `generator/build_bat.py` - **the gold spaces on the Buff HP card.**
+2. `simulation/healthsweep.py` - `SPEC` and the Health loop.
+3. `playtest/dist/bat.js` - `specimenCount` AND `HEALTH_BY_DIFFICULTY`, which
+   are separate literals at opposite ends of the file (lines ~20 and ~315).
+4. `playtest/dist/index.html` - the `#batDifficulty` options.
+5. `rules/bat.html` - the difficulty table, then rebuild the PDF.
+
+`simulation/table.py` and `generator/build_bat.py` used to carry it too and
+no longer do: table.py reads the difficulty names off `bat.DIFFICULTY`, and
+the gold spaces came off the Buff HP card when it became optional.
 
 Number 7 is the one that bites. The card is a 15-space track and `track()`
 marks the difficulty starts in gold; those marks were still `{15, 12, 9, 7,
@@ -736,8 +757,12 @@ Each of these only appears a few turns in.
 
 Not your job to fix, but worth knowing if Jon raises them:
 
-- **AoS Unstable is under-tuned** — roughly a 1-in-7 win rate against a ~30%
-  design target. Labelled experimental in the rulebook.
+- **AoS runs low from Standard down** — 35.0% at Standard and 18.0% at
+  Nobulous against a 47-57% community band, the lowest of the three games.
+  The old entry here called out "AoS Unstable" at a 1-in-7 win rate; that
+  was a whole-deck difficulty, and difficulty is now the Routine /
+  Specialized / Unstable MIX, so the hard end is the Nobulous 2/3/3 mix.
+  Still labelled experimental in the rulebook.
 - **NAP Impostor Tasks have no recovery-color dot**, unlike every other
   Assignment. A rules decision is pending.
 - **Two rules questions are open**, both recorded at the end of
@@ -746,15 +771,56 @@ Not your job to fix, but worth knowing if Jon raises them:
   Neither blocks anything you are doing.
 - Card art is 200 DPI (633 × 886 px). Fine on screen; would want 300 for print
   production.
-- **The BAT Tyrant battle is under review.** Jon played it and found it
-  tedious: it has no resource-management tension, which the simulation
-  confirms - the correct play is to commit only what recovery returns, so the
-  dice pool is a per-round income rather than a budget, and the battle ends
-  with 7.1 of about 10 dice unspent after 9.1 rounds. A proposed rewrite is
-  prototyped in `simulation/proto/` with its own README; nothing in
-  `rules/`, `generator/` or `playtest/` has been touched, and the shipping
-  `simulation/bat.py` is unchanged. Do not start porting it - the dial is
-  still being settled.
+- **The BAT Tyrant battle was rewritten.** Jon played the old one and found
+  it tedious, and the simulation agreed: the correct play was to commit only
+  what recovery returned, so the dice pool was a per-round income rather than
+  a budget, and the fight ran 9.1 rounds and ended with 7.1 of about 10 dice
+  unspent. Five changes, measured in `simulation/proto/` and now live in
+  `rules/bat.html` and `playtest/dist/bat.js`:
+
+  1. **A Splice must be MET in one attack or the blow bounces** - the rule a
+     Rat's Upgrades already used, applied to the Tyrant. Overflow carries and
+     may break the next Splice too.
+  2. **Splice effects fire once, on break**, and banish a die of that
+     Splice's own color. They are no longer per-round auras.
+  3. **A Rat's Upgrade is spent whenever it blocks**, whatever the blow was
+     worth.
+  4. **The Tyrant breaks containment after 8 rounds.**
+  5. **Buff HP is gone.** It existed because the Health chip only reads to
+     20, so the Tyrant's bulk had to live on a separate card; with the
+     Splices carrying the fight those points fit on the dial again.
+     Difficulty is one number, **Tyrant Health 9 / 10 / 12 / 14**. The card
+     stays in the PnP as an optional tracker with no gold spaces.
+  6. **No commit cap.** "Up to 6 dice" is gone. Measured against a policy
+     written to exploit an uncapped pool, removing it opens nothing:
+     chaining walls uncapped scores WORSE than chaining under the cap, and
+     dumping the pool is 7 points worse than playing sensibly. REC+2 is the
+     real limiter.
+
+  Spending now beats hoarding by 7.3 points, where it used to lose by 14.5,
+  and the fight is 7.2 rounds instead of 9.1. The ladder came out nearly
+  even on its own: **50.7 / 40.4 / 29.4 / 19.3**, steps of about ten points
+  each, against the old -6 / -11 / -11.
+
+  **The campaign rule had to change with it.** Because an Upgrade is now
+  spent whenever it blocks, a winning party holds a MEDIAN OF ZERO Upgrades
+  at the end - only 2% of wins left the 3 the old rule asked for. BAT now
+  retains from the Upgrades the Rats held when the battle BEGAN, which
+  94-96% of wins have 3 or more of (supply.txt, re-measured 2026-10-27 after
+  the Upgrade-leak fixes), and which decouples the campaign from the armor
+  economy entirely. Thematically it is also the better rule: the Rats are
+  not the imposters, they chose what went into one.
+
+  One layout trap: `.box` in rules/style.css is `break-inside: avoid`, so a
+  box is an unbreakable block. Adding a fourth box to BAT's last page pushed
+  the rulebook to four pages, and no amount of trimming prose elsewhere
+  fixed it - the fix was to turn that box back into prose. If the page count
+  jumps after an edit, count the boxes before shaving words.
+
+  **`simulation/bat.py` still models the OLD battle.** It was deliberately
+  not touched, so `table.py`, `RESULTS.txt` and `simulation/README.md` all
+  describe rules that no longer ship. Promoting `proto/bat.py` over it, and
+  re-running the cross-tab, is the outstanding job.
 
 ---
 

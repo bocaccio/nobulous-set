@@ -48,8 +48,8 @@
 <table>
   <tr><th>Tier</th><th>Add</th></tr>
   <tr><td>I</td><td>Draw 1 of the 6 <b>Experimental Protocols</b> at setup.</td></tr>
-  <tr><td>II</td><td>Shuffle the 6 <b>Unauthorized Modifications</b> into the Upgrade deck. Either a Rat or the
-      Tyrant may hold them.</td></tr>
+  <tr><td>II</td><td>Remove 6 ordinary Upgrades from the Upgrade deck and shuffle the 6 <b>Unauthorized
+      Modifications</b> in to replace them. Either a Rat or the Tyrant may hold them.</td></tr>
   <tr><td>III</td><td>Lay the 6 <b>Research Notes</b> face&#8209;up beside the table. Each prints its own claim
       condition; take a Note when you meet it, then spend it later for the one&#8209;shot reward printed on it.
       A Note can be claimed only once, and only one copy of each condition exists.</td></tr>
@@ -109,8 +109,9 @@ Limitations, and withhold 2 dice of a <em>randomly selected</em> color on top of
 <table>
   <tr><th>Domain</th><th>Retained (3)</th><th>Candidates (3)</th></tr>
   <tr><td>NAP<br>Knowledge</td><td>The 3 Final Exams actually faced</td><td>3 unused Final Exams</td></tr>
-  <tr><td>BAT<br>Physical</td><td>Up to 3 Upgrades held by surviving Rats, max 1 Specimen</td>
-      <td>Knocked&#8209;out Rats&rsquo; Upgrades and Tyrant Splices; fill BAT to 6</td></tr>
+  <tr><td>BAT<br>Physical</td><td>Up to 3 Upgrades the Rats held when the battle began, max 1
+      Specimen &mdash; survival does not matter</td>
+      <td>Cards spliced into the Tyrant, then unused Upgrades; fill BAT to 6</td></tr>
   <tr><td>AoS<br>Cover&#8209;Up</td><td>The 3 Advanced Programs faced, preserving Stable / Overheated</td>
       <td>3 unused Advanced Programs</td></tr>
 </table>
@@ -121,7 +122,7 @@ finale.</p>
 <ol class="seq">
   <li>Deal 4 Knowledge, 4 Physical and 4 Cover&#8209;Up Scenarios at random from the 24&#8209;card Council Test
       library and shuffle those 12 into the Scenario deck.</li>
-  <li>The Imposter begins at <b>4 HP / 2 STR / 3 REC</b> with all 17 dice available.</li>
+  <li>The Imposter begins at <b>5 HP / 2 STR / 3 REC</b> with all 17 dice available.</li>
   <li>Attempt Scenarios until <b>9 have been attempted</b>. Avoided Scenarios do not count.</li>
   <li>After the ninth attempt, win if the Imposter has at least 1 Health. <b>Reaching 0 Health at any point
       ends the finale in defeat</b> &mdash; replay the finale, not the campaign.</li>
@@ -138,7 +139,8 @@ you choose before anything leaves your hand. A hit is 1 success and a Crit is 2.
   <li>Decide which Research Pool cards to spend. Apply their Target reductions. Spent cards are gone.</li>
   <li>Commit dice and roll against the modified Target using the normal Strategy procedure.</li>
   <li>Resolve the Scenario&rsquo;s success or failure text.</li>
-  <li>Recover up to REC exhausted dice. Advance the attempt count.</li>
+  <li>Recover up to REC exhausted dice &mdash; REC falls as Suspicion grows. Advance the
+      attempt count.</li>
 </ol>
 <p>You may attempt a Scenario without spending anything.</p>
 
@@ -172,9 +174,10 @@ without attempting it. Reveal the next one.</p>
   <li>Apply any extra failure text printed on the Scenario.</li>
 </ol>
 <div class="box warn">
-  <span class="lbl">Suspicion is uncapped</span>
+  <span class="lbl">Suspicion is uncapped, and it costs you dice</span>
   Every card in the Suspicion row adds <b>+1 Target to every later Scenario</b> unless that Scenario says
-  otherwise.
+  otherwise. It also costs recovery: <b>your REC is 3 minus the number of cards in the Suspicion row</b>,
+  to a minimum of 0. The more the Council suspects you, the less of your pool comes back.
 </div>
 <p><em>Terminology:</em> the <b>Research Pool</b> is always the 18 carried&#8209;forward cards. The <b>dice
 pool</b> is the Imposter&rsquo;s dice. Scenario text that discards from the Research Pool never discards a die.</p>

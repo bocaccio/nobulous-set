@@ -11,7 +11,10 @@ ends the apprenticeship. You then sit three mandatory Final Exams and must
 finish all three with at least 1 Health. Arriving short of 6 Credits does not
 lose either - it costs dice and leaves the exam Targets unreduced.
 
-FINF is the difficulty dial (rules/nap.html:143), Standard is -1.
+Difficulty is the Credit goal. FINF is a SECOND, independent dial - the
+three cards numbered 1 Morning, 2 Afternoon, 3 Evening - and Standard is
+Reduce 1. The "+2" / "-1" setting strings below are shorthand for Increase
+or Reduce N, meaning N of those three cards.
 
 WHAT IS NOT MODELED
   * Apprentice abilities. All six are 2 HP / 2 STR / 2 REC and "differ only
@@ -129,6 +132,12 @@ STR_CAPS_COMPLETIONS = False
 SPLIT_ROLLS = True
 # How many cards one roll may be spread over; beyond 4 the row runs out anyway.
 CARDS_PER_ROLL = 4
+# A second difficulty lever, and it flattens out: at 4 Setbacks the goal runs
+# 42.9% at 6 Credits, 29.1% at 8, 21.7% at 10, then only 20.8 / 18.0 / 16.5%
+# at 12 / 14 / 16. The shortfall penalty is bounded by the dice you still
+# have - past about 10 Credits you are always fully drained and further
+# shortfall is nearly free. Raising the Final Exam Targets is not bounded
+# that way.
 # Play the printed card text: Request rewards, Opportunity payouts and the
 # Apprentice ability. False reproduces the older, card-text-free model.
 PLAY_THE_CARDS = True
@@ -136,10 +145,19 @@ PLAY_THE_CARDS = True
 # finish will go lower.
 DICE_RESERVE = 2
 # Reduce variant: with this True a FINF card is not tied to its number - any
-# held card removes any non-Final-Exam card from the ACTIVE Time Slot.
+# held card removes any non-Final-Exam card from the ACTIVE Time Slot. The
+# printed rule ties it to the number (rules/nap.html, "Reduce"), which is
+# why this is False; an earlier draft of the rulebook described the loose
+# version and has been removed.
 FINF_REDUCE_ANY_CARD = False
 # Deck composition, fixed by the rules: 3 of the 6 Setbacks and all 6
 # Opportunities. Exposed so the lever can be measured.
+# Half of NAP's difficulty. The Credit goal cannot carry it alone: the
+# shortfall penalty is never paid, Credits discount the Final Exam one for
+# one so demanding more refunds itself, and above about 8 the Credits earned
+# flatline because the deck runs out. The deck is the other half, which is
+# what BAT (Specimens added) and AoS (deck mix) already use.
+#   Easy 4, Standard 4, Hard 5, Nobulous 6
 SETBACKS_IN_DECK = 3
 OPPORTUNITIES_IN_DECK = 6
 
@@ -223,6 +241,8 @@ ABILITIES = {"Prodigy": None, "Slacker": "discard", "Technician": "setback_windo
              "Lab Rat": "soak"}
 
 CREDITS_TO_LEAVE = 6      # Easy 5, Standard 6, Hard 7, Nobulous 8
+# Difficulty is the pair (Credit goal, Setbacks in the deck).
+LEVELS = {"Easy": (5, 4), "Standard": (6, 4), "Hard": (7, 5), "Nobulous": (8, 6)}
 ROW_MAX = 4
 SLOTS_PER_DAY = 3
 
@@ -341,17 +361,24 @@ class Game(object):
                 card.index = i
                 deck.append(card)
 
-        # Tier I: 3 of the 4 Following Setbacks stand in for 3 base Setbacks.
-        if tier in ("I", "II", "III"):
-            for i in self.rng.sample(range(4), 3):
-                t, upkeep = FOLLOWING[i]
-                card = Card("setback", t, t, self.rng.choice("PBGY"))
-                card.upkeep = upkeep
-                deck.append(card)
-        else:
-            for i in self.rng.sample(range(6), min(6, SETBACKS_IN_DECK)):
-                t, dot = SETBACKS[i]
-                deck.append(Card("setback", t, t, dot))
+        # Tier I: 3 of the 4 Following Setbacks REPLACE 3 base Setbacks - the
+        # deck keeps the same number of Setbacks, three of them nastier. It
+        # used to drop every base Setback for exactly 3 Following ones, which
+        # was only equivalent while SETBACKS_IN_DECK was always 3; once Hard
+        # and Nobulous carried 4 and 6, turning a tier ON made them EASIER.
+        following = 3 if tier in ("I", "II", "III") else 0
+        base = max(0, SETBACKS_IN_DECK - following)
+        for i in self.rng.sample(range(4), following):
+            t, upkeep = FOLLOWING[i]
+            card = Card("setback", t, t, self.rng.choice("PBGY"))
+            card.upkeep = upkeep
+            card.index = i          # Following Setback i, so it is identifiable
+            deck.append(card)
+        for i in self.rng.sample(range(6), min(6, base)):
+            t, dot = SETBACKS[i]
+            card = Card("setback", t, t, dot)
+            card.index = i          # base Setback i; the six were anonymous
+            deck.append(card)
         if self.finf_increase:
             # Increase shuffles the dealt FINF cards into the Assignment deck.
             for slot in self.finf_cards:
@@ -444,6 +471,33 @@ class Game(object):
         card.free = free
         self.row.append(card)
 
+    # What a revealed Assignment is worth, in Targets. The old policy took
+    # the cheaper card and ignored the reward entirely, which declined every
+    # permanent upgrade in the deck: Task 23 is Target 6 for a PERMANENT +1
+    # STR and was taken in 8% of games.
+    # Deliberately small. Sweeping these showed the gain comes almost
+    # entirely from valuing the CREDIT, not the upgrade: the old policy would
+    # take a cheap no-Credit Task over a slightly dearer Credit one, working
+    # against the win condition. Weighting permanent upgrades heavily made
+    # the model play WORSE at Hard and Nobulous, where a failed expensive
+    # Task costs more than the bonus returns.
+    REWARD_WORTH = {"str": 0.5, "rec": 0.5, "hp": 0.3, "recover_any": 0.3,
+                    "recover_dot": 0.3, "recover_committed": 0.25,
+                    "bonus": 0.25}
+
+    def card_worth(self, card):
+        """Higher is better: what it pays, less what it costs."""
+        worth = -float(card.target)
+        if card.kind == "task" and card.subject:
+            worth += 2.0                      # a Credit is the win condition
+        if card.kind == "opportunity":
+            worth += 1.0                      # coupons are banked for later
+        entry = REQUEST_REWARD.get(getattr(card, "index", None))
+        if entry and card.kind == "task":
+            worth += self.REWARD_WORTH.get(entry[0], 0.0)
+        worth -= 0.6 * getattr(card, "skulls", 0)
+        return worth
+
     def reveal(self):
         """Reveal 2, take one as Primary, discard the other."""
         row_max = 3 if self.ability == "small_row" else ROW_MAX
@@ -475,7 +529,7 @@ class Game(object):
             # is still Mandatory.
             forced = [c for c in forced if c.kind == "impostor"]
             drawn = [c for c in drawn if c.kind != "setback"] or drawn
-        primary = forced[0] if forced else min(drawn, key=lambda c: c.target)
+        primary = forced[0] if forced else max(drawn, key=self.card_worth)
         self.row.append(primary)
         self.queued = primary.dot
         # Skulls resolve only on the Assignment you chose.
@@ -745,8 +799,7 @@ class Game(object):
         elif payout == "free_task":
             # Exhaust 2 available dice to clear a cheap non-Credit Task.
             for _ in range(2):
-                if self.available:
-                    self.exhausted.append(self.available.pop())
+                self.spend_die()
             cheap = [c for c in self.row
                      if c.kind == "task" and not c.subject and c.remaining() <= 3]
             if cheap:
@@ -791,11 +844,29 @@ class Game(object):
         self.row.remove(worst)
         self.ability_day = self.day
 
+    def spend_die(self, color=None):
+        """Exhaust one available die.
+
+        The card's recovery dot names the colour, and that die goes if the
+        Apprentice holds one; otherwise the weakest does, so being out of
+        the named colour is not a free pass. Before this, the pool was a
+        flat list popped from the end, which handed over the RED die first.
+        """
+        if not self.available:
+            return None
+        if color and color in self.available:
+            pick = color
+        else:
+            pick = min(self.available, key=lambda c: EV[c])
+        self.available.remove(pick)
+        self.exhausted.append(pick)
+        return pick
+
     def soak(self):
         """Lab Rat: once a day, exhaust a die instead of losing 1 Health."""
         if self.ability != "soak" or self.ability_day == self.day or not self.available:
             return False
-        self.exhausted.append(self.available.pop())
+        self.spend_die()
         self.ability_day = self.day
         return True
 
@@ -813,7 +884,7 @@ class Game(object):
         for _ in range(card.penalty):
             if not self.available:
                 break
-            self.exhausted.append(self.available.pop())
+            self.spend_die(DOT_COLOR.get(card.dot))
 
     def move_setback(self):
         """Spend a coupon to send a Setback to a different Time Slot."""
@@ -896,8 +967,7 @@ class Game(object):
                 continue
             cost = card.upkeep or (0 if card.stored_dice else 1)
             for _ in range(cost):
-                if self.available:
-                    self.exhausted.append(self.available.pop())
+                self.spend_die(DOT_COLOR.get(card.dot))
         while self.finf_due[self.slot] > 0:
             self.finf_due[self.slot] -= 1
             self.draw_into_row(free=True)   # Skulls ignored on FINF cards
@@ -940,6 +1010,19 @@ class Game(object):
             i += 1
             if i > 40:
                 break
+        # You arrive at the exam having spent everything, so the clause above
+        # was never once paid - measured 0.0 dice at every difficulty, which
+        # made being short of the goal free and left NAP's Nobulous tier
+        # columns running backwards. What cannot be paid in available dice is
+        # taken from the exhausted pile and BANISHED, so Preparation below
+        # cannot recover it.
+        i = 0
+        while missing > 0 and self.exhausted and i <= 40:
+            c = order[i % len(order)]
+            if c in self.exhausted:
+                self.exhausted.remove(c)
+                missing -= 1
+            i += 1
         # Preparation: 1 die, plus 1 per Credit above 6, plus queued recovery.
         self.recover(1 + max(0, self.credit_total - CREDITS_TO_LEAVE))
         if self.queued:

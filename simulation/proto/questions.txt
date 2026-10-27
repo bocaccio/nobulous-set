@@ -1,0 +1,12 @@
+                                  Easy  Standard      Hard  Nobulous
+
+1. The 6-dice cap  (Buff at the front, as it ships)
+  commit up to 6                 50.6%     41.4%     30.4%     19.1%
+  commit up to 8                 50.6%     41.4%     30.4%     19.1%
+  commit up to 10                50.6%     41.4%     30.4%     19.1%
+
+2. Where the chip damage sits
+  Buff card at the front         50.6%     41.4%     30.4%     19.1%
+  folded into Health             50.4%     40.2%     29.8%     18.6%
+
+   folded Health totals: Easy 9, Standard 10, Hard 12, Nobulous 14  (dial maximum 20)

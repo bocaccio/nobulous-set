@@ -83,7 +83,7 @@ TECHS = [
     ("Architect", "Reconfigure", "Once per Program, before rolling an element, move up to 2 allocated dice between unresolved elements."),
     ("Debugger", "Debug", "Once per Program, after failing by exactly 1 success, reroll 1 allocated die. If it still fails, exhaust that die."),
     ("Optimizer", "Optimize", "Once per Program, Target +1 successes may count as Optimal Implementation."),
-    ("Engineer", "Redundancy", "For up to 2 elements per Program, the safe allocation threshold is Target +2 instead of Target +1."),
+    ("Engineer", "Redundancy", "For up to 2 elements per Program, the allocation cap is Target +2 instead of Target +1."),
     ("Operator", "Workaround", "When a non-Red Limitation would withhold 2 dice, you may withhold 1 of those dice as another non-Red color instead."),
     ("Compiler", "Compile", "When spending an additional STR roll, reroll any number of dice on that element while keeping the others."),
 ]

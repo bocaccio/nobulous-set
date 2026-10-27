@@ -14,6 +14,14 @@
     yellow: ["✦", "✷", "", "", "", ""],
     red: ["✦", "✦", "✦", "✦", "✦", "✷"]
   };
+  // The Tyrant's bulk is its five Splices; Health is what is left once the
+  // last wall comes down, and it is also the difficulty dial. Buff HP used
+  // to carry these points on its own card, back when Health was a flat 20.
+  const HEALTH_BY_DIFFICULTY={Easy:9,Standard:10,Hard:12,Nobulous:14};
+  const tyrantMaxHealth=()=>HEALTH_BY_DIFFICULTY[state.difficulty]??10;
+  // The Tyrant breaks containment if it survives this many rounds, so
+  // chipping away is not a plan.
+  const ROUND_LIMIT=8;
   const upgrades = [
     ["Serrated Claws",2],["Reinforced Jaw",3],["Capacitor Muscles",3],["Piercing Horn",4],
     ["Spring-Loaded Legs",2],["Prehensile Tail",2],["Tripwire Tendons",3],["Evasive Reflexes",3],
@@ -240,27 +248,27 @@
   const cardName = card => card.type === "s" ? specimens[card.i] : card.type === "u" ? upgrades[card.i][0] : card.type === "m" ? BAT_MODS[card.i][0] : "Untracked Upgrade";
   // --- NRJ module cards ---------------------------------------------
   const BAT_PROTOCOLS = [
-    ["Cross-Contamination","The first time each Rat borrows a die, it may borrow any color regardless of Upgrade count. If that die is banished, reveal the top Upgrade and Splice it into the Tyrant."],
-    ["Shared Equipment Budget","At setup, randomly select 2 personal dice from different Rats and place them in a common Equipment pool. After completing an Experiment, the active Rat may exchange one personal die with one Equipment die."],
-    ["Accelerated Trials","Experiments with printed Target 5+ have -1 Target. Exhaust 2 of the active Rat's available dice after every such attempt, whether or not it is completed."],
+    ["Cross-Contamination","The first time each Rat borrows a die, it may borrow any color regardless of Upgrade count. If that die is banished, reveal the top 3 Upgrades and Splice them into the Tyrant."],
+    ["Shared Equipment Budget","At setup, randomly select 1 personal die and place it in a common Equipment pool. After completing an Experiment, the active Rat may exchange up to 2 personal dice with Equipment dice."],
+    ["Accelerated Trials","Experiments with printed Target 5+ have -1 Target. Before every such attempt, exhaust 2 of the active Rat's available dice, Purple first; if it holds no Purple, exhaust its weakest."],
     ["Questionable Procurement","Shuffle 1 additional random Specimen into the Upgrade deck. The first Specimen acquired by each Rat does not count against its 3-Upgrade limit until that Rat gains another Upgrade."],
-    ["Independent Funding","After the borrowed die's banishment check, when a Rat has lent a die to a Rat holding fewer Upgrades, the lender recovers 1 die - but only if that Experiment was completed."],
-    ["Questionable Methodology","After revealing the two Upgrades for an Experiment, you may Splice the stronger one into the Tyrant and reveal a replacement. If you do, reduce the Experiment's Target by 1."],
+    ["Independent Funding","At the start of each Experiment with printed Target 4 or lower, exhaust 2 of the active Rat's available dice, Blue first; if it holds no Blue, exhaust its weakest. The grant funds ambitious work only. When a Rat lends a die to a Rat holding fewer Upgrades and that Experiment is completed, the lender recovers 1 die."],
+    ["Questionable Methodology","After revealing the two Upgrades for an Experiment with printed Target 5+, Splice the stronger one into the Tyrant and reveal a replacement. This is not optional."],
   ];
   // name, slot and value, printed text, value
   const BAT_MODS = [
-    ["Extra Limbs","Mobility \u00b7 Value 3","Tap: roll 1 exhausted Green or Yellow die. While held, the holder may not borrow dice.",3],
-    ["Secondary Brain","Senses \u00b7 Value 3","Tap before rolling: +1 STR for this Experiment/attack. While held, the holder may not use the Red die.",3],
-    ["Adrenal Gland","Power \u00b7 Value 4","Tap: +3 damage. While held, the holder has 1 less Health, minimum 1.",4],
-    ["Bone Plating","Defense \u00b7 Value 3","Reduce incoming damage by 2. While held, the holder has -1 REC, minimum 1.",3],
-    ["Redundant Organs","Defense \u00b7 Value 4","The first time the holder would be knocked out, discard this card instead; the holder remains at 1 Health. While held, the holder cannot be selected as active on consecutive turns.",4],
-    ["Hypermetabolism","Senses \u00b7 Value 3","Tap: recover +2 dice. While held, exhaust 1 available die at the end of each Experiment the holder attempts.",3],
+    ["Extra Limbs","Mobility \u00b7 Value 4","Tap: roll 1 exhausted Green or Yellow die. While held, the holder may not borrow dice.",4],
+    ["Secondary Brain","Senses \u00b7 Value 4","Tap before rolling: +1 STR for this Experiment/attack. While held, the holder may not use the Red die.",4],
+    ["Adrenal Gland","Power \u00b7 Value 5","Tap: +3 damage. While held, the holder has 1 less Health, minimum 1.",5],
+    ["Bone Plating","Defense \u00b7 Value 4","Reduce incoming damage by 2. While held, the holder has -1 REC, minimum 1.",4],
+    ["Redundant Organs","Defense \u00b7 Value 5","The first time the holder would be knocked out, discard this card instead; the holder remains at 1 Health. While held, the holder cannot be selected as active on consecutive turns.",5],
+    ["Hypermetabolism","Senses \u00b7 Value 4","Tap: recover +2 dice. While held, exhaust 1 available die at the end of each Experiment the holder attempts, Purple first; if it holds no Purple, exhaust its weakest.",4],
   ];
   const BAT_NOTES = [
-    ["Unexpected Resilience","Claim after a Rat completes an Experiment without committing Purple or Red.","Once per game, recover all of that Rat's dice."],
-    ["Successful Integration","Claim when a single Rat holds 2 Specimens.","Once per game, ignore the +1 Target from revealing a Specimen."],
+    ["Unexpected Resilience","Claim after a Rat completes an Experiment without committing Red.","Once per game, recover all of that Rat's dice."],
+    ["Successful Integration","Claim when a Rat holds a Specimen.","Once per game, ignore the +1 Target from revealing a Specimen."],
     ["Acceptable Losses","Claim after failing 3 Experiments within the same four-Rat rotation.","Once per game after another failure, choose which revealed Upgrade is Spliced."],
-    ["Cross-Species Compatibility","Claim when all four Rats hold at least 2 Upgrades.","Once during the Tyrant battle, the active Rat may tap an Upgrade held by another surviving Rat."],
+    ["Cross-Species Compatibility","Claim after a Rat completes an Experiment using a borrowed die.","Once during the Tyrant battle, the active Rat may tap an Upgrade held by another surviving Rat."],
     ["Controlled Failure","Claim after deliberately committing zero dice to an Experiment.","Once later, after revealing an Experiment, discard it and reveal the next one instead."],
     ["Red Means Go","Claim after Red provides the success that completes an Experiment and at least one die belonging to another Rat also contributed.","Once per game after using Red, place it directly on any non-active Rat rather than setting it aside."],
   ];
@@ -316,7 +324,7 @@
     return {
       difficulty, tier, protocol, notes, deck:shuffle([...cards.keys()]),
       upgradeDeck:shuffle([...upgrades.keys()].map(i=>({type:"u",i})).concat(mods,shuffle([...specimens.keys()]).slice(0,specimenCount).map(i=>({type:"s",i})))),
-      current:null, discard:[], splices:0, spliceCards:[], rounds:0, health:20, notice:"", activeRat:0, battle:null,
+      current:null, discard:[], splices:0, spliceCards:[], rounds:0, health:HEALTH_BY_DIFFICULTY[difficulty]??10, notice:"", activeRat:0, battle:null,
       red:{holder:Math.floor(Math.random()*4),zone:"available",selected:false,face:""},
       lastRat:null,recBonus:null,
       rats:names.map((name,i)=>({name,hp:[1,1,2,2][i],side:"front",upgrades:[],dice:colors.map((color,j)=>({id:`rat-${i}-${j}`,color,zone:"available",selected:false,face:""}))}))
@@ -802,7 +810,6 @@
   }
 
   // Buff HP no longer equals the Specimen count; it is tuned separately.
-  const BUFF_BY_DIFFICULTY={Easy:3,Standard:4,Hard:7,Nobulous:11};
   const TYRANT_NEED=[["purple",2],["blue",2],["green",1],["yellow",1]];
   const tyrantDice = () => personalDice().filter(d=>d.zone==="tyrant").sort(byColor);
   // Damage is whatever is showing in the Rolled area right now, so rerolls cannot double-count.
@@ -891,9 +898,8 @@
     if(state.battle&&state.battle.startFlip==null&&state.battle.attack==null&&Array.isArray(state.battle.attackDeck)&&state.battle.attackDeck.length){
       state.battle.startFlip=state.battle.attackDeck.pop();state.battle.attackDiscard.push(state.battle.startFlip);save();}
     if(!state.battle){
-      const buff=BUFF_BY_DIFFICULTY[state.difficulty]??5;
       const order=shuffle([...Array(5).keys()]);
-      state.battle={turn:"rats",buffHp:buff,buffMax:buff,order,hp:order.map(i=>cardValue(state.spliceCards[i])),max:order.map(i=>cardValue(state.spliceCards[i])),
+      state.battle={turn:"rats",round:1,order,hp:order.map(i=>cardValue(state.spliceCards[i])),max:order.map(i=>cardValue(state.spliceCards[i])),
         attackDeck:shuffle([...Array(ATTACK_NAMES.length).keys()]),attackDiscard:[],attack:null};
       // The Experiment phase's turn flags end here. The battle runs its own
       // turn structure (battle.turn / battle.needRec), and leaving turnLocked
@@ -925,7 +931,6 @@
 
   // The Health die sits on the leftmost card still standing.
   function frontSlot(b) {
-    if(b.buffHp>0) return "buff";
     const i=b.hp.findIndex(v=>v>0);
     return i<0?"tyrant":i;
   }
@@ -939,38 +944,71 @@
   // current value - 3 across and 5 down, counting DOWN from 15 at the
   // top-left, exactly as generator/build_bat.py prints it. The four gold
   // spaces are the difficulty starts.
-  const BUFF_GOLD = new Set([11, 7, 4, 3]);
-  function buffTrack(hp){
-    let out="";
-    for(let n=15;n>=1;n--){
-      const here=n===hp;
-      out+=`<span class="bat-buff-space${BUFF_GOLD.has(n)?" gold":""}${here?" marked":""}">`
-        +(here?healthDie(n):n)
-        +`</span>`;
-    }
-    return `<div class="bat-buff-track" role="img" aria-label="Buff HP ${hp} of 15">${out}</div>`;
-  }
   function trackCell(slot,card,hp,max,front,editable) {
     const dead=hp<=0;
     return `<div class="bat-track-cell ${dead?"destroyed":""} ${front===slot?"front":""}">`
-      +(slot==="buff"
-        ? buffTrack(hp)
-        : `<div class="suite-card portrait bat-track-art" data-track-art="${slot}"></div>`
-          +(front===slot&&hp>0?`<div class="bat-track-die">${healthDie(hp)}</div>`:""))
+      +`<div class="suite-card portrait bat-track-art" data-track-art="${slot}"></div>`
+      +(front===slot&&hp>0?`<div class="bat-track-die">${healthDie(hp)}</div>`:"")
       +`<div class="bat-track-name">${escape(card?cardName(card):"Buff HP")}</div>`
-      +`<div class="bat-hp-selector"><button data-track-hp="${slot}" data-delta="-1" ${!editable||hp<=0?"disabled":""} aria-label="Reduce">−</button>`
-      +`<strong>${hp} / ${max}</strong>`
-      +`<button data-track-hp="${slot}" data-delta="1" ${!editable||hp>=max?"disabled":""} aria-label="Increase">+</button></div>`
+      +`<div class="bat-hp-selector bat-splice-toggle"><strong>Value ${max}</strong>`
+      +`<button data-track-hp="${slot}" ${editable?"":"disabled"} title="${dead?"Put this Splice back on the track":"Mark this Splice destroyed"}">`
+      +`${dead?"Restore":"Destroy"}</button></div>`
       +`<div class="bat-track-state">${dead?"Destroyed":front===slot?"Taking damage":"Intact"}</div></div>`;
   }
 
-  // Damage runs Buff HP, then each Splice in order, then Health.
+  // A Splice's color, for the die it banishes when it breaks. The order of
+  // `upgrades`, `specimens` and BAT_MODS matches generator/build_bat.py, so
+  // these are index lookups rather than a second copy of the card data.
+  const CAT_COLOR=["green","green","green","green","blue","blue","blue","blue",
+                   "yellow","yellow","yellow","yellow","purple","purple","purple","purple"];
+  const SPECIMEN_COLORS=[["green","purple"],["green","yellow"],["blue","purple"],["blue","yellow"],
+                         ["yellow","blue"],["yellow","green"],["purple","blue"],["purple","green"]];
+  const MOD_COLORS=["blue","purple","green","yellow","yellow","purple"];
+  function spliceColors(card){
+    if(!card) return [];
+    if(card.type==="s") return SPECIMEN_COLORS[card.i%SPECIMEN_COLORS.length];
+    if(card.type==="m") return [MOD_COLORS[card.i%MOD_COLORS.length]];
+    return [CAT_COLOR[card.i%CAT_COLOR.length]];
+  }
+
+  // "A Splice destroyed by the Rats banishes one die of its own color from
+  // the shared pool - any die, if none of that color is left." Its printed
+  // effect is not used: on the Tyrant a card is only its Value.
+  function banishForSplice(card){
+    const want=spliceColors(card);
+    const avail=personalDice().filter(d=>d.zone==="available");
+    const spent=personalDice().filter(d=>d.zone==="exhausted");
+    // Prefer the Splice's own color, and prefer taking an available die
+    // over a spent one; a spent die is still in the pool, just used up.
+    const pick=avail.find(d=>want.includes(d.color))
+            ||spent.find(d=>want.includes(d.color))
+            ||avail[0]||spent[0];
+    if(!pick) return null;
+    pick.zone="banished";pick.selected=false;pick.face="";
+    return pick;
+  }
+
+  // Damage runs Buff HP, then each Splice in order, then Health. Buff HP
+  // chips; a Splice does NOT - the blow must meet its printed Value in this
+  // one attack or it bounces off and the whole attack is wasted. Overflow
+  // from a broken Splice carries on and may break the next one too.
   function applyTyrantDamage(n){
     const b=state.battle;if(!b)return 0;
     let left=n;
-    if(b.buffHp>0){const hit=Math.min(b.buffHp,left);b.buffHp-=hit;left-=hit;}
-    for(let i=0;i<b.hp.length&&left>0;i++){if(b.hp[i]>0){const hit=Math.min(b.hp[i],left);b.hp[i]-=hit;left-=hit;}}
-    if(left>0){state.health=Math.max(0,state.health-left);}
+    b.bounced=0;b.bounceLeft=0;b.brokeThisHit=null;   // cards, not names
+    const broke=[];
+    for(let i=0;i<b.hp.length;i++){
+      if(b.hp[i]<=0) continue;            // already destroyed
+      if(left<b.hp[i]) {                  // this wall is not met; nothing carries
+        b.bounced=b.hp[i];b.bounceLeft=left;
+        break;
+      }
+      left-=b.hp[i];b.hp[i]=0;
+      broke.push(state.spliceCards[b.order[i]]);
+    }
+    if(broke.length) b.brokeThisHit=broke;
+    // Overflow only reaches Health once every Splice is down.
+    if(!b.bounced && left>0){state.health=Math.max(0,state.health-left);}
     return n;
   }
 
@@ -1081,8 +1119,10 @@
     if(!b) return;
     const front=frontSlot(b);
     // A card is only adjustable once everything to its left is destroyed.
-    const cells=[trackCell("buff",null,b.buffHp,b.buffMax,front,front==="buff")]
-      .concat(b.order.map((cardIndex,pos)=>trackCell(pos,state.spliceCards[cardIndex],b.hp[pos],b.max[pos],front,front===pos)));
+    // A destroyed Splice stays editable, or Restore could never be reached:
+    // destroying it moves the front marker past it and would disable its own
+    // undo. Otherwise only the card currently taking damage is adjustable.
+    const cells=b.order.map((cardIndex,pos)=>trackCell(pos,state.spliceCards[cardIndex],b.hp[pos],b.max[pos],front,front===pos||b.hp[pos]<=0));
     const draws=Math.min(6,Math.max(2,...b.order.map((cardIndex,pos)=>b.hp[pos]>0?cardValue(state.spliceCards[cardIndex]):0)));
     const drawn=tyrantDice().filter(d=>d.selected),bag=tyrantDice().filter(d=>!d.selected);
     const tyrantDie=d=>`<button class="rat-die ${d.color} ${d.selected?"selected":""} ${d.face?"rolled":""}" data-tyrant-die="${d.id}" title="${d.color}"><span class="face">${d.face||""}</span><span class="tiny">${d.color[0].toUpperCase()}</span></button>`;
@@ -1097,7 +1137,7 @@
     const dial=`<div class="bat-tyrant ${front==="tyrant"?"front":""} ${tyrantTurn?"acting":""}">`
       +`<div class="bat-track-name">Tyrant Health${tyrantTurn?' <span class="bat-turn-flag">its turn</span>':""}</div>`
       +`<div class="bat-dial">`
-      +`<svg viewBox="0 0 120 120" role="img" aria-label="Tyrant Health ${state.health} of 20">`
+      +`<svg viewBox="0 0 120 120" role="img" aria-label="Tyrant Health ${state.health} of ${tyrantMaxHealth()}">`
       +`<circle class="dial-ring" cx="60" cy="60" r="56"></circle>`
       +numbers.join("")
       +`<g class="dial-hand" transform="rotate(${angleFor(state.health).toFixed(2)} 60 60)">`
@@ -1106,8 +1146,8 @@
       +`<circle class="dial-hub" cx="60" cy="60" r="5"></circle>`
       +`<text class="dial-value" x="60" y="60">${state.health}</text></svg></div>`
       +`<div class="bat-hp-selector"><button data-tyrant-hp data-delta="-1" ${front!=="tyrant"||state.health<=0?"disabled":""} aria-label="Rotate down">−</button>`
-      +`<strong>${state.health} / 20</strong>`
-      +`<button data-tyrant-hp data-delta="1" ${front!=="tyrant"||state.health>=20?"disabled":""} aria-label="Rotate up">+</button></div>`
+      +`<strong>${state.health} / ${tyrantMaxHealth()}</strong>`
+      +`<button data-tyrant-hp data-delta="1" ${front!=="tyrant"||state.health>=tyrantMaxHealth()?"disabled":""} aria-label="Rotate up">+</button></div>`
       +`</div>`;
     const atkLeft=(b.attackDeck||[]).length,flipOnly=b.attack==null&&b.startFlip!=null;
     const atk=b.attack!=null?b.attack:b.startFlip;
@@ -1180,6 +1220,10 @@
       "The Tyrant works. The Rats do not. Only one of those was the experiment.",
       "Four subjects, four knockouts. Finally, a result I can reproduce.",
       "No matter. I will order more Rats. The supplier stopped asking why."]},
+    timeout:{title:"The Tyrant broke containment.",quotes:[
+      "Eight rounds of chipping away. It simply walked out while you were tidying.",
+      "You had it surrounded and you poked it. Now it is somewhere in the building.",
+      "Containment held for eight rounds. That is eight more than I promised the board."]},
     win:{title:"The Tyrant has been defeated.",quotes:[
       "You destroyed my Tyrant. I am recording this as unsolicited peer review.",
       "Beaten by its own test subjects. I hope the Tyrant is suitably embarrassed.",
@@ -1191,6 +1235,7 @@
       let kind=null;
       if(state.health<=0) kind="win";
       else if(state.rats.every(r=>r.down)) kind="loss";
+      else if((state.battle.round||1)>ROUND_LIMIT) kind="timeout";
       if(kind){const q=ENDINGS[kind].quotes;
         state.endGame={kind,quote:q[Math.floor(Math.random()*q.length)],dismissed:false};save();}
     }
@@ -1208,7 +1253,7 @@
       ? `Experiment deck · NRJ Tier ${window.NOBULOUS_TIER.name(batTier())} module cards in play`
       : "Experiment deck · Prototyrant research";
     renderBATModules();renderSwapPrompt();renderBanked();
-    $("batStats").innerHTML=`<div class="suite-stat"><span>Splices</span><strong>${state.splices} / 5</strong></div><div class="suite-stat"><span>Experiments</span><strong>${state.rounds}</strong></div><div class="suite-stat"><span>Deck</span><strong>${state.deck.length}</strong></div><div class="suite-stat"><span>Prototyrant HP</span><strong>${state.health}</strong></div><div class="suite-stat bat-red-stat"><span>Red</span>${state.red.zone==="setaside"||state.red.zone==="rolled"?`<span class="rat-die red setaside" title="Communal Red die · set aside until moved to a Rat"><span class="face">${state.red.face||""}</span><span class="tiny">R</span></span>`:`<strong>${names[state.red.holder]}</strong>`}${!inBattle()&&state.current&&!state.turnLocked?`<button data-bat-reset="1" class="bat-reset-turn" title="Set Red aside again, send back any borrowed die and clear every selection, so a different Rat can be chosen. Unavailable once the dice are rolled.">Reset turn</button>`:""}</div><div class="suite-stat bat-banished-stat"><span>Banished</span><div class="bat-banished-row">${state.rats.flatMap(r=>r.dice.filter(d=>d.zone==="banished")).sort(byColor).map(d=>`<span class="rat-die ${d.color} banished-chip" title="${d.color} · banished"><span class="face"></span><span class="tiny">${d.color[0].toUpperCase()}</span></span>`).join("")||`<span class="bat-banished-empty">None</span>`}</div></div>`;
+    $("batStats").innerHTML=`<div class="suite-stat"><span>Splices</span><strong>${state.splices} / 5</strong></div><div class="suite-stat"><span>Experiments</span><strong>${state.rounds}</strong></div><div class="suite-stat"><span>Deck</span><strong>${state.deck.length}</strong></div><div class="suite-stat"><span>Prototyrant HP</span><strong>${state.health}</strong></div>${inBattle()&&state.battle?`<div class="suite-stat ${(state.battle.round||1)>=ROUND_LIMIT-1?"bat-clock-late":""}" title="The Tyrant breaks containment after ${ROUND_LIMIT} rounds"><span>Round</span><strong>${Math.min(state.battle.round||1,ROUND_LIMIT)} / ${ROUND_LIMIT}</strong></div>`:""}<div class="suite-stat bat-red-stat"><span>Red</span>${state.red.zone==="setaside"||state.red.zone==="rolled"?`<span class="rat-die red setaside" title="Communal Red die · set aside until moved to a Rat"><span class="face">${state.red.face||""}</span><span class="tiny">R</span></span>`:`<strong>${names[state.red.holder]}</strong>`}${!inBattle()&&state.current&&!state.turnLocked?`<button data-bat-reset="1" class="bat-reset-turn" title="Set Red aside again, send back any borrowed die and clear every selection, so a different Rat can be chosen. Unavailable once the dice are rolled.">Reset turn</button>`:""}</div><div class="suite-stat bat-banished-stat"><span>Banished</span><div class="bat-banished-row">${state.rats.flatMap(r=>r.dice.filter(d=>d.zone==="banished")).sort(byColor).map(d=>`<span class="rat-die ${d.color} banished-chip" title="${d.color} · banished"><span class="face"></span><span class="tiny">${d.color[0].toUpperCase()}</span></span>`).join("")||`<span class="bat-banished-empty">None</span>`}</div></div>`;
     renderRats();renderSplices();renderBattle();renderPool();renderEffect();
     checkEnd();
     const c=state.current,el=$("batEncounter"),caption=$("batEncounterText");
@@ -1325,12 +1370,18 @@
     if(button?.dataset.newGame==="bat") {state=fresh(state.difficulty);save();ensureExperiment()||render();return;}
     if(button?.id==="batEndYes"){$("batEndDialog").close();state=fresh(state.difficulty);save();ensureExperiment()||render();return;}
     if(button?.id==="batEndNo"){$("batEndDialog").close();if(state.endGame)state.endGame.dismissed=true;
-      state.notice=state.endGame&&state.endGame.kind==="win"?"The Tyrant is defeated. The board is left as it ended.":"Every Rat is knocked out. The board is left as it ended.";
+      state.notice=(state.endGame?{win:"The Tyrant is defeated.",timeout:"The Tyrant broke containment."}[state.endGame.kind]||"Every Rat is knocked out.":"Every Rat is knocked out.")+" The board is left as it ended.";
       save();render();return;}
-    if(button?.dataset.trackHp!==undefined){const b=state.battle;if(b){const slot=button.dataset.trackHp,delta=Number(button.dataset.delta);
-      if(slot==="buff")b.buffHp=Math.max(0,Math.min(b.buffMax,b.buffHp+delta));
-      else{const i=Number(slot);b.hp[i]=Math.max(0,Math.min(b.max[i],b.hp[i]+delta));}
-      save();render();}return;}
+    if(button?.dataset.trackHp!==undefined){const b=state.battle;if(b){
+      // Whole or gone - there is no value in between for a Splice to hold.
+      const i=Number(button.dataset.trackHp);
+      const wasDead=b.hp[i]<=0;
+      b.hp[i]=wasDead?b.max[i]:0;
+      const card=state.spliceCards[b.order[i]];
+      setNotice(wasDead
+        ? `${cardName(card)} restored to the track at Value ${b.max[i]}.`
+        : `${cardName(card)} marked destroyed.`);
+      return;}return;}
     if(button?.dataset.tyrantDie!==undefined){const die=personalDice().find(d=>d.id===button.dataset.tyrantDie);if(die){die.selected=!die.selected;save();render();}return;}
     if(button?.dataset.tyrantDraw!==undefined){const b=state.battle;if(b&&b.revealed&&!b.rolled){
       const n=Number(button.dataset.tyrantDraw)||2,pool=tyrantDice();
@@ -1352,7 +1403,7 @@
       state.notice=`The Tyrant drew ${n} and rolled ${base}${extra}. `
         +(b.attack===4?"":`${hits} ${hits===1?"hit":"hits"} against ${tgt.name}.`);
       save();render();}return;}
-    if(button?.dataset.tyrantHp!==undefined){if(!state.battle||frontSlot(state.battle)!=="tyrant")return;state.health=Math.max(0,Math.min(20,state.health+Number(button.dataset.delta)));save();render();return;}
+    if(button?.dataset.tyrantHp!==undefined){if(!state.battle||frontSlot(state.battle)!=="tyrant")return;state.health=Math.max(0,Math.min(tyrantMaxHealth(),state.health+Number(button.dataset.delta)));save();render();return;}
     if(button?.dataset.batDrop){const [ratIndex,cardIndex]=button.dataset.batDrop.split(":").map(Number);const rat=state.rats[ratIndex];if(rat?.upgrades[cardIndex]){const [gone]=rat.upgrades.splice(cardIndex,1);state.discard.push(cardName(gone));setNotice(`${rat.name} destroyed ${cardName(gone)}.`);}return;}
     if(button?.dataset.batHeld){const [ratIndex,cardIndex]=button.dataset.batHeld.split(":").map(Number);const card=state.rats[ratIndex]?.upgrades[cardIndex];if(card){card.tapped=!card.tapped;save();render();}return;}
     if(button?.dataset.batSplice!==undefined){const index=Number(button.dataset.batSplice);const card=state.spliceCards[index];if(card){card.tapped=!card.tapped;save();render();}return;}
@@ -1395,7 +1446,6 @@
       }
       const dice=selected().filter(d=>d.zone!=="exhausted"),red=state.red.selected&&state.red.zone==="available";
       const redAgain=state.red.selected&&state.red.zone==="rolled";
-      if(dice.length+(red?1:0)>6) return setNotice("Commit at most 6 dice from the shared pool.");
       let gained=0;
       dice.forEach(d=>{d.face=rollFace(d.color);gained+=faceValue(d.face);d.zone="rolled";d.selected=false;});
       if(red){state.red.face=rollFace("red");gained+=faceValue(state.red.face);state.red.zone="rolled";state.red.selected=false;}
@@ -1409,11 +1459,25 @@
       const anyRolled=personalDice().some(d=>d.zone==="rolled")||state.red.zone==="rolled";
       if(!anyRolled)return;
       const n=rolledDamage();
+      bt.bounced=0;bt.brokeThisHit=null;
       if(n>0) applyTyrantDamage(n);
       personalDice().forEach(d=>{if(d.zone==="rolled"){d.zone="exhausted";d.selected=false;d.face="";}});
       if(state.red.zone==="rolled"){state.red.zone="available";state.red.selected=false;state.red.face="";}
+      // Only now is the pool whole again, so a Splice can find its own color.
+      const brokeText=(bt.brokeThisHit||[]).map(card=>{
+        const gone=banishForSplice(card);
+        return cardName(card)+(gone?` (banished a ${gone.color} die)`:"");
+      });
       bt.needRec=true;   // the turn does not pass until REC is done
-      state.notice=(n>0?`${n} damage applied.`:`No damage — the rolled dice are exhausted.`)
+      // Threshold damage: say what the blow actually did, because "4 damage
+      // applied" can mean the attack bounced off and achieved nothing.
+      const broke = brokeText.length ? `${n} damage broke ${brokeText.join(", ")}.` : "";
+      const outcome = n<=0 ? `No damage — the rolled dice are exhausted.`
+        : broke && bt.bounced ? `${broke} The remaining ${bt.bounceLeft} bounced off the next Splice, which needs ${bt.bounced}.`
+        : broke ? broke
+        : bt.bounced ? `${n} damage BOUNCED — the next Splice needs ${bt.bounced} in one attack. The whole attack is wasted.`
+        : `${n} damage applied.`;
+      state.notice=outcome
         +` Now recover ${active().name}’s dice: select up to ${RAT_REC[state.activeRat]+2} exhausted dice and press Recover.`;
       save();render();
       const recBtn=document.querySelector("[data-pool-recover]");
@@ -1466,6 +1530,7 @@
         document.getElementById("batPoolPanel")?.scrollIntoView({behavior:"smooth",block:"center"});return;}
       pick[0].zone="exhausted";pick[0].selected=false;pick[0].face="";
       b.roarPending=false;b.tyrantHits=0;b.hitTarget=null;b.turn="rats";b.rolled=false;b.revealed=false;b.attackRat=null;
+      b.round=(b.round||1)+1;
       state.notice=`Terrifying Roar exhausted a ${pick[0].color} die. The Rats' turn.`;save();render();return;}
     if(button?.dataset.applyHits!==undefined){const b=state.battle;if(!b||!b.rolled||b.roarPending)return;
       const hits=b.tyrantHits,rat=state.rats[b.attackRat!=null?b.attackRat:state.activeRat]||active();
@@ -1475,8 +1540,10 @@
         const j=Number(b.hitTarget),card=rat.upgrades[j];
         if(card){
           const armorHits=hits-direct;
-          if(armorHits>=cardValue(card)){rat.upgrades.splice(j,1);state.discard.push(cardName(card));state.notice=`${armorHits} hits destroyed ${cardName(card)}.`;}
-          else state.notice=`${armorHits} hits could not meet ${cardName(card)} (Value ${cardValue(card)}) — it holds.`;
+          // An Upgrade stops the attack dead whatever the blow was worth,
+          // and is spent for it either way: the Rats' armor is a budget.
+          rat.upgrades.splice(j,1);state.discard.push(cardName(card));
+          state.notice=`${cardName(card)} blocked ${armorHits} ${armorHits===1?"hit":"hits"} and was spent.`;
           if(direct){rat.hp-=direct;state.notice+=` Crushing Blow put ${direct} through to Health.`;
             if(rat.hp<=0){rat.hp=0;rat.down=true;state.notice+=` ${rat.name} was knocked out.`;}}
         }
@@ -1502,6 +1569,7 @@
                             : ` Every Rat is knocked out — the Tyrant wins.`;
       }
       b.tyrantHits=0;b.hitTarget=null;b.turn="rats";b.rolled=false;b.revealed=false;
+      b.round=(b.round||1)+1;
       tyrantDice().forEach(d=>{d.selected=false;d.face="";});
       save();render();return;}
     const noteClaim=button?.closest("[data-bat-note-claim]");

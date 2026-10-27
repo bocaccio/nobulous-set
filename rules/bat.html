@@ -21,13 +21,13 @@
   <li>16 regular Upgrade cards (4 each of Power, Mobility, Defense, Senses)</li>
   <li>8 Specimen cards</li>
   <li>7 Tyrant Attack cards</li>
-  <li>1 Buff HP track card (15 spaces)</li>
+  <li>1 Buff HP track card (15 spaces) &mdash; <em>optional, see Fine&#8209;tuning</em></li>
   <li><b>From 20 Strong:</b> the 17 unit dice &mdash;
       <span class="dice"><span class="sw P"></span>4 Purple, <span class="sw B"></span>4 Blue,
       <span class="sw G"></span>4 Green, <span class="sw Y"></span>4 Yellow,
       <span class="sw R"></span>1 Red</span></li>
   <li><b>From 20 Strong:</b> the <b>Strategy die</b>, which marks the active Lab Rat all game; the
-      <b>Health die</b>, which is used for the Tyrant track in the battle; the <b>Health dial</b>; and the Chip.
+      <b>Health die</b>; the <b>Health dial</b>, which tracks the Tyrant in the battle; and the Chip.
       The Recovery die is not used.</li>
 </ul>
 
@@ -40,13 +40,13 @@
   <li>Place the Red die on a randomly selected Lab Rat. Red is communal and belongs to no Rat.</li>
   <li>Set the dial to 20; this is the Tyrant&rsquo;s base Health.</li>
   <li>Choose a difficulty. It sets the <b>Specimens</b> added to the Upgrade deck and the Tyrant&rsquo;s
-      starting <b>Buff HP</b>.
+      <b>Health</b>.
     <table>
-      <tr><th>Difficulty</th><th>Specimens</th><th>Buff HP</th><th>Win rate</th></tr>
-      <tr><td>Easy</td><td>5</td><td>3</td><td>~50%</td></tr>
-      <tr><td><b>Standard</b></td><td>6</td><td>4</td><td>~43%</td></tr>
-      <tr><td>Hard</td><td>7</td><td>7</td><td>~32%</td></tr>
-      <tr><td>Nobulous</td><td>8</td><td>11</td><td>~21%</td></tr>
+      <tr><th>Difficulty</th><th>Specimens</th><th>Tyrant Health</th></tr>
+      <tr><td>Easy</td><td>5</td><td>9</td></tr>
+      <tr><td><b>Standard</b></td><td>6</td><td>10</td></tr>
+      <tr><td>Hard</td><td>7</td><td>12</td></tr>
+      <tr><td>Nobulous</td><td>8</td><td>14</td></tr>
     </table>
     Shuffle that many random Specimens in with the 16 regular Upgrades. Return the rest to the box.
     </li>
@@ -101,13 +101,14 @@ Spliced. Recovery still happens. This is a legal choice, not a rest action &mdas
   <li>During the <b>Splice Phase</b>, the Value indicates which of two revealed cards is the
       <em>stronger</em> one &mdash; the one that gets Spliced when you fail. Holding Upgrades also narrows
       what you may borrow.</li>
-  <li>During the <b>Tyrant Battle</b>, the Value determines how much damage the card can absorb before it is
-      destroyed (see <em>Armor</em>). Tapping a card (Rats only) uses its printed effect.</li>
+  <li>During the <b>Tyrant Battle</b> a Value is a <b>threshold, not a pool</b>: a Tyrant Splice must be
+      met by that much damage in a single attack to break, and a Rat&rsquo;s Upgrade blocks one attack and is
+      spent (see <em>Armor</em>). Tapping a card (Rats only) uses its printed effect.</li>
   <li>A Rat may hold at most <b>3</b> Upgrades. Specimens count against that limit.</li>
 </ul>
-<p>The Tyrant holds Spliced Upgrades differently. It never taps: the <b>frontmost</b> Splice in its row
-applies its effect on every attack, free, for as long as that card survives &mdash; so a Splice is armor and
-a weapon at the same time, and killing it is how you switch off both.</p>
+<p>The Tyrant holds Spliced Upgrades differently. It never taps, and a Splice&rsquo;s printed effect is
+<b>never used</b> &mdash; on the Tyrant a card is only its Value. What it costs you is the die it takes with
+it when it breaks (see <em>Breaking a Splice</em>).</p>
 
 <h2>Borrowing</h2>
 <p>The active Rat may borrow <b>one</b> available non&#8209;Red die from another Rat, before either Strategy
@@ -136,9 +137,8 @@ attack.</b> The Red die is set aside afterwards instead of being exhausted.</p>
 
 <h2>Awakening the Tyrant</h2>
 <p>The Tyrant awakens the moment it reaches <b>5 Splices</b>. Build the <b>Tyrant track</b>; from left to
-right, place the <b>Buff HP card</b> with the Health die on the spot corresponding to your chosen difficulty
-level, the five Tyrant Splices <b>in a random order</b>, and then the <b>Health dial (set to 20)</b>. Once
-complete, begin the battle.</p>
+right, place the five Tyrant Splices <b>in a random order</b>, and then the <b>Health dial</b>, set to your
+difficulty&rsquo;s Tyrant Health. Once complete, begin the battle.</p>
 <p><b>Splicing Machine Malfunction.</b> If the Experiment deck runs out first, randomly select enough unused
 Upgrade cards to bring the Tyrant to exactly 5 Splices, apply them, and begin the battle. Running out of
 <em>Upgrade</em> cards is not a malfunction &mdash; reshuffle the Upgrade discard instead.</p>
@@ -149,14 +149,14 @@ Upgrade cards to bring the Tyrant to exactly 5 Splices, apply them, and begin th
   <li>Shuffle the 7 <b>Tyrant Attack</b> cards face&#8209;down, then <b>flip the top card</b> face&#8209;up to
       start the Attack discard. It does not attack; it only supplies the first <b>commit color</b> (see
       <em>Committing by color</em>).</li>
-  <li>The <b>Tyrant track</b> runs Buff HP, the five shuffled Splices, Health. That is the order damage has
-      to chew through, and the <b>Health die walks along it</b> &mdash; it starts on the Buff HP card and
-      only ever moves right, sitting on whichever card is currently being damaged and showing how much that
-      card has left. One die runs the whole Tyrant.</li>
-  <li>The Tyrant has <b>20 Health</b> plus its Buff HP. Take <b>2 Purple, 2 Blue, 1 Green and 1 Yellow</b>
-      out of the Rats&rsquo; personal dice &mdash; there are only 17 dice in the game, so the Tyrant&rsquo;s six
-      come from the Rats&rsquo; own supply. Keep them in a bag or a cup you can reach into without looking.
-      Those six never exhaust; the Tyrant draws from them fresh every round.</li>
+  <li>The <b>Tyrant track</b> runs the five shuffled Splices, then Health. That is the order damage has to
+      chew through. Nothing marks a Splice: <b>a Splice is never part&#8209;damaged</b>, so it is either
+      whole or gone.</li>
+  <li>Its bulk is the five Splices &mdash; the dial is only what is left once the last wall comes down, and
+      the fight is won by breaking them. Take <b>2 Purple, 2 Blue, 1 Green and 1 Yellow</b>
+      out of the Rats&rsquo; personal dice &mdash; there are only 17 in the game, so the Tyrant&rsquo;s six come
+      from the Rats&rsquo; own supply. Keep them in a bag. Those six never exhaust; the Tyrant draws from them
+      fresh every round.</li>
   <li>Sweep every personal die still in the game &mdash; from all four Rats, available <em>and</em> exhausted
       &mdash; into one <b>shared battle pool</b>, all available. Banished dice stay gone. <b>Red is not part of
       the pool</b>; it is available to the attacking Rat every round, on the terms described under
@@ -170,18 +170,25 @@ Upgrade cards to bring the Tyrant to exactly 5 Splices, apply them, and begin th
   <li><b>Untap.</b> Every Upgrade tapped last round untaps now.</li>
   <li><b>Choose the attacking Rat</b> from those still standing and move the <b>Strategy die</b> to it. It
       uses its own Upgrades; its printed ability is silent here.</li>
-  <li><b>Commit up to 6 dice</b> from the shared battle pool, <b>honoring the commit color</b>, and roll them.
+  <li><b>Commit as many dice as you like</b> from the shared battle pool, <b>honoring the commit color</b>,
+      and roll them &mdash; no limit, but you only get <b>REC + 2</b> back.
       Every hit is 1 damage and every Crit is 2, and <b>STR 2</b> gives a second Strategy roll here too.</li>
   <li><b>Either tap one Upgrade or commit Red &mdash; not both.</b> Tapping applies that Upgrade&rsquo;s
       printed effect, and the card cannot absorb damage until it untaps. Committing Red adds it to the roll
-      on top of your six pool dice, for free. A Rat may do neither.</li>
-  <li><b>Apply the damage</b> to the Tyrant along its row, left to right: <b>Buff HP first</b>, then each
-      Splice in the order it was laid down, then its Health. Each Splice soaks damage up to its Value and is
-      destroyed once that Value is used up; anything left over carries straight through to the next card.</li>
+      on top of your committed dice, for free. A Rat may do neither.</li>
+  <li><b>Apply the damage</b> left to right. <b>A Splice does not chip:</b> your blow must <b>meet its
+      printed Value in this one attack</b> or it bounces off and the whole attack is wasted. Meet it and the
+      Splice is destroyed outright, and the remainder carries on &mdash; it may break the next Splice too,
+      and whatever survives all five comes off Health, which does chip. <b>Each Splice you break banishes one
+      die of its own color</b> from the shared pool, or any die if none of that color is left; its printed
+      effect is never used. The Tyrant was built from your equipment and takes some with it.</li>
   <li><b>Recover.</b> Return dice equal to the attacking Rat&rsquo;s <b>REC + 2</b> from the ones you just
       committed to the shared pool. <b>The rest are exhausted and do not come back.</b></li>
   <li>If the Tyrant is at 0 Health, the Rats win. Otherwise the Tyrant attacks.</li>
+  <li><b>Count the round.</b> If the Tyrant has survived <b>8 rounds</b> it breaks containment and the Rats
+      lose. You have eight attacks to break five walls.</li>
 </ol>
+
 
 <div class="box">
   <span class="lbl">Committing by color</span>
@@ -199,43 +206,36 @@ Upgrade cards to bring the Tyrant to exactly 5 Splices, apply them, and begin th
   <li>The Tyrant draws a number of dice equal to the <b>highest Value among the Splices it still holds</b>
       &mdash; 2 if it holds none, never more than its 6 &mdash; <b>at random, without looking</b>, and rolls
       them, then return them to the bag.</li>
-  <li>Add the effect of the <b>frontmost Splice in the row</b>. The Tyrant never taps: the effect is free,
-      it happens on every attack, and it uses the card&rsquo;s <b>printed Value</b> &mdash; damage already
-      marked on that card does not weaken it. When the frontmost Splice is destroyed the next one takes
-      over.</li>
   <li>Unless the card says otherwise the attack lands on the <b>attacking Rat</b>. Choose one of its
-      <em>untapped</em> Upgrades to take the blow: it is destroyed if the damage <b>meets or exceeds its
-      Value</b>, and holds otherwise. Either way the attack <b>stops there</b> &mdash; at most one Upgrade is
-      destroyed and nothing carries over. Only a Rat with <b>no</b> untapped Upgrade takes the damage to its
-      Health (see <em>Armor</em>).</li>
+      <em>untapped</em> Upgrades to take the blow: it stops the attack dead, and <b>it is spent</b> &mdash;
+      discard it, whatever the blow was worth. At most one Upgrade is lost and nothing carries over. Only a
+      Rat with <b>no</b> untapped Upgrade takes the damage to its Health (see <em>Armor</em>).</li>
   <li>A Rat reduced to 0 Health is <b>knocked out</b>: set it aside and discard its Upgrades. It cannot be
-      chosen as the attacker again, and for the campaign its Upgrades become candidates rather than
-      retained cards.</li>
+      chosen as the attacker again.</li>
 </ol>
-<p>Reduce the Tyrant to 0 Health to win. If every Rat is knocked out, the Tyrant wins and you replay BAT.</p>
+<p>Reduce the Tyrant to 0 Health to win. The Tyrant wins if <b>every Rat is knocked out</b>, or if it
+<b>survives 8 rounds</b>; either way you replay BAT.</p>
 
 <h3>Armor</h3>
 <div class="box">
   <span class="lbl">Two kinds of armor</span>
-  <b>The Tyrant&rsquo;s Splices accumulate damage</b> &mdash; the Health die sits on whichever one is being
-  chewed through and remembers how far you have got. <b>A Rat&rsquo;s Upgrades do not.</b> A blow either
-  meets an Upgrade&rsquo;s Value and shatters it or bounces off it entirely, so no Rat card is ever left
-  part&#8209;damaged.
+  <b>Neither kind chips</b> &mdash; no card here is ever left part&#8209;damaged. A Splice must be met in one
+  blow or it takes nothing; a Rat&rsquo;s Upgrade stops an attack dead whatever it was worth. The difference is
+  the price: a Splice stands until a big enough hit lands, a Rat&rsquo;s Upgrade is <b>spent the moment it
+  blocks</b>. The Tyrant&rsquo;s armor is a wall; the Rats&rsquo; is a budget.
 </div>
 
-<h3>Buff HP</h3>
-<p>The Buff HP track is 15 spaces; the four gold spaces mark each difficulty&rsquo;s starting Buff HP. Put the
-<b>Health die</b> on your number and move it down one space per point of damage. When the last point is
-gone, move the die onto the first Splice, <b>set it to that card&rsquo;s Value</b>, and carry on the same way down
-the row. Any start from 1 to 15 may be used to fine&#8209;tune the difficulty.</p>
+<h3>Fine&#8209;tuning</h3>
+<p>Any Health value works, and a single point is a noticeable swing. The <b>Buff HP card</b> is
+optional &mdash; hold part of the Health on it and spend that first.</p>
 
 <h2>Carrying BAT forward</h2>
 <p><em>Only relevant if you are playing the Nobulous Research Journal (NRJ) campaign. Skip otherwise.</em></p>
-<p>After a successful battle, <b>retain up to 3 Upgrade cards held by Rats that survived</b>, of which at most
-1 may be a Specimen. Upgrades held by knocked&#8209;out Rats, and every card spliced into the Tyrant, become
-<b>candidates</b>. If fewer than 3 eligible Upgrades survive, fill the remaining slots with candidates so BAT
-contributes 6 cards in total.</p>
-<p>Winning is not enough &mdash; winning with your Rats intact is what banks material for the finale.</p>
+<p>After a successful battle, <b>retain up to 3 of the Upgrade cards the Rats earned</b> &mdash; the ones they
+held when the battle began &mdash; of which at most 1 may be a Specimen. It does not matter whether the card
+or its holder survived: the Rats are not the imposters, they chose what went into one, and winning proves
+the choice was right. Cards spliced into the Tyrant are <b>candidates</b>; fill any remaining slots from
+those, then from unused Upgrades, so BAT contributes 6 in total.</p>
 
 <div class="foot">BAT &middot; The Nobulous Set &middot; fan expansion for 20 Strong &middot; prototype rules,
 not affiliated with Chip Theory Games</div>

@@ -4,13 +4,12 @@ Rules source: rules/bat.html plus the card data in generator/build_bat.py.
 
 Verified against rules/bat.html and the core 20-Strong_Rulebook.pdf.
 
-Only 17 dice exist in the physical box, so the Tyrant's six - 2 Purple,
-2 Blue, 1 Green, 1 Yellow - MUST be taken out of the Rats' own 16 personal
-dice. There is no separate Tyrant pool. rules/bat.html reads as though the
-Tyrant brings its own ("those six dice never exhaust"), which is not
-physically possible and should be reworded. tyrant_takes_rat_dice=False
-models the impossible version and exists only to measure what the dice tax
-costs: about 15 points at Standard.
+Only 17 dice exist in the physical box and the Rats own 16 of them, so the
+Tyrant's six - 2 Purple, 2 Blue, 1 Green, 1 Yellow - MUST be taken out of
+the Rats' own supply. There is no separate Tyrant pool and there cannot be
+one; a Tyrant bringing its own six would need 23 dice to exist. The dice tax
+this imposes on the Rats is not a design option, it is the component count,
+and rules/bat.html states it directly in the setup step.
 
 Modeled as printed:
   * Value is printed and never weakens - damage marked on a Splice does not
@@ -45,12 +44,17 @@ Modeled as printed:
     running out of Upgrades reshuffles the discard instead
 
 The printed tap effects ARE implemented, but behind `card_effects=True`, which
-is OFF by default. That switch turns on the leftmost Splice firing free on
-every Tyrant attack, and the Rats tapping one Upgrade per attack. At Standard,
-15,000 games: effects off 71.4%, on 40.1%, on with tapped_defends 58.9% -
-against a published ~63%. No setting reproduces the ladder exactly; off
-overshoots and on undershoots. That is an unresolved discrepancy rather than a
-settled answer; see README.md.
+is OFF by default while every caller in this package passes True. That switch
+turns on the leftmost Splice firing free on every Tyrant attack, and the Rats
+tapping one Upgrade per attack. At Standard with no tier module, 20,000 games
+(2026-10-27): effects off 42.8%, on 46.5%, on with tapped_defends 55.8%.
+
+These used to read 71.4% / 40.1% / 58.9%, a 31-point spread with off above a
+published ~63% and on far below it. That spread came from a model charging
+the adopted +1 on every Experiment Target twice and leaking Upgrade cards out
+of a deck the rules make inexhaustible. With both fixed the three settings sit
+within 13 points and all three undershoot ~63%, so the question is no longer
+which switch is right; see README.md.
 
 Design variants, all switchable, for testing rule changes:
   dice_rule        "six" (current) or "highest_upgrade" - the attacking Rat
@@ -102,7 +106,40 @@ SPECIMEN_CATS = ["Power", "Power", "Mobility", "Mobility",
                  "Defense", "Defense", "Senses", "Senses"]
 
 # Printed Targets of the 20 Experiments.
-EXPERIMENT_TARGETS = [2, 2, 3, 3, 4, 3, 3, 4, 3, 3, 4, 4, 3, 4, 4, 3, 4, 5, 4, 5]
+# The printed effect on each Experiment, by deck index. Thirteen of the
+# twenty are mechanical and modelled; the rest are listed in UNMODELLED_EXP
+# so the omission is visible in the code rather than implied.
+EXPERIMENT_EFFECT = {
+    0: "flip_side",        # Baseline Calibration
+    1: "need_yellow",      # Fine Motor Trial: else +1 Target
+    2: "extra_upgrade",    # Structural Stress Trial
+    3: "rereveal",         # Contaminated Tissue
+    4: "burn_two",         # Performance Trial
+    5: "need_purple",      # Load-Bearing Trial: else discard and redraw
+    7: "need_green",       # Rapid Response Trial: else lose the better Upgrade
+    8: "three_colors",     # Full-Spectrum Trial
+    9: "max_two",          # Workspace Efficiency Study
+    10: "no_red",          # Restricted Materials Trial
+    11: "no_borrow",       # Independent Performance Trial
+    12: "no_phase_two",    # Resource Depletion Study
+    13: "reroll_pb",       # Reliability Trial
+    14: "exclude_die",     # Reagent Exclusion Trial
+    15: "containment",     # Containment Failure, optional
+    16: "str_one",         # Endurance Trial
+    17: "retrofit",        # Field Retrofit Trial, optional, on success
+    18: "methodology",     # Methodological Optimization, optional
+    19: "tyrant_minus_2",  # Degraded Tissue Study, on success
+}
+UNMODELLED_EXP = {
+    6: "Diagnostic Trial - committing Blue buys a look at the next "
+       "Experiment, and the policy has no lookahead to spend it on",
+}
+
+# Read straight off the cards in generator/build_bat.py, which is the
+# authoritative text. The model used to keep a base table of its own and add
+# TARGET_DELTA = 1 to it; when that rise was adopted and printed onto the
+# cards, seven Experiments ended up charged for it twice.
+EXPERIMENT_TARGETS = [3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5]
 
 # difficulty -> (Specimens shuffled into the Upgrade deck, Buff HP)
 # (Specimens shuffled into the Upgrade deck, the Tyrant's starting Buff HP).
@@ -110,11 +147,15 @@ EXPERIMENT_TARGETS = [2, 2, 3, 3, 4, 3, 3, 4, 3, 3, 4, 4, 3, 4, 4, 3, 4, 5, 4, 5
 # whole ladder up by roughly 13 points. The dial is exhausted at Nobulous:
 # there are only 8 Specimen cards; the Buff HP track was extended to 15
 # spaces so the bottom two rungs could separate.
+# (Specimens shuffled into the Upgrade deck, the Tyrant's Health).
+# The second number used to be Buff HP on its own card, back when Health was
+# a flat 20 and the chip could not read higher; the Splices carry the fight
+# now, so those points live on the dial and difficulty is one number again.
 DIFFICULTY = {
-    "Easy": (5, 3),
-    "Standard": (6, 4),
-    "Hard": (7, 7),
-    "Nobulous": (8, 11),
+    "Easy": (5, 9),
+    "Standard": (6, 10),
+    "Hard": (7, 12),
+    "Nobulous": (8, 14),
 }
 
 TYRANT_NEED = [("purple", 2), ("blue", 2), ("green", 1), ("yellow", 1)]
@@ -162,18 +203,51 @@ BORROWABLE = {
 # active Rat's available dice exhausted after completing one. The two knobs
 # below exist to test a narrower, costlier version of the card.
 ACCEL_FLOOR = 5          # printed Target at which the -1 applies
-ACCEL_COST_ALWAYS = True   # bill the 2 dice on every attempt, not just a win
-INDEP_ON_WIN = True        # Independent Funding pays only on a completed Experiment
+ACCEL_COST_ALWAYS = True   # bill the dice on every attempt, not just a win
+ACCEL_DICE = 2             # how many of the active Rat's dice it bills
+# Billing AFTER the attempt charges dice the Rat has already spent, so the
+# cost clause barely lands. Billing before it is a real cost.
+ACCEL_COST_BEFORE = True
+# The grant is for ambitious work; routine Experiments are self-funded. This
+# is the complement of Accelerated Trials' Target 5+, so the two cards gate
+# on opposite halves of the deck and read as different cards.
+# Eight triggers were measured before this one landed in band. The old card -
+# the lender recovers a die - was worth +0.1 despite firing 2.7 times a game,
+# because the lender's dice are not the binding resource. Anything charged at
+# resolve time was worth 0.0: the active Rat has already spent its dice by
+# then, the same dead-clause problem Accelerated Trials had. Anything keyed to
+# Upgrades held was dodged for free, because the Rat-selection policy already
+# prefers the least-loaded Rat. Anything undodgeable was far too big - a setup
+# banish is -11.0 and taxing the Red holder -10.5, with nothing in between,
+# because a Rat owns only 4 dice. What works is a pre-attempt cost on a gate
+# firing about half the time, which is also what fixed Accelerated Trials.
+INDEP_ROUTINE_CEIL = 4     # tax printed Targets at or below this
+INDEP_ROUTINE_DICE = 2
+INDEP_ON_WIN = True        # retained: the old lender payout, now off by default
+INDEP_LENDER_PAYOUT = True
 # Questionable Methodology: splice the stronger Upgrade into the Tyrant for a
 # replacement reveal. The printed card charged +1 Target for the privilege, so
 # nobody took it; -1 makes it a bargain paid for in Tyrant strength.
-METHODOLOGY_DELTA = -1
+METHODOLOGY_DELTA = 0
 METHODOLOGY_FLOOR = 5      # the policy only takes the bargain on hard Experiments
+# An OPTIONAL bargain can never be a difficulty card - the player only takes
+# it when it helps. Forced, the Tyrant grows whether you want it or not.
+METHODOLOGY_FORCED = True
+# Cross-Contamination: a banished borrowed die Splices this many Upgrades.
+CROSS_SPLICE_N = 3
+# Shared Equipment Budget: dice pulled into the common pool at setup, and the
+# dice a completed Experiment buys back by exchanging with it.
+SHARED_EQUIP_DICE = 1
+SHARED_EQUIP_RECOVER = 2
 
 # Which module each tier adds. The printed campaign is protocol, mods, notes;
 # permuting this answers whether a different order would give BAT the dip at
 # Tier II that NAP and AoS have.
 TIER_ORDER = ["protocol", "mods", "notes"]
+# Flat Notes granted at setup, for measuring what one is worth. Only 3 of the
+# 6 printed Research Notes have conditions this model can observe, so the
+# claim rate is about 1.09 a game and this is how to price the shortfall.
+NOTES_BONUS = 0
 
 # Candidate fixes for BAT's tier ladder, which currently rises where NAP's and
 # AoS's dip. Both mirror what those two games already do:
@@ -190,8 +264,64 @@ TIER2_BANISH = False       # Tier II banishes a second one. Unlike Specimens thi
                            # a Specimen-based tier rule does nothing at Hard
                            # and Nobulous, which already use 7 and 8 of them.
 TIER2_EXTRA_SPECIMEN = 0   # further Specimens once the Modifications arrive
-MODS_REPLACE = False
+# Every other game's tiers REPLACE cards rather than adding them. BAT adding
+# 6 Modifications to the Upgrade deck handed the Rats more armor, which is
+# why its tier columns used to run backwards.
+MODS_REPLACE = True
 TIER_INDEX = {"none": 0, "I": 1, "II": 2, "III": 3}
+
+
+# Commit this much over the wall's Value, to cover the spread on the roll.
+THRESHOLD_MARGIN = 1.15
+# "Commit up to 6 dice from the shared battle pool." Overridable so the cap
+# itself can be measured.
+# "Commit as many dice as you like." The cap was removed after measuring
+# that an uncapped pool opens nothing: chaining walls uncapped scores worse
+# than under the cap, and dumping the pool is far worse than playing
+# sensibly, because recovery of REC+2 is the real limiter.
+RAT_DICE_CAP = 99
+
+
+# "Exhaust an available die" - which one? Every clause used to walk
+# rat.dice, which is COLORS order, so it took the PURPLE: the strongest die
+# in the game. A player hands over the weakest. The difference is measurable,
+# so it is a policy rather than an accident.
+#   "color"     the card names a colour; that die goes, weakest otherwise
+#   "weakest"   what an unconstrained player does - yellow every time
+#   "strongest" what the model used to do by accident, kept for comparison
+#   "random"    blind choice, the proxy used before colours were assigned
+EXHAUST_PICK = "color"
+
+# The colour each Experimental Protocol names for its exhaust clause. A
+# clause that always takes a yellow costs almost nothing; naming a colour is
+# what makes it a real price, and it cannot be ducked - if the Rat holds none
+# of that colour the weakest die goes instead.
+PROTOCOL_COLOR = {
+    "accelerated_trials": "purple",
+    "independent_funding": "blue",
+    "cross_contamination": "green",
+    "shared_equipment": "yellow",
+    "questionable_procurement": "green",
+    "questionable_methodology": "blue",
+}
+
+
+def pick_exhaust(dice, n, rng, color=None):
+    """The n dice a clause takes, by EXHAUST_PICK.
+
+    With "color", dice of the named colour go first and the weakest make up
+    any shortfall, so being out of that colour is not a free pass.
+    """
+    free = [d for d in dice if d.zone == "available"]
+    if EXHAUST_PICK == "strongest":
+        free.sort(key=lambda d: -EV[d.color])
+    elif EXHAUST_PICK == "random":
+        rng.shuffle(free)
+    elif EXHAUST_PICK == "color" and color:
+        free.sort(key=lambda d: (d.color != color, EV[d.color]))
+    else:
+        free.sort(key=lambda d: EV[d.color])
+    return free[:n]
 
 
 def module_active(name, tier):
@@ -216,6 +346,10 @@ RAT_SIDES = [
     ["experimental", "adaptation"],
 ]
 
+# Set to a protocol name to force it instead of drawing at random, for
+# measuring what one card is worth on its own.
+FORCE_PROTOCOL = None
+
 PROTOCOLS = [
     "cross_contamination",      # a banished borrowed die Splices an Upgrade
     "shared_equipment",         # 2 dice into a common Equipment pool
@@ -229,19 +363,22 @@ PROTOCOLS = [
 # Either a Rat or the Tyrant may hold them. The drawbacks are the reason the
 # cards are a mixed blessing, so each is modeled as printed rather than
 # flattened into one generic penalty.
-#   no_borrow  Extra Limbs        - may not borrow dice (borrowing unmodeled)
+#   no_borrow  Extra Limbs        - may not borrow dice
 #   no_red     Secondary Brain    - may not use the Red die
 #   less_hp    Adrenal Gland      - 1 less Health, minimum 1
 #   less_rec   Bone Plating       - -1 REC, minimum 1 (also blocks 2 damage)
 #   no_streak  Redundant Organs   - cannot be active on consecutive turns
 #   burn_die   Hypermetabolism    - exhaust 1 die per Experiment attempted
+# A Modification is deliberately a high Value with a drawback attached: good
+# armor while a Rat holds it, and a tall wall if the Tyrant splices it. Under
+# threshold damage the second of those matters more.
 MODS = [
-    (3, "no_borrow"),
-    (3, "no_red"),
-    (4, "less_hp"),
-    (3, "less_rec"),
-    (4, "no_streak"),
-    (3, "burn_die"),
+    (4, "no_borrow"),
+    (4, "no_red"),
+    (5, "less_hp"),
+    (4, "less_rec"),
+    (5, "no_streak"),
+    (4, "burn_die"),
 ]
 # Lower the Modification bodies so the drawback is the point of the card.
 MOD_VALUE_DELTA = 0
@@ -257,8 +394,10 @@ MOD_VALUE_DELTA = 0
 PHASE2_POLICY = "push"
 # A flat rise on every printed Experiment Target. Needs no new components -
 # it is 20 numbers on 20 cards - so it is the cheapest way to move the whole
-# ladder once the dice-side dial is exhausted.
-TARGET_DELTA = 1
+# ladder once the dice-side dial is exhausted. The +1 this dial proposed has
+# been printed onto the cards, so it reads 0: EXPERIMENT_TARGETS above is now
+# the printed deck, and this is a dial again rather than a pending change.
+TARGET_DELTA = 0
 MOD_VALUES = [v for v, _ in MODS]
 MOD_CATS = ["Mobility", "Senses", "Power", "Defense", "Defense", "Senses"]
 
@@ -348,14 +487,17 @@ class Upgrade(object):
     """An Upgrade held by a Rat. A Rat may tap one per attack, instead of
     committing Red, for its printed effect; "the card cannot absorb damage
     until it untaps"."""
-    __slots__ = ("value", "effect", "tapped", "name", "cat")
+    __slots__ = ("value", "effect", "tapped", "name", "cat", "card")
 
-    def __init__(self, value, effect, name="", cat=""):
+    def __init__(self, value, effect, name="", cat="", card=None):
         self.value = value
         self.effect = effect
         self.tapped = False
         self.name = name
         self.cat = cat
+        # The Upgrade deck entry this came from. A Rat holds a physical
+        # card, and Field Retrofit has to be able to put it back.
+        self.card = card
 
 
 class Rat(object):
@@ -456,6 +598,12 @@ def splice_colors(card):
     return (CAT_COLOR[cat],)
 
 
+# Dice a breaking Splice banishes, and how long the Tyrant can be contained.
+# Both are printed numbers rather than switches, so they stay named.
+BREAK_BANISH = 1
+ROUND_LIMIT = 8
+
+
 class Splice(object):
     """One card on the Tyrant track.
 
@@ -485,16 +633,15 @@ class Splice(object):
 
 
 class Game(object):
-    def __init__(self, difficulty="Standard", rng=None, tyrant_takes_rat_dice=True,
+    def __init__(self, difficulty="Standard", rng=None,
                  tier="none", card_effects=False, dice_rule="six",
                  attacker_policy="healthiest", tapped_defends=False,
                  tap_bonus="none", attack_cards=True, tyrant_pool=6,
                  battle_rec_bonus=2, battle_rec="flat", rec_rule="strongest",
-                 color_rule="attack_only", commit_policy="conserve",
+                 color_rule="attack_only", commit_policy="threshold",
                  sides=None):
         self.rng = rng or random.Random()
-        self.tyrant_takes_rat_dice = tyrant_takes_rat_dice
-        self.specimens, self.buff_max = DIFFICULTY[difficulty]
+        self.specimens, self.start_health = DIFFICULTY[difficulty]
         self.tier = tier
         # The printed tap effects on Upgrades and Specimens: the Tyrant's
         # frontmost Splice firing free on every attack, and the Rats tapping
@@ -541,7 +688,7 @@ class Game(object):
         self.protocol = None
         self.notes = 0
         if module_active("protocol", tier):
-            self.protocol = self.rng.choice(PROTOCOLS)
+            self.protocol = FORCE_PROTOCOL or self.rng.choice(PROTOCOLS)
             if TIER1_EXTRA_SPECIMEN:
                 self.specimens += 1
             self.tier1_banish = TIER1_BANISH
@@ -561,7 +708,9 @@ class Game(object):
         # short all game; the exchange is modeled as the +1 recovery below.
         self.equipment_pool = 0
         if self.protocol == "shared_equipment":
-            for donor in self.rng.sample(self.rats, 2):
+            donors = [self.rats[i % len(self.rats)]
+                      for i in range(SHARED_EQUIP_DICE)]
+            for donor in donors:
                 if donor.dice:
                     donor.dice.pop()
                     self.equipment_pool += 1
@@ -599,7 +748,8 @@ class Game(object):
                 pool=[i for i in range(len(SPECIMEN_NAMES))]
                 self.upgrade_deck.append(("s", self.rng.choice(pool)))
         self.rng.shuffle(self.upgrade_deck)
-        self.notes = 0         # Research Notes claimed and not yet spent
+        self.notes = NOTES_BONUS if module_active("notes", tier) else 0
+        # Research Notes claimed and not yet spent
         self.claimed = set()   # which Notes have been claimed
         self.recent = []       # outcomes of the last four Experiments
         self.freeborrow = set()
@@ -611,8 +761,7 @@ class Game(object):
         self.tyrant_taps = 0
         self.last_destroyed = ()
         self.attack_color = None
-        self.health = 20
-        self.buff = self.buff_max
+        self.health = self.start_health
         self.experiments = 0
         self.last_active = None
         self.tyrant_dice = []
@@ -628,30 +777,50 @@ class Game(object):
 
         Each prints a claim condition and can be claimed only once. Handing
         the player a flat allowance was the single biggest distortion in the
-        BAT tier column, so the conditions are checked as printed. The three
-        modeled here are the ones whose conditions this model can actually
-        observe; the other three turn on tapping, on zero-dice turns the
-        policy never takes, and on a battle-only reward.
+        BAT tier column, so the conditions are checked as printed. Five of
+        the six are modelled here. Controlled Failure is not: it claims on
+        deliberately committing zero dice to an Experiment, which no policy
+        in this model takes.
+
+        What a claim buys is a different matter - see self.notes, which
+        pools every claim into one counter and spends it on two of the six
+        printed rewards. That is the live limit on BAT's Tier III column.
         """
         if not module_active("notes", self.tier):
             return
         self.recent.append(success)
         self.recent = self.recent[-4:]
 
-        # Unexpected Resilience: completed without committing Purple or Red.
-        if "resilience" not in self.claimed and success and not used_red and \
-                not any(d.color == "purple" for d in committed):
+        # Unexpected Resilience: completed without committing Red. The
+        # printed card also barred Purple, which held it to 16% of games.
+        if "resilience" not in self.claimed and success and not used_red:
             self.claimed.add("resilience")
             self.notes += 1
-        # Successful Integration: a single Rat holds 2 Specimens.
-        if "integration" not in self.claimed and \
-                sum(1 for u in rat.upgrades if u.value == SPECIMEN_VALUE) >= 2:
+        # Successful Integration: a Rat holds a Specimen. The printed card
+        # wanted two, which happened in 19% of games. Matched by name: two
+        # Unauthorized Modifications also carry Value 5.
+        _spec = sum(1 for u in rat.upgrades if u.name in SPECIMEN_NAMES)
+        if "integration" not in self.claimed and _spec >= 1:
             self.claimed.add("integration")
             self.notes += 1
         # Acceptable Losses: 3 Experiments failed in the same four-Rat rotation.
         if "losses" not in self.claimed and len(self.recent) == 4 and \
                 self.recent.count(False) >= 3:
             self.claimed.add("losses")
+            self.notes += 1
+        # Cross-Species Compatibility: claimed on the act of sharing, which
+        # is what the card is about - its reward is tapping another Rat's
+        # Upgrade. "All four Rats hold 2+ Upgrades" never happened in 1500
+        # games, and "any two" only reached 16%: Upgrades are too scarce for
+        # any threshold version of this card to fire.
+        if "compatibility" not in self.claimed and success and \
+                getattr(self, "borrowed_this_turn", False):
+            self.claimed.add("compatibility")
+            self.notes += 1
+        # Red Means Go: Red completed it and a borrowed die was in the throw.
+        if "red_means_go" not in self.claimed and success and used_red and \
+                getattr(self, "borrowed_this_turn", False):
+            self.claimed.add("red_means_go")
             self.notes += 1
 
     def borrow_for(self, rat):
@@ -688,11 +857,15 @@ class Game(object):
         if banished and self.protocol == "cross_contamination" and self.upgrade_deck:
             # "If that die is banished, reveal the top Upgrade and Splice it
             # into the Tyrant."
-            extra = self.upgrade_deck.pop()
-            self.splices.append(Splice(splice_value(extra), splice_cat(extra), splice_effect(extra), splice_colors(extra)))
-            if extra[0] == "m":
-                self.splice_mods += 1
-        if not banished and self.protocol == "independent_funding" and \
+            for _ in range(CROSS_SPLICE_N):
+                if not self.upgrade_deck:
+                    break
+                extra = self.upgrade_deck.pop()
+                self.splices.append(Splice(splice_value(extra), splice_cat(extra), splice_effect(extra), splice_colors(extra)))
+                if extra[0] == "m":
+                    self.splice_mods += 1
+        if INDEP_LENDER_PAYOUT and not banished \
+                and self.protocol == "independent_funding" and \
                 lender is not None and len(lender.upgrades) > len(rat.upgrades):
             # "when a Rat has lent a die to a Rat holding fewer Upgrades, the
             # lender recovers 1 die."
@@ -712,25 +885,45 @@ class Game(object):
         # Upgrade discard instead." The discard is every card revealed and not
         # kept, so the Upgrade deck is effectively inexhaustible.
         while len(self.upgrade_deck) < 2:
+            # Only the reshuffle can refill the deck, so an empty discard
+            # means fewer than the 2 cards this Experiment has to reveal
+            # exist, and the phase ends here. Testing for an EMPTY deck
+            # instead left one card and an empty discard spinning in a
+            # no-op body forever - it cost a 20,000-game cross-tab run.
+            if not self.discard:
+                return False
             self.upgrade_deck += self.discard
             self.discard = []
-            if not self.upgrade_deck:
-                return False
 
-        target = EXPERIMENT_TARGETS[self.deck.pop()] + TARGET_DELTA
+        _exp = self.deck.pop()
+        self.exp_effect = EXPERIMENT_EFFECT.get(_exp)
+        target = EXPERIMENT_TARGETS[_exp] + TARGET_DELTA
+        if self.exp_effect == "burn_two":
+            # "Discard the top 2 cards of the Experiment deck face down."
+            del self.deck[-2:]
         # Accelerated Trials: Experiments with printed Target 4+ have -1 Target.
         accelerated = self.protocol == "accelerated_trials" and target >= ACCEL_FLOOR
         if accelerated:
             target -= 1
-        self.accel_cost = accelerated
+        self.accel_cost = accelerated and not ACCEL_COST_BEFORE
         options = [self.upgrade_deck.pop(), self.upgrade_deck.pop()]
+        if self.exp_effect == "rereveal" and len(self.upgrade_deck) >= 2:
+            # "Discard the revealed Upgrades and reveal 2 new Upgrades.
+            # These become the Upgrades for this Experiment."
+            self.discard += options
+            options = [self.upgrade_deck.pop(), self.upgrade_deck.pop()]
+        if self.exp_effect == "extra_upgrade" and self.upgrade_deck:
+            # Structural Stress Trial: "Reveal 1 additional Upgrade."
+            options.append(self.upgrade_deck.pop())
         if (self.protocol == "questionable_methodology" and target >= METHODOLOGY_FLOOR
-                and len(self.splices) < 4 and self.upgrade_deck):
+                and (METHODOLOGY_FORCED or len(self.splices) < 4) and self.upgrade_deck):
             # Feed the Tyrant the better Upgrade in exchange for an easier
             # Experiment and a fresh reveal.
             strongest = max(options, key=splice_value)
             self.splices.append(Splice(splice_value(strongest), splice_cat(strongest),
                                        splice_effect(strongest), splice_colors(strongest)))
+            if strongest[0] == "m":
+                self.splice_mods += 1
             options.remove(strongest)
             options.append(self.upgrade_deck.pop())
             target = max(1, target + METHODOLOGY_DELTA)
@@ -756,6 +949,39 @@ class Game(object):
         )
         previous = self.last_active
         self.last_active = rat
+        eff = getattr(self, "exp_effect", None)
+        if eff == "flip_side":
+            rat.side = 1 - rat.side if rat.side < 2 else rat.side
+        elif eff == "need_yellow" and not any(
+                d.color == "yellow" for d in self.available(rat)):
+            target += 1                       # "If unable, increase Target by 1"
+        elif eff == "need_green" and len(options) > 1 and not any(
+                d.color == "green" for d in self.available(rat)):
+            # Rapid Response Trial: "discard the stronger revealed Upgrade
+            # and continue the Experiment." Discarded, not removed from the
+            # game - it comes back on the next reshuffle.
+            _dropped = max(options, key=splice_value)
+            options.remove(_dropped)
+            self.discard.append(_dropped)
+        elif eff == "need_purple" and not any(
+                d.color == "purple" for d in self.available(rat)):
+            # "Discard this Experiment and draw another one."
+            if self.deck:
+                _n = self.deck.pop()
+                self.exp_effect = EXPERIMENT_EFFECT.get(_n)
+                eff = self.exp_effect
+                target = EXPERIMENT_TARGETS[_n] + TARGET_DELTA
+        if (INDEP_ROUTINE_CEIL and self.protocol == "independent_funding"
+                and target <= INDEP_ROUTINE_CEIL):
+            for d in pick_exhaust(rat.dice, INDEP_ROUTINE_DICE, self.rng,
+                                  PROTOCOL_COLOR["independent_funding"]):
+                d.zone = "exhausted"
+        if accelerated and ACCEL_COST_BEFORE:
+            # "Exhaust 2 of the active Rat's available dice" - billed before
+            # the attempt, while the Rat still has dice to lose.
+            for d in pick_exhaust(rat.dice, ACCEL_DICE, self.rng,
+                                  PROTOCOL_COLOR["accelerated_trials"]):
+                d.zone = "exhausted"
         if rat.ability == "prepared" and previous is not None and previous is not rat:
             for d in rat.dice:
                 if d.zone == "exhausted":
@@ -781,24 +1007,86 @@ class Game(object):
                 self.red_holder = self.rng.choice(others)
             self.red_aside = False
         has_red = self.red_holder is rat
+        if eff == "no_red":
+            # "Place the Red die on the active Rat. Red cannot be used."
+            self.red_holder = rat
+            has_red = False
 
+        if eff == "containment":
+            # "You may choose to reduce the Target by 2. If you do, before
+            # committing, roll a Yellow die. On a hit or Crit, banish one
+            # available Blue die. Otherwise, banish that Yellow die."
+            # Taken when the Rat's own dice look short of the printed Target,
+            # which is when two off the Target is worth a die.
+            gamble = next((d for d in self.available(rat)
+                           if d.color == "yellow"), None)
+            own = sum(EV[d.color] for d in self.available(rat))
+            if gamble is not None and own < target:
+                target = max(1, target - 2)
+                if roll("yellow", self.rng):
+                    victim = next((d for d in self.available(rat)
+                                   if d.color == "blue"), gamble)
+                else:
+                    victim = gamble
+                victim.zone = "banished"
+        if eff == "methodology" and len(options) > 1:
+            # "You may reduce the Target to 0. If you do, take the weaker
+            # revealed Upgrade and Splice the stronger." Taken when the
+            # Target is out of reach: a certain Upgrade beats a likely
+            # failure, which would hand the Tyrant that card anyway.
+            own = sum(EV[d.color] for d in self.available(rat))
+            if own < target - 1:
+                strongest = max(options, key=splice_value)
+                self.splices.append(Splice(splice_value(strongest),
+                                           splice_cat(strongest),
+                                           splice_effect(strongest),
+                                           splice_colors(strongest)))
+                if strongest[0] == "m":
+                    self.splice_mods += 1
+                options.remove(strongest)
+                target = 0
+        excluded = None
+        if eff == "exclude_die":
+            # "Randomly select one available die belonging to the active Rat.
+            # That die cannot be committed to this Experiment."
+            free = self.available(rat)
+            if free:
+                excluded = self.rng.choice(free)
         successes = 0
         committed = []
         rolled = []          # (die, value) so a side can reroll one
         used_red = False
         borrowed = None
+        cap_dice = 2 if eff == "max_two" else None
         specimen_up = any(kind == "s" for kind, _ in options)
         phases = STR_PHASES + (1 if (rat.ability == "experimental" and specimen_up) else 0)
+        if eff in ("str_one", "no_phase_two"):
+            phases = 1          # Endurance Trial: STR 1. Resource Depletion:
+                                # no further dice in the second phase, which
+                                # with nothing new to commit is the same thing.
         for phase in range(phases):
             if successes >= target:
                 break
             pool = sorted(self.available(rat), key=lambda d: -EV[d.color])
+            if excluded is not None:
+                pool = [d for d in pool if d is not excluded]
+            if eff == "three_colors" and phase == 0:
+                # "Committed dice must include 3 different colors" - lead with
+                # one of each, strongest first, then fill normally.
+                seen, spread = set(), []
+                for d in pool:
+                    if d.color not in seen:
+                        seen.add(d.color)
+                        spread.append(d)
+                pool = spread + [d for d in pool if d not in spread]
             if phase == 0:
                 take = []
                 expected = 0.0
                 for d in pool:
                     if expected >= target:
                         break
+                    if cap_dice is not None and len(take) >= cap_dice:
+                        break          # Workspace Efficiency Study: 2 dice
                     take.append(d)
                     expected += EV[d.color]
                 # Secondary Brain forbids its holder the Red die.
@@ -810,7 +1098,8 @@ class Game(object):
                 # forbids its holder from borrowing at all.
                 if expected < target and borrowed is None and \
                         not rat.has("no_borrow") and not solo_rat:
-                    borrowed = self.borrow_for(rat)
+                    borrowed = (None if eff == "no_borrow"
+                                else self.borrow_for(rat))
             elif PHASE2_POLICY == "extra_die":
                 take = pool[:1]  # second Strategy phase: one more die
             elif PHASE2_POLICY == "push":
@@ -884,6 +1173,11 @@ class Game(object):
                 break
             for d in take:
                 value = roll(d.color, self.rng)
+                if (eff == "reroll_pb" and phase == 0 and value
+                        and d.color in ("purple", "blue")):
+                    # "Hits and Crits on Purple and Blue dice in the first
+                    # Strategy phase must be rerolled."
+                    value = roll(d.color, self.rng)
                 successes += value
                 rolled.append((d, value))
                 d.zone = "exhausted"
@@ -910,29 +1204,71 @@ class Game(object):
                     break
 
         # The borrowed die is rolled again by itself; a miss banishes it.
+        self.borrowed_this_turn = borrowed is not None
         self.resolve_borrowed(borrowed, rat)
 
         best = max(options, key=splice_value)
         # The card not taken or Spliced is discarded, and the discard is
         # reshuffled when the Upgrade deck runs dry.
         self.discard += [c for c in options if c is not best]
+        if successes >= target and eff == "tyrant_minus_2":
+            # Degraded Tissue Study: "If successful, reduce the Prototyrant's
+            # Health dial by 2."
+            self.health = max(0, self.health - 2)
         if successes >= target:
             # Questionable Procurement lets the first Specimen sit outside the
             # 3-Upgrade limit.
             cap = 4 if self.protocol == "questionable_procurement" else 3
-            if len(rat.upgrades) < cap:
+            took = len(rat.upgrades) < cap
+            if took:
                 rat.upgrades.append(Upgrade(splice_value(best),
                                             splice_effect(best),
                                             splice_name(best),
-                                            splice_cat(best)))
+                                            splice_cat(best), best))
                 if best[0] == "m":
                     rat.take_mod(best[1])
                 if best[0] == "s":
                     rat.specimens += 1
+            else:
+                # At the Upgrade limit the Rat keeps nothing, so the card it
+                # could not take is discarded. It was held out of the discard
+                # above as the card to be taken, and without this it left the
+                # game entirely.
+                self.discard.append(best)
+            if eff == "retrofit" and rat.upgrades:
+                # "If successful, you may swap one of the active Rat's
+                # Upgrades with one of the revealed Upgrades. Specimens
+                # cannot be swapped." Resolved after the take, because the
+                # card pays at the Upgrade limit: there the Rat keeps
+                # nothing, so the stronger revealed card is still on offer.
+                mine = [u for u in rat.upgrades
+                        if u.name not in SPECIMEN_NAMES]
+                offer = [c for c in options
+                         if c[0] != "s" and not (took and c is best)]
+                if mine and offer:
+                    worst = min(mine, key=lambda u: u.value)
+                    pick = max(offer, key=splice_value)
+                    if splice_value(pick) > worst.value:
+                        rat.upgrades.remove(worst)
+                        if worst.card is not None:
+                            self.discard.append(worst.card)
+                        if worst.name in MOD_NAMES:
+                            rat.drop_mod(worst.value)
+                        rat.upgrades.append(Upgrade(splice_value(pick),
+                                                    splice_effect(pick),
+                                                    splice_name(pick),
+                                                    splice_cat(pick), pick))
+                        if pick[0] == "m":
+                            rat.take_mod(pick[1])
+                        # The swapped-in card left the discard; the one that
+                        # came off the Rat takes its place there.
+                        if pick in self.discard:
+                            self.discard.remove(pick)
             if accelerated:
                 # "After completing one, exhaust 2 of the active Rat's
                 # available dice."
-                for d in self.available(rat)[:2]:
+                for d in pick_exhaust(rat.dice, 2, self.rng,
+                                      PROTOCOL_COLOR["accelerated_trials"]):
                     d.zone = "exhausted"
         else:
             self.splices.append(Splice(splice_value(best), splice_cat(best), splice_effect(best), splice_colors(best)))
@@ -941,7 +1277,8 @@ class Game(object):
 
         # Hypermetabolism burns a die every Experiment its holder attempts.
         if rat.has("burn_die"):
-            for d in self.available(rat)[:1]:
+            # Hypermetabolism is Senses, so it eats a purple.
+            for d in pick_exhaust(rat.dice, 1, self.rng, "purple"):
                 d.zone = "exhausted"
 
         recovery = rat.effective_rec()
@@ -954,7 +1291,7 @@ class Game(object):
             # personal die with one Equipment die." The Equipment dice are
             # never exhausted by this Rat's turn, so a completed Experiment
             # effectively buys back one die.
-            recovery += 1
+            recovery += SHARED_EQUIP_RECOVER
         for d in committed[:recovery]:  # Recover equal to REC
             d.zone = "available"
         lender = getattr(self, "pending_funding", None)
@@ -966,14 +1303,10 @@ class Game(object):
                         d.zone = "available"
                         break
         if getattr(self, "accel_cost", False) and (successes >= target or ACCEL_COST_ALWAYS):
-            # Accelerated Trials bills 2 of the active Rat's available dice.
-            billed = 0
-            for d in rat.dice:
-                if billed >= 2:
-                    break
-                if d.zone == "available":
-                    d.zone = "exhausted"
-                    billed += 1
+            # Accelerated Trials bills the active Rat's available dice.
+            for d in pick_exhaust(rat.dice, ACCEL_DICE, self.rng,
+                                  PROTOCOL_COLOR["accelerated_trials"]):
+                d.zone = "exhausted"
         self.claim_notes(rat, successes >= target, committed, used_red)
         self.experiments += 1
         return len(self.splices) < 5
@@ -982,22 +1315,15 @@ class Game(object):
     # Tyrant Battle
     # ------------------------------------------------------------------
     def start_battle(self):
-        """Current rules carve the Tyrant's six dice out of the Rats' pool.
-        With tyrant_takes_rat_dice=False the Tyrant instead brings its own six,
-        which is what the printed rulebook describes."""
+        """Carve the Tyrant's six dice out of the Rats' own pool.
+
+        There is no alternative: the box holds 17 dice and the Rats own 16.
+        """
         # Each Modification the Tyrant holds may be tapped once in the battle.
         self.tyrant_taps = self.splice_mods
+        self.round_no = 0
         # Flip one Attack card to supply the Buff HP / Health color.
         self.attack_color = ATTACK_COLORS[self.rng.randrange(ATTACK_COUNT)]
-        if not self.tyrant_takes_rat_dice:
-            self.tyrant_dice = [Die(c) for c, n in TYRANT_NEED
-                                for _ in range(n)][:self.tyrant_pool]
-            for r in self.rats:
-                for d in r.dice:
-                    if d.zone == "exhausted":
-                        d.zone = "available"
-            self.rng.shuffle(self.splices)
-            return
         need = []
         for color, count in TYRANT_NEED:
             need += [color] * count
@@ -1027,19 +1353,49 @@ class Game(object):
     def shared_pool(self):
         return [d for r in self.rats for d in r.dice if d.zone == "available"]
 
+    def splice_breaks(self, s):
+        """A breaking Splice banishes a die of its own color.
+
+        Its printed effect is NOT used. An earlier draft had it fire once as
+        a parting shot; that was cut because the effects are ongoing or
+        attack-time modifiers with nothing to attach to at the moment the
+        card dies - and this function never implemented it anyway, so every
+        measurement was already taken without it.
+        """
+        self.last_destroyed = s.colors
+        for _ in range(BREAK_BANISH):
+            pool = self.shared_pool()
+            if not pool:
+                pool = [d for r in self.rats for d in r.dice
+                        if d.zone == "exhausted"]
+            if not pool:
+                return
+            match = [d for d in pool if d.color in s.colors]
+            (match or pool)[0].zone = "banished"
+
+    def wall_queue(self):
+        """The printed Values still standing, in the order damage meets them."""
+        return [sp.value for sp in self.track()]
+
+    def front_requirement(self):
+        """The Value the next Splice needs, or None once they are all down."""
+        front = self.track()
+        return front[0].value if front else None
+
     def damage_tyrant(self, dmg):
-        """Buff HP, then the five Splices left to right, then Health.
-        Anything left over carries straight through to the next card."""
-        if self.buff > 0:
-            hit = min(self.buff, dmg)
-            self.buff -= hit
-            dmg -= hit
+        """A blow meets a Splice's printed Value or bounces off entirely.
+
+        This is the rule a Rat's Upgrades already used, applied to the
+        Tyrant: no card is ever left part-damaged. Overflow from a broken
+        Splice carries on and may break the next one too; whatever survives
+        all five comes off Health, which is the only thing here that chips.
+        """
         for s in self.track():
-            if dmg <= 0:
-                break
-            dmg = s.soak(dmg)
-            if not s.alive:
-                self.last_destroyed = s.colors   # the Tyrant absorbs it
+            if dmg < s.value:
+                return                      # bounced: the attack is wasted
+            s.damage = s.value              # destroyed outright
+            dmg -= s.value
+            self.splice_breaks(s)
         if dmg > 0:
             self.health = max(0, self.health - dmg)
 
@@ -1054,7 +1410,7 @@ class Game(object):
         an Upgrade do double duty: armor, and permission to roll dice.
         """
         if self.dice_rule == "six":
-            return 6
+            return RAT_DICE_CAP
         if not rat.upgrades:
             return 2
         return min(6, max(2, max(u.value for u in rat.upgrades)))
@@ -1079,16 +1435,7 @@ class Game(object):
             return self._satisfy(pick, avail, need, cap, both=False)
         full = self.color_rule == "both_full"
         by_card = self.color_rule == "both_attack"
-        if self.buff > 0:
-            # Buff HP: none, or under both_full it shields - and so shares
-            # the color of - the Splice directly behind it.
-            if by_card:
-                need = [self.attack_color]
-            elif not (full and front):
-                return pick
-            else:
-                need = list(front[0].colors)
-        elif not front:
+        if not front:
             # Tyrant Health: none, or under both_full it carries the color
             # of the last Splice destroyed.
             if by_card:
@@ -1185,11 +1532,15 @@ class Game(object):
         return ranked[:keep]
 
     def front_effect(self):
-        """The frontmost surviving Splice's effect, free on every attack."""
-        if not self.card_effects:
-            return NO_EFFECT
-        front = self.track()
-        return front[0].effect if front else NO_EFFECT
+        """Always nothing: on the Tyrant a Splice is only its Value.
+
+        It never taps and its printed effect is never used. An earlier rule
+        had the frontmost Splice fire free on every attack, which compounded
+        over a long fight until the win rate collapsed from 62%% to 16%% -
+        inert or lethal with nothing in between. Kept as a method so the
+        callers that unpack an effect tuple need no special case.
+        """
+        return NO_EFFECT
 
     def track(self):
         """Surviving Splices, left to right.
@@ -1205,6 +1556,7 @@ class Game(object):
         return [s for s in self.splices if s.alive]
 
     def battle_round(self):
+        self.round_no = getattr(self, "round_no", 0) + 1
         # "Untap. Every Upgrade tapped last round untaps now."
         for r in self.rats:
             for u in r.upgrades:
@@ -1225,6 +1577,47 @@ class Game(object):
         if self.commit_policy == "conserve":
             # Commit only what will come back, so nothing is lost for good.
             cap = min(cap, rat.effective_rec() + self.battle_rec_bonus)
+        elif self.commit_policy == "threshold":
+            # Against a wall, dice below its Value are wasted entirely, so
+            # commit enough to clear it and no more. Against the Buff dial or
+            # bare Health there is no wall, so fall back to conserving.
+            need = self.front_requirement()
+            if need is None:
+                cap = min(cap, rat.effective_rec() + self.battle_rec_bonus)
+            else:
+                avail = sorted(self.shared_pool(), key=lambda d: -EV[d.color])
+                total = EV_REROLL["red"]        # Red rides along for free
+                want = None
+                for i, d in enumerate(avail[:cap], start=1):
+                    total += EV_REROLL[d.color]
+                    if total >= need * THRESHOLD_MARGIN:
+                        want = i
+                        break
+                # Out of reach even at full commitment: swing anyway, because
+                # stalling just hands the Tyrant free attacks.
+                cap = want or cap
+        elif self.commit_policy == "chain":
+            # Spend to break as many consecutive walls as this throw can
+            # afford. Costs more dice than taking them one at a time, but
+            # saves rounds off the clock and Tyrant attacks.
+            walls = self.wall_queue()
+            avail = sorted(self.shared_pool(), key=lambda d: -EV[d.color])
+            if not walls:
+                cap = min(cap, rat.effective_rec() + self.battle_rec_bonus)
+            else:
+                running, targets = 0, []
+                for v in walls:
+                    running += v
+                    targets.append(running)
+                total, want = EV_REROLL["red"], None
+                reached = 0
+                for i, d in enumerate(avail[:cap], start=1):
+                    total += EV_REROLL[d.color]
+                    while reached < len(targets) and \
+                            total >= targets[reached] * THRESHOLD_MARGIN:
+                        reached += 1
+                        want = i
+                cap = want or cap
         pool = self.commit_for_splice(cap)
         if not pool and self.notes > 0:
             # Unexpected Resilience: recover all of that Rat's dice.
@@ -1440,6 +1833,11 @@ class Game(object):
             affordable = [u for u in armor if hits >= u.value]
             if affordable:
                 lost = min(affordable, key=lambda u: u.value)
+            else:
+                # Blocking SPENDS the card, so a blow under every Value is
+                # still paid for - armor is a budget, not a permanent wall.
+                lost = min(armor, key=lambda u: u.value)
+            if lost is not None:
                 rat.upgrades.remove(lost)
                 if rat.mods:
                     rat.drop_mod(lost.value)
@@ -1474,31 +1872,39 @@ class Game(object):
                 return True
             if all(r.down for r in self.rats):
                 return False
+            if getattr(self, "round_no", 0) >= ROUND_LIMIT:
+                return False          # the Tyrant breaks containment
             if not self.battle_round():
                 break
         return self.health <= 0
 
 
-def run(difficulty="Standard", games=20000, seed=20, tyrant_takes_rat_dice=True,
+def run(difficulty="Standard", games=20000, seed=20,
         tier="none", card_effects=False, dice_rule="six", sides=None,
         attacker_policy="healthiest", tapped_defends=False,
         tap_bonus="none", attack_cards=True, tyrant_pool=6,
         battle_rec_bonus=2, battle_rec="flat", rec_rule="strongest",
-        color_rule="attack_only", commit_policy="conserve"):
+        color_rule="attack_only", commit_policy="threshold"):
     """Win rate over `games` complete games.
 
     card_effects=True turns on the printed tap effects - the Tyrant's
     frontmost Splice firing free on every attack, and the Rats tapping one
-    Upgrade per attack instead of committing Red. It is OFF by default, and
-    that is a deliberate, uncomfortable choice: with the effects off this
-    model reproduces the published ladder almost exactly at Standard (62.9%
-    against ~63%), and with them on it collapses to about 16%. One of those
-    is wrong and this package cannot tell which. See README.md.
+    Upgrade per attack instead of committing Red. The default is OFF for
+    historical reasons only: every caller in this package passes True, so
+    the cross-tab, the sweep and all the audit tools run with the effects
+    on. At Standard with no tier module, 20,000 games, measured 2026-10-27:
+    42.8% with them off, 46.5% with them on.
+
+    This docstring used to say the effects collapse BAT from 62.9% to about
+    16%, and that one of those had to be wrong. Both figures came from a
+    model that charged the adopted +1 on every Experiment Target twice and
+    leaked Upgrade cards out of a deck the rules make inexhaustible. With
+    those fixed the effects are worth +3.7 points, not -47. See README.md.
     """
     rng = random.Random(seed)
     wins = 0
     for _ in range(games):
-        if Game(difficulty, rng, tyrant_takes_rat_dice, tier,
+        if Game(difficulty, rng, tier,
                 card_effects, dice_rule, attacker_policy,
                 tapped_defends, tap_bonus, attack_cards, tyrant_pool,
                 battle_rec_bonus, battle_rec, rec_rule, color_rule,

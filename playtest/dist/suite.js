@@ -79,7 +79,7 @@
   const NAP_TASK_SUBJECTS = ["Theory","Anatomy","Engineering","Anatomy","Procedure","Theory","Anatomy","Engineering","Engineering","Engineering","Engineering","Procedure","Procedure","Anatomy","Anatomy","Theory","Procedure","Theory","Procedure","Theory",null,null,null,null,null,null];
   const NAP_SUBJECTS = ["Anatomy","Engineering","Procedure","Theory"];
   const NAP_SUBJECT_ICONS = {
-    Anatomy:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.3l-1.7-1.6C5.1 15 2 12.2 2 8.7 2 5.9 4.1 3.8c1.6 0 3.1.7 4 1.9.9-1.2 2.4-1.9 4-1.9C17.9 3.8 20 5.9 20 8.7c0 3.5-3.1 6.3-8.3 11z"/></svg>',
+    Anatomy:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.3l-1.7-1.6C5.1 15 2 12.2 2 8.7 2 5.9 4.1 3.8 8 3.8c1.6 0 3.1.7 4 1.9.9-1.2 2.4-1.9 4-1.9C17.9 3.8 20 5.9 20 8.7c0 3.5-3.1 6.3-8.3 11z"/></svg>',
     Engineering:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.4a3.6 3.6 0 100 7.2 3.6 3.6 0 000-7.2zm9 4.5v-1.8l-2.2-.5a7 7 0 00-.6-1.5l1.2-1.9-1.3-1.3-1.9 1.2a7 7 0 00-1.5-.6L14.2 4h-1.8l-.5 2.5a7 7 0 00-1.5.6L8.5 5.9 7.2 7.2l1.2 1.9a7 7 0 00-.6 1.5L5.4 11v1.8l2.4.5a7 7 0 00.6 1.5l-1.2 1.9 1.3 1.3 1.9-1.2a7 7 0 001.5.6l.5 2.4h1.8l.5-2.4a7 7 0 001.5-.6l1.9 1.2 1.3-1.3-1.2-1.9a7 7 0 00.6-1.5z"/></svg>',
     Procedure:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.7 3.3a1 1 0 00-1.4 0l-9 9-1.3 3.4a.6.6 0 00.8.8l3.4-1.3 9-9a1 1 0 000-1.4zM8.6 15.9l-4 4a1.4 1.4 0 102 2l4-4z"/></svg>',
     Theory:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4.4h6.2c1 0 1.8.8 1.8 1.8v13c0-.8-.8-1.4-1.8-1.4H4zm16 0h-6.2c-1 0-1.8.8-1.8 1.8v13c0-.8.8-1.4 1.8-1.4H20z"/></svg>'
@@ -94,7 +94,7 @@
   const fresh = () => ({
     config:{mode:"standalone",tier:"0",finale:"sample",tierOverride:{bat:"",nap:"",aos:""}},
     nap:{day:1,slot:0,hp:2,str:2,rec:2,credits:0,creditGoal:6,coupons:[],deviousCoupons:[],couponWild:false,distinctRecover:false,phase:"apprenticeship",exam:null,outcome:null,completedCredits:[],apprentice:"Prodigy",deck:[],discard:[],rows:[[],[],[]],recoveryDots:[null,null,null],primaryDot:null,choice:null,finf:{mode:"reduce",level:1,cards:[0],spent:[],drawn:[],pendingCurrent:[]},pendingReward:null,nextSlotBonus:{str:0,rec:0,crit:0},activeSlotBonus:{str:0,rec:0,crit:0},notice:"",dice:freshDice(),rollsUsed:0,phaseCommittedSuccesses:0,recovering:false,rollResult:""},
-    nrj:{hp:4,str:2,rec:3,attempts:0,suspicion:0,deck:[],discard:[],current:null,pool:18,eligibleAvoid:3,dice:freshDice(),nextDiscount:0}
+    nrj:{hp:5,str:2,rec:3,attempts:0,suspicion:0,deck:[],discard:[],current:null,pool:18,eligibleAvoid:3,cards:null,dice:freshDice(),nextDiscount:0}
   });
   let state=fresh();
   let napPileView="deck";
@@ -106,7 +106,7 @@
   state.nap.rollsUsed??=0;state.nap.phaseCommittedSuccesses??=0;state.nap.recovering??=false;state.nap.rollResult??="";
   state.nap.recoveryDots??=[null,null,null];
   state.nap.primaryDot??=null;
-  state.nap.discard??=[];state.nap.pendingReward??=null;if(state.nap.pendingReward&&!state.nap.pendingReward.cardType)state.nap.pendingReward={...state.nap.pendingReward,cardType:"o",cardIndex:state.nap.pendingReward.kind==="distinct"?1:4,text:state.nap.pendingReward.kind==="distinct"?NAP_OPPORTUNITY_EFFECTS[1]:NAP_OPPORTUNITY_EFFECTS[4]};state.nap.creditGoal??=6;state.nap.coupons??=[];state.nap.deviousCoupons??=[];state.nap.distinctRecover??=false;state.nap.couponWild??=false;state.nap.phase??="apprenticeship";state.nap.exam??=null;state.nap.outcome??=null;state.nap.recoverOverride??=null;state.nap.nextSlotBonus??={str:0,rec:0,crit:0};state.nap.activeSlotBonus??={str:0,rec:0,crit:0};state.nrj.discard??=[];
+  state.nap.discard??=[];state.nap.pendingReward??=null;if(state.nap.pendingReward&&!state.nap.pendingReward.cardType)state.nap.pendingReward={...state.nap.pendingReward,cardType:"o",cardIndex:state.nap.pendingReward.kind==="distinct"?1:4,text:state.nap.pendingReward.kind==="distinct"?NAP_OPPORTUNITY_EFFECTS[1]:NAP_OPPORTUNITY_EFFECTS[4]};state.nap.creditGoal??=6;state.nap.coupons??=[];state.nap.deviousCoupons??=[];state.nap.distinctRecover??=false;state.nap.couponWild??=false;state.nap.phase??="apprenticeship";state.nap.exam??=null;state.nap.outcome??=null;state.nap.recoverOverride??=null;state.nap.nextSlotBonus??={str:0,rec:0,crit:0};state.nap.activeSlotBonus??={str:0,rec:0,crit:0};state.nrj.discard??=[];state.nrj.cards??=null;
   state.nap.finf={mode:"reduce",level:1,cards:[0],spent:[],drawn:[],pendingCurrent:[],...state.nap.finf};
   const mf=state.nap.finf;
   // Saves from the single-card FINF: start again at Standard.
@@ -567,7 +567,7 @@
     return `NRJ Tier ${tierName(tier)} active${over?" (table override)":""} \u00b7 module cards are mixed in.`;
   }
 
-  const ruleFiles={bat:["assets/BAT_Rulebook.pdf?v=fonts-2","BAT rules PDF"],nap:["assets/NAP_Rulebook.pdf?v=fonts-1","NAP rules PDF"],aos:["assets/AoS_Rulebook.pdf?v=fonts-1","AoS rules PDF"],nrj:["assets/NRJ_Campaign_Supplement.pdf?v=fonts-1","NRJ rules PDF"]};
+  const ruleFiles={bat:["assets/BAT_Rulebook.pdf?v=carry1","BAT rules PDF"],nap:["assets/NAP_Rulebook.pdf?v=carry1","NAP rules PDF"],aos:["assets/AoS_Rulebook.pdf?v=carry1","AoS rules PDF"],nrj:["assets/NRJ_Campaign_Supplement.pdf?v=carry1","NRJ rules PDF"]};
   function updateTopbar(){const game=$("gameNav")?.value||"home",link=$("rulesLink"),resetBtn=$("resetBtn"),record=$("recordBtn");
     const rules=ruleFiles[game];if(rules){link.href=rules[0];link.textContent=rules[1];link.hidden=false}else link.hidden=true;
     resetBtn.hidden=game==="home";resetBtn.textContent=game==="nrj"?"New finale":"New test";
@@ -727,7 +727,10 @@
       : setbacks;
     return tasks.concat(opps,sb);
   }
-  function buildNAP(){const setback=shuffle([...Array(6).keys()]).slice(0,3).map(i=>({type:"s",i}));const apprentice=state.nap.apprentice||"Prodigy",creditGoal=state.nap.creditGoal||4;state.nap={day:1,slot:0,hp:2,str:2,rec:2,credits:0,creditGoal,coupons:[],deviousCoupons:[],couponWild:false,distinctRecover:false,phase:"apprenticeship",exam:null,outcome:null,completedCredits:[],apprentice,deck:shuffle(buildNAPDeck(setback)),discard:[],rows:[[],[],[]],recoveryDots:[null,null,null],primaryDot:null,choice:null,finf:{mode:"reduce",level:1,cards:[0],spent:[],drawn:[],pendingCurrent:[]},pendingReward:null,nextSlotBonus:{str:0,rec:0,crit:0},activeSlotBonus:{str:0,rec:0,crit:0},notice:"",dice:freshDice(),rollsUsed:0,phaseCommittedSuccesses:0,recovering:false,rollResult:""};save();renderNAP();}
+  // Difficulty is (Credit goal, Setbacks in the deck); see rules/nap.html.
+  const NAP_SETBACK_COUNT={5:4,6:4,7:5,8:6};
+  function buildNAP(){const goal=state.nap.creditGoal||6;
+    const setback=shuffle([...Array(6).keys()]).slice(0,NAP_SETBACK_COUNT[goal]??3).map(i=>({type:"s",i}));const apprentice=state.nap.apprentice||"Prodigy",creditGoal=state.nap.creditGoal||4;state.nap={day:1,slot:0,hp:2,str:2,rec:2,credits:0,creditGoal,coupons:[],deviousCoupons:[],couponWild:false,distinctRecover:false,phase:"apprenticeship",exam:null,outcome:null,completedCredits:[],apprentice,deck:shuffle(buildNAPDeck(setback)),discard:[],rows:[[],[],[]],recoveryDots:[null,null,null],primaryDot:null,choice:null,finf:{mode:"reduce",level:1,cards:[0],spent:[],drawn:[],pendingCurrent:[]},pendingReward:null,nextSlotBonus:{str:0,rec:0,crit:0},activeSlotBonus:{str:0,rec:0,crit:0},notice:"",dice:freshDice(),rollsUsed:0,phaseCommittedSuccesses:0,recovering:false,rollResult:""};save();renderNAP();}
   function drawNAPAssignment(){
     const card=state.nap.deck.pop();
     if(card?.type!=="f")return card;
@@ -906,12 +909,75 @@
   }
   function renderNAP(){const n=state.nap;$("napOverlay").textContent=overlayText("nap");renderTierPickers();$("napStats").innerHTML=stat("Day",n.day)+stat("Time",["Morning","Afternoon","Evening"][n.slot])+stat("HP",n.hp)+stat("STR",n.str)+stat("REC",n.rec)+stat("Credits",`${n.credits} / ${n.creditGoal}`)+stat("Deck",n.deck.length)+stat("Rolls",`${n.rollsUsed} / ${n.str}`);renderNAPDiscard();renderNAPApprentice();renderNAPCoupons();renderNAPSlots();renderNAPReward();renderNAPFINF();renderNAPExam();$("napNotice").textContent=n.notice||"";$("napNotice").classList.toggle("hidden",!n.notice);$("napChoice").classList.toggle("hidden",!n.choice);$("napChoiceB").parentElement.classList.toggle("hidden",!n.choice?.[1]);if(n.choice)n.choice.forEach((x,i)=>{const c=napCard(x.type,x.i,x.nrj,x.dot);setSprite($(i?"napChoiceB":"napChoiceA"),c.file,c.i,c.cols,c.rows);});renderRoller("nap");}
 
-  function buildNRJ(){const byDomain=["Knowledge","Physical","Cover-Up"].flatMap(d=>shuffle(SCENARIOS.map((x,i)=>x[1]===d?i:null).filter(i=>i!==null)).slice(0,4));state.nrj={hp:4,str:2,rec:3,attempts:0,suspicion:0,deck:shuffle(byDomain),discard:[],current:null,pool:18,eligibleAvoid:3,dice:freshDice(),nextDiscount:0};save();renderNRJ();}
-  function drawNRJ(){if(state.nrj.current||state.nrj.attempts>=9)return;if(!state.nrj.deck.length)buildNRJ();state.nrj.current=state.nrj.deck.pop();save();renderNRJ();}
-  function nrjTarget(){if(state.nrj.current===null)return null;const s=SCENARIOS[state.nrj.current],ignore=s[0]==="A Disputed Citation",extra=s[0]==="The Missing Hours"?state.nrj.suspicion:0;const reduction=Number($("nrjNapMatch").value||0)*2+Number($("nrjBatMatch").value||0)*3+Number($("nrjSpecimen").value||0)*5+Number($("nrjAosStable").value||0)*4+Number($("nrjAosHot").value||0)*2+Number($("nrjWrong").value||0)*2;return Math.max(0,s[3]+(ignore?0:state.nrj.suspicion)+extra-state.nrj.nextDiscount-reduction);}
-  function clearNRJInputs(){["nrjNapMatch","nrjBatMatch","nrjSpecimen","nrjAosStable","nrjAosHot","nrjWrong"].forEach(id=>$(id).value=0);}
-  function resolveNRJ(success,choice="hp"){if(state.nrj.current===null)return;const s=SCENARIOS[state.nrj.current];const spent=["nrjNapMatch","nrjBatMatch","nrjSpecimen","nrjAosStable","nrjAosHot","nrjWrong"].reduce((n,id)=>n+Number($(id).value||0),0);if(spent>state.nrj.pool)return;state.nrj.pool-=spent;if(!success){state.nrj.suspicion+=s[0]==="Failed Apparatus"?2:1;if(choice==="hp"||s[0]==="Tainted Wine")state.nrj.hp--;else{let n=2;state.nrj.dice.filter(d=>d.zone==="available").forEach(d=>{if(n){d.zone="banished";n--;}});if(n)state.nrj.hp--;}}state.nrj.nextDiscount=success&&s[0]==="The Narrow Stair"?1:0;state.nrj.attempts++;state.nrj.discard.push(state.nrj.current);state.nrj.current=null;clearNRJInputs();save();renderNRJ();}
-  function renderNRJ(){const n=state.nrj;$("nrjOverlay").textContent=`${$("nrjPoolMode")?.value==="campaign"?"Campaign":"Standalone sample"} · survive 9 attempts`;$("nrjStats").innerHTML=stat("HP",n.hp)+stat("STR",n.str)+stat("REC",n.rec)+stat("Attempts",`${n.attempts} / 9`)+stat("Suspicion",n.suspicion)+stat("Research",n.pool)+stat("Avoid cards",n.eligibleAvoid);renderDiscard("nrj",n.discard,i=>SCENARIOS[i][0]);if(n.current===null){clearSprite($("nrjScenario"),n.attempts>=9?(n.hp>0?"Finale survived":"The Imposter was exposed"):"Reveal a Scenario");$("nrjScenarioText").textContent="";}else{const s=SCENARIOS[n.current];setSprite($("nrjScenario"),"NRJ_ImposterScenarios_TTS.png",n.current,10,3);$("nrjScenarioText").innerHTML=`<strong>${s[0]} · ${s[1]} / ${s[2]}</strong><br>Printed Target ${s[3]} · ${s[4]}`;}updateNRJTarget();renderRoller("nrj");}
+  // ---- the Research Pool as cards -------------------------------------
+  // rules/nrj.html, "Standalone Imposter mode": 3 eligible retained cards
+  // and 3 Candidates from each game, retained AoS randomised Stable versus
+  // Overheated independently, BAT kept to at most 1 Specimen.
+  const NRJ_CATS={Knowledge:["Anatomy","Engineering","Procedure","Theory"],Physical:["Power","Mobility","Defense","Senses"],"Cover-Up":["Approach","Concealment","Restraint","Extraction"]};
+  const NRJ_DOMAIN={NAP:"Knowledge",BAT:"Physical",AoS:"Cover-Up"};
+  const nrjPick=a=>a[Math.floor(Math.random()*a.length)];
+  function dealNRJPool(){
+    const cards=[];
+    const add=(g,o)=>cards.push({g,cat:nrjPick(NRJ_CATS[NRJ_DOMAIN[g]]),kept:false,val:0,hot:false,spec:false,dot:null,spent:false,sel:false,...o});
+    for(let i=0;i<3;i++)add("NAP",{kept:true,val:2,dot:nrjPick(COLORS)});
+    const spec=Math.random()<.5;
+    for(let i=0;i<3;i++)add("BAT",{kept:true,val:(spec&&!i)?5:3,spec:spec&&!i});
+    for(let i=0;i<3;i++){const hot=Math.random()<.5;add("AoS",{kept:true,val:hot?2:4,hot});}
+    for(const g of ["NAP","BAT","AoS"])for(let i=0;i<3;i++)add(g,{});
+    return cards;
+  }
+  // "Matching retained" pays its printed value; retained off-category pays 2;
+  // "Candidate or damaged card" pays 0.
+  const nrjCardValue=(c,cat)=>c.kept?(c.cat===cat?c.val:2):0;
+  // Only Candidate Advanced Programs and retained OVERHEATED ones may be
+  // discarded to avoid; retained Stable ones are pure Target reduction.
+  const nrjCanAvoid=c=>c.g==="AoS"&&(!c.kept||c.hot);
+  const nrjSampleMode=()=>$("nrjPoolMode")?.value!=="campaign";
+  function nrjAvoidCount(){const n=state.nrj;return n.cards?n.cards.filter(c=>!c.spent&&nrjCanAvoid(c)).length:n.eligibleAvoid;}
+  function nrjPoolCount(){const n=state.nrj;return n.cards?n.cards.filter(c=>!c.spent).length:n.pool;}
+  function nrjReduction(){
+    const n=state.nrj;
+    if(!n.cards)return Number($("nrjNapMatch").value||0)*2+Number($("nrjBatMatch").value||0)*3+Number($("nrjSpecimen").value||0)*5+Number($("nrjAosStable").value||0)*4+Number($("nrjAosHot").value||0)*2+Number($("nrjWrong").value||0)*2;
+    const cat=n.current===null?null:SCENARIOS[n.current][2];
+    return n.cards.filter(c=>!c.spent&&c.sel).reduce((a,c)=>a+nrjCardValue(c,cat),0);
+  }
+  function toggleNRJCard(i){
+    const n=state.nrj,c=n.cards&&n.cards[i];
+    if(!c||c.spent)return;
+    if(!c.sel&&n.current!==null&&SCENARIOS[n.current][0]==="The Long Argument"&&c.g==="NAP"&&n.cards.some(x=>x.sel&&!x.spent&&x.g==="NAP")){
+      $("nrjOverlay").textContent="The Long Argument: spend at most one NAP card.";
+      return;
+    }
+    c.sel=!c.sel;save();renderNRJ();
+  }
+  function renderNRJPool(){
+    const n=state.nrj,host=$("nrjPoolCards"),inputs=$("nrjPoolInputs"),hot=$("nrjHotHeldWrap"),sample=!!n.cards;
+    host.classList.toggle("hidden",!sample);
+    inputs.classList.toggle("hidden",sample);
+    if(hot)hot.classList.toggle("hidden",sample);
+    if(!sample){host.innerHTML="";return;}
+    const cat=n.current===null?null:SCENARIOS[n.current][2];
+    const label=c=>!c.kept?`${c.g} candidate &middot; ${c.cat}`
+      :c.g==="NAP"?`NAP exam &middot; ${c.cat} &middot; ${c.dot[0].toUpperCase()}`
+      :c.g==="BAT"?`BAT ${c.spec?"Specimen":"Upgrade"} &middot; ${c.cat}`
+      :`AoS ${c.hot?"Overheated":"Stable"} &middot; ${c.cat}`;
+    host.innerHTML=["NAP","BAT","AoS"].map(g=>{
+      const mine=n.cards.map((c,i)=>[c,i]).filter(([c])=>c.g===g);
+      return `<section class="nrj-pool-group"><h3>${g}</h3><div class="nrj-pool-row">`+mine.map(([c,i])=>{
+        const v=nrjCardValue(c,cat);
+        const cls=["nrj-pool-card",g.toLowerCase(),c.spent?"spent":"",c.sel?"sel":"",(c.kept&&c.cat===cat)?"match":""].filter(Boolean).join(" ");
+        const worth=c.spent?"spent":cat===null?(c.kept?`&minus;${c.val} / &minus;2`:"0"):v?`&minus;${v}`:"0";
+        return `<button class="${cls}" data-nrj-card="${i}"${c.spent?" disabled":""}><span>${label(c)}</span><strong>${worth}</strong></button>`;
+      }).join("")+`</div></section>`;
+    }).join("");
+    host.querySelectorAll("[data-nrj-card]").forEach(b=>b.onclick=()=>toggleNRJCard(Number(b.dataset.nrjCard)));
+  }
+  function buildNRJ(){const byDomain=["Knowledge","Physical","Cover-Up"].flatMap(d=>shuffle(SCENARIOS.map((x,i)=>x[1]===d?i:null).filter(i=>i!==null)).slice(0,4));const sample=nrjSampleMode();state.nrj={hp:5,str:2,rec:3,attempts:0,suspicion:0,deck:shuffle(byDomain),discard:[],current:null,pool:18,eligibleAvoid:3+(sample?0:Number($("nrjHotHeld")?.value||0)),cards:sample?dealNRJPool():null,dice:freshDice(),nextDiscount:0};save();renderNRJ();}
+  function drawNRJ(){if(state.nrj.current!==null||state.nrj.attempts>=9)return;if(!state.nrj.deck.length)return;state.nrj.current=state.nrj.deck.pop();save();renderNRJ();}
+  function nrjTarget(){if(state.nrj.current===null)return null;const s=SCENARIOS[state.nrj.current],ignore=s[0]==="A Disputed Citation",extra=s[0]==="The Missing Hours"?state.nrj.suspicion:0;const reduction=nrjReduction();return Math.max(0,s[3]+(ignore?0:state.nrj.suspicion)+extra-state.nrj.nextDiscount-reduction);}
+  function clearNRJInputs(){["nrjNapMatch","nrjBatMatch","nrjSpecimen","nrjAosStable","nrjAosHot","nrjWrong"].forEach(id=>$(id).value=0);if(state.nrj.cards)state.nrj.cards.forEach(c=>c.sel=false);}
+  function resolveNRJ(success,choice="hp"){if(state.nrj.current===null)return;const s=SCENARIOS[state.nrj.current];if(state.nrj.cards){state.nrj.cards.forEach(c=>{if(c.sel&&!c.spent)c.spent=true;});}else{const spent=["nrjNapMatch","nrjBatMatch","nrjSpecimen","nrjAosStable","nrjAosHot","nrjWrong"].reduce((n,id)=>n+Number($(id).value||0),0);if(spent>state.nrj.pool)return;state.nrj.pool-=spent;}if(!success){state.nrj.suspicion+=s[0]==="Failed Apparatus"?2:1;if(choice==="hp"||s[0]==="Tainted Wine")state.nrj.hp--;else{let n=2;state.nrj.dice.filter(d=>d.zone==="available").forEach(d=>{if(n){d.zone="banished";n--;}});if(n)state.nrj.hp--;}}state.nrj.nextDiscount=success&&s[0]==="The Narrow Stair"?1:0;state.nrj.attempts++;state.nrj.discard.push(state.nrj.current);state.nrj.current=null;clearNRJInputs();save();renderNRJ();}
+  function renderNRJ(){const n=state.nrj;$("nrjOverlay").textContent=`${$("nrjPoolMode")?.value==="campaign"?"Campaign":"Standalone sample"} · survive 9 attempts`;$("nrjStats").innerHTML=stat("HP",n.hp)+stat("STR",n.str)+stat("REC",nrjRec()===n.rec?`${n.rec}`:`${nrjRec()} of ${n.rec}`)+stat("Attempts",`${n.attempts} / 9`)+stat("Suspicion",n.suspicion)+stat("Research",nrjPoolCount())+stat("Avoid cards",nrjAvoidCount());renderDiscard("nrj",n.discard,i=>SCENARIOS[i][0]);if(n.current===null){clearSprite($("nrjScenario"),n.attempts>=9?(n.hp>0?"Finale survived":"The Imposter was exposed"):"Reveal a Scenario");$("nrjScenarioText").textContent="";}else{const s=SCENARIOS[n.current];setSprite($("nrjScenario"),"NRJ_ImposterScenarios_TTS.png",n.current,10,3);$("nrjScenarioText").innerHTML=`<strong>${s[0]} · ${s[1]} / ${s[2]}</strong><br>Printed Target ${s[3]} · ${s[4]}`;}renderNRJPool();updateNRJTarget();renderRoller("nrj");}
   function updateNRJTarget(){const t=nrjTarget();$("nrjTarget").textContent=t===null?"—":t;}
 
   function renderNAPRoller(host,dice){
@@ -1043,7 +1109,8 @@
     n.rollResult=`${gained} successes applied to ${napCard(a.type,a.i,a.nrj,a.dot).name}${completed?" · completed":opportunity?" · no progress stored":" · stored"}.`;
     save();renderNAP();
   }
-  function recoverCap(game){const n=state[game];return (game==="nap"&&n.recoverOverride!=null)?n.recoverOverride:(n.rec||2);}
+  function nrjRec(){const n=state.nrj;return Math.max(0,(n.rec??3)-(n.suspicion||0));}
+  function recoverCap(game){const n=state[game];if(game==="nrj")return nrjRec();return (game==="nap"&&n.recoverOverride!=null)?n.recoverOverride:(n.rec||2);}
   function recoverPicked(game){return state[game].dice.filter(d=>d.zone==="exhausted"&&d.selected);}
   function rollerRender(game,text){if(game==="nap")state.nap.rollResult=text;save();renderRoller(game);if(game!=="nap"){const el=$(`${game}Roller`)?.querySelector(".roll-result");if(el)el.textContent=text;}}
   function recover(game){
@@ -1141,7 +1208,7 @@
     save();renderNAP();
   };
   $("napApprentice").onchange=e=>{state.nap.apprentice=e.target.value;save();renderNAP();};
-  $("nrjBuildPool").onclick=buildNRJ;$("nrjDraw").onclick=drawNRJ;$("nrjAvoid").onclick=()=>{if(state.nrj.current===null||state.nrj.eligibleAvoid<1)return;const s=SCENARIOS[state.nrj.current];if(s[0]==="A Sudden Fall")return;state.nrj.eligibleAvoid--;state.nrj.pool=Math.max(0,state.nrj.pool-1);if(s[0]==="Someone Was Seen")state.nrj.deck.push(state.nrj.current);else state.nrj.deck.unshift(state.nrj.current);state.nrj.current=null;save();renderNRJ();};$("nrjSuccess").onclick=()=>resolveNRJ(true);$("nrjFailHp").onclick=()=>resolveNRJ(false,"hp");$("nrjFailDice").onclick=()=>resolveNRJ(false,"dice");["nrjNapMatch","nrjBatMatch","nrjSpecimen","nrjAosStable","nrjAosHot","nrjWrong"].forEach(id=>$(id).oninput=updateNRJTarget);
+  $("nrjBuildPool").onclick=buildNRJ;$("nrjPoolMode").onchange=()=>{const n=state.nrj;if(n.attempts===0&&n.current===null){n.cards=nrjSampleMode()?dealNRJPool():null;if(!n.cards){n.pool=18;n.eligibleAvoid=3+Number($("nrjHotHeld")?.value||0);}save();renderNRJ();}else{renderNRJ();$("nrjOverlay").textContent="Pool mode applies on Build / reset pool.";}};$("nrjHotHeld").oninput=()=>{const n=state.nrj;if(!n.cards){n.eligibleAvoid=3+Number($("nrjHotHeld").value||0);save();renderNRJ();}};$("nrjDraw").onclick=drawNRJ;$("nrjAvoid").onclick=()=>{const n=state.nrj;if(n.current===null||nrjAvoidCount()<1)return;const s=SCENARIOS[n.current];if(s[0]==="A Sudden Fall")return;if(n.cards){const pickable=n.cards.filter(c=>!c.spent&&nrjCanAvoid(c)).sort((a,b)=>Number(a.kept)-Number(b.kept))[0];if(!pickable)return;pickable.spent=true;pickable.sel=false;}else{n.eligibleAvoid--;n.pool=Math.max(0,n.pool-1);}if(s[0]==="Someone Was Seen")state.nrj.deck.push(state.nrj.current);else state.nrj.deck.unshift(state.nrj.current);state.nrj.current=null;save();renderNRJ();};$("nrjSuccess").onclick=()=>resolveNRJ(true);$("nrjFailHp").onclick=()=>resolveNRJ(false,"hp");$("nrjFailDice").onclick=()=>resolveNRJ(false,"dice");["nrjNapMatch","nrjBatMatch","nrjSpecimen","nrjAosStable","nrjAosHot","nrjWrong"].forEach(id=>$(id).oninput=updateNRJTarget);
   if(!state.nap.deck.length)buildNAP();if(!state.nrj.deck.length)buildNRJ();showScreen("home");
   window.addEventListener("pageshow",()=>showScreen($("gameNav")?.value||"home"));
   $("homeBtn")?.addEventListener("click",updateTopbar);

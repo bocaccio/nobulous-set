@@ -9,7 +9,7 @@
   <title>Nobulous Playtest Lab</title>
   <meta name="description" content="An iPad-first playtest lab for BAT, NAP, AoS, and the NRJ Imposter finale.">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <link rel="stylesheet" href="styles.css?v=nobrutal3">
+  <link rel="stylesheet" href="styles.css?v=pool1">
 </head>
 <body>
   <header class="topbar">
@@ -23,7 +23,7 @@
         <option value="home">Choose game…</option><option value="bat">BAT</option><option value="nap">NAP</option><option value="aos">AoS</option><option value="nrj">NRJ Imposter</option>
       </select>
       <button class="ghost" id="recordBtn" aria-pressed="false">Playtest record</button>
-            <a class="button-link ghost" id="rulesLink" href="assets/AoS_Rulebook.pdf?v=fonts-1" target="_blank" rel="noopener">AoS rules PDF</a>
+            <a class="button-link ghost" id="rulesLink" href="assets/AoS_Rulebook.pdf?v=carry1" target="_blank" rel="noopener">AoS rules PDF</a>
       <button class="danger ghost" id="resetBtn">New test</button>
     </div>
   </header>
@@ -62,7 +62,7 @@
     </section>
 
     <section id="screen-bat" class="game-screen hidden suite-screen">
-      <div class="suite-heading panel"><div><p class="kicker">Build-a-Tyrant</p><h2>BAT playtest table</h2></div><div class="compact-actions"><label class="tier-pick" for="batTier">NRJ tier<select id="batTier"><option value="">Follow campaign</option><option value="0">None</option><option value="1">Tier I &middot; Agenda</option><option value="2">Tier II &middot; Contamination</option><option value="3">Tier III &middot; Exploitation</option></select></label><a class="button-link ghost" href="assets/BAT_Rulebook.pdf?v=fonts-2" target="_blank">BAT rules PDF</a><button data-new-game="bat" class="danger ghost">New BAT test</button></div></div>
+      <div class="suite-heading panel"><div><p class="kicker">Build-a-Tyrant</p><h2>BAT playtest table</h2></div><div class="compact-actions"><label class="tier-pick" for="batTier">NRJ tier<select id="batTier"><option value="">Follow campaign</option><option value="0">None</option><option value="1">Tier I &middot; Agenda</option><option value="2">Tier II &middot; Contamination</option><option value="3">Tier III &middot; Exploitation</option></select></label><a class="button-link ghost" href="assets/BAT_Rulebook.pdf?v=carry1" target="_blank">BAT rules PDF</a><button data-new-game="bat" class="danger ghost">New BAT test</button></div></div>
       <p id="batOverlay" class="overlay-note"></p>
       <div class="suite-stats panel bat-stat-bar"><div class="bat-stat-controls"><label for="batDifficulty">Difficulty</label><select id="batDifficulty"><option>Easy</option><option selected>Standard</option><option>Hard</option><option>Nobulous</option></select><label for="batRat">Active Rat</label><select id="batRat"><option>Rummage</option><option>Fidget</option><option>Whiz</option><option>Mottle</option></select></div><div id="batStats" class="bat-stat-list"></div></div>
       <section id="batModules" class="panel bat-modules hidden"></section>
@@ -86,13 +86,13 @@
     </section>
 
     <section id="screen-nap" class="game-screen hidden suite-screen">
-      <div class="suite-heading panel"><div><p class="kicker">Nobulous' Apprentice Program</p><h2>NAP playtest table</h2></div><div class="compact-actions"><a class="button-link ghost" href="assets/NAP_Rulebook.pdf?v=fonts-1" target="_blank">Full NAP rules</a><button data-new-game="nap" class="danger ghost">New NAP test</button></div></div>
+      <div class="suite-heading panel"><div><p class="kicker">Nobulous' Apprentice Program</p><h2>NAP playtest table</h2></div><div class="compact-actions"><a class="button-link ghost" href="assets/NAP_Rulebook.pdf?v=carry1" target="_blank">Full NAP rules</a><button data-new-game="nap" class="danger ghost">New NAP test</button></div></div>
       <p id="napOverlay" class="overlay-note"></p>
       <div class="suite-stats panel nap-stat-bar"><div class="nap-stat-controls"><label for="napCreditGoal">Difficulty</label><select id="napCreditGoal">
-          <option value="5">Easy &middot; 5 Credits</option>
-          <option value="6" selected>Standard &middot; 6 Credits</option>
-          <option value="7">Hard &middot; 7 Credits</option>
-          <option value="8">Nobulous &middot; 8 Credits</option>
+          <option value="5">Easy &middot; 5 Cr, 4 Setbacks</option>
+          <option value="6" selected>Standard &middot; 6 Cr, 4 Setbacks</option>
+          <option value="7">Hard &middot; 7 Cr, 5 Setbacks</option>
+          <option value="8">Nobulous &middot; 8 Cr, 6 Setbacks</option>
         </select><label for="napDifficulty">FINF dial</label><select id="napDifficulty">
           <option value="inc1">Increase 1</option>
           <option value="inc2">Increase 2</option>
@@ -115,11 +115,11 @@
     </section>
 
     <section id="screen-nrj" class="game-screen hidden suite-screen">
-      <div class="suite-heading panel"><div><p class="kicker">Nobulous Research Journal</p><h2>Imposter Scenario</h2></div><div class="compact-actions"><a class="button-link ghost" href="assets/NRJ_Campaign_Supplement.pdf" target="_blank">Full NRJ rules</a><button data-new-game="nrj" class="danger ghost">New finale</button></div></div>
-      <div class="suite-controls panel"><label>Pool setup<select id="nrjPoolMode"><option value="sample">Standalone sample (18 cards)</option><option value="campaign">Campaign pool (manual)</option></select></label><button id="nrjBuildPool">Build / reset pool</button><button id="nrjDraw" class="primary">Reveal Scenario</button><button id="nrjAvoid">Avoid with eligible AoS</button><p id="nrjOverlay" class="overlay-note"></p></div>
+      <div class="suite-heading panel"><div><p class="kicker">Nobulous Research Journal</p><h2>Imposter Scenario</h2></div><div class="compact-actions"><a class="button-link ghost" href="assets/NRJ_Campaign_Supplement.pdf?v=carry1" target="_blank">Full NRJ rules</a><button data-new-game="nrj" class="danger ghost">New finale</button></div></div>
+      <div class="suite-controls panel"><label>Pool setup<select id="nrjPoolMode"><option value="sample">Standalone sample (18 cards)</option><option value="campaign">Campaign pool (manual)</option></select></label><label id="nrjHotHeldWrap" class="hidden">Overheated AoS retained<input id="nrjHotHeld" type="number" min="0" max="3" value="0"></label><button id="nrjBuildPool">Build / reset pool</button><button id="nrjDraw" class="primary">Reveal Scenario</button><button id="nrjAvoid">Avoid with eligible AoS</button><p id="nrjOverlay" class="overlay-note"></p></div>
       <div class="suite-stats panel" id="nrjStats"></div>
       <details class="discard-panel panel"><summary>Discard pile <strong id="nrjDiscardCount">0</strong><span id="nrjDiscardTop">Empty</span></summary><ol id="nrjDiscardList"></ol></details>
-      <div class="nrj-layout"><article class="panel"><p class="mini-label">Council test</p><div id="nrjScenario" class="suite-card portrait placeholder-card"><span>Reveal a Scenario</span></div><div id="nrjScenarioText" class="card-caption"></div></article><section class="panel"><p class="kicker">Research Pool</p><h2>Spend reductions</h2><div class="pool-inputs"><label>NAP matching (−2)<input id="nrjNapMatch" type="number" min="0" value="0"></label><label>BAT matching (−3)<input id="nrjBatMatch" type="number" min="0" value="0"></label><label>BAT Specimen (−5)<input id="nrjSpecimen" type="number" min="0" value="0"></label><label>AoS Stable (−4)<input id="nrjAosStable" type="number" min="0" value="0"></label><label>AoS Overheated (−2)<input id="nrjAosHot" type="number" min="0" value="0"></label><label>Wrong category (−2)<input id="nrjWrong" type="number" min="0" value="0"></label></div><div class="target-readout">Modified target <strong id="nrjTarget">—</strong></div><div class="compact-actions"><button id="nrjSuccess" class="primary">Resolve success</button><button id="nrjFailHp" class="danger">Fail · lose 1 HP</button><button id="nrjFailDice" class="danger ghost">Fail · banish 2 dice</button></div></section></div>
+      <div class="nrj-layout"><article class="panel"><p class="mini-label">Council test</p><div id="nrjScenario" class="suite-card portrait placeholder-card"><span>Reveal a Scenario</span></div><div id="nrjScenarioText" class="card-caption"></div></article><section class="panel"><p class="kicker">Research Pool</p><h2>Spend reductions</h2><div id="nrjPoolCards" class="nrj-pool-cards hidden"></div><div id="nrjPoolInputs" class="pool-inputs"><label>NAP matching (−2)<input id="nrjNapMatch" type="number" min="0" max="3" value="0"></label><label>BAT matching (−3)<input id="nrjBatMatch" type="number" min="0" max="3" value="0"></label><label>BAT Specimen (−5)<input id="nrjSpecimen" type="number" min="0" max="1" value="0"></label><label>AoS Stable (−4)<input id="nrjAosStable" type="number" min="0" max="3" value="0"></label><label>AoS Overheated (−2)<input id="nrjAosHot" type="number" min="0" max="3" value="0"></label><label>Wrong category (−2)<input id="nrjWrong" type="number" min="0" max="9" value="0"></label></div><div class="target-readout">Modified target <strong id="nrjTarget">—</strong></div><div class="compact-actions"><button id="nrjSuccess" class="primary">Resolve success</button><button id="nrjFailHp" class="danger">Fail · lose 1 HP</button><button id="nrjFailDice" class="danger ghost">Fail · banish 2 dice</button></div></section></div>
       <div id="nrjRoller" class="roller panel"></div>
     </section>
 
@@ -146,10 +146,10 @@
           <div class="compact-actions">
             <label class="inline-pick" for="deckSelect">Difficulty
               <select id="deckSelect" title="Difficulty sets how many of the 8 Programs come from Routine / Specialized / Unstable.">
-                <option value="Easy">Easy &middot; 4/4/0</option>
-                <option value="Standard" selected>Standard &middot; 3/4/1</option>
-                <option value="Hard">Hard &middot; 2/3/3</option>
-                <option value="Nobulous">Nobulous &middot; 0/4/4</option>
+                <option value="Easy">Easy &middot; 5/3/0</option>
+                <option value="Standard" selected>Standard &middot; 4/3/1</option>
+                <option value="Hard">Hard &middot; 3/3/2</option>
+                <option value="Nobulous">Nobulous &middot; 2/3/3</option>
               </select>
             </label>
             <button id="flipBtn" disabled>Flip</button>
@@ -258,9 +258,9 @@
   </dialog>
 
   <div id="toast" role="status" aria-live="polite"></div>
-  <script src="app.js?v=strroll1"></script>
+  <script src="app.js?v=aosmix1"></script>
   <script src="bat_experiments.js"></script>
-  <script src="suite.js?v=strroll1"></script>
-  <script src="bat.js?v=nobrutal2"></script>
+  <script src="suite.js?v=pool2"></script>
+  <script src="bat.js?v=notes1"></script>
 </body>
 </html>

@@ -38,8 +38,15 @@ figures. Read the fidelity notes before quoting anything here.
 | `nrj.py` | Imposter Scenario: Council attempts, Suspicion, the Research Pool |
 | `table.py` | the cross-tab: difficulty x NRJ tier x hero card |
 | `run_all.py` | thin wrapper over `table.py` |
-| `buffsweep.py` | sweeps BAT's Buff HP against the published ladder |
+| `healthsweep.py` | tunes the Tyrant's Health against a target ladder |
+| `aoseconomy.py` | whether AoS can be given a dice economy, and what it costs |
 | `sweep.py` | every game, every difficulty, every hero, every NRJ tier |
+| `dicetension.py` | whether running out of dice is actually the pressure, per game |
+| `audit.py` | per card: how often it reaches the table, and whether its text does anything |
+| `imposter.py` | the finale's dice economy: pool, Targets, the failure trade, the dials |
+| `proto/fix.py` | candidate repairs for the finale, and which of them do nothing |
+| `supply.py` | whether the campaign's 18 cards can actually be banked, and whether standalone matches |
+| `protocols.py` | per-Protocol tuning sweep for BAT's NRJ Tier I |
 | `proto/` | a proposed rewrite of the BAT battle, kept out of the shipping model - see `proto/README.md` |
 
 Card data is transcribed from canonical sources, never retyped from memory:
@@ -125,9 +132,11 @@ Hoplomachus 53%, Tanglewoods Red/White/Gold 47/53/57%). A finished game in this
 system sits near 50%, and that is the yardstick for everything below. The BAT
 ladder published in `rules/bat.html` (~70/63/56/49/42) straddles that band.
 
-After this pass's BAT fixes, BAT reproduces the easy end of its published
-ladder closely - Standard 62.9% against ~63% - and drifts high at the hard end.
-AoS and NAP still sit well below the band.
+Against that band the three games read Easy 55.4 / 49.9 / 47.0% and
+Standard 46.5 / 42.1 / 35.0% (BAT / NAP / AoS): in band at Easy, below it
+from Standard down. The published BAT ladder is not a second opinion - the
+Health dial was tuned against this model - and the rulebooks no longer print
+win rates at all, so `RESULTS.txt` is the only place they live.
 
 ## Results
 
@@ -147,37 +156,84 @@ current ladder. For that, see `table.py`.
 
 | FINF | no NRJ | Tier I | Tier II | Tier III |
 |---|---|---|---|---|
-| +3 | 15.7% | 16.1% | 10.8% | 10.7% |
-| +2 | 15.9% | 15.9% | 11.0% | 11.2% |
-| +1 | 16.9% | 16.3% | 11.3% | 11.3% |
-| **−1** *(Standard)* | **18.2%** | 17.9% | 11.9% | 13.3% |
-| −2 | 19.0% | 18.3% | 12.6% | 13.6% |
-| −3 | 19.3% | 18.3% | 12.4% | 13.4% |
+| +3 | 41.6% | 37.8% | 25.6% | 30.5% |
+| +2 | 42.7% | 40.5% | 26.6% | 32.1% |
+| +1 | 43.9% | 41.3% | 27.2% | 33.5% |
+| **−1** *(Standard)* | **48.0%** | **44.3%** | **31.8%** | **39.8%** |
+| −2 | 50.4% | 46.5% | 32.8% | 41.7% |
+| −3 | 51.8% | 48.0% | 35.5% | 44.7% |
+
+Re-measured 2026-10-27, 7,200 games a cell. Every cell used to read 15-19%
+here, from before the Primary-choice policy was corrected - it took the
+cheaper of the two revealed Assignments and ignored what the card paid. The
+dial spans 10 points end to end and Standard sits in the middle of it.
 
 Tier I is close to a wash - the Following Setbacks it swaps in are harsher
 per card but displace base Setbacks of similar weight. Tier II is the trough,
 as designed: 4 Impostor Tasks that are Mandatory and grant no Credits remove
-four Credit chances and force four clears. Tier III recovers 1-2 points.
+four Credit chances and force four clears. Tier III recovers 6-9 points, more
+than the other two games get back.
+
+These cells run above the cross-tab's NAP row (Standard 42.1%) because this
+table holds the Credit goal at 6 and moves only the FINF dial, while the
+cross-tab moves the goal and the Setback count together.
 
 ### BAT - difficulty x NRJ tier
 
-| difficulty | no NRJ | Tier I | Tier II | Tier III | published |
-|---|---|---|---|---|---|
-| Easy | 68.3% | 71.3% | 75.1% | 77.0% | ~70% |
-| Standard | 62.4% | 67.1% | 70.6% | 73.6% | ~63% |
-| Hard | 58.9% | 62.6% | 66.0% | 69.7% | ~56% |
-| Brutal | 54.5% | 58.7% | 62.1% | 65.9% | ~49% |
-| Nobulous | 50.8% | 55.2% | 58.0% | 62.3% | ~42% |
+Difficulty is **Specimens added to the Upgrade deck / the Tyrant's Health**.
+The track is the five Splices in random order, then the Health dial; damage
+runs left to right. The current numbers are in `RESULTS.txt`.
 
-Track order is Buff HP, the five Splices in random order, then the Health
-dial; damage runs left to right.
+| difficulty | Specimens | Health | no NRJ |
+|---|---|---|---|
+| Easy | 5 | 9 | 55.4% |
+| Standard | 6 | 10 | 46.5% |
+| Hard | 7 | 12 | 33.4% |
+| Nobulous | 8 | 14 | 22.4% |
 
-#### The leftmost-Splice effect, and why it is switched off
+#### The battle was rewritten
 
-The Tyrant track is **Buff HP, then the five Splices in random order, then the
-Health dial**. Damage chews left to right, and the leftmost surviving Splice
-supplies its printed effect free on every Tyrant attack; when it is destroyed
-the next one takes over. That is implemented, behind `card_effects=True`.
+The Tyrant battle this model describes is not the one in the older sections
+below. Jon played the original and found it tedious, and the model agreed:
+the correct play was to commit only what recovery returned, so the dice pool
+was a per-round income rather than a budget. The battle ran 9.1 rounds and
+ended with **7.1 of about 10 dice unspent**; its trough equalled its mean,
+meaning the pool did not move at all. Committing freely was 14.5 points
+WORSE than hoarding.
+
+Five changes, measured in `proto/` and now the rules:
+
+1. **A Splice must be met in one attack or the blow bounces.** The rule a
+   Rat's Upgrades already used, applied to the Tyrant. Overflow from a broken
+   Splice carries on and may break the next; nothing is ever part-damaged.
+2. **A breaking Splice banishes a die of its own color** (`BREAK_BANISH`).
+   Its printed effect is never used - see below for why the old aura went.
+3. **A Rat's Upgrade is spent whenever it blocks**, whatever the blow.
+4. **The Tyrant breaks containment after 8 rounds** (`ROUND_LIMIT`).
+5. **Buff HP folded into Health**, so difficulty is one number again, and
+   the 6-dice commit cap was removed after measuring that an uncapped pool
+   opens nothing.
+
+Spending now beats hoarding by **+7.2**, the fight is 7.2 rounds, and the
+pool troughs at 3.0 with 36% of games dropping to two dice or fewer - ahead
+of NAP's 20% on `dicetension.py`'s measure.
+
+**The campaign rule had to move with it.** Because an Upgrade is spent to
+block, a winning party ends holding a median of ZERO; only 2% of wins left
+the 3 the old carry-forward rule asked for. BAT now retains from the
+Upgrades held when the battle BEGAN, which 86% of wins have 3 or more of.
+
+#### HISTORY: the leftmost-Splice aura, and why it was cut
+
+*This section describes the battle as it was BEFORE the rewrite above. It is
+kept because it is the measurement that motivated the change.*
+
+The old track was **Buff HP, then the five Splices in random order, then the
+Health dial**, and the leftmost surviving Splice supplied its printed effect
+free on every Tyrant attack. Firing every round compounded: with the effects
+on the win rate collapsed from 62% to 16%, with nothing usable in between.
+Inert or lethal. A Splice now does nothing while it stands and banishes one
+die when it breaks, which is a cost you can feel without a compounding one.
 
 All 30 cards are encoded individually from their printed text - 16 Upgrades,
 8 Specimens, 6 Modifications - as a 4-tuple of (damage added to the Tyrant's
@@ -186,7 +242,12 @@ exhausted). Of the Splices that actually reach the Tyrant in play, **51% add
 damage, 38% block, and 12% are inert** (pure dice-recovery cards, which do
 nothing for a Tyrant whose six dice never exhaust).
 
-It is **off by default**, because switching it on gives:
+It is **off by default**. The table below is historical - it has a Brutal
+row and a `published` column - and the collapse it shows was an artifact of
+two model faults since fixed: the adopted +1 on Experiment Targets charged
+twice, and Upgrade cards leaking out of a deck the rules make inexhaustible.
+Measured now at Standard with no tier module, the effects are worth **+3.7**
+(42.8% off, 46.5% on), not -52. The historical figures:
 
 | difficulty | effects on | effects off | published |
 |---|---|---|---|
@@ -251,13 +312,19 @@ battle section of `rules/bat.html` against the code turned them up:
    highest Value among the Splices it still holds, and Value is printed -
    "damage already marked on that card does not weaken it". The model used the
    damaged remainder, so a wounded Tyrant rolled fewer dice than it should.
-3. **Damage ignored the Defense-first order.** The track runs Buff HP, then
-   Defense Splices, then the rest, then Health.
+3. **Damage ignored the Defense-first order.** The track then ran Buff HP,
+   Defense Splices, the rest, then Health. (Buff HP has since been folded
+   into Health and the order is now simply the five Splices, then Health.)
 
 All six fixes together moved Standard from 85.3% to 62.9% - onto the
 published ~63%.
 
-### BAT - the Tyrant dice rule
+### HISTORY: BAT - the Tyrant dice rule
+
+*Measured before the battle was rewritten, against the ladder published at
+the time. The arrangement it settled - the Tyrant's six dice coming out of
+the Rats' own supply - is still what `rules/bat.html` and the model use, so
+the conclusion stands even though every number here is superseded.*
 
 | difficulty | playtest UI | rulebook | published ladder | error |
 |---|---|---|---|---|
@@ -287,40 +354,96 @@ Specimens are the Value-5 cards).
 
 ### AoS - Program deck x NRJ tier
 
-| deck | no NRJ | Tier I | Tier II | Tier III |
+| difficulty | no NRJ | Tier I | Tier II | Tier III |
 |---|---|---|---|---|
-| Routine | 43.3% | 32.5% | 21.0% | 39.7% |
-| Specialized | 9.3% | 6.6% | 3.2% | 6.7% |
-| Unstable | 2.2% | 2.0% | 0.8% | 1.9% |
+| Easy 5/3/0 | 47.0% | 35.2% | 24.9% | 38.7% |
+| Standard 4/3/1 | 35.0% | 25.3% | 16.9% | 27.9% |
+| Hard 3/3/2 | 25.6% | 17.3% | 10.9% | 19.8% |
+| Nobulous 2/3/3 | 18.0% | 11.8% | 6.7% | 13.1% |
 
-This is the cleanest tier response of the three and matches the design intent
-exactly: Tier II is the trough (Routine 43.3% -> 21.0%) and Tier III claws most
-of it back (39.7%). Routine is the only cell in the community band; Specialized
-and Unstable sit far below it.
+The axis changed. This table used to be indexed by whole Program decks
+(Routine 43.3%, Specialized 9.3%, Unstable 2.2%); difficulty is now the MIX
+of Routine / Specialized / Unstable in the deck, which is why these rows do
+not line up with any earlier copy of this table.
+
+It is still the cleanest tier response of the three and matches the design
+intent exactly: Tier II is the trough (Easy 47.0% -> 24.9%) and Tier III claws
+most of it back (38.7%). Easy is the only row near the community band, and AoS
+starts lower than the other two games and falls about as fast.
 
 ### NRJ - the finale
 
-9.3%. The tiers apply to the three games above, not to the finale, and the
-finale has no difficulty dial. **The earlier 100% figure was an artifact and is
-gone**: that model treated all 18 Research Pool cards as spendable at a flat
--3, when only 9 of the 18 reduce anything - "Candidate or damaged card" is
-worth 0 - and retained values are -2 to -5 on a category match, -2 off it.
+50.9% in the cross-tab and 50.3% in imposter.py's own 4,000-game pass, up
+from 32.4%, after one line was added to the Imposter card: **"your REC is 3
+minus the number of cards in the Suspicion row"**, with 5 starting Health
+rather than 4. The tiers apply to the three games above, not to the
+finale.
+
+That was a repair, not a re-tune. `imposter.py` measured the finale on
+`dicetension.py`'s scale and found no dice pressure at all - 0% of commit
+decisions at two dice or fewer, 0.0% empty - because the pool collapsed to
+exactly REC by the fourth attempt and sat on that floor for the remaining
+five. It could not run out, so running out was never a worry. With the floor
+coupled to the Suspicion row it declines 17.0 -> 3.8 -> 0.7 across the nine
+attempts, and the finale now leads the set on five of the six tension columns
+- every column that measures RUNNING OUT. NAP's mean pool is lower (4.3
+against 5.8), so on the mean alone NAP is the tighter game.
+
+`proto/fix.py` has the twenty-one candidates and combinations that were
+measured and rejected, and the negative
+result is the useful part: **nothing that leaves the recovery floor fixed can
+create dice tension**, however far it moves the win rate. One candidate
+banishes eight of the seventeen dice every game and reads 0% and 0.0%.
+
+Two earlier NRJ figures were artifacts and are gone. **100%** came from
+treating all 18 Research Pool cards as spendable at a flat -3, when only 9 of
+the 18 reduce anything - "Candidate or damaged card" is worth 0 - and retained
+values are -2 to -5 on a category match, -2 off it. **9.3%** came from REC
+handing back the *weakest* exhausted dice: `commit()` filled the pile
+strongest-first and recovery popped the end of it, an accident of list order
+worth 21 points.
+
+The campaign hand-off was audited separately, by running the three games
+and reading what each banks: `supply.py`. Supply is sufficient everywhere,
+and **standalone is a fair stand-in for a real campaign** - 50.2% against
+50.4% to 52.1% across the four difficulties. Two assumptions in `build_pool`
+were wrong and are fixed: a retained BAT Specimen is available on 86-96% of
+wins rather than the 50% assumed, and the first AoS Advanced Program is
+Stable by rule so the flat 50/50 Stable/Overheated was never reachable
+(34-38% Overheated in practice).
+
+What is still wrong is the slope. One point of starting Health is worth about
+21 points of win rate and one point on all 24 Targets about 18, because nine
+pass/fail attempts against a small failure budget amplify any dial about
+ninefold. Flattening that means grading each attempt rather than passing or
+failing it. The consolation is that one number now serves as the difficulty
+ladder the finale has never had: 3/4/5/6 starting Health gives 9.3%, 29.4%,
+50.8%, 71.0%, with dice pressure rising along it.
 
 ## The hero axis
 
-It is not in the tables because it cannot move a number here. Every game's
-heroes share one statline and differ only in ability text, which the rulebooks
-state outright:
+Every game's heroes share one statline and differ only in ability text,
+which the rulebooks state outright:
 
 - AoS - "All six begin at 2 HP / 2 STR / 3 REC and differ only in ability."
 - NAP - "All six begin at 2 HP / 2 STR / 2 REC; they differ only in abilities."
 - BAT - both sides of each Lab Rat print the same HP/STR/REC.
 
-Ability text is exactly what these models omit, so the heroes come out
-identical *in the model* and certainly are not identical *in play*. All twenty
-are listed in `cards.py`. BAT's is not even a pick of one card: all four Rats
-always play, so it is 16 side-combinations, and Rat abilities do not apply in
-the Tyrant Battle at all.
+This section used to say ability text was exactly what these models omit, so
+the heroes came out identical here. They are modelled now, and because the
+statlines really are identical the whole spread is ability text:
+
+| game | best | worst | spread |
+|---|---|---|---|
+| AoS Technicians | optimizer 43.4% | engineer 26.0% | 17.4 |
+| NAP Apprentices | Technician 46.1% | Prodigy 38.6% | 7.5 |
+| BAT Lab Rat sides | tool_keeper 45.6% | self_sufficient 41.9% | 3.7 |
+
+At Standard with no tier module; the full tables are in `RESULTS.txt`, and all
+twenty cards are listed in `cards.py`. AoS's 17 points is a lot to rest on one
+card choice and is worth a look. BAT's axis is not a pick of one card: all four
+Rats always play, so it is 16 side-combinations, and Rat abilities do not apply
+in the Tyrant Battle at all - which is why its spread is the narrowest.
 
 ## Fidelity
 
@@ -328,30 +451,41 @@ What every model implements: exact die faces, printed Targets, the dice economy
 (commit, exhaust, recover), STR rerolls, HP and failure tracking, and each
 game's win condition.
 
-**The BAT tier row is not usable.** In this model the tier modules make BAT
-easier, contradicting the intent that Tier II is the pressure peak. AoS and NAP
-both reproduce that intent, so the fault is specific to the BAT model, and it is
-structural: BAT's only real loss channel is Rats being knocked out, and Upgrades
-are armor that stops damage outright, so adding six Upgrade-class cards to the
-deck raises the armor supply. The modules' hostile clauses live in content the
-model omits - the Tyrant Attack deck, the frontmost-Splice effect, and the
-Protocol clauses that turn on die-borrowing between Rats. Both Modification
-sides *are* modeled (the Tyrant may tap one for +2 damage, and all six printed
-"while held" drawbacks apply to a Rat holder); it is not enough to flip the
-sign.
+**The BAT tier row reads correctly now.** It used to run backwards: the tier
+modules made BAT *easier*, contradicting the intent that Tier II is the
+pressure peak. That was a model fault, not a design one, and it took three
+fixes - the Tyrant Attack deck, the Protocol die-borrowing clauses, and
+tier effects that REPLACE base cards instead of adding to them. Tier II is
+now the trough in every BAT column, matching AoS and NAP.
 
-What none implements is the bulk of **per-card text**, which is the largest
-source of divergence from the published figures:
+What remains unmodelled is **per-card text**, and the list is much shorter
+than it was. Verify it against `audit.py` rather than trusting this block;
+several claims here have been wrong, including a run of five that all said
+BAT content was omitted after it had been implemented.
 
-- **BAT** - the 20 Experiment effects, 16 Upgrade abilities, 7 Tyrant Attack
-  cards, and the frontmost-Splice effect. Hostile on net, so BAT reads high.
+- **BAT** - 19 of the 20 Experiment effects are implemented. The exception
+  is Diagnostic Trial, which buys a look at the next Experiment; the policy
+  has no lookahead to spend it on. The 16 Upgrade abilities, all 7 Tyrant
+  Attacks, both Modification sides and the Protocol borrowing clauses are
+  modelled. The frontmost Splice has no effect *by rule* - on the Tyrant a
+  Splice is only its Value - so that is a design decision, not a gap.
+- **BAT Research Notes** - the claim conditions are all modelled, but a
+  claim goes into one pooled counter that is spent on two of the six printed
+  rewards. Four printed rewards do nothing. This is the live limit on BAT's
+  Tier III column: Notes are claimed 4.3 times a game and buy very little.
 - **NAP** - Apprentice abilities, the 26 Request effects, Opportunity effects
   and subject-icon wilds. Player-favorable on net, so NAP reads low. The
   printed Demand penalties, Setback blocking and the Final Exam *are*
   implemented.
 - **AoS** - Technician abilities and the 6 Limitations.
-- **NRJ** - 18 of the 24 Scenario effects. The 6 that drive the dice economy or
-  Suspicion are implemented.
+- **NRJ** - 1 of the 24 Scenario effects, down from 18. Across the Chamber
+  buys a look at the next Scenario and the policy has no lookahead to spend
+  it on. The six clauses that restrict WHICH dice may contribute were the
+  last block added. `imposter.py` measures what they do: three of them block
+  the majority of the attempts they appear in and the set is worth -1.9
+  points, because a blocked attempt was already lost and being blocked saves
+  the dice it would have wasted. One of the six - the Yellow ban - blocks
+  0%, because a pool recovered strongest-first holds no Yellow to bar.
 
 **Policy sensitivity is large.** Each model plays one fixed greedy policy. NRJ
 measured the size of this: rationing the Research Pool evenly across the nine

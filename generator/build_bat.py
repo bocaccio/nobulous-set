@@ -190,7 +190,10 @@ TRACK_CSS = ('.trk{display:flex;flex-direction:column;gap:.6mm;margin-top:1mm}'
 
 
 def track():
-    marks = {11, 7, 4, 3}                     # Nobulous, Hard, Standard, Easy
+    # No gold spaces any more: difficulty is Tyrant Health, read off the dial.
+    # The card is optional, for players who would rather push a die along a
+    # track than read a dial, and any space is a legal start.
+    marks = set()
     cells = ['<div class="sp%s">%d</div>' % (' mark' if v in marks else '', v)
              for v in range(15, 0, -1)]
     rows = ['<div class="trow">%s</div>' % ''.join(cells[i:i + 3])
@@ -199,8 +202,8 @@ def track():
 
 
 buff = [C('Buff HP', 'Tyrant · remove before Health',
-          '<div class="bufftip">Place the Health die on your difficulty’s number. '
-          'Move it 1 space per damage.</div>' + track(),
+          '<div class="bufftip">Optional. Hold part of the Tyrant’s Health here: '
+          'put the die on that many and spend it before the dial.</div>' + track(),
           'Removed before the Tyrant’s Health can be damaged.',
           acc=BUFF_GREEN)]
 print("Buff HP track", render_deck('BAT_BuffHP', buff, 'BAT', PORTRAIT, TRACK_CSS, back='CardBack_BAT_BuffHP'))

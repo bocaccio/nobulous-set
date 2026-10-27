@@ -36,14 +36,15 @@
     from each of the three decks, shuffle the <b>8</b> together, and return the rest to the box:
     <table>
       <tr><th>Level</th><th>Routine</th><th>Specialized</th><th>Unstable</th></tr>
-      <tr><td>Easy</td><td>4</td><td>4</td><td>&mdash;</td></tr>
-      <tr><td><b>Standard</b></td><td><b>3</b></td><td><b>4</b></td><td><b>1</b></td></tr>
-      <tr><td>Hard</td><td>2</td><td>3</td><td>3</td></tr>
-      <tr><td>Nobulous</td><td>&mdash;</td><td>4</td><td>4</td></tr>
+      <tr><td>Easy</td><td>5</td><td>3</td><td>&mdash;</td></tr>
+      <tr><td><b>Standard</b></td><td><b>4</b></td><td><b>3</b></td><td><b>1</b></td></tr>
+      <tr><td>Hard</td><td>3</td><td>3</td><td>2</td></tr>
+      <tr><td>Nobulous</td><td>2</td><td>3</td><td>3</td></tr>
     </table>
-    Each step up trades a Routine Program for a harder one. Routine Programs ask for three elements at
-    low Targets, Unstable ones four at high Targets, and Specialized sits between. All three decks pay the
-    same spread of rewards, so the mix changes the workload and nothing else.</li>
+    Specialized stays at 3 throughout; <b>each step up trades one Routine Program for one Unstable</b>.
+    Routine Programs ask for three elements at low Targets, Unstable ones four at high Targets, and
+    Specialized sits between. All three decks pay the same spread of rewards, so the mix changes the
+    workload and nothing else.</li>
   <li>Shuffle the 6 Limitations into a face&#8209;down deck.</li>
   <li>Shuffle the 8 Advanced Programs and set them aside for the finale.</li>
   <li>Lay out the element mats. All 17 dice start available.</li>
@@ -87,29 +88,17 @@ Reward removes them, so later cycles are shorter. After the third cycle &mdash; 
   letting a Shortage do it for you &mdash; has a real cost.
 </div>
 
-<h3>Requirement density</h3>
-<table>
-  <tr><th>Deck</th><th>Required&#8209;color dots per card</th></tr>
-  <tr><td>Routine</td><td>1</td></tr>
-  <tr><td>Specialized</td><td>2</td></tr>
-  <tr><td>Unstable</td><td>1</td></tr>
-  <tr><td>Advanced</td><td>2</td></tr>
-</table>
-<p>The same required colors appear on both faces of a Program card.</p>
+<p>Specialized and Advanced Programs carry two required&#8209;color dots; Routine and Unstable carry one.
+The same required colors appear on both faces of a Program card.</p>
 
 <h3>Limitations</h3>
-<ul>
-  <li>Reveal exactly <b>1</b> Limitation per Program, always right after the Program and before any
-      required&#8209;color dice are committed.</li>
-  <li>Yellow / Green / Blue / Purple Shortage: withhold 2 available dice of that color.</li>
-  <li>Diversity Protocol: withhold 2 dice of different non&#8209;Red colors.</li>
-  <li>Red Quarantine: withhold the Red die.</li>
-  <li>Withheld dice return to your pool when the Program ends. Discard the Limitation after that Program.</li>
-</ul>
+<p>Reveal exactly <b>1</b> Limitation per Program, right after the Program and <em>before</em> any
+required&#8209;color dice are committed. Each withholds dice from your pool, as printed. Withheld dice return
+when the Program ends; discard the Limitation then.</p>
 
-<h3>Allocation threshold</h3>
-<p><b>Target +1</b> dice is the safe allocation threshold for an element, not a hard cap. You may allocate more,
-but every die beyond Target +1 exhausts after that element resolves regardless of the outcome.</p>
+<h3>Allocation cap</h3>
+<p>An element may hold at most <b>Target + 1</b> dice, unless a card raises that cap &mdash; the Engineer
+does, for up to 2 elements per Program.</p>
 
 <h2>Rolling and the exhaustion gradient</h2>
 <p>Each element gets one Strategy roll. Additional rolls up to your STR form a <b>shared pool</b> spent anywhere
@@ -121,10 +110,10 @@ result <em>replaces</em> the old one, better or worse.</p>
   Allocating dice is not spending them. When an element resolves, its dice return to your available pool
   &mdash; <b>except</b> for the ones the table below burns.
 </div>
+<p>Anything not listed below costs nothing.</p>
 <table>
   <tr><th>Result</th><th>Consequence</th></tr>
   <tr><td>Exactly meet Target</td><td><b>Optimal Implementation:</b> recover 2 exhausted dice.</td></tr>
-  <tr><td>Beat by exactly 1</td><td>No penalty.</td></tr>
   <tr><td>Beat by 2 or more</td><td>Exhaust 1 die allocated to that element.</td></tr>
   <tr><td>Fail the element</td><td>Exhaust all dice allocated to that element.</td></tr>
   <tr><td>Used an extra STR roll</td><td>That element&rsquo;s dice exhaust regardless of outcome.</td></tr>
@@ -141,15 +130,8 @@ then recover 2 &mdash; which may include dice you just exhausted.</p>
 <p>Every Program in the Routine, Specialized and Unstable decks prints a <b>Program Reward</b>. Claim it when
 you complete that Program with <b>no failed elements at all</b> &mdash; one failure is enough to lose it, even
 though one failure costs no Health.</p>
-<ul>
-  <li><b>Recover 1 HP</b> &mdash; to a maximum of 6.</li>
-  <li><b>Recover 3 exhausted dice.</b></li>
-  <li><b>Banish 1 Limitation from the game.</b></li>
-  <li><b>Return 1 Overheated Program to Stable.</b></li>
-  <li><b>+1 REC; remove this Program</b> &mdash; the bonus is permanent and the card leaves the deck.</li>
-  <li><b>+1 STR; remove this Program</b> &mdash; likewise.</li>
-</ul>
-<p>Advanced Programs carry no reward.</p>
+<p>The reward is printed on the Program. Two of them &mdash; <b>+1 REC</b> and <b>+1 STR</b> &mdash; are
+permanent, and remove that Program from the deck when claimed. Advanced Programs carry no reward.</p>
 
 <h2>Stable, Overheated, set aside</h2>
 <ul>
@@ -168,10 +150,9 @@ though one failure costs no Health.</p>
       the exposed edge Target adds an element. If the marked overheated element is first or last, that edge must
       be used; if it is internal, you choose.</li>
   <li>Advanced Program 1 begins Stable.</li>
-  <li>Ending with 0&ndash;1 failed elements: the next Advanced Program begins Stable.</li>
-  <li>Ending with 2+ failed elements: suffer Catastrophic Failure (lose 1 Health) and the next Advanced Program
-      begins Overheated.</li>
-  <li>Catastrophic Failure does not stop Advanced Programming unless Health reaches 0.</li>
+  <li>The next Advanced Program begins <b>Overheated</b> if this one ended in Catastrophic Failure, and
+      <b>Stable</b> otherwise. Catastrophic Failure does not stop Advanced Programming unless Health
+      reaches 0.</li>
 </ul>
 <p>Complete all three with Health remaining to win AoS.</p>
 

@@ -26,8 +26,14 @@ import sys
 
 import bat
 
-CONFIG = dict(threshold=True, health=4, break_banish=1, armor_spend=True,
+bat.RAT_DICE_CAP = 99          # the commit cap was removed; see README
+
+CONFIG = dict(threshold=True, break_banish=1, armor_spend=True,
               round_cap=8, attrition=False)
+# Difficulty is Tyrant Health; Buff HP used to carry these points on its own
+# card, back when Health was a flat 20. Specimen count is unchanged.
+HEALTH = {"Easy": 9, "Standard": 10, "Hard": 12, "Nobulous": 14}
+SPECIMENS = {"Easy": 5, "Standard": 6, "Hard": 7, "Nobulous": 8}
 REC = 2
 DEFAULT = 4000
 
@@ -39,6 +45,10 @@ def trial(difficulty="Standard", games=DEFAULT, policy="threshold", rec=REC,
           **over):
     """Win rate, battle length, dice left and dry-loss share."""
     bat.PROTO.update(OFF)
+    # No Buff HP card: the difficulty's points are Health.
+    if "health" not in over and over.get("threshold", CONFIG["threshold"]):
+        bat.DIFFICULTY[difficulty] = (SPECIMENS[difficulty], 0)
+        over = dict(over, health=HEALTH[difficulty])
     bat.PROTO.update(over)
     wins = rounds = 0
     dice, on_win, dry, losses = [], [], 0, 0
@@ -79,21 +89,25 @@ def trial(difficulty="Standard", games=DEFAULT, policy="threshold", rec=REC,
 
 
 def main(games=DEFAULT):
-    print("BAT prototype - threshold damage, 8-round clock, Health 4,")
-    print("Splice breaks banish a die, Upgrades spent to block. %d games."
-          % games)
+    print("BAT prototype - threshold damage, 8-round clock, no commit cap,")
+    print("Splice breaks banish a die, Upgrades spent to block,")
+    print("Buff HP folded into Health (9/10/12/14). %d games." % games)
 
     print()
     print("1. Is spending correct?  (Standard)")
     print("   %-12s %8s %8s %10s" % ("policy", "win", "rounds", "dice left"))
     got = {}
+    # Under the shipping rules there are no walls, so the threshold policy
+    # has nothing to aim at and collapses into conserve. The meaningful
+    # contrast there is hoarding against spending freely.
     for name, cfg in (("shipping rules", OFF), ("prototype", CONFIG)):
-        for pol in ("conserve", "threshold"):
+        spender = "all-out" if cfg is OFF else "threshold"
+        for pol in ("conserve", spender):
             r = trial(games=games, policy=pol, **cfg)
             got[(name, pol)] = r["win"]
             print("   %-12s %7.1f%% %8.1f %10.1f   %s/%s"
                   % (pol, r["win"], r["rounds"], r["dice"], name, pol))
-        gap = got[(name, "threshold")] - got[(name, "conserve")]
+        gap = got[(name, spender)] - got[(name, "conserve")]
         print("   -> %s: spending beats hoarding by %+.1f" % (name, gap))
         print()
 

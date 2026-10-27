@@ -44,26 +44,26 @@ def T(x, cls='txt'):
 
 
 PROTOCOLS = [
- ("Cross-Contamination", "The first time each Rat borrows a die, it may borrow any color regardless of Upgrade count. If that die is banished, reveal the top Upgrade and Splice it into the Tyrant."),
- ("Shared Equipment Budget", "At setup, randomly select 2 personal dice from different Rats and place them in a common Equipment pool. After completing an Experiment, the active Rat may exchange one personal die with one Equipment die."),
- ("Accelerated Trials", "Experiments with printed Target 5+ have -1 Target. Exhaust 2 of the active Rat's available dice after every such attempt, whether or not it is completed."),
+ ("Cross-Contamination", "The first time each Rat borrows a die, it may borrow any color regardless of Upgrade count. If that die is banished, reveal the top 3 Upgrades and Splice them into the Tyrant."),
+ ("Shared Equipment Budget", "At setup, randomly select 1 personal die and place it in a common Equipment pool. After completing an Experiment, the active Rat may exchange up to 2 personal dice with Equipment dice."),
+ ("Accelerated Trials", "Experiments with printed Target 5+ have -1 Target. Before every such attempt, exhaust 2 of the active Rat's available dice, Purple first; if it holds no Purple, exhaust its weakest."),
  ("Questionable Procurement", "Shuffle 1 additional random Specimen into the Upgrade deck. The first Specimen acquired by each Rat does not count against its 3-Upgrade limit until that Rat gains another Upgrade."),
- ("Independent Funding", "After the borrowed die's banishment check, when a Rat has lent a die to a Rat holding fewer Upgrades, the lender recovers 1 die - but only if that Experiment was completed."),
- ("Questionable Methodology", "After revealing the two Upgrades for an Experiment, you may Splice the stronger one into the Tyrant and reveal a replacement. If you do, reduce the Experiment's Target by 1."),
+ ("Independent Funding", "At the start of each Experiment with printed Target 4 or lower, exhaust 2 of the active Rat's available dice, Blue first; if it holds no Blue, exhaust its weakest. The grant funds ambitious work only. When a Rat lends a die to a Rat holding fewer Upgrades and that Experiment is completed, the lender recovers 1 die."),
+ ("Questionable Methodology", "After revealing the two Upgrades for an Experiment with printed Target 5+, Splice the stronger one into the Tyrant and reveal a replacement. This is not optional."),
 ]
 MODS = [
- ("Extra Limbs", "Mobility &middot; Value 3", "Tap: roll 1 exhausted Green or Yellow die. While held, the holder may not borrow dice."),
- ("Secondary Brain", "Senses &middot; Value 3", "Tap before rolling: +1 STR for this Experiment/attack. While held, the holder may not use the Red die."),
- ("Adrenal Gland", "Power &middot; Value 4", "Tap: +3 damage. While held, the holder has 1 less Health, minimum 1."),
- ("Bone Plating", "Defense &middot; Value 3", "Reduce incoming damage by 2. While held, the holder has -1 REC, minimum 1."),
- ("Redundant Organs", "Defense &middot; Value 4", "The first time the holder would be knocked out, discard this card instead; the holder remains at 1 Health. While held, the holder cannot be selected as active on consecutive turns."),
- ("Hypermetabolism", "Senses &middot; Value 3", "Tap: recover +2 dice. While held, exhaust 1 available die at the end of each Experiment the holder attempts."),
+ ("Extra Limbs", "Mobility &middot; Value 4", "Tap: roll 1 exhausted Green or Yellow die. While held, the holder may not borrow dice."),
+ ("Secondary Brain", "Senses &middot; Value 4", "Tap before rolling: +1 STR for this Experiment/attack. While held, the holder may not use the Red die."),
+ ("Adrenal Gland", "Power &middot; Value 5", "Tap: +3 damage. While held, the holder has 1 less Health, minimum 1."),
+ ("Bone Plating", "Defense &middot; Value 4", "Reduce incoming damage by 2. While held, the holder has -1 REC, minimum 1."),
+ ("Redundant Organs", "Defense &middot; Value 5", "The first time the holder would be knocked out, discard this card instead; the holder remains at 1 Health. While held, the holder cannot be selected as active on consecutive turns."),
+ ("Hypermetabolism", "Senses &middot; Value 4", "Tap: recover +2 dice. While held, exhaust 1 available die at the end of each Experiment the holder attempts, Purple first; if it holds no Purple, exhaust its weakest."),
 ]
 NOTES = [
- ("Unexpected Resilience", "Claim after a Rat completes an Experiment without committing Purple or Red.", "Once per game, recover all of that Rat's dice."),
- ("Successful Integration", "Claim when a single Rat holds 2 Specimens.", "Once per game, ignore the +1 Target from revealing a Specimen."),
+ ("Unexpected Resilience", "Claim after a Rat completes an Experiment without committing Red.", "Once per game, recover all of that Rat's dice."),
+ ("Successful Integration", "Claim when a Rat holds a Specimen.", "Once per game, ignore the +1 Target from revealing a Specimen."),
  ("Acceptable Losses", "Claim after failing 3 Experiments within the same four-Rat rotation.", "Once per game after another failure, choose which revealed Upgrade is Spliced."),
- ("Cross-Species Compatibility", "Claim when all four Rats hold at least 2 Upgrades.", "Once during the Tyrant battle, the active Rat may tap an Upgrade held by another surviving Rat."),
+ ("Cross-Species Compatibility", "Claim after a Rat completes an Experiment using a borrowed die.", "Once during the Tyrant battle, the active Rat may tap an Upgrade held by another surviving Rat."),
  ("Controlled Failure", "Claim after deliberately committing zero dice to an Experiment.", "Once later, after revealing an Experiment, discard it and reveal the next one instead."),
  ("Red Means Go", "Claim after Red provides the success that completes an Experiment and at least one die belonging to another Rat also contributed.", "Once per game after using Red, place it directly on any non-active Rat rather than setting it aside."),
 ]

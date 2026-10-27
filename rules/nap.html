@@ -36,16 +36,19 @@ face&#8209;down. Holding FINF 2, for example, lets you remove one card during an
 <p>FINF is not used during the Final Exam, in either direction.</p>
 
 <h2>Difficulty</h2>
-<p>Difficulty is the <b>Credit goal</b>: how many Credits you must earn before the Final Exam. Choose a level
-before you start and keep it for the whole game.</p>
+<p>Difficulty is two numbers: the <b>Credit goal</b> you must reach before the Final Exam, and how many of
+the <b>6 Setbacks</b> are shuffled into the Assignment deck. Choose a level before you start and keep it for
+the whole game.</p>
 <table>
-  <tr><th>Level</th><th>Credit goal</th></tr>
-  <tr><td>Easy</td><td>5 Credits</td></tr>
-  <tr><td><b>Standard</b></td><td><b>6 Credits</b></td></tr>
-  <tr><td>Hard</td><td>7 Credits</td></tr>
-  <tr><td>Nobulous</td><td>8 Credits</td></tr>
+  <tr><th>Level</th><th>Credit goal</th><th>Setbacks</th></tr>
+  <tr><td>Easy</td><td>5 Credits</td><td>4</td></tr>
+  <tr><td><b>Standard</b></td><td><b>6 Credits</b></td><td><b>4</b></td></tr>
+  <tr><td>Hard</td><td>7 Credits</td><td>5</td></tr>
+  <tr><td>Nobulous</td><td>8 Credits</td><td>6</td></tr>
 </table>
-<p>Everything else is identical at every level. The FINF dial is separate and can be set at any difficulty.</p>
+<p>The Credit goal cannot carry the dial alone: Credits also reduce Final Exam Targets, so asking for more
+hands some of it back, and past 8 there are not enough Assignments left to earn them. The deck is the other
+half. The FINF dial is separate again and can be set at any difficulty.</p>
 
 <h2>Setup</h2>
 <ol class="seq">
@@ -134,7 +137,9 @@ clearing more Assignments than you have Strategy rolls is normal &mdash; it is w
       Opportunities store no progress. If the rotated Opportunity is still incomplete at the end of that slot,
       discard it without applying an effect or penalty.</li>
   <li>An Assignment that is <em>already</em> on its Demand side and still unresolved at the end of a slot
-      <b>inflicts its printed Demand penalty</b>, and does so again at the end of every slot it survives.</li>
+      <b>inflicts its printed Demand penalty</b>, and does so again at the end of every slot it survives.
+      When a penalty exhausts dice, exhaust dice of that Assignment&rsquo;s <b>recovery&#8209;dot color</b> first;
+      if you hold none, exhaust your weakest.</li>
   <li>Once the next Time Slot begins, stored dice are locked to that Assignment and cannot be voluntarily
       exhausted.</li>
   <li>When an Assignment finally resolves, its committed and stored dice exhaust unless the card says otherwise.
@@ -178,24 +183,6 @@ legal die. You may hold any number of coupons, and unspent coupons score nothing
   card &mdash; instead rotate the Skull&#8209;generating Assignment to its Demand side once. Further blocked
   Skulls do nothing.
 </div>
-
-<h2>Following in Nobulous&rsquo; Footsteps (FINF)</h2>
-<p>FINF is a second dial, independent of the difficulty level. <b>Choose one setting before you start</b> and
-use the card at that setting for the whole game. The standard setting is <b>&minus;1</b>.</p>
-<h3>Increase &mdash; +1 / +2 / +3</h3>
-<p>Shuffle the FINF card into the Assignment deck. When it is drawn, place it <em>before</em> the Primary
-selection for that slot, then add Assignments from the top of the deck:</p>
-<ul>
-  <li><b>+1</b> adds 1 Assignment to the next Time Slot.</li>
-  <li><b>+2</b> adds 1 to each of the next 2 Time Slots.</li>
-  <li><b>+3</b> adds 1 to each of the next 3 Time Slots.</li>
-</ul>
-<p>Ignore Skulls on Assignments added by FINF, and never exceed 4 Assignments in a row.</p>
-<h3>Reduce &mdash; &minus;1 / &minus;2 / &minus;3</h3>
-<p>The setting is the number of <b>uses you have for the whole game</b>: &minus;1 gives one use, &minus;3 gives
-three. Rotate the card after each use. One use lets you <b>remove any non&#8209;Final&#8209;Exam Assignment
-from the current row</b> and exhaust every die stored on it.</p>
-<p>FINF is not used during the Final Exam, in either direction.</p>
 
 <h2>End of Day</h2>
 <p>Move all completed Assignments from the Time Slots to the face&#8209;up discard pile. Reveal and discard the

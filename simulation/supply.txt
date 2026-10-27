@@ -1,0 +1,132 @@
+CAN THE CAMPAIGN'S CARDS BE SAVED? 1200 games per game per level
+
+1. SUPPLY - printed cards against what the rules ask for
+
+   NAP   3 Final Exams faced + 3 unused           12 printed, needs 6  ok
+   AoS   3 Advanced Programs faced + 3 unused      8 printed, needs 6  ok
+   BAT   up to 3 Upgrades held + Splices to fill 6 24 printed, needs 6  ok
+
+   The Tyrant always carries exactly 5 Splices, so BAT's Candidate
+   supply from the Tyrant alone is 5: 3 retained needs 3 of them,
+   1 retained needs 5, and a win with NO retained Upgrade would
+   need 6 and come up one short. That did not happen in any win
+   measured below, but the rules permit it - winning the battle
+   having completed no Experiments - and they used to be silent
+   on it. rules/bat.html now fills from unused Upgrade cards when
+   the Splices do not cover it, which is the source Splicing
+   Machine Malfunction already uses to top the Tyrant up to 5.
+
+2. BANKING - what each game leaves on the table when it is won
+
+   BAT: Upgrades the Rats hold when the battle begins
+                  win    mean  3+ held  Specimen    2 Spec
+   Easy         53.2%    4.40      94%       86%       46%
+   Standard     47.2%    4.39      95%       91%       57%
+   Hard         33.1%    4.28      94%       92%       62%
+   Nobulous     23.3%    4.24      96%       96%       68%
+
+   So the three retained slots fill on nearly every win, and a
+   Specimen - worth -5 against an Upgrade's -3 - is there to take
+   almost always. The 'at most 1 Specimen' cap is the binding
+   rule, not the supply: a second Specimen is on the table in the
+   last column's share of wins and has to be left behind.
+
+   AoS: Stable / Overheated of the 3 Advanced Programs faced
+                  win  Overheat               commonest hand
+   Easy         37.9%       34% Stable / Overheated / Overheated
+   Standard     30.6%       35% Stable / Overheated / Overheated
+   Hard         19.7%       38% Stable / Overheated / Overheated
+   Nobulous     12.6%       36% Stable / Overheated / Overheated
+
+   The first Advanced Program is Stable by rule, so a retained AoS
+   hand can never be all-Overheated and the finale's flat 50/50
+   was never reachable. Stable is -4 and cannot be discarded to
+   avoid; Overheated is -2 and can - so the real hand reduces more
+   and avoids less than the model assumed.
+
+   NAP: nothing to measure. final_exam draws pool[:3] from 12
+   printed exams, so exactly 3 are faced and retained in every
+   game that reaches the exam, and 9 remain to draw 3 Candidates
+   from. NAP's contribution is 3 retained + 3 Candidates always.
+
+3. STANDALONE AGAINST A REAL CAMPAIGN HAND
+
+   Standalone draws 3 retained and 3 Candidates per game at
+   random, so it banks the maximum every time. These rows feed
+   the finale the hands the games above actually produced.
+
+                                        finale
+   standalone, as printed                 50.2%
+   campaign hand-off, Easy                52.1%
+   campaign hand-off, Standard            51.6%
+   campaign hand-off, Hard                51.8%
+   campaign hand-off, Nobulous            50.4%
+
+4. CARRY-FORWARD RULES - do the four documents agree?
+
+   rules/bat.html   retains 'the ones they held when the battle
+                    began... it does not matter whether the card
+                    or its holder survived', with Tyrant Splices
+                    as the Candidates
+   rules/nrj.html   agrees - checked on this run
+   rules/bat.html   self-consistent - checked on this run
+   rules/nap.html   3 Final Exams faced + 3 unused = 6          ok
+   rules/aos.html   3 Advanced Programs faced + 3 unused = 6    ok
+
+   Two copies of the old rule were stale when the audit ran and
+   both have been corrected. nrj.html's Research Pool table
+   predated the bat.html rewrite; bat.html's own knockout step
+   also still said a knocked-out Rat's Upgrades 'become
+   candidates rather than retained cards', three paragraphs from
+   the rule saying it does not matter whether the card or its
+   holder survived - 'the Rats are not the imposters, they chose
+   what went into one, and winning proves the choice was right.'
+
+5. THE PLAYTEST TABLE - the other place the hand-off is entered
+
+   playtest/dist/suite.js keeps the Research Pool as a COUNT of 18
+   and six number inputs for what is being spent, because the
+   player holds the physical cards. Three things came out of
+   auditing it:
+
+   fixed   drawNRJ guarded on `if(state.nrj.current||...)`, a
+           falsy test on a card INDEX. Scenario index 0 is The
+           Physician's Greeting, so with that card on the table
+           pressing Reveal again silently discarded it, drew a
+           replacement and counted no attempt. Verified in the
+           running app before and after: current 0 -> 7 with the
+           attempt count unmoved, now unchanged. Every other read
+           of nrj.current already used === null.
+   fixed   the six spend inputs had no maximum, so a slip could
+           spend more cards of a kind than the pool holds. Caps
+           are now 3 per retained kind, 1 for the Specimen, 9 for
+           wrong-category.
+   fixed   `eligibleAvoid` was a flat 3 and the pool-mode selector
+           only changed the overlay label. These were one issue:
+           the app could not derive the avoid count because it
+           tracked the pool as a COUNT of 18 rather than as
+           cards, and standalone mode offered a random sample
+           without dealing one.
+
+           Standalone mode now deals the 18 cards rules/nrj.html
+           describes - 3 retained and 3 Candidates per game,
+           retained AoS randomised Stable/Overheated
+           independently, BAT held to at most 1 Specimen - and
+           the player spends them by clicking. So the Target
+           reduction is computed from the cards actually spent, a
+           spent card is gone for the rest of the finale, the
+           avoid count is read off the pool (3 to 5, as section 2
+           predicts), and 'The Long Argument: spend at most one
+           NAP card' is now enforceable and enforced. Avoiding
+           discards a Candidate before a retained Overheated
+           Program, since a Candidate reduces nothing anyway.
+
+           Campaign mode keeps the manual tally - there the
+           player holds the physical cards - and gains one setup
+           input, how many retained Overheated Programs were
+           banked, which is exactly what the avoid count needed.
+   fixed   drawNRJ rebuilt the pool when the Scenario deck ran
+           empty, which silently restarted the finale. Twelve
+           Scenarios against nine attempts means it cannot
+           happen, but losing a game in progress is a worse
+           answer than doing nothing, so it now does nothing.

@@ -1,0 +1,73 @@
+CANDIDATE REPAIRS FOR THE IMPOSTER SCENARIO, 3000 games per cell
+every dial defaults to the printed rules; see nrj.py
+
+                                               win | tension at commit    | pool shape                  | cliff
+                                                   |  mean    <=2   empty |  att1  att5  att9  bnsh | +-1HP
+----------------------------------------------------------------------------------------------------------------------
+the printed rules                            32.4% |   6.6     0%    0.0% |  17.0   4.2   3.0  0.52 |  27.7
+A  banish 1 die per missing success, max 2   78.0% |   6.5     0%    0.0% |  17.0   4.2   3.1  1.49 |  29.6
+A+ the same, max 4                           92.3% |   6.5     0%    0.0% |  17.0   4.2   3.2  4.22 |  16.1
+B  failure trade may banish exhausted dice  100.0% |   6.4     0%    0.0% |  17.0   4.2   3.0  8.31 |   0.0
+C  recover 1 extra die after a success       56.1% |   7.3     0%    0.0% |  17.0   5.0   3.4  0.58 |  21.7
+C+ recover 2 extra dice after a success      73.7% |   8.2     0%    0.0% |  17.0   6.0   4.7  0.69 |  14.8
+D  every printed Target -2                   89.8% |   7.4     0%    0.0% |  17.0   4.6   3.8  0.63 |  11.3
+D+ every printed Target -3                   98.4% |   8.4     0%    0.0% |  17.0   6.1   4.2  0.75 |   2.2
+E  Suspicion capped at 3                     32.4% |   6.6     0%    0.0% |  17.0   4.2   3.0  0.52 |  27.7
+A+B together                                100.0% |   6.5     0%    0.0% |  17.0   4.2   3.1  6.95 |   0.0
+A+C together                                 95.7% |   7.5     0%    0.0% |  17.0   5.2   4.0  1.76 |   7.5
+A+B+E together                              100.0% |   6.5     0%    0.0% |  17.0   4.2   3.1  6.95 |   0.0
+B+D  trade payable, Targets -2              100.0% |   7.5     0%    0.0% |  17.0   4.7   3.7  3.34 |   0.0
+F  REC -1 per 2 Suspicion                    35.6% |   6.4    18%    0.0% |  17.0   4.0   2.1  0.52 |  27.4
+F+ REC -1 per Suspicion                      27.9% |   6.2    32%    0.0% |  17.0   3.4   1.3  0.53 |  20.4
+G  1 committed die banished on a failure     32.3% |   6.5     0%    0.0% |  17.0   4.2   3.0  4.36 |  27.5
+G+ 2 committed dice banished on a failure    32.0% |   6.5     0%    0.0% |  17.0   4.1   3.0  8.20 |  27.2
+F+G  floor falls and failure drains          34.5% |   6.4    18%    0.0% |  17.0   4.0   2.1  4.32 |  27.2
+F+G+D  the same, Targets -2                  88.4% |   7.3     6%    0.0% |  17.0   4.5   3.5  2.37 |  10.1
+F+G+D+ the same, Targets -3                  96.5% |   8.3     5%    0.0% |  17.0   6.0   4.0  1.89 |   3.5
+F+G+C+D  plus recover 1 on a success         94.0% |   8.7     3%    0.0% |  17.0   6.4   4.8  1.99 |   4.6
+H  REC = 3 - Suspicion, floor 0              28.6% |   6.1    32%    9.2% |  17.0   3.3   0.9  0.52 |  20.4
+H  the same, 5 starting Health  <<< RECOMMENDED   50.4% |   5.8    35%   13.7% |  17.0   3.3   0.7  0.53 |  21.2
+H  the same plus partial payment (redundant)   82.0% |   6.1    24%    5.7% |  17.0   3.9   1.1  0.86 |  15.3
+----------------------------------------------------------------------------------------------------------------------
+
+for scale, dicetension.py on the three games:
+  NAP  (Standard)   mean 4.3   <=2 32%   empty 3.2%
+  AoS  (Standard)   mean 6.2   <=2 22%   empty 0.9%
+  a point of Tyrant Health in BAT is worth about 4 points of win
+  rate; a point of Imposter Health is worth 20 to 30.
+
+WHAT THE TENSION COLUMN SAYS. Only the candidates that touch the
+RECOVERY FLOOR move it. A, B, D, E and G leave `<=2` at 0% and
+`empty` at 0.0% however far they move the win rate - G banishes
+eight dice a game and changes the tension not at all. The reason
+is that 'recover up to REC exhausted dice' refills the pool to a
+fixed floor every attempt whatever happened, so the pool cannot
+trend toward zero and running out cannot become a worry. Win rate
+is reachable with any dial here; tension is reachable only by
+making the floor itself fall.
+
+RECOMMENDED: H. One line on the Imposter card -
+  "Your REC is 3 minus the number of cards in the Suspicion row."
+plus starting Health 5 rather than 4. No new components: the
+Suspicion row is already face-up on the table, and it already
+drives the Target climb, so the more the Council suspects you the
+less you recover. It lands at the middle of the community band
+with the highest dice tension in the set, and the pool declines
+17 -> 3.3 -> 0.7 across the nine attempts instead of sitting on
+a floor of 3. Partial payment on top is redundant and pushes it
+to 82%.
+
+AND IT GIVES THE FINALE A DIFFICULTY DIAL, which it has never
+had. Starting Health, everything else as printed:
+
+                    win    <=2   empty
+   Nobulous        9.6%    26%    2.9%  (3 Health)
+   Hard           28.6%    32%    9.2%  (4 Health)
+   Standard       50.4%    35%   13.7%  (5 Health)
+   Easy           70.9%    37%   16.0%  (6 Health)
+
+The rungs are wider than the other three games', because nine
+pass/fail attempts against a small failure budget amplify any
+dial about ninefold. That steepness is the finale's real
+structural problem and it is not fixed here - but it is what
+makes one number serve as a four-rung ladder.

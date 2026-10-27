@@ -1,0 +1,137 @@
+THE IMPOSTER SCENARIO AND THE DICE POOL, 4000 games each
+17 dice, 5 HP / STR 2 / REC 3, 9 attempts
+win rate 50.3%
+
+1. TENSION - dice available when the game asks you to commit
+   the same measurement dicetension.py makes of the other three
+
+                               mean     <=2    empty  |   trough      <=2   empty
+   Imposter Scenario            5.8     35%    13.5%  |      0.6      97%   62.9%
+   NAP  (Standard)              4.3     32%     3.2%  |      0.9      92%   47.9%
+   AoS  (Standard)              6.2     22%     0.9%  |      1.2      86%   22.0%
+
+   Before repair H the finale read 6.6 mean, 0% at two dice or
+   fewer and 0.0% empty, with a per-game trough of 3.0 - it never
+   starved and never even got low, because the pool sat on a
+   fixed REC floor through the whole second half. It now leads
+   the set on five of these six columns - every column that
+   measures RUNNING OUT - and the floor it rested on is gone.
+   NAP's mean pool is lower, 4.3 against 5.8, so on the mean
+   alone NAP is the tighter game.
+
+2. ECONOMY - the pool, the Target, and the gap between them
+
+   attempt           1     2     3     4     5     6     7     8     9
+   dice available  17.0  11.5   5.5   3.8   3.3   2.8   2.0   1.2   0.7
+   dice reach      17.6  11.4   5.6   4.2   3.8   3.2   2.3   1.4   0.8
+   Target printed   8.8   9.0   9.2   9.3   9.4   9.8  10.5  11.2  11.7
+   Target spent     8.8   8.5   4.4   3.7   5.1   7.3   9.6  11.0  11.6
+   SHORTFALL      -8.8  -3.0  -1.2  -0.5   1.3   4.1   7.3   9.5  10.9
+
+   committed per attempt   3.98 dice
+   spare after committing  1.82 dice; no spare at all in 57% of
+                           commit decisions - the whole pool goes in
+   failed attempts         4.37 of 9, against 5 Health
+
+3. THE TRADE - 'lose 1 Health OR banish 2 available dice'
+
+   The choice is resolved between the commit and the recovery -
+   rules/nrj.html steps 4, 5, 6 - which is the trough of the pool.
+
+   available dice at that instant   0.35 (mean)
+   none at all                      92.2% of failures
+   able to pay in dice              6.1% of failures
+   actually paid in dice            6.2% of failures
+   banished over a whole game       0.54 dice of 17
+
+   So the one clause that makes dice a currency is unavailable in
+   the great majority of the failures that offer it. The printed
+   rule even anticipates this - 'if you cannot banish 2 available
+   dice, Health loss is mandatory' - so the finale is a Health
+   race with a dice floor, not a dice-management puzzle. Same
+   shape as BAT's Accelerated Trials: a cost billed after the
+   spend finds an empty pool.
+
+4. DICE CLAUSES - the Scenarios that restrict the dice themselves
+
+   Six of the 24 Council Tests constrain which dice may
+   contribute, and none was modelled until this audit.
+
+                                     drawn  blocks it
+   The Long Session                   1480        69%
+   An Open Window                     1527        56%
+   Order of Precedence                1442        58%
+   An Old Injury                      1467        39%
+   The Ceremonial Seal                1434        27%
+   The Darkened Corridor              1452         0%
+
+   all six modelled       50.3%
+   all six switched off   52.2%
+
+   Three of them block the majority of the attempts they appear
+   in, and the whole set is worth -1.9 points. That is the
+   finding, not a reassurance: by the time these clauses bite,
+   the attempt was already lost, and being blocked SAVES the dice
+   and the Research cards it would have wasted. There is nothing
+   left to squeeze.
+
+   The color clauses only have teeth when the pool is thin, and
+   repair H gave two of the three some: they used to block 0% of
+   their attempts and now block 39% and 27%, because a pool of
+   two or three dice may simply not hold the Purple the card
+   asks for. The third bars YELLOW, and a pool recovered
+   strongest-first holds none, so it still blocks 0% - inert as
+   printed. The other two are a tax on the recovery decision -
+   recover the strongest dice and you keep the Purple but lose
+   the spread; recover for color and you throw weaker dice.
+   That is a decision the finale did not previously contain.
+
+5. POLICY - four choices in nrj.py that are not printed rules
+
+   recover the last dice appended             29.9%  (-20.4)
+   banish the last die in the list            50.3%  (+0.0)
+   withhold the trade below 8 dice            50.3%  (+0.0)
+   commit nothing at an unreachable Target    49.2%  (-1.1)
+
+   Recovering the worst dice rather than the best costs 20
+   points on its own, and it was an accident of list order:
+   commit() filled the exhausted pile strongest-first and REC
+   popped the end of it. The two banish dials are worth +0.0 and
+   +0.0, for the reason section 3 gives - the trade is already
+   unpayable, so how it would be paid changes nothing. Committing
+   at a Target the pool cannot reach was tested and KEPT:
+   withholding the dice is worth -1.1, because 'expected
+   successes below the Target' is not the same as impossible, and
+   a long throw can still crit its way home.
+
+6. DIALS - one step each
+
+   REC 2            37.0%  (-13.4)   mean pool  5.0
+   REC 4            73.0%  (+22.7)   mean pool  6.8
+   3 Health          8.9%  (-41.4)   mean pool  6.6
+   5 Health         50.3%  (+0.0)   mean pool  5.8
+   STR 3            78.5%  (+28.2)   mean pool  6.1
+   8 attempts       71.2%  (+20.8)   mean pool  6.2
+   10 attempts      28.4%  (-21.9)   mean pool  5.6
+
+   Every dial is a cliff. One point of REC is worth 13 to 23
+   points of win rate and one point of Health 0 to 41, against
+   roughly 4 for a point of Tyrant Health in BAT. Nine attempts
+   each near the pass/fail line, with Health covering only three
+   failures, is a binomial knife edge - the finale is fragile
+   rather than tense, and it cannot be tuned with these dials
+   because there is no setting between far too easy and far too
+   hard.
+
+7. RESEARCH POOL - the other budget
+
+   Target reduction bought   17.7 over the finale
+   cards left unspent        5.8 of 18
+   of those, retained        0.0 (the rest reduce nothing)
+
+   Not one retained card goes unspent: everything left in the
+   pool at the end is a Candidate, which reduces nothing. The
+   budget is spent out by the fourth attempt - see the Target
+   rows in section 2, where the spent Target falls to 3.7 and is
+   back at the printed value by attempt 7. The finale's whole
+   reduction budget covers four attempts of nine.
