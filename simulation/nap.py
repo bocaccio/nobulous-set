@@ -30,7 +30,7 @@ WHAT IS NOT MODELED
 """
 import random
 
-from dice import COLORS, EV, roll
+from dice import COLORS, EV, policy_value, roll
 
 # (target, demand, recovery dot, skulls) for the 26 Tasks, deck order.
 TASKS = [
@@ -123,6 +123,43 @@ TIERS = ["none", "I", "II", "III"]
 # committing a fresh batch. Rerolling a miss is free; rerolling a hit is only
 # worth it when a Crit is the one thing that still finishes the card.
 PUSH_REROLL = True
+# How many expected successes to throw past an Assignment's requirement.
+# RETUNED 2026-10-27 from 1 to -1, which is worth +33.5 points at Standard
+# and +31 to +35 at every difficulty. The old value was reasoned from "a
+# roll that falls short locks its dice onto the card as stored progress",
+# which is true and is the argument for the OPPOSITE policy: stored progress
+# is carried, so a shortfall costs only the upkeep while the card sits,
+# while every success past the requirement is simply lost. Deliberately
+# under-throwing by one is the cheapest way to buy progress. The sweep has
+# a clear interior peak - 42.5 / 57.8 / 65.2 / 55.3 / 44.0% at +1 / 0 / -1 /
+# -2 / -3 - so this is not "commit nothing" winning by degenerate means.
+COMMIT_MARGIN = -1
+
+# ---------------------------------------------------------------------------
+# PLAYER MODEL. simulation/players.py sets these to approximate kinds of
+# human player. The defaults are the calibrated policy every other tool in
+# this package runs on, so leaving them alone changes nothing.
+#   DICE_ORDER    "strongest" take the best die first - the tuned policy
+#                 "weakest"   save the good dice for later, a common error
+#                 "random"    no ordering at all
+#   COMMIT_MARGIN how many expected successes to throw past the requirement
+# ---------------------------------------------------------------------------
+# RETUNED 2026-10-27 to "weakest", worth +8.9 points on its own and +33.5
+# together with the commit margin. NAP charges nothing for a short roll, so
+# the strong dice are better kept for the Assignments that need them; BAT is
+# the mirror image, where a wall must fall in one blow and taking the
+# strongest dice is worth +25.8.
+DICE_ORDER = "weakest"
+
+
+def pick_order(seq, rng=None):
+    """The order a player takes dice in, per DICE_ORDER."""
+    if DICE_ORDER == "random" and rng is not None:
+        out = list(seq)
+        rng.shuffle(out)
+        return out
+    return sorted(seq, key=lambda c: EV[c], reverse=DICE_ORDER != "weakest")
+
 TARGET_DELTA = 0   # flat rise on every printed Assignment Target
 
 STR_CAPS_COMPLETIONS = False
@@ -133,8 +170,9 @@ SPLIT_ROLLS = True
 # How many cards one roll may be spread over; beyond 4 the row runs out anyway.
 CARDS_PER_ROLL = 4
 # A second difficulty lever, and it flattens out: at 4 Setbacks the goal runs
-# 42.9% at 6 Credits, 29.1% at 8, 21.7% at 10, then only 20.8 / 18.0 / 16.5%
-# at 12 / 14 / 16. The shortfall penalty is bounded by the dice you still
+# 76.3% at 6 Credits, 65.8% at 8, 55.6% at 10, then only 52.4 / 50.1 / 48.0%
+# at 12 / 14 / 16. Raising the goal is the obvious dial for re-pitching NAP
+# after the retune, and on its own it cannot get below about 48%. The shortfall penalty is bounded by the dice you still
 # have - past about 10 Credits you are always fully drained and further
 # shortfall is nearly free. Raising the Final Exam Targets is not bounded
 # that way.
@@ -424,7 +462,7 @@ class Game(object):
         leads with a matching die when it holds one.
         """
         want = DOT_COLOR[card.dot]
-        pool = sorted(self.available, key=lambda c: -EV[c])
+        pool = pick_order(self.available, self.rng)
         take = []
         if want in pool:
             take.append(want)
@@ -450,7 +488,7 @@ class Game(object):
         # falls short locks its dice onto the card as stored progress - so
         # under-committing drains the pool far faster than over-committing.
         expected = sum(EV[c] for c in take)
-        want = card.remaining() + 1
+        want = card.remaining() + policy_value(COMMIT_MARGIN, self)
         for c in pool:
             if expected >= want:
                 break
@@ -619,7 +657,7 @@ class Game(object):
                 # the throw is expected to cover what is still missing.
                 add = []
                 expected = sum(results) + sum(EV[take[i]] for i in again)
-                for c in sorted(self.available, key=lambda c: -EV[c]):
+                for c in pick_order(self.available, self.rng):
                     if expected >= need:
                         break
                     add.append(c)
@@ -1051,7 +1089,7 @@ class Game(object):
                         self.exhausted.remove(c)
                         self.available.append(c)
                         seen.add(c)
-            take = sorted(self.available, key=lambda c: -EV[c])
+            take = pick_order(self.available, self.rng)
             got, used = 0.0, []
             for c in take:
                 if got >= target:

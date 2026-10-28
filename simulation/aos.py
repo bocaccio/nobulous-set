@@ -11,7 +11,7 @@ to win.
 """
 import random
 
-from dice import COLORS, EV, roll
+from dice import COLORS, EV, policy_value, roll
 
 ELEMENT_COUNTS = {
     "Routine": [3, 3, 3, 3, 3, 4, 3, 4],
@@ -125,6 +125,30 @@ COMPILER_ABILITY = "compile"
 # False the model throws the whole element again, which is how it behaved
 # before the base Strategy phase was modelled properly.
 PUSH_REROLL = True
+# Dice held back from each element. Target + 1 is a RULES cap and cannot be
+# exceeded, so this only ever fills less: 0 is the calibrated policy.
+FILL_MARGIN = 0
+
+# ---------------------------------------------------------------------------
+# PLAYER MODEL. simulation/players.py sets these to approximate kinds of
+# human player. The defaults are the calibrated policy every other tool in
+# this package runs on, so leaving them alone changes nothing.
+#   DICE_ORDER    "strongest" take the best die first - the tuned policy
+#                 "weakest"   save the good dice for later, a common error
+#                 "random"    no ordering at all
+#   COMMIT_MARGIN how many expected successes to throw past the requirement
+# ---------------------------------------------------------------------------
+DICE_ORDER = "strongest"
+
+
+def pick_order(seq, rng=None):
+    """The order a player takes dice in, per DICE_ORDER."""
+    if DICE_ORDER == "random" and rng is not None:
+        out = list(seq)
+        rng.shuffle(out)
+        return out
+    return sorted(seq, key=lambda c: EV[c], reverse=DICE_ORDER != "weakest")
+
 # How an extra Strategy roll works. "element" is the AoS rule, printed at
 # rules/aos.html:117 and implemented in playtest/dist/app.js: the whole
 # element is thrown again and the new result replaces the old one, better or
@@ -145,6 +169,21 @@ CORRUPT_WITHHOLD = 2
 # whose rewards change an outcome rather than an allocation choice - "treat one
 # failed element as successful" and "recover 2 exhausted dice".
 BACKDOOR_CLAIMS = 2
+
+
+# "On a Catastrophic Failure you may exhaust 2 misses on failed Elements to
+# negate the Health loss." Agreed with Jon 2026-10-28, after Cloudspire,
+# where misses loaded on a spire absorb damage. Note the dice on a failed
+# Element were exhausting anyway, so this costs nothing beyond the misses
+# being there - which is why it fires on 68% of Catastrophic Failures. Set
+# to 0 to recover the rule as printed before 2026-10-28.
+MISSES_TO_NEGATE = 2
+SAVES = None          # set to a list to record saves per game
+# Instrumentation, like FIRINGS below: set to a Counter to record how many
+# misses were sitting on the failed Elements each time a Program reaches
+# Catastrophic Failure. That distribution is what decides whether the
+# negate rule fires often enough to be worth printing.
+NEGATE_STATS = None
 
 
 def fresh_dice():
@@ -261,7 +300,7 @@ class Game(object):
         in 266,000 element resolutions across all six Technicians, because
         going past it is never worth the dice, so it became a limit.
         """
-        pool = sorted(self.available, key=lambda c: -EV[c])
+        pool = pick_order(self.available, self.rng)
         plan = [[] for _ in targets]
         # Redundancy: the two biggest Targets get the wider threshold.
         self.wide = set()
@@ -280,6 +319,7 @@ class Game(object):
             cap = t if (i == 0 and self.intf == "cap_first") else t + 1
             if i in getattr(self, "wide", set()):
                 cap = t + 2
+            cap = max(1, cap + policy_value(FILL_MARGIN, self))
             while pool and len(plan[i]) < cap:
                 plan[i].append(pool.pop(0))
         return plan
@@ -321,6 +361,7 @@ class Game(object):
         plan = self.allocate(targets)
         rerolls = max(0, self.str_ - 1)
         failed = 0
+        misses_on_failed = 0   # misses available to negate a Catastrophic
         leaked = 0
         recovery = max(0, self.rec + RECOVERY_DELTA)   # plus the Optimal bonus
         used_debug = used_optimize = False
@@ -420,6 +461,7 @@ class Game(object):
                             FIRINGS["  both over-rules at once"] += 1
             if miss:
                 failed += 1
+                misses_on_failed += values.count(0)
             if used_reroll or miss:
                 self.exhausted += dice          # the whole Element exhausts
             else:
@@ -477,7 +519,15 @@ class Game(object):
         for _ in range(min(recovery, len(self.exhausted))):
             self.available.append(self.exhausted.pop())
         if failed >= 2:
-            self.hp -= 1
+            if NEGATE_STATS is not None:
+                NEGATE_STATS[min(misses_on_failed, 9)] += 1
+            if (MISSES_TO_NEGATE
+                    and misses_on_failed >= MISSES_TO_NEGATE):
+                misses_on_failed -= MISSES_TO_NEGATE
+                if SAVES is not None:
+                    SAVES[-1] += 1
+            else:
+                self.hp -= 1
         elif failed == 0 and deck in PROGRAM_REWARDS:
             self.reward(PROGRAM_REWARDS[deck][pid], slot)
         self.completed += 1

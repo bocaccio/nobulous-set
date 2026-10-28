@@ -1,0 +1,59 @@
+
+THE RESEARCH POOL - what the cards you bring are worth
+==================================================================
+20000 finales per cell, standalone, retuned policy
+
+1. THE SPAN
+   no Research Pool at all               0.0%
+   every card a Candidate                0.0%
+   the printed pool                     61.6%   <-- as printed
+   18 retained, best value              98.5%
+
+   So the pool is worth 61.6 points against bringing nothing,
+   and a perfect hand would add 36.9 more.
+
+2. HOW MANY CARDS - useful (retained) cards, rest Candidates
+   A flat value mix - NAP 2, BAT 3, AoS 4 - so the 9-card row
+   reads below the printed pool, whose nine include Specimens at
+   5 and Stable Programs at 4. The shape is the point, not the
+   level: this is where the cliff is.
+   useful          win vs printed
+   0              0.0%    -61.6
+   1              0.0%    -61.6
+   2              0.0%    -61.5
+   3              0.2%    -61.3
+   4              1.0%    -60.6
+   5              3.1%    -58.5
+   6              9.8%    -51.7
+   7             19.8%    -41.7
+   8             34.8%    -26.8
+   9             50.5%    -11.0   <-- printed has 9
+   12            74.7%    +13.2
+   18            90.4%    +28.8
+
+3. WHOSE CARDS - drop everything one game contributes
+                         win vs printed
+   without NAP         13.5%    -48.1
+   without BAT         12.4%    -49.1
+   without AoS          7.9%    -53.7
+
+4. WHICH CARDS - the choices a real campaign actually makes
+                                 win vs printed
+   BAT banks a Specimen        63.0%     +1.4
+   BAT banks no Specimen       61.6%     +0.1
+   BAT banks 1 card only       27.7%    -33.9
+   AoS all Stable              68.0%     +6.4
+   AoS all Overheated          56.4%     -5.1
+   best realistic hand         68.5%     +7.0
+   worst realistic hand        56.8%     -4.8
+
+   You cannot arrive with less than a full pool: rules/nrj.html
+   says to win all three games and replay any you lose, and that
+   each WON game contributes 6. So section 2 is a fact about the
+   design, not a risk a campaign runs - what a player can
+   actually vary is the spread in this section.
+
+5. DOES THE POOL EVEN BIND?
+   cards spent per finale         8.4 of 18
+   useful cards left unspent      0.0 of 9
+   finales that used every one   100.0%

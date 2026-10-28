@@ -282,17 +282,24 @@ is a legal start.
 
 | | Specimens | Tyrant Health | win rate |
 |---|---|---|---|
-| Easy | 5 | 9 | 55.4% |
-| Standard | 6 | 10 | 46.5% |
-| Hard | 7 | 12 | 33.4% |
-| Nobulous | 8 | 14 | 22.4% |
+| Easy | 5 | 9 | 62.7% |
+| Standard | 6 | 10 | 53.2% |
+| Hard | 7 | 12 | 40.1% |
+| Nobulous | 8 | 14 | 28.1% |
 
 Win rates are the no-NRJ column of the cross-tab in `simulation/RESULTS.txt`
-(rerun 2026-10-27, 20,000 games a cell): the difficulty dial alone, with no
-tier module, which is what these rows are. The tier columns and the per-Rat
-spread are in that file. A point of Tyrant Health is worth about 4 points of
-win rate, so the dial is far flatter than the finale's Health, where a point
-is worth about 21.
+(rerun 2026-10-27 after the policy retune, 20,000 games a cell): the
+difficulty dial alone, with no tier module, which is what these rows are.
+The tier columns and the per-Rat spread are in that file. A point of Tyrant
+Health is worth about 6 points of win rate, so the dial is far flatter than
+the finale's Health, where a point is worth 19 to 41.
+
+**These rose about 7 points in the retune and the dial was never re-pitched.**
+BAT's battle policy had been sitting on the wrong side of a threshold cliff
+(`THRESHOLD_MARGIN` 1.16 measures 46.3%, 1.17 measures 54.1%). Standard now
+lands inside the 47-57% community band, which is the first time any game in
+the set has, but Easy at 62.7% is above it. See the CAVEATS block in
+RESULTS.txt.
 
 These are about 4 points above the ladder the model reported before the
 rerun, because the +1 it carried in `TARGET_DELTA` had been adopted onto the
@@ -758,11 +765,23 @@ Each of these only appears a few turns in.
 Not your job to fix, but worth knowing if Jon raises them:
 
 - **AoS runs low from Standard down** — 35.0% at Standard and 18.0% at
-  Nobulous against a 47-57% community band, the lowest of the three games.
+  Nobulous against a 47-57% community band, the lowest of the three games,
+  and the only game the 2026-10-27 policy retune did not move at all: its
+  policy was already the best available, so this is the game and not the
+  player.
   The old entry here called out "AoS Unstable" at a 1-in-7 win rate; that
   was a whole-deck difficulty, and difficulty is now the Routine /
   Specialized / Unstable MIX, so the hard end is the Nobulous 2/3/3 mix.
   Still labelled experimental in the rulebook.
+- **Every difficulty dial in the set now needs re-pitching.** The policy
+  retune of 2026-10-27 moved NAP from 42.1% to 76.0% at Standard, the
+  finale from 50.9% to 61.6% and BAT from 46.5% to 53.2%, because the
+  models had been playing three of the four games 6 to 34 points below
+  their own best available policy. Every Credit goal, Health value and
+  Target was calibrated against the old play. Nothing has been re-pitched.
+- **NAP has almost no dice pressure left.** Under the retuned policy 2% of
+  its commit decisions happen at two dice or fewer, against 32% before,
+  with a mean pool of 10.9 dice. It wins 76% and never feels the pool.
 - **NAP Impostor Tasks have no recovery-color dot**, unlike every other
   Assignment. A rules decision is pending.
 - **Two rules questions are open**, both recorded at the end of

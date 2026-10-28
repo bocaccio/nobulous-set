@@ -1,14 +1,14 @@
 THE IMPOSTER SCENARIO AND THE DICE POOL, 4000 games each
 17 dice, 5 HP / STR 2 / REC 3, 9 attempts
-win rate 50.3%
+win rate 61.7%
 
 1. TENSION - dice available when the game asks you to commit
    the same measurement dicetension.py makes of the other three
 
                                mean     <=2    empty  |   trough      <=2   empty
-   Imposter Scenario            5.8     35%    13.5%  |      0.6      97%   62.9%
-   NAP  (Standard)              4.3     32%     3.2%  |      0.9      92%   47.9%
-   AoS  (Standard)              6.2     22%     0.9%  |      1.2      86%   22.0%
+   Imposter Scenario            5.0     35%    11.4%  |      0.5      99%   64.0%
+   NAP  (Standard)             11.0      2%     0.5%  |      6.5       8%    0.4%
+   AoS  (Standard)             13.7      0%     0.0%  |      8.2       1%    0.0%
 
    Before repair H the finale read 6.6 mean, 0% at two dice or
    fewer and 0.0% empty, with a per-game trough of 3.0 - it never
@@ -22,27 +22,27 @@ win rate 50.3%
 2. ECONOMY - the pool, the Target, and the gap between them
 
    attempt           1     2     3     4     5     6     7     8     9
-   dice available  17.0  11.5   5.5   3.8   3.3   2.8   2.0   1.2   0.7
-   dice reach      17.6  11.4   5.6   4.2   3.8   3.2   2.3   1.4   0.8
-   Target printed   8.8   9.0   9.2   9.3   9.4   9.8  10.5  11.2  11.7
-   Target spent     8.8   8.5   4.4   3.7   5.1   7.3   9.6  11.0  11.6
-   SHORTFALL      -8.8  -3.0  -1.2  -0.5   1.3   4.1   7.3   9.5  10.9
+   dice available  17.0   8.3   3.5   3.5   3.2   2.8   1.8   1.0   0.4
+   dice reach      17.6   9.4   4.1   4.0   3.8   3.3   2.2   1.2   0.5
+   Target printed   8.9   8.9   9.0   8.9   9.1   9.4  10.3  11.1  11.8
+   Target spent     8.9   7.9   2.9   3.4   4.7   7.7  10.0  11.1  11.8
+   SHORTFALL      -8.7  -1.5  -1.2  -0.6   0.9   4.3   7.9   9.9  11.3
 
-   committed per attempt   3.98 dice
-   spare after committing  1.82 dice; no spare at all in 57% of
+   committed per attempt   4.35 dice
+   spare after committing  0.68 dice; no spare at all in 85% of
                            commit decisions - the whole pool goes in
-   failed attempts         4.37 of 9, against 5 Health
+   failed attempts         4.23 of 9, against 5 Health
 
 3. THE TRADE - 'lose 1 Health OR banish 2 available dice'
 
    The choice is resolved between the commit and the recovery -
    rules/nrj.html steps 4, 5, 6 - which is the trough of the pool.
 
-   available dice at that instant   0.35 (mean)
-   none at all                      92.2% of failures
-   able to pay in dice              6.1% of failures
-   actually paid in dice            6.2% of failures
-   banished over a whole game       0.54 dice of 17
+   available dice at that instant   0.11 (mean)
+   none at all                      97.8% of failures
+   able to pay in dice              2.1% of failures
+   actually paid in dice            1.9% of failures
+   banished over a whole game       0.16 dice of 17
 
    So the one clause that makes dice a currency is unavailable in
    the great majority of the failures that offer it. The printed
@@ -58,18 +58,18 @@ win rate 50.3%
    contribute, and none was modelled until this audit.
 
                                      drawn  blocks it
-   The Long Session                   1480        69%
-   An Open Window                     1527        56%
-   Order of Precedence                1442        58%
-   An Old Injury                      1467        39%
-   The Ceremonial Seal                1434        27%
-   The Darkened Corridor              1452         0%
+   An Open Window                     1593        75%
+   The Long Session                   1536        74%
+   Order of Precedence                1500        73%
+   An Old Injury                      1559        33%
+   The Ceremonial Seal                1574        22%
+   The Darkened Corridor              1502         0%
 
-   all six modelled       50.3%
-   all six switched off   52.2%
+   all six modelled       61.7%
+   all six switched off   63.5%
 
    Three of them block the majority of the attempts they appear
-   in, and the whole set is worth -1.9 points. That is the
+   in, and the whole set is worth -1.8 points. That is the
    finding, not a reassurance: by the time these clauses bite,
    the attempt was already lost, and being blocked SAVES the dice
    and the Research cards it would have wasted. There is nothing
@@ -88,34 +88,34 @@ win rate 50.3%
 
 5. POLICY - four choices in nrj.py that are not printed rules
 
-   recover the last dice appended             29.9%  (-20.4)
-   banish the last die in the list            50.3%  (+0.0)
-   withhold the trade below 8 dice            50.3%  (+0.0)
-   commit nothing at an unreachable Target    49.2%  (-1.1)
+   recover the last dice appended             60.9%  (-0.8)
+   banish the last die in the list            60.5%  (-1.2)
+   withhold the trade below 8 dice            61.7%  (+0.0)
+   commit nothing at an unreachable Target    59.4%  (-2.3)
 
-   Recovering the worst dice rather than the best costs 20
+   Recovering the worst dice rather than the best costs 1
    points on its own, and it was an accident of list order:
    commit() filled the exhausted pile strongest-first and REC
-   popped the end of it. The two banish dials are worth +0.0 and
+   popped the end of it. The two banish dials are worth -1.2 and
    +0.0, for the reason section 3 gives - the trade is already
    unpayable, so how it would be paid changes nothing. Committing
    at a Target the pool cannot reach was tested and KEPT:
-   withholding the dice is worth -1.1, because 'expected
+   withholding the dice is worth -2.3, because 'expected
    successes below the Target' is not the same as impossible, and
    a long throw can still crit its way home.
 
 6. DIALS - one step each
 
-   REC 2            37.0%  (-13.4)   mean pool  5.0
-   REC 4            73.0%  (+22.7)   mean pool  6.8
-   3 Health          8.9%  (-41.4)   mean pool  6.6
-   5 Health         50.3%  (+0.0)   mean pool  5.8
-   STR 3            78.5%  (+28.2)   mean pool  6.1
-   8 attempts       71.2%  (+20.8)   mean pool  6.2
-   10 attempts      28.4%  (-21.9)   mean pool  5.6
+   REC 2            35.1%  (-26.6)   mean pool  4.3
+   REC 4            78.9%  (+17.2)   mean pool  5.9
+   3 Health          2.2%  (-59.5)   mean pool  5.7
+   5 Health         61.7%  (+0.0)   mean pool  5.0
+   STR 3            77.8%  (+16.1)   mean pool  5.2
+   8 attempts       80.0%  (+18.2)   mean pool  5.4
+   10 attempts      20.7%  (-41.0)   mean pool  4.8
 
-   Every dial is a cliff. One point of REC is worth 13 to 23
-   points of win rate and one point of Health 0 to 41, against
+   Every dial is a cliff. One point of REC is worth 17 to 27
+   points of win rate and one point of Health 0 to 59, against
    roughly 4 for a point of Tyrant Health in BAT. Nine attempts
    each near the pass/fail line, with Health covering only three
    failures, is a binomial knife edge - the finale is fragile
@@ -125,8 +125,8 @@ win rate 50.3%
 
 7. RESEARCH POOL - the other budget
 
-   Target reduction bought   17.7 over the finale
-   cards left unspent        5.8 of 18
+   Target reduction bought   18.3 over the finale
+   cards left unspent        5.7 of 18
    of those, retained        0.0 (the rest reduce nothing)
 
    Not one retained card goes unspent: everything left in the

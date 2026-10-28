@@ -42,17 +42,28 @@ import random
 import statistics
 import sys
 
+import dicetension
 import nrj
 from dice import EV
 
 
 GAMES = 4000
 
-# dicetension.py's figures for the other three, for the same three columns.
-REFERENCE = [
-    ("NAP  (Standard)", 4.3, 32, 3.2, 0.9, 92, 47.9),
-    ("AoS  (Standard)", 6.2, 22, 0.9, 1.2, 86, 22.0),
-]
+def reference_rows(games):
+    """NAP and AoS on the same scale, MEASURED rather than copied.
+
+    This was a frozen copy of dicetension.py's printed figures, which went
+    stale as soon as NAP's commit policy was retuned - the comparison the
+    whole section rests on would have been against a player NAP no longer
+    has. Calling the tool costs a few seconds and cannot drift.
+    """
+    rows = []
+    for label, fn in (("NAP  (Standard)", dicetension.nap_game),
+                      ("AoS  (Standard)", dicetension.aos_game)):
+        r = dicetension.sample(fn, games)
+        rows.append((label, r["mean"], r["low"], r["starved"],
+                     r["trough"], r["tight"], r["dry"]))
+    return rows
 
 CLAUSE_CARDS = sorted(set(list(nrj.NEED_COLORS) + list(nrj.NEED_DISTINCT)
                           + list(nrj.NEED_COUNT) + list(nrj.FORBID_COLOR)))
@@ -232,7 +243,7 @@ def main(games=GAMES):
     m = tension(base)
     print("   %-24s %7.1f %6.0f%% %7.1f%%  | %8.1f %7.0f%% %6.1f%%"
           % (("Imposter Scenario",) + m))
-    for row in REFERENCE:
+    for row in reference_rows(max(600, games // 4)):
         print("   %-24s %7.1f %6.0f%% %7.1f%%  | %8.1f %7.0f%% %6.1f%%" % row)
     print()
     print("   Before repair H the finale read 6.6 mean, 0% at two dice or")

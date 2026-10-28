@@ -1,0 +1,39 @@
+
+THE PLAYER AT THE TABLE - 20000 games per cell
+==========================================================================
+                  - - Standard - -        - - Nobulous - -    finale
+profile         NAP    BAT    AoS      NAP    BAT    AoS       NRJ
+--------------------------------------------------------------------------
+strategic     76.0%  53.2%  35.0%    52.8%  28.1%  18.0%     61.6%
+cautious      29.8%  42.0%  35.0%    15.6%  22.0%  18.0%     46.5%
+novice        54.0%  45.1%  30.7%    30.3%  23.6%  15.6%     60.1%
+haphazard     29.2%  27.1%  32.5%    15.6%  13.7%  16.3%     33.6%
+pre-retune    42.1%  46.5%  35.0%    21.7%  22.4%  18.0%     50.9%
+
+  Against the strategic player, in points of win rate:
+--------------------------------------------------------------------------
+cautious     -46.2  -11.2   +0.0   -37.2   -6.1   +0.0    -15.0
+novice       -22.0   -8.1   -4.3   -22.4   -4.5   -2.3     -1.4
+haphazard    -46.8  -26.1   -2.6   -37.2  -14.3   -1.7    -28.0
+pre-retune   -33.9   -6.7   +0.0   -31.1   -5.6   +0.0    -10.7
+
+  DO THEY RUN OUT OF DICE? NAP's pool at every commit decision,
+  measured the way dicetension.py measures the shipping policy.
+--------------------------------------------------------------------------
+  profile          mean      <=2    empty  |   trough      dry
+  strategic        10.4       2%     0.3%  |      5.9     0.3%
+  cautious          7.7       5%     0.1%  |      4.6     0.1%
+  novice            9.1       4%     0.1%  |      4.7     0.3%
+  haphazard         7.5       5%     0.0%  |      4.6     0.0%
+  pre-retune        8.4       4%     0.0%  |      4.7     0.0%
+
+  How much the player matters, best profile to worst:
+    NAP Std    46.8 points
+    BAT Std    26.1 points
+    AoS Std     4.3 points
+    NAP Nob    37.2 points
+    BAT Nob    14.3 points
+    AoS Nob     2.3 points
+    NRJ        28.0 points
+
+  finished in 357s

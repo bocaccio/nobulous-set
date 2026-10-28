@@ -43,7 +43,7 @@ NOT MODELED: Research card effects beyond Target reduction.
 """
 import random
 
-from dice import COLORS, EV, EV_REROLL, roll
+from dice import COLORS, EV, EV_REROLL, policy_value, roll
 
 ATTEMPTS = 9
 START_HP = 5
@@ -109,6 +109,54 @@ RECOVER_PICK = "best"
 BANISH_PICK = "weakest"
 BANISH_FLOOR = 2
 COMMIT_HOPELESS = True
+# Expected successes thrown past the Target. RETUNED 2026-10-27 from 0 to
+# 2, worth +11.0 points. The old reasoning - that overthrowing costs the
+# next attempt more than it buys this one - had it backwards: a failed
+# attempt is gone for good AND leaves the Suspicion row one card taller,
+# which raises every later Target and lowers REC, so certainty now is
+# cheaper than certainty later. Margin 3 is worse again (58.4%), so this is
+# a peak and not a slope.
+COMMIT_MARGIN = 2
+
+# ---------------------------------------------------------------------------
+# PLAYER MODEL. simulation/players.py sets these to approximate kinds of
+# human player. The defaults are the calibrated policy every other tool in
+# this package runs on, so leaving them alone changes nothing.
+#   DICE_ORDER    "strongest" take the best die first - the tuned policy
+#                 "weakest"   save the good dice for later, a common error
+#                 "random"    no ordering at all
+#   COMMIT_MARGIN how many expected successes to throw past the requirement
+# ---------------------------------------------------------------------------
+# RETUNED 2026-10-27 to "weakest", worth about +1.1 at the new margin.
+# Small, and the honest caveat is that a RANDOM order measures about 0.6
+# better still (62.6% against 61.9%, four sigma at 40,000 games). Random is
+# not a policy a player can follow, so it is not installed; the "spread"
+# option below was an attempt to capture what it exploits and did not, so
+# what random is doing here is unexplained and open.
+DICE_ORDER = "weakest"
+
+
+def pick_order(seq, rng=None):
+    """The order a player takes dice in, per DICE_ORDER.
+
+    "spread" was an attempt to explain a RANDOM order beating both
+    strongest-first and weakest-first here, which no player would adopt.
+    Six Scenarios demand specific colours or three distinct ones, so the
+    guess was that what matters is what the pool still LOOKS like
+    afterwards: spend from the colour you hold most of, weakest copy first.
+    It measured level with weakest-first (61.9% against 61.9%), so colour
+    variety is NOT what the random order is exploiting. Kept for the
+    negative result; the question is still open.
+    """
+    if DICE_ORDER == "random" and rng is not None:
+        out = list(seq)
+        rng.shuffle(out)
+        return out
+    if DICE_ORDER == "spread":
+        held = list(seq)
+        return sorted(held, key=lambda c: (-held.count(c), EV[c]))
+    return sorted(seq, key=lambda c: EV[c], reverse=DICE_ORDER != "weakest")
+
 
 # (name, domain, category, printed Target) for the 24 Council Test Scenarios.
 SCENARIOS = [
@@ -358,7 +406,7 @@ class Game(object):
         return True
 
     def commit(self, target, name=None):
-        pool = sorted(self.legal_pool(name), key=lambda c: -EV[c])
+        pool = pick_order(self.legal_pool(name), self.rng)
         if not COMMIT_HOPELESS and \
                 sum(EV_REROLL[c] for c in pool) < target:
             # The attempt fails whether or not dice are thrown at it, so keep
@@ -379,7 +427,7 @@ class Game(object):
                 for c in [x for x in pool if x in want[0]][:want[1]]:
                     grab(c)
             if name in NEED_DISTINCT:
-                for color in sorted(set(pool), key=lambda c: -EV[c]):
+                for color in pick_order(set(pool), self.rng):
                     if len(set(take)) >= NEED_DISTINCT[name]:
                         break
                     if color not in take:
@@ -387,7 +435,8 @@ class Game(object):
             while len(take) < NEED_COUNT.get(name, 0) and pool:
                 grab(pool[0])
         got = sum(EV_REROLL[c] for c in take)
-        while got < target and pool:
+        limit = target + policy_value(COMMIT_MARGIN, self)
+        while got < limit and pool:
             got += EV_REROLL[pool[0]]
             grab(pool[0])
         return take
@@ -469,7 +518,7 @@ class Game(object):
             hits = [k for k, v in enumerate(values) if v == 1]
             add = []
             expected = total + sum(EV[take[k]] for k in again)
-            for c in sorted(self.legal_pool(name), key=lambda c: -EV[c]):
+            for c in pick_order(self.legal_pool(name), self.rng):
                 if expected >= target:
                     break
                 if add.count(c) < self.legal_pool(name).count(c):

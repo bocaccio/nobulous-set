@@ -36,3 +36,15 @@ def roll_many(colors, rng):
 def best_first(colors):
     """Strongest dice first - the ordering every policy here uses."""
     return sorted(colors, key=lambda c: -EV[c])
+
+def policy_value(value, game=None):
+    """A policy dial that is either a constant or a function of the game.
+
+    players.py models players whose commitment changes as a game goes
+    wrong - emptying the pool and then starving, or wobbling while they
+    work out a strategy - so each margin dial may be a callable taking the
+    Game. Constants pass straight through, so this costs nothing when no
+    profile is set.
+    """
+    return value(game) if callable(value) else value
+

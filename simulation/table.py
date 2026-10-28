@@ -147,10 +147,27 @@ def main(games=DEFAULT):
         print("  %-24s %7d %8d%%" % (name, n, rate))
     print()
     print("  Source: 20 Strong Community Game Stats, read 2026-09-20.")
-    print("  A finished game in this system sits near 50%. Against that:")
-    print("    AoS  near band at Easy, below it from Standard down.")
-    print("    NAP  in band at Easy, below it from Standard down.")
-    print("    BAT  in band at Easy, below it from Standard down.")
+    print("  A finished game in this system sits near 50%. Against that,")
+    print("  after the 2026-10-27 policy retune:")
+    print("    BAT  in band at Standard (53.2%), above at Easy, below from Hard.")
+    print("    NAP  well ABOVE the band everywhere but Nobulous (52.8%).")
+    print("    AoS  unchanged by the retune: near band at Easy, below from")
+    print("         Standard down - its policy was already the best available.")
+    print("    NRJ  above the band at 61.6%.")
+    print()
+    print("  THE RETUNE IS WHY, AND IT INVALIDATES EVERY DIFFICULTY DIAL.")
+    print("  These models used to play one fixed policy that was 6 to 34")
+    print("  points off its own optimum in three of the four games, so the")
+    print("  set read low and every dial was calibrated against that.")
+    print("  Retuned - NAP commits one expected success BELOW each")
+    print("  requirement and spends weak dice first, the finale commits two")
+    print("  above, BAT steps off a threshold cliff - NAP goes 42.1% to")
+    print("  76.0% at Standard, the finale 50.9% to 61.6%, BAT 46.5% to")
+    print("  53.2%. AoS does not move at all: Target + 1 is a rules cap, so")
+    print("  it had no over-commit to tune. AoS's 35.0% is a statement")
+    print("  about the game; the other three were statements about the")
+    print("  player. Re-pitching the ladders is a design decision and has")
+    print("  not been made.")
     print("  BAT's Health dial was tuned against this model, so the model")
     print("  agreeing with the shipped ladder is construction, not")
     print("  corroboration. The rulebooks no longer print win rates at all -")
@@ -194,16 +211,24 @@ def main(games=DEFAULT):
   nothing because they cancelled.
 
     protocol                    before   retuned     now
-    Cross-Contamination          +3.4     -6.0     -7.3
-    Shared Equipment Budget     -18.8     -6.0     -7.2
-    Accelerated Trials           +6.3     -6.9     -0.8   <-- out of band
-    Questionable Methodology    +10.7     -4.1     -2.8
-    Questionable Procurement     -3.1     -3.2     -4.8
-    Independent Funding          -0.2     -5.1     -4.4
+    Shared Equipment Budget     -18.8     -6.0     -7.4
+    Questionable Procurement     -3.1     -3.2     -4.2
+    Cross-Contamination          +3.4     -6.0     -3.6
+    Independent Funding          -0.2     -5.1     -3.1
+    Accelerated Trials           +6.3     -6.9     -1.4   <-- out of band
+    Questionable Methodology    +10.7     -4.1     -0.2   <-- out of band
 
-  Tier I now sits at -4.1 at Standard, against NAP's -3.1, and the six
-  average -4.5. The "now" column is 8,000 forced games a card against a
-  46.8% no-tier baseline, measured after the Upgrade-leak fixes.
+  Tier I now sits at -3.1 at Standard, against NAP's -4.0, and the six
+  average -3.3. The "now" column is 8,000 forced games a card against a
+  53.6% no-tier baseline, measured after the policy retune.
+
+  TWO ARE NOW NEAR-INERT, AND NEITHER CARD CHANGED. Accelerated Trials
+  gates on printed Target 5+ and lost most of its deck when TARGET_DELTA
+  was zeroed. Questionable Methodology trades the better Upgrade for an
+  easier Experiment, and the retuned battle no longer needs the bargain -
+  it went -2.8 to -0.2 on the policy change alone. Both are design
+  questions, and both illustrate the same thing: a card tuned against a
+  policy is only as stable as the policy.
 
   TWO OF THEM GATE ON THE PRINTED TARGET, SO ZEROING TARGET_DELTA RE-AIMED
   THEM. Accelerated Trials fires at printed Target 5+ and Independent
@@ -246,8 +271,8 @@ def main(games=DEFAULT):
   check what its trigger is gated on before trusting the figure later.
 
   BAT'S TIER III RECOVERS WEAKLY, AND THE REASON MOVED. Tier II is the
-  trough as intended and Tier III gains +5.4 back at Standard, against
-  NAP's +8.0 and AoS's +11.0. The first diagnosis was the claim side:
+  trough as intended and Tier III gains +4.7 back at Standard, against
+  NAP's +5.4 and AoS's +11.0. The first diagnosis was the claim side:
   two of the six Research Notes were nearly dead paper, and the rest
   averaged 2.0 claims a game. Loosening two conditions and rewriting the
   dead one - Cross-Species Compatibility now claims on completing an
@@ -302,7 +327,7 @@ def main(games=DEFAULT):
               short, Methodological Optimization takes Target 0 when the
               Target is out of reach, Field Retrofit swaps when the card on
               offer beats the Rat's worst. Over the 16 cells the whole deck
-              is worth +1.6 points, so it roughly balances, which is what a
+              is worth +1.4 points, so it roughly balances, which is what a
               well-made deck should do. NRJ now omits 1 of its 24
               Scenario effects, down from 18: see the Imposter section
               below, and imposter.py.
@@ -311,9 +336,9 @@ def main(games=DEFAULT):
               the cards at commit b57eedd, so seven of the twenty Experiments
               were charged the rise twice, and Containment Failure was being
               charged 4 against a printed 5. bat.py now reads the printed
-              numbers with TARGET_DELTA back at 0, which is worth +11.3
-              points over the 16 cells - re-measured after the leak fixes,
-              against +4.2 when it was first found. Read card data off generator/build_*.py; a
+              numbers with TARGET_DELTA back at 0, which is worth +11.7
+              points over the 16 cells - re-measured after the policy
+              retune, against +11.3 before it and +4.2 when first found. Read card data off generator/build_*.py; a
               dial that gets adopted has to be zeroed when it is.
     thin      Field Retrofit Trial is modelled and all but inert. Its
               Experiment is completed 54 times in 400 games, and in 94% of
@@ -352,8 +377,10 @@ def main(games=DEFAULT):
   printed statlines really are identical - Technicians 2/2/3, Apprentices
   2/2/2, both sides of each Lab Rat the same - so the spread comes entirely
   from the abilities, which are now modeled: about 17 points between the
-  best and worst Technician (43.4% to 26.0% at Standard), about 8 between
-  Apprentices (46.1% to 38.6%). This cross-tab
+  best and worst Technician (43.4% to 26.0% at Standard), about 7 between
+  Apprentices (80.8% to 73.5%) and under 4 across BAT's eight Rat sides
+  (53.2% to 49.6%). AoS's spread is untouched by the retune and is more
+  than twice either of the others. This cross-tab
   reports their mean; the per-hero tables are in RESULTS.txt, and cards.py
   lists all twenty.
 
@@ -382,16 +409,33 @@ def main(games=DEFAULT):
 
                         mean    <=2   empty  |  trough   <=2   empty
     Imposter, printed    6.6     0%    0.0%  |     3.0    0%    0.0%   32.4%
-    Imposter, repaired   5.8    35%   13.5%  |     0.6   97%   62.9%   50.3%
-    NAP (Standard)       4.3    32%    3.2%  |     0.9   92%   47.9%
-    AoS (Standard)       6.2    22%    0.9%  |     1.2   86%   22.0%
+    Imposter, repaired   5.0    35%   11.4%  |     0.5   99%   64.0%   61.7%
+    NAP (Standard)      10.9     2%    0.2%  |     6.4    8%    0.2%
+    AoS (Standard)      13.7     0%    0.0%  |     8.2    1%    0.0%
 
-  The pool now runs 17.0, 11.5, 5.5, 3.8, 3.3, 2.8, 2.0, 1.2, 0.7 across the
-  nine attempts, and the win rate sits at the middle of the 47-57% community
-  band. The finale leads the set on five of those six columns: NAP's mean
-  pool is 4.3 against the finale's 5.8, so on the mean alone NAP is tighter.
-  Every column that measures RUNNING OUT - at two dice or fewer, empty, and
-  all three trough columns - is the finale's.
+  The NAP and AoS rows are measured by dicetension.py, not copied into this
+  file. They used to be, at 4.3 and 6.2 mean, and both had gone stale -
+  AoS's at its own rebalance, NAP's when its commit policy was retuned, so
+  the comparison the whole section rests on was against players neither
+  game has any more. imposter.py now calls the tool instead of holding a
+  copy of its output.
+
+  The pool runs 17.0, 8.3, 3.5, 3.5, 3.2, 2.8, 1.8, 1.0, 0.4 across the
+  nine attempts. The finale leads the set on all six columns, and not
+  narrowly: 5.0 mean
+  against NAP's 10.9 and AoS's 13.7, 35% of commit decisions at two dice or
+  fewer against 2% and 0%, and a per-game trough of 0.5 against 6.4 and 8.2.
+  It is the only game in the set where the pool runs out at all.
+
+  An earlier pass here claimed five of six rather than all six, on the
+  grounds that NAP's mean pool was lower. That came from the frozen NAP row
+  above and was wrong. Re-measure a comparison before correcting it.
+
+  What the retune did to the other side of that table is its own finding.
+  NAP now commits one expected success BELOW each requirement, so it hoards:
+  2% of its decisions are made at two dice or fewer, against 32% under the
+  old policy. The game that was the dice-pressure yardstick for the finale
+  has almost no dice pressure left, and the win rate went to 76% with it.
 
   WHAT DID NOT WORK IS THE MORE USEFUL HALF. Twenty-one candidates and
   combinations were measured; proto/fix.txt has them all.
@@ -409,27 +453,28 @@ def main(games=DEFAULT):
   THE ONE CLAUSE THAT WOULD MAKE DICE CURRENCY CANNOT BE PAID. The failure
   choice is resolved between the commit and the recovery - rules/nrj.html
   steps 4, 5, 6 - which is the trough. At that instant the Imposter holds
-  0.35 dice on average, NONE AT ALL in 92% of failures, and can pay in dice
-  in 6.1%. The printed rule anticipates it ("if you cannot banish 2 available
+  0.11 dice on average, NONE AT ALL in 98% of failures, and can pay in dice
+  in 2.1%. The retuned player commits more, so the trough is deeper and the
+  clause is less payable than ever. The printed rule anticipates it ("if you cannot banish 2 available
   dice, Health loss is mandatory"), so the finale is a Health race with a
   dice floor. Same shape as BAT's Accelerated Trials: a cost billed after
   the spend finds an empty pool. Resolving the choice after recovery, or
   banishing from the exhausted pile, would make the trade real - both are
   rules changes and neither has been made.
 
-  SIX SCENARIOS RESTRICT THE DICE, AND ARE WORTH -1.9 POINTS. "Commit at
+  SIX SCENARIOS RESTRICT THE DICE, AND ARE WORTH -1.8 POINTS. "Commit at
   least 6 dice", "commit at least 3 different colors", the two color
   minimums and "Yellow cannot contribute" were never modelled; they are now,
   and so is every other Scenario effect bar one. Three of them block the
-  MAJORITY of the attempts they appear in - 69%, 58%, 56% - and the whole
-  set moves the finale 52.2% to 50.3%, because by the time they bite the
+  MAJORITY of the attempts they appear in - 75%, 74%, 73% - and the whole
+  set moves the finale 63.5% to 61.7%, because by the time they bite the
   attempt was already lost, and being blocked saves the dice and the
   Research cards it would have wasted.
 
   The three color clauses used to block 0% of their attempts, because
   recovering the best dice leaves a pool of Purple and Blue. Repair H gave
   two of them teeth: with the pool down to two or three dice, An Old Injury
-  now blocks 39% of its attempts and The Ceremonial Seal 27%, because the
+  now blocks 33% of its attempts and The Ceremonial Seal 22%, because the
   pool may simply not hold the Purple the card asks for. The Darkened
   Corridor still blocks 0% - it bars YELLOW, and a pool recovered
   strongest-first holds no Yellow to bar. That one is inert as printed. They are a tax on the recovery decision - recover the strongest
@@ -440,19 +485,19 @@ def main(games=DEFAULT):
   simulation/supply.py runs the three games and reads what each one banks,
   then feeds those hands to the finale. Full output in supply.txt.
 
-    standalone, as printed        50.2%
-    campaign hand-off, Easy       52.1%     Standard  51.6%
-    campaign hand-off, Hard       51.8%     Nobulous  50.4%
+    standalone, as printed        61.8%
+    campaign hand-off, Easy       60.5%     Standard  61.4%
+    campaign hand-off, Hard       58.7%     Nobulous  59.9%
 
   Supply is sufficient everywhere. NAP faces exactly 3 Final Exams out of 12
   printed, so its 3 retained and 3 Candidates are never in doubt. AoS faces
   exactly 3 Advanced Programs out of 8. BAT retains "up to 3 of the Upgrade
   cards the Rats earned - the ones they held when the battle began", and the
-  Rats hold 4.2 to 4.4 of them on a win, 3 or more in 94-96% of wins.
+  Rats hold 4.3 to 4.4 of them on a win, 3 or more in 92-95% of wins.
 
   TWO THINGS THE MEASUREMENT CORRECTED IN build_pool. It assumed a 50%
   chance that one retained BAT card is a Specimen; a Specimen is actually on
-  the table in 86-96% of wins, and at -5 against an Upgrade's -3 it is
+  the table in 87-94% of wins, and at -5 against an Upgrade's -3 it is
   always the one you keep. It also assumed each retained AoS card is 50%
   Stable; the first Advanced Program is Stable BY RULE, and across the three
   the Overheated share is 34-38%, so the real hand reduces more and avoids
@@ -480,18 +525,23 @@ THE RULE WAS RIGHT IN ONE PLACE AND STALE IN TWO. bat.html was rewritten so
   Machine Malfunction uses to top the Tyrant up to 5.
 
   The "at most 1 Specimen" cap is what binds, not supply: a second Specimen
-  is on the table in 46-68% of wins and has to be left behind.
+  is on the table in 43-70% of wins and has to be left behind.
 
   EVERY DIAL IS STILL A CLIFF, AND THAT IS NOT FIXED. One point of starting
-  Health is worth about 21 points of win rate and one point on all 24
-  Targets about 18, against roughly 4 for a point of Tyrant Health in BAT.
+  Health is worth 19 to 41 points of win rate and one point on all 24
+  Targets about 32, against roughly 6 for a point of Tyrant Health in BAT.
+  The retune made this WORSE, not better: a player who commits two above
+  the Target converts each point of Health into more wins, so the 4-to-5
+  Health step alone is worth 41 points.
   Nine pass/fail attempts against a small failure budget amplify any dial
   about ninefold. Flattening that means grading each attempt instead of
   passing or failing it, which is a larger change than H.
 
   The upside is that one number now serves as the difficulty ladder the
-  finale has never had - 3/4/5/6 starting Health gives 9.3%, 29.4%, 50.8%,
-  71.0%, with dice pressure rising along it. Wider rungs than the other
+  finale has never had - 3/4/5/6 starting Health gives 2.0%, 20.5%, 61.6%,
+  80.4%, with dice pressure rising along it. Those rungs are far too wide
+  to ship as a ladder now; re-pitching them is part of the re-calibration
+  the retune forces. Wider rungs than the other
   three games, but a ladder where there was none. Not applied: H ships at
   5 Health, which is the Standard rung.
 """)

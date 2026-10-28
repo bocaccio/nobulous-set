@@ -20,10 +20,10 @@ CAN THE CAMPAIGN'S CARDS BE SAVED? 1200 games per game per level
 
    BAT: Upgrades the Rats hold when the battle begins
                   win    mean  3+ held  Specimen    2 Spec
-   Easy         53.2%    4.40      94%       86%       46%
-   Standard     47.2%    4.39      95%       91%       57%
-   Hard         33.1%    4.28      94%       92%       62%
-   Nobulous     23.3%    4.24      96%       96%       68%
+   Easy         63.7%    4.37      92%       87%       43%
+   Standard     56.1%    4.38      94%       91%       56%
+   Hard         44.1%    4.29      93%       92%       62%
+   Nobulous     28.1%    4.36      95%       94%       70%
 
    So the three retained slots fill on nearly every win, and a
    Specimen - worth -5 against an Upgrade's -3 - is there to take
@@ -56,11 +56,11 @@ CAN THE CAMPAIGN'S CARDS BE SAVED? 1200 games per game per level
    the finale the hands the games above actually produced.
 
                                         finale
-   standalone, as printed                 50.2%
-   campaign hand-off, Easy                52.1%
-   campaign hand-off, Standard            51.6%
-   campaign hand-off, Hard                51.8%
-   campaign hand-off, Nobulous            50.4%
+   standalone, as printed                 61.8%
+   campaign hand-off, Easy                60.5%
+   campaign hand-off, Standard            61.4%
+   campaign hand-off, Hard                58.7%
+   campaign hand-off, Nobulous            59.9%
 
 4. CARRY-FORWARD RULES - do the four documents agree?
 

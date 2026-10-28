@@ -8,10 +8,10 @@ NAP  Nobulous' Apprenticeship Program
   difficulty = Credit goal / Setbacks in the deck; FINF at Reduce 1
 
                             no NRJ    Tier I   Tier II  Tier III
-  Easy (5 Cr, 4 Sb)          49.9%     47.5%     34.4%     41.8%
-  Standard (6 Cr, 4 Sb) *     42.1%     39.0%     27.0%     35.0%
-  Hard (7 Cr, 5 Sb)          30.1%     27.4%     20.4%     27.1%
-  Nobulous (8 Cr, 6 Sb)      21.7%     20.2%     16.3%     22.5%
+  Easy (5 Cr, 4 Sb)          81.3%     78.7%     68.2%     73.2%
+  Standard (6 Cr, 4 Sb) *     76.0%     72.0%     61.3%     66.7%
+  Hard (7 Cr, 5 Sb)          65.6%     60.4%     50.3%     56.7%
+  Nobulous (8 Cr, 6 Sb)      52.8%     48.3%     41.7%     48.6%
   
     * Standard difficulty. Mean of the six Apprentices.
     Tier I   3 of 4 Following Setbacks replace 3 base Setbacks
@@ -24,10 +24,10 @@ BAT  Build-a-Tyrant
   difficulty = Specimens added / Tyrant Health; random Rat sides
 
                             no NRJ    Tier I   Tier II  Tier III
-  Easy                       55.4%     49.8%     42.0%     47.0%
-  Standard                   46.5%     42.4%     35.1%     40.5%
-  Hard                       33.4%     30.8%     25.6%     30.3%
-  Nobulous                   22.4%     21.2%     16.4%     20.9%
+  Easy                       62.7%     58.4%     45.5%     50.7%
+  Standard                   53.2%     50.1%     38.7%     43.4%
+  Hard                       40.1%     38.6%     27.9%     33.4%
+  Nobulous                   28.1%     26.3%     18.6%     23.9%
   
     Tier I   1 of 6 Experimental Protocols drawn at setup
     Tier II  6 Unauthorized Modifications in the Upgrade deck
@@ -58,8 +58,8 @@ NRJ  Imposter Scenario (the campaign finale)
   the finale has no difficulty dial. Its variable is the Research
   Pool.
 
-  standalone         50.9%
-  campaign           50.9%
+  standalone         61.6%
+  campaign           61.6%
 
 ==================================================================
 CALIBRATION - published 20 Strong titles, community-recorded
@@ -75,10 +75,27 @@ CALIBRATION - published 20 Strong titles, community-recorded
   all titles                   955       53%
 
   Source: 20 Strong Community Game Stats, read 2026-09-20.
-  A finished game in this system sits near 50%. Against that:
-    AoS  near band at Easy, below it from Standard down.
-    NAP  in band at Easy, below it from Standard down.
-    BAT  in band at Easy, below it from Standard down.
+  A finished game in this system sits near 50%. Against that,
+  after the 2026-10-27 policy retune:
+    BAT  in band at Standard (53.2%), above at Easy, below from Hard.
+    NAP  well ABOVE the band everywhere but Nobulous (52.8%).
+    AoS  unchanged by the retune: near band at Easy, below from
+         Standard down - its policy was already the best available.
+    NRJ  above the band at 61.6%.
+
+  THE RETUNE IS WHY, AND IT INVALIDATES EVERY DIFFICULTY DIAL.
+  These models used to play one fixed policy that was 6 to 34
+  points off its own optimum in three of the four games, so the
+  set read low and every dial was calibrated against that.
+  Retuned - NAP commits one expected success BELOW each
+  requirement and spends weak dice first, the finale commits two
+  above, BAT steps off a threshold cliff - NAP goes 42.1% to
+  76.0% at Standard, the finale 50.9% to 61.6%, BAT 46.5% to
+  53.2%. AoS does not move at all: Target + 1 is a rules cap, so
+  it had no over-commit to tune. AoS's 35.0% is a statement
+  about the game; the other three were statements about the
+  player. Re-pitching the ladders is a design decision and has
+  not been made.
   BAT's Health dial was tuned against this model, so the model
   agreeing with the shipped ladder is construction, not
   corroboration. The rulebooks no longer print win rates at all -
@@ -120,16 +137,24 @@ CAVEATS
   nothing because they cancelled.
 
     protocol                    before   retuned     now
-    Cross-Contamination          +3.4     -6.0     -7.3
-    Shared Equipment Budget     -18.8     -6.0     -7.2
-    Accelerated Trials           +6.3     -6.9     -0.8   <-- out of band
-    Questionable Methodology    +10.7     -4.1     -2.8
-    Questionable Procurement     -3.1     -3.2     -4.8
-    Independent Funding          -0.2     -5.1     -4.4
+    Shared Equipment Budget     -18.8     -6.0     -7.4
+    Questionable Procurement     -3.1     -3.2     -4.2
+    Cross-Contamination          +3.4     -6.0     -3.6
+    Independent Funding          -0.2     -5.1     -3.1
+    Accelerated Trials           +6.3     -6.9     -1.4   <-- out of band
+    Questionable Methodology    +10.7     -4.1     -0.2   <-- out of band
 
-  Tier I now sits at -4.1 at Standard, against NAP's -3.1, and the six
-  average -4.5. The "now" column is 8,000 forced games a card against a
-  46.8% no-tier baseline, measured after the Upgrade-leak fixes.
+  Tier I now sits at -3.1 at Standard, against NAP's -4.0, and the six
+  average -3.3. The "now" column is 8,000 forced games a card against a
+  53.6% no-tier baseline, measured after the policy retune.
+
+  TWO ARE NOW NEAR-INERT, AND NEITHER CARD CHANGED. Accelerated Trials
+  gates on printed Target 5+ and lost most of its deck when TARGET_DELTA
+  was zeroed. Questionable Methodology trades the better Upgrade for an
+  easier Experiment, and the retuned battle no longer needs the bargain -
+  it went -2.8 to -0.2 on the policy change alone. Both are design
+  questions, and both illustrate the same thing: a card tuned against a
+  policy is only as stable as the policy.
 
   TWO OF THEM GATE ON THE PRINTED TARGET, SO ZEROING TARGET_DELTA RE-AIMED
   THEM. Accelerated Trials fires at printed Target 5+ and Independent
@@ -172,8 +197,8 @@ CAVEATS
   check what its trigger is gated on before trusting the figure later.
 
   BAT'S TIER III RECOVERS WEAKLY, AND THE REASON MOVED. Tier II is the
-  trough as intended and Tier III gains +5.4 back at Standard, against
-  NAP's +8.0 and AoS's +11.0. The first diagnosis was the claim side:
+  trough as intended and Tier III gains +4.7 back at Standard, against
+  NAP's +5.4 and AoS's +11.0. The first diagnosis was the claim side:
   two of the six Research Notes were nearly dead paper, and the rest
   averaged 2.0 claims a game. Loosening two conditions and rewriting the
   dead one - Cross-Species Compatibility now claims on completing an
@@ -228,7 +253,7 @@ CAVEATS
               short, Methodological Optimization takes Target 0 when the
               Target is out of reach, Field Retrofit swaps when the card on
               offer beats the Rat's worst. Over the 16 cells the whole deck
-              is worth +1.6 points, so it roughly balances, which is what a
+              is worth +1.4 points, so it roughly balances, which is what a
               well-made deck should do. NRJ now omits 1 of its 24
               Scenario effects, down from 18: see the Imposter section
               below, and imposter.py.
@@ -237,9 +262,9 @@ CAVEATS
               the cards at commit b57eedd, so seven of the twenty Experiments
               were charged the rise twice, and Containment Failure was being
               charged 4 against a printed 5. bat.py now reads the printed
-              numbers with TARGET_DELTA back at 0, which is worth +11.3
-              points over the 16 cells - re-measured after the leak fixes,
-              against +4.2 when it was first found. Read card data off generator/build_*.py; a
+              numbers with TARGET_DELTA back at 0, which is worth +11.7
+              points over the 16 cells - re-measured after the policy
+              retune, against +11.3 before it and +4.2 when first found. Read card data off generator/build_*.py; a
               dial that gets adopted has to be zeroed when it is.
     thin      Field Retrofit Trial is modelled and all but inert. Its
               Experiment is completed 54 times in 400 games, and in 94% of
@@ -278,8 +303,10 @@ CAVEATS
   printed statlines really are identical - Technicians 2/2/3, Apprentices
   2/2/2, both sides of each Lab Rat the same - so the spread comes entirely
   from the abilities, which are now modeled: about 17 points between the
-  best and worst Technician (43.4% to 26.0% at Standard), about 8 between
-  Apprentices (46.1% to 38.6%). This cross-tab
+  best and worst Technician (43.4% to 26.0% at Standard), about 7 between
+  Apprentices (80.8% to 73.5%) and under 4 across BAT's eight Rat sides
+  (53.2% to 49.6%). AoS's spread is untouched by the retune and is more
+  than twice either of the others. This cross-tab
   reports their mean; the per-hero tables are in RESULTS.txt, and cards.py
   lists all twenty.
 
@@ -308,16 +335,33 @@ CAVEATS
 
                         mean    <=2   empty  |  trough   <=2   empty
     Imposter, printed    6.6     0%    0.0%  |     3.0    0%    0.0%   32.4%
-    Imposter, repaired   5.8    35%   13.5%  |     0.6   97%   62.9%   50.3%
-    NAP (Standard)       4.3    32%    3.2%  |     0.9   92%   47.9%
-    AoS (Standard)       6.2    22%    0.9%  |     1.2   86%   22.0%
+    Imposter, repaired   5.0    35%   11.4%  |     0.5   99%   64.0%   61.7%
+    NAP (Standard)      10.9     2%    0.2%  |     6.4    8%    0.2%
+    AoS (Standard)      13.7     0%    0.0%  |     8.2    1%    0.0%
 
-  The pool now runs 17.0, 11.5, 5.5, 3.8, 3.3, 2.8, 2.0, 1.2, 0.7 across the
-  nine attempts, and the win rate sits at the middle of the 47-57% community
-  band. The finale leads the set on five of those six columns: NAP's mean
-  pool is 4.3 against the finale's 5.8, so on the mean alone NAP is tighter.
-  Every column that measures RUNNING OUT - at two dice or fewer, empty, and
-  all three trough columns - is the finale's.
+  The NAP and AoS rows are measured by dicetension.py, not copied into this
+  file. They used to be, at 4.3 and 6.2 mean, and both had gone stale -
+  AoS's at its own rebalance, NAP's when its commit policy was retuned, so
+  the comparison the whole section rests on was against players neither
+  game has any more. imposter.py now calls the tool instead of holding a
+  copy of its output.
+
+  The pool runs 17.0, 8.3, 3.5, 3.5, 3.2, 2.8, 1.8, 1.0, 0.4 across the
+  nine attempts. The finale leads the set on all six columns, and not
+  narrowly: 5.0 mean
+  against NAP's 10.9 and AoS's 13.7, 35% of commit decisions at two dice or
+  fewer against 2% and 0%, and a per-game trough of 0.5 against 6.4 and 8.2.
+  It is the only game in the set where the pool runs out at all.
+
+  An earlier pass here claimed five of six rather than all six, on the
+  grounds that NAP's mean pool was lower. That came from the frozen NAP row
+  above and was wrong. Re-measure a comparison before correcting it.
+
+  What the retune did to the other side of that table is its own finding.
+  NAP now commits one expected success BELOW each requirement, so it hoards:
+  2% of its decisions are made at two dice or fewer, against 32% under the
+  old policy. The game that was the dice-pressure yardstick for the finale
+  has almost no dice pressure left, and the win rate went to 76% with it.
 
   WHAT DID NOT WORK IS THE MORE USEFUL HALF. Twenty-one candidates and
   combinations were measured; proto/fix.txt has them all.
@@ -335,27 +379,28 @@ CAVEATS
   THE ONE CLAUSE THAT WOULD MAKE DICE CURRENCY CANNOT BE PAID. The failure
   choice is resolved between the commit and the recovery - rules/nrj.html
   steps 4, 5, 6 - which is the trough. At that instant the Imposter holds
-  0.35 dice on average, NONE AT ALL in 92% of failures, and can pay in dice
-  in 6.1%. The printed rule anticipates it ("if you cannot banish 2 available
+  0.11 dice on average, NONE AT ALL in 98% of failures, and can pay in dice
+  in 2.1%. The retuned player commits more, so the trough is deeper and the
+  clause is less payable than ever. The printed rule anticipates it ("if you cannot banish 2 available
   dice, Health loss is mandatory"), so the finale is a Health race with a
   dice floor. Same shape as BAT's Accelerated Trials: a cost billed after
   the spend finds an empty pool. Resolving the choice after recovery, or
   banishing from the exhausted pile, would make the trade real - both are
   rules changes and neither has been made.
 
-  SIX SCENARIOS RESTRICT THE DICE, AND ARE WORTH -1.9 POINTS. "Commit at
+  SIX SCENARIOS RESTRICT THE DICE, AND ARE WORTH -1.8 POINTS. "Commit at
   least 6 dice", "commit at least 3 different colors", the two color
   minimums and "Yellow cannot contribute" were never modelled; they are now,
   and so is every other Scenario effect bar one. Three of them block the
-  MAJORITY of the attempts they appear in - 69%, 58%, 56% - and the whole
-  set moves the finale 52.2% to 50.3%, because by the time they bite the
+  MAJORITY of the attempts they appear in - 75%, 74%, 73% - and the whole
+  set moves the finale 63.5% to 61.7%, because by the time they bite the
   attempt was already lost, and being blocked saves the dice and the
   Research cards it would have wasted.
 
   The three color clauses used to block 0% of their attempts, because
   recovering the best dice leaves a pool of Purple and Blue. Repair H gave
   two of them teeth: with the pool down to two or three dice, An Old Injury
-  now blocks 39% of its attempts and The Ceremonial Seal 27%, because the
+  now blocks 33% of its attempts and The Ceremonial Seal 22%, because the
   pool may simply not hold the Purple the card asks for. The Darkened
   Corridor still blocks 0% - it bars YELLOW, and a pool recovered
   strongest-first holds no Yellow to bar. That one is inert as printed. They are a tax on the recovery decision - recover the strongest
@@ -366,19 +411,19 @@ CAVEATS
   simulation/supply.py runs the three games and reads what each one banks,
   then feeds those hands to the finale. Full output in supply.txt.
 
-    standalone, as printed        50.2%
-    campaign hand-off, Easy       52.1%     Standard  51.6%
-    campaign hand-off, Hard       51.8%     Nobulous  50.4%
+    standalone, as printed        61.8%
+    campaign hand-off, Easy       60.5%     Standard  61.4%
+    campaign hand-off, Hard       58.7%     Nobulous  59.9%
 
   Supply is sufficient everywhere. NAP faces exactly 3 Final Exams out of 12
   printed, so its 3 retained and 3 Candidates are never in doubt. AoS faces
   exactly 3 Advanced Programs out of 8. BAT retains "up to 3 of the Upgrade
   cards the Rats earned - the ones they held when the battle began", and the
-  Rats hold 4.2 to 4.4 of them on a win, 3 or more in 94-96% of wins.
+  Rats hold 4.3 to 4.4 of them on a win, 3 or more in 92-95% of wins.
 
   TWO THINGS THE MEASUREMENT CORRECTED IN build_pool. It assumed a 50%
   chance that one retained BAT card is a Specimen; a Specimen is actually on
-  the table in 86-96% of wins, and at -5 against an Upgrade's -3 it is
+  the table in 87-94% of wins, and at -5 against an Upgrade's -3 it is
   always the one you keep. It also assumed each retained AoS card is 50%
   Stable; the first Advanced Program is Stable BY RULE, and across the three
   the Overheated share is 34-38%, so the real hand reduces more and avoids
@@ -406,22 +451,27 @@ THE RULE WAS RIGHT IN ONE PLACE AND STALE IN TWO. bat.html was rewritten so
   Machine Malfunction uses to top the Tyrant up to 5.
 
   The "at most 1 Specimen" cap is what binds, not supply: a second Specimen
-  is on the table in 46-68% of wins and has to be left behind.
+  is on the table in 43-70% of wins and has to be left behind.
 
   EVERY DIAL IS STILL A CLIFF, AND THAT IS NOT FIXED. One point of starting
-  Health is worth about 21 points of win rate and one point on all 24
-  Targets about 18, against roughly 4 for a point of Tyrant Health in BAT.
+  Health is worth 19 to 41 points of win rate and one point on all 24
+  Targets about 32, against roughly 6 for a point of Tyrant Health in BAT.
+  The retune made this WORSE, not better: a player who commits two above
+  the Target converts each point of Health into more wins, so the 4-to-5
+  Health step alone is worth 41 points.
   Nine pass/fail attempts against a small failure budget amplify any dial
   about ninefold. Flattening that means grading each attempt instead of
   passing or failing it, which is a larger change than H.
 
   The upside is that one number now serves as the difficulty ladder the
-  finale has never had - 3/4/5/6 starting Health gives 9.3%, 29.4%, 50.8%,
-  71.0%, with dice pressure rising along it. Wider rungs than the other
+  finale has never had - 3/4/5/6 starting Health gives 2.0%, 20.5%, 61.6%,
+  80.4%, with dice pressure rising along it. Those rungs are far too wide
+  to ship as a ladder now; re-pitching them is part of the re-calibration
+  the retune forces. Wider rungs than the other
   three games, but a ladder where there was none. Not applied: H ships at
   5 Health, which is the Standard rung.
 
-finished in 545.9s
+finished in 492.5s
 
 ==================================================================
 PER-HERO SWEEP  (sweep.py)
@@ -429,57 +479,57 @@ PER-HERO SWEEP  (sweep.py)
 
 NAP - Easy (5 Credits, 4 Setbacks), FINF Reduce 1
                            none        I       II      III
-Prodigy                   47.0%    45.4%    30.4%    39.6%
-Slacker                   50.2%    47.9%    36.2%    43.1%
-Technician                54.2%    51.2%    38.5%    44.7%
-Savant                    52.1%    48.4%    35.2%    42.1%
-Opportunist               49.5%    48.3%    33.1%    41.2%
-Lab Rat                   48.0%    46.0%    32.2%    39.0%
+Prodigy                   80.2%    77.0%    64.1%    70.6%
+Slacker                   80.7%    77.5%    67.3%    73.4%
+Technician                85.9%    84.0%    75.3%    78.7%
+Savant                    79.3%    76.5%    66.1%    71.6%
+Opportunist               82.1%    80.0%    70.3%    73.7%
+Lab Rat                   81.2%    78.1%    66.1%    70.2%
 
 NAP - Standard (6 Credits, 4 Setbacks), FINF Reduce 1
                            none        I       II      III
-Prodigy                   38.6%    35.0%    22.4%    31.8%
-Slacker                   42.0%    39.4%    29.3%    39.2%
-Technician                46.1%    44.1%    29.9%    36.2%
-Savant                    42.2%    40.4%    28.0%    35.8%
-Opportunist               42.9%    39.5%    27.6%    34.6%
-Lab Rat                   41.3%    36.8%    24.8%    32.9%
+Prodigy                   73.5%    69.5%    57.8%    62.7%
+Slacker                   74.7%    71.2%    60.6%    66.5%
+Technician                80.8%    78.8%    69.5%    74.5%
+Savant                    74.2%    68.8%    58.1%    64.9%
+Opportunist               77.7%    73.5%    62.6%    67.8%
+Lab Rat                   74.2%    71.0%    58.3%    63.7%
 
 NAP - Hard (7 Credits, 5 Setbacks), FINF Reduce 1
                            none        I       II      III
-Prodigy                   27.0%    24.2%    17.8%    23.8%
-Slacker                   31.6%    30.3%    23.5%    31.6%
-Technician                36.8%    31.6%    24.2%    29.7%
-Savant                    28.6%    27.4%    19.7%    27.0%
-Opportunist               28.7%    26.4%    19.1%    25.4%
-Lab Rat                   28.1%    25.7%    19.1%    25.9%
+Prodigy                   61.9%    56.1%    46.0%    53.1%
+Slacker                   64.2%    59.5%    50.0%    56.6%
+Technician                74.2%    70.0%    60.5%    66.1%
+Savant                    62.2%    58.0%    47.9%    53.7%
+Opportunist               67.0%    60.8%    50.6%    58.4%
+Lab Rat                   63.9%    58.3%    47.2%    52.6%
 
 NAP - Nobulous (8 Credits, 6 Setbacks), FINF Reduce 1
                            none        I       II      III
-Prodigy                   19.4%    18.1%    13.9%    20.5%
-Slacker                   24.6%    22.7%    18.2%    26.8%
-Technician                26.5%    24.3%    20.1%    25.1%
-Savant                    20.2%    18.9%    16.4%    20.8%
-Opportunist               20.9%    18.6%    14.4%    20.6%
-Lab Rat                   19.7%    18.5%    14.6%    21.0%
+Prodigy                   46.9%    44.5%    37.2%    43.3%
+Slacker                   53.2%    47.9%    41.7%    50.1%
+Technician                65.5%    60.3%    53.5%    60.3%
+Savant                    48.8%    44.1%    38.8%    44.1%
+Opportunist               54.4%    49.3%    42.6%    50.0%
+Lab Rat                   49.2%    44.8%    37.5%    44.1%
 
 BAT - win rate by difficulty, random Rat sides
                            none        I       II      III
-Easy                      55.2%    50.2%    41.5%    47.4%
-Standard                  46.3%    43.2%    35.7%    40.0%
-Hard                      33.8%    30.4%    25.7%    30.9%
-Nobulous                  23.2%    20.5%    16.6%    21.8%
+Easy                      62.6%    58.8%    44.3%    49.5%
+Standard                  54.4%    50.3%    39.1%    44.2%
+Hard                      40.5%    37.8%    27.2%    32.8%
+Nobulous                  28.0%    25.6%    17.8%    23.2%
 
 BAT - Standard, each Rat side alone against no ability
                            none        I       II      III
-careful_borrower          44.8%    39.0%    33.0%    36.7%
-tool_keeper               45.6%    41.1%    34.1%    38.4%
-jury_rig                  42.9%    39.4%    31.9%    35.6%
-fine_tuning               44.5%    38.1%    31.3%    34.6%
-self_sufficient           41.9%    38.5%    30.7%    36.1%
-prepared                  44.2%    38.6%    32.5%    36.8%
-experimental              43.0%    40.1%    31.6%    35.8%
-adaptation                43.5%    38.3%    30.8%    35.2%
+careful_borrower          52.8%    49.6%    35.9%    41.8%
+tool_keeper               53.2%    48.9%    35.2%    41.6%
+jury_rig                  50.6%    45.5%    33.8%    39.9%
+fine_tuning               51.3%    46.4%    34.5%    38.2%
+self_sufficient           50.0%    46.6%    34.4%    39.2%
+prepared                  50.8%    45.8%    35.0%    39.9%
+experimental              50.1%    47.4%    33.7%    39.6%
+adaptation                49.6%    47.4%    32.9%    38.5%
 
 AoS - win rate by difficulty, mean of the six Technicians
                            none        I       II      III

@@ -132,11 +132,21 @@ Hoplomachus 53%, Tanglewoods Red/White/Gold 47/53/57%). A finished game in this
 system sits near 50%, and that is the yardstick for everything below. The BAT
 ladder published in `rules/bat.html` (~70/63/56/49/42) straddles that band.
 
-Against that band the three games read Easy 55.4 / 49.9 / 47.0% and
-Standard 46.5 / 42.1 / 35.0% (BAT / NAP / AoS): in band at Easy, below it
-from Standard down. The published BAT ladder is not a second opinion - the
-Health dial was tuned against this model - and the rulebooks no longer print
-win rates at all, so `RESULTS.txt` is the only place they live.
+Against that band, after the 2026-10-27 policy retune, the three games read
+Easy 62.7 / 81.3 / 47.0% and Standard 53.2 / 76.0 / 35.0% (BAT / NAP / AoS),
+with the finale at 61.6%. BAT Standard is in the band; NAP is well above it;
+AoS is unchanged and still below from Standard down.
+
+**The retune is the headline and it inverts the old conclusion.** These
+models played one fixed policy, and in three of the four games it was 6 to
+34 points below the best setting of its own dials - NAP most of all, because
+it threw one expected success PAST each requirement when a short roll banks
+its progress for free. So "the set reads low" was mostly a statement about
+the player. AoS is the control: its policy was already optimal, Target + 1
+being a rules cap, and it did not move. Every difficulty dial in the set was
+calibrated against the old play and none has been re-pitched; see the CAVEATS
+block in `RESULTS.txt`. The rulebooks no longer print win rates at all, so
+that file is the only place they live.
 
 ## Results
 
@@ -163,10 +173,17 @@ current ladder. For that, see `table.py`.
 | −2 | 50.4% | 46.5% | 32.8% | 41.7% |
 | −3 | 51.8% | 48.0% | 35.5% | 44.7% |
 
-Re-measured 2026-10-27, 7,200 games a cell. Every cell used to read 15-19%
-here, from before the Primary-choice policy was corrected - it took the
-cheaper of the two revealed Assignments and ignored what the card paid. The
-dial spans 10 points end to end and Standard sits in the middle of it.
+Measured 2026-10-27, 7,200 games a cell, BEFORE the policy retune later the
+same day - so these cells are about 30 points low and are kept only for the
+shape of the dial, which is what the section is about. The retuned Credit
+goal curve, at 4 Setbacks, runs 76.3% at 6 Credits, 65.8% at 8, 55.6% at 10,
+then 52.4 / 50.1 / 48.0% at 12 / 14 / 16: raising the goal is the obvious
+lever for re-pitching NAP, and on its own it bottoms out near 48%.
+
+Every cell here used to read 15-19%, from before the Primary-choice policy
+was corrected - it took the cheaper of the two revealed Assignments and
+ignored what the card paid. The dial spans 10 points end to end and Standard
+sits in the middle of it.
 
 Tier I is close to a wash - the Following Setbacks it swaps in are harsher
 per card but displace base Setbacks of similar weight. Tier II is the trough,
@@ -186,10 +203,10 @@ runs left to right. The current numbers are in `RESULTS.txt`.
 
 | difficulty | Specimens | Health | no NRJ |
 |---|---|---|---|
-| Easy | 5 | 9 | 55.4% |
-| Standard | 6 | 10 | 46.5% |
-| Hard | 7 | 12 | 33.4% |
-| Nobulous | 8 | 14 | 22.4% |
+| Easy | 5 | 9 | 62.7% |
+| Standard | 6 | 10 | 53.2% |
+| Hard | 7 | 12 | 40.1% |
+| Nobulous | 8 | 14 | 28.1% |
 
 #### The battle was rewritten
 
@@ -373,10 +390,13 @@ starts lower than the other two games and falls about as fast.
 
 ### NRJ - the finale
 
-50.9% in the cross-tab and 50.3% in imposter.py's own 4,000-game pass, up
+61.6% in the cross-tab and 61.7% in imposter.py's own 4,000-game pass, up
 from 32.4%, after one line was added to the Imposter card: **"your REC is 3
 minus the number of cards in the Suspicion row"**, with 5 starting Health
-rather than 4. The tiers apply to the three games above, not to the
+rather than 4. About 11 of those points are the 2026-10-27 policy retune
+rather than the card: the finale rewards committing two expected successes
+past the Target, because a failed attempt is gone for good and leaves the
+Suspicion row one card taller. The tiers apply to the three games above, not to the
 finale.
 
 That was a repair, not a re-tune. `imposter.py` measured the finale on
@@ -384,10 +404,12 @@ That was a repair, not a re-tune. `imposter.py` measured the finale on
 decisions at two dice or fewer, 0.0% empty - because the pool collapsed to
 exactly REC by the fourth attempt and sat on that floor for the remaining
 five. It could not run out, so running out was never a worry. With the floor
-coupled to the Suspicion row it declines 17.0 -> 3.8 -> 0.7 across the nine
-attempts, and the finale now leads the set on five of the six tension columns
-- every column that measures RUNNING OUT. NAP's mean pool is lower (4.3
-against 5.8), so on the mean alone NAP is the tighter game.
+coupled to the Suspicion row it declines 17.0 -> 3.5 -> 0.4 across the nine
+attempts, and the finale leads the set on all six tension columns - 5.0 mean
+against NAP's 10.9 and AoS's 13.7, and it is the only game in the set where
+the pool runs out at all. An earlier pass here said five of six, reasoning
+from figures that had been copied out of dicetension.py and left to go
+stale; imposter.py now calls that tool instead of holding a copy.
 
 `proto/fix.py` has the twenty-one candidates and combinations that were
 measured and rejected, and the negative
@@ -405,20 +427,22 @@ worth 21 points.
 
 The campaign hand-off was audited separately, by running the three games
 and reading what each banks: `supply.py`. Supply is sufficient everywhere,
-and **standalone is a fair stand-in for a real campaign** - 50.2% against
-50.4% to 52.1% across the four difficulties. Two assumptions in `build_pool`
+and **standalone is a fair stand-in for a real campaign** - 61.8% against
+58.7% to 61.4% across the four difficulties. Two assumptions in `build_pool`
 were wrong and are fixed: a retained BAT Specimen is available on 86-96% of
 wins rather than the 50% assumed, and the first AoS Advanced Program is
 Stable by rule so the flat 50/50 Stable/Overheated was never reachable
 (34-38% Overheated in practice).
 
-What is still wrong is the slope. One point of starting Health is worth about
-21 points of win rate and one point on all 24 Targets about 18, because nine
+What is still wrong is the slope. One point of starting Health is worth 19 to
+41 points of win rate and one point on all 24 Targets about 32, because nine
 pass/fail attempts against a small failure budget amplify any dial about
 ninefold. Flattening that means grading each attempt rather than passing or
 failing it. The consolation is that one number now serves as the difficulty
-ladder the finale has never had: 3/4/5/6 starting Health gives 9.3%, 29.4%,
-50.8%, 71.0%, with dice pressure rising along it.
+ladder the finale has never had: 3/4/5/6 starting Health gives 2.0%, 20.5%,
+61.6%, 80.4%, with dice pressure rising along it. The retune made those
+rungs WIDER, not narrower - the 4-to-5 step alone is 41 points - so they are
+not shippable as a ladder without re-pitching.
 
 ## The hero axis
 
@@ -436,8 +460,8 @@ statlines really are identical the whole spread is ability text:
 | game | best | worst | spread |
 |---|---|---|---|
 | AoS Technicians | optimizer 43.4% | engineer 26.0% | 17.4 |
-| NAP Apprentices | Technician 46.1% | Prodigy 38.6% | 7.5 |
-| BAT Lab Rat sides | tool_keeper 45.6% | self_sufficient 41.9% | 3.7 |
+| NAP Apprentices | Technician 80.8% | Prodigy 73.5% | 7.3 |
+| BAT Lab Rat sides | tool_keeper 53.2% | adaptation 49.6% | 3.6 |
 
 At Standard with no tier module; the full tables are in `RESULTS.txt`, and all
 twenty cards are listed in `cards.py`. AoS's 17 points is a lot to rest on one

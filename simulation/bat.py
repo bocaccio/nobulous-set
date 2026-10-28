@@ -46,8 +46,9 @@ Modeled as printed:
 The printed tap effects ARE implemented, but behind `card_effects=True`, which
 is OFF by default while every caller in this package passes True. That switch
 turns on the leftmost Splice firing free on every Tyrant attack, and the Rats
-tapping one Upgrade per attack. At Standard with no tier module, 20,000 games
-(2026-10-27): effects off 42.8%, on 46.5%, on with tapped_defends 55.8%.
+tapping one Upgrade per attack. At Standard with no tier module, 20,000 games,
+after the policy retune: effects off 50.8%, on 53.2%, on with tapped_defends
+61.5%.
 
 These used to read 71.4% / 40.1% / 58.9%, a 31-point spread with off above a
 published ~63% and on far below it. That spread came from a model charging
@@ -77,7 +78,7 @@ The 20 Experiment effects are not implemented.
 """
 import random
 
-from dice import COLORS, EV, EV_REROLL, roll
+from dice import COLORS, EV, EV_REROLL, policy_value, roll
 
 RAT_HP = [1, 1, 2, 2]
 RAT_REC = [2, 2, 1, 1]
@@ -272,7 +273,16 @@ TIER_INDEX = {"none": 0, "I": 1, "II": 2, "III": 3}
 
 
 # Commit this much over the wall's Value, to cover the spread on the roll.
-THRESHOLD_MARGIN = 1.15
+# RETUNED 2026-10-27 from 1.15 to 1.20, worth +6.7 points at Standard and
+# +5.7 to +7.2 across the ladder. This is a cliff, not a slope: 1.16
+# measures 46.3% and 1.17 measures 54.1%, because `total >= need * MARGIN`
+# is tested against discrete dice EV and one hundredth flips whether a
+# further die joins a common wall Value. 1.15 sat on the wrong side of it.
+# 1.20 is mid-plateau - the 1.17-1.18 peak is worth about 0.9 more and is
+# not worth standing next to an edge for. The real fix is an ADDITIVE
+# margin, which removes the cliff; it would move every BAT figure again, so
+# it is raised rather than done.
+THRESHOLD_MARGIN = 1.20
 # "Commit up to 6 dice from the shared battle pool." Overridable so the cap
 # itself can be measured.
 # "Commit as many dice as you like." The cap was removed after measuring
@@ -291,6 +301,25 @@ RAT_DICE_CAP = 99
 #   "strongest" what the model used to do by accident, kept for comparison
 #   "random"    blind choice, the proxy used before colours were assigned
 EXHAUST_PICK = "color"
+
+# ---------------------------------------------------------------------------
+# PLAYER MODEL. See the block of the same name in nap.py. DICE_ORDER is how
+# a player picks dice to COMMIT; EXHAUST_PICK above is which die they hand
+# over when a clause takes one, and the two are set independently because a
+# player can be good at one and bad at the other.
+# ---------------------------------------------------------------------------
+DICE_ORDER = "strongest"
+
+
+def pick_order(dice, rng=None):
+    """The order a player takes dice in, per DICE_ORDER. Die objects."""
+    if DICE_ORDER == "random" and rng is not None:
+        out = list(dice)
+        rng.shuffle(out)
+        return out
+    return sorted(dice, key=lambda d: EV[d.color],
+                  reverse=DICE_ORDER != "weakest")
+
 
 # The colour each Experimental Protocol names for its exhaust clause. A
 # clause that always takes a yellow costs almost nothing; naming a colour is
@@ -1067,7 +1096,7 @@ class Game(object):
         for phase in range(phases):
             if successes >= target:
                 break
-            pool = sorted(self.available(rat), key=lambda d: -EV[d.color])
+            pool = pick_order(self.available(rat), self.rng)
             if excluded is not None:
                 pool = [d for d in pool if d is not excluded]
             if eff == "three_colors" and phase == 0:
@@ -1425,7 +1454,7 @@ class Game(object):
         color instead, which six strong dice almost always already contain.
         Buff HP and the Tyrant's own Health carry no requirement.
         """
-        avail = sorted(self.shared_pool(), key=lambda d: -EV[d.color])
+        avail = pick_order(self.shared_pool(), self.rng)
         pick = avail[:cap]
         if self.color_rule == "off":
             return pick
@@ -1585,12 +1614,12 @@ class Game(object):
             if need is None:
                 cap = min(cap, rat.effective_rec() + self.battle_rec_bonus)
             else:
-                avail = sorted(self.shared_pool(), key=lambda d: -EV[d.color])
+                avail = pick_order(self.shared_pool(), self.rng)
                 total = EV_REROLL["red"]        # Red rides along for free
                 want = None
                 for i, d in enumerate(avail[:cap], start=1):
                     total += EV_REROLL[d.color]
-                    if total >= need * THRESHOLD_MARGIN:
+                    if total >= need * policy_value(THRESHOLD_MARGIN, self):
                         want = i
                         break
                 # Out of reach even at full commitment: swing anyway, because
@@ -1614,7 +1643,8 @@ class Game(object):
                 for i, d in enumerate(avail[:cap], start=1):
                     total += EV_REROLL[d.color]
                     while reached < len(targets) and \
-                            total >= targets[reached] * THRESHOLD_MARGIN:
+                            total >= targets[reached] * policy_value(
+                                THRESHOLD_MARGIN, self):
                         reached += 1
                         want = i
                 cap = want or cap
