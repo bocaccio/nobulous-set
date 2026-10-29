@@ -1,0 +1,16 @@
+# core.autocrlf is true on the Windows machine, and Git decides text vs binary
+# by sniffing the first few KB. It gets the PNGs, the fonts and most of the
+# rulebook PDFs right, but it reads reportlab's print-and-play PDFs as TEXT -
+# `git ls-files --eol` showed i/lf on all four - so a fresh clone rewrote every
+# LF byte in them to CRLF. The files grew by 470 bytes, every cross-reference
+# offset moved, and the PDFs came out of the clone damaged: tolerant readers
+# recovered them through "incorrect startxref pointer", strict ones need not.
+# Caught 2026-10-28. The stored blobs were always correct; only checkout was
+# corrupting them, so marking the types here is the whole fix.
+#
+# Do not rely on sniffing for a binary type. Name it.
+
+*.pdf  binary
+*.png  binary
+*.ttf  binary
+*.docx binary
