@@ -430,3 +430,43 @@ Council Extraction Protocol, the eighth Advanced Program, with the extra
 success on element 3.  generator/aos.py marks element 2, and the app's own
 PROGRAM_MARKS agreed with the card, so only its PROGRAM_TARGETS was wrong.
 Corrected to match the printed card.
+
+--------------------------------------------------------------------
+2026-10-29, later the same day - THE FIVE REWARD CARDS CAME BACK
+
+The rebuild above said "nothing else printed on a Council Test is used",
+which quietly threw away the eight cards printed as REWARDS. Five of them
+pay in a currency this finale still has, and they are restored:
+
+    The Chamber Mechanism   recover 2 exhausted dice
+    The Sedative Ledger     recover 3 exhausted dice
+    The Vote                recover ALL exhausted dice of one colour
+    Tracks in the Yard      recover 1 exhausted die of each of two colours
+    The Narrow Stair        the next Exhibit you deploy: Target -1
+
+"If you succeed" reads as "when this Exhibit falls", and the reward is
+taken during Resolve, after the dice on the card have come back - so a
+recovery can take the very dice that just buried it.  The other three
+Reward cards (An Unwelcome Embrace, The Night Watchman's Account, Across
+the Chamber) modify a single attempt, which this scenario no longer has as
+a unit, and are not restored.  They are the only reason it matters WHICH
+Exhibit you finish first, and four of the five are Target 3 as dealt, so
+the cheapest evidence is the evidence that pays.
+
+THEY COST A POINT OF RECOVERY: REC 4 BECAME REC 3.  The Rewards are worth
++17.1 points, and at REC 4 they tipped the economy over - burying evidence
+returned dice fast enough that throwing every allowed die beat holding any
+back by 8.4 points, the commit decision disappeared entirely, and the best
+available policy won 66.6%, outside the band.  At REC 3 the finale reads
+49.4% over five seeds and the commit decision is live again (+8.5).  The
+Rewards are the fourth point of recovery, and they have to be earned.
+
+WHAT THE RE-PITCH ALSO FOUND.  The Dossier sits one Exhibit above a cliff:
+12 / 13 / 14 / 15 / 16 / 18 Exhibits read 79.3 / 74.0 / 65.1 / 49.0 / 21.1
+/ 0.2%.  A sixteenth Exhibit is not a difficulty step, it is a different
+game.  simulation/finale.txt carries the rest.
+
+One layout note for whoever edits the supplement next: style.css makes a
+TABLE break-inside: avoid, exactly like a .box, so the five Rewards are a
+list and not a table.  As a table they pushed the book to a fourth page
+carrying one orphaned line.

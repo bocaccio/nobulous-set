@@ -94,7 +94,7 @@
   const fresh = () => ({
     config:{mode:"standalone",tier:"0",finale:"sample",tierOverride:{bat:"",nap:"",aos:""}},
     nap:{day:1,slot:0,hp:2,str:2,rec:2,credits:0,creditGoal:6,coupons:[],deviousCoupons:[],couponWild:false,distinctRecover:false,phase:"apprenticeship",exam:null,outcome:null,completedCredits:[],apprentice:"Prodigy",deck:[],discard:[],rows:[[],[],[]],recoveryDots:[null,null,null],primaryDot:null,choice:null,finf:{mode:"reduce",level:1,cards:[0],spent:[],drawn:[],pendingCurrent:[]},pendingReward:null,nextSlotBonus:{str:0,rec:0,crit:0},activeSlotBonus:{str:0,rec:0,crit:0},notice:"",dice:freshDice(),rollsUsed:0,phaseCommittedSuccesses:0,recovering:false,rollResult:""},
-    nrj:{hp:5,str:2,rec:4,session:0,dossier:[],active:[],buried:[],key:0,recCredit:0,
+    nrj:{hp:5,str:2,rec:3,session:0,dossier:[],active:[],buried:[],key:0,recCredit:0,
       rollsUsed:0,rollResult:"",outcome:null,recovering:false,pool:18,cards:null,dice:freshDice()}
   });
   let state=fresh();
@@ -932,6 +932,17 @@
   const nrjAttention=s=>NRJ_WHEEL[s%5];
   const nrjAllowed=s=>[nrjAttention(s),NRJ_WHEEL[(s+1)%5]];
   const nrjBaseTarget=id=>Math.max(1,SCENARIOS[id][3]-NRJ_OFFSET);
+  // The five Council Tests printed as Rewards that still pay something this
+  // finale has. "If you succeed" reads as "when this Exhibit falls", and the
+  // reward lands after the dice on it come back. generator/check_app_sync.py
+  // checks these names against the printed cards; simulation/finale.py's
+  // REWARDS is the same table, and measures them at +3.8 points.
+  const NRJ_REWARDS={
+    "The Chamber Mechanism":{how:"dice",n:2},
+    "The Sedative Ledger":{how:"dice",n:3},
+    "The Vote":{how:"colour",n:1},
+    "Tracks in the Yard":{how:"spread",n:2},
+    "The Narrow Stair":{how:"discount",n:1}};
   // Damage reads the Target AS IT NOW STANDS, so answering a Target-5
   // Exhibit also makes it hit softer. finale.py's Exhibit.damage does the
   // same, and the rulebook says so in the Answering section.
@@ -962,18 +973,23 @@
   function buildNRJ(){
     const dossier=["Knowledge","Physical","Cover-Up"].flatMap(d=>
       shuffle(SCENARIOS.map((x,i)=>x[1]===d?i:null).filter(i=>i!==null)).slice(0,NRJ_DEAL));
-    state.nrj={hp:5,str:2,rec:4,session:0,dossier:shuffle(dossier),active:[],buried:[],
-      key:0,recCredit:0,rollsUsed:0,rollResult:"",outcome:null,recovering:false,
-      pool:18,cards:nrjSampleMode()?dealNRJPool():null,dice:freshDice()};
+    state.nrj={hp:5,str:2,rec:3,session:0,dossier:shuffle(dossier),active:[],buried:[],
+      key:0,recCredit:0,discount:0,rollsUsed:0,rollResult:"",outcome:null,
+      recovering:false,pool:18,cards:nrjSampleMode()?dealNRJPool():null,dice:freshDice()};
     save();renderNRJ();
   }
   function nrjDeploy(){
     const n=state.nrj;
     if(n.outcome||!n.dossier.length)return;
     const id=n.dossier.pop();
-    n.active.push({id,key:++n.key,target:nrjBaseTarget(id),dealt:0,fresh:true});
+    let target=nrjBaseTarget(id),note="";
+    if(n.discount){                            // The Narrow Stair, if owed
+      target=Math.max(1,target-n.discount);
+      note=` The Narrow Stair reduced its Target by ${n.discount}.`;n.discount=0;
+    }
+    n.active.push({id,key:++n.key,target,dealt:0,fresh:true});
     n.recCredit++;                             // the deploy reward: one die back
-    n.rollResult=`Deployed ${SCENARIOS[id][0]}. Recover ${n.recCredit} ${n.recCredit===1?"die":"dice"} when ready.`;
+    n.rollResult=`Deployed ${SCENARIOS[id][0]}.${note} Recover ${n.recCredit} ${n.recCredit===1?"die":"dice"} when ready.`;
     save();renderNRJ();
   }
   function nrjAnswer(key){
@@ -1017,6 +1033,37 @@
       +(nrjStanding(e)?"":" It falls at the end of the session.");
     save();renderNRJ();
   }
+  function nrjPayReward(e){
+    const n=state.nrj,r=NRJ_REWARDS[SCENARIOS[e.id][0]];
+    if(!r)return "";
+    const exhausted=()=>n.dice.filter(d=>d.zone==="exhausted");
+    const back=d=>{d.zone="available";d.face="";d.selected=false;};
+    if(r.how==="discount"){n.discount+=r.n;return `${SCENARIOS[e.id][0]}: the next Exhibit you deploy has its Target reduced by ${r.n}.`;}
+    if(!exhausted().length)return `${SCENARIOS[e.id][0]} pays nothing: no exhausted dice.`;
+    if(r.how==="dice"){
+      // The player picks which, so this is owed rather than taken.
+      n.recCredit+=r.n;return `${SCENARIOS[e.id][0]}: recover ${r.n} exhausted dice (now owed ${n.recCredit}).`;
+    }
+    if(r.how==="colour"){
+      const counts={};exhausted().forEach(d=>counts[d.color]=(counts[d.color]||0)+1);
+      // Take the colour the NEXT session will want; if none of it is
+      // exhausted, take whichever colour there is most of.
+      const coming=nrjAllowed(n.session+1)[0];
+      const want=counts[coming]?coming:Object.keys(counts).sort((a,b)=>counts[b]-counts[a])[0];
+      const took=exhausted().filter(d=>d.color===want);took.forEach(back);
+      return `${SCENARIOS[e.id][0]}: recovered all ${took.length} exhausted ${want} ${took.length===1?"die":"dice"}.`;
+    }
+    if(r.how==="spread"){
+      const took=[];
+      for(const want of [nrjAllowed(n.session+1)[0],nrjAllowed(n.session+1)[1]]){
+        const d=exhausted().find(x=>x.color===want&&!took.includes(x));
+        if(d){back(d);took.push(d);}
+      }
+      if(!took.length)return `${SCENARIOS[e.id][0]} pays nothing: no exhausted dice of the colours coming up.`;
+      return `${SCENARIOS[e.id][0]}: recovered ${took.map(d=>d.color).join(" and ")}.`;
+    }
+    return "";
+  }
   function nrjEndSession(){
     const n=state.nrj;
     if(n.outcome)return;
@@ -1031,6 +1078,8 @@
     const fell=n.active.filter(e=>!nrjStanding(e));
     fell.forEach(e=>{n.dice.forEach(d=>{if(d.zone==="locked"&&d.ex===e.key){d.zone="exhausted";d.face="";d.ex=null;}});n.buried.push(e.id);});
     if(fell.length)notes.push(`${fell.length} Exhibit${fell.length===1?"":"s"} buried.`);
+    // Rewards pay after those dice are back, so a recovery can take them.
+    fell.forEach(e=>{const r=nrjPayReward(e);if(r)notes.push(r);});
     n.active=n.active.filter(nrjStanding);
     n.active.forEach(e=>e.fresh=false);
     n.recCredit+=n.rec;
@@ -1065,6 +1114,7 @@
         <div class="nrj-exhibit-card" data-nrj-sprite="${e.id}"></div>
         <h3>${s[0]}</h3>
         <p class="nrj-exhibit-meta">${s[1]} · printed ${s[3]} · Damage ${nrjDamage(e)}</p>
+        ${NRJ_REWARDS[s[0]]?`<p class="nrj-exhibit-reward">Pays when it falls: ${s[4].replace(/^Success: /,"")}</p>`:""}
         <p class="nrj-exhibit-track"><strong>${Math.min(e.dealt,e.target)}</strong> / ${e.target}${down?" · falls at end of session":` · ${left} to go`}</p>
         <div class="compact-actions">
           <button data-nrj-apply="${e.key}"${down||n.outcome?" disabled":""}>Apply selected dice</button>

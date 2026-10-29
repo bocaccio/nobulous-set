@@ -37,42 +37,57 @@ WHAT THE COMPONENTS SUPPLY
     Suspicion, the uncapped Target tax: standing Exhibits deal Damage every
     session, which is the same pressure paid in Health instead of arithmetic.
 
-THE PITCH: 53.1%, against a community band of 47-57% and a mean of 53.0%
-across 955 recorded games. Every lever below is measured at that setting.
+THE PITCH: 49.4%, against a community band of 47-57% and a mean of 53.0%
+across 955 recorded games. Measured over five seeds, because one is not a
+pitch: 49.0 49.3 49.3 49.3 50.1. Every figure below is at that setting.
 
-  pace       clock 53.1   against every fixed pace: two 34.2, three 0.4,
-             one and all 0.0, and the throttled variant 41.2
-  recovery   next 53.1 and horizon 54.0, against best 47.2 and now 4.8 -
+  pace       clock 49.0   against every fixed pace: two 31.7, three 1.0,
+             one and all 0.0, and the throttled variant 38.0
+  recovery   horizon 49.0 and next 47.5, against best 40.2 and now 6.8 -
              reading the wheel pays, and grabbing this session's colour is
              far too late
-  Research   spending it 53.1 against 9.3 for ignoring it, with hoarding for
-             the Target 5s at 32.0 and dumping it at 33.6 - WHICH card on
-             WHICH Exhibit is the decision, not whether to spend
-  carry-over 53.1 against 36.2 when progress resets, so the published rule
+  commit     adaptive 49.0 against 41.3 for throwing every allowed die
+  Research   spending it 49.0 against 8.6 for ignoring it, with hoarding
+             for the Target 5s at 28.3 and dumping it at 32.3 - WHICH card
+             on WHICH Exhibit is the decision, not whether to spend
+  Rewards    49.4 against 32.3 with the five Reward cards switched off
+  carry-over 49.0 against 30.7 when progress resets, so the published rule
              that damage on a standing enemy persists is load-bearing
-  blind play 0.3% - a player using none of the levers does not finish
+  blind play 0.4% - a player using none of the levers does not finish
 
-  The three levers, each measured as it is added to blind play: spending the
-  Research Pool +13.1, keeping pace with the clock +20.3, recovering for the
-  colour coming up +19.5. Committing only what you need, which was the
-  prototype's biggest lever, is worth 0.0 - see the errata.
+  The four levers, each measured as it is added to blind play: spending
+  the Research Pool +14.1, keeping pace with the clock +13.0, recovering
+  for the colour coming up +11.5, committing only what you need +8.5.
+
+THE FIVE REWARD CARDS ARE WHY REC IS 3. Eight of the 24 Council Tests are
+printed as Rewards and five of them still pay something this finale has;
+restoring them is worth +17.1 points. At REC 4 that tipped the economy
+over: burying evidence returned dice fast enough that throwing every
+allowed die beat holding any back by 8.4 points, the commit decision
+vanished, and the best available policy won 66.6%. Dropping to REC 3 put
+the finale back in band AND gave the commit lever back. The Rewards are
+the fourth point of recovery, and they have to be earned.
 
 THE CLOCK IS NOT MONOTONIC, and that is a property rather than a bug. The
 window is two colours wide and the wheel is five long, so the length of the
 clock decides which colour the LAST session lands on. Nine sessions puts the
 red session - one die, the hard one - exactly in the middle at session 5, and
-ends on purple, the strongest. Eight sessions reads 24.6% and ten 18.1%,
+ends on purple, the strongest. Eight sessions reads 23.8% and ten 21.8%,
 because ten ENDS on red with the whole remainder still on the table. The
 nine-session clock is chosen for its phase on the wheel, not its length.
 
-WHAT IS STILL STEEP. One point of REC is worth about 20 points of win rate
-(REC 3 reads 33.0%) and a point of STR 88.5%. That is the same binomial knife
-edge imposter.py diagnosed in the superseded finale: a short race of pass/fail
-sessions amplifies any dial that changes income. The Dossier is the gentler
-dial at about 10 points an Exhibit, and the three settings measured in band -
-12 Exhibits at REC 2, 14 at REC 3, 15 at REC 4 - are a real choice rather
-than a knife edge. Health is a buffer and saturates: 3 / 4 / 5 / 6 Health
-read 47.4 / 52.1 / 53.1 / 54.0.
+WHAT IS STEEP, and where the edges are. REC is the usable dial and it is
+not gentle: 2 / 3 / 4 / 5 read 20.2 / 49.0 / 56.3 / 55.5, and that last
+pair is not a typo - past REC 4 the modelled policy stops being the best
+one, exactly as described above. A point of STR is worth 84.4%.
+
+THE DOSSIER SITS ONE EXHIBIT ABOVE A CLIFF. At REC 3 the deck reads
+12 / 13 / 14 / 15 / 16 / 18 Exhibits = 79.3 / 73.7 / 65.2 / 49.0 / 21.0 /
+0.2%. It is a workable ten-points-an-Exhibit dial on the easy side and
+falls off entirely past the shipped 15, so a sixteenth Exhibit is not a
+difficulty step, it is a different game. Health, by contrast, saturates
+and is a buffer rather than a dial: 3 / 4 / 5 / 6 read 43.0 / 48.6 / 49.0
+/ 49.5.
 """
 import collections
 import math
@@ -95,12 +110,31 @@ DEAL = 5                   # Exhibits per domain; a 3-tuple deals unevenly
 SESSIONS = 9               # the clock. Chosen for its phase: see the header
 HEALTH = 5
 STRAT = 2                  # Strategy phases per session
-REC_BASE = 4
+# REC 3 rather than 4: the five Reward cards hand back dice for burying
+# the right evidence, so the extra recovery is earned instead of given.
+# At REC 4 with the Rewards on, throwing every allowed die beat holding
+# any back by 8.4 points and the commit decision disappeared.
+REC_BASE = 3
 BIG = 5                    # an Exhibit at this Target or above deals 2 Damage
 CARRY = True               # damage on a standing Exhibit carries over
 RESEARCH = True            # the campaign's 9 retained cards
 
 DOMAINS = ("Knowledge", "Physical", "Cover-Up")
+
+# THE FIVE REWARD CARDS. Eight of the 24 Council Tests are printed as
+# Rewards; these five pay on success in a currency this finale still has,
+# and "if you succeed" reads as "when the Exhibit falls". The other three
+# (An Unwelcome Embrace, The Night Watchman's Account, Across the Chamber)
+# modify an attempt that no longer exists as a unit, and are not restored.
+# Measured at +1.3 points, which is why they cost nothing to put back.
+REWARDS = {
+    "The Chamber Mechanism": ("dice", 2),       # recover 2 exhausted dice
+    "The Sedative Ledger": ("dice", 3),         # recover 3
+    "The Vote": ("colour", 1),                  # all exhausted of one colour
+    "Tracks in the Yard": ("spread", 2),        # 1 each of two colours
+    "The Narrow Stair": ("discount", 1),        # next Exhibit deployed: -1
+}
+PAY_REWARDS = True
 # Which game's retained cards answer which domain. Mirrors the category match
 # of the superseded finale, scaled from Targets of 8-10 to Targets of 3-5.
 ANSWERS = {"Knowledge": "NAP", "Physical": "BAT", "Cover-Up": "AoS"}
@@ -113,6 +147,31 @@ ANSWERS = {"Knowledge": "NAP", "Physical": "BAT", "Cover-Up": "AoS"}
 # `best` recovery then ahead of `next`).
 WHEEL = ["yellow", "green", "blue", "purple", "red"]
 WINDOW = 2
+
+
+def deck_cards():
+    """(name, domain, kind, printed Target) for the 24 Council Tests, read
+    from generator/build_nrj.py so the model cannot drift from the cards."""
+    import ast
+    src = os.path.join(os.path.dirname(os.path.dirname(
+        os.path.abspath(__file__))), "generator", "build_nrj.py")
+    with io.open(src, encoding="utf-8") as f:
+        tree = ast.parse(f.read())
+    for node in tree.body:
+        if (isinstance(node, ast.Assign) and len(node.targets) == 1
+                and getattr(node.targets[0], "id", "") == "SCEN"):
+            out = []
+            for row in node.value.elts:
+                v = [e.value for e in row.elts[:4] if isinstance(e, ast.Constant)]
+                out.append((v[0], v[1], v[2].split(" - ")[-1], v[3]))
+            return out
+    raise RuntimeError("SCEN not found in generator/build_nrj.py")
+
+
+import io                                    # noqa: E402  (deck_cards needs it)
+
+DECK = deck_cards()
+BY_DOMAIN = {d: [c for c in DECK if c[1] == d] for d in DOMAINS}
 
 
 def fresh():
@@ -132,10 +191,12 @@ def window(dial):
 
 
 class Exhibit(object):
-    __slots__ = ("domain", "target", "dealt", "locked")
+    __slots__ = ("domain", "target", "dealt", "locked", "name", "kind")
 
-    def __init__(self, domain, target):
+    def __init__(self, domain, target, name="", kind=""):
         self.domain = domain
+        self.name = name
+        self.kind = kind
         self.target = target
         self.dealt = 0          # successes carried over from past sessions
         self.locked = []        # dice held on the card, neither side of the pool
@@ -185,8 +246,8 @@ def dossier(rng):
     out = []
     per = DEAL if isinstance(DEAL, tuple) else (DEAL,) * 3
     for d, n in zip(DOMAINS, per):
-        for p in rng.sample(PRINTED, n):
-            out.append(Exhibit(d, p - TARGET_OFFSET))
+        for name, _, kind, p in rng.sample(BY_DOMAIN[d], min(n, len(BY_DOMAIN[d]))):
+            out.append(Exhibit(d, p - TARGET_OFFSET, name, kind))
     rng.shuffle(out)
     return out
 
@@ -201,6 +262,7 @@ class Game(object):
         self.hp = HEALTH
         self.dial = 0
         self.at = 0
+        self.discount = 0          # The Narrow Stair, owed to the next deploy
 
     # -- the state a policy may read. All of it is face-up on the table ----
     def colour(self):
@@ -239,6 +301,37 @@ class Game(object):
         self.exhausted.sort(key=lambda c: key[c])
         for _ in range(min(rec, len(self.exhausted))):
             self.available.append(self.exhausted.pop())
+
+    def pay_reward(self, e):
+        """A Reward Exhibit pays as it falls. Rules: rules/nrj.html, "What
+        the Council lets slip"."""
+        if not PAY_REWARDS:
+            return
+        pay = REWARDS.get(e.name)
+        if not pay:
+            return
+        how, n = pay
+        if how in ("colour", "spread") and not self.exhausted:
+            return                 # nothing exhausted: the Reward pays nothing
+        if how == "dice":
+            self.recover("next", n)
+        elif how == "discount":
+            self.discount += n
+        elif how == "colour":
+            # All exhausted dice of ONE colour: take the colour the next
+            # session wants, falling back to whichever there is most of.
+            want = self.next_colour()
+            if want not in self.exhausted:
+                want = max(set(self.exhausted), key=self.exhausted.count)
+            for c in [c for c in self.exhausted if c == want]:
+                self.exhausted.remove(c)
+                self.available.append(c)
+        elif how == "spread":
+            # One die of each of two colours: the next two on the wheel.
+            for want in (self.next_colour(1), self.next_colour(2)):
+                if want in self.exhausted:
+                    self.exhausted.remove(want)
+                    self.available.append(want)
 
     def reward(self, policy):
         """Rose pays for every enemy you deploy, which is what makes taking
@@ -331,8 +424,12 @@ def want_dice(g, pool, policy):
 def session(g, pace, recov, rew, commit, res):
     taken = []
     for _ in range(how_many(g, pace)):
-        taken.append(g.deck.pop())
-        g.active.append(taken[-1])
+        e = g.deck.pop()
+        if g.discount:                      # The Narrow Stair, if one is owed
+            e.target = max(1, e.target - g.discount)
+            g.discount = 0
+        taken.append(e)
+        g.active.append(e)
         g.reward(rew)
     g.spend_research(taken, res)
 
@@ -390,6 +487,10 @@ def session(g, pace, recov, rew, commit, res):
     for e in buried:
         g.exhausted += e.locked
         e.locked = []
+    # Rewards pay AFTER the dice come back, so "recover 2" can take the
+    # very dice that just buried the card.
+    for e in buried:
+        g.pay_reward(e)
     if not CARRY:
         for e in g.active:                  # the control: progress resets
             g.exhausted += e.locked
@@ -402,7 +503,7 @@ def session(g, pace, recov, rew, commit, res):
     return True
 
 
-def play(rng, pace="clock", recov="next", rew="dice", commit="adaptive",
+def play(rng, pace="clock", recov="horizon", rew="dice", commit="adaptive",
          res="small"):
     g = Game(rng)
     for _ in range(SESSIONS):
@@ -415,7 +516,7 @@ def play(rng, pace="clock", recov="next", rew="dice", commit="adaptive",
 
 KW = ("pace", "recov", "rew", "commit", "res")
 DIALS = ("SESSIONS", "DEAL", "HEALTH", "STRAT", "REC_BASE", "BIG", "CARRY",
-         "RESEARCH", "TARGET_OFFSET", "WINDOW")
+         "RESEARCH", "TARGET_OFFSET", "WINDOW", "PAY_REWARDS")
 
 
 def run(games=GAMES, seed=11, **over):
@@ -479,12 +580,20 @@ if __name__ == "__main__":
 
     print()
     print("1. THE PITCH")
+    print("   Five seeds, because one is not a pitch: a single %d-game cell"
+          % GAMES)
+    print("   lands about a point either side of the mean.")
+    seeds = (11, 23, 47, 101, 7)
     for lab, over in (("as it ships", {}),
+                      ("without the five Reward cards", {"PAY_REWARDS": False}),
                       ("without the Research Pool", {"RESEARCH": False}),
                       ("played blind", dict(recov="best", pace="two",
                                             commit="all", res="none"))):
-        w = run(**over)
-        print("   %-32s %7.1f%%%s" % (lab, w, band(w)))
+        ws = [run(seed=sd, **over) for sd in seeds]
+        mean = sum(ws) / len(ws)
+        print("   %-32s %6.1f%%%s  [%s]"
+              % (lab, mean, band(mean),
+                 " ".join("%.1f" % w for w in ws)))
         sys.stdout.flush()
 
     print()
@@ -535,18 +644,23 @@ if __name__ == "__main__":
                       ("8 sessions (ends on blue)", {"SESSIONS": 8}),
                       ("10 sessions (ENDS ON RED)", {"SESSIONS": 10}),
                       ("12 Exhibits, 4 per domain", {"DEAL": 4}),
+                      ("13 Exhibits (5/4/4)", {"DEAL": (5, 4, 4)}),
+                      ("14 Exhibits (5/5/4)", {"DEAL": (5, 5, 4)}),
+                      ("16 Exhibits (6/5/5)", {"DEAL": (6, 5, 5)}),
                       ("18 Exhibits, 6 per domain", {"DEAL": 6}),
                       ("3 Health", {"HEALTH": 3}),
                       ("4 Health", {"HEALTH": 4}),
                       ("6 Health", {"HEALTH": 6}),
-                      ("REC 3", {"REC_BASE": 3}),
+                      ("REC 2", {"REC_BASE": 2}),
+                      ("REC 4", {"REC_BASE": 4}),
                       ("REC 5", {"REC_BASE": 5}),
                       ("STR 3", {"STRAT": 3}),
                       ("one-colour attention", {"WINDOW": 1}),
                       ("three-colour attention", {"WINDOW": 3}),
                       ("Targets 2/3/4", {"TARGET_OFFSET": 6}),
                       ("Damage 2 at Target 4+", {"BIG": 4}),
-                      ("damage resets each session", {"CARRY": False})):
+                      ("damage resets each session", {"CARRY": False}),
+                      ("no Reward cards", {"PAY_REWARDS": False})):
         w = run(**over)
         print("   %-32s %7.1f%%%s" % (lab, w, band(w)))
         sys.stdout.flush()
@@ -558,14 +672,16 @@ if __name__ == "__main__":
     print("    winning pace and it is one formula, so the depth is in")
     print("    execution. finale10 said as much in its honest-limit note;")
     print("    what is new is that its own throttled variant measures WORSE")
-    print("    than the plain schedule here, 41.2% against 53.1%.")
+    print("    than the plain schedule here, 38.0% against 49.0%.")
     print("  2 'a three-colour window'. At three colours raw strength beats")
-    print("    reading the wheel and the finale reads 90.6%. The window has")
+    print("    reading the wheel and the finale reads 76.1%. The window has")
     print("    to be TWO for the dial's central decision to pay at all.")
     print("  3 its pacing figures. `clock` rounds the schedule and so falls")
     print("    quietly behind at a pressure just over 1 - see how_many().")
     print("  4 'commit only the dice you need', its LARGEST lever at +35.1.")
-    print("    Worth 0.0 here: at REC 4 against Targets of 3 to 5 there is")
-    print("    no pool shortage to be disciplined about, so throwing every")
-    print("    allowed die measures exactly as well. Three levers carry")
-    print("    this finale, not four.")
+    print("    Worth +8.5 here, a quarter of that - and it is the lever")
+    print("    most sensitive to the recovery economy. At REC 4 with the")
+    print("    five Reward cards paying dice back it measured 0.0 and")
+    print("    throwing every allowed die was simply better, which is why")
+    print("    REC is 3: the Rewards ARE the fourth point of recovery, and")
+    print("    they have to be earned.")

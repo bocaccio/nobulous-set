@@ -280,6 +280,24 @@ for key, jsname, fields in (
     check("%s vs %s - %d names and Targets" % (key, jsname, len(g)), not bad,
           "%r" % (bad[:3],))
 
+# The finale restores five printed Rewards by NAME, in three places: the
+# rulebook, suite.js's NRJ_REWARDS and finale.py's REWARDS. A renamed card
+# would silently stop paying, so the names are checked against the deck.
+print()
+print("NRJ - the five restored Reward cards")
+scen = gr["SCEN"]
+printed_rewards = set(r[0] for r in scen if r[2].endswith("Reward"))
+js_rewards = set(js_literal("playtest/dist/suite.js", "NRJ_REWARDS"))
+sim = text("simulation/finale.py")
+rules = text("rules/nrj.html")
+check("suite.js names 5 Reward cards", len(js_rewards) == 5,
+      "%d: %s" % (len(js_rewards), sorted(js_rewards)))
+missing = sorted(js_rewards - printed_rewards)
+check("every one is printed as a Reward card", not missing, "%s" % missing)
+for name in sorted(js_rewards):
+    check("  %s in finale.py and the rulebook" % name,
+          name in sim and name in rules)
+
 print()
 print("BAT - rules and app")
 jb = text("playtest/dist/bat.js")

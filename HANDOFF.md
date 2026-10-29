@@ -867,8 +867,23 @@ Not your job to fix, but worth knowing if Jon raises them:
      the gentler dial, about 10 points an Exhibit, and 12 Exhibits at REC 2
      and 14 at REC 3 also measure in band if the economy ever needs moving.
 
+  **Five of the printed Rewards were restored later the same day**, which
+  cost a point of REC. Eight Council Tests print a Reward; the five that
+  pay in a currency this finale still has are live again, worth +17.1
+  points, and at REC 4 they tipped the economy over - burying evidence
+  paid dice back fast enough that throwing every allowed die beat holding
+  any back and the commit decision vanished. REC 3 put it back in band
+  (49.4%) and gave that decision back. Treat the Rewards as the fourth
+  point of recovery, earned rather than given, and do not raise REC
+  without re-checking whether `commit: all` has taken over again.
+
+  And the Dossier sits ONE EXHIBIT above a cliff: 12 / 13 / 14 / 15 / 16 /
+  18 Exhibits read 79.3 / 74.0 / 65.1 / 49.0 / 21.1 / 0.2%. Adding a
+  sixteenth is not a difficulty step.
+
   Outstanding: the Council Test cards still print Scenario text that this
-  finale does not use, and the rulebook and the lab both have to say so.
+  finale mostly does not use, and the rulebook and the lab both have to
+  say so.
   Reprinting that deck as Exhibits — Target and Damage on the face, no
   Scenario clause — is the obvious follow-up, and it is a `build_nrj.py`
   and `pack.py` job, not a rules one.
