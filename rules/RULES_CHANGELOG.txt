@@ -360,3 +360,73 @@ RE-RENDERED THE SAME DAY
     Overheated/set-aside consequence is driven by the failed element
     count and is untouched.  Wording that let the misses buy that back
     would print a rule the simulator does not play.
+
+====================================================================
+2026-10-29 - THE IMPOSTER FINALE WAS REBUILT
+
+The nine-attempt Suspicion finale is gone. In its place is the design
+proto/finale10.py prototyped: the Council's attention rotates through the
+die colours, and you choose how much of the evidence to face each session
+against a hard clock. rules/nrj.html is rewritten from "The Imposter
+Scenario" to the end, the rulebook PDF is re-rendered, and the playtest
+lab's NRJ tab is rebuilt to match. NO CARD WAS REPRINTED.
+
+WHY. imposter.py had measured the old finale and found three things wrong
+that no dial could fix: "banish 2 available dice" was unpayable in 97.8%
+of the failures that offered it, the Research Pool was spent out by the
+fourth attempt of nine, and every dial was a cliff - one point of REC worth
+17 to 27 points of win rate - so there was no setting between far too easy
+and far too hard.  It read 61.5%, above the 47-57% community band.
+
+THE NEW FINALE, all of it calibrated in simulation/finale.py at 53.1%
+against a band whose mean is 53.0%:
+
+  * THE DOSSIER.  Deal 5 Knowledge, 5 Physical and 5 Cover-Up Council
+    Tests.  An Exhibit's Target is its PRINTED Target MINUS 5, so the
+    existing 24-card library supplies Targets of 3, 4 and 5 with nothing
+    reprinted - every domain already prints 8 8 8 9 9 9 10 10.  Damage is
+    1, or 2 at Target 5, read from the Target as it now stands.
+  * THE ATTENTION.  Yellow, green, blue, purple, red, advancing one step a
+    session from yellow.  You may APPLY only the attention colour and the
+    next one; others may still be committed and rolled.  The window is two
+    colours because one is unplayable (0.0%) and three inverts the
+    recovery decision and reads 90.6%.
+  * NINE SESSIONS, chosen for its PHASE on the wheel rather than its
+    length.  Red falls in the middle, at session 5, and the ninth session
+    is purple.  Eight sessions reads 24.4% and ten 17.8%, because ten ENDS
+    on red with the remainder still on the table.
+  * THE PACE.  Deploy as many Exhibits as you like; each pays you a
+    recovered die.  Everything still standing at the end of a session
+    deals its Damage.  Dice on a standing Exhibit stay on it and their
+    successes carry over; dice on one that falls come back exhausted.
+  * THE RESEARCH POOL SURVIVES with one job.  A retained card answers only
+    its own domain - NAP to Knowledge, BAT to Physical, AoS to Cover-Up -
+    and removes 1 from a just-deployed Exhibit's Target, or 2 for a BAT
+    Specimen or a Stable Advanced Program.  Candidates answer nothing.
+  * GONE: Suspicion, the avoid rule, the "lose 1 Health or banish 2 dice"
+    trade, and 5 HP / REC 3 (now 5 HP / REC 4).
+
+WHAT IT BOUGHT.  Blind play reads 0.3%, so the gap between playing it
+badly and playing it well is 52.8 points, against the old finale's much
+flatter layer.  Three levers carry it, each measured as it is added:
+spending the Research Pool +13.1, keeping pace with the clock +20.3,
+recovering for the colour that is coming +19.5.  Ignoring the Research
+Pool entirely reads 9.3%, so the campaign is load-bearing rather than a
+discount.
+
+WHAT IT DID NOT FIX.  REC is still a cliff - REC 3 reads 33.0% - and STR 3
+reads 88.5%.  A short race of pass/fail sessions amplifies any dial that
+changes income, which is the same diagnosis imposter.py made of the
+version this replaces.  The Dossier is the gentler dial at about 10 points
+an Exhibit, and three settings measured in band (12 Exhibits at REC 2, 14
+at REC 3, 15 at REC 4), so the chosen one is a choice and not a knife edge.
+
+THE PROTOTYPE'S OWN CLAIMS DID NOT ALL SURVIVE the real components; the
+four that did not are listed at the end of simulation/finale.txt.
+
+ONE CARD-DATA FIX, found the same day by cross-checking the app against
+the generators: playtest/dist/app.js printed the Overheated face of
+Council Extraction Protocol, the eighth Advanced Program, with the extra
+success on element 3.  generator/aos.py marks element 2, and the app's own
+PROGRAM_MARKS agreed with the card, so only its PROGRAM_TARGETS was wrong.
+Corrected to match the printed card.

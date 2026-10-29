@@ -824,11 +824,54 @@ Not your job to fix, but worth knowing if Jon raises them:
   54.2% and it fires on 68% of Catastrophic Failures. `MISSES_TO_NEGATE` in
   `aos.py` is the switch; set it to 0 to recover the rule as printed before
   that date. What is left is the SOLO axis — AoS reads 71.2% played without
-  NRJ against 54.2% at Tier III, the widest such gap in the set.
+  NRJ against 54.2% at Tier III, the widest such gap in the set. Those
+  Tier III figures were measured against the finale that has since been
+  replaced; the AoS game itself is unchanged, but any campaign-axis number
+  that leans on the finale needs re-running against `finale.py`.
   The old entry here called out "AoS Unstable" at a 1-in-7 win rate; that
   was a whole-deck difficulty, and difficulty is now the Routine /
   Specialized / Unstable MIX, so the hard end is the Nobulous 2/3/3 mix.
   Still labelled experimental in the rulebook.
+- **The Imposter finale was rebuilt on 2026-10-29, and this closes the
+  finale items above.** The nine-attempt Suspicion scenario is gone;
+  `rules/nrj.html`, `rules/NRJ_Campaign_Supplement.pdf` and the lab's NRJ
+  tab now carry the design `proto/finale10.py` prototyped — a **Dossier** of
+  15 **Exhibits**, the Council's **attention** rotating through the die
+  colours, and a pace you set yourself against a nine-session clock.
+  `simulation/finale.py` is the calibrated model and reads **53.1%** against
+  a band whose mean is 53.0%; `simulation/finale.txt` is its report.
+  `simulation/nrj.py` and `simulation/imposter.py` now describe rules that
+  no longer ship and say so at the top.
+
+  **No card was reprinted.** An Exhibit's Target is its printed Target minus
+  5, and every domain of the Council Test library already prints
+  8 8 8 9 9 9 10 10, so the deck supplies Targets of 3, 4 and 5 as dealt.
+  `finale.py`'s `check_components()` asserts that against `build_nrj.py`, so
+  the day someone edits a Scenario Target the model will say so.
+
+  Three things are worth knowing before touching it:
+
+  1. **The clock is not monotonic, and that is the design.** The attention
+     window is two colours and the wheel is five, so the clock's LENGTH
+     decides which colour the last session lands on. Nine sessions puts red
+     in the middle and ends on purple; ten ends ON red and reads 17.8%,
+     eight reads 24.4%. Changing the session count without checking the
+     phase will look like a balance change and will not be one.
+  2. **The attention window must stay at two colours.** One is unplayable
+     (0.0%); three reads 90.6% AND inverts the recovery decision, so
+     reading the wheel — worth +19.5 at two — stops paying at three. The
+     window is the design, not a difficulty knob.
+  3. **REC is still a cliff**: REC 3 reads 33.0% against REC 4's 53.1%, and
+     STR 3 reads 88.5%. The finale did not escape the binomial knife edge
+     `imposter.py` diagnosed; it escaped being out of band. The Dossier is
+     the gentler dial, about 10 points an Exhibit, and 12 Exhibits at REC 2
+     and 14 at REC 3 also measure in band if the economy ever needs moving.
+
+  Outstanding: the Council Test cards still print Scenario text that this
+  finale does not use, and the rulebook and the lab both have to say so.
+  Reprinting that deck as Exhibits — Target and Damage on the face, no
+  Scenario clause — is the obvious follow-up, and it is a `build_nrj.py`
+  and `pack.py` job, not a rules one.
 - **Every difficulty dial in the set now needs re-pitching.** The policy
   retune of 2026-10-27 moved NAP from 42.1% to 76.0% at Standard, the
   finale from 50.9% to 61.6% and BAT from 46.5% to 53.2%, because the
@@ -845,7 +888,8 @@ Not your job to fix, but worth knowing if Jon raises them:
   The Task Demands were left alone: raising them widens that spread to about
   10 and drops three Apprentices out of band, whether all 26 rise or only
   the 14 whose Request-to-Demand gap the change collapsed to zero.
-  BAT and the finale have not been re-pitched.
+  The finale was re-pitched on 2026-10-29, by replacing it outright rather
+  than by moving a dial — see the item above. BAT has not been.
 - **NAP has little dice pressure, though the +1 pass helped.** Under the
   retuned policy 2% of its commit decisions happened at two dice or fewer,
   against 32% before, with a mean pool of 10.9 dice — it won 76% and never

@@ -35,7 +35,8 @@ figures. Read the fidelity notes before quoting anything here.
 | `bat.py` | Build-a-Tyrant: Splice Phase and Tyrant Battle |
 | `nap.py` | Apprenticeship: the Assignment row, Demand penalties, the Final Exam |
 | `aos.py` | Automaton of Shale: Element allocation, Programs, cycles, Advanced |
-| `nrj.py` | Imposter Scenario: Council attempts, Suspicion, the Research Pool |
+| `finale.py` | **the Imposter finale that ships**: the Dossier, the attention dial, the pace against the clock |
+| `nrj.py` | SUPERSEDED - the nine-attempt Suspicion finale it replaced, kept because other files cite it |
 | `table.py` | the cross-tab: difficulty x NRJ tier x hero card |
 | `run_all.py` | thin wrapper over `table.py` |
 | `healthsweep.py` | tunes the Tyrant's Health against a target ladder |
@@ -43,7 +44,7 @@ figures. Read the fidelity notes before quoting anything here.
 | `sweep.py` | every game, every difficulty, every hero, every NRJ tier |
 | `dicetension.py` | whether running out of dice is actually the pressure, per game |
 | `audit.py` | per card: how often it reaches the table, and whether its text does anything |
-| `imposter.py` | the finale's dice economy: pool, Targets, the failure trade, the dials |
+| `imposter.py` | the SUPERSEDED finale's dice economy, and the diagnosis that led to rebuilding it |
 | `proto/fix.py` | candidate repairs for the finale, and which of them do nothing |
 | `supply.py` | whether the campaign's 18 cards can actually be banked, and whether standalone matches |
 | `protocols.py` | per-Protocol tuning sweep for BAT's NRJ Tier I |
@@ -134,7 +135,8 @@ ladder published in `rules/bat.html` (~70/63/56/49/42) straddles that band.
 
 Against that band the three games now read Easy 62.7 / 56.8 / 79.6% and
 Standard 53.2 / 49.8 / 71.2% (BAT / NAP / AoS) on the no-NRJ axis, with the
-finale at 61.5%. BAT and NAP are in the band at Standard. AoS is in it at
+finale at 53.1% since it was rebuilt on 2026-10-29 (`finale.py`; the
+nine-attempt version it replaced read 61.5%). BAT and NAP are in the band at Standard. AoS is in it at
 Standard on the campaign axis (54.2% at Tier III) but still reads high played
 on its own.
 

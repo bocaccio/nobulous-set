@@ -1,4 +1,12 @@
-"""NRJ Imposter Scenario: survive nine Council attempts.
+"""SUPERSEDED. This models the nine-attempt Suspicion finale, which the
+Dossier finale replaced on 2026-10-29. The shipping simulator is
+`finale.py`; rules/nrj.html no longer describes anything below, and no
+figure from this file describes a game anyone can now play. It is kept
+because imposter.txt, RESULTS.txt and table.py cite it, and because the
+diagnosis it produced - a short race of pass/fail attempts amplifies any
+dial that changes income - is the reason the finale was rebuilt at all.
+
+NRJ Imposter Scenario: survive nine Council attempts.
 
 Rules source: rules/nrj.html. The 24 Council Test Scenarios - name, domain,
 category and printed Target - are transcribed from the SCENARIOS table in

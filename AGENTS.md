@@ -35,6 +35,9 @@ cd rules && python build.py
 cd generator
 python build_bat.py   # or build_nap.py / build_aos.py / build_nrj.py
 python pack.py
+
+# Check the playtest lab still matches the generators (exit code = failures)
+cd generator && python check_app_sync.py
 ```
 
 The card generator has environment-specific output paths; inspect `gen.py`

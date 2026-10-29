@@ -119,68 +119,88 @@ Limitations, and withhold 2 dice of a <em>randomly selected</em> color on top of
 finale.</p>
 
 <h2>The Imposter Scenario</h2>
+<p>The Council has assembled a <b>Dossier</b> on you. Each card in it is an <b>Exhibit</b> &mdash; one thing
+they intend to ask about. You cannot refuse it and you cannot outrun it; you can only decide how much of it to
+face at a time, and you have nine sessions before the Council rules.</p>
 <ol class="seq">
-  <li>Deal 4 Knowledge, 4 Physical and 4 Cover&#8209;Up Scenarios at random from the 24&#8209;card Council Test
-      library and shuffle those 12 into the Scenario deck.</li>
-  <li>The Imposter begins at <b>5 HP / 2 STR / 3 REC</b> with all 17 dice available.</li>
-  <li>Attempt Scenarios until <b>9 have been attempted</b>. Avoided Scenarios do not count.</li>
-  <li>After the ninth attempt, win if the Imposter has at least 1 Health. <b>Reaching 0 Health at any point
-      ends the finale in defeat</b> &mdash; replay the finale, not the campaign.</li>
-</ol>
-<p>STR 2 means each attempt is one roll plus one further Strategy roll, unless a Scenario says otherwise.
-That second roll works the normal way: pick up any dice you have not yet applied &mdash; misses, hits, or
-both &mdash; add any further available dice you want, and throw them together. None of it is compulsory, and
-you choose before anything leaves your hand. A hit is 1 success and a Crit is 2.</p>
-
-<h3>Attempting a Scenario</h3>
-<ol class="seq">
-  <li>Reveal the top Scenario and apply any reveal text.</li>
-  <li>Decide whether to <b>avoid</b> it (below). An avoided Scenario does not advance the attempt count.</li>
-  <li>Decide which Research Pool cards to spend. Apply their Target reductions. Spent cards are gone.</li>
-  <li>Commit dice and roll against the modified Target using the normal Strategy procedure.</li>
-  <li>Resolve the Scenario&rsquo;s success or failure text.</li>
-  <li>Recover up to REC exhausted dice &mdash; REC falls as Suspicion grows. Advance the
-      attempt count.</li>
-</ol>
-<p>You may attempt a Scenario without spending anything.</p>
-
-<h3>Spending Research cards</h3>
-<p>Every Scenario names one category within its domain. A card&rsquo;s value depends on whether it matches:</p>
-<table>
-  <tr><th>Card</th><th>Reduction</th></tr>
-  <tr><td>Matching retained &mdash; NAP</td><td>&minus;2</td></tr>
-  <tr><td>Matching retained &mdash; BAT</td><td>&minus;3 (Specimen &minus;5)</td></tr>
-  <tr><td>Matching retained &mdash; AoS</td><td>Stable &minus;4, Overheated &minus;2</td></tr>
-  <tr><td>Retained, wrong category</td><td>&minus;2</td></tr>
-  <tr><td>Candidate or damaged card</td><td>0</td></tr>
-</table>
-
-<h3>Avoiding a Scenario</h3>
-<p>Discard one eligible AoS card from the Research Pool and place the current Scenario on the bottom of the deck
-without attempting it. Reveal the next one.</p>
-<ul>
-  <li>Only <b>Candidate</b> Advanced Programs and <b>retained Overheated</b> Advanced Programs may be discarded
-      to avoid.</li>
-  <li>Retained <b>Stable</b> Advanced Programs cannot avoid &mdash; they are pure Target reduction.</li>
-  <li>Repeated avoidance is legal while eligible AoS cards remain.</li>
-  <li>If a Scenario specifies where an avoided card goes, follow its text instead.</li>
-</ul>
-
-<h3>Failure and Suspicion</h3>
-<ol class="seq">
-  <li>Place the failed Scenario face&#8209;up in the <b>Suspicion row</b>.</li>
-  <li>Choose: lose 1 Health <b>or</b> banish 2 available dice.</li>
-  <li>If you cannot banish 2 available dice, Health loss is mandatory.</li>
-  <li>Apply any extra failure text printed on the Scenario.</li>
+  <li>Deal 5 Knowledge, 5 Physical and 5 Cover&#8209;Up Scenarios at random from the 24&#8209;card Council Test
+      library. Shuffle those 15 into a face&#8209;down <b>Dossier</b>.</li>
+  <li>An Exhibit&rsquo;s <b>Target</b> is its printed Target <b>minus 5</b>: a printed 8 is a Target of 3, a 9 is
+      4, a 10 is 5. Nothing else printed on a Council Test is used in this scenario.</li>
+  <li>An Exhibit&rsquo;s <b>Damage</b> is <b>1</b>, or <b>2 if its Target is 5</b>.</li>
+  <li>The Imposter begins at <b>5 HP / 2 STR / 4 REC</b> with all 17 dice available.</li>
+  <li>Keep the Research Pool face&#8209;up beside the table. Play <b>9 sessions</b>.</li>
 </ol>
 <div class="box warn">
-  <span class="lbl">Suspicion is uncapped, and it costs you dice</span>
-  Every card in the Suspicion row adds <b>+1 Target to every later Scenario</b> unless that Scenario says
-  otherwise. It also costs recovery: <b>your REC is 3 minus the number of cards in the Suspicion row</b>,
-  to a minimum of 0. The more the Council suspects you, the less of your pool comes back.
+  <span class="lbl">You win by clearing the Dossier, and you lose two ways</span>
+  <b>Win</b> the moment the Dossier is empty and no Exhibit is left standing. <b>Lose</b> if the ninth session
+  ends with any Exhibit still in the Dossier or on the table, or if your Health ever reaches 0. Either way you
+  replay the finale, not the campaign.
 </div>
-<p><em>Terminology:</em> the <b>Research Pool</b> is always the 18 carried&#8209;forward cards. The <b>dice
-pool</b> is the Imposter&rsquo;s dice. Scenario text that discards from the Research Pool never discards a die.</p>
+
+<h3>The Council&rsquo;s attention</h3>
+<p>The Council examines one aspect of you at a time, and you can see what they will turn to next. The
+<b>attention</b> starts on Yellow and advances one step at the end of every session:</p>
+<p><span class="sw Y"></span> Yellow &rarr; <span class="sw G"></span> Green &rarr;
+<span class="sw B"></span> Blue &rarr; <span class="sw P"></span> Purple &rarr;
+<span class="sw R"></span> Red &rarr; back to Yellow.</p>
+<p>You may only <b>apply</b> dice of the attention&rsquo;s colour <b>or the next colour on that list</b>. Other
+dice may still be committed and rolled &mdash; they simply cannot be applied, and they exhaust like any other
+committed die. Every colour is therefore usable for two consecutive sessions, which is what makes recovery a
+plan rather than a reflex: recover for the colour that is <em>coming</em>, not the one in front of you.</p>
+<table>
+  <tr><th>Session</th><td>1</td><td>2</td><td>3</td><td>4</td><td><b>5</b></td><td>6</td><td>7</td><td>8</td>
+      <td>9</td></tr>
+  <tr><th>Attention</th><td><span class="sw Y"></span></td><td><span class="sw G"></span></td>
+      <td><span class="sw B"></span></td><td><span class="sw P"></span></td>
+      <td><span class="sw R"></span></td><td><span class="sw Y"></span></td>
+      <td><span class="sw G"></span></td><td><span class="sw B"></span></td>
+      <td><span class="sw P"></span></td></tr>
+</table>
+<p>Session 5 is the hard one: Red and Yellow are the only colours you may apply, and you own exactly one Red
+die. Session 9 is the kindest, Purple and Red &mdash; so the Dossier should be nearly empty well before the
+Council&rsquo;s attention comes back around.</p>
+
+<h3>A session</h3>
+<ol class="seq">
+  <li><b>Deploy.</b> Take as many Exhibits as you like from the top of the Dossier &mdash; any number, including
+      none &mdash; and place them face&#8209;up in front of you. For <em>each</em> one you deploy, <b>recover 1
+      exhausted die</b>, or mend 1 Health if nothing is exhausted.</li>
+  <li><b>Answer the evidence.</b> Spend Research Pool cards on the Exhibits you just deployed (below). Exhibits
+      deployed in an earlier session can no longer be answered.</li>
+  <li><b>Strategy, twice.</b> Commit dice, roll, and apply hits to your standing Exhibits: a hit is 1 success, a
+      Crit is 2, and only the allowed colours may be applied. Then take up any dice you have not applied, add
+      more if you want, and throw again. Nothing is compulsory.</li>
+  <li><b>Resolve.</b> Every Exhibit <em>still standing</em> deals its Damage to you. Then exhaust every
+      committed die that applied nothing, and every die lying on an Exhibit that has just fallen. Recover up to
+      <b>REC</b> exhausted dice, advance the attention, and tick the clock.</li>
+</ol>
+<p>An Exhibit falls when the successes on it reach its Target. <b>Dice applied to an Exhibit that is still
+standing stay on it, and the successes they scored stay with them</b> &mdash; progress on an Exhibit is never
+lost, and those dice are neither available nor exhausted until the card falls.</p>
+
+<h3>Answering an Exhibit</h3>
+<p>A <b>retained</b> card answers only its own domain, and reduces the Target of one Exhibit you have just
+deployed. A card you spend is gone. Candidates answer nothing at all.</p>
+<table>
+  <tr><th>Retained card</th><th>Answers</th><th>Reduction</th></tr>
+  <tr><td>NAP Final Exam</td><td>Knowledge</td><td>&minus;1</td></tr>
+  <tr><td>BAT Upgrade</td><td>Physical</td><td>&minus;1, or &minus;2 for a Specimen</td></tr>
+  <tr><td>AoS Advanced Program</td><td>Cover&#8209;Up</td><td>&minus;2 if Stable, &minus;1 if Overheated</td></tr>
+  <tr><td>Candidate or damaged card</td><td>&mdash;</td><td>0</td></tr>
+</table>
+<p>Nine retained cards against fifteen Exhibits: the campaign answers a little over half the Dossier at best,
+and only while the right domains are still coming up. No Exhibit can be reduced below Target 1.</p>
+
+<h3>The decision the finale is built on</h3>
+<p>Deploying more than you must is how you get ahead of the clock, and every Exhibit you deploy pays you a die
+for it. Deploying more than you can <em>bury</em> is how you bleed, because everything left standing hits you
+again next session. Count the Exhibits left against the sessions left, and do not fall behind that number
+&mdash; slowing down when Health is short feels prudent and loses games, because the clock kills more reliably
+than the Council does.</p>
+<p><em>Terminology:</em> the <b>Research Pool</b> is the 18 carried&#8209;forward cards. The <b>Dossier</b> is
+the 15 Exhibits. The <b>dice pool</b> is the Imposter&rsquo;s dice. Card text that discards from the Research
+Pool never discards a die.</p>
 
 <h2>Standalone Imposter mode</h2>
 <p>You can play the finale without the campaign:</p>
@@ -189,7 +209,7 @@ pool</b> is the Imposter&rsquo;s dice. Scenario text that discards from the Rese
   <li>Select 3 more from each game as Candidates.</li>
   <li>For retained AoS Advanced Programs, randomize Stable versus Overheated independently.</li>
   <li>For BAT, keep the limit of at most 1 Specimen.</li>
-  <li>Build the 12&#8209;card Scenario deck normally and play the nine&#8209;attempt finale.</li>
+  <li>Build the 15&#8209;card Dossier normally and play the nine&#8209;session finale.</li>
 </ol>
 
 <div class="foot">NRJ &middot; The Nobulous Set &middot; fan expansion for 20 Strong &middot; prototype rules,

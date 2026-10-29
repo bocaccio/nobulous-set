@@ -1,0 +1,68 @@
+THE IMPOSTER FINALE - the attention rotates, and you set the pace
+==========================================================================
+6000 finales a cell. 15 Exhibits, 9 sessions, 17 dice, Targets 3/4/5.
+printed Targets: Knowledge ok; Physical ok; Cover-Up ok
+* marks the 47-57% community band, whose mean is 53.0%.
+
+1. THE PITCH
+   as it ships                         53.1%*
+   without the Research Pool            9.0% 
+   played blind                         0.3% 
+
+2. THE SKILL LAYER - every input face-up, none of it remembered
+   played as the old finale was         0.3% 
+   + spend the Research Pool           13.4%   +13.1
+   + keep pace with the clock          33.6%   +20.3
+   + recover the colour coming up      53.1%*  +19.5
+   + commit only what you need         53.1%*  -0.0
+
+3. IS THE PACE A LIVE DECISION? the replay question.
+   A fixed pace is what a solved scenario looks like.
+   pace: one                            0.0% 
+   pace: two                           34.2% 
+   pace: three                          0.4% 
+   pace: all                            0.0% 
+   pace: clock                         53.1%*
+   pace: ceil                          49.5%*
+   pace: throttle                      41.2% 
+
+4. THE OTHER THREE DECISIONS
+   recover   best 47.2%  now 4.8%  next 53.1%  horizon 54.0%   gap 49.2
+   commit    all 53.1%  adaptive 53.1%   gap 0.0
+   Research  none 9.3%  small 53.1%  big 32.0%  dump 33.6%   gap 43.8
+
+5. THE DIALS - one step each
+   as it ships                         53.1%*
+   8 sessions (ends on blue)           24.4% 
+   10 sessions (ENDS ON RED)           17.8% 
+   12 Exhibits, 4 per domain           78.6% 
+   18 Exhibits, 6 per domain            0.1% 
+   3 Health                            47.4%*
+   4 Health                            52.1%*
+   6 Health                            54.0%*
+   REC 3                               33.0% 
+   REC 5                               53.8%*
+   STR 3                               88.5% 
+   one-colour attention                 0.0% 
+   three-colour attention              90.6% 
+   Targets 2/3/4                       92.2% 
+   Damage 2 at Target 4+               50.4%*
+   damage resets each session          36.2% 
+
+THE PROTOTYPE'S ERRATA - three finale10 claims that the real
+components did not support:
+  1 'the pace cannot be memorised'. The schedule rule IS the
+    winning pace and it is one formula, so the depth is in
+    execution. finale10 said as much in its honest-limit note;
+    what is new is that its own throttled variant measures WORSE
+    than the plain schedule here, 41.2% against 53.1%.
+  2 'a three-colour window'. At three colours raw strength beats
+    reading the wheel and the finale reads 90.6%. The window has
+    to be TWO for the dial's central decision to pay at all.
+  3 its pacing figures. `clock` rounds the schedule and so falls
+    quietly behind at a pressure just over 1 - see how_many().
+  4 'commit only the dice you need', its LARGEST lever at +35.1.
+    Worth 0.0 here: at REC 4 against Targets of 3 to 5 there is
+    no pool shortage to be disciplined about, so throwing every
+    allowed die measures exactly as well. Three levers carry
+    this finale, not four.
