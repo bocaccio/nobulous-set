@@ -83,6 +83,11 @@ CALIBRATION - published 20 Strong titles, community-recorded
     AoS  in band at Standard on the campaign axis (53.5%) since
          the misses-negate rule; still high on its own, 70.8%.
     NRJ  above the band at 61.5%.
+         [2026-10-29: this whole file measures the SUPERSEDED
+          nine-attempt finale, because table.py drives nrj.py. The
+          finale that ships is the Dossier scenario and reads 53.1% -
+          simulation/finale.py and finale.txt. Nothing else in this
+          file is affected; the tiers never applied to the finale.]
 
   THE RETUNE IS WHY, AND IT INVALIDATES EVERY DIFFICULTY DIAL.
   These models used to play one fixed policy that was 6 to 34
