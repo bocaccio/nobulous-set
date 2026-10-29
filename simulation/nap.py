@@ -33,14 +33,27 @@ import random
 from dice import COLORS, EV, policy_value, roll
 
 # (target, demand, recovery dot, skulls) for the 26 Tasks, deck order.
+#
+# EVERY PRINTED TARGET ROSE BY 1 ON 2026-10-28, agreed with Jon: the 26 Task
+# Requests here, the 6 Opportunities and the 12 Final Exam base Targets. Task
+# DEMAND targets did not move. NAP read well above the 47-57% community band
+# at every rung of its printed Credit ladder - Standard was 66.7% at Tier III
+# and 76.0% with no NRJ - and the Credit goal could not fix both axes at any
+# value. One more success on every check does: Standard lands at 51.1% and
+# 49.5%, all six Apprentices land in band on both axes, and the two axes
+# converge (the printed 9.3-point gap becomes -1.6) because raising the Exam
+# Targets is what the no-NRJ game actually leans on. The per-Apprentice
+# spread also narrows, 10.8 to 8.4 at Tier III.
+#
+# TARGET_DELTA below is still a dial on top of these numbers, and still 0.
 TASKS = [
-    (2, 3, "Y", 0), (3, 5, "G", 1), (4, 5, "B", 1), (5, 7, "P", 2),
-    (3, 4, "Y", 0), (3, 4, "G", 0), (3, 5, "B", 0), (5, 6, "P", 0),
-    (4, 5, "G", 1), (4, 9, "B", 1), (4, 5, "B", 1), (4, 9, "P", 1),
-    (5, 9, "P", 1), (6, 7, "P", 1), (3, 5, "Y", 1), (4, 9, "B", 2),
-    (5, 7, "P", 2), (3, 4, "G", 0), (4, 9, "Y", 1), (4, 5, "G", 0),
-    (3, 4, "Y", 0), (3, 4, "G", 0), (4, 5, "B", 0), (6, 8, "P", 1),
-    (4, 9, "B", 1), (4, 5, "P", 0),
+    (3, 3, "Y", 0), (4, 5, "G", 1), (5, 5, "B", 1), (6, 7, "P", 2),
+    (4, 4, "Y", 0), (4, 4, "G", 0), (4, 5, "B", 0), (6, 6, "P", 0),
+    (5, 5, "G", 1), (5, 9, "B", 1), (5, 5, "B", 1), (5, 9, "P", 1),
+    (6, 9, "P", 1), (7, 7, "P", 1), (4, 5, "Y", 1), (5, 9, "B", 2),
+    (6, 7, "P", 2), (4, 4, "G", 0), (5, 9, "Y", 1), (5, 5, "G", 0),
+    (4, 4, "Y", 0), (4, 4, "G", 0), (5, 5, "B", 0), (7, 8, "P", 1),
+    (5, 9, "B", 1), (5, 5, "P", 0),
 ]
 
 # Subject per Task; the last six are unmarked and earn no Credit.
@@ -62,14 +75,14 @@ DEMAND_PENALTY = [1, -1, 2, -1, 1, 1, -1, 1, -1, 1, 2, -1, 1, -1,
 # 1 available die", and while one is on the row "No other Assignment may be
 # worked until this Setback is resolved."
 SETBACKS = [(6, "Y"), (6, "G"), (7, "G"), (7, "B"), (8, "B"), (8, "P")]
-OPPORTUNITIES = [(3, "Y"), (3, "Y"), (4, "Y"), (4, "Y"), (3, "G"), (4, "G")]
+OPPORTUNITIES = [(4, "Y"), (4, "Y"), (5, "Y"), (5, "Y"), (4, "G"), (5, "G")]
 
 # (subject, recovery dot, base Target) for the 12 Final Exams, 3 per subject.
 EXAMS = [
-    ("Anatomy", "B", 5), ("Anatomy", "Y", 6), ("Anatomy", "P", 6),
-    ("Theory", "G", 5), ("Theory", "P", 6), ("Theory", "Y", 7),
-    ("Engineering", "G", 5), ("Engineering", "B", 6), ("Engineering", "B", 6),
-    ("Procedure", "Y", 6), ("Procedure", "P", 7), ("Procedure", "G", 7),
+    ("Anatomy", "B", 6), ("Anatomy", "Y", 7), ("Anatomy", "P", 7),
+    ("Theory", "G", 6), ("Theory", "P", 7), ("Theory", "Y", 8),
+    ("Engineering", "G", 6), ("Engineering", "B", 7), ("Engineering", "B", 7),
+    ("Procedure", "Y", 7), ("Procedure", "P", 8), ("Procedure", "G", 8),
 ]
 
 SUBJECT_LIST = ["Anatomy", "Engineering", "Procedure", "Theory"]

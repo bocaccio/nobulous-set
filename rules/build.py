@@ -4,7 +4,14 @@
     python3 build.py bat nap    # just those
 
 Needs WeasyPrint:  pip install weasyprint
-On Windows WeasyPrint also needs GTK; WSL or any Linux box is far easier.
+
+On Windows WeasyPrint needs GTK's libraries on PATH, not just installed. With
+miniforge they are already there, in Library/bin, and only PATH is missing:
+
+    PATH="/c/Users/weeks/miniforge3/Library/bin:$PATH" python build.py
+
+Verified on Windows 2026-10-28: all four books build, and the two unchanged
+ones came out byte-identical to the committed PDFs.
 
 The HTML files are the master copy. style.css controls every visual choice --
 typeface, the two-column body, the colored section bars, the boxes, the tables.

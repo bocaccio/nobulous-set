@@ -171,14 +171,39 @@ python3 build_bat.py      # or build_nap.py / build_aos.py / build_nrj.py
 python3 pack.py           # re-merges the per-game PnP PDFs afterwards
 ```
 
-Each script writes its sheets and PnP pages into an output directory. **Check
-the paths at the top of `gen.py` first** — they point at the original authoring
-machine (`/home/claude/cards/out`) and will need repointing to `../images`.
+Each script writes its sheets and PnP pages into `gen.py`'s `OUT`, which
+defaults to `generator/out` and is overridden by the `NOBULOUS_CARD_OUT`
+environment variable. The `sys.path.insert(0, '/home/claude/cards')` at the top
+of each `build_*.py` names the original authoring machine; it is dead weight,
+not a blocker, because the script's own directory is already on `sys.path`.
 
 Dependencies: `weasyprint`, `pillow`, `reportlab`, `pypdf`, and `pdftoppm` from
-poppler-utils. **WeasyPrint on Windows needs GTK installed separately** and is
-genuinely awkward; WSL or a Linux container is far easier. The shipped PNGs are
-prebuilt precisely so nobody has to do this to play.
+poppler-utils. The shipped PNGs are prebuilt precisely so nobody has to do this
+to play.
+
+**This DOES run on the Windows machine, and WSL is not needed.** Every
+dependency is already installed; the only trick is that WeasyPrint's GTK
+libraries live in the conda tree and are found through `PATH`, not through
+Python. Verified 2026-10-28 by rendering all four families and diffing against
+the committed art: 40 of 50 sheets came back BYTE-IDENTICAL, including sheets
+generated on the original Linux machine, so the environment is exact and not
+merely close.
+
+```bash
+# from generator/ - the Library/bin entry is what WeasyPrint needs
+PATH="/c/Users/weeks/miniforge3/Library/bin:$PATH"   NOBULOUS_CARD_OUT=/some/scratch/dir   C:/Users/weeks/miniforge3/python.exe build_nap.py
+```
+
+`pdftoppm` is already on `PATH` from MiKTeX (poppler 24.04), so it needs
+nothing. **`pack.py` is not reproducible**: reportlab stamps a
+`/CreationDate`, a `/ModDate` and a random `/ID` into each PnP PDF, so all
+four rewrite on every run whether or not a card changed. Never read a PnP
+diff as evidence of a content change — check the PNGs. `canvas.Canvas(path,
+invariant=1)` in `gen.py`'s `write_pnp` would fix it; not done, because it
+rewrites all four files and is Jon's call. Render to a scratch directory first and diff against `images/` before
+copying anything out — that is how the stale backs below were caught. The same
+`PATH` prefix is all `rules/build.py` needs; its docstring still recommends WSL
+and no longer has to.
 
 After regenerating: commit the changed PNGs, push, and only rebuild
 `NobulousSet.json` if a deck's **card count, grid size or back** changed. Pure
@@ -764,11 +789,42 @@ Each of these only appears a few turns in.
 
 Not your job to fix, but worth knowing if Jon raises them:
 
-- **AoS runs low from Standard down** — 35.0% at Standard and 18.0% at
-  Nobulous against a 47-57% community band, the lowest of the three games,
-  and the only game the 2026-10-27 policy retune did not move at all: its
-  policy was already the best available, so this is the game and not the
-  player.
+- **`images/` had drifted BEHIND `playtest/dist/assets/`, and both behind the
+  generator.** Caught 2026-10-28 on the first full render this repo has had in
+  one pass. Six `*_TTS_back.png` sheets were stale: the four AoS back grids,
+  `BAT_Rats_TTS_back.png` and `NAP_Apprentices_TTS_back.png`. The AoS ones were
+  badly stale — the current `build_aos.py` moves the flavour text to the foot of
+  the card and spells the Catastrophic Failure consequence out in the footer
+  (`OVER_FTR`, `STABLE_FTR`), and none of that had ever been rendered. Worse,
+  `playtest/dist/assets/` already held the CORRECT AoS backs while `images/`
+  held older ones, so the copy was ahead of the tree AGENTS.md calls generated
+  output. All three trees are now in sync. **Re-render everything and diff, not
+  just the deck you touched** — `e54fbcc` re-rendered only the Technicians deck
+  after editing `build_aos.py`, which is how the other four AoS sheets were
+  missed.
+
+- **Two deployment traps in `playtest/dist/`, both of which hide a change
+  rather than break it.** First, `index.html` loads the scripts with cache
+  tokens — `app.js?v=...`, `suite.js?v=...` — so **editing a script without
+  bumping its token ships stale code to every client that has the page
+  cached.** Both tokens were bumped on 2026-10-28; bump them again on the next
+  edit. Second, `load()` restores a saved game with
+  `state = { ...freshState(), ...saved }`, which takes the saved `metrics`
+  whole, so any counter added later is `undefined` in an old save and renders
+  as "undefined" the moment it is incremented. `load()` now merges
+  `freshMetrics()` under the saved metrics; keep that if you add a counter.
+
+- **AoS ran low from Standard down, and this is now addressed.** It read
+  35.0% at Standard and 18.0% at Nobulous against a 47-57% community band,
+  the lowest of the three games, and was the only game the 2026-10-27 policy
+  retune did not move at all — its policy was already the best available, so
+  it was the game and not the player. On 2026-10-28 it gained a rule rather
+  than a dial: **on a Catastrophic Failure you may exhaust 2 misses on failed
+  Elements to negate the Health loss.** Standard at Tier III went 27.9% to
+  54.2% and it fires on 68% of Catastrophic Failures. `MISSES_TO_NEGATE` in
+  `aos.py` is the switch; set it to 0 to recover the rule as printed before
+  that date. What is left is the SOLO axis — AoS reads 71.2% played without
+  NRJ against 54.2% at Tier III, the widest such gap in the set.
   The old entry here called out "AoS Unstable" at a 1-in-7 win rate; that
   was a whole-deck difficulty, and difficulty is now the Routine /
   Specialized / Unstable MIX, so the hard end is the Nobulous 2/3/3 mix.
@@ -778,10 +834,26 @@ Not your job to fix, but worth knowing if Jon raises them:
   finale from 50.9% to 61.6% and BAT from 46.5% to 53.2%, because the
   models had been playing three of the four games 6 to 34 points below
   their own best available policy. Every Credit goal, Health value and
-  Target was calibrated against the old play. Nothing has been re-pitched.
-- **NAP has almost no dice pressure left.** Under the retuned policy 2% of
-  its commit decisions happen at two dice or fewer, against 32% before,
-  with a mean pool of 10.9 dice. It wins 76% and never feels the pool.
+  Target was calibrated against the old play.
+
+  **Two of the four have now been re-pitched, both on 2026-10-28, and
+  neither through a difficulty dial.** AoS gained the misses-negate rule
+  above. NAP had every printed Target raised by 1 — the 26 Task Requests,
+  the 6 Opportunities and the 12 Final Exam bases — which took Standard from
+  76.0% to 49.8% solo and 51.4% at Tier III, with all six Apprentices in
+  band on both axes and the per-Apprentice spread NARROWING, 10.8 to 8.4.
+  The Task Demands were left alone: raising them widens that spread to about
+  10 and drops three Apprentices out of band, whether all 26 rise or only
+  the 14 whose Request-to-Demand gap the change collapsed to zero.
+  BAT and the finale have not been re-pitched.
+- **NAP has little dice pressure, though the +1 pass helped.** Under the
+  retuned policy 2% of its commit decisions happened at two dice or fewer,
+  against 32% before, with a mean pool of 10.9 dice — it won 76% and never
+  felt the pool. Since every printed Target rose by 1 it wins 49.8% and each
+  check costs one more success, so the mean pool is 9.5, the per-game trough
+  5.1, and 16% of games touch two dice or fewer at their worst point against
+  8% before. Still the slackest in the set: `dicetension.py` puts BAT's
+  battle at a mean of 4.6 and the finale at 5.0.
 - **NAP Impostor Tasks have no recovery-color dot**, unlike every other
   Assignment. A rules decision is pending.
 - **Two rules questions are open**, both recorded at the end of

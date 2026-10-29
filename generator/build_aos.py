@@ -11,12 +11,17 @@ REWARD = {'hp1': 'Gain 1 HP',
           'str_up_remove': '+1 STR; remove this Program',
           'opt_placeholder': 'Banish 1 Limitation from the game.'}
 
-STABLE_FTR = ('Any failed element makes this Program Overheated. '
-              '2+ failed elements: also lose 1 HP (Catastrophic Failure).')
-OVER_FTR = ('Any failed element sets this Program aside. '
-            '2+ failed elements: also lose 1 HP (Catastrophic Failure).')
-ADV_FTR = ('2+ failed elements: lose 1 HP and the next Advanced Program is Overheated. '
-           '0-1 failed elements: next Advanced Program is Stable. Recover between Advanced Programs.')
+# "or exhaust 2 misses on them" is scoped to the HEALTH LOSS alone. In aos.py
+# the save sits inside `if failed >= 2:` and only skips `self.hp -= 1`, while
+# `overheated = failed >= 2` is computed outside it - so a negated
+# Catastrophic Failure still overheats the next Advanced Program, which is
+# why ADV_FTR says "either way".
+STABLE_FTR = ('1 failed element: this Program Overheats. '
+              '2+ (Catastrophic Failure): lose 1 HP, or exhaust 2 misses on them.')
+OVER_FTR = ('1 failed element: this Program is set aside. '
+            '2+ (Catastrophic Failure): lose 1 HP, or exhaust 2 misses on them.')
+ADV_FTR = ('2+ failed elements: lose 1 HP, or exhaust 2 misses on them; either way the next '
+           'Advanced Program Overheats. 0-1: it stays Stable. Recover between Advanced Programs.')
 
 
 DECK_ACCENT = {'Routine': '#315c49', 'Specialized': '#4c4a75', 'Unstable': '#7a3838',

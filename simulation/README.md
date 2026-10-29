@@ -132,10 +132,20 @@ Hoplomachus 53%, Tanglewoods Red/White/Gold 47/53/57%). A finished game in this
 system sits near 50%, and that is the yardstick for everything below. The BAT
 ladder published in `rules/bat.html` (~70/63/56/49/42) straddles that band.
 
-Against that band, after the 2026-10-27 policy retune, the three games read
-Easy 62.7 / 81.3 / 47.0% and Standard 53.2 / 76.0 / 35.0% (BAT / NAP / AoS),
-with the finale at 61.6%. BAT Standard is in the band; NAP is well above it;
-AoS is unchanged and still below from Standard down.
+Against that band the three games now read Easy 62.7 / 56.8 / 79.6% and
+Standard 53.2 / 49.8 / 71.2% (BAT / NAP / AoS) on the no-NRJ axis, with the
+finale at 61.5%. BAT and NAP are in the band at Standard. AoS is in it at
+Standard on the campaign axis (54.2% at Tier III) but still reads high played
+on its own.
+
+Two changes on 2026-10-28 moved NAP and AoS there, and neither was a
+difficulty dial. **NAP had every printed Target raised by 1** - the 26 Task
+Requests, the 6 Opportunities and the 12 Final Exam bases, with the Task
+Demands deliberately left alone - which took Standard from 76.0% to 49.8%.
+**AoS gained a rule**: on a Catastrophic Failure you may exhaust 2 misses on
+failed Elements to negate the Health loss, which took Standard at Tier III
+from 27.9% to 54.2%. The calibration block `table.py` prints carries the
+reasoning for both, including why NAP's Demands did not move.
 
 **The retune is the headline and it inverts the old conclusion.** These
 models played one fixed policy, and in three of the four games it was 6 to
@@ -177,8 +187,14 @@ Measured 2026-10-27, 7,200 games a cell, BEFORE the policy retune later the
 same day - so these cells are about 30 points low and are kept only for the
 shape of the dial, which is what the section is about. The retuned Credit
 goal curve, at 4 Setbacks, runs 76.3% at 6 Credits, 65.8% at 8, 55.6% at 10,
-then 52.4 / 50.1 / 48.0% at 12 / 14 / 16: raising the goal is the obvious
-lever for re-pitching NAP, and on its own it bottoms out near 48%.
+then 52.4 / 50.1 / 48.0% at 12 / 14 / 16: raising the goal looks like the
+obvious lever for re-pitching NAP, and on its own it bottoms out near 48%.
+
+It is not the lever that was used. The Credit goal could not put both axes in
+band at any value, because the no-NRJ game leans on the Final Exam Targets
+and the goal does not touch them. Raising every printed Target by 1 did, and
+unlike the goal it also narrowed the per-Apprentice spread. See the
+calibration block in `table.py`.
 
 Every cell here used to read 15-19%, from before the Primary-choice policy
 was corrected - it took the cheaper of the two revealed Assignments and
@@ -373,10 +389,14 @@ Specimens are the Value-5 cards).
 
 | difficulty | no NRJ | Tier I | Tier II | Tier III |
 |---|---|---|---|---|
-| Easy 5/3/0 | 47.0% | 35.2% | 24.9% | 38.7% |
-| Standard 4/3/1 | 35.0% | 25.3% | 16.9% | 27.9% |
-| Hard 3/3/2 | 25.6% | 17.3% | 10.9% | 19.8% |
-| Nobulous 2/3/3 | 18.0% | 11.8% | 6.7% | 13.1% |
+| Easy 5/3/0 | 79.6% | 68.4% | 61.1% | 65.0% |
+| Standard 4/3/1 | 71.2% | 59.1% | 50.7% | 54.2% |
+| Hard 3/3/2 | 62.8% | 49.3% | 40.8% | 44.9% |
+| Nobulous 2/3/3 | 52.6% | 40.2% | 32.0% | 35.2% |
+
+Measured after the misses-negate rule of 2026-10-28. Before it the same cells
+read 47.0 / 35.2 / 24.9 / 38.7% at Easy and 35.0 / 25.3 / 16.9 / 27.9% at
+Standard, which is where every earlier copy of this table sits.
 
 The axis changed. This table used to be indexed by whole Program decks
 (Routine 43.3%, Specialized 9.3%, Unstable 2.2%); difficulty is now the MIX
@@ -384,9 +404,12 @@ of Routine / Specialized / Unstable in the deck, which is why these rows do
 not line up with any earlier copy of this table.
 
 It is still the cleanest tier response of the three and matches the design
-intent exactly: Tier II is the trough (Easy 47.0% -> 24.9%) and Tier III claws
-most of it back (38.7%). Easy is the only row near the community band, and AoS
-starts lower than the other two games and falls about as fast.
+intent exactly: Tier II is the trough (Easy 79.6% -> 61.1%) and Tier III claws
+most of it back (65.0%). What the negate rule did NOT fix is the gap between
+the two axes: AoS now lands in band at Standard on the campaign axis (54.2%)
+while reading 71.2% played on its own, so the solo game is the loose end.
+NAP's +1 pass closed its own version of that gap - 49.8% against 51.4% - by
+raising the Final Exam Targets, and AoS has no equivalent card to lean on.
 
 ### NRJ - the finale
 

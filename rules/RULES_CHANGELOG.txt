@@ -259,3 +259,104 @@ VERIFIED CORRECT, NO CHANGE
     Tier III Devious Opportunities do REPLACE the six base Opportunities.  The
     compendium's looser "add" wording in §6.2 does not match the simulator; the
     rulebook already had it right.
+
+
+====================================================================
+2026-10-28 — BALANCE PASS, after the audit above
+Two changes measured against the 47-57%% community band (955 recorded
+games, mean 53%%).  Neither is a difficulty dial; both are printed on
+the cards or in the books, so both need re-rendering.
+
+
+AoS — GAINED A RULE
+    On a Catastrophic Failure you may EXHAUST 2 MISSES ON FAILED
+    ELEMENTS to negate the Health loss.  Count only misses still
+    showing after any rerolls, and only on elements that actually
+    failed.  Printed in aos.html under Catastrophic Failure.
+    AoS read 35.0%% at Standard and 18.0%% at Nobulous, the lowest in
+    the set, and was the one game the 2026-10-27 policy retune could
+    not move — its policy was already the best available, so this was
+    the game and not the player.  Standard at Tier III went 27.9%% to
+    54.2%%.  The rule fires on 68%% of Catastrophic Failures.
+    MISSES_TO_NEGATE in aos.py is the switch; 0 recovers the old rule.
+    Still open: AoS reads 71.2%% played without NRJ against 54.2%% at
+    Tier III, the widest solo-to-campaign gap in the set.
+
+
+NAP — EVERY PRINTED TARGET ROSE BY 1
+    The 26 Task REQUEST Targets, the 6 Opportunity Targets and the 12
+    Final Exam BASE Targets.  Task DEMAND Targets did not move.
+    NAP read above the band at every rung of its printed Credit ladder
+    — Standard was 76.0%% played on its own — and the Credit goal could
+    not fix both axes at any value, because the no-NRJ game leans on
+    the Final Exam Targets and the goal does not touch them.  One more
+    success on every check does: Standard is 49.8%% on its own and
+    51.4%% at Tier III, all six Apprentices land in band on both axes,
+    and the per-Apprentice spread NARROWS, 10.8 to 8.4.
+    Raising the Demands as well was measured and rejected: it widens
+    that spread to about 10 and drops three Apprentices out of band,
+    whether all 26 rise or only the 14 described below.
+    The printed ladder is unchanged — Easy 5 Credits, Standard 6,
+    Hard 7, Nobulous 8 — but Standard has replaced Nobulous as the
+    in-band rung, and Hard (37.8%%) and Nobulous (28.0%%) now sit below
+    the band, in line with BAT's Nobulous at 28.1%%.
+
+    WHAT THAT COST, and the wording that follows from it:
+    14 of the 26 Tasks now print the SAME number on both faces, so on
+    those cards flipping to Demand is no longer a Target rise — only
+    the printed effect changes, and the penalty bites a slot later.
+    The Request-to-Demand gap went from 1 x14, 2 x6, 4 x1, 5 x5 to
+    0 x14, 1 x6, 3 x1, 4 x5.  nap.html said an unresolved Task flips
+    to its Demand side, "higher Target", which is now false on 14 of
+    26 cards; it reads "a harsher printed effect, and often a higher
+    Target".  The simulator sees the Targets and the Demand penalties
+    but not the per-side effects, so it cannot price what this does to
+    how a flip FEELS.  That is a question for the table.
+
+    One card's text followed the numbers: the NRJ Devious card BORROW
+    THE MASTER'S NOTES named "printed Target 3 or less" on a
+    Request-side non-Credit Task.  Those six Targets went 3,3,4,6,4,4
+    to 4,4,5,7,5,5, so the card would have matched nothing.  Now "4 or
+    less".  No other NRJ Target was raised — leaving the FOLLOWING,
+    IMPOSTOR and DEVIOUS tables at their printed values is what keeps
+    NAP's two axes converged.
+
+RE-RENDERED THE SAME DAY
+    All four rulebooks, all four print-and-play files and every card
+    sheet were rebuilt on 2026-10-28 and copied out to images/,
+    print-and-play/ and playtest/dist/assets/.  WeasyPrint's GTK
+    libraries turned out to be present all along, in the conda tree,
+    and only missing from PATH; see HANDOFF.md section 8.  BAT's and
+    NRJ's rulebooks came back byte-identical, which is the check that
+    the render environment is exact.
+
+    That render also caught SIX SHEETS THAT WERE ALREADY STALE, none of
+    them from this pass: the four AoS back grids, BAT_Rats_TTS_back and
+    NAP_Apprentices_TTS_back.  The AoS backs had never been rendered
+    since build_aos.py moved the flavour text to the foot of the card
+    and put the Catastrophic Failure consequence in the footer.  They
+    are correct now.
+
+    NOW ON THE CARDS: the AoS footers were rewritten the same day, at
+    Jon's direction, so a player reading only the card can see the
+    escape.  They were also SHORTENED in the process — the old wording
+    ran to a four-line block and the new one is three:
+
+        1 failed element: this Program Overheats.
+        2+ (Catastrophic Failure): lose 1 HP, or exhaust 2 misses on them.
+
+    The Overheated face reads "is set aside" in place of the first
+    clause.  Advanced Programs carry the whole thing in one sentence:
+
+        2+ failed elements: lose 1 HP, or exhaust 2 misses on them;
+        either way the next Advanced Program Overheats.  0-1: it stays
+        Stable.  Recover between Advanced Programs.
+
+    "EITHER WAY" IS LOAD-BEARING.  In aos.py the save sits inside
+    `if failed >= 2:` and skips only `self.hp -= 1`, while
+    `overheated = failed >= 2` is computed outside it.  A negated
+    Catastrophic Failure is still a Catastrophic Failure: it still
+    overheats the next Advanced Program, and on an ordinary Program the
+    Overheated/set-aside consequence is driven by the failed element
+    count and is untouched.  Wording that let the misses buy that back
+    would print a rule the simulator does not play.

@@ -9,7 +9,7 @@
     green:["✦","✦","✷","","",""], yellow:["✦","✷","","","",""], red:["✦","✦","✦","✦","✦","✷"]
   };
   const NAP_TASKS = [
-    ["Organize the Specimen Cabinet",2,3,"Y",0],["Prepare the Tissue Samples",3,5,"G",1],["Calibrate the Neural Imager",4,5,"B",1],["Stabilize the Prototype Brain",5,7,"P",2],["Sterilize the Surgical Tools",3,4,"Y",0],["Label the Neural Samples",3,4,"G",0],["Monitor the Growth Vats",3,5,"B",0],["Tune the Cranial Resonator",5,6,"P",0],["Prepare the Transplant Rig",4,5,"G",1],["Align the Memory Probes",4,9,"B",1],["Test the Cerebral Coupler",4,5,"B",1],["Recalibrate the Bone Saw",4,9,"P",1],["Prime the Synaptic Pump",5,9,"P",1],["Map the Council Brain",6,7,"P",1],["Condition the Donor Tissue",3,5,"Y",1],["Verify the Identity Matrix",4,9,"B",2],["Complete the Splice Protocol",5,7,"P",2],["Document the Procedure",3,4,"G",0],["Suture the Donor Incision",4,9,"Y",1],["Decode Nobulous' Lecture Notes",4,5,"G",0],["Update Nobulous' Lab Notes",3,4,"Y",0],["Inventory the Spare Organs",3,4,"G",0],["Clean the Restraint Table",4,5,"B",0],["Reassemble the Automaton Hand",6,8,"P",1],["Dispose of Failed Samples",4,9,"B",1],["Sharpen the Surgical Implements",4,5,"P",0]
+    ["Organize the Specimen Cabinet",3,3,"Y",0],["Prepare the Tissue Samples",4,5,"G",1],["Calibrate the Neural Imager",5,5,"B",1],["Stabilize the Prototype Brain",6,7,"P",2],["Sterilize the Surgical Tools",4,4,"Y",0],["Label the Neural Samples",4,4,"G",0],["Monitor the Growth Vats",4,5,"B",0],["Tune the Cranial Resonator",6,6,"P",0],["Prepare the Transplant Rig",5,5,"G",1],["Align the Memory Probes",5,9,"B",1],["Test the Cerebral Coupler",5,5,"B",1],["Recalibrate the Bone Saw",5,9,"P",1],["Prime the Synaptic Pump",6,9,"P",1],["Map the Council Brain",7,7,"P",1],["Condition the Donor Tissue",4,5,"Y",1],["Verify the Identity Matrix",5,9,"B",2],["Complete the Splice Protocol",6,7,"P",2],["Document the Procedure",4,4,"G",0],["Suture the Donor Incision",5,9,"Y",1],["Decode Nobulous' Lecture Notes",5,5,"G",0],["Update Nobulous' Lab Notes",4,4,"Y",0],["Inventory the Spare Organs",4,4,"G",0],["Clean the Restraint Table",5,5,"B",0],["Reassemble the Automaton Hand",7,8,"P",1],["Dispose of Failed Samples",5,9,"B",1],["Sharpen the Surgical Implements",5,5,"P",0]
   ];
   const NAP_OPPS = ["Take an Unauthorized Break","Raid the Supply Closet","Borrow Better Instruments","Study Nobulous' Notes","Salvage Useful Components","Practice on a Spare Brain"];
   const NAP_REQUEST_EFFECTS = [
@@ -28,18 +28,18 @@
   //   contributeAny [[colors], count] of successful dice across those colors
   //   scoring      a printed change to how successes are counted
   const NAP_EXAMS = [
-    ["Cranial Integrity Inspection","Anatomy","B",5,"Commit dice of at least 3 different colors.",{minColors:3}],
-    ["Fine Motor Assessment","Anatomy","Y",6,"At least 1 Yellow and 1 Blue die must contribute.",{contribute:{yellow:1,blue:1}}],
-    ["Physiological Stress Test","Anatomy","P",6,"At least 2 Blue/Purple dice total must contribute.",{contributeAny:[["blue","purple"],2]}],
-    ["Council Etiquette Simulation","Theory","G",5,"Red cannot be committed; use at least 3 colors.",{noRed:true,minColors:3}],
-    ["Identity Recall Demonstration","Theory","P",6,"At least 1 Blue and 1 Purple die must contribute.",{contribute:{blue:1,purple:1}}],
-    ["Final Impostor Examination","Theory","Y",7,"Use at least 4 different colors. A Red Crit counts as 1 success.",{minColors:4,scoring:"redCrit1"}],
-    ["Neural Response Screening","Engineering","G",5,"At least 1 Crit must contribute to complete this Assignment.",{needCrit:true}],
-    ["Adaptive Reasoning Trial","Engineering","B",6,"Commit at least 4 dice. One Yellow Crit counts as 3 successes.",{minDice:4,scoring:"yellowCrit3"}],
-    ["Council Recognition Drill","Engineering","B",6,"Red cannot be committed. At least 1 Purple die must contribute.",{noRed:true,contribute:{purple:1}}],
-    ["Procedural Knowledge Review","Procedure","Y",6,"Red cannot be committed; use at least 3 different colors.",{noRed:true,minColors:3}],
-    ["Unexpected Policy Debate","Procedure","P",7,"Commit at least 4 dice from at least 3 different colors.",{minDice:4,minColors:3}],
-    ["Nobulous' Comprehensive Review","Procedure","G",7,"Commit at least 5 dice from at least 3 different colors.",{minDice:5,minColors:3}],
+    ["Cranial Integrity Inspection","Anatomy","B",6,"Commit dice of at least 3 different colors.",{minColors:3}],
+    ["Fine Motor Assessment","Anatomy","Y",7,"At least 1 Yellow and 1 Blue die must contribute.",{contribute:{yellow:1,blue:1}}],
+    ["Physiological Stress Test","Anatomy","P",7,"At least 2 Blue/Purple dice total must contribute.",{contributeAny:[["blue","purple"],2]}],
+    ["Council Etiquette Simulation","Theory","G",6,"Red cannot be committed; use at least 3 colors.",{noRed:true,minColors:3}],
+    ["Identity Recall Demonstration","Theory","P",7,"At least 1 Blue and 1 Purple die must contribute.",{contribute:{blue:1,purple:1}}],
+    ["Final Impostor Examination","Theory","Y",8,"Use at least 4 different colors. A Red Crit counts as 1 success.",{minColors:4,scoring:"redCrit1"}],
+    ["Neural Response Screening","Engineering","G",6,"At least 1 Crit must contribute to complete this Assignment.",{needCrit:true}],
+    ["Adaptive Reasoning Trial","Engineering","B",7,"Commit at least 4 dice. One Yellow Crit counts as 3 successes.",{minDice:4,scoring:"yellowCrit3"}],
+    ["Council Recognition Drill","Engineering","B",7,"Red cannot be committed. At least 1 Purple die must contribute.",{noRed:true,contribute:{purple:1}}],
+    ["Procedural Knowledge Review","Procedure","Y",7,"Red cannot be committed; use at least 3 different colors.",{noRed:true,minColors:3}],
+    ["Unexpected Policy Debate","Procedure","P",8,"Commit at least 4 dice from at least 3 different colors.",{minDice:4,minColors:3}],
+    ["Nobulous' Comprehensive Review","Procedure","G",8,"Commit at least 5 dice from at least 3 different colors.",{minDice:5,minColors:3}],
   ];
   // --- NRJ module cards for NAP -------------------------------------
   // Carried on an Assignment as {type, i, nrj:true}: a module card keeps the
@@ -59,7 +59,7 @@
   // Devious Opportunities. "exam" cards are kept and spent during the Final
   // Exam; "now" cards resolve on completion.
   const NAP_DEVIOUS = [
-    ["Borrow the Master's Notes","G",3,"Exhaust 2 available dice to immediately complete one Request-side non-Credit Task with printed Target 3 or less.","now"],
+    ["Borrow the Master's Notes","G",3,"Exhaust 2 available dice to immediately complete one Request-side non-Credit Task with printed Target 4 or less.","now"],
     ["Raid the Supply Cabinet","Y",3,"Final Exam: recover 3 exhausted dice of different colors before any one exam.","exam"],
     ["Extra Credit?","G",3,"Gain 1 Credit in the subject of the most recently completed Task; then reveal an additional Assignment.","now"],
     ["Helpful Test Subject","B",3,"Final Exam: after rolling one exam, reroll any number of failed dice.","exam"],
@@ -682,7 +682,7 @@
       if(type==="t"){const c=NAP_IMPOSTOR[i];return{name:c[0],file:"NRJ_NAP_ImpostorTasks_TTS.png",i,cols:4,rows:1,target:c[2],demand:c[3],dot:dot||"P",skulls:0,text:c[4],subject:c[1],nrj:true};}
       if(type==="o"){const c=NAP_DEVIOUS[i];return{name:c[0],file:"NRJ_NAP_DeviousOpportunities_TTS.png",i,cols:6,rows:1,target:c[2],demand:c[2],dot:c[1],skulls:0,text:c[3],when:c[4],nrj:true};}
     }
-    if(type==="e")return napExamCard(i);if(type==="f")return{name:`FINF ${i+1} · ${FINF_SLOTS[i]||""}`,file:"NAP_SlotsFINF_TTS.png",i:3+(i||0),cols:6,rows:1,target:0,demand:0,dot:"—",skulls:0};if(type==="t")return {name:NAP_TASKS[i][0],file:"NAP_Tasks_TTS.png",i,cols:10,rows:3,target:NAP_TASKS[i][1],demand:NAP_TASKS[i][2],dot:NAP_TASKS[i][3],skulls:NAP_TASKS[i][4]};if(type==="o")return{name:NAP_OPPS[i],file:"NAP_Opportunities_TTS.png",i,cols:6,rows:1,target:[3,3,4,4,3,4][i],demand:[3,3,4,4,3,4][i],dot:i<4?"Y":"G",skulls:0};return{name:NAP_SETBACKS[i][0],file:"NAP_Setbacks_TTS.png",i,cols:6,rows:1,target:NAP_SETBACKS[i][1],demand:NAP_SETBACKS[i][1],dot:NAP_SETBACKS[i][2],skulls:0};}
+    if(type==="e")return napExamCard(i);if(type==="f")return{name:`FINF ${i+1} · ${FINF_SLOTS[i]||""}`,file:"NAP_SlotsFINF_TTS.png",i:3+(i||0),cols:6,rows:1,target:0,demand:0,dot:"—",skulls:0};if(type==="t")return {name:NAP_TASKS[i][0],file:"NAP_Tasks_TTS.png",i,cols:10,rows:3,target:NAP_TASKS[i][1],demand:NAP_TASKS[i][2],dot:NAP_TASKS[i][3],skulls:NAP_TASKS[i][4]};if(type==="o")return{name:NAP_OPPS[i],file:"NAP_Opportunities_TTS.png",i,cols:6,rows:1,target:[4,4,5,5,4,5][i],demand:[4,4,5,5,4,5][i],dot:i<4?"Y":"G",skulls:0};return{name:NAP_SETBACKS[i][0],file:"NAP_Setbacks_TTS.png",i,cols:6,rows:1,target:NAP_SETBACKS[i][1],demand:NAP_SETBACKS[i][1],dot:NAP_SETBACKS[i][2],skulls:0};}
   const NAP_ABILITIES={
     "Prodigy":{when:"Once per Time Slot",text:"When using two dice of the same color as wild, only one of those dice must roll a success."},
     "Slacker":{when:"Passive",text:"Your Time Slot rows hold a maximum of 3 Assignments instead of 4."},

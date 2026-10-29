@@ -272,7 +272,7 @@
     }
     host.innerHTML=html;
   }
-  const freshMetrics = () => ({ programs: 0, failedElements: 0, catastrophes: 0, rerolls: 0, diceExhausted: 0, requiredMisses: 0, fiddly: 0, unclear: 0, good: 0 });
+  const freshMetrics = () => ({ programs: 0, failedElements: 0, catastrophes: 0, negated: 0, rerolls: 0, diceExhausted: 0, requiredMisses: 0, fiddly: 0, unclear: 0, good: 0 });
   const freshState = (level = "Standard") => ({
     started: false, deck: level, level, tech: 0, hp: 2, str: 2, rec: 3, cycle: 1, mode: "program",
     programs: aosFreshPrograms(level), queue: [], discard: [], current: null,
@@ -309,6 +309,10 @@
       const saved = JSON.parse(localStorage.getItem(STORAGE));
       if (saved && saved.dice && saved.metrics) {
         state = { ...freshState(saved.level || "Standard"), ...saved };
+        // The spread above takes the saved metrics whole, so a save written
+        // before a counter existed would leave it undefined and render as
+        // "undefined" once incremented. Fill in any missing counter.
+        state.metrics = { ...freshMetrics(), ...saved.metrics };
         state.level = state.level || (AOS_LEVELS[state.deck] ? state.deck : "Standard");
         if (!(state.programs || []).every(p => p.src)) {
           // Pre-mix save: give every Program the deck it was actually from.
@@ -345,6 +349,10 @@
   function clearSprite(el, text) { el.removeAttribute("style"); el.classList.add("placeholder-card"); el.innerHTML = `<span>${text}</span>`; }
   function dieById(id) { return state.dice.find(d => d.id === id); }
   function value(face) { return face === "crit" ? 2 : face === "hit" ? 1 : 0; }
+  // Misses that must be exhausted on failed elements to negate the Health
+  // loss from a Catastrophic Failure. Mirrors MISSES_TO_NEGATE in
+  // simulation/aos.py; 0 restores the rule as printed before 2026-10-28.
+  const MISSES_TO_NEGATE = 2;
   function zoneDice(zone) { return state.dice.filter(d => d.zone === zone); }
   // Recovery (REC at the end of each Program, 2 for Optimal Implementation, 3 from the Program Reward)
   // always takes exhausted dice only. It is a gated step: select exactly the dice owed, then recover them.
@@ -478,6 +486,10 @@
     if (recoveryPending()) { toast("Recover your dice first."); return; }
     el.failed = el.successes < el.target;
     if (el.usedReroll || el.failed) {
+      // Count the misses BEFORE exhausting, because exhausting clears d.element
+      // and completeProgram can no longer tell which element a die sat on.
+      // Only misses still showing after any rerolls count, per the rulebook.
+      if (el.failed) el.misses = dice.filter(d => value(d.face) === 0).length;
       dice.forEach(d => { d.zone = "exhausted"; d.element = null; }); state.metrics.diceExhausted += dice.length;
       finalizeElement(el); return;
     }
@@ -521,7 +533,22 @@
     if (recoveryPending()) { toast("Recover your dice first."); return; }
     const failed = forcedFailure ? 1 : state.elements.filter(e => e.failed).length;
     state.metrics.programs += 1; state.metrics.failedElements += failed;
-    if (!forcedFailure && failed >= 2) { state.hp = Math.max(0, state.hp - 1); state.metrics.catastrophes += 1; log("Catastrophic Failure: lost 1 HP.", "bad"); }
+    if (!forcedFailure && failed >= 2) {
+      state.metrics.catastrophes += 1;
+      // "You may exhaust 2 misses on failed elements to negate the Health
+      // loss." Applied automatically: every die on a failed element was
+      // exhausted at beginResolve already, so spending the misses costs
+      // nothing and no player would ever decline. MISSES_TO_NEGATE in
+      // simulation/aos.py is the same constant; keep the two in step.
+      const missesOnFailed = state.elements.reduce((n, e) => n + (e.failed ? (e.misses || 0) : 0), 0);
+      if (missesOnFailed >= MISSES_TO_NEGATE) {
+        state.metrics.negated += 1;
+        log(`Catastrophic Failure negated: exhausted ${MISSES_TO_NEGATE} of ${missesOnFailed} misses on failed elements. No Health lost.`, "good");
+      } else {
+        state.hp = Math.max(0, state.hp - 1);
+        log(`Catastrophic Failure: lost 1 HP (only ${missesOnFailed} miss${missesOnFailed === 1 ? "" : "es"} on failed elements, ${MISSES_TO_NEGATE} needed to negate).`, "bad");
+      }
+    }
     state.dice.filter(d => d.zone === "allocated" || d.zone === "withheld").forEach(d => { d.zone = "available"; d.element = null; d.face = null; });
     grantRecovery(state.rec, `REC ${state.rec}`);
     if (state.current.mode === "program") {
@@ -715,7 +742,7 @@
   }
   function renderMetrics() {
     const m = state.metrics;
-    const items = [["Programs",m.programs],["Failed elements",m.failedElements],["Catastrophes",m.catastrophes],["Extra rolls",m.rerolls],["Dice exhausted",m.diceExhausted],["Required misses",m.requiredMisses],["Fiddly / unclear",`${m.fiddly} / ${m.unclear}`],["Good decisions",m.good]];
+    const items = [["Programs",m.programs],["Failed elements",m.failedElements],["Catastrophes",m.catastrophes],["Negated",m.negated],["Extra rolls",m.rerolls],["Dice exhausted",m.diceExhausted],["Required misses",m.requiredMisses],["Fiddly / unclear",`${m.fiddly} / ${m.unclear}`],["Good decisions",m.good]];
     $("metrics").innerHTML = items.map(([k,v]) => `<div class="metric"><span>${k}</span><strong>${v}</strong></div>`).join("");
     $("eventLog").innerHTML = state.log.map(e => `<div class="log-entry"><b>${e.at}</b> · ${e.message}</div>`).join("") || "<div class='log-entry'>The playtest log will appear here.</div>";
   }
@@ -754,7 +781,7 @@
 
   function summary() {
     const m = state.metrics;
-    return `AoS playtest — ${state.level || state.deck} / ${TECHS[state.tech].name}\nResult: ${state.finished ? (state.hp > 0 ? "Win" : "Loss") : "In progress"}\nHP ${state.hp} · STR ${state.str} · REC ${state.rec}\nPrograms ${m.programs}; failed elements ${m.failedElements}; catastrophes ${m.catastrophes}; extra rolls ${m.rerolls}; dice exhausted ${m.diceExhausted}; required-color misses ${m.requiredMisses}\nSignals: fiddly ${m.fiddly}; unclear ${m.unclear}; good decisions ${m.good}\nNotes: ${state.notes || "—"}`;
+    return `AoS playtest — ${state.level || state.deck} / ${TECHS[state.tech].name}\nResult: ${state.finished ? (state.hp > 0 ? "Win" : "Loss") : "In progress"}\nHP ${state.hp} · STR ${state.str} · REC ${state.rec}\nPrograms ${m.programs}; failed elements ${m.failedElements}; catastrophes ${m.catastrophes} (${m.negated} negated); extra rolls ${m.rerolls}; dice exhausted ${m.diceExhausted}; required-color misses ${m.requiredMisses}\nSignals: fiddly ${m.fiddly}; unclear ${m.unclear}; good decisions ${m.good}\nNotes: ${state.notes || "—"}`;
   }
   async function copySummary() { state.notes = $("notes").value; try { await navigator.clipboard.writeText(summary()); toast("Summary copied"); } catch (_) { toast("Copy unavailable; select the notes manually."); } save(); }
   function reset() { if (document.getElementById("gameNav")?.value !== "aos") return; if (!confirm("Start a new playtest? The current in-progress state will be replaced.")) return; state = freshState(state.level || "Standard"); aosApplyInterferenceSetup(); selectedDice.clear(); render(); }

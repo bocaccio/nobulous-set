@@ -110,7 +110,7 @@ FOLLOWING = [
 # "now" resolves on completion. Tier III banks its help for the exams, where NAP
 # is actually lethal; the two immediate cards do things an exam has no room for.
 DEVIOUS = [
- ("Borrow the Master's Notes", 'G', 3, "Exhaust 2 available dice to immediately complete one Request-side non-Credit Task with printed Target 3 or less.", "now"),
+ ("Borrow the Master's Notes", 'G', 3, "Exhaust 2 available dice to immediately complete one Request-side non-Credit Task with printed Target 4 or less.", "now"),
  ("Raid the Supply Cabinet", 'Y', 3, "Final Exam: recover 3 exhausted dice of different colors before any one exam.", "exam"),
  ("Extra Credit?", 'G', 3, "Gain 1 Credit in the subject of the most recently completed Task; then reveal an additional Assignment.", "now"),
  ("Helpful Test Subject", 'B', 3, "Final Exam: after rolling one exam, reroll any number of failed dice.", "exam"),
