@@ -1,0 +1,14 @@
+PRICING THE CONFIDENCE MECHANIC
+========================================================================
+3000 finales x 3 seeds a cell, best of 24 policies.
+* = inside the 47-57% community band.
+
+                                          win     pace  recover
+                                                   gap      gap
+  no confidence - as it ships           49.1%*    17.2      9.2   clock/horizon/adaptive
+  a Reward Exhibit drops one            55.9%*    22.4      5.6   clock/horizon/adaptive
+  ...at 18 Exhibits                      4.2%      3.6      1.8   throttle/horizon/all
+  ...at 21 Exhibits                      0.1%      0.1      0.1   ceil/next/all
+  every 3rd burial drops one            67.0%     32.8      6.3   ceil/horizon/adaptive
+  ...at 18 Exhibits                      5.9%      5.1      0.7   two/next/adaptive
+  ...at 21 Exhibits                      0.3%      0.3      0.2   ceil/horizon/all

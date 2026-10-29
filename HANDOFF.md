@@ -881,6 +881,20 @@ Not your job to fix, but worth knowing if Jon raises them:
   18 Exhibits read 79.3 / 74.0 / 65.1 / 49.0 / 21.1 / 0.2%. Adding a
   sixteenth is not a difficulty step.
 
+  **A confidence mechanic was priced and not applied** -
+  `simulation/proto/confidence.py`, with its table in `confidence.txt`.
+  The question was whether burying evidence should pay in the one currency
+  the finale is short of, the clock. It can: a buried Reward Exhibit
+  discarding one Dossier card reads 55.9% at the shipped 15 Exhibits, in
+  band with no re-pitch. Two things argue against taking it as it stands.
+  It cannot be paid for with a bigger Dossier (18 Exhibits reads 4.2%, 21
+  reads 0.1%) and REC cannot trim it (REC 2 is 20.2%), so it would ship
+  pinned near the top of the band with nothing left to centre it with. And
+  it taxes the attention dial: what reading the wheel is worth falls from
+  9.2 to 5.6, about 40%, buying pacing pressure the finale already has at
+  17.2. The confidence TRACK version, every third burial, reads 67.0% and
+  is out of band outright. Jon's call, not a balance bug.
+
   Outstanding: the Council Test cards still print Scenario text that this
   finale mostly does not use, and the rulebook and the lab both have to
   say so.
