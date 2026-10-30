@@ -494,3 +494,78 @@ Rats holding no Upgrades, Advanced Programming failed twice, 7 points — to
 24-point spread before the finale begins.  NAP contributes a flat 3 points
 however the apprenticeship went, which is the one part of the carryover that
 does not vary at all.
+
+THE TIER III CARRYOVER, 2026-10-29
+----------------------------------
+THE RESEARCH POOL IS NOW THE TIER III CARDS THEMSELVES.  It used to be 18
+cards pulled out of the BAT, NAP and AoS decks - the Final Exams faced, the
+Upgrades the Rats held, the Advanced Programs faced - which meant the finale
+held 18 of the three games' cards hostage and the "standalone" Imposter mode
+still needed all three other boxes open on the table.  Tier III already lays
+out exactly 6 cards a game: 6 Research Notes, 6 Devious Opportunities, 6
+Backdoor Routines.  That is 18, the Pool's own size, and they are the only NRJ
+cards whose end state is physically recorded.  So the campaign is now TIER III
+ONLY, nothing leaves the games' own decks, and standalone needs no other box.
+
+  Research Note        -> Physical     Devious Opportunity -> Knowledge
+  Backdoor Routine     -> Cover-Up
+
+  never claimed            Candidate, answers nothing
+  claimed and spent        retained, reduces a Target by 1
+  claimed and never spent  retained, reduces by 2
+
+Retention caps at 3 a game; AoS's own limit of 2 claims binds first.
+
+WHY RESTRAINT IS THE CARRYOVER.  Every one of these cards exists to make its
+own game easier, so the campaign asks the opposite: finish all three having
+claimed what you could and spent as little of it as possible.
+
+THE CLAIM NOW COSTS SOMETHING, which is the card-text change.  Measured over
+4000 games a seed x 3 seeds, the printed claim conditions were free: AoS's
+Garbage Collection fires in 100% of games, Root Access 99.8%, Resource Fork
+99.7%, and only Diagnostic Port bites at 12.8%; BAT claims 4 or 5 of its 5
+observable Notes in 90% of games.  Claiming cost nothing, so the whole BAT and
+AoS carryover rested on the spend decision.  NAP never had that problem - a
+Devious Opportunity has to be WORKED like an Assignment, in place of a Credit
+Task, and apprentices finish with 0 to 6 completed, about 2.5 on average.
+
+So all twelve BAT and AoS Tier III cards now print a cost alongside the
+condition, in NAP's shape - give up the game's own progress to bank a card:
+
+  Research Notes     "Claiming gives up the next Upgrade a completed
+                      Experiment earns."
+  Backdoor Routines  "Claiming gives up the next Program Reward you would
+                      claim."
+
+Priced in dice it does NOT work: diverting a single die to the Routine costs
+AoS 8 points of win rate and three dice costs 21, because exhaustion is the
+whole game there.  Forking the reward costs about 6 points for the first claim
+in either game - BAT 44.1% -> 38.2% -> 29.5%, AoS 47.7% -> 41.6% -> 38.6% - so
+nobody will ever take a third, and the cap is economic rather than printed.
+
+WHAT THE WHOLE CAMPAIGN NOW COSTS.  Best of 24 finale policies, 6000 x 3
+seeds, each game sampled 4000 x 3:
+
+  play for the game    BAT 44.1  NAP 53.6  AoS 48.6   pool 10.9   finale 44.5%
+  balanced             BAT 42.5  NAP 52.9  AoS 48.6   pool 11.3   finale 46.5%
+  play for the finale  BAT 38.4  NAP 52.9  AoS 43.4   pool 13.1   finale 50.4%
+
+A lost game is replayed alone, so the price of restraint is paid in attempts -
+roughly half an extra game across the campaign - rather than in a gate.
+
+AND ROOT ACCESS WAS BEING THROWN AWAY.  Its use saves a Catastrophic Failure,
+but the printed rule already negates that Health loss for free if you exhaust
+2 misses on failed elements.  Spending the Routine first wastes it on a problem
+already solved.  Holding it until the Health would actually end the game is
+better on both axes: AoS 47.3% -> 48.7% and 0.06 -> 1.57 Routines carried, over
+8000 games x 5 seeds.  aos.html now says so in a box.
+
+A layout note, the same one the Rewards list hit: style.css makes both .box and
+table break-inside: avoid, so the BAT and NAP carryover sections had to come
+back to a single paragraph each.  Written long they pushed both books to a
+fourth page carrying 111 characters.  The NRJ supplement is legitimately 4 pages
+now, with 1660 characters on the last.
+
+STILL OUTSTANDING: the printed cards.  The twelve claim-cost clauses are in
+generator/build_nrj.py and mirrored in the lab, but print-and-play/ has not been
+regenerated, so the PnP card faces still carry the old text.

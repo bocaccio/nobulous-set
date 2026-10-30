@@ -206,6 +206,34 @@ BACKDOOR_NAMES = ("Diagnostic Port", "Privilege Escalation", "Resource Fork",
 #   hoard    never negate; carry both Routines into the finale.
 BACKDOOR_POLICY = "greedy"
 
+# CLAIMING BY WORKING IT, the proposed replacement for the printed claim
+# conditions. Measured 2026-10-29: five of the six conditions fire in 76-100%
+# of games, so claiming costs nothing and the whole AoS carryover rests on the
+# spend decision. NAP does not have that problem, because a Devious
+# Opportunity has to be WORKED like an Assignment before it is yours.
+#
+# The same idiom here: a Backdoor Routine prints a claim Target, and during a
+# Program you may put dice on the ROUTINE instead of on an element. Dice spent
+# claiming are dice not spent on the Program, which is the trade the printed
+# conditions never asked for.
+#
+# PRICED IN DICE IT DOES NOT WORK. Diverting dice to the Routine costs 8
+# points of AoS win rate for ONE die and 21 for three, because exhaustion is
+# the whole game here - the dice economy cannot spare them. Measured
+# 2026-10-29: Target 1 / 1 die / 2 tries reads 40.4% against a baseline of
+# 48.6%, and Target 3 / 3 dice / 3 tries reads 19.8%.
+#
+# SO THE CLAIM FORKS THE REWARD INSTEAD. A Program completed with no failed
+# element claims its printed Program Reward; you may claim a Backdoor Routine
+# INSTEAD. That is NAP's shape exactly - a Devious Opportunity is worked in
+# place of a Credit Task, giving up the game's own progress to bank a card -
+# and it needs no new cost, because two of the Program Rewards are the
+# permanent +1 REC and +1 STR.
+#
+# CLAIM_INSTEAD is how many rewards the policy will trade away. 0 is off, so
+# the calibrated win rates do not move.
+CLAIM_INSTEAD = 0
+
 
 # "On a Catastrophic Failure you may exhaust 2 misses on failed Elements to
 # negate the Health loss." Agreed with Jon 2026-10-28, after Cloudspire,
@@ -271,6 +299,7 @@ class Game(object):
         self.corrupt = False
         self.backdoors = 0
         self.met = set()       # claim conditions met, observation only
+        self.worked = 0        # ...and how many were claimed
         if tier in ("I", "II", "III"):
             self.intf = self.rng.choice(INTERFERENCE)
             if self.intf == "banish_one":
@@ -586,7 +615,12 @@ class Game(object):
             else:
                 self.hp -= 1
         elif failed == 0 and deck in PROGRAM_REWARDS:
-            self.reward(PROGRAM_REWARDS[deck][pid], slot)
+            # The fork: bank a Backdoor Routine instead of taking the reward.
+            if (self.worked < CLAIM_INSTEAD
+                    and self.worked < BACKDOOR_CLAIMS):
+                self.worked += 1
+            else:
+                self.reward(PROGRAM_REWARDS[deck][pid], slot)
         self.completed += 1
         return failed
 

@@ -138,12 +138,12 @@
     ["Stack Overflow","If any element receives 5+ dice, exhaust one die committed to that element before rolling."],
   ];
   const AOS_BACKDOOR = [
-    ["Diagnostic Port","Claim after completing a Program with no element over-allocated.","Later, reroll one entire Strategy roll."],
-    ["Privilege Escalation","Claim after completing an Overheated Program without failing an element.","Later, ignore one Limitation."],
-    ["Resource Fork","Claim after completing a Program while committing no more than Target + 1 dice in total beyond its summed Targets.","Later, recover 2 exhausted dice."],
-    ["Packet Sniffer","Claim after completing a Program with Crits on at least two different elements.","Later, look at the next Limitation before selecting a Program."],
-    ["Garbage Collection","Claim after completing a Program while at least 4 dice are exhausted.","Later, recover one die of each of two different colors."],
-    ["Root Access","Claim after completing a Program with Optimal Implementation on at least two elements.","During Advanced Programming, treat one failed element as successful."],
+    ["Diagnostic Port","Claim after completing a Program with no element over-allocated. Claiming gives up the next Program Reward you would claim.","Later, reroll one entire Strategy roll."],
+    ["Privilege Escalation","Claim after completing an Overheated Program without failing an element. Claiming gives up the next Program Reward you would claim.","Later, ignore one Limitation."],
+    ["Resource Fork","Claim after completing a Program while committing no more than Target + 1 dice in total beyond its summed Targets. Claiming gives up the next Program Reward you would claim.","Later, recover 2 exhausted dice."],
+    ["Packet Sniffer","Claim after completing a Program with Crits on at least two different elements. Claiming gives up the next Program Reward you would claim.","Later, look at the next Limitation before selecting a Program."],
+    ["Garbage Collection","Claim after completing a Program while at least 4 dice are exhausted. Claiming gives up the next Program Reward you would claim.","Later, recover one die of each of two different colors."],
+    ["Root Access","Claim after completing a Program with Optimal Implementation on at least two elements. Claiming gives up the next Program Reward you would claim.","During Advanced Programming, treat one failed element as successful."],
   ];
   const aosTier = () => window.NOBULOUS_TIER ? window.NOBULOUS_TIER.forGame("aos") : "0";
   const LIMITATION_FLAVOR = [

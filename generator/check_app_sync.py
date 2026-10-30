@@ -280,6 +280,45 @@ for key, jsname, fields in (
     check("%s vs %s - %d names and Targets" % (key, jsname, len(g)), not bad,
           "%r" % (bad[:3],))
 
+# The Tier III decks the lab keeps outside suite.js. Every field is compared,
+# because the claim CONDITION now carries the cost clause that prices it -
+# "Claiming gives up..." - and a lab that kept the old wording would teach the
+# player a rule the rulebooks no longer have.
+for key, path, jsname in (("NOTES", "playtest/dist/bat.js", "BAT_NOTES"),
+                          ("BACKDOOR", "playtest/dist/app.js",
+                           "AOS_BACKDOOR")):
+    try:
+        j = js_literal(path, jsname)
+    except KeyError as ex:
+        check("%s vs %s" % (key, jsname), False, str(ex))
+        continue
+    g = gr[key]
+    if len(g) != len(j):
+        check("%s vs %s" % (key, jsname), False,
+              "%d vs %d rows" % (len(g), len(j)))
+        continue
+    bad = [a[0] for a, b in zip(g, j) if list(a[:3]) != list(b[:3])]
+    check("%s vs %s - %d cards, name, condition and effect"
+          % (key, jsname, len(g)), not bad, "%r" % (bad[:3],))
+
+check("the Tier III claim cost is printed on all 12 BAT and AoS cards",
+      text("generator/build_nrj.py").count(
+          "Claiming gives up the next Upgrade a completed Experiment earns.")
+      == 6
+      and text("generator/build_nrj.py").count(
+          "Claiming gives up the next Program Reward you would claim.") == 6)
+
+check("the campaign is Tier III only in all four books",
+      all("Tier III\nonly" in text(f) or "Tier III only" in text(f)
+          for f in ("rules/nrj.html", "rules/bat.html", "rules/nap.html",
+                    "rules/aos.html")))
+
+check("the Research Pool is the Tier III cards, not the games' own decks",
+      "the Tier III cards you claimed" in text("rules/nrj.html")
+      and "6 Research Notes" in text("rules/nrj.html")
+      and "6 Devious Opportunities" in text("rules/nrj.html")
+      and "6 Backdoor Routines" in text("rules/nrj.html"))
+
 # The finale restores five printed Rewards by NAME, in three places: the
 # rulebook, suite.js's NRJ_REWARDS and finale.py's REWARDS. A renamed card
 # would silently stop paying, so the names are checked against the deck.

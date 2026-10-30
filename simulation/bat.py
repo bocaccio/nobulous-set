@@ -268,6 +268,21 @@ NOTES_BONUS = 0
 # proceed at all, so it always fires and no setting withholds it.
 NOTES_POLICY = "greedy"
 
+# HOW A NOTE IS CLAIMED. The printed conditions are free: all five this model
+# can observe fire in 73-98% of games, so claiming costs nothing and the whole
+# BAT carryover rests on the spend decision. NAP does not have that problem,
+# because a Devious Opportunity has to be WORKED like an Assignment - you give
+# up a Credit Task to bank it.
+#
+# The same shape here: a completed Experiment earns the active Rat an Upgrade,
+# and you may bank a Research Note INSTEAD. Upgrades are the Rats' power and
+# their damage soak, so the trade is paid in the game's own progress and needs
+# no new cost mechanism.
+#
+# NOTES_INSTEAD is how many Upgrades the policy will trade away. 0 is off, so
+# the calibrated win rates do not move.
+NOTES_INSTEAD = 0
+
 # Candidate fixes for BAT's tier ladder, which currently rises where NAP's and
 # AoS's dip. Both mirror what those two games already do:
 #   TIER1_EXTRA_SPECIMEN - Tier I carries a flat handicap, the way Following
@@ -798,6 +813,7 @@ class Game(object):
         self.notes = NOTES_BONUS if module_active("notes", tier) else 0
         # Research Notes claimed and not yet spent
         self.claimed = set()   # which Notes have been claimed
+        self.worked = 0        # ...and how many were traded for, not met
         self.recent = []       # outcomes of the last four Experiments
         self.freeborrow = set()
         self.lender = None
@@ -1275,6 +1291,13 @@ class Game(object):
             # 3-Upgrade limit.
             cap = 4 if self.protocol == "questionable_procurement" else 3
             took = len(rat.upgrades) < cap
+            if took and self.worked < NOTES_INSTEAD:
+                # The fork: bank a Research Note instead of the Upgrade. The
+                # card the Rat does not take is discarded below, as it is at
+                # the Upgrade limit.
+                self.worked += 1
+                self.notes += 1
+                took = False
             if took:
                 rat.upgrades.append(Upgrade(splice_value(best),
                                             splice_effect(best),

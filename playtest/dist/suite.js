@@ -104,6 +104,9 @@
   // shape - deck/attempts/suspicion - which would spread over the new
   // state and leave renderNRJ reading undefined arrays. Start it over.
   if(!Array.isArray(state.nrj?.dossier)||!Array.isArray(state.nrj?.active))state.nrj=fresh().nrj;
+  // A Research Pool dealt before the Tier III rewrite carries hot/spec
+  // flags and no `used`, so its cards would render with the wrong worth.
+  if(state.nrj?.cards?.some(c=>c&&!("used" in c)))state.nrj=fresh().nrj;
   if(state.nap.notice===undefined)state.nap.notice="";
   if(!Array.isArray(state.nap.rows)){state.nap.rows=[[],[],[]];if(Array.isArray(state.nap.row))state.nap.rows[state.nap.slot||0]=state.nap.row;delete state.nap.row;}
   state.nap.rows=state.nap.rows.map(row=>row.map(a=>({...a,storedDice:a.storedDice||[]})));
@@ -572,7 +575,7 @@
     return `NRJ Tier ${tierName(tier)} active${over?" (table override)":""} \u00b7 module cards are mixed in.`;
   }
 
-  const ruleFiles={bat:["assets/BAT_Rulebook.pdf?v=avoid1","BAT rules PDF"],nap:["assets/NAP_Rulebook.pdf?v=avoid1","NAP rules PDF"],aos:["assets/AoS_Rulebook.pdf?v=avoid1","AoS rules PDF"],nrj:["assets/NRJ_Campaign_Supplement.pdf?v=avoid1","NRJ rules PDF"]};
+  const ruleFiles={bat:["assets/BAT_Rulebook.pdf?v=tier3","BAT rules PDF"],nap:["assets/NAP_Rulebook.pdf?v=tier3","NAP rules PDF"],aos:["assets/AoS_Rulebook.pdf?v=tier3","AoS rules PDF"],nrj:["assets/NRJ_Campaign_Supplement.pdf?v=tier3","NRJ rules PDF"]};
   function updateTopbar(){const game=$("gameNav")?.value||"home",link=$("rulesLink"),resetBtn=$("resetBtn"),record=$("recordBtn");
     const rules=ruleFiles[game];if(rules){link.href=rules[0];link.textContent=rules[1];link.hidden=false}else link.hidden=true;
     resetBtn.hidden=game==="home";resetBtn.textContent=game==="nrj"?"New finale":"New test";
@@ -915,10 +918,11 @@
   function renderNAP(){const n=state.nap;$("napOverlay").textContent=overlayText("nap");renderTierPickers();$("napStats").innerHTML=stat("Day",n.day)+stat("Time",["Morning","Afternoon","Evening"][n.slot])+stat("HP",n.hp)+stat("STR",n.str)+stat("REC",n.rec)+stat("Credits",`${n.credits} / ${n.creditGoal}`)+stat("Deck",n.deck.length)+stat("Rolls",`${n.rollsUsed} / ${n.str}`);renderNAPDiscard();renderNAPApprentice();renderNAPCoupons();renderNAPSlots();renderNAPReward();renderNAPFINF();renderNAPExam();$("napNotice").textContent=n.notice||"";$("napNotice").classList.toggle("hidden",!n.notice);$("napChoice").classList.toggle("hidden",!n.choice);$("napChoiceB").parentElement.classList.toggle("hidden",!n.choice?.[1]);if(n.choice)n.choice.forEach((x,i)=>{const c=napCard(x.type,x.i,x.nrj,x.dot);setSprite($(i?"napChoiceB":"napChoiceA"),c.file,c.i,c.cols,c.rows);});renderRoller("nap");}
 
   // ---- the Research Pool as cards -------------------------------------
-  // rules/nrj.html, "Standalone Imposter mode": 3 eligible retained cards
-  // and 3 Candidates from each game, retained AoS randomised Stable versus
-  // Overheated independently, BAT kept to at most 1 Specimen.
-  const nrjPick=a=>a[Math.floor(Math.random()*a.length)];
+  // rules/nrj.html, "Standalone Imposter mode": the Research Pool IS the
+  // three Tier III decks - 6 Research Notes, 6 Devious Opportunities, 6
+  // Backdoor Routines - so the finale needs no other box. 3 retained and 3
+  // Candidates from each six, and a coin for every retained card decides
+  // whether it was ever spent in its own game.
   // ---- The Imposter finale -------------------------------------------
   // Rules: rules/nrj.html, "The Imposter Scenario". Calibrated by
   // simulation/finale.py, which reads 53.1% at these numbers against a
@@ -950,12 +954,14 @@
   const nrjStanding=e=>e.dealt<e.target;
   function dealNRJPool(){
     const cards=[];
-    const add=(g,o)=>cards.push({g,kept:false,val:0,hot:false,spec:false,dot:null,spent:false,sel:false,...o});
-    for(let i=0;i<3;i++)add("NAP",{kept:true,val:1,dot:nrjPick(COLORS)});
-    const spec=Math.random()<.5;
-    for(let i=0;i<3;i++)add("BAT",{kept:true,val:(spec&&!i)?2:1,spec:spec&&!i});
-    for(let i=0;i<3;i++){const hot=Math.random()<.5;add("AoS",{kept:true,val:hot?1:2,hot});}
-    for(const g of ["NAP","BAT","AoS"])for(let i=0;i<3;i++)add(g,{});
+    const add=(g,o)=>cards.push({g,kept:false,val:0,used:false,dot:null,spent:false,sel:false,...o});
+    // Each game lays 6 Tier III cards out; 3 are retained and 3 are
+    // Candidates. A retained card that was never spent in its own game
+    // answers for 2, one that was spent answers for 1.
+    for(const g of ["NAP","BAT","AoS"]){
+      for(let i=0;i<3;i++){const used=Math.random()<.5;add(g,{kept:true,val:used?1:2,used});}
+      for(let i=0;i<3;i++)add(g,{});
+    }
     return cards;
   }
   // A retained card answers only its OWN domain. Candidates answer nothing.
@@ -1134,10 +1140,9 @@
     host.classList.toggle("hidden",!sample);
     inputs.classList.toggle("hidden",sample);
     if(!sample){host.innerHTML="";return;}
+    const NRJ_TIER3={NAP:"Devious",BAT:"Note",AoS:"Routine"};
     const label=c=>!c.kept?`${c.g} candidate`
-      :c.g==="NAP"?`NAP exam · ${c.dot[0].toUpperCase()}`
-      :c.g==="BAT"?`BAT ${c.spec?"Specimen":"Upgrade"}`
-      :`AoS ${c.hot?"Overheated":"Stable"}`;
+      :`${c.g} ${NRJ_TIER3[c.g]}${c.used?" · spent":""}`;
     host.innerHTML=["NAP","BAT","AoS"].map(g=>{
       const mine=n.cards.map((c,i)=>[c,i]).filter(([c])=>c.g===g);
       return `<section class="nrj-pool-group"><h3>${g} · answers ${NRJ_DOMAIN[g]}</h3><div class="nrj-pool-row">`+mine.map(([c,i])=>{

@@ -60,12 +60,12 @@ MODS = [
  ("Hypermetabolism", "Senses &middot; Value 4", "Tap: recover +2 dice. While held, exhaust 1 available die at the end of each Experiment the holder attempts, Purple first; if it holds no Purple, exhaust its weakest."),
 ]
 NOTES = [
- ("Unexpected Resilience", "Claim after a Rat completes an Experiment without committing Red.", "Once per game, recover all of that Rat's dice."),
- ("Successful Integration", "Claim when a Rat holds a Specimen.", "Once per game, ignore the +1 Target from revealing a Specimen."),
- ("Acceptable Losses", "Claim after failing 3 Experiments within the same four-Rat rotation.", "Once per game after another failure, choose which revealed Upgrade is Spliced."),
- ("Cross-Species Compatibility", "Claim after a Rat completes an Experiment using a borrowed die.", "Once during the Tyrant battle, the active Rat may tap an Upgrade held by another surviving Rat."),
- ("Controlled Failure", "Claim after deliberately committing zero dice to an Experiment.", "Once later, after revealing an Experiment, discard it and reveal the next one instead."),
- ("Red Means Go", "Claim after Red provides the success that completes an Experiment and at least one die belonging to another Rat also contributed.", "Once per game after using Red, place it directly on any non-active Rat rather than setting it aside."),
+ ("Unexpected Resilience", "Claim after a Rat completes an Experiment without committing Red. Claiming gives up the next Upgrade a completed Experiment earns.", "Once per game, recover all of that Rat's dice."),
+ ("Successful Integration", "Claim when a Rat holds a Specimen. Claiming gives up the next Upgrade a completed Experiment earns.", "Once per game, ignore the +1 Target from revealing a Specimen."),
+ ("Acceptable Losses", "Claim after failing 3 Experiments within the same four-Rat rotation. Claiming gives up the next Upgrade a completed Experiment earns.", "Once per game after another failure, choose which revealed Upgrade is Spliced."),
+ ("Cross-Species Compatibility", "Claim after a Rat completes an Experiment using a borrowed die. Claiming gives up the next Upgrade a completed Experiment earns.", "Once during the Tyrant battle, the active Rat may tap an Upgrade held by another surviving Rat."),
+ ("Controlled Failure", "Claim after deliberately committing zero dice to an Experiment. Claiming gives up the next Upgrade a completed Experiment earns.", "Once later, after revealing an Experiment, discard it and reveal the next one instead."),
+ ("Red Means Go", "Claim after Red provides the success that completes an Experiment and at least one die belonging to another Rat also contributed. Claiming gives up the next Upgrade a completed Experiment earns.", "Once per game after using Red, place it directly on any non-active Rat rather than setting it aside."),
 ]
 NRJ_BLUE = '#1f4e6b'
 # Card backs first: the deck PnPs interleave them behind the fronts.
@@ -190,12 +190,12 @@ CORRUPT = [
  ("Stack Overflow", "If any element receives 5+ dice, exhaust one die committed to that element before rolling."),
 ]
 BACKDOOR = [
- ("Diagnostic Port", "Claim after completing a Program with no element over-allocated.", "Later, reroll one entire Strategy roll."),
- ("Privilege Escalation", "Claim after completing an Overheated Program without failing an element.", "Later, ignore one Limitation."),
- ("Resource Fork", "Claim after completing a Program while committing no more than Target + 1 dice in total beyond its summed Targets.", "Later, recover 2 exhausted dice."),
- ("Packet Sniffer", "Claim after completing a Program with Crits on at least two different elements.", "Later, look at the next Limitation before selecting a Program."),
- ("Garbage Collection", "Claim after completing a Program while at least 4 dice are exhausted.", "Later, recover one die of each of two different colors."),
- ("Root Access", "Claim after completing a Program with Optimal Implementation on at least two elements.", "During Advanced Programming, treat one failed element as successful."),
+ ("Diagnostic Port", "Claim after completing a Program with no element over-allocated. Claiming gives up the next Program Reward you would claim.", "Later, reroll one entire Strategy roll."),
+ ("Privilege Escalation", "Claim after completing an Overheated Program without failing an element. Claiming gives up the next Program Reward you would claim.", "Later, ignore one Limitation."),
+ ("Resource Fork", "Claim after completing a Program while committing no more than Target + 1 dice in total beyond its summed Targets. Claiming gives up the next Program Reward you would claim.", "Later, recover 2 exhausted dice."),
+ ("Packet Sniffer", "Claim after completing a Program with Crits on at least two different elements. Claiming gives up the next Program Reward you would claim.", "Later, look at the next Limitation before selecting a Program."),
+ ("Garbage Collection", "Claim after completing a Program while at least 4 dice are exhausted. Claiming gives up the next Program Reward you would claim.", "Later, recover one die of each of two different colors."),
+ ("Root Access", "Claim after completing a Program with Optimal Implementation on at least two elements. Claiming gives up the next Program Reward you would claim.", "During Advanced Programming, treat one failed element as successful."),
 ]
 intf = [C(n, "NRJ &middot; Nobulous Interference", '<div class="sub">Draw 1 at setup</div>' + T(e),
            'Tier I &mdash; Agenda.', acc=AOS_H) for n, e in INTF]
