@@ -26,47 +26,73 @@ WHAT THE COMPONENTS SUPPLY
     its printed Target MINUS 5, so the deck supplies 3s, 4s and 5s with not
     one card reprinted - three 3s, three 4s and two 5s per domain.
     check_components() asserts that spread against build_nrj.py.
-  2 THE RESEARCH POOL SURVIVES, with one job instead of three. The campaign
-    still carries 18 cards, 9 retained and 9 Candidates, and a retained card
-    spent as you deploy removes 1 from that Exhibit's Target - 2 for a BAT
-    Specimen or a Stable Advanced Program. It answers only its own domain:
-    NAP to Knowledge, BAT to Physical, AoS to Cover-Up. That is the old
-    category match, and it is the only thing that makes the three domains
-    mean anything once the dial is carrying the colour layer.
+  2 THE RESEARCH POOL IS THE TIER III CARDS. Each game lays 6 out - 6
+    Research Notes, 6 Devious Opportunities, 6 Backdoor Routines - so the
+    18-card Pool needs no other box. A card you claimed is retained and a
+    card you never claimed is a Candidate, worth nothing. A retained card
+    spent as you deploy removes 1 from that Exhibit's Target, or 2 if you
+    never spent it in its own game: the campaign's challenge is to finish
+    each game using as little of its own Tier III help as possible. It
+    answers only its own domain - NAP to Knowledge, BAT to Physical, AoS to
+    Cover-Up - which is the old category match, and the only thing that
+    makes the three domains mean anything once the dial carries the colour
+    layer. At most 8 retained cards against 15 Exhibits: 3 a game, and 2
+    from AoS, whose own claim limit binds before the cap does.
   3 THE AVOID RULE IS GONE, because choosing your pace replaces it. So is
     Suspicion, the uncapped Target tax: standing Exhibits deal Damage every
     session, which is the same pressure paid in Health instead of arithmetic.
 
-THE PITCH: 49.4%, against a community band of 47-57% and a mean of 53.0%
-across 955 recorded games. Measured over five seeds, because one is not a
-pitch: 49.0 49.3 49.3 49.3 50.1. Every figure below is at that setting.
+THE PITCH: 50.6%, re-measured 2026-10-30 against the Tier III pool - see
+WHAT THE RE-PITCH MOVED below. Against a community band of 47-57% and a mean
+of 53.0% across 955 recorded games, and against the 50/40/30/20 difficulty
+ladder, where it is the EASY rung. Measured over five seeds, because one is
+not a pitch: 51.4 50.5 50.9 49.4 50.9. Every figure below is at that setting.
 
-  pace       clock 49.0   against every fixed pace: two 31.7, three 1.0,
-             one and all 0.0, and the throttled variant 38.0
-  recovery   horizon 49.0 and next 47.5, against best 40.2 and now 6.8 -
+  pace       clock 51.4   against every fixed pace: two 33.1, three 1.5,
+             one and all 0.0, and the throttled variant 40.1
+  recovery   horizon 51.4 and next 50.1, against best 43.0 and now 7.5 -
              reading the wheel pays, and grabbing this session's colour is
              far too late
-  commit     adaptive 49.0 against 41.3 for throwing every allowed die
-  Research   spending it 49.0 against 8.6 for ignoring it, with hoarding
-             for the Target 5s at 28.3 and dumping it at 32.3 - WHICH card
+  commit     adaptive 51.4 against 39.1 for throwing every allowed die
+  Research   spending it 51.4 against 8.6 for ignoring it, with hoarding
+             for the Target 5s at 36.0 and dumping it at 33.9 - WHICH card
              on WHICH Exhibit is the decision, not whether to spend
-  Rewards    49.4 against 32.3 with the five Reward cards switched off
-  carry-over 49.0 against 30.7 when progress resets, so the published rule
+  Rewards    50.6 against 37.0 with the five Reward cards switched off
+  carry-over 51.4 against 32.4 when progress resets, so the published rule
              that damage on a standing enemy persists is load-bearing
   blind play 0.4% - a player using none of the levers does not finish
 
   The four levers, each measured as it is added to blind play: spending
-  the Research Pool +14.1, keeping pace with the clock +13.0, recovering
-  for the colour coming up +11.5, committing only what you need +8.5.
+  the Research Pool +13.0, keeping pace with the clock +14.3, recovering
+  for the colour coming up +10.7, committing only what you need +11.8.
+
+  Every figure above is the BEST cell of the 224-cell policy grid, and the
+  policy this module models IS that cell - clock / horizon / adaptive /
+  small. This project has mis-pitched a game once by measuring it against a
+  weaker policy than the one a player would find; the grid search is the
+  guard against doing it twice.
+
+WHAT THE RE-PITCH MOVED. research() used to deal the pool the 2026-10-29
+Tier III rework replaced - a NAP card always worth 1, a BAT card worth 2 only
+on a 1-in-4 Specimen, an AoS card worth 2 on a coin flip - so every figure
+measured before 2026-10-30 was against a pool weaker than the printed one.
+The correction is worth +1.2 points, not the 8 it looks like, because it
+arrived with a second correction pulling the other way: AoS's own limit of 2
+claims a game means the campaign can carry 8 retained cards and not 9.
+Dealing 9 of them reads 57.6%. Nothing downstream needed re-tuning, and the
+COMMIT lever got stronger rather than weaker - 12.3 against 7.7 - because a
+pool that lowers Targets is a pool that makes committing exactly enough pay
+more.
 
 THE FIVE REWARD CARDS ARE WHY REC IS 3. Eight of the 24 Council Tests are
 printed as Rewards and five of them still pay something this finale has;
-restoring them is worth +17.1 points. At REC 4 that tipped the economy
-over: burying evidence returned dice fast enough that throwing every
-allowed die beat holding any back by 8.4 points, the commit decision
-vanished, and the best available policy won 66.6%. Dropping to REC 3 put
-the finale back in band AND gave the commit lever back. The Rewards are
-the fourth point of recovery, and they have to be earned.
+restoring them is worth +13.6 points. At REC 4 that tips the economy over,
+and the commit decision does not merely die, it INVERTS: throwing every
+allowed die beats holding any back by 10.0 points and the best available
+policy wins 65.8%, out of band. Re-measured on the Tier III pool, the
+commit gap reads +19.1 at REC 2, +11.0 at REC 3, -10.0 at REC 4 and -11.6
+at REC 5. REC 3 is the last rung where committing is a decision. The
+Rewards are the fourth point of recovery, and they have to be earned.
 
 THE CLOCK IS NOT MONOTONIC, and that is a property rather than a bug. The
 window is two colours wide and the wheel is five long, so the length of the
@@ -77,17 +103,17 @@ because ten ENDS on red with the whole remainder still on the table. The
 nine-session clock is chosen for its phase on the wheel, not its length.
 
 WHAT IS STEEP, and where the edges are. REC is the usable dial and it is
-not gentle: 2 / 3 / 4 / 5 read 20.2 / 49.0 / 56.3 / 55.5, and that last
-pair is not a typo - past REC 4 the modelled policy stops being the best
-one, exactly as described above. A point of STR is worth 84.4%.
+not gentle: 2 / 3 / 4 / 5 read 24.3 / 51.4 / 54.6 / 55.4, and that last
+pair is not a typo - past REC 3 the modelled policy stops being the best
+one, exactly as described above. A point of STR is worth 85.4%.
 
 THE DOSSIER SITS ONE EXHIBIT ABOVE A CLIFF. At REC 3 the deck reads
-12 / 13 / 14 / 15 / 16 / 18 Exhibits = 79.3 / 73.7 / 65.2 / 49.0 / 21.0 /
-0.2%. It is a workable ten-points-an-Exhibit dial on the easy side and
+12 / 13 / 14 / 15 / 16 / 18 Exhibits = 79.4 / 72.5 / 65.6 / 51.4 / 21.1 /
+0.2%. It is a workable seven-points-an-Exhibit dial on the easy side and
 falls off entirely past the shipped 15, so a sixteenth Exhibit is not a
 difficulty step, it is a different game. Health, by contrast, saturates
-and is a buffer rather than a dial: 3 / 4 / 5 / 6 read 43.0 / 48.6 / 49.0
-/ 49.5.
+and is a buffer rather than a dial: 3 / 4 / 5 / 6 read 43.3 / 49.2 / 51.4
+/ 51.4.
 """
 import collections
 import math
@@ -117,7 +143,12 @@ STRAT = 2                  # Strategy phases per session
 REC_BASE = 3
 BIG = 5                    # an Exhibit at this Target or above deals 2 Damage
 CARRY = True               # damage on a standing Exhibit carries over
-RESEARCH = True            # the campaign's 9 retained cards
+RESEARCH = True            # the campaign's retained Tier III cards
+# How many cards each game carries, NAP / BAT / AoS. The printed cap is 3 a
+# game, but AoS's own limit of 2 claims a game binds first, so 8 is the most
+# any campaign can carry and the standalone rule deals the same.
+RETAIN = (3, 3, 2)
+SPENT = 0.5                # P(a retained card was spent in its own game)
 
 DOMAINS = ("Knowledge", "Physical", "Cover-Up")
 
@@ -220,18 +251,20 @@ class Card(object):
 
 
 def research(rng):
-    """The 9 retained cards, 3 per game, as the standalone rules deal them.
+    """The retained Tier III cards, as rules/nrj.html deals them.
 
-    BAT keeps at most 1 Specimen and AoS randomises Stable against
-    Overheated, both per rules/nrj.html's standalone mode - so the pool's
-    strength varies between finales exactly as a campaign's would.
+    Every retained card is worth 2 if it was never spent in its own game and
+    1 if it was, whichever game it came from - the Tier III scheme of
+    2026-10-29, which replaced the Specimen and Stable/Overheated values this
+    function used to deal. SPENT is the chance a card was cashed in, so the
+    pool's strength varies between finales exactly as a campaign's would.
     """
     if not RESEARCH:
         return []
-    out = [Card("NAP", 1) for _ in range(3)]
-    specimen = rng.randrange(4) == 0          # at most 1, and not always
-    out += [Card("BAT", 2 if specimen and i == 0 else 1) for i in range(3)]
-    out += [Card("AoS", 2 if rng.random() < 0.5 else 1) for _ in range(3)]
+    out = []
+    for game, n in zip(("NAP", "BAT", "AoS"), RETAIN):
+        out += [Card(game, 1 if rng.random() < SPENT else 2)
+                for _ in range(n)]
     return out
 
 
@@ -348,9 +381,9 @@ class Game(object):
 
     def spend_research(self, fresh_exhibits, policy):
         """A retained card removes 1 from an Exhibit of its own domain, or 2
-        for a Specimen or a Stable Program. Only just-deployed Exhibits can
-        be answered: once the Council has heard the evidence, producing your
-        credentials is too late.
+        if it was never spent in its own game. Only just-deployed Exhibits
+        can be answered: once the Council has heard the evidence, producing
+        your credentials is too late.
         """
         if policy == "none" or not self.pool:
             return
@@ -516,7 +549,8 @@ def play(rng, pace="clock", recov="horizon", rew="dice", commit="adaptive",
 
 KW = ("pace", "recov", "rew", "commit", "res")
 DIALS = ("SESSIONS", "DEAL", "HEALTH", "STRAT", "REC_BASE", "BIG", "CARRY",
-         "RESEARCH", "TARGET_OFFSET", "WINDOW", "PAY_REWARDS")
+         "RESEARCH", "RETAIN", "SPENT", "TARGET_OFFSET", "WINDOW",
+         "PAY_REWARDS")
 
 
 def run(games=GAMES, seed=11, **over):
@@ -666,22 +700,53 @@ if __name__ == "__main__":
         sys.stdout.flush()
 
     print()
+    print("6. THE RESEARCH POOL, re-pitched 2026-10-30")
+    print("   Every retained Tier III card is worth 2 if it was never spent")
+    print("   in its own game and 1 if it was. RETAIN is 3/3/2 because AoS")
+    print("   may only claim 2 a game, so 8 is all a campaign can carry.")
+    for lab, over in (("as it ships, 3/3/2 at a coin flip", {}),
+                      ("3/3/3 - 9 retained, unreachable", {"RETAIN": (3, 3, 3)}),
+                      ("nothing spent - maximal restraint", {"SPENT": 0.0}),
+                      ("everything spent", {"SPENT": 1.0}),
+                      ("2/2/2 - claimed sparingly", {"RETAIN": (2, 2, 2)}),
+                      ("1/1/1", {"RETAIN": (1, 1, 1)}),
+                      ("no retained cards at all", {"RESEARCH": False})):
+        ws = [run(seed=sd, **over) for sd in seeds]
+        mean = sum(ws) / len(ws)
+        print("   %-34s %6.1f%%%s" % (lab, mean, band(mean)))
+        sys.stdout.flush()
+    print()
+    print("   AND WHETHER COMMITTING IS STILL A DECISION. The pool lowers")
+    print("   Targets, so it could have done what REC 4 does and made")
+    print("   throwing every allowed die simply correct. It did the")
+    print("   opposite - the gap is wider than it was on the old pool.")
+    for rec in (2, 3, 4, 5):
+        a = sum(run(seed=sd, REC_BASE=rec, commit="adaptive")
+                for sd in seeds) / len(seeds)
+        b = sum(run(seed=sd, REC_BASE=rec, commit="all")
+                for sd in seeds) / len(seeds)
+        print("   REC %d  adaptive %5.1f%%  all %5.1f%%   gap %+5.1f%s"
+              % (rec, a, b, a - b,
+                 "   <- shipped" if rec == REC_BASE else ""))
+        sys.stdout.flush()
+
+    print()
     print("THE PROTOTYPE'S ERRATA - three finale10 claims that the real")
     print("components did not support:")
     print("  1 'the pace cannot be memorised'. The schedule rule IS the")
     print("    winning pace and it is one formula, so the depth is in")
     print("    execution. finale10 said as much in its honest-limit note;")
     print("    what is new is that its own throttled variant measures WORSE")
-    print("    than the plain schedule here, 38.0% against 49.0%.")
+    print("    than the plain schedule here, 40.1% against 51.4%.")
     print("  2 'a three-colour window'. At three colours raw strength beats")
-    print("    reading the wheel and the finale reads 76.1%. The window has")
+    print("    reading the wheel and the finale reads 79.2%. The window has")
     print("    to be TWO for the dial's central decision to pay at all.")
     print("  3 its pacing figures. `clock` rounds the schedule and so falls")
     print("    quietly behind at a pressure just over 1 - see how_many().")
     print("  4 'commit only the dice you need', its LARGEST lever at +35.1.")
-    print("    Worth +8.5 here, a quarter of that - and it is the lever")
+    print("    Worth +11.8 here, a third of that - and it is the lever")
     print("    most sensitive to the recovery economy. At REC 4 with the")
-    print("    five Reward cards paying dice back it measured 0.0 and")
-    print("    throwing every allowed die was simply better, which is why")
+    print("    five Reward cards paying dice back it INVERTS, and")
+    print("    throwing every allowed die wins by 10.0, which is why")
     print("    REC is 3: the Rewards ARE the fourth point of recovery, and")
     print("    they have to be earned.")

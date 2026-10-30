@@ -313,6 +313,25 @@ check("the campaign is Tier III only in all four books",
           for f in ("rules/nrj.html", "rules/bat.html", "rules/nap.html",
                     "rules/aos.html")))
 
+# HOW MANY CARDS ARE RETAINED, in the three places that say so. 3/3/2: the
+# printed cap is 3 a game and AoS's own limit of 2 claims binds first, so 8
+# is all a campaign can carry. Dealing 9 measures 57.6% against the pitched
+# 50.6%, and simulation/finale.py dealt the pre-Tier III values until
+# 2026-10-30, so every one of these is worth points.
+RETAIN = (3, 3, 2)
+check("finale.py retains %s" % (RETAIN,),
+      "RETAIN = (3, 3, 2)" in text("simulation/finale.py"))
+check("suite.js retains the same",
+      "const RETAIN={NAP:3,BAT:3,AoS:2};" in text("playtest/dist/suite.js"))
+check("nrj.html's standalone mode deals the same",
+      "<b>3 Notes, 3 Opportunities and 2 Routines</b>" in text("rules/nrj.html")
+      and "At most eight retained cards" in text("rules/nrj.html"))
+check("a retained card is worth 2 unspent and 1 spent, in all three",
+      "1 if rng.random() < SPENT else 2" in text("simulation/finale.py")
+      and "val:used?1:2" in text("playtest/dist/suite.js")
+      and "&minus;2 if you never spent it, &minus;1 if you did"
+      in text("rules/nrj.html"))
+
 check("the Research Pool is the Tier III cards, not the games' own decks",
       "the Tier III cards you claimed" in text("rules/nrj.html")
       and "6 Research Notes" in text("rules/nrj.html")

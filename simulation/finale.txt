@@ -7,55 +7,76 @@ printed Targets: Knowledge ok; Physical ok; Cover-Up ok
 1. THE PITCH
    Five seeds, because one is not a pitch: a single 6000-game cell
    lands about a point either side of the mean.
-   as it ships                        49.4%*  [49.0 49.3 49.3 49.3 50.1]
-   without the five Reward cards      32.3%   [32.8 32.4 31.4 31.8 32.9]
-   without the Research Pool           8.6%   [8.7 8.3 8.7 8.4 8.7]
-   played blind                        0.4%   [0.4 0.5 0.4 0.4 0.3]
+   as it ships                        50.6%*  [51.4 50.5 50.9 49.4 50.9]
+   without the five Reward cards      37.0%   [36.7 36.7 37.4 36.4 37.5]
+   without the Research Pool           8.6%   [8.7 8.4 8.8 8.4 8.7]
+   played blind                        0.4%   [0.3 0.4 0.3 0.4 0.5]
 
 2. THE SKILL LAYER - every input face-up, none of it remembered
-   played as the old finale was         0.4% 
-   + spend the Research Pool           14.5%   +14.1
-   + keep pace with the clock          27.6%   +13.1
-   + recover the colour coming up      39.0%   +11.4
-   + commit only what you need         47.6%*  +8.6
+   played as the old finale was         0.3% 
+   + spend the Research Pool           13.3%   +13.0
+   + keep pace with the clock          27.7%   +14.3
+   + recover the colour coming up      38.4%   +10.7
+   + commit only what you need         50.1%*  +11.8
 
 3. IS THE PACE A LIVE DECISION? the replay question.
    A fixed pace is what a solved scenario looks like.
    pace: one                            0.0% 
-   pace: two                           31.7% 
-   pace: three                          1.0% 
+   pace: two                           33.1% 
+   pace: three                          1.5% 
    pace: all                            0.0% 
-   pace: clock                         49.0%*
-   pace: ceil                          45.6% 
-   pace: throttle                      38.0% 
+   pace: clock                         51.4%*
+   pace: ceil                          47.9%*
+   pace: throttle                      40.1% 
 
 4. THE OTHER THREE DECISIONS
-   recover   best 40.2%  now 6.8%  next 47.6%  horizon 49.0%   gap 42.2
-   commit    all 41.3%  adaptive 49.0%   gap 7.7
-   Research  none 8.6%  small 49.0%  big 28.3%  dump 32.3%   gap 40.4
+   recover   best 43.0%  now 7.5%  next 50.1%  horizon 51.4%   gap 43.9
+   commit    all 39.0%  adaptive 51.4%   gap 12.4
+   Research  none 8.6%  small 51.4%  big 35.9%  dump 33.9%   gap 42.8
 
 5. THE DIALS - one step each
-   as it ships                         49.0%*
-   8 sessions (ends on blue)           23.9% 
-   10 sessions (ENDS ON RED)           21.8% 
-   12 Exhibits, 4 per domain           79.3% 
-   13 Exhibits (5/4/4)                 73.7% 
-   14 Exhibits (5/5/4)                 65.2% 
-   16 Exhibits (6/5/5)                 21.0% 
+   as it ships                         51.4%*
+   8 sessions (ends on blue)           24.2% 
+   10 sessions (ENDS ON RED)           22.2% 
+   12 Exhibits, 4 per domain           79.4% 
+   13 Exhibits (5/4/4)                 72.5% 
+   14 Exhibits (5/5/4)                 65.6% 
+   16 Exhibits (6/5/5)                 21.1% 
    18 Exhibits, 6 per domain            0.2% 
-   3 Health                            43.0% 
-   4 Health                            48.6%*
-   6 Health                            49.5%*
-   REC 2                               20.2% 
-   REC 4                               56.3%*
-   REC 5                               55.5%*
-   STR 3                               84.4% 
+   3 Health                            43.3% 
+   4 Health                            49.2%*
+   6 Health                            51.5%*
+   REC 2                               24.3% 
+   REC 4                               54.6%*
+   REC 5                               55.4%*
+   STR 3                               85.4% 
    one-colour attention                 0.0% 
-   three-colour attention              76.0% 
-   Targets 2/3/4                       92.7% 
-   Damage 2 at Target 4+               47.6%*
-   damage resets each session          30.7% 
-   no Reward cards                     32.8% 
+   three-colour attention              79.2% 
+   Targets 2/3/4                       92.8% 
+   Damage 2 at Target 4+               49.8%*
+   damage resets each session          32.3% 
+   no Reward cards                     36.7% 
+
+6. THE RESEARCH POOL, re-pitched 2026-10-30
+   Every retained Tier III card is worth 2 if it was never spent
+   in its own game and 1 if it was. RETAIN is 3/3/2 because AoS
+   may only claim 2 a game, so 8 is all a campaign can carry.
+   as it ships, 3/3/2 at a coin flip    50.6%*
+   3/3/3 - 9 retained, unreachable      57.6% 
+   nothing spent - maximal restraint    58.2% 
+   everything spent                     37.4% 
+   2/2/2 - claimed sparingly            35.7% 
+   1/1/1                                18.5% 
+   no retained cards at all              8.6% 
+
+   AND WHETHER COMMITTING IS STILL A DECISION. The pool lowers
+   Targets, so it could have done what REC 4 does and made
+   throwing every allowed die simply correct. It did the
+   opposite - the gap is wider than it was on the old pool.
+   REC 2  adaptive  23.9%  all   4.8%   gap +19.2
+   REC 3  adaptive  50.6%  all  39.6%   gap +11.0   <- shipped
+   REC 4  adaptive  55.8%  all  65.8%   gap -10.0
+   REC 5  adaptive  55.6%  all  67.2%   gap -11.6
 
 THE PROTOTYPE'S ERRATA - three finale10 claims that the real
 components did not support:
@@ -63,16 +84,16 @@ components did not support:
     winning pace and it is one formula, so the depth is in
     execution. finale10 said as much in its honest-limit note;
     what is new is that its own throttled variant measures WORSE
-    than the plain schedule here, 38.0% against 49.0%.
+    than the plain schedule here, 40.1% against 51.4%.
   2 'a three-colour window'. At three colours raw strength beats
-    reading the wheel and the finale reads 76.1%. The window has
+    reading the wheel and the finale reads 79.2%. The window has
     to be TWO for the dial's central decision to pay at all.
   3 its pacing figures. `clock` rounds the schedule and so falls
     quietly behind at a pressure just over 1 - see how_many().
   4 'commit only the dice you need', its LARGEST lever at +35.1.
-    Worth +8.5 here, a quarter of that - and it is the lever
+    Worth +11.8 here, a third of that - and it is the lever
     most sensitive to the recovery economy. At REC 4 with the
-    five Reward cards paying dice back it measured 0.0 and
-    throwing every allowed die was simply better, which is why
+    five Reward cards paying dice back it INVERTS, and
+    throwing every allowed die wins by 10.0, which is why
     REC is 3: the Rewards ARE the fourth point of recovery, and
     they have to be earned.

@@ -895,9 +895,51 @@ Not your job to fix, but worth knowing if Jon raises them:
   17.2. The confidence TRACK version, every third burial, reads 67.0% and
   is out of band outright. Jon's call, not a balance bug.
 
-  Outstanding: the Council Test cards still print Scenario text that this
-  finale mostly does not use, and the rulebook and the lab both have to
-  say so.
+  **RE-PITCHED 2026-10-30 AGAINST THE TIER III POOL, and this supersedes
+  every finale figure above.** `research()` was still dealing the pool the
+  Tier III rework replaced - a NAP card always worth 1, a BAT card worth 2
+  only on a 1-in-4 Specimen, an AoS card worth 2 on a coin flip - so the
+  model had been measuring against a pool that no longer existed. At the
+  same time `nrj.html`'s standalone mode dealt 3 retained from each six,
+  which no campaign can reach: AoS may only claim 2 Routines a game, so 8
+  is the cap in practice and 9 reads 57.6%. Both fixed; `RETAIN` and
+  `SPENT` are dials now, and `check_app_sync.py` compares the counts in
+  `finale.py`, `suite.js` and `nrj.html` against each other.
+
+  The pitch is **50.6%**, 6000 finales x 5 seeds, and it is still the best
+  cell of the 224-cell policy grid - clock / horizon / adaptive / small,
+  the cell the module models. The two corrections nearly cancel, which is
+  why nothing downstream needed re-tuning. What could have broken did not:
+  **the commit lever got STRONGER**, 12.3 points against 7.7, because a
+  pool that lowers Targets makes committing exactly enough pay more. REC 3
+  is confirmed and the reason is sharper - at REC 4 the commit decision
+  INVERTS, throwing every allowed die winning by 10.0 and the best policy
+  reaching 65.8%, out of band. The gap by REC is +19.1 / +11.0 / -10.0 /
+  -11.6 for REC 2 / 3 / 4 / 5.
+
+  Read the current numbers from `simulation/finale.txt`, whose section 6
+  is the pool, not from the figures earlier in this bullet: those are
+  from before the Rewards were restored (53.1%) and from before the
+  re-pitch (49.4%).
+
+  The Council Test cards still print Scenario text this finale mostly does
+  not use, but both places that had to say so now do: `nrj.html` step 2 of
+  the setup ("Apart from the five Rewards below, nothing else printed on a
+  Council Test is used in this scenario") and the lab's Exhibits panel.
+  Reprinting the deck as Exhibits - Target and Damage on the face, no
+  Scenario clause - is still the obvious follow-up and is a `build_nrj.py`
+  and `pack.py` job.
+
+  Outstanding: the **difficulty ladder is still unimplemented**. The frame
+  is 50 easy / 40 standard / 30 hard / 20 Nobulous, and at 50.6% the
+  finale as it ships is the EASY rung with no dial under it. The
+  recommendation is an exhausted start, 0 / 5 / 9 / 11 dice, measured at
+  49.4 / 41.5 / 28.0 / 19.6 before the re-pitch and the only candidate
+  whose recovery gap GROWS with difficulty - re-measure it on the current
+  pool before writing it in. Note that the pool is itself a steep dial,
+  18.5% at one retained card a game against 58.2% at three never spent,
+  but it is a campaign outcome rather than a setting, so it is not the
+  place to put the ladder.
   Reprinting that deck as Exhibits — Target and Damage on the face, no
   Scenario clause — is the obvious follow-up, and it is a `build_nrj.py`
   and `pack.py` job, not a rules one.

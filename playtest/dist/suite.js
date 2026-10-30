@@ -955,12 +955,16 @@
   function dealNRJPool(){
     const cards=[];
     const add=(g,o)=>cards.push({g,kept:false,val:0,used:false,dot:null,spent:false,sel:false,...o});
-    // Each game lays 6 Tier III cards out; 3 are retained and 3 are
-    // Candidates. A retained card that was never spent in its own game
-    // answers for 2, one that was spent answers for 1.
+    // Each game lays 6 Tier III cards out. A retained card that was never
+    // spent in its own game answers for 2, one that was spent answers for 1.
+    // AoS retains only 2: its own limit of 2 claims a game binds before the
+    // cap of 3 does, so 8 is all a campaign can carry. Dealing 9 reads
+    // 57.6% against the pitched 50.6% - see simulation/finale.txt.
+    const RETAIN={NAP:3,BAT:3,AoS:2};
     for(const g of ["NAP","BAT","AoS"]){
-      for(let i=0;i<3;i++){const used=Math.random()<.5;add(g,{kept:true,val:used?1:2,used});}
-      for(let i=0;i<3;i++)add(g,{});
+      const k=RETAIN[g];
+      for(let i=0;i<k;i++){const used=Math.random()<.5;add(g,{kept:true,val:used?1:2,used});}
+      for(let i=0;i<6-k;i++)add(g,{});
     }
     return cards;
   }

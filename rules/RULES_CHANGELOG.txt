@@ -569,3 +569,57 @@ now, with 1660 characters on the last.
 STILL OUTSTANDING: the printed cards.  The twelve claim-cost clauses are in
 generator/build_nrj.py and mirrored in the lab, but print-and-play/ has not been
 regenerated, so the PnP card faces still carry the old text.
+
+THE FINALE RE-PITCHED ON THE TIER III POOL, 2026-10-30
+------------------------------------------------------
+THE MODEL WAS STILL DEALING THE OLD POOL.  simulation/finale.py's research()
+built the Research Pool the Tier III rework replaced the day before - a NAP
+card always worth 1, a BAT card worth 2 only on a 1-in-4 Specimen, an AoS card
+worth 2 on a coin flip - and its docstring still cited Specimens and
+Stable/Overheated by name.  So the 49.4% pitch, and every figure in
+simulation/finale.txt, was measured against a pool that no longer exists.
+
+AND THE RULEBOOK WAS DEALING A POOL NO CAMPAIGN COULD REACH.  Standalone mode
+drew 3 retained from each six, but AoS may only claim 2 Backdoor Routines a
+game, so 8 is the most any campaign can carry.  Nine reads 57.6%.
+
+Both are fixed.  research() now deals a 2 for a card never spent in its own
+game and a 1 for one that was, from RETAIN = (3, 3, 2); standalone mode draws
+3 Notes, 3 Opportunities and 2 Routines; the lab deals the same; and
+check_app_sync.py now compares all three, which is the drift that caused this.
+
+THE RE-PITCH: 50.6%, up 1.2 points, over 6000 finales x 5 seeds and against
+the BEST cell of the 224-cell policy grid - which is still the cell the module
+models, clock / horizon / adaptive / small.  The two corrections very nearly
+cancel: stronger cards, one fewer of them.
+
+  as it ships, 3/3/2 at a coin flip    50.6%     everything spent      37.4%
+  3/3/3, which no campaign reaches     57.6%     2/2/2                 35.7%
+  nothing spent - maximal restraint    58.2%     1/1/1                 18.5%
+                                                 no retained cards      8.6%
+
+NOTHING DOWNSTREAM NEEDED RE-TUNING, and the thing that could have broken did
+not.  A pool that lowers Targets could have done what REC 4 does and made
+throwing every allowed die simply correct.  It did the opposite - committing
+only what you need is worth MORE against a stronger pool, 12.3 points against
+7.7, because the Exhibits it answers are the ones you no longer need a full
+handful for.  The four levers now read: spend the Pool +13.0, keep pace with
+the clock +14.3, recover for the colour coming up +10.7, commit only what you
+need +11.8.
+
+REC 3 IS CONFIRMED, with a sharper reason than before.  At REC 4 the commit
+decision does not merely die, it INVERTS: throwing every allowed die beats
+holding any back by 10.0 points and the best available policy wins 65.8%, out
+of band.  The gap by REC reads +19.1 / +11.0 / -10.0 / -11.6 for REC 2 / 3 /
+4 / 5.  REC 3 is the last rung where committing is a decision.
+
+Other figures that moved, all in finale.txt: the five Reward cards are worth
++13.6 rather than +17.1; REC 2/3/4/5 read 24.3 / 51.4 / 54.6 / 55.4; a point
+of STR is worth 85.4%; the Dossier cliff is 79.4 / 72.5 / 65.6 / 51.4 / 21.1 /
+0.2% for 12 through 18 Exhibits, so 15 still sits one Exhibit above it.
+
+AND THE POOL IS A STEEP DIAL IN ITS OWN RIGHT - 18.5% at one retained card a
+game against 58.2% at three never spent.  That is the whole 50/40/30/20 ladder
+in one quantity, but it is a campaign OUTCOME rather than a difficulty setting,
+so it argues for building the ladder somewhere else.  The exhausted-start dial
+is still the recommendation and is still unimplemented.
