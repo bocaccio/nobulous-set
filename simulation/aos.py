@@ -170,6 +170,42 @@ CORRUPT_WITHHOLD = 2
 # failed element as successful" and "recover 2 exhausted dice".
 BACKDOOR_CLAIMS = 2
 
+# THE SIX CLAIM CONDITIONS. Each Backdoor Routine prints a condition as well
+# as a later one-shot use, and the NRJ campaign retains the Routines you
+# claimed - so what the finale inherits from AoS is how many conditions you
+# met, capped at the 2 claims a game allows. The conditions below are the
+# printed ones from the BACKDOOR table in generator/build_nrj.py, read
+# against rules/aos.html: the allocation cap is Target + 1, an element FAILS
+# when it misses its Target, and OPTIMAL IMPLEMENTATION is landing exactly
+# on it.
+#
+#   Diagnostic Port       no element over-allocated - every element held at
+#                         most its Target in dice
+#   Privilege Escalation  an Overheated Program completed with no element
+#                         failed
+#   Resource Fork         total dice committed no more than the summed
+#                         Targets plus 1
+#   Packet Sniffer        Crits on at least two different elements
+#   Garbage Collection    completed while at least 4 dice were exhausted
+#   Root Access           Optimal Implementation on at least two elements
+#
+# This is OBSERVATION ONLY. Nothing recorded here changes how a Program
+# resolves, so the win rates are untouched and the calibration holds; the
+# model still grants the 2 Root Access uses at setup as it always did.
+BACKDOOR_NAMES = ("Diagnostic Port", "Privilege Escalation", "Resource Fork",
+                  "Packet Sniffer", "Garbage Collection", "Root Access")
+
+# WHEN TO SPEND ONE. The NRJ campaign retains a claimed Routine either way,
+# but a Routine still HELD at the end is worth more to the finale than one
+# cashed in - the campaign's challenge is to win each game using as few of
+# these buffs as it can. So spending is a policy, not a reflex:
+#
+#   greedy   negate every Catastrophic Failure you can. The shipped model,
+#            and the default, so the calibrated win rates do not move.
+#   last     negate only when the Health it costs would end the game.
+#   hoard    never negate; carry both Routines into the finale.
+BACKDOOR_POLICY = "greedy"
+
 
 # "On a Catastrophic Failure you may exhaust 2 misses on failed Elements to
 # negate the Health loss." Agreed with Jon 2026-10-28, after Cloudspire,
@@ -234,6 +270,7 @@ class Game(object):
         self.intf = None
         self.corrupt = False
         self.backdoors = 0
+        self.met = set()       # claim conditions met, observation only
         if tier in ("I", "II", "III"):
             self.intf = self.rng.choice(INTERFERENCE)
             if self.intf == "banish_one":
@@ -380,6 +417,7 @@ class Game(object):
                 take = min(short, key=lambda i: len(plan[i]) - targets[i])
                 plan[take].append(plan[give].pop())
                 moved += 1
+        seen = []              # per element: (dice, Target, total, crit, miss)
         for i, t in enumerate(targets):
             dice = plan[i]
             for c in dice:
@@ -439,6 +477,8 @@ class Game(object):
                     used_debug = True
                     total += sum(self.element_values(i, misses[:1]))
             miss = total < t
+            seen.append((len(dice), t, total,
+                         any(v >= 2 for v in values), miss))
             if FIRINGS is not None:
                 safe_n = t + (2 if i in getattr(self, "wide", set()) else 1)
                 FIRINGS["elements"] += 1
@@ -497,10 +537,27 @@ class Game(object):
                     used_optimize = True        # Optimize: Target + 1 counts
                     recovery += OPTIMAL_BONUS
 
+        # Which Backdoor Routines this Program could have been claimed off.
+        # Measured before Root Access negates anything, so "without failing
+        # an element" means the element really held.
+        if seen:
+            if all(n <= t2 for n, t2, _tot, _c, _m in seen):
+                self.met.add("Diagnostic Port")
+            if face == "back" and not failed:
+                self.met.add("Privilege Escalation")
+            if sum(n for n, _t, _tot, _c, _m in seen) <= sum(targets) + 1:
+                self.met.add("Resource Fork")
+            if sum(1 for _n, _t, _tot, c, _m in seen if c) >= 2:
+                self.met.add("Packet Sniffer")
+            if len(self.exhausted) >= 4:
+                self.met.add("Garbage Collection")
+            if sum(1 for _n, t2, tot, _c, _m in seen if tot == t2) >= 2:
+                self.met.add("Root Access")
+
         # Root Access: treat one failed element as successful. Spent to save a
         # Program from Catastrophic Failure, which is the only thing that costs
         # Health.
-        if failed >= 2 and self.backdoors > 0:
+        if failed >= 2 and self.backdoors > 0 and self.spend_backdoor():
             self.backdoors -= 1
             failed -= 1
 
@@ -532,6 +589,14 @@ class Game(object):
             self.reward(PROGRAM_REWARDS[deck][pid], slot)
         self.completed += 1
         return failed
+
+    def spend_backdoor(self):
+        """Root Access is about to save 1 Health. Is it worth a Routine?"""
+        if BACKDOOR_POLICY == "hoard":
+            return False
+        if BACKDOOR_POLICY == "last":
+            return self.hp <= 1        # the Health loss would end the game
+        return True
 
     def retire(self, pid):
         """The card leaves the deck for good, shortening later cycles."""

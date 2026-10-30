@@ -245,10 +245,28 @@ SHARED_EQUIP_RECOVER = 2
 # permuting this answers whether a different order would give BAT the dip at
 # Tier II that NAP and AoS have.
 TIER_ORDER = ["protocol", "mods", "notes"]
-# Flat Notes granted at setup, for measuring what one is worth. Only 3 of the
-# 6 printed Research Notes have conditions this model can observe, so the
-# claim rate is about 1.09 a game and this is how to price the shortfall.
+# Flat Notes granted at setup, for measuring what one is worth. FIVE of the
+# six printed Research Notes have conditions this model can observe - see
+# Game.claim_notes, which checks them as printed. Only Controlled Failure is
+# missing, because it claims on deliberately committing zero dice and no
+# policy here does that. This knob prices the shortfall.
 NOTES_BONUS = 0
+
+# WHEN TO SPEND A CLAIMED NOTE. The NRJ campaign retains a claimed Note
+# whether or not you cash it in, and one still HELD at the end is worth more
+# to the finale than one spent - the campaign's challenge is to win each game
+# using as few of these buffs as it can. There is only one discretionary
+# spend in this model: ignoring the +1 Target a revealed Specimen adds.
+#
+#   greedy   ignore every Specimen you can. The shipped model, and the
+#            default, so the calibrated win rates do not move.
+#   hard     ignore it only when the Experiment is already at Target 5+.
+#   hoard    never ignore it; take the +1 and keep the Note.
+#
+# The other spend - Unexpected Resilience, recovering a Rat's dice when the
+# commit pool is empty - is not a policy: without it the attempt cannot
+# proceed at all, so it always fires and no setting withholds it.
+NOTES_POLICY = "greedy"
 
 # Candidate fixes for BAT's tier ladder, which currently rises where NAP's and
 # AoS's dip. Both mirror what those two games already do:
@@ -801,6 +819,14 @@ class Game(object):
     def available(self, rat):
         return [d for d in rat.dice if d.zone == "available"]
 
+    def spend_note(self, target):
+        """A revealed Specimen is about to add +1 Target. Spend a Note?"""
+        if NOTES_POLICY == "hoard":
+            return False
+        if NOTES_POLICY == "hard":
+            return target + 1 >= 5
+        return True
+
     def claim_notes(self, rat, success, committed, used_red):
         """Tier III Research Notes are earned, not granted.
 
@@ -959,7 +985,7 @@ class Game(object):
         if any(kind == "s" for kind, _ in options):
             # Successful Integration can be spent to ignore the +1 Target a
             # revealed Specimen would add.
-            if self.notes > 0:
+            if self.notes > 0 and self.spend_note(target):
                 self.notes -= 1
             else:
                 target += 1
