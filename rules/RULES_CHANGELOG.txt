@@ -470,3 +470,27 @@ One layout note for whoever edits the supplement next: style.css makes a
 TABLE break-inside: avoid, exactly like a .box, so the five Rewards are a
 list and not a table.  As a table they pushed the book to a fourth page
 carrying one orphaned line.
+
+AoS — CARRYING AoS FORWARD, 2026-10-29
+--------------------------------------
+The Stable/Overheated note promised a use the reworked finale no longer has.
+It read "Stable retained cards are stronger for reducing Targets in the finale
+but cannot be discarded to avoid a Scenario; Overheated ones are weaker but
+can."  The Dossier finale deleted the Avoid rule — choosing your pace replaced
+it — so an Overheated card was simply worse, with nothing on the other side of
+the trade, and a Catastrophic Failure in Advanced Programming had become pure
+loss presented as a trade-off.
+
+Now printed: Stable reduces an Exhibit's Target by 2, Overheated by 1, and
+because Advanced Program 1 always begins Stable and each later one is
+Overheated only after a Catastrophic Failure, AoS carries 4, 5 or 6 points of
+help into the finale — never 3.  No number changed; the sentence now describes
+what the finale actually does.
+
+Measured while checking it (simulation, best of 24 policies, 6000 x 3 seeds):
+the Research Pool alone swings the finale from 32.5% at the campaign floor —
+Rats holding no Upgrades, Advanced Programming failed twice, 7 points — to
+56.2% for a clean campaign at 13 points.  The three games already decide a
+24-point spread before the finale begins.  NAP contributes a flat 3 points
+however the apprenticeship went, which is the one part of the carryover that
+does not vary at all.
