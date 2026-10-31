@@ -998,8 +998,19 @@ Not your job to fix, but worth knowing if Jon raises them:
   `rules/RULES_CHANGELOG.txt`: whether the Red die joins the BAT battle pool,
   and what NAP's Slacker means by "voluntarily draw an additional Assignment".
   Neither blocks anything you are doing.
-- Card art is 200 DPI (633 × 886 px). Fine on screen; would want 300 for print
-  production.
+- **Card art is 300 DPI (750 × 1050 px) as of 2026-10-30**, raised from 200
+  for print production. Everything that lays out a card measures in
+  millimetres and `title_lines` scales both its text width and its wrap
+  limit with `DPI`, so the bump changed resolution only - no card reflowed.
+  Two NAP sheets then exceeded what Tabletop Simulator will load, so
+  `gen.py` gained `fit_tts()`: any deck sheet over **10000 px** on a side is
+  downscaled with the cells kept integral. The PnP pages are built from the
+  full-resolution card images rather than from the sheet, so print is
+  unaffected and only the two oversized TTS textures shrink.
+- **`pack.py` IS reproducible now.** The drift was never in the card sheets;
+  `write_pnp` used reportlab's default canvas, which stamps a `/CreationDate`
+  and a fresh document ID per run. With `invariant=1` two packs of identical
+  input produce byte-identical PDFs, verified for all four games.
 - **The BAT Tyrant battle was rewritten.** Jon played the old one and found
   it tedious, and the simulation agreed: the correct play was to commit only
   what recovery returned, so the dice pool was a per-round income rather than

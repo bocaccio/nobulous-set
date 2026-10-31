@@ -12,7 +12,13 @@ os.makedirs(OUT, exist_ok=True)
 
 PORTRAIT = (63.5, 88.9)
 LANDSCAPE = (88.9, 63.5)
-DPI = 200
+# 300 for print production. Everything that lays out a card measures in
+# millimetres and converts through DPI, and title_lines' text width and its
+# limit both scale with it, so the wrapping and the physical card size are
+# unchanged - only the resolution. Raised from 200 on 2026-10-30; the
+# largest sheet, a 10x3 grid, goes from 5000x2100 to 7500x3150 px, still
+# inside what Tabletop Simulator will load.
+DPI = 300
 
 ACCENT = {'BAT': '#2c5f4a', 'NAP': '#6b3f8c', 'AoS': '#8a3d2e',
           'NRJ': '#1f4e6b', 'IMP': '#4a3b6b'}
@@ -199,7 +205,12 @@ def write_pnp(path, pages):
         return
     from reportlab.pdfgen import canvas as _cv
     from reportlab.lib.utils import ImageReader
-    c = _cv.Canvas(path)
+    # invariant=1 fixes the CreationDate and the document ID that reportlab
+    # otherwise stamps per run. Without it two packs of identical input
+    # produce different bytes, which is the PnP non-reproducibility
+    # HANDOFF recorded: the card sheets were always deterministic, only the
+    # PDF wrapper was not.
+    c = _cv.Canvas(path, invariant=1)
     for pg in pages:
         wpt, hpt = pg.width / DPI * 72.0, pg.height / DPI * 72.0
         c.setPageSize((wpt, hpt))
@@ -284,6 +295,25 @@ def hdr_fit(title, cls='', size=PORTRAIT):
                                   + SUB_GAP + SUB_SIZE * 1.25 * PT_MM)
 
 
+# Tabletop Simulator will not load a custom deck image above 10000 px on a
+# side. At 300 DPI a card is 750x1050, so a 10-wide grid is 7500 across -
+# fine - but NAP's 26 Tasks and 12 Final Exams pack 14 and 10 to a row and
+# came out 10500. The PRINT resolution is the one that matters at 300 DPI,
+# so the sheet is downscaled to fit rather than the cards re-gridded: the
+# PnP pages are built from the full-resolution card images, not from this.
+TTS_MAX = 10000
+
+
+def fit_tts(sheet, cols, rows):
+    """Shrink a deck sheet to TTS's ceiling, keeping the cells integral."""
+    if max(sheet.width, sheet.height) <= TTS_MAX:
+        return sheet
+    k = TTS_MAX / float(max(sheet.width, sheet.height))
+    cw = int(sheet.width / cols * k)
+    ch = int(sheet.height / rows * k)
+    return sheet.resize((cw * cols, ch * rows), Image.LANCZOS)
+
+
 def render_deck(name, cards, accent_key, size=PORTRAIT, extra='', back=None):
     """One-faced deck. `back` is the stem of a card back already built by
     make_back; the PnP then alternates a page of fronts with a page of that back,
@@ -304,7 +334,7 @@ def render_deck(name, cards, accent_key, size=PORTRAIT, extra='', back=None):
     sheet = Image.new('RGB', (cols * w, rows * h), '#f6f3ea')
     for i, im in enumerate(ims):
         sheet.paste(im, ((i % cols) * w, (i // cols) * h))
-    sheet.save(os.path.join(OUT, '%s_TTS.png' % name))
+    fit_tts(sheet, cols, rows).save(os.path.join(OUT, '%s_TTS.png' % name))
     lay = pnp_layout((w, h))
     pages = paginate(ims, lay=lay)
     if back:
@@ -364,7 +394,8 @@ def render_duplex(name, fronts, backs, accent_key, size=PORTRAIT, extra=''):
         sheet = Image.new('RGB', (cols * w, rows * h), '#f6f3ea')
         for i, im in enumerate(ims[tag]):
             sheet.paste(im, ((i % cols) * w, (i // cols) * h))
-        sheet.save(os.path.join(OUT, '%s_TTS%s.png' % (name, suffix)))
+        fit_tts(sheet, cols, rows).save(
+            os.path.join(OUT, '%s_TTS%s.png' % (name, suffix)))
     # Front page then its mirrored back page, so a long-edge duplex flip puts
     # each back behind its own face.  The mirror is about the center of the
     # full 3-wide grid, not about the cards that happen to be present, because

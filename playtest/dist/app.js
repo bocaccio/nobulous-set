@@ -2,7 +2,7 @@
   "use strict";
 
   const ASSET = "assets/";
-  const ASSET_VERSION = "cards-fixed-1";
+  const ASSET_VERSION = "dpi300";
   const MAX_ELEMENTS = 5; // the allocation board always shows five Element slots
   const DECKS = {
     Routine: { front: "AoS_Routine_TTS.png", back: "AoS_Routine_TTS_back.png", count: 8 },
