@@ -789,6 +789,35 @@ Each of these only appears a few turns in.
 
 Not your job to fix, but worth knowing if Jon raises them:
 
+- **The Candidates answer nothing, and that is now deliberate.** The Research
+  Pool is the 18 Tier III cards each game lays out. The 7 you claimed are
+  retained and take 2 off an Exhibit's Target; the 11 you did not are
+  Candidates, and since the Exhibits were reprinted on 2026-10-30 - which
+  removed Rope Burns' random discard, the last card text that touched them -
+  they do nothing at all. A global job for them was designed, priced and
+  REJECTED on 2026-10-31. Four currencies and six prices were measured and
+  every one failed the same test: worth nothing at Easy and a great deal at
+  every handicapped rung, because the job and the difficulty ladder spend the
+  same scarcity. Paying in Targets was worse than paying in dice (spread 11.0
+  against 8.2) and dropping the price only shrank the job - at 6 Candidates a
+  Target it was worth +0.5 at Easy and ten times that at Nobulous. The cause
+  is not the currency: AT EASY THE MODELLED POLICY IS NOT DICE-CONSTRAINED, so
+  any global aid is marginal there and decisive once a handicap binds. Taking
+  the job anyway costs the dial - the usable range falls from 40 points to 32
+  and Nobulous has to exhaust all sixteen coloured dice to reach 20%, leaving
+  no headroom. The full table is in `simulation/proto/candidates.py`. The
+  Candidates stay on the table and one of the Imposter cards is built around
+  spending them, so the leftovers have a use that is a visible choice rather
+  than a silent re-scaling of every rung.
+
+- **One deck spells it "Impostor" and everything else spells it "Imposter".**
+  The split is semantic rather than random: the character, the finale and the
+  scenario are all "the Imposter", while NAP's Tier II deck is
+  `NRJ_NAP_ImpostorTasks` / "Impostor Tasks". Both spellings appear in
+  `rules/nrj.html`. Renaming the deck would touch the deck KEY, the manifest,
+  `pack.py`, `tts/decks.py`, the lab's `catalog.json` and the rendered card
+  faces, so it is being raised rather than fixed.
+
 - **`images/` had drifted BEHIND `playtest/dist/assets/`, and both behind the
   generator.** Caught 2026-10-28 on the first full render this repo has had in
   one pass. Six `*_TTS_back.png` sheets were stale: the four AoS back grids,
