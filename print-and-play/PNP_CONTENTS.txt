@@ -39,7 +39,7 @@ NobulousSet_NRJ_PnP.pdf  (18 pages)
   Page 3   9 cards  Impostor Tasks 1-4, Following Setbacks 1-4, Devious Opportunities 1
   Page 4   9 cards  Devious Opportunities 2-6, Nobulous Interference 1-4
   Page 5   9 cards  Nobulous Interference 5-6, Corrupted Limitations 1-6, Backdoor Routines 1
-  Page 6   9 cards  Backdoor Routines 2-6, Council Test Scenarios 1-4
-  Page 7   9 cards  Council Test Scenarios 5-13
-  Page 8   9 cards  Council Test Scenarios 14-22
-  Page 9   2 cards  Council Test Scenarios 23-24
+  Page 6   9 cards  Backdoor Routines 2-6, Exhibits 1-4
+  Page 7   9 cards  Exhibits 5-13
+  Page 8   9 cards  Exhibits 14-22
+  Page 9   2 cards  Exhibits 23-24

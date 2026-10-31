@@ -313,24 +313,73 @@ check("the campaign is Tier III only in all four books",
           for f in ("rules/nrj.html", "rules/bat.html", "rules/nap.html",
                     "rules/aos.html")))
 
-# HOW MANY CARDS ARE RETAINED, in the three places that say so. 3/3/2: the
-# printed cap is 3 a game and AoS's own limit of 2 claims binds first, so 8
-# is all a campaign can carry. Dealing 9 measures 57.6% against the pitched
-# 50.6%, and simulation/finale.py dealt the pre-Tier III values until
-# 2026-10-30, so every one of these is worth points.
-RETAIN = (3, 3, 2)
-check("finale.py retains %s" % (RETAIN,),
-      "RETAIN = (3, 3, 2)" in text("simulation/finale.py"))
+# HOW MANY CARDS ARE RETAINED, in the three places that say so. NAP 3, BAT 2,
+# AoS 2: with one card value the pool is just a count, and seven is the count
+# that reads 50.6%. Six reads 41.5% and eight 57.8%, so a place that drifts by
+# one card drifts by about eight points of win rate.
+check("finale.py retains 3 NAP / 2 BAT / 2 AoS",
+      "RETAIN = (3, 2, 2)" in text("simulation/finale.py"))
 check("suite.js retains the same",
-      "const RETAIN={NAP:3,BAT:3,AoS:2};" in text("playtest/dist/suite.js"))
+      "const RETAIN={NAP:3,BAT:2,AoS:2};" in text("playtest/dist/suite.js"))
 check("nrj.html's standalone mode deals the same",
-      "<b>3 Notes, 3 Opportunities and 2 Routines</b>" in text("rules/nrj.html")
-      and "At most eight retained cards" in text("rules/nrj.html"))
-check("a retained card is worth 2 unspent and 1 spent, in all three",
-      "1 if rng.random() < SPENT else 2" in text("simulation/finale.py")
-      and "val:used?1:2" in text("playtest/dist/suite.js")
-      and "&minus;2 if you never spent it, &minus;1 if you did"
-      in text("rules/nrj.html"))
+      "<b>3 Opportunities, 2 Notes and 2 Routines</b>" in text("rules/nrj.html")
+      and "At most seven retained cards" in text("rules/nrj.html"))
+
+# RETAINED OR NOT - one value. The spent/unspent split was dropped on
+# 2026-10-30 because nothing on the table records which a card is. A file
+# that kept it would be asking the player for bookkeeping the others do not.
+check("a retained card is worth 2, with no spent/unspent split",
+      "Card(game, CARD_VALUE)" in text("simulation/finale.py")
+      and "CARD_VALUE = 2" in text("simulation/finale.py")
+      and "const NRJ_CARD_VALUE=2;" in text("playtest/dist/suite.js")
+      and "val:NRJ_CARD_VALUE" in text("playtest/dist/suite.js"))
+check("no file still halves a card for having been spent",
+      "SPENT" not in text("simulation/finale.py")
+      and "c.used" not in text("playtest/dist/suite.js")
+      and "never spent it" not in text("rules/nrj.html"))
+
+# THE DIFFICULTY LADDER names its dice, so all three files carry the same
+# four rows of yellow / green / blue / purple or the lab is not playing the
+# game the book describes. The counts are not interchangeable: the same
+# total taken from different colours measured 28.7% against 38.4%.
+LADDER = (("easy", (0, 0, 0, 0)), ("standard", (3, 2, 2, 2)),
+          ("hard", (3, 3, 3, 2)), ("nobulous", (3, 3, 4, 4)))
+sim = text("simulation/finale.py")
+check("finale.py carries the ladder as a per-colour table",
+      'TIRED_COLOURS = ("yellow", "green", "blue", "purple")' in sim
+      and all('"%s": (%s)' % (lvl, ", ".join(str(n) for n in c)) in sim
+              for lvl, c in LADDER))
+check("suite.js carries the same four rows",
+      'const NRJ_TIRED_COLORS=["yellow","green","blue","purple"];'
+      in text("playtest/dist/suite.js")
+      and "const NRJ_LADDER={%s};"
+      % ",".join("%s:[%s]" % (lvl, ",".join(str(n) for n in c))
+                 for lvl, c in LADDER) in text("playtest/dist/suite.js"))
+nrj = text("rules/nrj.html")
+check("nrj.html prints the same four rows",
+      "Four difficulties" in nrj
+      and all("".join("<td>%d</td>" % n for n in c) in
+              nrj.replace("\n", "").replace("      ", "")
+              for lvl, c in LADDER if lvl != "easy"))
+check("and nobody exhausts the single red die",
+      "red" not in sim[sim.index("TIRED_COLOURS"):
+                       sim.index("START_TIRED = ")]
+      and '"red"' not in text("playtest/dist/suite.js")[
+          text("playtest/dist/suite.js").index("NRJ_TIRED_COLORS"):
+          text("playtest/dist/suite.js").index("NRJ_LADDER")])
+
+# THE EXHIBIT FACE. Target and Damage are printed now, so the rulebook must
+# NOT still be telling the player to subtract 5.
+nrjgen = text("generator/build_nrj.py")
+check("the Exhibit face prints Target and Damage",
+      "def exhibit_body" in nrjgen and "EXHIBIT_OFFSET = 5" in nrjgen
+      and "BIG_TARGET = 5" in nrjgen
+      and '<div class="biglbl">Damage</div>' in nrjgen)
+check("and the rulebook no longer asks for the subtraction",
+      "minus 5" not in nrj
+      and "Each Exhibit prints its <b>Target</b> and its <b>Damage</b>" in nrj)
+check("the five Rewards are reworded for the finale",
+      nrjgen.count("When this Exhibit falls") == 5)
 
 check("the Research Pool is the Tier III cards, not the games' own decks",
       "the Tier III cards you claimed" in text("rules/nrj.html")

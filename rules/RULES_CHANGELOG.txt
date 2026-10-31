@@ -623,3 +623,96 @@ game against 58.2% at three never spent.  That is the whole 50/40/30/20 ladder
 in one quantity, but it is a campaign OUTCOME rather than a difficulty setting,
 so it argues for building the ladder somewhere else.  The exhausted-start dial
 is still the recommendation and is still unimplemented.
+
+EXHIBITS, A SIMPLER CARRYOVER, AND THE DIFFICULTY LADDER, 2026-10-30
+---------------------------------------------------------------------
+THE 24 COUNCIL TESTS ARE REPRINTED AS EXHIBITS.  The finale used nothing on
+the face except the Target, which it read as the printed value MINUS 5, and
+five of the Rewards; the card was asking the player to ignore most of itself
+and do arithmetic on the rest.  Target and Damage are printed now.  The five
+live Rewards are reworded from "If you succeed" to "When this Exhibit falls",
+and the other nineteen print no clause at all.  The deck is used nowhere else
+in the set, so nothing else had to change.
+
+  Why not just use the printed 8 / 9 / 10?  Measured: 0.0%.  Only two colours
+  may be applied in a session, worth 3.2 to 7.3 successes a throw, so fifteen
+  Exhibits at printed Targets need about 135 successes against a nine-session
+  budget of roughly 60.  Minus 5 was the conversion from "one card, one big
+  attempt" to "fifteen problems on a clock"; printing the result removes it
+  from the table.
+
+Three setup steps in nrj.html collapse to one, and the deck is called Exhibits
+in pack.py, tts/decks.py, tts/lua.lua and CARD_MANIFEST.txt.  The deck KEY,
+NRJ_ImposterScenarios, is unchanged: it names deployed sheet files.
+
+RETAINED OR NOT.  The spent/unspent split is gone.  A card's value depended on
+whether it had been cashed in during its own game - a fact about a session
+that may have been weeks earlier, recorded nowhere on the table, and needing
+two piles of claimed cards to track.  A card you claimed is retained and takes
+2 off an Exhibit's Target; a card you never claimed is a Candidate.
+
+With one value the pool is just a COUNT, and seven is the count that reads
+50%: NAP 3, BAT 2, AoS 2.  The caps are the economics, not tuning - a NAP
+Opportunity is worked like an Assignment and apprentices finish about 2.5, a
+second BAT Note already costs that game 9 points, and AoS allows 2 claims.
+
+  retained   worth 1   worth 2            Eight cards worth 1.5 beat six worth
+  1/1/1        15.7%     21.7%            2 on the same total reduction, so
+  2/2/2        26.6%     41.5%            the COUNTS had to be re-derived
+  3/2/2        31.8%     50.5%  <- ships  rather than the values doubled:
+  3/3/2        37.4%     58.0%            spreading across more Exhibits, and
+  3/3/3        43.0%     65.6%            across three domains, pays better.
+  none                    8.6%
+
+THE DIFFICULTY LADDER, and it is cut with dice rather than with a dial.  The
+Imposter begins with named dice exhausted; they recover normally, so the
+handicap costs tempo rather than dice and bites hardest early.
+
+  level      yellow  green  blue  purple   n    win    aim
+  Easy          -      -      -      -     0   50.6%   +0.6
+  Standard      3      2      2      2     9   39.2%   -0.8
+  Hard          3      3      3      2    11   30.6%   +0.6
+  Nobulous      3      3      4      4    14   19.4%   -0.6
+
+The single red is never exhausted: session 5 allows only Red and Yellow and
+there is one red die.
+
+TWO THINGS HAD TO BE GOT RIGHT HERE.  First, the dice are NAMED rather than
+chosen.  An earlier version let the player pick and the model picked badly -
+all four colours come four to a pool, so "spend the commonest" broke the tie
+on purple, the best die in the set, and the Nobulous rung measured WORSE
+chosen (16.5%) than random (19.0%).  Modelling a free choice badly understates
+every rung, and naming the dice removes the question.
+
+Second, the counts are SPREAD across the colours instead of taking whole ones.
+Whole colours collide with the attention wheel, which opens on Yellow with a
+Yellow+Green window:
+
+  4 yellow, 4 green                28.7%     same eight dice; the difference
+  4 purple, 4 blue                 38.4%     is the wheel, not the handicap
+
+Taken weakest-first the curve has a 14.6-point cliff between 6 and 8 dice,
+exactly where the opening window hits zero, and a rung on a cliff is not a
+setting.  Spread, the largest step in the whole curve is 6.1 points and the
+ladder and the wheel stay independent - which matters, because the wheel's
+phase is already chosen for where sessions 5 and 9 land.
+
+AND THE RUNGS ARE STILL GAMES OF SKILL, which is the property that chose this
+dial over REC or Dossier size.  The recovery decision - the one the attention
+wheel exists to create - pays MORE as the ladder gets harder:
+
+  Easy      pace +19.1   recover  +4.8   commit +12.3
+  Standard  pace +20.4   recover +10.9   commit +19.8
+  Hard      pace +16.7   recover +14.1   commit +14.8
+  Nobulous  pace  +9.7   recover +10.6   commit  +7.7
+
+THE PITCH IS 50.5%, and it is the best of the 224-cell policy grid: clock /
+horizon / adaptive / small, the cell the module models.  REC 3 is reconfirmed
+- the commit gap reads +23.8 / +12.3 / -12.0 / -13.2 at REC 2 / 3 / 4 / 5, so
+3 is the last rung where holding dice back is correct at all.
+
+Regenerated: the 24 Exhibits, and with them the 12 BAT and AoS Tier III cards
+whose claim-cost clause had been in the generator since 2026-10-29 but never
+rendered.  Exactly three sheets changed and every other NRJ sheet came out
+byte-identical, so the card renderer is reproducible on this machine; the
+remaining PnP non-reproducibility is in pack.py's assembly.

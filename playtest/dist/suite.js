@@ -106,7 +106,7 @@
   if(!Array.isArray(state.nrj?.dossier)||!Array.isArray(state.nrj?.active))state.nrj=fresh().nrj;
   // A Research Pool dealt before the Tier III rewrite carries hot/spec
   // flags and no `used`, so its cards would render with the wrong worth.
-  if(state.nrj?.cards?.some(c=>c&&!("used" in c)))state.nrj=fresh().nrj;
+  if(state.nrj?.cards?.some(c=>c&&"used" in c))state.nrj=fresh().nrj;
   if(state.nap.notice===undefined)state.nap.notice="";
   if(!Array.isArray(state.nap.rows)){state.nap.rows=[[],[],[]];if(Array.isArray(state.nap.row))state.nap.rows[state.nap.slot||0]=state.nap.row;delete state.nap.row;}
   state.nap.rows=state.nap.rows.map(row=>row.map(a=>({...a,storedDice:a.storedDice||[]})));
@@ -598,7 +598,7 @@
   // otherwise a card whose body matches the cream gutter looks smaller than the rest.
   const CELL_LONG=700,CELL_SHORT=500,GUTTER=15;
   // Every card image carries this tag; bump it whenever the sheets are rebuilt.
-  const ART_VERSION="?v=ratnames";
+  const ART_VERSION="?v=exhibits2";
   function peekStyle(deck,index,side,boxW){
     const back=side==="back"&&deck.back;
     // A deck may name one back for all its cards, or one per card.
@@ -952,18 +952,28 @@
   // same, and the rulebook says so in the Answering section.
   const nrjDamage=e=>e.target>=NRJ_BIG?2:1;
   const nrjStanding=e=>e.dealt<e.target;
+  const NRJ_CARD_VALUE=2;
+  // rules/nrj.html, "Four difficulties": the dice the Imposter begins with
+  // exhausted, yellow / green / blue / purple. Never the red - session 5
+  // allows only Red and Yellow. They recover normally, so it costs tempo.
+  // Spread across the colours on purpose: whole colours would empty the
+  // window the attention opens on and make the wheel's phase the
+  // difficulty. Fitted to 50/40/30/20 in simulation/finale.txt section 7.
+  const NRJ_TIRED_COLORS=["yellow","green","blue","purple"];
+  const NRJ_LADDER={easy:[0,0,0,0],standard:[3,2,2,2],hard:[3,3,3,2],nobulous:[3,3,4,4]};
   function dealNRJPool(){
     const cards=[];
-    const add=(g,o)=>cards.push({g,kept:false,val:0,used:false,dot:null,spent:false,sel:false,...o});
-    // Each game lays 6 Tier III cards out. A retained card that was never
-    // spent in its own game answers for 2, one that was spent answers for 1.
-    // AoS retains only 2: its own limit of 2 claims a game binds before the
-    // cap of 3 does, so 8 is all a campaign can carry. Dealing 9 reads
-    // 57.6% against the pitched 50.6% - see simulation/finale.txt.
-    const RETAIN={NAP:3,BAT:3,AoS:2};
+    const add=(g,o)=>cards.push({g,kept:false,val:0,dot:null,spent:false,sel:false,...o});
+    // Each game lays 6 Tier III cards out. A card you claimed is retained
+    // and takes 2 off an Exhibit's Target; a card you never claimed is a
+    // Candidate and answers nothing. Whether a retained card was spent in
+    // its own game used to halve it, and was dropped on 2026-10-30: nothing
+    // records it and a campaign can sit for weeks between games.
+    // 3/2/2 is what a campaign can carry, and 7 cards is what reads 50.6%.
+    const RETAIN={NAP:3,BAT:2,AoS:2};
     for(const g of ["NAP","BAT","AoS"]){
       const k=RETAIN[g];
-      for(let i=0;i<k;i++){const used=Math.random()<.5;add(g,{kept:true,val:used?1:2,used});}
+      for(let i=0;i<k;i++)add(g,{kept:true,val:NRJ_CARD_VALUE});
       for(let i=0;i<6-k;i++)add(g,{});
     }
     return cards;
@@ -980,12 +990,22 @@
     n.cards.forEach(x=>x.sel=false);          // one card selected at a time
     c.sel=!was;save();renderNRJ();
   }
+  const nrjLevel=()=>$("nrjLevel")?.value||"easy";
+  function nrjStartingDice(){
+    const dice=freshDice(),counts=NRJ_LADDER[nrjLevel()]||NRJ_LADDER.easy;
+    NRJ_TIRED_COLORS.forEach((color,i)=>{
+      dice.filter(d=>d.color===color).slice(0,counts[i])
+          .forEach(d=>{d.zone="exhausted";});
+    });
+    return dice;
+  }
   function buildNRJ(){
     const dossier=["Knowledge","Physical","Cover-Up"].flatMap(d=>
       shuffle(SCENARIOS.map((x,i)=>x[1]===d?i:null).filter(i=>i!==null)).slice(0,NRJ_DEAL));
     state.nrj={hp:5,str:2,rec:3,session:0,dossier:shuffle(dossier),active:[],buried:[],
       key:0,recCredit:0,discount:0,rollsUsed:0,rollResult:"",outcome:null,
-      recovering:false,pool:18,cards:nrjSampleMode()?dealNRJPool():null,dice:freshDice()};
+      recovering:false,pool:18,cards:nrjSampleMode()?dealNRJPool():null,
+      level:nrjLevel(),dice:nrjStartingDice()};
     save();renderNRJ();
   }
   function nrjDeploy(){
@@ -1123,7 +1143,7 @@
       return `<article class="nrj-exhibit ${down?"down":""}">
         <div class="nrj-exhibit-card" data-nrj-sprite="${e.id}"></div>
         <h3>${s[0]}</h3>
-        <p class="nrj-exhibit-meta">${s[1]} · printed ${s[3]} · Damage ${nrjDamage(e)}</p>
+        <p class="nrj-exhibit-meta">${s[1]} · Target ${nrjBaseTarget(e.id)} · Damage ${nrjDamage(e)}</p>
         ${NRJ_REWARDS[s[0]]?`<p class="nrj-exhibit-reward">Pays when it falls: ${s[4].replace(/^Success: /,"")}</p>`:""}
         <p class="nrj-exhibit-track"><strong>${Math.min(e.dealt,e.target)}</strong> / ${e.target}${down?" · falls at end of session":` · ${left} to go`}</p>
         <div class="compact-actions">
@@ -1145,8 +1165,7 @@
     inputs.classList.toggle("hidden",sample);
     if(!sample){host.innerHTML="";return;}
     const NRJ_TIER3={NAP:"Devious",BAT:"Note",AoS:"Routine"};
-    const label=c=>!c.kept?`${c.g} candidate`
-      :`${c.g} ${NRJ_TIER3[c.g]}${c.used?" · spent":""}`;
+    const label=c=>!c.kept?`${c.g} candidate`:`${c.g} ${NRJ_TIER3[c.g]}`;
     host.innerHTML=["NAP","BAT","AoS"].map(g=>{
       const mine=n.cards.map((c,i)=>[c,i]).filter(([c])=>c.g===g);
       return `<section class="nrj-pool-group"><h3>${g} · answers ${NRJ_DOMAIN[g]}</h3><div class="nrj-pool-row">`+mine.map(([c,i])=>{

@@ -922,24 +922,47 @@ Not your job to fix, but worth knowing if Jon raises them:
   from before the Rewards were restored (53.1%) and from before the
   re-pitch (49.4%).
 
-  The Council Test cards still print Scenario text this finale mostly does
-  not use, but both places that had to say so now do: `nrj.html` step 2 of
-  the setup ("Apart from the five Rewards below, nothing else printed on a
-  Council Test is used in this scenario") and the lab's Exhibits panel.
-  Reprinting the deck as Exhibits - Target and Damage on the face, no
-  Scenario clause - is still the obvious follow-up and is a `build_nrj.py`
-  and `pack.py` job.
+  **THE DECK IS REPRINTED AS EXHIBITS, 2026-10-30.** Target and Damage are
+  on the face, the five live Rewards are reworded to "When this Exhibit
+  falls", and the other nineteen print nothing. The printed 8/9/10 could
+  not simply be used as the Target - that measures 0.0%, because fifteen
+  Exhibits at those values need about 135 successes against a nine-session
+  budget of roughly 60. Three setup steps in `nrj.html` collapsed into one.
+  The deck is called **Exhibits** in `pack.py`, `tts/decks.py`,
+  `tts/lua.lua` and `CARD_MANIFEST.txt`; the deck KEY
+  `NRJ_ImposterScenarios` is deliberately unchanged, because it names the
+  sheet files deployed in `images/` and the lab.
 
-  Outstanding: the **difficulty ladder is still unimplemented**. The frame
-  is 50 easy / 40 standard / 30 hard / 20 Nobulous, and at 50.6% the
-  finale as it ships is the EASY rung with no dial under it. The
-  recommendation is an exhausted start, 0 / 5 / 9 / 11 dice, measured at
-  49.4 / 41.5 / 28.0 / 19.6 before the re-pitch and the only candidate
-  whose recovery gap GROWS with difficulty - re-measure it on the current
-  pool before writing it in. Note that the pool is itself a steep dial,
-  18.5% at one retained card a game against 58.2% at three never spent,
-  but it is a campaign outcome rather than a setting, so it is not the
-  place to put the ladder.
+  That rebuild also finally shipped the **12 BAT and AoS Tier III cards**
+  whose claim-cost clause had been in `build_nrj.py` since 2026-10-29 and
+  never rendered. Exactly three sheets changed and every other NRJ sheet
+  came out byte-identical, so the card renderer IS reproducible here - the
+  PnP non-reproducibility noted elsewhere is in `pack.py`'s assembly.
+
+  **THE CARRYOVER IS RETAINED-OR-NOT.** The spent/unspent split is gone: it
+  was a fact about a session weeks earlier that nothing on the table
+  records. Every retained card takes 2 off a Target, and the pool is a
+  count - NAP 3, BAT 2, AoS 2, which is the seven that reads 50%.
+
+  **THE DIFFICULTY LADDER SHIPPED**, cut with named dice rather than a
+  dial. Easy none, Standard 3/2/2/2, Hard 3/3/3/2, Nobulous 3/3/4/4
+  (yellow/green/blue/purple), measuring 50.6 / 39.2 / 30.6 / 19.4. Two
+  things to know before touching it:
+
+  1. **The dice are NAMED, not chosen.** An earlier version let the player
+     pick and the model picked worse than random at the hard end, because
+     all four colours come four to a pool and "spend the commonest" broke
+     the tie on purple. Do not reintroduce a player choice here.
+  2. **The counts are SPREAD on purpose.** Whole colours collide with the
+     attention wheel: 4 yellow + 4 green reads 28.7% against 38.4% for the
+     same eight dice taken off the purple end, because the wheel opens on
+     Yellow+Green. Weakest-first has a 14.6-point cliff between 6 and 8
+     dice; spread, the largest step in the curve is 6.1. The wheel's phase
+     is already chosen for where sessions 5 and 9 land, so the ladder has
+     to stay independent of it.
+
+  The rungs still reward play, which is why this dial was chosen over REC
+  or Dossier size: recovery is worth +4.8 at Easy and +14.1 at Hard.
   Reprinting that deck as Exhibits — Target and Damage on the face, no
   Scenario clause — is the obvious follow-up, and it is a `build_nrj.py`
   and `pack.py` job, not a rules one.

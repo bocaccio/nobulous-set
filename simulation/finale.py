@@ -36,35 +36,34 @@ WHAT THE COMPONENTS SUPPLY
     answers only its own domain - NAP to Knowledge, BAT to Physical, AoS to
     Cover-Up - which is the old category match, and the only thing that
     makes the three domains mean anything once the dial carries the colour
-    layer. At most 8 retained cards against 15 Exhibits: 3 a game, and 2
-    from AoS, whose own claim limit binds before the cap does.
+    layer. A card is RETAINED or it is not and every retained one is worth
+    2: the spent/unspent split was dropped on 2026-10-30 because nothing on
+    the table records which a card is. At most 7 retained against 15
+    Exhibits - NAP 3, BAT 2, AoS 2 - which is the count that reads 50%.
   3 THE AVOID RULE IS GONE, because choosing your pace replaces it. So is
     Suspicion, the uncapped Target tax: standing Exhibits deal Damage every
     session, which is the same pressure paid in Health instead of arithmetic.
 
-THE PITCH: 50.6%, re-measured 2026-10-30 against the Tier III pool - see
-WHAT THE RE-PITCH MOVED below. Against a community band of 47-57% and a mean
-of 53.0% across 955 recorded games, and against the 50/40/30/20 difficulty
-ladder, where it is the EASY rung. Measured over five seeds, because one is
-not a pitch: 51.4 50.5 50.9 49.4 50.9. Every figure below is at that setting.
+THE PITCH: 50.5% at EASY, which is the Easy rung of the 50/40/30/20 ladder
+and also sits in the old 47-57% community band. Measured over five seeds,
+because one is not a pitch: 50.1 50.4 50.1 50.6 51.0. Every figure below is
+at that setting, with no dice exhausted at setup.
 
-  pace       clock 51.4   against every fixed pace: two 33.1, three 1.5,
-             one and all 0.0, and the throttled variant 40.1
-  recovery   horizon 51.4 and next 50.1, against best 43.0 and now 7.5 -
+  pace       clock 50.1   against every fixed pace: two 31.9, three 1.2,
+             one and all 0.0, and the throttled variant 47.4
+  recovery   horizon 50.1 and next 51.3, against best 45.6 and now 8.4 -
              reading the wheel pays, and grabbing this session's colour is
-             far too late
-  commit     adaptive 51.4 against 39.1 for throwing every allowed die
-  Research   spending it 51.4 against 8.6 for ignoring it, with hoarding
-             for the Target 5s at 36.0 and dumping it at 33.9 - WHICH card
+             far too late. next edges horizon on one seed and loses to it
+             over five, 50.0 against 50.5 - which is the whole reason this
+             file pitches on five.
+  commit     adaptive 50.1 against 37.5 for throwing every allowed die
+  Research   spending it 50.1 against 8.7 for ignoring it, with hoarding
+             for the Target 5s at 42.1 and dumping it at 37.5 - WHICH card
              on WHICH Exhibit is the decision, not whether to spend
-  Rewards    50.6 against 37.0 with the five Reward cards switched off
-  carry-over 51.4 against 32.4 when progress resets, so the published rule
+  Rewards    50.5 against 42.7 with the five Reward cards switched off
+  carry-over 50.1 against 31.1 when progress resets, so the published rule
              that damage on a standing enemy persists is load-bearing
-  blind play 0.4% - a player using none of the levers does not finish
-
-  The four levers, each measured as it is added to blind play: spending
-  the Research Pool +13.0, keeping pace with the clock +14.3, recovering
-  for the colour coming up +10.7, committing only what you need +11.8.
+  blind play 0.5% - a player using none of the levers does not finish
 
   Every figure above is the BEST cell of the 224-cell policy grid, and the
   policy this module models IS that cell - clock / horizon / adaptive /
@@ -72,27 +71,35 @@ not a pitch: 51.4 50.5 50.9 49.4 50.9. Every figure below is at that setting.
   weaker policy than the one a player would find; the grid search is the
   guard against doing it twice.
 
-WHAT THE RE-PITCH MOVED. research() used to deal the pool the 2026-10-29
-Tier III rework replaced - a NAP card always worth 1, a BAT card worth 2 only
-on a 1-in-4 Specimen, an AoS card worth 2 on a coin flip - so every figure
-measured before 2026-10-30 was against a pool weaker than the printed one.
-The correction is worth +1.2 points, not the 8 it looks like, because it
-arrived with a second correction pulling the other way: AoS's own limit of 2
-claims a game means the campaign can carry 8 retained cards and not 9.
-Dealing 9 of them reads 57.6%. Nothing downstream needed re-tuning, and the
-COMMIT lever got stronger rather than weaker - 12.3 against 7.7 - because a
-pool that lowers Targets is a pool that makes committing exactly enough pay
-more.
+THE LADDER IS CUT WITH DICE, not with a dial - see START_TIRED. Easy none,
+Standard 3/2/2/2, Hard 3/3/3/2, Nobulous 3/3/4/4 yellow/green/blue/purple,
+reading 50.6 / 39.2 / 30.6 / 19.4. The rungs still reward play, which is why
+this dial was chosen over REC or the Dossier: the RECOVERY decision pays
++4.8 at Easy and +14.1 at Hard, so the harder tiers are more rewarding of
+good play rather than less.
+
+WHAT 2026-10-30 MOVED, in three corrections. research() was still dealing the
+pool the Tier III rework replaced the day before - a NAP card always worth 1,
+a BAT card worth 2 only on a 1-in-4 Specimen, an AoS card worth 2 on a coin
+flip. Then the spent/unspent split went, because a campaign played over
+several evenings cannot track it, and with one card value the pool became a
+count that had to be re-derived: eight cards worth 1.5 beat six worth 2 on
+the same total reduction, since spreading across more Exhibits and more
+domains pays better than concentrating. And the Council Tests were reprinted
+as Exhibits, Target and Damage on the face. Through all of it the pitch moved
+about a point, and the COMMIT lever got stronger rather than weaker - 12.3
+against 7.7 - because a pool that lowers Targets makes committing exactly
+enough pay more.
 
 THE FIVE REWARD CARDS ARE WHY REC IS 3. Eight of the 24 Council Tests are
 printed as Rewards and five of them still pay something this finale has;
-restoring them is worth +13.6 points. At REC 4 that tips the economy over,
+restoring them is worth +7.8 points. At REC 4 that tips the economy over,
 and the commit decision does not merely die, it INVERTS: throwing every
-allowed die beats holding any back by 10.0 points and the best available
-policy wins 65.8%, out of band. Re-measured on the Tier III pool, the
-commit gap reads +19.1 at REC 2, +11.0 at REC 3, -10.0 at REC 4 and -11.6
-at REC 5. REC 3 is the last rung where committing is a decision. The
-Rewards are the fourth point of recovery, and they have to be earned.
+allowed die beats holding any back by 12.0 points and the best available
+policy wins 65.9%, out of band. The commit gap reads +23.8 at REC 2, +12.3
+at REC 3, -12.0 at REC 4 and -13.2 at REC 5. REC 3 is the last rung where
+committing is a decision. The Rewards are the fourth point of recovery, and
+they have to be earned.
 
 THE CLOCK IS NOT MONOTONIC, and that is a property rather than a bug. The
 window is two colours wide and the wheel is five long, so the length of the
@@ -103,17 +110,17 @@ because ten ENDS on red with the whole remainder still on the table. The
 nine-session clock is chosen for its phase on the wheel, not its length.
 
 WHAT IS STEEP, and where the edges are. REC is the usable dial and it is
-not gentle: 2 / 3 / 4 / 5 read 24.3 / 51.4 / 54.6 / 55.4, and that last
+not gentle: 2 / 3 / 4 / 5 read 28.2 / 50.5 / 53.9 / 54.1, and that last
 pair is not a typo - past REC 3 the modelled policy stops being the best
 one, exactly as described above. A point of STR is worth 85.4%.
 
 THE DOSSIER SITS ONE EXHIBIT ABOVE A CLIFF. At REC 3 the deck reads
-12 / 13 / 14 / 15 / 16 / 18 Exhibits = 79.4 / 72.5 / 65.6 / 51.4 / 21.1 /
+12 / 13 / 14 / 15 / 16 / 18 Exhibits = 76.7 / 69.8 / 64.8 / 50.1 / 20.6 /
 0.2%. It is a workable seven-points-an-Exhibit dial on the easy side and
 falls off entirely past the shipped 15, so a sixteenth Exhibit is not a
 difficulty step, it is a different game. Health, by contrast, saturates
-and is a buffer rather than a dial: 3 / 4 / 5 / 6 read 43.3 / 49.2 / 51.4
-/ 51.4.
+and is a buffer rather than a dial: 3 / 4 / 5 / 6 read 43.5 / 50.3 / 50.1
+/ 50.0.
 """
 import collections
 import math
@@ -147,8 +154,40 @@ RESEARCH = True            # the campaign's retained Tier III cards
 # How many cards each game carries, NAP / BAT / AoS. The printed cap is 3 a
 # game, but AoS's own limit of 2 claims a game binds first, so 8 is the most
 # any campaign can carry and the standalone rule deals the same.
-RETAIN = (3, 3, 2)
-SPENT = 0.5                # P(a retained card was spent in its own game)
+# NAP 3, BAT 2, AoS 2. With one value the pool is just a count, and seven
+# cards is the count that reads 50.6%. The caps match the economics: a NAP
+# Opportunity is worked like an Assignment and apprentices finish about 2.5
+# of them, a second BAT Note already costs that game 9 points, and AoS
+# limits itself to 2 claims.
+RETAIN = (3, 2, 2)
+CARD_VALUE = 2             # what one retained card takes off an Exhibit
+# THE IMPOSTER STARTS TIRED, and how tired is the difficulty. These dice
+# begin exhausted; they return through ordinary recovery, so the handicap
+# costs tempo rather than dice and bites hardest early, when the Dossier is
+# full. The RULES name them, so there is no player choice here for this
+# module to model badly - an earlier version let the model pick the dice and
+# picked worse than random at the hard end.
+#
+# The counts are deliberately SPREAD across the four colours rather than
+# taking whole ones, because whole colours collide with the attention wheel.
+# The wheel opens on Yellow with a Yellow+Green window, so "4 yellow, 4
+# green" empties the only colours sessions 1 and 2 may apply and reads 28.7%
+# against 38.4% for the same eight dice taken off the purple end - a
+# ten-point swing decided by the wheel's phase rather than by the handicap.
+# Spread, the curve is smooth and the two stay independent.
+#
+# The single red is never exhausted: session 5 allows only Red and Yellow,
+# and there is one red die.
+#
+#   level      y  g  b  p     n    win     aim
+#   Easy       0  0  0  0     0   50.6%   +0.6
+#   Standard   3  2  2  2     9   39.2%   -0.8
+#   Hard       3  3  3  2    11   30.6%   +0.6
+#   Nobulous   3  3  4  4    14   19.4%   -0.6
+TIRED_COLOURS = ("yellow", "green", "blue", "purple")
+LADDER = {"easy": (0, 0, 0, 0), "standard": (3, 2, 2, 2),
+          "hard": (3, 3, 3, 2), "nobulous": (3, 3, 4, 4)}
+START_TIRED = LADDER["easy"]
 
 DOMAINS = ("Knowledge", "Physical", "Cover-Up")
 
@@ -253,18 +292,16 @@ class Card(object):
 def research(rng):
     """The retained Tier III cards, as rules/nrj.html deals them.
 
-    Every retained card is worth 2 if it was never spent in its own game and
-    1 if it was, whichever game it came from - the Tier III scheme of
-    2026-10-29, which replaced the Specimen and Stable/Overheated values this
-    function used to deal. SPENT is the chance a card was cashed in, so the
-    pool's strength varies between finales exactly as a campaign's would.
+    Retained or not, and every retained card is worth the same. The earlier
+    scheme paid 2 for a card never spent in its own game and 1 for one that
+    was; it was dropped on 2026-10-30 because nothing on the table records
+    which a card is, and a campaign can sit for weeks between games.
     """
     if not RESEARCH:
         return []
     out = []
     for game, n in zip(("NAP", "BAT", "AoS"), RETAIN):
-        out += [Card(game, 1 if rng.random() < SPENT else 2)
-                for _ in range(n)]
+        out += [Card(game, CARD_VALUE) for _ in range(n)]
     return out
 
 
@@ -292,10 +329,20 @@ class Game(object):
         self.pool = research(rng)
         self.active = []
         self.available, self.exhausted = fresh(), []
+        self.start_tired()
         self.hp = HEALTH
         self.dial = 0
         self.at = 0
         self.discount = 0          # The Narrow Stair, owed to the next deploy
+
+    def start_tired(self):
+        """The dice rules/nrj.html names for the chosen difficulty."""
+        for colour, n in zip(TIRED_COLOURS, START_TIRED):
+            for _ in range(n):
+                if colour not in self.available:
+                    break
+                self.available.remove(colour)
+                self.exhausted.append(colour)
 
     # -- the state a policy may read. All of it is face-up on the table ----
     def colour(self):
@@ -549,8 +596,8 @@ def play(rng, pace="clock", recov="horizon", rew="dice", commit="adaptive",
 
 KW = ("pace", "recov", "rew", "commit", "res")
 DIALS = ("SESSIONS", "DEAL", "HEALTH", "STRAT", "REC_BASE", "BIG", "CARRY",
-         "RESEARCH", "RETAIN", "SPENT", "TARGET_OFFSET", "WINDOW",
-         "PAY_REWARDS")
+         "RESEARCH", "RETAIN", "CARD_VALUE", "START_TIRED",
+         "TARGET_OFFSET", "WINDOW", "PAY_REWARDS")
 
 
 def run(games=GAMES, seed=11, **over):
@@ -700,20 +747,67 @@ if __name__ == "__main__":
         sys.stdout.flush()
 
     print()
-    print("6. THE RESEARCH POOL, re-pitched 2026-10-30")
-    print("   Every retained Tier III card is worth 2 if it was never spent")
-    print("   in its own game and 1 if it was. RETAIN is 3/3/2 because AoS")
-    print("   may only claim 2 a game, so 8 is all a campaign can carry.")
-    for lab, over in (("as it ships, 3/3/2 at a coin flip", {}),
-                      ("3/3/3 - 9 retained, unreachable", {"RETAIN": (3, 3, 3)}),
-                      ("nothing spent - maximal restraint", {"SPENT": 0.0}),
-                      ("everything spent", {"SPENT": 1.0}),
-                      ("2/2/2 - claimed sparingly", {"RETAIN": (2, 2, 2)}),
-                      ("1/1/1", {"RETAIN": (1, 1, 1)}),
-                      ("no retained cards at all", {"RESEARCH": False})):
-        ws = [run(seed=sd, **over) for sd in seeds]
-        mean = sum(ws) / len(ws)
-        print("   %-34s %6.1f%%%s" % (lab, mean, band(mean)))
+    print("6. THE RESEARCH POOL")
+    print("   A card is retained or it is not, and every retained card takes")
+    print("   %d off one Exhibit's Target. The spent/unspent split was dropped"
+          % CARD_VALUE)
+    print("   on 2026-10-30: nothing on the table records which a card is,")
+    print("   and a campaign can sit for weeks between games. So the pool is")
+    print("   now just a COUNT, and seven is the count that reads 50%.")
+    print("   %-26s %8s %8s" % ("NAP/BAT/AoS retained", "worth 1", "worth 2"))
+    for r in ((1, 1, 1), (2, 2, 1), (2, 2, 2), (3, 2, 2), (3, 3, 2),
+              (3, 3, 3)):
+        a = sum(run(seed=sd, RETAIN=r, CARD_VALUE=1)
+                for sd in seeds) / len(seeds)
+        b = sum(run(seed=sd, RETAIN=r, CARD_VALUE=2)
+                for sd in seeds) / len(seeds)
+        print("   %-26s %7.1f%% %7.1f%%%s"
+              % ("%d/%d/%d" % r, a, b,
+                 "   <- shipped" if r == RETAIN else ""))
+        sys.stdout.flush()
+    w0 = sum(run(seed=sd, RESEARCH=False) for sd in seeds) / len(seeds)
+    print("   %-26s %7s  %7.1f%%" % ("no retained cards", "", w0))
+    print()
+    print("   Eight cards worth 1.5 each beat six worth 2, on the same total")
+    print("   reduction: spreading across more Exhibits pays better than")
+    print("   concentrating, and more cards cover the three domains better.")
+    print("   That is why dropping to one value needed the COUNTS re-derived")
+    print("   rather than the values doubled.")
+
+    print()
+    print("7. THE DIFFICULTY LADDER - dice exhausted at setup")
+    print("   The rules name the dice, so there is no choice to model. The")
+    print("   counts are spread across the colours on purpose: taking whole")
+    print("   ones collides with the wheel, which opens Yellow+Green, and")
+    print("   '4 yellow 4 green' reads 28.7% against 38.4% for the same")
+    print("   eight dice taken off the purple end. The red is never taken.")
+    print("   %-10s %-14s %4s %8s %7s" % ("level", "y  g  b  p", "n",
+                                          "win", "aim"))
+    aims = {"easy": 50, "standard": 40, "hard": 30, "nobulous": 20}
+    for lab in ("easy", "standard", "hard", "nobulous"):
+        c = LADDER[lab]
+        x = sum(run(seed=sd, START_TIRED=c) for sd in seeds) / len(seeds)
+        print("   %-10s %-14s %4d %7.1f%%%s  %3d%%  %+.1f"
+              % (lab.title(), "%d  %d  %d  %d" % c, sum(c), x, band(x),
+                 aims[lab], x - aims[lab]))
+        sys.stdout.flush()
+    print()
+    print("   AND WHETHER THE RUNGS ARE STILL GAMES OF SKILL. A tier where")
+    print("   no policy beats another is not a harder puzzle, it is a worse")
+    print("   one, so every rung is measured with its own gaps. This is the")
+    print("   property that chose this dial: the RECOVERY decision, which is")
+    print("   what the attention wheel exists to create, pays MORE as the")
+    print("   ladder gets harder.")
+    for lab in ("easy", "standard", "hard", "nobulous"):
+        c = LADDER[lab]
+
+        def g(**kw):
+            return sum(run(seed=sd, START_TIRED=c, **kw)
+                       for sd in seeds) / len(seeds)
+        base = g()
+        print("   %-10s %5.1f%%   pace %+5.1f   recover %+5.1f   commit %+5.1f"
+              % (lab.title(), base, base - g(pace="two"),
+                 base - g(recov="best"), base - g(commit="all")))
         sys.stdout.flush()
     print()
     print("   AND WHETHER COMMITTING IS STILL A DECISION. The pool lowers")

@@ -297,7 +297,7 @@ EARLIER (rev 15)
       Devious Opportunities                      NAP opportunity gold
       Nobulous Interference, Backdoor Routines   AoS rust
       Corrupted Limitations                      AoS limitation teal
-      Imposter Scenarios                         colored by domain: Knowledge purple,
+      Exhibits                                   colored by domain: Knowledge purple,
                                                  Physical green, Cover-Up rust
     Every NRJ card names its tier in the footer.
   - The four AoS Program decks are now genuinely two-sided: Stable on the face,
@@ -323,7 +323,7 @@ PRINT AND PLAY (Letter)
   NobulousSet_BAT_PnP.pdf   BAT
   NobulousSet_NAP_PnP.pdf   NAP
   NobulousSet_AoS_PnP.pdf   AoS
-  NobulousSet_NRJ_PnP.pdf   NRJ modules + Imposter Scenarios
+  NobulousSet_NRJ_PnP.pdf   NRJ modules + Exhibits
 
 TWO-SIDED CARDS
   These decks are genuinely double-sided.  In TTS tick "Unique Backs" and load
@@ -383,7 +383,7 @@ CARD BACKS
         CardBack_NRJ_ResearchNote     Research Notes
         CardBack_NRJ_Interference     Nobulous Interference
         CardBack_NRJ_BackdoorRoutine  Backdoor Routines
-        CardBack_NRJ_CouncilTest      24 Imposter Scenarios
+        CardBack_NRJ_CouncilTest      24 Exhibits
 
   NRJ cards that are shuffled into a base deck take that deck's back, or they
   would be identifiable face-down:

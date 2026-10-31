@@ -56,7 +56,7 @@ GAMES = {
         ('NRJ_AoS_Interference', 'Nobulous Interference'),
         ('NRJ_AoS_CorruptedLimitations', 'Corrupted Limitations'),
         ('NRJ_AoS_BackdoorRoutines', 'Backdoor Routines'),
-        ('NRJ_ImposterScenarios', 'Council Test Scenarios'),
+        ('NRJ_ImposterScenarios', 'Exhibits'),
     ],
 }
 

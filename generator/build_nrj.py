@@ -13,12 +13,14 @@ DOMAIN = {'Knowledge': NAP_H, 'Physical': BAT_H, 'Cover-Up': AOS_H}
 MOD_STRIP = '#4a4238'
 
 
-def C(title, sub, body, ftr='', warn=False, acc=None, tint=None):
+def C(title, sub, body, ftr='', warn=False, acc=None, tint=None, hdr=None):
     f = ('<div class="ftr%s">%s</div>' % (' warn' if warn else '', ftr)) if ftr else ''
     cls = ' xlong' if len(title) > 30 else (' long' if len(title) > 19 else '')
     st = ' style="--a:%s"' % acc if acc else ''
     bs = ' style="background:%s"' % tint if tint else ''
-    hs = hdr_fit(title, cls, CARD_SIZE)
+    # `hdr` fixes the header depth for a whole deck, so a two-line title does
+    # not push the body down relative to a one-line one.
+    hs = hdr_fit(title, cls, CARD_SIZE) if hdr is None else hdr
     return ('<div class="card nrj"%s><div class="hdr"%s><div class="t%s">%s</div>'
             '<div class="s">%s</div></div>'
             '<div class="body"%s>%s<div class="spacer"></div>%s</div>'
@@ -213,6 +215,10 @@ print("Interference", render_deck('NRJ_AoS_Interference', intf, 'NRJ', back='Car
 print("Corrupted Limitations", render_deck('NRJ_AoS_CorruptedLimitations', corr, 'NRJ', back='CardBack_AoS_Limitation'))
 print("Backdoor Routines", render_deck('NRJ_AoS_BackdoorRoutines', bkd, 'NRJ', back='CardBack_NRJ_BackdoorRoutine'))
 
+# The 24 Council Tests. The Scenario clause in the last column is the card's
+# ORIGINAL text and is no longer rendered - see exhibit_body below. The
+# printed Target stays 8 / 9 / 10 here because that spread is the deck's
+# provenance and simulation/finale.py asserts it.
 SCEN = [
  ("The Physician's Greeting", "Knowledge", "Anatomy - Relief", 8, "The first NAP card you spend here also performs its Special Recovery."),
  ("An Old Injury", "Knowledge", "Anatomy - Constraint", 9, "At least 2 Purple or Blue dice must contribute."),
@@ -239,10 +245,62 @@ SCEN = [
  ("The Missing Hours", "Cover-Up", "Extraction - Aggravator", 10, "+1 additional Target for each card in the Suspicion row."),
  ("A Second Search", "Cover-Up", "Extraction - Relief", 8, "Remove one card from the Suspicion row, then attempt this Scenario normally."),
 ]
-cards = [C(n, "%s Test &middot; %s" % (dom, cat),
-           '<div class="big">%d</div><div class="biglbl">Target</div>' % t + T(e, 'txt c'),
-           'Imposter Scenario. Discounted by %s cards of the matching category.'
+# THE EXHIBIT FACE. An Exhibit's Target is the printed Council Test Target
+# minus EXHIBIT_OFFSET, and it deals 2 Damage at BIG_TARGET or above and 1
+# below it. Both were table arithmetic until 2026-10-30; they are printed
+# now. The Scenario clause in SCEN above is kept as the record of what the
+# card used to say and is no longer rendered - the finale uses none of it.
+EXHIBIT_OFFSET = 5
+BIG_TARGET = 5
+
+# The five Rewards that still pay in a currency this finale has. "If you
+# succeed" is reworded to the event the finale actually has: the Exhibit
+# falling. The other three printed Rewards modified a single attempt, which
+# this scenario does not have, so they print no Reward at all.
+EXHIBIT_REWARD = {
+    "The Chamber Mechanism": "When this Exhibit falls, recover 2 exhausted dice.",
+    "The Sedative Ledger": "When this Exhibit falls, recover 3 exhausted dice.",
+    "The Vote": "When this Exhibit falls, recover all exhausted dice of one color.",
+    "Tracks in the Yard": "When this Exhibit falls, recover 1 exhausted die of each of two colors.",
+    "The Narrow Stair": "When this Exhibit falls, the next Exhibit you deploy has its Target reduced by 1.",
+}
+
+
+def exhibit_body(name, target):
+    damage = 2 if target >= BIG_TARGET else 1
+    # A FIXED top margin, not a centring spacer. Centring floats the
+    # numbers higher on the five cards that also carry a Reward, and the
+    # Target is the one thing a player reads across a row of face-up
+    # Exhibits - it has to sit at the same height on all 24.
+    stats = ('<div class="row" style="justify-content:center;gap:7mm;'
+             'margin-top:6mm">'
+             '<div><div class="big">%d</div><div class="biglbl">Target</div></div>'
+             '<div><div class="big">%d</div><div class="biglbl">Damage</div></div>'
+             '</div>' % (target, damage))
+    reward = EXHIBIT_REWARD.get(name)
+    if reward:
+        stats += ('<div class="sub" style="margin-top:3.2mm">Reward</div>'
+                  + T(reward, 'txt c sm'))
+    return stats
+
+
+def _hdr_mm(style):
+    return float(style.split(':')[1].rstrip('mm')) if style else 0.0
+
+
+def _cls(title):
+    return ' xlong' if len(title) > 30 else (' long' if len(title) > 19 else '')
+
+
+# The deepest header any Exhibit title needs, applied to all of them, so the
+# Target sits at one height across a row of face-up cards.
+EXHIBIT_HDR = max((hdr_fit(n, _cls(n), CARD_SIZE) for n, _d, _c, _t, _e in SCEN),
+                  key=_hdr_mm)
+
+cards = [C(n, "%s Exhibit &middot; %s" % (dom, cat.split(" - ")[0]),
+           exhibit_body(n, t - EXHIBIT_OFFSET),
+           'Dossier. A retained %s card reduces this Target by 2, to a minimum of 1.'
            % {'Knowledge': 'NAP', 'Physical': 'BAT', 'Cover-Up': 'AoS'}[dom],
-           acc=DOMAIN[dom]) for n, dom, cat, t, e in SCEN]
-print("Scenarios", render_deck('NRJ_ImposterScenarios', cards, 'IMP', back='CardBack_NRJ_CouncilTest'))
+           acc=DOMAIN[dom], hdr=EXHIBIT_HDR) for n, dom, cat, t, e in SCEN]
+print("Exhibits", render_deck('NRJ_ImposterScenarios', cards, 'IMP', back='CardBack_NRJ_CouncilTest'))
 

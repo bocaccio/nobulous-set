@@ -71,7 +71,7 @@ DECKS = [
     dict(key='NRJ_AoS_BackdoorRoutines', count=6, w=6, h=1, back='CardBack_NRJ_BackdoorRoutine',
          land=False, game='NRJ', label='Backdoor Routines'),
     dict(key='NRJ_ImposterScenarios', count=24, w=10, h=3, back='CardBack_NRJ_CouncilTest',
-         land=False, game='IMP', label='Council Test Scenarios'),
+         land=False, game='IMP', label='Exhibits'),
 ]
 
 GAME_COLOR = {'BAT': (0.17, 0.37, 0.29), 'NAP': (0.42, 0.25, 0.55),

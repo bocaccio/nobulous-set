@@ -155,7 +155,7 @@ end
 function setupImposter()
   clearTable()
   STATE.game = 'IMP'
-  park(findDeck('Council Test Scenarios'), {0, 2, 6}, {0, 180, 180})
+  park(findDeck('Exhibits'), {0, 2, 6}, {0, 180, 180})
   STATE.suspicion, STATE.attempts = 0, 0
   refreshPanel()
   say('Imposter Scenario. Deal 4 Knowledge, 4 Physical and 4 Cover-Up at random, shuffle those 12. ' ..
