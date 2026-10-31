@@ -94,11 +94,16 @@ print("Modifications", render_deck('NRJ_BAT_Modifications', mods, 'NRJ', back='C
 print("Research Notes", render_deck('NRJ_BAT_ResearchNotes', notes, 'NRJ', back='CardBack_NRJ_ResearchNote'))
 
 
+# name, subject, recovery-color dot, ReqTarget, DemTarget, effect.
+# The dot is not decoration: Required Effort, completing, storing progress
+# and the next slot's queued colour all read "that Assignment's color dot",
+# so an Assignment without one is under-specified. One of each colour, each
+# matching a colour its own subject already uses.
 IMPOSTOR = [
- ("Neural Extraction Practicum", "Anatomy", 5, 6, "One die committed here remains locked until the end of the Day even if completed."),
- ("Load-Bearing Prosthetics", "Engineering", 4, 5, "At least 2 applied successes must come from the same color."),
- ("Emergency Specimen Handling", "Procedure", 4, 5, "Before rolling, commit at least 2 dice initially."),
- ("Containment Drill", "Theory", 4, 5, "If unresolved, exhaust 1 available die before flipping it to Demand."),
+ ("Neural Extraction Practicum", "Anatomy", 'P', 5, 6, "One die committed here remains locked until the end of the Day even if completed."),
+ ("Load-Bearing Prosthetics", "Engineering", 'B', 4, 5, "At least 2 applied successes must come from the same color."),
+ ("Emergency Specimen Handling", "Procedure", 'Y', 4, 5, "Before rolling, commit at least 2 dice initially."),
+ ("Containment Drill", "Theory", 'G', 4, 5, "If unresolved, exhaust 1 available die before flipping it to Demand."),
 ]
 # name, recovery-color dot, successes, effect
 FOLLOWING = [
@@ -129,8 +134,10 @@ DEV_FOOTER = {
 # Demand band bottom, key rule on the right spine.
 CARD_SIZE = LANDSCAPE
 imp = []
-for n, subj, rt, dt, e in IMPOSTOR:
-    marks = '<div class="marks">%s</div>' % subj_icon(subj)
+for n, subj, dot, rt, dt, e in IMPOSTOR:
+    # Same marks block as a base Task: subject icon, then the colour dot.
+    marks = ('<div class="marks">%s<div class="dt" style="background:%s">'
+             '</div></div>' % (subj_icon(subj), DOT[dot]))
     w = n.split()
     best, bi = 10**9, 1
     for i in range(1, len(w) or 1):

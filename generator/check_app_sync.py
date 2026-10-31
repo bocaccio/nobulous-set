@@ -280,6 +280,28 @@ for key, jsname, fields in (
     check("%s vs %s - %d names and Targets" % (key, jsname, len(g)), not bad,
           "%r" % (bad[:3],))
 
+# THE IMPOSTOR TASK DOTS. Every NAP Assignment prints a recovery-colour dot
+# and three printed rules read "that Assignment's color dot" - Required
+# Effort, completing or storing progress, and the colour the Primary queues
+# for the next Time Slot. The 4 Impostor Tasks printed none until 2026-10-31,
+# so the card, the model (which inherited the replaced Task's dot) and the
+# lab (which fell back to "P") all disagreed, and nothing here could see it.
+IMP_DOTS = (("Neural Extraction Practicum", "P"),
+            ("Load-Bearing Prosthetics", "B"),
+            ("Emergency Specimen Handling", "Y"),
+            ("Containment Drill", "G"))
+gen_imp = {r[0]: r[2] for r in gr["IMPOSTOR"]}
+js_imp = {r[0]: r[2] for r in js_literal("playtest/dist/suite.js",
+                                         "NAP_IMPOSTOR")}
+sim_imp = dict((s, d) for s, d, _r, _t in
+               py_tables("simulation/nap.py")["IMPOSTOR"])
+sim_subj = {n: s for (n, s, _d, _r, _t, _e) in gr["IMPOSTOR"]}
+bad = [n for n, d in IMP_DOTS
+       if gen_imp.get(n) != d or js_imp.get(n) != d
+       or sim_imp.get(sim_subj.get(n)) != d]
+check("the 4 Impostor Task dots agree in the cards, the lab and nap.py",
+      not bad, "%r" % (bad,))
+
 # The Tier III decks the lab keeps outside suite.js. Every field is compared,
 # because the claim CONDITION now carries the cost clause that prices it -
 # "Claiming gives up..." - and a lab that kept the old wording would teach the

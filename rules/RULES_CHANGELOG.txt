@@ -197,13 +197,13 @@ NAP — Nobulous Apprenticeship Program
 13. Opportunity effects reaching into the next Time Slot override restrictions
     printed on the Task cards they apply to.
 
-    OPEN QUESTION FOR YOU — Slacker's passive reads "the first time each Day you
-    VOLUNTARILY DRAW AN ADDITIONAL ASSIGNMENT".  No such action exists in the
-    compendium, on the reference sheet, or in the simulator, so I have not
-    invented one.  Either the rule was dropped (and Slacker's passive needs
-    rewording) or it should read something like "you may take BOTH revealed
-    Assignments if the row has space".  The second reading also explains the
-    end-of-day discard's stated purpose.
+    RESOLVED, 2026-10-31 — Slacker's passive was reworded rather than the
+    missing action invented.  It now reads "Your Time Slot rows hold a
+    maximum of 3 Assignments instead of 4", which references a rule that
+    exists; the lab enforces it as napRowMax and nap.py plays it as
+    small_row.  Nothing in the set says "voluntarily draw" any more.
+    The measurement below is kept because it still prices the option if
+    anyone reinstates it.
     MEASURED, so the option is costed if you reinstate it: taking the second
     revealed Assignment is a trap, not a gift.  Used greedily it costs 20+ points
     (base game 32.4% -> 11.6%); used sparingly - only into a nearly empty row,
@@ -716,3 +716,40 @@ whose claim-cost clause had been in the generator since 2026-10-29 but never
 rendered.  Exactly three sheets changed and every other NRJ sheet came out
 byte-identical, so the card renderer is reproducible on this machine; the
 remaining PnP non-reproducibility is in pack.py's assembly.
+
+IMPOSTOR TASKS GET THE DOT EVERY ASSIGNMENT NEEDS, 2026-10-31
+--------------------------------------------------------------
+The 4 Impostor Tasks printed no recovery-colour dot.  Three printed NAP rules
+read "that Assignment's color dot" - Required Effort, completing or storing
+progress, and the colour the Primary queues for the next Time Slot - so on
+these four cards all three references dangled and Red-as-wild meant nothing.
+
+Nothing agreed on what the dot was.  The card printed none; simulation/nap.py
+gave each Impostor Task the dot of the Credit Task it replaced, a different
+colour every game, so NAP's Tier II and III calibration was measured against
+dots that were never on a card; and the lab fell back to `dot||"P"`.
+check_app_sync could not catch it because there was no field to compare.
+
+  Neural Extraction Practicum   Anatomy      Purple
+  Load-Bearing Prosthetics      Engineering  Blue
+  Emergency Specimen Handling   Procedure    Yellow
+  Containment Drill             Theory       Green
+
+One of each colour, which keeps the deck's balance, and three of the four
+take their own subject's most common Credit Task dot; Procedure takes Yellow
+because Purple is spoken for and Yellow is its other colour.
+
+PRINTING IT IS FREE.  4000 games a cell x 4 seeds, all six Apprentices:
+
+  tier none   mean 54.7 -> 54.7   spread 7.8 -> 7.8
+  tier II     mean 39.5 -> 39.6   spread 7.1 -> 7.4
+  tier III    mean 56.7 -> 56.7   spread 6.6 -> 6.6
+
+So the correction costs nothing and NAP's pitch stands.  check_app_sync now
+compares the four dots across the generator, the lab and the model.
+
+ALSO CLOSED, both stale rather than open: the Red die plays in the BAT battle
+as a trade (item 3i above, and rules/bat.html has it in three places), and
+Slacker's passive was reworded in b57eedd to "Your Time Slot rows hold a
+maximum of 3 Assignments instead of 4".  Nothing in the set has said
+"voluntarily draw an additional Assignment" for some time.

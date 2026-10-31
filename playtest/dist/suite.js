@@ -50,11 +50,13 @@
     ["Minor Laboratory Fire","B",8,"At the end of each Time Slot this remains unresolved, exhaust 1 available die."],
     ["Where Did I Put That?","P",8,"While unresolved, one die committed here cannot be recovered by Special Recovery."],
   ];
+  // name, subject, recovery-color dot, Request, Demand, effect. The dot is
+  // printed on the card; this used to fall back to "P" when it found none.
   const NAP_IMPOSTOR = [
-    ["Neural Extraction Practicum","Anatomy",5,6,"One die committed here remains locked until the end of the Day even if completed."],
-    ["Load-Bearing Prosthetics","Engineering",4,5,"At least 2 applied successes must come from the same color."],
-    ["Emergency Specimen Handling","Procedure",4,5,"Before rolling, commit at least 2 dice initially."],
-    ["Containment Drill","Theory",4,5,"If unresolved, exhaust 1 available die before flipping it to Demand."],
+    ["Neural Extraction Practicum","Anatomy","P",5,6,"One die committed here remains locked until the end of the Day even if completed."],
+    ["Load-Bearing Prosthetics","Engineering","B",4,5,"At least 2 applied successes must come from the same color."],
+    ["Emergency Specimen Handling","Procedure","Y",4,5,"Before rolling, commit at least 2 dice initially."],
+    ["Containment Drill","Theory","G",4,5,"If unresolved, exhaust 1 available die before flipping it to Demand."],
   ];
   // Devious Opportunities. "exam" cards are kept and spent during the Final
   // Exam; "now" cards resolve on completion.
@@ -687,7 +689,7 @@
   function napCard(type,i,nrj,dot){
     if(nrj){
       if(type==="s"){const c=NAP_FOLLOWING[i];return{name:c[0],file:"NRJ_NAP_FollowingSetbacks_TTS.png",i,cols:4,rows:1,target:c[2],demand:c[2],dot:c[1],skulls:0,text:c[3],nrj:true};}
-      if(type==="t"){const c=NAP_IMPOSTOR[i];return{name:c[0],file:"NRJ_NAP_ImpostorTasks_TTS.png",i,cols:4,rows:1,target:c[2],demand:c[3],dot:dot||"P",skulls:0,text:c[4],subject:c[1],nrj:true};}
+      if(type==="t"){const c=NAP_IMPOSTOR[i];return{name:c[0],file:"NRJ_NAP_ImpostorTasks_TTS.png",i,cols:4,rows:1,target:c[3],demand:c[4],dot:c[2],skulls:0,text:c[5],subject:c[1],nrj:true};}
       if(type==="o"){const c=NAP_DEVIOUS[i];return{name:c[0],file:"NRJ_NAP_DeviousOpportunities_TTS.png",i,cols:6,rows:1,target:c[2],demand:c[2],dot:c[1],skulls:0,text:c[3],when:c[4],nrj:true};}
     }
     if(type==="e")return napExamCard(i);if(type==="f")return{name:`FINF ${i+1} · ${FINF_SLOTS[i]||""}`,file:"NAP_SlotsFINF_TTS.png",i:3+(i||0),cols:6,rows:1,target:0,demand:0,dot:"—",skulls:0};if(type==="t")return {name:NAP_TASKS[i][0],file:"NAP_Tasks_TTS.png",i,cols:10,rows:3,target:NAP_TASKS[i][1],demand:NAP_TASKS[i][2],dot:NAP_TASKS[i][3],skulls:NAP_TASKS[i][4]};if(type==="o")return{name:NAP_OPPS[i],file:"NAP_Opportunities_TTS.png",i,cols:6,rows:1,target:[4,4,5,5,4,5][i],demand:[4,4,5,5,4,5][i],dot:i<4?"Y":"G",skulls:0};return{name:NAP_SETBACKS[i][0],file:"NAP_Setbacks_TTS.png",i,cols:6,rows:1,target:NAP_SETBACKS[i][1],demand:NAP_SETBACKS[i][1],dot:NAP_SETBACKS[i][2],skulls:0};}

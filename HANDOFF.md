@@ -992,12 +992,26 @@ Not your job to fix, but worth knowing if Jon raises them:
   5.1, and 16% of games touch two dice or fewer at their worst point against
   8% before. Still the slackest in the set: `dicetension.py` puts BAT's
   battle at a mean of 4.6 and the finale at 5.0.
-- **NAP Impostor Tasks have no recovery-color dot**, unlike every other
-  Assignment. A rules decision is pending.
-- **Two rules questions are open**, both recorded at the end of
-  `rules/RULES_CHANGELOG.txt`: whether the Red die joins the BAT battle pool,
-  and what NAP's Slacker means by "voluntarily draw an additional Assignment".
-  Neither blocks anything you are doing.
+- **NAP Impostor Tasks print a recovery-colour dot as of 2026-10-31**:
+  Anatomy P, Engineering B, Procedure Y, Theory G. They had none, and three
+  printed NAP rules read "that Assignment's color dot" - Required Effort,
+  completing or storing progress, and the colour the Primary queues - so
+  every reference dangled. Worse, nothing agreed what the dot was: the
+  model inherited the replaced Credit Task's (a different colour each
+  game), the lab fell back to "P", and the card printed none, which is why
+  NAP's Tier II and III calibration had been measured against dots that
+  were never printed. Printing them is free: +-0.1 at every tier and the
+  per-Apprentice spread unchanged, over 4000 games x 4 seeds. check_app_sync
+  now compares the four dots across all three files.
+- **Both of those rules questions are closed, and were already closed
+  before 2026-10-31 - only the records were stale.** The Red die plays in
+  the BAT battle as a trade: changelog item 3i reads RESOLVED, and
+  `rules/bat.html` places it on a random Rat at setup, moves it to a
+  non-active Rat each turn, and resolves it separately from personal dice.
+  Slacker's passive was reworded in `b57eedd` to "Your Time Slot rows hold a
+  maximum of 3 Assignments instead of 4" - a rule that exists, enforced by
+  the lab as `napRowMax` and played by `nap.py` as `small_row`. Nothing in
+  the set says "voluntarily draw" any more.
 - **Card art is 300 DPI (750 × 1050 px) as of 2026-10-30**, raised from 200
   for print production. Everything that lays out a card measures in
   millimetres and `title_lines` scales both its text width and its wrap

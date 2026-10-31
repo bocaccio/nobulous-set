@@ -110,8 +110,11 @@ FOLLOWING = [(7, 1), (7, 1), (8, 1), (8, 1)]
 
 # (subject, Request Target, Demand Target). Mandatory, and they grant no
 # Credits - "You still have to clear them; clearing them advances nothing."
-IMPOSTOR = [("Anatomy", 5, 6), ("Engineering", 4, 5),
-            ("Procedure", 4, 5), ("Theory", 4, 5)]
+# subject, printed dot, Request Target, Demand Target. The dot is printed
+# on the card as of 2026-10-30; before that this model inherited the dot of
+# the Credit Task each Impostor Task replaced, which was never on any card.
+IMPOSTOR = [("Anatomy", 'P', 5, 6), ("Engineering", 'B', 4, 5),
+            ("Procedure", 'Y', 4, 5), ("Theory", 'G', 4, 5)]
 
 # (Target, payout). Two resolve on completion; the other four are kept and
 # spent during the Final Exam, which is where NAP actually kills you.
@@ -270,7 +273,10 @@ OPPORTUNITY_REWARD = ["hp", "recover2", "str_next", "rec_next", "recover3", "cri
 
 # One ability per Apprentice. Prodigy's wild rule needs per-die color matching
 # the model does not do, so it plays as no ability.
-# Candidate Slacker abilities. "discard" is the printed one.
+# Candidate Slacker abilities. "small_row" is the PRINTED one as of the
+# 2026-10-31 rewording; ABILITIES still maps Slacker to "discard" and
+# __init__ redirects it through SLACKER_ABILITY, so this constant is the
+# one switch that decides what Slacker does.
 #   discard          once per Day, drop the worst Assignment in this slot
 #   morning_discard  the same, but only during a Morning - the Time Slot card
 #                    is the tracker, so nothing extra is written down
@@ -388,12 +394,12 @@ class Game(object):
 
         # Tier II: each Impostor Task replaces a Credit Task of its subject.
         if tier in ("II", "III"):
-            for subject, rt, dt in IMPOSTOR:
+            for subject, dot, rt, dt in IMPOSTOR:
                 same = [c for c in deck
                         if c.kind == "task" and c.subject == subject]
                 victim = self.rng.choice(same)
                 deck.remove(victim)
-                imp = Card("impostor", rt, dt, victim.dot, 0, None,
+                imp = Card("impostor", rt, dt, dot, 0, None,
                            victim.penalty)
                 imp.index = None
                 deck.append(imp)
