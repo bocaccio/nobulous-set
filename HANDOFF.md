@@ -945,7 +945,9 @@ Not your job to fix, but worth knowing if Jon raises them:
   it taxes the attention dial: what reading the wheel is worth falls from
   9.2 to 5.6, about 40%, buying pacing pressure the finale already has at
   17.2. The confidence TRACK version, every third burial, reads 67.0% and
-  is out of band outright. Jon's call, not a balance bug.
+  is out of band outright. **DROPPED on Jon's call, 2026-10-31.** The
+  prototype and its table stay as the record of what it would have cost;
+  nothing in the shipped rules, cards or simulators refers to it.
 
   **RE-PITCHED 2026-10-30 AGAINST THE TIER III POOL, and this supersedes
   every finale figure above.** `research()` was still dealing the pool the

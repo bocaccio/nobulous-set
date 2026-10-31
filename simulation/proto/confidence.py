@@ -43,6 +43,9 @@ Three shapes are measured:
 What matters as much as the win rate is whether it flattens the
 decisions: a mechanic that makes the pace or the wheel irrelevant has
 bought nothing, however thematic, so both gaps are reported per cell.
+
+DROPPED 2026-10-31, on Jon's call. Kept as the record of the price. Nothing
+in the shipped rules, cards or simulators refers to a confidence mechanic.
 """
 import os
 import statistics as st
