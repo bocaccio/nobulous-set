@@ -812,26 +812,64 @@ Not your job to fix, but worth knowing if Jon raises them:
   `playtest/dist/suite.js` has no Imposter picker and implements none of the ten
   abilities. That is the outstanding piece of this change.
 
-- **The Candidates answer nothing, and that is now deliberate.** The Research
-  Pool is the 18 Tier III cards each game lays out. The 7 you claimed are
-  retained and take 2 off an Exhibit's Target; the 11 you did not are
-  Candidates, and since the Exhibits were reprinted on 2026-10-30 - which
-  removed Rope Burns' random discard, the last card text that touched them -
-  they do nothing at all. A global job for them was designed, priced and
-  REJECTED on 2026-10-31. Four currencies and six prices were measured and
-  every one failed the same test: worth nothing at Easy and a great deal at
-  every handicapped rung, because the job and the difficulty ladder spend the
-  same scarcity. Paying in Targets was worse than paying in dice (spread 11.0
-  against 8.2) and dropping the price only shrank the job - at 6 Candidates a
-  Target it was worth +0.5 at Easy and ten times that at Nobulous. The cause
-  is not the currency: AT EASY THE MODELLED POLICY IS NOT DICE-CONSTRAINED, so
-  any global aid is marginal there and decisive once a handicap binds. Taking
-  the job anyway costs the dial - the usable range falls from 40 points to 32
-  and Nobulous has to exhaust all sixteen coloured dice to reach 20%, leaving
-  no headroom. The full table is in `simulation/proto/candidates.py`. The
-  Candidates stay on the table and one of the Imposter cards is built around
-  spending them, so the leftovers have a use that is a visible choice rather
-  than a silent re-scaling of every rung.
+- **The Candidates answer nothing, and there is now exactly one measured way
+  to change that - AWAITING JON'S CALL.** The Research Pool is the 18 Tier III
+  cards each game lays out. The 7 you claimed are retained and take 2 off an
+  Exhibit's Target; the 11 you did not are Candidates, and since the Exhibits
+  were reprinted on 2026-10-30 - which removed Rope Burns' random discard, the
+  last card text that touched them - they do nothing at all.
+
+  A global job was designed, priced and rejected on 2026-10-31, then
+  re-measured the same day, and the rejection turned out to be **half wrong**.
+  Two corrections:
+
+  1. **Those were not six prices. They were four use-caps.** A claiming
+     campaign carries 11 Candidates, so a job costing 4 can be done twice and
+     one costing 6 once, whatever the rules say. The price never bound - the
+     POOL SIZE did. With the cap as its own dial, 3-a-use twice, 4-a-use
+     twice, 4-a-use three times and 5-a-use three times all return the SAME
+     four numbers, because on 11 Candidates all four ARE two uses.
+  2. **A Target is a die by another name**, so dice and Targets are one
+     currency, and it is the one the difficulty ladder itself spends. That,
+     and not "no job can be uniform", is the whole of the non-uniformity.
+
+  Priced in the **attention wheel** - the one scarcity the ladder never
+  touches, since nine sessions of Yellow-Green-Blue-Purple-Red are identical
+  at Easy and at Nobulous - the same job goes flat:
+
+  | job | Easy | r11 | r13 | r16 | spread |
+  | --- | --- | --- | --- | --- | --- |
+  | 4 Candidates a die (the best rejected) | +1.1 | +8.4 | +9.3 | +8.7 | 8.2 |
+  | **4 Candidates, apply 1 forbidden colour** | **+2.5** | **+3.2** | **+2.9** | **+3.2** | **0.7** |
+
+  A spread of 0.7 across a forty-point ladder is flatter than any card in the
+  set. It is flat because the job needs an AVAILABLE DIE OF A FORBIDDEN
+  COLOUR: the handicap removes available dice and so limits how often the job
+  can be taken, while the wheel's restriction is the same at every rung, and
+  the two cancel. The cap is load-bearing - uncapped it is as bad as the dice
+  job - and at 4 Candidates the pool supplies the cap without a printed
+  clause (11 cards affords it twice).
+
+  What shipping it would cost, measured: **not the ladder** (the job and the
+  Imposters compete for the same spare wrong-colour die, so they do not stack
+  - with the strongest Imposter the rungs read 55.8 / 39.6 / 32.0 / 20.2
+  against today's 55.1 / 41.0 / 32.2 / 19.6, so Easy moves +0.7 and Standard
+  and Hard move TOWARDS aim); **not the policy** (`pace: clock` still wins);
+  **not the claim decision** (claiming is worth 42 points, not 6 - a campaign
+  that claims nothing reads 8.4% at Easy - and the gap widens). What it does
+  cost is **Precedent**: the Archivist's side B is the same ability for free,
+  so if the job ships that side needs replacing.
+
+  Also recorded there: a Candidate job **cannot be a catch-up mechanic**, which
+  was the original rationale. The job pays a full claimer +5.3 and a
+  claim-nothing campaign +0.6, because 15 Exhibits at undiminished Targets are
+  lost whatever you are holding.
+
+  Nothing has been changed in the cards or the rules. `finale.py` is still the
+  calibrated build with no Candidate job; the dials and the full tables are in
+  `simulation/proto/candidates.py` (`python candidates.py currencies`) and
+  `simulation/proto/imposters.py`. Until this is decided, the Candidates stay
+  on the table and one Imposter card is built around spending them.
 
 - **One deck spells it "Impostor" and everything else spells it "Imposter".**
   The split is semantic rather than random: the character, the finale and the

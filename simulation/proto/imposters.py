@@ -29,7 +29,10 @@ TWO TESTS, AND A SIDE HAS TO PASS BOTH.
             exhausted, so there is no handicap left to peg it back with.
   UNIFORM   worth about the same at Easy as at a handicapped rung. A side
             that scales is the only pick at Nobulous, which is the fault
-            that sank the global Candidate job (proto/candidates.py).
+            that sank every DICE-priced global Candidate job. Priced in
+            attention instead, one does pass both tests - and it is
+            Precedent, so it would cost the Archivist its B side. Raised,
+            not shipped; see proto/candidates.py.
 
 WHAT THE LADDER DOES with one chosen, 4000 x 5 seeds, against aims of
 50 / 40 / 30 / 20:
@@ -138,8 +141,22 @@ LAID_OUT = 6
 CANDIDATE_COST = 0
 # "die"    - discard CANDIDATE_COST Candidates, recover 1 exhausted die
 # "target" - discard CANDIDATE_COST Candidates, -1 off a just-deployed Exhibit
+# "colour" - discard CANDIDATE_COST Candidates, apply 1 die the attention
+#            forbids. Priced in ATTENTION rather than in dice: the wheel is
+#            the one scarcity the difficulty ladder does not also spend.
+# "reroll" - discard CANDIDATE_COST Candidates, reroll one committed die
+#            that applied nothing. Adds no die, so it is bounded by how many
+#            you were able to commit in the first place.
+# "soak"   - discard CANDIDATE_COST Candidates, prevent 1 Damage
+# "cheap"  - discard CANDIDATE_COST Candidates, cheapest of the top 3 of the
+#            Dossier to the top
+# "front"  - the same, dearest to the top
 # "none"   - Candidates do nothing (as it shipped)
 CANDIDATE_JOB = "none"
+# HOW OFTEN the job may be done in a whole Scenario. 0 is uncapped, which
+# is how all six rejected prices were measured - nine sessions, nine uses.
+# The cap is the dial those six never varied.
+CANDIDATE_USES = 0
 # THE IMPOSTER YOU CHOSE. Five two-sided cards, one lever each, and every
 # side prints the finale's own 5 HP / 2 STR / 3 REC - the house rule across
 # the set is that heroes differ only in ability text (simulation/cards.py).
@@ -519,9 +536,21 @@ def session(g, pace, recov, rew, commit, res):
     # on top, so the session you spend it on is the one you can finish.
 
     if (CANDIDATE_JOB == "die" and CANDIDATE_COST and g.exhausted
-            and g.candidates >= cand_cost(g)):
+            and g.candidates >= cand_cost(g)
+            and (not CANDIDATE_USES or g.once["cand"] < CANDIDATE_USES)):
+        g.once["cand"] += 1
         g.candidates -= cand_cost(g)
         g.recover(recov, 1)
+    if (CANDIDATE_JOB in ("cheap", "front") and CANDIDATE_COST
+            and len(g.deck) >= 2 and g.candidates >= cand_cost(g)
+            and (not CANDIDATE_USES or g.once["cand"] < CANDIDATE_USES)):
+        g.once["cand"] += 1
+        g.candidates -= cand_cost(g)
+        top = g.deck[-3:]
+        del g.deck[-3:]
+        top.sort(key=lambda e: e.target,
+                 reverse=CANDIDATE_JOB == "cheap")
+        g.deck += top                 # the end of the list is the top
     taken = []
     for _ in range(how_many(g, pace)):
         e = g.deck.pop()
@@ -538,12 +567,14 @@ def session(g, pace, recov, rew, commit, res):
     # The decoupled job: Candidates pay in Target, not in dice, so the job
     # does not fight the exhausted-dice ladder over the same currency.
     if (CANDIDATE_JOB == "target" and CANDIDATE_COST and taken
-            and g.candidates >= cand_cost(g)):
+            and g.candidates >= cand_cost(g)
+            and (not CANDIDATE_USES or g.once["cand"] < CANDIDATE_USES)):
         cands = [e for e in taken if e.left > 1]
         if cands:
             e = max(cands, key=lambda e: (e.target >= BIG, e.left))
             e.target -= 1
             g.candidates -= cand_cost(g)
+            g.once["cand"] += 1
 
     ok = window(g.colour())
     # The Usher, Early Admittance: once a finale the window reaches one
@@ -600,6 +631,19 @@ def session(g, pace, recov, rew, commit, res):
                 g.available.remove(c)
                 spent[c] += 1
                 take = take + [c]
+        if (CANDIDATE_JOB == "colour" and CANDIDATE_COST
+                and g.candidates >= cand_cost(g)
+                and (not CANDIDATE_USES or g.once["cand"] < CANDIDATE_USES)
+                and sum(EV_REROLL[c] for c in g.available if c in ok)
+                < sum(e.left for e in g.active)):
+            pick = [c for c in g.available if c not in ok]
+            if pick:
+                g.once["cand"] += 1
+                g.candidates -= cand_cost(g)
+                c = max(pick, key=lambda c: EV_REROLL[c])
+                g.available.remove(c)
+                spent[c] += 1
+                take = take + [c]
         if g.hero == "archivist_b" and not g.once["prec"]:
             pick = [c for c in g.available if c not in ok]
             if pick:
@@ -634,6 +678,18 @@ def session(g, pace, recov, rew, commit, res):
         unapplied = []
         hits = []
         for c in rolling:
+            v = roll(c, g.rng)
+            if v:
+                hits.append((c, v))
+            else:
+                unapplied.append(c)
+        if (CANDIDATE_JOB == "reroll" and CANDIDATE_COST and unapplied
+                and g.candidates >= cand_cost(g)
+                and (not CANDIDATE_USES or g.once["cand"] < CANDIDATE_USES)):
+            g.once["cand"] += 1
+            g.candidates -= cand_cost(g)
+            c = max(unapplied, key=lambda c: EV_REROLL[c])
+            unapplied.remove(c)
             v = roll(c, g.rng)
             if v:
                 hits.append((c, v))
@@ -681,7 +737,14 @@ def session(g, pace, recov, rew, commit, res):
             applied[c] += 1
 
     # Every Exhibit still standing deals its Damage.
-    g.hp -= sum(e.damage for e in g.active if e.left > 0)
+    hit = sum(e.damage for e in g.active if e.left > 0)
+    while (CANDIDATE_JOB == "soak" and CANDIDATE_COST and hit > 0
+           and g.candidates >= cand_cost(g)
+           and (not CANDIDATE_USES or g.once["cand"] < CANDIDATE_USES)):
+        g.once["cand"] += 1
+        g.candidates -= cand_cost(g)
+        hit -= 1
+    g.hp -= hit
     if g.hp <= 0:
         return False
 
@@ -746,7 +809,8 @@ def play(rng, pace="clock", recov="horizon", rew="dice", commit="adaptive",
 KW = ("pace", "recov", "rew", "commit", "res")
 DIALS = ("SESSIONS", "DEAL", "HEALTH", "STRAT", "REC_BASE", "BIG", "CARRY",
          "RESEARCH", "RETAIN", "CARD_VALUE", "LAID_OUT",
-         "CANDIDATE_COST", "CANDIDATE_JOB", "HERO", "ARCHIVIST_USES",
+         "CANDIDATE_COST", "CANDIDATE_JOB", "CANDIDATE_USES",
+         "HERO", "ARCHIVIST_USES",
          "START_TIRED", "TARGET_OFFSET", "WINDOW",
          "PAY_REWARDS")
 

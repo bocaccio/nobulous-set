@@ -1,11 +1,22 @@
-"""What job should a Candidate do? REJECTED - none of them, globally.
+"""What job should a Candidate do? ONE thing works: bend the attention.
 
-    python candidates.py          # the options, measured against doing nothing
+    python candidates.py             # the options, against doing nothing
+    python candidates.py currencies  # the uniformity table below
 
-THE VERDICT, 2026-10-31. No global Candidate job ships. Four currencies and
-six prices were measured and every one of them FAILED THE UNIFORMITY TEST:
-worth nothing at Easy and a great deal at every handicapped rung, because
-the job and the difficulty ladder spend the same scarcity.
+THE ANSWER, 2026-10-31, second pass. There IS a uniform global Candidate
+job, and it is this:
+
+    Discard 4 Candidates to apply 1 die the attention forbids.
+
+Worth +2.5 at Easy and +3.2 at Nobulous - a spread of 0.7 across a forty
+point ladder, which is flatter than any card in the set. RAISED, NOT
+SHIPPED: it needs Jon's call, because it duplicates an Imposter side. The
+first pass below rejected the idea on a diagnosis that was half wrong, and
+both halves are worth keeping, so this docstring now carries both.
+
+THE FIRST PASS, and what it got right. Every job it measured paid in dice
+or in Targets, and every one FAILED THE UNIFORMITY TEST - worth nothing at
+Easy and a great deal at every handicapped rung:
 
   job                   Easy    r11    r13    r16    worth E -> 16   spread
   no job               50.6%  30.6%  22.1%  10.8%        -             -
@@ -17,26 +28,92 @@ the job and the difficulty ladder spend the same scarcity.
   (4000 finales a cell x 5 seeds. Rungs are yellow/green/blue/purple
   dice exhausted at setup: r11 = 3/3/3/2, r13 = 3/4/3/3, r16 = 4/4/4/4.)
 
-Changing the CURRENCY does not help - paying in Targets is worse than
-paying in dice, spread 11.0 against 8.2 - and changing the PRICE only
-shrinks the job: at 6 Candidates a Target it is worth +0.5 at Easy and
-still ten times that at Nobulous. The cause is not the currency at all.
-AT EASY THE MODELLED POLICY IS NOT DICE-CONSTRAINED, so any global aid is
-marginal there and decisive once a handicap binds. That is a property of
-the ladder, so no job priced in anything can be uniform.
+That diagnosis was RIGHT about dice and Targets and WRONG in its last
+clause, which read "no job priced in anything can be uniform." Two
+corrections, both found by varying what the first pass held fixed.
 
-Taking the job anyway was the alternative, and it costs the dial: with the
-job in, the usable range falls from 40 points (50.6 down to 10.8) to 32
-(51.7 down to 19.5) and Nobulous has to exhaust all sixteen coloured dice
-to reach 20%, leaving no headroom. Eleven inert cards are a cosmetic fault;
-a compressed difficulty dial with nothing in reserve is a functional one.
+CORRECTION 1: THOSE WERE NOT SIX PRICES. THEY WERE FOUR USE-CAPS.
+A claiming campaign carries 11 Candidates, so a job costing 4 can be done
+twice and one costing 6 once, whatever the rules say. The price never bound
+- the POOL SIZE did, and every "cheaper" row above is simply a row with
+fewer uses. Measured with the cap as its own dial, cost stops mattering the
+moment it is not what limits you: 3-a-use twice, 4-a-use twice, 4-a-use
+three times and 5-a-use three times all return the SAME four numbers,
+because on 11 Candidates all four ARE two uses. So the first pass never
+tested a price. It tested 5, 3, 2 and 1 uses, and read the cap as a price.
 
-WHAT SHIPPED INSTEAD. The Candidates stay on the table and answer nothing
+CORRECTION 2: THE LADDER IS PRICED IN DICE, AND SO WAS EVERY JOB.
+A Target is a die by another name - fewer dice is a higher effective Target
+- so dice and Targets are ONE currency, not two, and it is the currency the
+difficulty ladder itself spends. That is the whole of the non-uniformity.
+The finale has three other scarcities, and the ATTENTION WHEEL is one the
+ladder never touches: nine sessions of Yellow-Green-Blue-Purple-Red are
+identical at Easy and at Nobulous. Priced there, the same job goes flat.
+
+  job                       Easy    r11    r13    r16   worth E->16  spread
+  no job                   50.6%  30.6%  22.1%  10.8%       -           -
+  4 Cand a die (2 uses)    51.7%  39.0%  31.4%  19.5%   +1.1 .. +9.3   8.2
+  4 Cand, off-colour, x1   53.1%  33.8%  25.0%  14.0%   +2.5 .. +3.3   0.7
+  4 Cand, off-colour, x2   53.7%  33.3%  26.9%  13.8%   +2.8 .. +4.8   2.0
+  2 Cand, off-colour, x5   59.7%  31.1%  24.8%  15.2%   +0.5 .. +9.2   8.6
+  2 Cand, soak 1 Damage    51.1%  31.7%  22.7%  10.7%   -0.1 .. +1.1   1.2
+  3 Cand, dearest on top   54.7%  30.2%  20.3%   9.0%   -1.8 .. +4.1   6.0
+  2 Cand, reroll a miss x2 53.9%  36.8%  27.6%  14.6%   +3.3 .. +6.2   2.9
+
+WHY ATTENTION IS FLAT, which is the reusable part. The job needs an
+AVAILABLE DIE OF A FORBIDDEN COLOUR. The handicap removes available dice,
+so it quietly limits how OFTEN the job can be taken, while the wheel's
+restriction is the same at every rung. The two effects cancel. The x5 row
+is the proof: extra uses pay at Easy (+6.6 over x1) and not at r11 (-2.7),
+because at r11 there is often no spare wrong-colour die to spend again.
+Uncapped it is as bad as the dice job - the CAP is load-bearing, and at
+cost 4 the pool supplies the cap without a printed clause.
+
+WHAT THE OTHER TWO SCARCITIES DO. DAMAGE reads -0.1 .. +1.1, which is zero:
+it binds at no rung, the same fact that killed Triage and Transposed Labels.
+THE DOSSIER'S ORDER is worth +4.1 at Easy and -1.8 at Nobulous - the only
+INVERSE-scaling effect measured in this finale, because reordering buys
+tempo and tempo is what you already have at Easy. A REROLL is the odd one:
+HUMPED, +3.3 at Easy, +6.2 at r11, +3.9 at r16, because it needs committed
+dice to exist and slack for the miss to matter, and those fail at opposite
+ends of the ladder.
+
+WHAT IT COSTS TO SHIP, measured, which is Jon's call:
+  * NOT the ladder. The job and the Imposters compete for the same spare
+    wrong-colour die, so they do not stack. With the strongest Imposter the
+    rungs read 55.8 / 39.6 / 32.0 / 20.2 against today's 55.1 / 41.0 /
+    32.2 / 19.6 - Easy moves +0.7 and Standard and Hard move TOWARDS aim.
+  * NOT the policy. `pace: clock` still wins with the job in, 53.7%
+    against 50.8% for `ceil`, so this is the best policy, not a weaker one.
+  * NOT the claim decision. Claiming is worth 42 points, not 6: a campaign
+    that claims nothing in all three games reads 8.4% at Easy against
+    50.6%. The gap WIDENS, from -42.2 to -44.7.
+  * IT COSTS PRECEDENT. The Archivist's side B is "apply 1 die of any
+    color, ignoring the attention entirely", free, once a Scenario, worth
+    about +3 (+2.5 in the roster table, +2.9 re-measured beside the job).
+    The job is that same ability bought with cards, worth +3.1. They are
+    ONE ability, and a free once is dominated by four spare cards twice. If
+    this ships, Archivist B needs replacing. Note the model does not know
+    to stop paying for what Precedent gives away, so "Precedent with the
+    job" reads WORSE at every handicapped rung (38.5 / 31.5 / 19.2 against
+    41.9 / 33.9 / 21.2) - that much is a modelling artifact, but two cards
+    doing one job is not.
+
+AND ONE RATIONALE BELOW IS WRONG. The note further down says a job is
+"automatically a consolation for the player whose three games could not
+afford to claim." It is not, at any price: that player is at a floor. The
+job pays a full claimer +5.3 and a claim-nothing campaign +0.6, because 15
+Exhibits at undiminished Targets are lost whatever you are holding. A
+Candidate job cannot be a catch-up mechanic. If one ships, it ships as a
+decision for everybody.
+
+WHAT SHIPPED FOR NOW. The Candidates stay on the table and answer nothing
 *unless your Imposter says otherwise* - one of the five Imposter cards is
 built around spending them. A hero ability is a visible choice, so a player
 who takes that card at Nobulous is knowingly trading flavour for help,
 which is legible in a way a silent global re-scaling is not. See
-proto/imposters.py.
+proto/imposters.py, whose CANDIDATE_JOB dial now carries every currency
+measured here.
 
 THE PROBLEM. The Research Pool is 18 cards: the Tier III cards each game
 laid out. The ones you CLAIMED are retained and take 2 off an Exhibit's
@@ -212,5 +289,75 @@ def main():
     return base
 
 
+# ---------------------------------------------------------------------------
+# THE SECOND PASS. What currency can a Candidate job be priced in?
+#
+# This path drives proto/imposters.py rather than finale.py, because the
+# CANDIDATE_JOB and CANDIDATE_USES dials live there: finale.py is the
+# calibrated build and carries no Candidate job at all, which is the state
+# the first pass left it in and the state it should stay in until this is
+# Jon's decision rather than a measurement.
+RUNGS = [("Easy", (0, 0, 0, 0)), ("r11", (3, 3, 3, 2)),
+         ("r13", (3, 4, 3, 3)), ("r16", (4, 4, 4, 4))]
+
+
+def _job(cost=0, kind="none", uses=0):
+    return dict(CANDIDATE_COST=cost, CANDIDATE_JOB=kind, CANDIDATE_USES=uses)
+
+
+# Priced in dice the job scales with the handicap; priced in ATTENTION it
+# does not, because the ladder never spends the wheel. The x5 row is there
+# to show the CAP is what does the work, not the price.
+CURRENCIES = [
+    ("no job", _job()),
+    ("4 Cand a die (2 uses)", _job(4, "die")),
+    ("4 Cand, off-colour, x1", _job(4, "colour", 1)),
+    ("4 Cand, off-colour, x2", _job(4, "colour", 2)),
+    ("2 Cand, off-colour, x5", _job(2, "colour", 5)),
+    ("2 Cand, soak 1 Damage", _job(2, "soak")),
+    ("3 Cand, dearest on top", _job(3, "front")),
+    ("2 Cand, reroll a miss x2", _job(2, "reroll", 2)),
+]
+
+
+def currencies(games=GAMES):
+    """Reproduce the uniformity table in this module's docstring."""
+    sys.path.insert(0, HERE)
+    import imposters as I
+
+    print("CANDIDATE CURRENCIES - %d finales a cell x %d seeds"
+          % (games, len(SEEDS)))
+    print("Rungs are yellow/green/blue/purple dice exhausted at setup.")
+    print("Easy is the floor: 0 dice, so it cannot be pegged back.")
+    print()
+    print("  %-25s %6s %6s %6s %6s  %-14s %6s"
+          % ("job", "Easy", "r11", "r13", "r16", "worth E->16", "spread"))
+    base = None
+    for label, dials in CURRENCIES:
+        row = []
+        for _, tired in RUNGS:
+            xs = [I.run(games=games, seed=sd, START_TIRED=tired, **dials)
+                  for sd in SEEDS]
+            row.append(sum(xs) / len(xs))
+        if base is None:
+            base = row
+            print("  %-25s %5.1f%% %5.1f%% %5.1f%% %5.1f%%  %-14s %6s"
+                  % (label, row[0], row[1], row[2], row[3], "-", "-"))
+        else:
+            w = [r - b for r, b in zip(row, base)]
+            print("  %-25s %5.1f%% %5.1f%% %5.1f%% %5.1f%%  "
+                  "%+4.1f .. %+4.1f %6.1f"
+                  % (label, row[0], row[1], row[2], row[3],
+                     min(w), max(w), max(w) - min(w)))
+        sys.stdout.flush()
+    print()
+    print("  Spread is the test. A job worth +2.5 at Easy and +9 at")
+    print("  Nobulous is the only pick at Nobulous, which is what the")
+    print("  first pass rejected; one worth +3 at both is a decision.")
+
+
 if __name__ == "__main__":
-    main()
+    if "currencies" in sys.argv[1:]:
+        currencies()
+    else:
+        main()
