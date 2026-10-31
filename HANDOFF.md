@@ -789,6 +789,29 @@ Each of these only appears a few turns in.
 
 Not your job to fix, but worth knowing if Jon raises them:
 
+- **Five Imposters, ten abilities, and the two rules they obey.** Added
+  2026-10-31. You choose one Imposter card and one of its two sides at setup;
+  all five print the finale's own 5 HP / 2 STR / 3 REC, because the house rule
+  across the set is that heroes differ only in ability text. Every side was
+  measured at Easy and at a handicapped rung and had to pass BOTH a level test
+  (0.8 to 4.3 points, so the choice is how you play rather than how hard it is)
+  and a uniformity test (worth about the same at both, so no side becomes the
+  only pick at Nobulous). Seven designs were cut on measurement, and the
+  reasons generalise: nothing may touch STR, REC, the width of the attention
+  window or the wheel's PHASE; nothing may hand dice back every session,
+  because nine sessions of one die IS the Nobulous handicap; and nothing may be
+  paid in Damage or Health, because a sensible pace never spends either -
+  soaking a Damage a session and moving successes between Exhibits both
+  measured exactly +0.0. The full table and every rejected design is in
+  `simulation/proto/imposters.py`. The ladder now runs 2-4 points hot with an
+  Imposter chosen and was deliberately NOT re-pegged, since Easy is already at
+  zero dice exhausted and pegging it would cost the meaning of "Easy".
+
+- **The lab does not know about the Imposters yet.** `playtest/dist/catalog.json`
+  lists the deck so the card browser shows it, but the finale lab in
+  `playtest/dist/suite.js` has no Imposter picker and implements none of the ten
+  abilities. That is the outstanding piece of this change.
+
 - **The Candidates answer nothing, and that is now deliberate.** The Research
   Pool is the 18 Tier III cards each game lays out. The 7 you claimed are
   retained and take 2 off an Exhibit's Target; the 11 you did not are

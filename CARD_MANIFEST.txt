@@ -363,6 +363,7 @@ DECK SHEETS AND BACKS
   NRJ_BAT_Protocols              6x1     portrait   CardBack_NRJ_Protocol
   NRJ_BAT_ResearchNotes          6x1     portrait   CardBack_NRJ_ResearchNote
   NRJ_ImposterScenarios          10x3    portrait   CardBack_NRJ_CouncilTest
+  NRJ_Imposters                  5x1     landscape  unique (side B)
   NRJ_NAP_DeviousOpportunities   6x1     landscape  CardBack_NAP_Assignment
   NRJ_NAP_FollowingSetbacks      4x1     landscape  CardBack_NAP_Assignment
   NRJ_NAP_ImpostorTasks          4x1     landscape  CardBack_NAP_Assignment

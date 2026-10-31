@@ -600,7 +600,7 @@
   // otherwise a card whose body matches the cream gutter looks smaller than the rest.
   const CELL_LONG=700,CELL_SHORT=500,GUTTER=15;
   // Every card image carries this tag; bump it whenever the sheets are rebuilt.
-  const ART_VERSION="?v=dpi300";
+  const ART_VERSION="?v=imposters";
   function peekStyle(deck,index,side,boxW){
     const back=side==="back"&&deck.back;
     // A deck may name one back for all its cards, or one per card.

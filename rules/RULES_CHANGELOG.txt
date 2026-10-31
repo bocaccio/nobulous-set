@@ -1,3 +1,15 @@
+2026-10-31  NRJ: THE FIVE IMPOSTERS
+Choose one Imposter and one of its two sides at setup.  All five print the
+finale's own 5 HP / 2 STR / 3 REC and differ only in ability, as the AoS
+Technicians and NAP Apprentices do.  The ten sides are measured: 0.8 to 4.3
+points at Easy, each worth about the same at a handicapped rung, so the choice
+is one of play style rather than difficulty.  The ladder was left where it is;
+it reads 2-4 points hot with an Imposter chosen, and still inside the band.
+Also: the Understudy is the only Imposter that spends Candidates, which is the
+whole use the unclaimed Tier III cards now have.  A job for them available to
+EVERY player was measured and rejected - see simulation/proto/candidates.py.
+
+
 THE NOBULOUS SET — RULEBOOK AUDIT
 Rulebooks checked line by line against Compendium v22, the printed card decks
 (BAT v0.6, NAP v0.9c, AoS v10, NRJ v0.24) and the calibrated simulators

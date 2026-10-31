@@ -403,6 +403,32 @@ check("and the rulebook no longer asks for the subtraction",
 check("the five Rewards are reworded for the finale",
       nrjgen.count("When this Exhibit falls") == 5)
 
+# THE FIVE IMPOSTERS. Ten sides, one statline, and every ability name has
+# to reach the rulebook - a side that only exists on the card is a side
+# nobody can look up. The abilities are read from the generator, so adding
+# one here fails this check until the rules carry it too.
+imp = py_tables("generator/build_nrj.py").get("IMPOSTERS", [])
+# The rulebook wraps its lines and hyphenates with &#8209; so that a card
+# name does not break across a column. Compare against a flattened copy
+# rather than making the rules uglier to suit the checker.
+nrj_flat = " ".join(nrj.replace("&#8209;", "-").split())
+check("five Imposters, two sides each", len(imp) == 10
+      and len(set(r[0] for r in imp)) == 5
+      and sorted(r[2] for r in imp) == ['A'] * 5 + ['B'] * 5)
+check("every Imposter prints the finale's own 5 HP / 2 STR / 3 REC",
+      "IMP_STATS = (5, 2, 3)" in nrjgen
+      and "The Imposter begins at <b>5 HP / 2 STR / 3 REC</b>" in nrj_flat)
+# finale.py prices a point of STR at 85 points and REC 4 inverts the commit
+# decision, so no ability may hand out either.
+check("no Imposter ability touches STR or REC",
+      not any("STR" in r[5] or "REC" in r[5] for r in imp))
+for name in sorted(set(r[4] for r in imp)):
+    check("  %s is in the rulebook" % name, name in nrj_flat)
+check("the Imposter deck is registered for PnP, TTS and the lab",
+      "'NRJ_Imposters'" in text("generator/pack.py")
+      and "key='NRJ_Imposters'" in text("tts/decks.py")
+      and "'NRJ_Imposters_TTS.png'" in text("generator/build_catalog.py"))
+
 check("the Research Pool is the Tier III cards, not the games' own decks",
       "the Tier III cards you claimed" in text("rules/nrj.html")
       and "6 Research Notes" in text("rules/nrj.html")

@@ -1322,6 +1322,43 @@
     "back": "CardBack_NRJ_CouncilTest.png",
     "backIsSheet": false,
     "backLabel": "Card back"
+   },
+   {
+    "title": "Imposters",
+    "sheet": "NRJ_Imposters_TTS.png",
+    "cols": 5,
+    "rows": 1,
+    "landscape": true,
+    "cards": [
+     {
+      "name": "The Archivist",
+      "kind": "Imposter card · side A",
+      "backName": "The Archivist"
+     },
+     {
+      "name": "The Understudy",
+      "kind": "Imposter card · side A",
+      "backName": "The Understudy"
+     },
+     {
+      "name": "The Usher",
+      "kind": "Imposter card · side A",
+      "backName": "The Usher"
+     },
+     {
+      "name": "The Porter",
+      "kind": "Imposter card · side A",
+      "backName": "The Porter"
+     },
+     {
+      "name": "The Steward",
+      "kind": "Imposter card · side A",
+      "backName": "The Steward"
+     }
+    ],
+    "back": "NRJ_Imposters_TTS_back.png",
+    "backIsSheet": true,
+    "backLabel": "Imposter card · side B"
    }
   ]
  }

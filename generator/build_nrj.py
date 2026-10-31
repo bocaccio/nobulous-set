@@ -1,5 +1,5 @@
 import sys; sys.path.insert(0, '/home/claude/cards')
-from gen import render_deck, make_back, hdr_fit, DOT, LANDSCAPE, PORTRAIT, subj_icon
+from gen import render_deck, render_duplex, make_back, hdr_fit, DOT, LANDSCAPE, PORTRAIT, subj_icon
 
 # The shape of the cards being built, for header measurement.
 CARD_SIZE = PORTRAIT
@@ -311,3 +311,87 @@ cards = [C(n, "%s Exhibit &middot; %s" % (dom, cat.split(" - ")[0]),
            acc=DOMAIN[dom], hdr=EXHIBIT_HDR) for n, dom, cat, t, e in SCEN]
 print("Exhibits", render_deck('NRJ_ImposterScenarios', cards, 'IMP', back='CardBack_NRJ_CouncilTest'))
 
+
+# ---- The Imposters: 5 two-sided cards, 10 abilities ------------------------
+# WHO YOU ARE PRETENDING TO BE. Every side prints the finale's own statline,
+# 5 HP / 2 STR / 3 REC, because the house rule across the set is that heroes
+# differ only in ability text (AoS and NAP say so in as many words; see
+# simulation/cards.py). The choice is one Imposter and one of its sides.
+#
+# WHAT THEY MAY NOT TOUCH, measured in simulation/finale.py:
+#   STR         a point is worth 85 points of win rate
+#   REC         REC 4 inverts the commit decision and the finale stops
+#               being a game of holding dice back
+#   the window  a third colour reads 90%
+#   the PHASE   the attention wheel's phase swings the finale 27 points
+#               (8 sessions 23.8%, 9 sessions 50.5%, 10 sessions 21.8%), so
+#               a card that holds the dial is a difficulty dial. Measured at
+#               +11.9 and cut.
+#   dice back,
+#   per session nine sessions of one recovered die IS the Nobulous handicap,
+#               so these read +15 to +20 at the hard rungs while reading +2
+#               at Easy. Every such side was rebuilt as once per Scenario.
+#
+# Each side is measured at Easy and at a handicapped rung, and has to pass
+# both a LEVEL test (close to the others) and a UNIFORMITY test (worth about
+# the same at both). See simulation/proto/imposters.py for the table.
+IMP_STATS = (5, 2, 3)
+IMPOSTERS = [
+ ("The Archivist", "Records Clerk", 'A', "Passive", "Cross-Referenced",
+  "A retained card may answer an Exhibit at Target 5 of <i>any</i> domain, not only its own.",
+  "Every document is about something. With enough patience, it is about this."),
+ ("The Archivist", "Records Clerk", 'B', "Once per Scenario", "Precedent",
+  "Apply 1 die of <i>any</i> color, ignoring the attention entirely.",
+  "Every ruling has a precedent. Finding it is merely clerical."),
+ ("The Understudy", "Stand-In", 'A', "Once per Scenario", "Open Audition",
+  "Discard 4 Candidates to reroll <i>every</i> committed die that applied nothing this Strategy phase.",
+  "The part was always available. Nobody else wanted it."),
+ ("The Understudy", "Stand-In", 'B', "Twice per Scenario", "Second Chair",
+  "Discard 2 Candidates to reroll one committed die that applied nothing.",
+  "Rehearsal is the performance nobody is charged for."),
+ ("The Usher", "Doorkeeper", 'A', "Once per Scenario", "Early Admittance",
+  "Apply 1 die of the color <i>one step beyond</i> the attention&rsquo;s two colors.",
+  "The doors open at the hour. The hour is a matter of interpretation."),
+ ("The Usher", "Doorkeeper", 'B', "Once per Scenario", "Double Doors",
+  "For one session, the attention covers a <i>third</i> color &mdash; one step beyond its usual two.",
+  "Both doors open only for a crowd, and a crowd can be arranged."),
+ ("The Porter", "Chamber Hand", 'A', "Once per Session", "Sleight of Hand",
+  "Take 1 die lying on a standing Exhibit and exhaust it. That Exhibit keeps its successes.",
+  "Nothing was removed. Things were carried."),
+ ("The Porter", "Chamber Hand", 'B', "Once per Scenario", "Heavy Lifting",
+  "Exhaust 1 available die, then recover 2 exhausted dice.",
+  "Two crates, one trip, and a brief disregard for the manifest."),
+ ("The Steward", "Chamber Steward", 'A', "Once per Scenario", "Requisition",
+  "Commit 1 exhausted die of a color the attention allows. It remains exhausted afterward.",
+  "The requisition was approved retroactively, the only way it was ever going to be."),
+ ("The Steward", "Chamber Steward", 'B', "Once per Scenario", "Standing Order",
+  "Take a third Strategy phase this session.",
+  "The session runs until the business concludes. He decides what the business is."),
+]
+
+IMP_ACC = {"The Archivist": NAP_H, "The Understudy": '#6b4a2e',
+           "The Usher": '#3c5a8a', "The Porter": BAT_H,
+           "The Steward": AOS_H}
+
+
+def impcard(n, role, side, trig, an, at, fl):
+    hp, st, rec = IMP_STATS
+    return C(n, "Imposter &middot; %s &mdash; Side %s" % (role, side),
+             '<div class="txt c" style="font-size:9.4pt;font-weight:bold;'
+             'margin-top:.6mm">HP %d &nbsp;|&nbsp; STR %d &nbsp;|&nbsp; '
+             'REC %d</div>'
+             '<div class="sub" style="margin-top:3mm">%s &middot; %s</div>'
+             '<div class="txt" style="margin-top:.4mm">%s</div>'
+             '<div style="font-size:7.4pt;font-style:italic;text-align:center;'
+             'line-height:1.25;color:#6f675a;margin:1.6mm 0 0">%s</div>'
+             % (hp, st, rec, trig, an, at, fl),
+             'Choose one Imposter and one of its sides at setup.',
+             acc=IMP_ACC[n])
+
+
+CARD_SIZE = LANDSCAPE
+imp_a = [impcard(*i) for i in IMPOSTERS[0::2]]
+imp_b = [impcard(*i) for i in IMPOSTERS[1::2]]
+print("Imposters", render_duplex('NRJ_Imposters', imp_a, imp_b, 'IMP',
+                                 LANDSCAPE), 'two-sided')
+CARD_SIZE = PORTRAIT

@@ -9,7 +9,9 @@ stubbed out first: nothing is drawn, only the data lists are read.
 Grid size is read from the finished sheet in out/: portrait cards are 500x700
 and landscape cards 700x500, so the sheet's own pixel size gives cols and rows.
 """
+import io
 import json
+import math
 import os
 import sys
 import types
@@ -50,20 +52,32 @@ def names(rows):
     return [r[0] if isinstance(r, (list, tuple)) else r for r in rows]
 
 
-def grid(sheet):
-    """(cols, rows, landscape) for a sprite sheet, from its pixel size."""
+def grid(sheet, n):
+    """(cols, rows, landscape) for a sprite sheet of n cards.
+
+    The layout is READ FROM THE RULE gen.py uses - cols = min(10, n), rows =
+    ceil(n / cols) - rather than inferred by dividing the sheet by a card
+    size. Inferring it was hard-coded to 500x700, which is 200 DPI; gen.py
+    went to 300 DPI on 2026-10-30 and nothing re-ran this script, so every
+    sheet then divided by the wrong number and all 29 decks came out with
+    the wrong cols, rows and orientation (Lab Rats 4x1 landscape read as
+    8x1 portrait). No pixel size can work in any case, because fit_tts()
+    shrinks a sheet past TTS's 10000px ceiling to a non-integral cell:
+    NAP_Tasks is 10000x2142, which is 10x3 cells of 1000x714.
+
+    Only the ORIENTATION still comes from the sheet, as the cell's shape.
+    """
     from PIL import Image
     with Image.open(os.path.join(OUT, sheet)) as im:
         w, h = im.size
-    cw, ch = (500, 700) if h > w or h % 700 == 0 and w % 500 == 0 else (700, 500)
-    if w % cw or h % ch:
-        cw, ch = ch, cw
-    return w // cw, h // ch, cw > ch
+    cols = min(10, n)
+    rows = int(math.ceil(n / float(cols)))
+    return cols, rows, (w / float(cols)) > (h / float(rows))
 
 
 def deck(title, sheet, card_names, kind, back=None, back_kind=None, back_names=None):
     per_card = isinstance(back, (list, tuple))
-    cols, rows, landscape = grid(sheet)
+    cols, rows, landscape = grid(sheet, len(card_names))
     entry = {
         'title': title, 'sheet': sheet, 'cols': cols, 'rows': rows, 'landscape': landscape,
         'cards': [{'name': n, 'kind': kind(n, i) if callable(kind) else kind}
@@ -154,8 +168,10 @@ CATALOG['aos']['decks'] += [
     deck('Technicians', 'AoS_Technicians_TTS.png', names(build_aos.TECHS[0::2]),
          'Technician card · front', 'AoS_Technicians_TTS_back.png',
          'Technician card · back', names(build_aos.TECHS[1::2])),
+    # The mats carry no data list to count, and they render at BIG rather
+    # than a card size, so the count comes from the loop in build_aos.py.
     deck('Element mats', 'AoS_ElementMats_TTS.png',
-         ['Element mat %d' % i for i in range(1, 1 + grid('AoS_ElementMats_TTS.png')[0] * grid('AoS_ElementMats_TTS.png')[1])],  # noqa: E501
+         ['Element mat %d' % i for i in range(1, 6)],
          'Element allocation mat', 'CardBack_AoS_ElementMat.png'),
 ]
 
@@ -181,6 +197,9 @@ CATALOG['nrj']['decks'] += [
          'Backdoor Routine · AoS', 'CardBack_NRJ_BackdoorRoutine.png'),
     deck('Impostor Scenarios', 'NRJ_ImposterScenarios_TTS.png', names(build_nrj.SCEN),
          lambda n, i: 'Council Test · %s' % build_nrj.SCEN[i][1], 'CardBack_NRJ_CouncilTest.png'),
+    deck('Imposters', 'NRJ_Imposters_TTS.png', names(build_nrj.IMPOSTERS[0::2]),
+         'Imposter card · side A', 'NRJ_Imposters_TTS_back.png',
+         'Imposter card · side B', names(build_nrj.IMPOSTERS[1::2])),
 ]
 
 total = 0

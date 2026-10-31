@@ -57,6 +57,7 @@ GAMES = {
         ('NRJ_AoS_CorruptedLimitations', 'Corrupted Limitations'),
         ('NRJ_AoS_BackdoorRoutines', 'Backdoor Routines'),
         ('NRJ_ImposterScenarios', 'Exhibits'),
+        ('NRJ_Imposters', 'Imposters (A / B)'),
     ],
 }
 
