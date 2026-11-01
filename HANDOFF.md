@@ -833,7 +833,8 @@ Not your job to fix, but worth knowing if Jon raises them:
   field. Change a card and the check tells you which field drifted.
 
 - **The Candidates answer nothing, and there is now exactly one measured way
-  to change that - AWAITING JON'S CALL.** The Research Pool is the 18 Tier III
+  to change that, and it was MEASURED AND DROPPED on 2026-10-31.** The
+  Research Pool is the 18 Tier III
   cards each game lays out. The 7 you claimed are retained and take 2 off an
   Exhibit's Target; the 11 you did not are Candidates, and since the Exhibits
   were reprinted on 2026-10-30 - which removed Rope Burns' random discard, the
@@ -885,7 +886,7 @@ Not your job to fix, but worth knowing if Jon raises them:
   claim-nothing campaign +0.6, because 15 Exhibits at undiminished Targets are
   lost whatever you are holding.
 
-  **Aim it BACKWARD and it costs nothing at all.** At "any color" the job
+  **Aim it BACKWARD and it costs no Imposter its job.** At "any color" the job
   degrades the whole attention lane - Precedent and both Usher sides go
   negative at the handicapped rungs, because all of them compete for the same
   spare wrong-color die. But nobody occupies backward: Precedent takes any
@@ -902,11 +903,56 @@ Not your job to fix, but worth knowing if Jon raises them:
   scales because it adds Target reduction, which is dice by another name; and
   Duplicate Filed is worth +7.5 to +11.3, three times the band.
 
-  Nothing has been changed in the cards or the rules. `finale.py` is still the
-  calibrated build with no Candidate job; the dials and the full tables are in
-  `simulation/proto/candidates.py` (`python candidates.py currencies`) and
-  `simulation/proto/imposters.py`. Until this is decided, the Candidates stay
-  on the table and one Imposter card is built around spending them.
+  **And then it failed on the rungs the set actually prints, which is what
+  closed the question.** Every number above was measured on the prototype's
+  own rungs - Easy / r11 / r13 / r16 - where the backward job reads spread 1.1
+  and looks like the one job that works. The set does not print r11, r13 or
+  r16. On Easy / Standard / Hard / Nobulous, across all ten Imposter sides
+  (`python candidates.py shipped`), the job is worth **+2.65 at Easy and -0.15
+  at Nobulous**. It is INVERSE-SCALING on the shipped ladder - the same fault
+  as the dice-priced jobs with the sign flipped, and the one thing the whole
+  investigation existed to avoid. The flatness was an artifact of the rungs.
+
+  The band settles it. The Easy row is the hot end of the matrix:
+
+  | | hottest Easy cell | Easy cells outside the 47-57% band |
+  | --- | --- | --- |
+  | no job | 55.1% (Double Doors) | **0 of 11** |
+  | with the job | 58.2% (Standing Order) | **3 of 11** |
+
+  Early Admittance, Requisition and Standing Order all leave the band at Easy
+  once the job is in, and every one of the eleven is inside it today. The
+  no-Imposter ladder reads 50.6 / 39.0 / 30.6 / 19.4 against aims of
+  50 / 40 / 30 / 20 - as close as it has ever been.
+
+  **No price fixes it, because the price is not a dial.** Sweeping 4, 5, 6, 7
+  and 8 Candidates returns exactly TWO distinct results, and "4 a use capped at
+  one" is byte-identical to the 6/7/8 row: cost 4 or 5 is 54.3 / 40.6 / 33.3 /
+  20.3 (affordable twice) and cost 6, 7 or 8 is 53.5 / 41.2 / 33.8 / 21.3
+  (affordable once). One use is still worth +3.5, because a policy with one use
+  spends it at the moment of maximum value. The only configuration left is
+  zero.
+
+  **And the reason is the reason it was chosen.** Backward was picked because
+  it collides with no Imposter side - Precedent takes any colour, Early
+  Admittance one step forward, Double Doors a third colour forward, and nobody
+  goes back. But non-collision and non-stacking are the same property seen
+  twice. The any-color job left the ladder alone only because it CANNIBALISED
+  Precedent, the two fighting over one spare die. The backward job competes
+  with nothing, so it ADDS to all ten sides - which is exactly why Easy reaches
+  58.2%.
+
+  Nothing has been changed in the cards or the rules, and nothing should be.
+  `finale.py` is still the calibrated build with no Candidate job; the dials
+  and the full tables are in `simulation/proto/candidates.py`
+  (`python candidates.py currencies`, `python candidates.py shipped`) and
+  `simulation/proto/imposters.py`. The Candidates stay a record of what you
+  could not afford, and the Understudy stays the one Imposter who spends them.
+
+  **If this is ever reopened**, measure on `LADDER` and against all ten sides
+  from the start. A mechanic that looks flat on three handicapped rungs can be
+  inverse across the four that ship, and a mechanic that collides with nothing
+  stacks with everything.
 
 - **The AoS lab could not finish an ordinary Program.** `completeProgram` in
   `playtest/dist/app.js` looked the card's prose up as

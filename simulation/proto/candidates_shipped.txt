@@ -1,0 +1,31 @@
+THE BACKWARD CANDIDATE JOB ON THE SHIPPED LADDER
+==============================================================================
+simulation/proto/imposters.py, 4000 finales a cell x 5 seeds.
+Job = discard 4 Candidates, apply 1 die of the colour the
+attention has just LEFT. Uncapped: 11 Candidates afford it twice.
+Aims: 50 / 40 / 30 / 20.
+
+                                   WITHOUT the job              WITH the job                
+                                     easy    std   hard    nob    easy    std   hard    nob   worth
+  no Imposter                       50.6%  39.0%  30.6%  19.4%   54.3%  40.6%  33.3%  20.8%   +1.3..+3.8  spread 2.4
+  -- the three sides that reach round the wheel
+  Precedent (Archivist B)           53.5%  41.8%  33.8%  21.0%   55.3%  40.0%  31.6%  18.9%   -2.2..+1.8  spread 4.0
+  Early Admittance (Usher A)        55.0%  41.2%  32.4%  19.9%   57.9%  42.0%  33.4%  20.3%   +0.4..+2.9  spread 2.5
+  Double Doors (Usher B)            55.1%  40.9%  32.3%  19.5%   55.7%  40.0%  33.0%  19.9%   -1.0..+0.8  spread 1.7
+  -- and the rest, for the ladder's sake
+  Cross-Referenced (Archivist A)    51.8%  40.8%  31.9%  21.0%   55.3%  41.7%  34.1%  21.1%   +0.1..+3.4  spread 3.3
+  Open Audition (Understudy A)      54.8%  45.8%  37.3%  24.9%   55.7%  44.9%  36.7%  23.2%   -1.7..+0.9  spread 2.7
+  Second Chair (Understudy B)       53.9%  44.6%  36.9%  24.6%   55.3%  44.4%  37.7%  23.4%   -1.2..+1.5  spread 2.6
+  Sleight of Hand (Porter A)        52.8%  40.3%  32.0%  20.0%   56.4%  41.6%  33.8%  21.1%   +1.1..+3.5  spread 2.4
+  Heavy Lifting (Porter B)          51.7%  41.7%  34.1%  23.8%   54.8%  44.5%  36.7%  24.9%   +1.1..+3.1  spread 2.0
+  Requisition (Steward A)           53.7%  41.8%  36.0%  23.6%   57.2%  42.7%  35.6%  22.7%   -0.9..+3.4  spread 4.3
+  Standing Order (Steward B)        54.0%  42.9%  35.0%  23.2%   58.2%  44.5%  35.9%  22.9%   -0.3..+4.2  spread 4.6
+
+  Against the aims, no Imposter:
+    without the job  Easy +0.6, Standard -1.0, Hard +0.6, Nobulous -0.6
+    with the job     Easy +4.3, Standard +0.6, Hard +3.3, Nobulous +0.8
+
+  Hottest rung over aim, without the job: +7.3 (Open Audition (Understudy A))
+  Hottest rung over aim, with the job:    +8.2 (Standing Order (Steward B))
+
+934s

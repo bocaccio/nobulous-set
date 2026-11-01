@@ -115,6 +115,61 @@ WHAT IT COSTS TO SHIP, measured, which is Jon's call:
     +2.6 to +3.8, and Precedent keeps its job. NO REPLACEMENT ARCHIVIST
     SIDE IS NEEDED.
 
+  * AND THEN IT FAILED ON THE RUNGS THE SET ACTUALLY PRINTS - 2026-10-31,
+    the measurement that closed the question. Everything above was
+    measured on this module's own rungs, Easy / r11 / r13 / r16, where
+    the backward job reads spread 1.1 and looks like the one job that
+    works. The set does not print r11, r13 or r16. It prints Easy,
+    Standard, Hard and Nobulous, and on those four, measured across all
+    ten Imposter sides (`python candidates.py shipped`):
+
+      the job's worth        mean      min      max
+      at Easy               +2.65     +0.6     +4.2
+      at Nobulous           -0.15     -2.1     +1.4
+
+    It is INVERSE-SCALING on the shipped ladder - worth about three
+    points at Easy and nothing at all at Nobulous - which is the same
+    fault as the dice-priced jobs with the sign flipped, and the one
+    thing this whole investigation existed to avoid. The flatness was an
+    artifact of the rungs, not a property of the job.
+
+    The band settles it. The finale report marks 47-57% as the community
+    band, and the Easy row is the hot end of the matrix:
+
+      hottest Easy cell, no job    55.1%  (Double Doors)   0 of 11 outside
+      hottest Easy cell, with job  58.2%  (Standing Order) 3 of 11 outside
+
+    Early Admittance, Requisition and Standing Order all leave the band
+    at Easy once the job is in. Without it every one of the eleven is
+    inside it, and the no-Imposter ladder reads 50.6 / 39.0 / 30.6 / 19.4
+    against aims of 50 / 40 / 30 / 20 - as close as it has ever been.
+
+  * NO PRICE FIXES IT, because the price is not a dial. Sweeping the cost
+    at 4, 5, 6, 7 and 8 Candidates returns exactly TWO distinct results,
+    and "4 a use capped at one" is byte-identical to the 6/7/8 row:
+
+      cost 4 or 5         54.3 / 40.6 / 33.3 / 20.3   affordable twice
+      cost 6, 7 or 8      53.5 / 41.2 / 33.8 / 21.3   affordable once
+      capped at one use   53.5 / 41.2 / 33.8 / 21.3   the same thing
+
+    One use is still worth +3.5, because a policy with one use spends it
+    at the moment of maximum value. The only configuration left is zero
+    uses.
+
+  * AND THE REASON IS THE REASON IT WAS CHOSEN. Backward was picked
+    because it collides with no Imposter side - Precedent takes any
+    colour, Early Admittance one step forward, Double Doors a third
+    colour forward, and nobody goes back. But non-collision and
+    non-stacking are the same property seen twice. The any-colour job
+    left the ladder alone only because it CANNIBALISED Precedent, the
+    two fighting over one spare die. The backward job competes with
+    nothing, so it ADDS to all ten sides, and that is exactly why Easy
+    goes to 58.2%.
+
+    So: not shipped, and the cards and rules are untouched. The
+    Candidates stay a record of what you could not afford, and the
+    Understudy stays the one Imposter who spends them.
+
   * AND THE REPLACEMENT SIDES ALL FAILED ANYWAY, which is worth keeping
     because of what it says about the pool. Measured with a job in, the
     band is about 0 to +4:
@@ -352,6 +407,69 @@ CURRENCIES = [
 ]
 
 
+def shipped(games=GAMES):
+    """The backward job on the four rungs the set prints, against all ten
+    Imposter sides. This is the measurement that closed the question: see
+    the fourth bullet of this module's docstring.
+    """
+    sys.path.insert(0, HERE)
+    import imposters as I
+
+    rungs = ("easy", "standard", "hard", "nobulous")
+    aims = dict(easy=50, standard=40, hard=30, nobulous=20)
+    job = dict(CANDIDATE_JOB="back", CANDIDATE_COST=4, CANDIDATE_USES=0)
+    nojob = dict(CANDIDATE_JOB="none", CANDIDATE_COST=0, CANDIDATE_USES=0)
+    sides = [("no Imposter", None),
+             ("Precedent", "archivist_b"),
+             ("Early Admittance", "usher_a"),
+             ("Double Doors", "usher_b"),
+             ("Cross-Referenced", "archivist_a"),
+             ("Open Audition", "understudy_a"),
+             ("Second Chair", "understudy_b"),
+             ("Sleight of Hand", "porter_a"),
+             ("Heavy Lifting", "porter_b"),
+             ("Requisition", "steward_a"),
+             ("Standing Order", "steward_b")]
+
+    def cell(rung, hero, dials):
+        over = dict(START_TIRED=I.LADDER[rung], HERO=hero)
+        over.update(dials)
+        return sum(I.run(games=games, seed=s, **over)
+                   for s in SEEDS) / len(SEEDS)
+
+    print("THE BACKWARD JOB ON THE SHIPPED LADDER - %d x %d seeds"
+          % (games, len(SEEDS)))
+    print("Aims %s. Community band 47-57%%."
+          % " / ".join(str(aims[r]) for r in rungs))
+    print()
+    print("  %-20s %-27s %-27s" % ("", "without the job", "with the job"))
+    print("  %-20s %6s %6s %6s %6s %6s %6s %6s %6s"
+          % ("", "easy", "std", "hard", "nob", "easy", "std", "hard", "nob"))
+    de, dn, hot_off, hot_on, outside = [], [], 0.0, 0.0, []
+    for label, hero in sides:
+        off = [cell(r, hero, nojob) for r in rungs]
+        on = [cell(r, hero, job) for r in rungs]
+        de.append(on[0] - off[0])
+        dn.append(on[3] - off[3])
+        hot_off, hot_on = max(hot_off, off[0]), max(hot_on, on[0])
+        if on[0] > 57.0:
+            outside.append(label)
+        print("  %-20s %5.1f%% %5.1f%% %5.1f%% %5.1f%% %5.1f%% %5.1f%% "
+              "%5.1f%% %5.1f%%"
+              % tuple([label] + off + on))
+        sys.stdout.flush()
+    print()
+    print("  the job is worth %+.2f at Easy and %+.2f at Nobulous"
+          % (sum(de) / len(de), sum(dn) / len(dn)))
+    print("  hottest Easy cell  %.1f%% without, %.1f%% with"
+          % (hot_off, hot_on))
+    print("  Easy cells outside the band with the job: %d %r"
+          % (len(outside), outside))
+    print()
+    print("  Inverse-scaling on the rungs that ship, and three cells out")
+    print("  of the band that are all inside it today. Not shipped.")
+
+
 def currencies(games=GAMES):
     """Reproduce the uniformity table in this module's docstring."""
     sys.path.insert(0, HERE)
@@ -389,7 +507,12 @@ def currencies(games=GAMES):
 
 
 if __name__ == "__main__":
-    if "currencies" in sys.argv[1:]:
+    # An optional game count after the name, so the table can be smoke
+    # tested in seconds: `python candidates.py shipped 50`.
+    _n = next((int(a) for a in sys.argv[1:] if a.isdigit()), GAMES)
+    if "shipped" in sys.argv[1:]:
+        shipped(_n)
+    elif "currencies" in sys.argv[1:]:
         currencies()
     else:
         main()
