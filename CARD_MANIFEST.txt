@@ -355,6 +355,7 @@ DECK SHEETS AND BACKS
   NAP_Opportunities              6x1     landscape  CardBack_NAP_Assignment
   NAP_Setbacks                   6x1     landscape  CardBack_NAP_Assignment
   NAP_SlotsFINF                  6x1     landscape  CardBack_NAP_TimeSlot x3 + CardBack_NAP_Assignment x3
+                                                    (two TTS decks over one sheet: NAP_Slots cells 1-3, NAP_FINF cells 4-6)
   NAP_Tasks                      10x3    landscape  CardBack_NAP_Assignment
   NRJ_AoS_BackdoorRoutines       6x1     portrait   CardBack_NRJ_BackdoorRoutine
   NRJ_AoS_CorruptedLimitations   6x1     portrait   CardBack_AoS_Limitation

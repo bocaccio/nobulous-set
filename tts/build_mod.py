@@ -49,16 +49,23 @@ def card(deck_id, idx, nickname, desc=''):
 
 
 def build_deck(d, deck_id, pos):
-    face = url(d['key'] + '_TTS.png')
-    back = (url(d['key'] + '_TTS_back.png') if d['back'] == 'unique'
+    # `sheet` and `first` let two decks share ONE face sheet and take
+    # different slices of it, which is how a sheet whose cards need two
+    # different backs is shipped: a TTS deck carries exactly one BackURL.
+    # TTS addresses a card as deck_id * 100 + its index in the grid, so the
+    # offset is all that is needed. See NAP_Slots / NAP_FINF in decks.py.
+    sheet = d.get('sheet', d['key'])
+    first = d.get('first', 0)
+    face = url(sheet + '_TTS.png')
+    back = (url(sheet + '_TTS_back.png') if d['back'] == 'unique'
             else url(d['back'] + '.png'))
     custom = {str(deck_id): {"FaceURL": face, "BackURL": back,
                              "NumWidth": d['w'], "NumHeight": d['h'],
                              "BackIsHidden": True, "UniqueBack": d['back'] == 'unique',
                              "Type": 0}}
     contained, ids = [], []
-    for i in range(d['count']):
-        contained.append(card(deck_id, i, '%s %d' % (d['label'], i + 1)))
+    for i in range(first, first + d['count']):
+        contained.append(card(deck_id, i, '%s %d' % (d['label'], i - first + 1)))
         ids.append(deck_id * 100 + i)
     r, g, b = GAME_COLOR[d['game']]
     obj = {"GUID": guid(), "Name": "Deck" if d['count'] > 1 else "CardCustom",
@@ -72,7 +79,7 @@ def build_deck(d, deck_id, pos):
     if d['count'] == 1:
         obj.pop("DeckIDs")
         obj.pop("ContainedObjects")
-        obj["CardID"] = deck_id * 100
+        obj["CardID"] = deck_id * 100 + first
     return obj
 
 
@@ -90,7 +97,11 @@ def panel():
 
 
 def dice_objects():
-    src = json.load(open('/home/claude/cards/dice_objects.json'))
+    # Checked in beside this script, so read it from there rather than
+    # from the machine it was first written on - that hardcoded path
+    # meant build_mod.py could not run anywhere else at all.
+    src = json.load(open(os.path.join(os.path.dirname(
+        os.path.abspath(__file__)), 'dice_objects.json')))
     out = []
     lay = {'Purple': (-16, -14), 'Blue': (-14, -14), 'Green': (-12, -14),
            'Yellow': (-10, -14), 'Pink': (-8, -14),
@@ -226,8 +237,9 @@ def main():
 
     need = set()
     for d in DECKS:
-        need.add(d['key'] + '_TTS.png')
-        need.add(d['key'] + '_TTS_back.png' if d['back'] == 'unique' else d['back'] + '.png')
+        sheet = d.get('sheet', d['key'])
+        need.add(sheet + '_TTS.png')
+        need.add(sheet + '_TTS_back.png' if d['back'] == 'unique' else d['back'] + '.png')
     need.add('ControlPanel.png')
     with open(os.path.join(os.path.dirname(OUT), 'REQUIRED_IMAGES.txt'), 'w') as f:
         f.write("Upload these to BASE_URL, keeping the filenames:\n\n")

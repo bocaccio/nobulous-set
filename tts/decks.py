@@ -34,13 +34,20 @@ DECKS = [
          land=True, game='NAP', label='Setbacks'),
     dict(key='NAP_FinalExams', count=12, w=10, h=2, back='CardBack_NAP_FinalExam',
          land=True, game='NAP', label='Final Exams'),
-    # 3 Time Slots + 3 FINF. The three Slots want CardBack_NAP_TimeSlot
-    # and the three FINF want the Assignment back; TTS allows one back a
-    # deck, and the Assignment back is the one that matters, because FINF
-    # cards are shuffled into the Assignment deck while the Slots are laid
-    # out face up and never hidden.
-    dict(key='NAP_SlotsFINF', count=6, w=6, h=1, back='CardBack_NAP_Assignment',
-         land=True, game='NAP', label='Time Slots + FINF'),
+    # 3 Time Slots + 3 FINF share ONE 6x1 sheet and need TWO backs, so they
+    # are two TTS decks over the same face: a TTS deck carries exactly one
+    # BackURL. The Slots are laid out face up and want the Time Slot back;
+    # the FINF cards are shuffled into the Assignment deck and want its
+    # back, and with one deck for both the Slots were getting the wrong one.
+    # `sheet` points both at NAP_SlotsFINF_TTS.png and `first` is the offset
+    # into its six cells - w and h stay the WHOLE grid, because NumWidth is
+    # how TTS slices the image.
+    dict(key='NAP_Slots', sheet='NAP_SlotsFINF', count=3, first=0, w=6, h=1,
+         back='CardBack_NAP_TimeSlot', land=True, game='NAP',
+         label='Time Slots'),
+    dict(key='NAP_FINF', sheet='NAP_SlotsFINF', count=3, first=3, w=6, h=1,
+         back='CardBack_NAP_Assignment', land=True, game='NAP',
+         label='FINF'),
     # ---- AoS -------------------------------------------------------------
     dict(key='AoS_Technicians', count=3, w=3, h=1, back='unique', land=True,
          game='AoS', label='Technicians'),

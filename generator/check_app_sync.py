@@ -470,14 +470,39 @@ for game in sorted(cat):
     for d in cat[game]["decks"]:
         key = d["sheet"].replace("_TTS.png", "")
         n, cols, rows = len(d["cards"]), d["cols"], d["rows"]
-        ent = re.search(r"dict\(key='%s',([^)]*)\)" % re.escape(key),
-                        tts_src)
-        if ent:
-            body = ent.group(1)
-            got = dict(re.findall(r"(count|w|h)=(\d+)", body))
-            check("  %s is %dx%d in TTS and the lab" % (key, cols, rows),
-                  got.get("w") == str(cols) and got.get("h") == str(rows)
-                  and got.get("count") == str(n))
+        # One SHEET may be served by more than one TTS deck, because a TTS
+        # deck carries exactly one back and NAP_SlotsFINF needs two. So the
+        # entries are gathered by sheet, their counts summed, and the grid
+        # required to be the whole image in every one of them - NumWidth
+        # slices the file, so a deck taking half of it still says 6x1.
+        ents = [m.group(1) for m in
+                re.finditer(r"dict\(([^)]*)\)", tts_src)
+                if re.search(r"sheet='%s'" % re.escape(key), m.group(1))
+                or re.search(r"key='%s'" % re.escape(key), m.group(1))
+                and "sheet=" not in m.group(1)]
+        if ents:
+            got = [dict(re.findall(r"(count|w|h|first)=(\d+)", b)) for b in ents]
+            check("  %s is %dx%d in TTS and the lab%s"
+                  % (key, cols, rows,
+                     " (%d decks)" % len(ents) if len(ents) > 1 else ""),
+                  all(g.get("w") == str(cols) and g.get("h") == str(rows)
+                      for g in got)
+                  and sum(int(g["count"]) for g in got) == n)
+            if len(ents) > 1:
+                # The only reason to split a sheet is two different backs,
+                # and the slices must tile it exactly once.
+                backs = [re.search(r"back='([^']*)'", b).group(1) for b in ents]
+                spans = sorted((int(g.get("first", 0)), int(g["count"]))
+                               for g in got)
+                at = 0
+                tiled = True
+                for f, c in spans:
+                    tiled = tiled and f == at
+                    at += c
+                check("  %s's %d decks have distinct backs and tile it once"
+                      % (key, len(ents)),
+                      len(set(backs)) == len(backs) and tiled and at == n,
+                      "%r %r" % (backs, spans))
         elif key not in ("AoS_ElementMats",):
             check("  %s is in tts/decks.py" % key, False)
         row = re.search(r"\n  %s\s+(\d+)x(\d+)\s+(portrait|landscape)"
