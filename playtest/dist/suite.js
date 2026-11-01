@@ -97,7 +97,8 @@
     config:{mode:"standalone",tier:"0",finale:"sample",tierOverride:{bat:"",nap:"",aos:""}},
     nap:{day:1,slot:0,hp:2,str:2,rec:2,credits:0,creditGoal:6,coupons:[],deviousCoupons:[],couponWild:false,distinctRecover:false,phase:"apprenticeship",exam:null,outcome:null,completedCredits:[],apprentice:"Prodigy",deck:[],discard:[],rows:[[],[],[]],recoveryDots:[null,null,null],primaryDot:null,choice:null,finf:{mode:"reduce",level:1,cards:[0],spent:[],drawn:[],pendingCurrent:[]},pendingReward:null,nextSlotBonus:{str:0,rec:0,crit:0},activeSlotBonus:{str:0,rec:0,crit:0},notice:"",dice:freshDice(),rollsUsed:0,phaseCommittedSuccesses:0,recovering:false,rollResult:""},
     nrj:{hp:5,str:2,rec:3,session:0,dossier:[],active:[],buried:[],key:0,recCredit:0,
-      rollsUsed:0,rollResult:"",outcome:null,recovering:false,pool:18,cards:null,dice:freshDice()}
+      rollsUsed:0,rollResult:"",outcome:null,recovering:false,pool:18,cards:null,dice:freshDice(),
+      imp:"",impCount:0,impSession:-1,armed:null,wide:-1,extraRolls:0}
   });
   let state=fresh();
   let napPileView="deck";
@@ -117,6 +118,10 @@
   state.nap.recoveryDots??=[null,null,null];
   state.nap.primaryDot??=null;
   state.nap.discard??=[];state.nap.pendingReward??=null;if(state.nap.pendingReward&&!state.nap.pendingReward.cardType)state.nap.pendingReward={...state.nap.pendingReward,cardType:"o",cardIndex:state.nap.pendingReward.kind==="distinct"?1:4,text:state.nap.pendingReward.kind==="distinct"?NAP_OPPORTUNITY_EFFECTS[1]:NAP_OPPORTUNITY_EFFECTS[4]};state.nap.creditGoal??=6;state.nap.coupons??=[];state.nap.deviousCoupons??=[];state.nap.distinctRecover??=false;state.nap.couponWild??=false;state.nap.phase??="apprenticeship";state.nap.exam??=null;state.nap.outcome??=null;state.nap.recoverOverride??=null;state.nap.nextSlotBonus??={str:0,rec:0,crit:0};state.nap.activeSlotBonus??={str:0,rec:0,crit:0};state.nrj.discard??=[];state.nrj.cards??=null;
+  // A finale in progress from before 2026-10-31 has no Imposter fields, and
+  // nrjImpLeft would read NaN uses off undefined. It keeps its dice.
+  state.nrj.imp??="";state.nrj.impCount??=0;state.nrj.impSession??=-1;
+  state.nrj.armed??=null;state.nrj.wide??=-1;state.nrj.extraRolls??=0;
   state.nap.finf={mode:"reduce",level:1,cards:[0],spent:[],drawn:[],pendingCurrent:[],...state.nap.finf};
   const mf=state.nap.finf;
   // Saves from the single-card FINF: start again at Standard.
@@ -577,7 +582,7 @@
     return `NRJ Tier ${tierName(tier)} active${over?" (table override)":""} \u00b7 module cards are mixed in.`;
   }
 
-  const ruleFiles={bat:["assets/BAT_Rulebook.pdf?v=tier3","BAT rules PDF"],nap:["assets/NAP_Rulebook.pdf?v=tier3","NAP rules PDF"],aos:["assets/AoS_Rulebook.pdf?v=tier3","AoS rules PDF"],nrj:["assets/NRJ_Campaign_Supplement.pdf?v=tier3","NRJ rules PDF"]};
+  const ruleFiles={bat:["assets/BAT_Rulebook.pdf?v=imposterlab","BAT rules PDF"],nap:["assets/NAP_Rulebook.pdf?v=imposterlab","NAP rules PDF"],aos:["assets/AoS_Rulebook.pdf?v=imposterlab","AoS rules PDF"],nrj:["assets/NRJ_Campaign_Supplement.pdf?v=imposterlab","NRJ rules PDF"]};
   function updateTopbar(){const game=$("gameNav")?.value||"home",link=$("rulesLink"),resetBtn=$("resetBtn"),record=$("recordBtn");
     const rules=ruleFiles[game];if(rules){link.href=rules[0];link.textContent=rules[1];link.hidden=false}else link.hidden=true;
     resetBtn.hidden=game==="home";resetBtn.textContent=game==="nrj"?"New finale":"New test";
@@ -963,6 +968,197 @@
   // difficulty. Fitted to 50/40/30/20 in simulation/finale.txt section 7.
   const NRJ_TIRED_COLORS=["yellow","green","blue","purple"];
   const NRJ_LADDER={easy:[0,0,0,0],standard:[3,2,2,2],hard:[3,3,3,2],nobulous:[3,3,4,4]};
+
+  // ---- The five Imposters, ten abilities -----------------------------
+  // generator/build_nrj.py IMPOSTERS is the authority. The `when` and
+  // `text` strings here are that table's VERBATIM, so
+  // generator/check_app_sync.py can compare them character for character -
+  // they are innerHTML, which is why the <i> tags and entities stay.
+  //
+  // No statline field: all five print 5 HP / 2 STR / 3 REC, because the
+  // house rule across the set is that heroes differ only in ability text.
+  // `i` is the column on NRJ_Imposters_TTS.png; side B is the same column
+  // of the back sheet. Every side had to pass a LEVEL test (0.8 to 4.3
+  // points) and a UNIFORMITY test (worth the same at Easy and at a
+  // handicapped rung) in simulation/proto/imposters.py.
+  //
+  // `per` is how the lab counts it, and ONE counter does for all ten
+  // because you only ever hold one side: n.impCount for per-Scenario and
+  // n.impSession for the Porter's per-Session side.
+  const NRJ_IMPOSTERS=[
+    {id:"0A",i:0,side:"A",name:"The Archivist",ability:"Cross-Referenced",
+     when:"Passive",per:"passive",uses:0,key:"crossref",
+     text:"A retained card may answer an Exhibit at Target 5 of <i>any</i> domain, not only its own.",
+     hint:"Always on. Any retained card answers an Exhibit still at Target 5 or more, whatever its domain."},
+    {id:"0B",i:0,side:"B",name:"The Archivist",ability:"Precedent",
+     when:"Once per Scenario",per:"scenario",uses:1,key:"precedent",
+     text:"Apply 1 die of <i>any</i> color, ignoring the attention entirely.",
+     hint:"Arm it, then select your rolled dice and Apply: exactly one of them may be a barred color."},
+    {id:"1A",i:1,side:"A",name:"The Understudy",ability:"Open Audition",
+     when:"Once per Scenario",per:"scenario",uses:1,key:"audition",cost:4,
+     text:"Discard 4 Candidates to reroll <i>every</i> committed die that applied nothing this Strategy phase.",
+     hint:"Rerolls every die still in the Rolled zone - those are the committed dice that have applied nothing."},
+    {id:"1B",i:1,side:"B",name:"The Understudy",ability:"Second Chair",
+     when:"Twice per Scenario",per:"scenario",uses:2,key:"second",cost:2,
+     text:"Discard 2 Candidates to reroll one committed die that applied nothing.",
+     hint:"Select one rolled die first, then use it."},
+    {id:"2A",i:2,side:"A",name:"The Usher",ability:"Early Admittance",
+     when:"Once per Scenario",per:"scenario",uses:1,key:"early",
+     text:"Apply 1 die of the color <i>one step beyond</i> the attention&rsquo;s two colors.",
+     hint:"Arm it, then Apply: one die of the third color may go through."},
+    {id:"2B",i:2,side:"B",name:"The Usher",ability:"Double Doors",
+     when:"Once per Scenario",per:"scenario",uses:1,key:"wide",
+     text:"For one session, the attention covers a <i>third</i> color &mdash; one step beyond its usual two.",
+     hint:"Opens the third color for the whole of this session, for as many dice as you like."},
+    {id:"3A",i:3,side:"A",name:"The Porter",ability:"Sleight of Hand",
+     when:"Once per Session",per:"session",uses:1,key:"sleight",
+     text:"Take 1 die lying on a standing Exhibit and exhaust it. That Exhibit keeps its successes.",
+     hint:"Arm it, then tap a die lying on a standing Exhibit in the dice row below."},
+    {id:"3B",i:3,side:"B",name:"The Porter",ability:"Heavy Lifting",
+     when:"Once per Scenario",per:"scenario",uses:1,key:"heavy",
+     text:"Exhaust 1 available die, then recover 2 exhausted dice.",
+     hint:"Select one available die first. The 2 dice back are owed, so you choose which to recover."},
+    {id:"4A",i:4,side:"A",name:"The Steward",ability:"Requisition",
+     when:"Once per Scenario",per:"scenario",uses:1,key:"requisition",
+     text:"Commit 1 exhausted die of a color the attention allows. It remains exhausted afterward.",
+     hint:"Arm it, then tap an exhausted die of an allowed color. It returns to exhausted at the end of the session wherever it is."},
+    {id:"4B",i:4,side:"B",name:"The Steward",ability:"Standing Order",
+     when:"Once per Scenario",per:"scenario",uses:1,key:"standing",
+     text:"Take a third Strategy phase this session.",
+     hint:"Raises this session's Strategy rolls from 2 to 3. It does not change STR."},
+  ];
+  const NRJ_IMP_BY_ID={};NRJ_IMPOSTERS.forEach(a=>NRJ_IMP_BY_ID[a.id]=a);
+  const nrjImp=()=>NRJ_IMP_BY_ID[state.nrj.imp]||null;
+  const nrjHas=k=>nrjImp()?.key===k;
+  // The colour one step beyond the attention's two - what both Usher sides
+  // reach, one die at a time or for a whole session.
+  const nrjBeyond=()=>NRJ_WHEEL[(state.nrj.session+2)%5];
+  // Double Doors widens the CURRENT session only, so the pure nrjAllowed(s)
+  // stays the look-ahead the Rewards use when they pay after a session.
+  function nrjAllowedNow(){
+    const n=state.nrj,a=nrjAllowed(n.session);
+    return n.wide===n.session?a.concat(nrjBeyond()):a;
+  }
+  // Standing Order buys a Strategy phase, not a point of STR - STR is worth
+  // 85 points of win rate and no Imposter may touch it.
+  const nrjStr=()=>state.nrj.str+(state.nrj.extraRolls||0);
+  function nrjImpLeft(){
+    const n=state.nrj,a=nrjImp();
+    if(!a||a.per==="passive")return 0;
+    if(a.per==="session")return n.impSession===n.session?0:1;
+    return Math.max(0,a.uses-(n.impCount||0));
+  }
+  function nrjSpendImp(){
+    const n=state.nrj;n.impCount=(n.impCount||0)+1;n.impSession=n.session;
+  }
+  // Only the Understudy spends Candidates. In the manual campaign pool the
+  // lab cannot tell a Candidate from a retained card, so it charges the
+  // single pool counter instead.
+  const nrjCandidates=()=>state.nrj.cards
+    ?state.nrj.cards.filter(c=>!c.kept&&!c.spent):null;
+  function nrjSpendCandidates(k){
+    const n=state.nrj,cand=nrjCandidates();
+    if(cand===null){if(n.pool<k)return false;n.pool-=k;return true;}
+    if(cand.length<k)return false;
+    cand.slice(0,k).forEach(c=>{c.spent=true;c.sel=false;});
+    return true;
+  }
+  function nrjUseImposter(){
+    const n=state.nrj,a=nrjImp();
+    if(!a||n.outcome||a.per==="passive"||!nrjImpLeft())return;
+    // Three sides need a target chosen after the button, so the button only
+    // ARMS them and the use is spent where the target is picked.
+    if(a.key==="precedent"||a.key==="early"||a.key==="sleight"||a.key==="requisition"){
+      n.armed=n.armed===a.key?null:a.key;
+      n.rollResult=n.armed?`${a.ability} armed. ${a.hint}`:`${a.ability} stood down.`;
+      save();renderNRJ();return;
+    }
+    if(a.key==="wide"){
+      n.wide=n.session;nrjSpendImp();
+      n.rollResult=`Double Doors: this session the attention also covers ${nrjBeyond()}.`;
+      save();renderNRJ();return;
+    }
+    if(a.key==="heavy"){
+      const d=n.dice.find(x=>x.selected&&x.zone==="available");
+      if(!d){n.rollResult="Heavy Lifting: select 1 available die to exhaust first.";save();renderNRJ();return;}
+      d.zone="exhausted";d.face="";d.selected=false;
+      n.recCredit+=2;nrjSpendImp();
+      n.rollResult=`Heavy Lifting: exhausted a ${d.color} die, and 2 dice are owed (now ${n.recCredit}). Recover them when ready.`;
+      save();renderNRJ();return;
+    }
+    if(a.key==="standing"){
+      n.extraRolls=(n.extraRolls||0)+1;nrjSpendImp();
+      n.rollResult=`Standing Order: a third Strategy phase this session (${n.rollsUsed} of ${nrjStr()} used).`;
+      save();renderNRJ();return;
+    }
+    if(a.key==="audition"||a.key==="second"){
+      const pool=nrjCandidates(),have=pool===null?n.pool:pool.length;
+      if(have<a.cost){n.rollResult=`${a.ability} costs ${a.cost} Candidates and ${have} ${have===1?"is":"are"} left.`;save();renderNRJ();return;}
+      // A die still in the Rolled zone IS a committed die that applied
+      // nothing: applying one moves it to "locked".
+      const pick=a.key==="audition"?n.dice.filter(d=>d.zone==="rolled")
+        :n.dice.filter(d=>d.zone==="rolled"&&d.selected).slice(0,1);
+      if(!pick.length){
+        n.rollResult=a.key==="audition"
+          ?"Open Audition: no committed dice are waiting unapplied."
+          :"Second Chair: select 1 rolled die to reroll first.";
+        save();renderNRJ();return;}
+      nrjSpendCandidates(a.cost);
+      pick.forEach(d=>{d.face=FACE[d.color][Math.floor(Math.random()*6)];d.selected=false;});
+      nrjSpendImp();
+      n.rollResult=`${a.ability}: spent ${a.cost} Candidates and rerolled ${pick.length} ${pick.length===1?"die":"dice"} - ${tallyText(rollTally(pick))}.`;
+      save();renderNRJ();return;
+    }
+  }
+  // Requisition: the die is tapped rather than selected, because an
+  // exhausted die is not selectable in the dice row outside a recovery.
+  // `req` is the flag that sends it back to exhausted at the end of the
+  // session wherever it has got to - that is the whole price of the side.
+  function nrjRequisition(d){
+    const n=state.nrj,allow=nrjAllowedNow();
+    if(!allow.includes(d.color)){
+      n.rollResult=`Requisition takes a die of a color the attention allows: ${allow.join(" or ")}, not ${d.color}.`;
+      save();renderNRJ();return;}
+    d.zone="available";d.selected=true;d.req=true;
+    n.armed=null;nrjSpendImp();
+    n.rollResult=`Requisition: the ${d.color} die is committed and selected. Roll it - it returns to exhausted at the end of the session.`;
+    save();renderNRJ();
+  }
+  // Sleight of Hand: the Exhibit KEEPS its successes, so e.dealt is never
+  // touched - only the die leaves. That is the whole of the side, and why
+  // it is worth anything: a die comes back out of a standing Exhibit
+  // without undoing what it bought.
+  function nrjSleight(d){
+    const n=state.nrj,e=n.active.find(x=>x.key===d.ex);
+    if(!e||!nrjStanding(e)){
+      n.rollResult="Sleight of Hand takes a die from a STANDING Exhibit; this one has already fallen.";
+      save();renderNRJ();return;}
+    d.zone="exhausted";d.face="";d.ex=null;d.selected=false;
+    n.armed=null;nrjSpendImp();
+    n.rollResult=`Sleight of Hand: a ${d.color} die left ${SCENARIOS[e.id][0]}, which keeps its ${Math.min(e.dealt,e.target)}.`;
+    save();renderNRJ();
+  }
+  const nrjImposterPick=()=>$("nrjImposter")?.value||"";
+  function renderNRJImposter(){
+    const n=state.nrj,host=$("nrjImposterPanel"),a=nrjImp();
+    host.classList.toggle("hidden",!a);
+    if(!a)return;
+    const left=nrjImpLeft(),cand=nrjCandidates();
+    const uses=a.per==="passive"?"always on"
+      :a.per==="session"?(left?"available this session":"used this session")
+      :`${left} of ${a.uses} left this Scenario`;
+    host.innerHTML=`<div class="nrj-imp-card" id="nrjImpSprite"></div>
+      <div class="nrj-imp-body">
+        <p class="kicker">${a.name} &middot; side ${a.side} &middot; 5 HP / 2 STR / 3 REC</p>
+        <h2>${a.ability}</h2>
+        <p class="nrj-imp-text">${a.text}</p>
+        <p class="nrj-imp-meta">${a.when} &middot; <strong>${uses}</strong>${a.cost?` &middot; costs ${a.cost} Candidates${cand?` (${cand.length} left)`:""}`:""}</p>
+        ${a.per==="passive"?"":`<div class="compact-actions"><button id="nrjImpUse"${n.armed===a.key?' class="primary"':""}${left&&!n.outcome?"":" disabled"}>${n.armed===a.key?"Stand down":`Use ${a.ability}`}</button></div>`}
+        <p class="hint">${a.hint}</p>
+      </div>`;
+    setSprite($("nrjImpSprite"),a.side==="A"?"NRJ_Imposters_TTS.png":"NRJ_Imposters_TTS_back.png",a.i,5,1);
+    const b=$("nrjImpUse");if(b)b.onclick=nrjUseImposter;
+  }
   function dealNRJPool(){
     const cards=[];
     const add=(g,o)=>cards.push({g,kept:false,val:0,dot:null,spent:false,sel:false,...o});
@@ -981,7 +1177,15 @@
     return cards;
   }
   // A retained card answers only its OWN domain. Candidates answer nothing.
-  const nrjCardValue=(c,domain)=>c.kept&&NRJ_DOMAIN[c.g]===domain?c.val:0;
+  // Cross-Referenced relaxes WHICH card may answer and nothing else, and
+  // only while the Exhibit still stands at Target 5. That gate is why the
+  // side is flat: it adds no Target reduction, and reduction is dice by
+  // another name, which is the currency the difficulty ladder spends.
+  const nrjCardValue=(c,domain,target)=>{
+    if(!c.kept)return 0;
+    if(NRJ_DOMAIN[c.g]===domain)return c.val;
+    return nrjHas("crossref")&&target>=NRJ_BIG?c.val:0;
+  };
   const nrjSampleMode=()=>$("nrjPoolMode")?.value!=="campaign";
   function nrjPoolCount(){const n=state.nrj;return n.cards?n.cards.filter(c=>!c.spent).length:n.pool;}
   function nrjSelectedCard(){const n=state.nrj;return n.cards?n.cards.findIndex(c=>c.sel&&!c.spent):-1;}
@@ -1007,7 +1211,11 @@
     state.nrj={hp:5,str:2,rec:3,session:0,dossier:shuffle(dossier),active:[],buried:[],
       key:0,recCredit:0,discount:0,rollsUsed:0,rollResult:"",outcome:null,
       recovering:false,pool:18,cards:nrjSampleMode()?dealNRJPool():null,
-      level:nrjLevel(),dice:nrjStartingDice()};
+      level:nrjLevel(),dice:nrjStartingDice(),
+      // Choosing an Imposter is a SETUP decision, so it is read here and
+      // nowhere else. impCount/impSession are the one counter that serves
+      // all ten sides, since you only ever hold one.
+      imp:nrjImposterPick(),impCount:0,impSession:-1,armed:null,wide:-1,extraRolls:0};
     save();renderNRJ();
   }
   function nrjDeploy(){
@@ -1035,8 +1243,12 @@
     }
     const i=nrjSelectedCard();
     if(i<0){n.rollResult="Select a retained card in the Research Pool first.";save();renderNRJ();return;}
-    const c=n.cards[i],v=nrjCardValue(c,SCENARIOS[e.id][1]);
-    if(!v){n.rollResult=`That card answers ${c.kept?NRJ_DOMAIN[c.g]:"nothing"}, not ${SCENARIOS[e.id][1]}.`;save();renderNRJ();return;}
+    const c=n.cards[i],v=nrjCardValue(c,SCENARIOS[e.id][1],e.target);
+    if(!v){
+      n.rollResult=`That card answers ${c.kept?NRJ_DOMAIN[c.g]:"nothing"}, not ${SCENARIOS[e.id][1]}.`
+        +(nrjHas("crossref")&&c.kept&&e.target<NRJ_BIG
+          ?` Cross-Referenced crosses domains only at Target 5 or more, and this stands at ${e.target}.`:"");
+      save();renderNRJ();return;}
     c.spent=true;c.sel=false;
     e.target=Math.max(1,e.target-v);
     n.rollResult=`Answered ${SCENARIOS[e.id][0]} for -${v}. Target now ${e.target}.`;
@@ -1045,13 +1257,27 @@
   function nrjApply(key){
     const n=state.nrj,e=n.active.find(x=>x.key===key);
     if(!e||n.outcome||!nrjStanding(e))return;
-    const allowed=nrjAllowed(n.session);
+    const allowed=nrjAllowedNow();
     const picked=n.dice.filter(d=>d.selected&&d.zone==="rolled");
     if(!picked.length){n.rollResult="Select rolled dice to apply.";save();renderNRJ();return;}
     const barred=picked.filter(d=>!allowed.includes(d.color));
+    // Precedent and Early Admittance each let exactly ONE die past the
+    // attention, so the use is spent HERE and not when the button is
+    // pressed: the button only arms it, and an Apply with no barred die in
+    // it leaves the side still armed and still unspent.
+    let via="";
     if(barred.length){
-      n.rollResult=`The attention is on ${allowed.join(" and ")}: ${barred.map(d=>d.color).join(", ")} cannot be applied.`;
-      save();renderNRJ();return;
+      const arm=n.armed,beyond=nrjBeyond();
+      const ok=barred.length===1&&(arm==="precedent"
+        ||arm==="early"&&barred[0].color===beyond);
+      if(!ok){
+        n.rollResult=`The attention is on ${allowed.join(" and ")}: ${barred.map(d=>d.color).join(", ")} cannot be applied.`
+          +(arm==="precedent"?" Precedent is armed, but it passes only ONE die."
+           :arm==="early"?` Early Admittance is armed, but it passes only one ${beyond} die.`:"");
+        save();renderNRJ();return;
+      }
+      via=` ${nrjImp().ability} passed the ${barred[0].color} die.`;
+      n.armed=null;nrjSpendImp();
     }
     let got=0;
     picked.forEach(d=>{
@@ -1062,7 +1288,7 @@
     if(!got){n.rollResult="Those dice all missed; nothing to apply.";save();renderNRJ();return;}
     e.dealt+=got;
     n.rollResult=`${got} ${got===1?"success":"successes"} onto ${SCENARIOS[e.id][0]}: ${Math.min(e.dealt,e.target)} of ${e.target}.`
-      +(nrjStanding(e)?"":" It falls at the end of the session.");
+      +(nrjStanding(e)?"":" It falls at the end of the session.")+via;
     save();renderNRJ();
   }
   function nrjPayReward(e){
@@ -1114,6 +1340,12 @@
     fell.forEach(e=>{const r=nrjPayReward(e);if(r)notes.push(r);});
     n.active=n.active.filter(nrjStanding);
     n.active.forEach(e=>e.fresh=false);
+    // Requisition's die "remains exhausted afterward" - wherever it got to,
+    // including lying on an Exhibit that is still standing.
+    n.dice.forEach(d=>{if(d.req){d.zone="exhausted";d.face="";d.ex=null;d.req=false;d.selected=false;}});
+    // Standing Order bought one session's phase; an armed side is stood
+    // down rather than carried, because it is not spent until it is used.
+    n.extraRolls=0;n.armed=null;
     n.recCredit+=n.rec;
     n.session++;n.rollsUsed=0;
     if(!n.dossier.length&&!n.active.length){n.outcome="won";notes.push("The Dossier is empty. The Council is satisfied.");}
@@ -1123,11 +1355,12 @@
     save();renderNRJ();
   }
   function renderNRJ(){
-    const n=state.nrj,allowed=nrjAllowed(n.session),att=nrjAttention(n.session);
+    const n=state.nrj,allowed=nrjAllowedNow(),att=nrjAttention(n.session);
     $("nrjOverlay").textContent=n.outcome
       ?(n.outcome==="won"?"Finale survived — the Dossier is empty.":"The Imposter was exposed.")
       :`${nrjSampleMode()?"Standalone sample":"Campaign"} · clear 15 Exhibits in 9 sessions`;
     $("nrjStats").innerHTML=stat("HP",n.hp)+stat("STR",n.str)+stat("REC",n.rec)
+      +stat("Rolls",`${n.rollsUsed} / ${nrjStr()}`)
       +stat("Session",`${Math.min(n.session+1,NRJ_SESSIONS)} / ${NRJ_SESSIONS}`)
       +stat("Dossier",n.dossier.length)+stat("Standing",n.active.filter(nrjStanding).length)
       +stat("Research",nrjPoolCount())+stat("Dice owed",n.recCredit);
@@ -1135,7 +1368,7 @@
     $("nrjAttention").innerHTML=NRJ_WHEEL.map((c,i)=>{
       const on=allowed.includes(c),now=c===att;
       return `<span class="nrj-wheel-step ${on?"on":""} ${now?"now":""}"><i class="die ${c}"></i>${c}${now?" · now":on?" · next":""}</span>`;
-    }).join("")+`<span class="nrj-wheel-note">Only ${allowed.join(" and ")} may be applied this session. Other colors may still be committed and rolled.</span>`;
+    }).join("")+`<span class="nrj-wheel-note">Only ${allowed.join(", ")} may be applied this session. Other colors may still be committed and rolled.${n.wide===n.session?" Double Doors opened the third color.":""}</span>`;
     renderDiscard("nrj",n.buried,i=>SCENARIOS[i][0]);
     // The Exhibits on the table.
     const host=$("nrjExhibits");
@@ -1159,7 +1392,7 @@
     host.querySelectorAll("[data-nrj-answer]").forEach(b=>b.onclick=()=>nrjAnswer(Number(b.dataset.nrjAnswer)));
     $("nrjDeploy").disabled=!!n.outcome||!n.dossier.length;
     $("nrjEndSession").disabled=!!n.outcome;
-    renderNRJPool();renderRoller("nrj");
+    renderNRJImposter();renderNRJPool();renderRoller("nrj");
   }
   function renderNRJPool(){
     const n=state.nrj,host=$("nrjPoolCards"),inputs=$("nrjPoolInputs"),sample=!!n.cards;
@@ -1186,8 +1419,8 @@
     [...dice].sort(byColor).forEach(d=>{const b=document.createElement("button");b.className=`roll-die ${d.color} ${d.zone} ${d.selected?"selected":""}`;const face=document.createElement("span");face.className="face";face.textContent=d.face||"";b.appendChild(face);const tiny=document.createElement("span");tiny.className="tiny";tiny.textContent=d.color[0].toUpperCase();b.appendChild(tiny);b.title=`${d.color} · ${d.zone}${d.zone==="rolled"||d.face?` · ${faceLabel(d.face)}`:""}`;b.setAttribute("aria-label",`${d.color} ${d.zone}${d.zone==="rolled"||d.face?` · ${faceLabel(d.face)}`:""}`);b.onclick=()=>{if(n.recovering){toggleRecoverDie("nap",d);return;}if(d.zone!=="available"&&d.zone!=="rolled")return;d.selected=!d.selected;save();renderRoller("nap");};host.querySelector(`[data-zone="${d.zone}"]`).appendChild(b);});
     host.querySelector(".roll-result").textContent=n.rollResult;
   }
-  function renderRoller(game){const host=$(`${game}Roller`),dice=state[game].dice;if(game==="nap"){renderNAPRoller(host,dice);return;}const rec=!!state[game].recovering;host.classList.toggle("recovering",rec);host.innerHTML=`<div class="roller-head"><div><p class="kicker">20 Strong dice</p><h2>${rec?`Tap exhausted dice to recover (up to ${recoverCap(game)})`:"Tap available dice to commit"}</h2></div><div class="compact-actions"><button data-roll="${game}" class="primary" ${rec?"disabled":""}>Roll selected</button><button data-recover="${game}"${rec?' class="primary"':""}>${rec?`Confirm recovery (${recoverPicked(game).length} / ${recoverCap(game)})`:"Recover up to REC"}</button><button data-ready="${game}" ${rec?"disabled":""}>Ready all</button>${rec?`<button data-recover-cancel="${game}">Cancel recovery</button>`:""}</div></div><div class="roller-dice"></div><div class="roll-result"></div>`;const row=host.querySelector(".roller-dice");[...dice].sort(byColor).forEach(d=>{const b=document.createElement("button");b.className=`roll-die ${d.color} ${d.zone} ${d.selected?"selected":""}`;const face=document.createElement("span");face.className="face";face.textContent=d.face||"";b.appendChild(face);const tiny=document.createElement("span");tiny.className="tiny";tiny.textContent=d.color[0].toUpperCase();b.appendChild(tiny);b.title=`${d.color} · ${d.zone}${d.zone==="rolled"||d.face?` · ${faceLabel(d.face)}`:""}`;b.onclick=()=>{if(rec){toggleRecoverDie(game,d);return;}if(d.zone!=="available"&&!(game==="nrj"&&d.zone==="rolled"))return;d.selected=!d.selected;save();renderRoller(game);};row.appendChild(b);});if(game==="nrj")host.querySelector(".roll-result").textContent=state.nrj.rollResult||"";}
-  function rollSelected(game){const n=state[game],held=game==="nap"||game==="nrj",dice=n.dice.filter(d=>d.selected&&(d.zone==="available"||held&&d.zone==="rolled"));if(!dice.length||game==="nap"&&(n.rollsUsed>=n.str||n.pendingReward))return;if(game==="nrj"&&(n.outcome||n.rollsUsed>=n.str))return;let successes=0;dice.forEach(d=>{d.face=FACE[d.color][Math.floor(Math.random()*6)];successes+=d.face==="✷"?2:d.face==="✦"?1:0;d.zone=held?"rolled":"exhausted";d.selected=false;});if(game==="nrj"){n.rollsUsed++;n.rollResult=`Strategy roll ${n.rollsUsed} of ${n.str}: ${tallyText(rollTally(dice))} from ${dice.length} ${dice.length===1?"die":"dice"}. Select rolled dice, then Apply them to an Exhibit.`;save();renderNRJ();return;}if(game==="nap"){n.rollsUsed++;n.phaseCommittedSuccesses=0;n.rollResult=`Strategy roll ${n.rollsUsed} of ${n.str}: ${tallyText(rollTally(dice))} from ${dice.length} ${dice.length===1?"die":"dice"}. ${n.rollsUsed<n.str?"Select unassigned rolled dice to apply or reroll.":"No Strategy rolls remain; apply any unassigned rolled dice."}`;save();renderNAP();return;}save();renderRoller(game);$(`${game}Roller`).querySelector(".roll-result").textContent=`${tallyText(rollTally(dice))} from ${dice.length} ${dice.length===1?"die":"dice"}.`;}
+  function renderRoller(game){const host=$(`${game}Roller`),dice=state[game].dice;if(game==="nap"){renderNAPRoller(host,dice);return;}const rec=!!state[game].recovering;host.classList.toggle("recovering",rec);host.innerHTML=`<div class="roller-head"><div><p class="kicker">20 Strong dice</p><h2>${rec?`Tap exhausted dice to recover (up to ${recoverCap(game)})`:"Tap available dice to commit"}</h2></div><div class="compact-actions"><button data-roll="${game}" class="primary" ${rec?"disabled":""}>Roll selected</button><button data-recover="${game}"${rec?' class="primary"':""}>${rec?`Confirm recovery (${recoverPicked(game).length} / ${recoverCap(game)})`:"Recover up to REC"}</button><button data-ready="${game}" ${rec?"disabled":""}>Ready all</button>${rec?`<button data-recover-cancel="${game}">Cancel recovery</button>`:""}</div></div><div class="roller-dice"></div><div class="roll-result"></div>`;const row=host.querySelector(".roller-dice");[...dice].sort(byColor).forEach(d=>{const b=document.createElement("button");b.className=`roll-die ${d.color} ${d.zone} ${d.selected?"selected":""}`;const face=document.createElement("span");face.className="face";face.textContent=d.face||"";b.appendChild(face);const tiny=document.createElement("span");tiny.className="tiny";tiny.textContent=d.color[0].toUpperCase();b.appendChild(tiny);b.title=`${d.color} · ${d.zone}${d.zone==="rolled"||d.face?` · ${faceLabel(d.face)}`:""}`;b.onclick=()=>{if(rec){toggleRecoverDie(game,d);return;}if(game==="nrj"&&state.nrj.armed==="sleight"&&d.zone==="locked"){nrjSleight(d);return;}if(game==="nrj"&&state.nrj.armed==="requisition"&&d.zone==="exhausted"){nrjRequisition(d);return;}if(d.zone!=="available"&&!(game==="nrj"&&d.zone==="rolled"))return;d.selected=!d.selected;save();renderRoller(game);};row.appendChild(b);});if(game==="nrj")host.querySelector(".roll-result").textContent=state.nrj.rollResult||"";}
+  function rollSelected(game){const n=state[game],held=game==="nap"||game==="nrj",dice=n.dice.filter(d=>d.selected&&(d.zone==="available"||held&&d.zone==="rolled"));if(!dice.length||game==="nap"&&(n.rollsUsed>=n.str||n.pendingReward))return;if(game==="nrj"&&(n.outcome||n.rollsUsed>=nrjStr()))return;let successes=0;dice.forEach(d=>{d.face=FACE[d.color][Math.floor(Math.random()*6)];successes+=d.face==="✷"?2:d.face==="✦"?1:0;d.zone=held?"rolled":"exhausted";d.selected=false;});if(game==="nrj"){n.rollsUsed++;n.rollResult=`Strategy roll ${n.rollsUsed} of ${nrjStr()}: ${tallyText(rollTally(dice))} from ${dice.length} ${dice.length===1?"die":"dice"}. Select rolled dice, then Apply them to an Exhibit.`;save();renderNRJ();return;}if(game==="nap"){n.rollsUsed++;n.phaseCommittedSuccesses=0;n.rollResult=`Strategy roll ${n.rollsUsed} of ${n.str}: ${tallyText(rollTally(dice))} from ${dice.length} ${dice.length===1?"die":"dice"}. ${n.rollsUsed<n.str?"Select unassigned rolled dice to apply or reroll.":"No Strategy rolls remain; apply any unassigned rolled dice."}`;save();renderNAP();return;}save();renderRoller(game);$(`${game}Roller`).querySelector(".roll-result").textContent=`${tallyText(rollTally(dice))} from ${dice.length} ${dice.length===1?"die":"dice"}.`;}
   function completeNAPAssignment(a,context={}){
     const n=state.nap;if(n.pendingReward||a.completed)return;
     const committed=[...new Set([...(a.committedDice||[]),...(a.storedDice||[])])],committedDice=committed.map(id=>n.dice.find(d=>d.id===id)).filter(Boolean);
@@ -1410,6 +1643,17 @@
   };
   $("napApprentice").onchange=e=>{state.nap.apprentice=e.target.value;save();renderNAP();};
   $("nrjBuildPool").onclick=buildNRJ;
+  // "Choose one Imposter and one of its two sides at setup", so the picker
+  // takes effect on Build and says so if a finale is already running.
+  $("nrjImposter").innerHTML=`<option value="">No Imposter &middot; plain finale</option>`
+    +NRJ_IMPOSTERS.map(a=>`<option value="${a.id}">${a.name} &middot; ${a.ability}</option>`).join("");
+  $("nrjImposter").onchange=()=>{
+    const n=state.nrj;
+    if(!n.session&&!n.active.length&&!n.buried.length&&!n.outcome){
+      n.imp=nrjImposterPick();n.impCount=0;n.impSession=-1;n.armed=null;
+      n.wide=-1;n.extraRolls=0;save();renderNRJ();
+    }else{$("nrjOverlay").textContent="A new Imposter applies on Build / reset finale.";}
+  };
   $("nrjPoolMode").onchange=()=>{const n=state.nrj;
     if(n.session===0&&!n.active.length&&n.dossier.length===15){
       n.cards=nrjSampleMode()?dealNRJPool():null;if(!n.cards)n.pool=18;save();renderNRJ();

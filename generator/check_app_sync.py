@@ -509,6 +509,64 @@ check("rules/bat.html: Buff HP demoted to an optional tracker",
       and "Tyrant Health" in hb)
 
 print()
+print("NRJ - the five Imposters")
+# The lab enforces the ten abilities as of 2026-10-31, so the ability TEXT is
+# now live data and not decoration: suite.js renders it as innerHTML, which
+# is why NRJ_IMPOSTERS carries build_nrj.py's strings verbatim - <i> tags,
+# entities and all - and why this compares them character for character.
+# Before this, the lab had no Imposter picker at all.
+js_imp = js_literal("playtest/dist/suite.js", "NRJ_IMPOSTERS")
+gen_rows = gr["IMPOSTERS"]
+check("suite.js carries all 10 Imposter sides", len(js_imp) == len(gen_rows),
+      "lab %d, generator %d" % (len(js_imp), len(gen_rows)))
+bad = []
+for k, (name, _role, side, when, ability, at, _fl) in enumerate(gen_rows):
+    if k >= len(js_imp):
+        break
+    a = js_imp[k]
+    for field, want, got in (("name", name, a["name"]), ("side", side, a["side"]),
+                             ("when", when, a["when"]),
+                             ("ability", ability, a["ability"]),
+                             ("text", at, a["text"]),
+                             ("sprite column", k // 2, a["i"]),
+                             ("id", "%d%s" % (k // 2, side), a["id"])):
+        if want != got:
+            bad.append("%s %s: card %r, lab %r" % (ability, field, want, got))
+check("the lab's 10 sides match the printed cards field for field", not bad,
+      "; ".join(bad[:3]))
+# All five print the finale's own statline. A per-Imposter statline would
+# make the choice a difficulty dial, which is the one thing it may not be.
+check("the cards print one statline, 5 HP / 2 STR / 3 REC",
+      tuple(gr["IMP_STATS"]) == (5, 2, 3), "%r" % (gr["IMP_STATS"],))
+check("suite.js has no per-Imposter statline to drift",
+      not any(k in a for a in js_imp for k in ("hp", "str", "rec")))
+# The lab keys every ability off `key`, and `per`/`uses` is how it counts
+# them, so a duplicate key or a zero-use active side would silently disable
+# one of the ten.
+keys = [a["key"] for a in js_imp]
+check("the 10 ability keys are distinct", len(set(keys)) == 10,
+      "%r" % (sorted(k for k in set(keys) if keys.count(k) > 1),))
+bad = [a["ability"] for a in js_imp
+       if (a["per"] == "passive") != (a["when"] == "Passive")
+       or a["per"] != "passive" and a["uses"] < 1
+       or a["when"].startswith("Twice") and a["uses"] != 2
+       or a["when"] == "Once per Session" and a["per"] != "session"]
+check("each side's per/uses agrees with its printed timing", not bad,
+      "%r" % (bad,))
+# The Understudy is the only one who spends Candidates, in the cards, the
+# rules and now the lab.
+cost = [a["ability"] for a in js_imp if a.get("cost")]
+check("only the Understudy's two sides cost Candidates",
+      cost == ["Open Audition", "Second Chair"], "%r" % (cost,))
+# The rules set the ability names with a non-breaking hyphen so they do not
+# break across a line in the roster table; the cards use a plain one. That
+# is typography rather than drift, so it is normalised away here.
+nrjh = text("rules/nrj.html").replace("&#8209;", "-").replace(u"‑", "-")
+missing = [a for (_n, _r, _s, _w, a, _t, _f) in gen_rows if a not in nrjh]
+check("rules/nrj.html lists all 10 abilities by name", not missing,
+      "%r" % (missing,))
+
+print()
 print("%d check(s) failed" % len(FAILS))
 for f in FAILS:
     print("   -", f)

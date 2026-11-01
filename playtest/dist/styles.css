@@ -750,3 +750,13 @@ button.attention{animation:attention-pulse 1.1s ease-in-out 2}
 #screen-nrj .roll-die.rolled{border-color:var(--gold)}
 .nrj-hint{margin:0 0 10px;color:var(--muted);font-size:.84rem;line-height:1.4}
 .nrj-exhibit-reward{margin:0;color:#8fc08a;font-size:.78rem;line-height:1.35}
+/* The chosen Imposter: the card as printed, then the ability as the lab
+   enforces it. Hidden entirely when no Imposter was taken. */
+.nrj-imposter{display:flex;gap:16px;align-items:flex-start}
+.nrj-imp-card{flex:0 0 190px;aspect-ratio:7/5;border-radius:10px;border:1px solid #515b65;background-color:#111;background-repeat:no-repeat}
+.nrj-imp-body{flex:1 1 auto;display:grid;gap:6px}
+.nrj-imp-body h2{margin:0}
+.nrj-imp-text{margin:0;color:#e8ecef;line-height:1.4}
+.nrj-imp-meta{margin:0;color:var(--muted);font-size:.82rem}
+.nrj-imp-meta strong{color:#f0d69d}
+@media(max-width:700px){.nrj-imposter{flex-direction:column}.nrj-imp-card{flex-basis:auto;width:100%;max-width:280px}}
