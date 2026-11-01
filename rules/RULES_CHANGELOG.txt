@@ -267,7 +267,7 @@ NRJ — Nobulous Research Journal
     on the card, and that each can be claimed once.
 
 VERIFIED CORRECT, NO CHANGE
-    NAP Tier II Impostor Tasks do REPLACE a Credit Task of the same subject, and
+    NAP Tier II Imposter Tasks do REPLACE a Credit Task of the same subject, and
     Tier III Devious Opportunities do REPLACE the six base Opportunities.  The
     compendium's looser "add" wording in §6.2 does not match the simulator; the
     rulebook already had it right.
@@ -330,7 +330,7 @@ NAP — EVERY PRINTED TARGET ROSE BY 1
     Request-side non-Credit Task.  Those six Targets went 3,3,4,6,4,4
     to 4,4,5,7,5,5, so the card would have matched nothing.  Now "4 or
     less".  No other NRJ Target was raised — leaving the FOLLOWING,
-    IMPOSTOR and DEVIOUS tables at their printed values is what keeps
+    IMPOSTER_TASKS and DEVIOUS tables at their printed values is what keeps
     NAP's two axes converged.
 
 RE-RENDERED THE SAME DAY
@@ -729,15 +729,15 @@ rendered.  Exactly three sheets changed and every other NRJ sheet came out
 byte-identical, so the card renderer is reproducible on this machine; the
 remaining PnP non-reproducibility is in pack.py's assembly.
 
-IMPOSTOR TASKS GET THE DOT EVERY ASSIGNMENT NEEDS, 2026-10-31
+IMPOSTER TASKS GET THE DOT EVERY ASSIGNMENT NEEDS, 2026-10-31
 --------------------------------------------------------------
-The 4 Impostor Tasks printed no recovery-colour dot.  Three printed NAP rules
+The 4 Imposter Tasks printed no recovery-colour dot.  Three printed NAP rules
 read "that Assignment's color dot" - Required Effort, completing or storing
 progress, and the colour the Primary queues for the next Time Slot - so on
 these four cards all three references dangled and Red-as-wild meant nothing.
 
 Nothing agreed on what the dot was.  The card printed none; simulation/nap.py
-gave each Impostor Task the dot of the Credit Task it replaced, a different
+gave each Imposter Task the dot of the Credit Task it replaced, a different
 colour every game, so NAP's Tier II and III calibration was measured against
 dots that were never on a card; and the lab fell back to `dot||"P"`.
 check_app_sync could not catch it because there was no field to compare.

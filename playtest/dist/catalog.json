@@ -523,7 +523,7 @@
       "kind": "Final Exam card · Theory"
      },
      {
-      "name": "Final Impostor Examination",
+      "name": "Final Imposter Examination",
       "kind": "Final Exam card · Theory"
      },
      {
@@ -1016,27 +1016,27 @@
     "backLabel": "Card back"
    },
    {
-    "title": "NAP Impostor Tasks",
-    "sheet": "NRJ_NAP_ImpostorTasks_TTS.png",
+    "title": "NAP Imposter Tasks",
+    "sheet": "NRJ_NAP_ImposterTasks_TTS.png",
     "cols": 4,
     "rows": 1,
     "landscape": true,
     "cards": [
      {
       "name": "Neural Extraction Practicum",
-      "kind": "Impostor Task · NAP"
+      "kind": "Imposter Task · NAP"
      },
      {
       "name": "Load-Bearing Prosthetics",
-      "kind": "Impostor Task · NAP"
+      "kind": "Imposter Task · NAP"
      },
      {
       "name": "Emergency Specimen Handling",
-      "kind": "Impostor Task · NAP"
+      "kind": "Imposter Task · NAP"
      },
      {
       "name": "Containment Drill",
-      "kind": "Impostor Task · NAP"
+      "kind": "Imposter Task · NAP"
      }
     ],
     "back": "CardBack_NAP_Assignment.png",
@@ -1216,7 +1216,7 @@
     "backLabel": "Card back"
    },
    {
-    "title": "Impostor Scenarios",
+    "title": "Imposter Scenarios",
     "sheet": "NRJ_ImposterScenarios_TTS.png",
     "cols": 10,
     "rows": 3,

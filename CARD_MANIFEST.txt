@@ -292,7 +292,7 @@ EARLIER (rev 15)
   - NRJ cards now match their base-game analog rather than using one NRJ color:
       Experimental Protocols and Research Notes  BAT green
       Unauthorized Modifications                 BAT category colors + UNAUTHORIZED strip
-      Impostor Tasks                             NAP purple
+      Imposter Tasks                             NAP purple
       Following Setbacks                         NAP setback blue
       Devious Opportunities                      NAP opportunity gold
       Nobulous Interference, Backdoor Routines   AoS rust
@@ -310,7 +310,7 @@ EARLIER (rev 15)
   - Every NRJ card carries a solid #1f4e6b band along its foot reading NOBULOUS
     RESEARCH JOURNAL.  Face-up, the module cards can be riffled out of any base
     deck in one pass.
-  - Impostor Tasks now use the base NAP Task layout: name on the left spine,
+  - Imposter Tasks now use the base NAP Task layout: name on the left spine,
     subject icon in the corner, green REQUEST band above and red DEMAND band
     below, and GRANTS NO CREDIT on the right spine where a Task's penalty sits.
   - BAT band colors by function: Encounters, Lab Rats and Assembly keep the
@@ -367,7 +367,7 @@ DECK SHEETS AND BACKS
   NRJ_Imposters                  5x1     landscape  unique (side B)
   NRJ_NAP_DeviousOpportunities   6x1     landscape  CardBack_NAP_Assignment
   NRJ_NAP_FollowingSetbacks      4x1     landscape  CardBack_NAP_Assignment
-  NRJ_NAP_ImpostorTasks          4x1     landscape  CardBack_NAP_Assignment
+  NRJ_NAP_ImposterTasks          4x1     landscape  CardBack_NAP_Assignment
 
 CARD BACKS
   BAT   CardBack_BAT_Encounter        Encounter deck
@@ -391,7 +391,7 @@ CARD BACKS
   would be identifiable face-down:
         Unauthorized Modifications          -> CardBack_BAT_Upgrade
         Corrupted Limitations               -> CardBack_AoS_Limitation
-        Impostor Tasks, Following Setbacks,
+        Imposter Tasks, Following Setbacks,
         Devious Opportunities               -> CardBack_NAP_Assignment
   Their NRJ identity is carried on the face instead, by the foot band reading
   NOBULOUS RESEARCH JOURNAL.
@@ -445,6 +445,6 @@ Callouts that are RULES, not rationale, were kept: Success, Failure, Two kinds
 of armor (trimmed), How the apprenticeship ends, Special Recovery (trimmed),
 Skulls, Required colors, If you cannot supply a required color, Dice come back
 unless you are punished (trimmed), Catastrophic Failure, The tiers are not
-difficulty levels, Impostor Tasks, Suspicion is uncapped (trimmed).
+difficulty levels, Imposter Tasks, Suspicion is uncapped (trimmed).
 
 The removed rationale is preserved in rules/RULES_CHANGELOG.txt.

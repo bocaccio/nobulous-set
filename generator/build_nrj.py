@@ -99,7 +99,9 @@ print("Research Notes", render_deck('NRJ_BAT_ResearchNotes', notes, 'NRJ', back=
 # and the next slot's queued colour all read "that Assignment's color dot",
 # so an Assignment without one is under-specified. One of each colour, each
 # matching a colour its own subject already uses.
-IMPOSTOR = [
+# Not IMPOSTERS, which is the five hero cards further down. These are
+# NAP's four Tier II Assignments.
+IMPOSTER_TASKS = [
  ("Neural Extraction Practicum", "Anatomy", 'P', 5, 6, "One die committed here remains locked until the end of the Day even if completed."),
  ("Load-Bearing Prosthetics", "Engineering", 'B', 4, 5, "At least 2 applied successes must come from the same color."),
  ("Emergency Specimen Handling", "Procedure", 'Y', 4, 5, "Before rolling, commit at least 2 dice initially."),
@@ -130,11 +132,11 @@ DEV_FOOTER = {
          "Final Exam, or discard it during the apprenticeship to ignore one Setback's "
          "restrictions for the rest of the game. Tier III &mdash; Exploitation.",
 }
-# Impostor Tasks use the base NAP Task layout: spine name, Request band top,
+# Imposter Tasks use the base NAP Task layout: spine name, Request band top,
 # Demand band bottom, key rule on the right spine.
 CARD_SIZE = LANDSCAPE
 imp = []
-for n, subj, dot, rt, dt, e in IMPOSTOR:
+for n, subj, dot, rt, dt, e in IMPOSTER_TASKS:
     # Same marks block as a base Task: subject icon, then the colour dot.
     marks = ('<div class="marks">%s<div class="dt" style="background:%s">'
              '</div></div>' % (subj_icon(subj), DOT[dot]))
@@ -152,7 +154,7 @@ for n, subj, dot, rt, dt, e in IMPOSTOR:
             '</div></div></div>%s' % (fs, l1, l2, marks))
     right = ('<div class="spine r" style="background:#f3eef7"><div class="track p">'
              '<div class="vert rr nowrap" style="width:52mm">'
-             '<span class="penlbl" style="color:#6b3f8c">Impostor Task &nbsp;</span>'
+             '<span class="penlbl" style="color:#6b3f8c">Imposter Task &nbsp;</span>'
              '<span class="pen" style="color:#6b3f8c">Grants no Credit</span>'
              '</div></div></div>')
     mid = ('<div class="mid">'
@@ -177,7 +179,7 @@ fol = [C(n, "NRJ &middot; Following Setback",
 dev = [C(n, "NRJ &middot; Devious Opportunity",
             successes_row(d, t, '#9a7410') + T(e),
             DEV_FOOTER[w], acc=NAP_OPP) for n, d, t, e, w in DEVIOUS]
-print("Impostor Tasks", render_deck('NRJ_NAP_ImpostorTasks', imp, 'NRJ', LANDSCAPE, back='CardBack_NAP_Assignment'))
+print("Imposter Tasks", render_deck('NRJ_NAP_ImposterTasks', imp, 'NRJ', LANDSCAPE, back='CardBack_NAP_Assignment'))
 print("Following Setbacks", render_deck('NRJ_NAP_FollowingSetbacks', fol, 'NRJ', LANDSCAPE, back='CardBack_NAP_Assignment'))
 print("Devious Opportunities", render_deck('NRJ_NAP_DeviousOpportunities', dev, 'NRJ', LANDSCAPE, back='CardBack_NAP_Assignment'))
 CARD_SIZE = PORTRAIT

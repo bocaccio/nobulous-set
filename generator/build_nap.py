@@ -72,7 +72,7 @@ EXAMS = [
   "Bow to the eldest member. Do not ask which one is the eldest."),
  ("Identity Recall Demonstration", THE,'P',7,"At least 1 Blue and 1 Purple die must contribute.",
   "State your name. Say it like you have always had it."),
- ("Final Impostor Examination", THE,'Y',8,"Use at least 4 different colors. A Red Crit counts as 1 success.",
+ ("Final Imposter Examination", THE,'Y',8,"Use at least 4 different colors. A Red Crit counts as 1 success.",
   "Every answer is correct. That is what makes the Council suspicious."),
  ("Neural Response Screening", ENG,'G',6,"At least 1 Crit must contribute to complete this Assignment.",
   "Electrodes on, lights off. Try not to think anything incriminating."),

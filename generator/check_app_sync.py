@@ -258,7 +258,7 @@ print("NRJ - generator/build_nrj.py vs playtest")
 gr = py_tables("generator/build_nrj.py")
 for key, jsname, fields in (
         ("FOLLOWING", "NAP_FOLLOWING", None),
-        ("IMPOSTOR", "NAP_IMPOSTOR", None),
+        ("IMPOSTER_TASKS", "NAP_IMPOSTER_TASKS", None),
         ("DEVIOUS", "NAP_DEVIOUS", None),
         ("SCEN", "SCENARIOS", None)):
     try:
@@ -271,35 +271,35 @@ for key, jsname, fields in (
         check("%s vs %s" % (key, jsname), False,
               "%d vs %d rows; gen[0]=%r js[0]=%r" % (len(g), len(j), g[0], j[0]))
         continue
-    # The Target index differs by table: SCEN and IMPOSTOR carry a domain or
+    # The Target index differs by table: SCEN and IMPOSTER_TASKS carry a domain or
     # subject before it, so the pair is named per table rather than guessed.
-    ti = {"FOLLOWING": (2, 2), "IMPOSTOR": (3, 3),
+    ti = {"FOLLOWING": (2, 2), "IMPOSTER_TASKS": (3, 3),
           "DEVIOUS": (2, 2), "SCEN": (3, 3)}[key]
     bad = [(a[0], a[ti[0]], b[ti[1]]) for a, b in zip(g, j)
            if a[0] != b[0] or a[ti[0]] != b[ti[1]]]
     check("%s vs %s - %d names and Targets" % (key, jsname, len(g)), not bad,
           "%r" % (bad[:3],))
 
-# THE IMPOSTOR TASK DOTS. Every NAP Assignment prints a recovery-colour dot
+# THE IMPOSTER TASK DOTS. Every NAP Assignment prints a recovery-colour dot
 # and three printed rules read "that Assignment's color dot" - Required
 # Effort, completing or storing progress, and the colour the Primary queues
-# for the next Time Slot. The 4 Impostor Tasks printed none until 2026-10-31,
+# for the next Time Slot. The 4 Imposter Tasks printed none until 2026-10-31,
 # so the card, the model (which inherited the replaced Task's dot) and the
 # lab (which fell back to "P") all disagreed, and nothing here could see it.
 IMP_DOTS = (("Neural Extraction Practicum", "P"),
             ("Load-Bearing Prosthetics", "B"),
             ("Emergency Specimen Handling", "Y"),
             ("Containment Drill", "G"))
-gen_imp = {r[0]: r[2] for r in gr["IMPOSTOR"]}
+gen_imp = {r[0]: r[2] for r in gr["IMPOSTER_TASKS"]}
 js_imp = {r[0]: r[2] for r in js_literal("playtest/dist/suite.js",
-                                         "NAP_IMPOSTOR")}
+                                         "NAP_IMPOSTER_TASKS")}
 sim_imp = dict((s, d) for s, d, _r, _t in
-               py_tables("simulation/nap.py")["IMPOSTOR"])
-sim_subj = {n: s for (n, s, _d, _r, _t, _e) in gr["IMPOSTOR"]}
+               py_tables("simulation/nap.py")["IMPOSTER_TASKS"])
+sim_subj = {n: s for (n, s, _d, _r, _t, _e) in gr["IMPOSTER_TASKS"]}
 bad = [n for n, d in IMP_DOTS
        if gen_imp.get(n) != d or js_imp.get(n) != d
        or sim_imp.get(sim_subj.get(n)) != d]
-check("the 4 Impostor Task dots agree in the cards, the lab and nap.py",
+check("the 4 Imposter Task dots agree in the cards, the lab and nap.py",
       not bad, "%r" % (bad,))
 
 # The Tier III decks the lab keeps outside suite.js. Every field is compared,

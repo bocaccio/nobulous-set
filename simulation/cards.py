@@ -67,7 +67,7 @@ TIER_CONTENT = {
     },
     "NAP": {
         "I":   "3 of 4 Following Setbacks replace 3 base Setbacks",
-        "II":  "4 Impostor Tasks - Mandatory, grant no Credits",
+        "II":  "4 Imposter Tasks - Mandatory, grant no Credits",
         "III": "6 Devious Opportunities replace the 6 Opportunities",
     },
     "AoS": {

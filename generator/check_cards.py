@@ -6,7 +6,7 @@ Each card is laid out again with its height released and a marker placed just
 after it: the marker's position is the height the card actually wants, and
 anything taller than the printed card would have been clipped.
 
-Cards whose layout is pinned to the card edges (the NAP Task and NRJ Impostor
+Cards whose layout is pinned to the card edges (the NAP Task and NRJ Imposter
 Task spines) carry no flow height, so they are skipped - those two decks have
 fixed geometry and are checked by eye.
 

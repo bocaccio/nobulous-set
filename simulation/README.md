@@ -205,7 +205,7 @@ sits in the middle of it.
 
 Tier I is close to a wash - the Following Setbacks it swaps in are harsher
 per card but displace base Setbacks of similar weight. Tier II is the trough,
-as designed: 4 Impostor Tasks that are Mandatory and grant no Credits remove
+as designed: 4 Imposter Tasks that are Mandatory and grant no Credits remove
 four Credit chances and force four clears. Tier III recovers 6-9 points, more
 than the other two games get back.
 

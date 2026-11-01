@@ -33,7 +33,7 @@
     ["Physiological Stress Test","Anatomy","P",7,"At least 2 Blue/Purple dice total must contribute.",{contributeAny:[["blue","purple"],2]}],
     ["Council Etiquette Simulation","Theory","G",6,"Red cannot be committed; use at least 3 colors.",{noRed:true,minColors:3}],
     ["Identity Recall Demonstration","Theory","P",7,"At least 1 Blue and 1 Purple die must contribute.",{contribute:{blue:1,purple:1}}],
-    ["Final Impostor Examination","Theory","Y",8,"Use at least 4 different colors. A Red Crit counts as 1 success.",{minColors:4,scoring:"redCrit1"}],
+    ["Final Imposter Examination","Theory","Y",8,"Use at least 4 different colors. A Red Crit counts as 1 success.",{minColors:4,scoring:"redCrit1"}],
     ["Neural Response Screening","Engineering","G",6,"At least 1 Crit must contribute to complete this Assignment.",{needCrit:true}],
     ["Adaptive Reasoning Trial","Engineering","B",7,"Commit at least 4 dice. One Yellow Crit counts as 3 successes.",{minDice:4,scoring:"yellowCrit3"}],
     ["Council Recognition Drill","Engineering","B",7,"Red cannot be committed. At least 1 Purple die must contribute.",{noRed:true,contribute:{purple:1}}],
@@ -52,7 +52,7 @@
   ];
   // name, subject, recovery-color dot, Request, Demand, effect. The dot is
   // printed on the card; this used to fall back to "P" when it found none.
-  const NAP_IMPOSTOR = [
+  const NAP_IMPOSTER_TASKS = [
     ["Neural Extraction Practicum","Anatomy","P",5,6,"One die committed here remains locked until the end of the Day even if completed."],
     ["Load-Bearing Prosthetics","Engineering","B",4,5,"At least 2 applied successes must come from the same color."],
     ["Emergency Specimen Handling","Procedure","Y",4,5,"Before rolling, commit at least 2 dice initially."],
@@ -582,7 +582,7 @@
     return `NRJ Tier ${tierName(tier)} active${over?" (table override)":""} \u00b7 module cards are mixed in.`;
   }
 
-  const ruleFiles={bat:["assets/BAT_Rulebook.pdf?v=imposterlab","BAT rules PDF"],nap:["assets/NAP_Rulebook.pdf?v=imposterlab","NAP rules PDF"],aos:["assets/AoS_Rulebook.pdf?v=imposterlab","AoS rules PDF"],nrj:["assets/NRJ_Campaign_Supplement.pdf?v=imposterlab","NRJ rules PDF"]};
+  const ruleFiles={bat:["assets/BAT_Rulebook.pdf?v=imposter2","BAT rules PDF"],nap:["assets/NAP_Rulebook.pdf?v=imposter2","NAP rules PDF"],aos:["assets/AoS_Rulebook.pdf?v=imposter2","AoS rules PDF"],nrj:["assets/NRJ_Campaign_Supplement.pdf?v=imposter2","NRJ rules PDF"]};
   function updateTopbar(){const game=$("gameNav")?.value||"home",link=$("rulesLink"),resetBtn=$("resetBtn"),record=$("recordBtn");
     const rules=ruleFiles[game];if(rules){link.href=rules[0];link.textContent=rules[1];link.hidden=false}else link.hidden=true;
     resetBtn.hidden=game==="home";resetBtn.textContent=game==="nrj"?"New finale":"New test";
@@ -605,7 +605,7 @@
   // otherwise a card whose body matches the cream gutter looks smaller than the rest.
   const CELL_LONG=700,CELL_SHORT=500,GUTTER=15;
   // Every card image carries this tag; bump it whenever the sheets are rebuilt.
-  const ART_VERSION="?v=imposters";
+  const ART_VERSION="?v=imposter2";
   function peekStyle(deck,index,side,boxW){
     const back=side==="back"&&deck.back;
     // A deck may name one back for all its cards, or one per card.
@@ -694,7 +694,7 @@
   function napCard(type,i,nrj,dot){
     if(nrj){
       if(type==="s"){const c=NAP_FOLLOWING[i];return{name:c[0],file:"NRJ_NAP_FollowingSetbacks_TTS.png",i,cols:4,rows:1,target:c[2],demand:c[2],dot:c[1],skulls:0,text:c[3],nrj:true};}
-      if(type==="t"){const c=NAP_IMPOSTOR[i];return{name:c[0],file:"NRJ_NAP_ImpostorTasks_TTS.png",i,cols:4,rows:1,target:c[3],demand:c[4],dot:c[2],skulls:0,text:c[5],subject:c[1],nrj:true};}
+      if(type==="t"){const c=NAP_IMPOSTER_TASKS[i];return{name:c[0],file:"NRJ_NAP_ImposterTasks_TTS.png",i,cols:4,rows:1,target:c[3],demand:c[4],dot:c[2],skulls:0,text:c[5],subject:c[1],nrj:true};}
       if(type==="o"){const c=NAP_DEVIOUS[i];return{name:c[0],file:"NRJ_NAP_DeviousOpportunities_TTS.png",i,cols:6,rows:1,target:c[2],demand:c[2],dot:c[1],skulls:0,text:c[3],when:c[4],nrj:true};}
     }
     if(type==="e")return napExamCard(i);if(type==="f")return{name:`FINF ${i+1} · ${FINF_SLOTS[i]||""}`,file:"NAP_SlotsFINF_TTS.png",i:3+(i||0),cols:6,rows:1,target:0,demand:0,dot:"—",skulls:0};if(type==="t")return {name:NAP_TASKS[i][0],file:"NAP_Tasks_TTS.png",i,cols:10,rows:3,target:NAP_TASKS[i][1],demand:NAP_TASKS[i][2],dot:NAP_TASKS[i][3],skulls:NAP_TASKS[i][4]};if(type==="o")return{name:NAP_OPPS[i],file:"NAP_Opportunities_TTS.png",i,cols:6,rows:1,target:[4,4,5,5,4,5][i],demand:[4,4,5,5,4,5][i],dot:i<4?"Y":"G",skulls:0};return{name:NAP_SETBACKS[i][0],file:"NAP_Setbacks_TTS.png",i,cols:6,rows:1,target:NAP_SETBACKS[i][1],demand:NAP_SETBACKS[i][1],dot:NAP_SETBACKS[i][2],skulls:0};}
@@ -722,10 +722,10 @@
   function buildNAPDeck(setbacks){
     const tier=napTier();
     let tasks=[...Array(26).keys()].map(i=>({type:"t",i}));
-    // Tier II: each Impostor Task replaces a Credit Task of its own subject,
+    // Tier II: each Imposter Task replaces a Credit Task of its own subject,
     // inheriting that Task's color dot. They grant no Credits.
     if(tier==="2"||tier==="3"){
-      NAP_IMPOSTOR.forEach((imp,i)=>{
+      NAP_IMPOSTER_TASKS.forEach((imp,i)=>{
         const same=tasks.filter(c=>NAP_TASK_SUBJECTS[c.i]===imp[1]);
         if(!same.length)return;
         const victim=same[Math.floor(Math.random()*same.length)];
@@ -1426,7 +1426,7 @@
     const committed=[...new Set([...(a.committedDice||[]),...(a.storedDice||[])])],committedDice=committed.map(id=>n.dice.find(d=>d.id===id)).filter(Boolean);
     (a.storedDice||[]).forEach(id=>{const d=n.dice.find(x=>x.id===id);if(d){d.zone="exhausted";d.selected=false;}});
     a.completed=true;a.completedDay=n.day;a.rewardClaimed=true;
-    // The card says "Assignment", and an Impostor Task is one.
+    // The card says "Assignment", and an Imposter Task is one.
     if(n.apprentice==="Technician"&&a.type==="s"){
       const back=n.dice.filter(d=>d.zone==="exhausted").slice(0,2);
       back.forEach(d=>{d.zone="available";d.face="";d.selected=false;});
@@ -1434,7 +1434,7 @@
     }
     if(n.apprentice==="Opportunist"&&a.type==="t"&&!a.demandSide)
       recoverOneNAP(DOT_COLOR[napCard(a.type,a.i,a.nrj,a.dot).dot],`${napCard(a.type,a.i,a.nrj,a.dot).name} completed as a Request`);
-    // Impostor Tasks are Mandatory and grant no Credits, and the unmarked
+    // Imposter Tasks are Mandatory and grant no Credits, and the unmarked
     // Tasks are not Credit Tasks either.
     if(a.type==="t"&&!a.nrj&&NAP_TASK_SUBJECTS[a.i]){n.credits++;n.completedCredits.push({type:"t",i:a.i});}
     const reward=(kind,remaining,text,extra={})=>{n.pendingReward={kind,remaining,text,cardId:a.id,cardType:a.type,cardIndex:a.i,usedColors:[],...extra};a.rewardClaimed=false;};
@@ -1468,8 +1468,8 @@
   //   Following 0  Nobulous Needs This Now - first die to another Assignment
   //                must match that Assignment's dot
   //   Following 1  Unscheduled Demonstration - work it before anything else
-  //   Impostor  1  Load-Bearing Prosthetics - 2 successes of one color
-  //   Impostor  2  Emergency Specimen Handling - commit 2 dice to start
+  //   Imposter  1  Load-Bearing Prosthetics - 2 successes of one color
+  //   Imposter  2  Emergency Specimen Handling - commit 2 dice to start
   function moduleBlock(a, dice, successful){
     const n = state.nap, row = napRow();
     const card = napCard(a.type, a.i, a.nrj, a.dot);
@@ -1483,7 +1483,7 @@
       if (!dice.some(d => d.color === want))
         return `${napCard("s", 0, true).name}: the first die you commit elsewhere this Time Slot must be ${want}.`;
     }
-    // Impostor Task restrictions.
+    // Imposter Task restrictions.
     if (a.type === "t" && a.nrj) {
       if (a.i === 1) {
         const byColor = {};

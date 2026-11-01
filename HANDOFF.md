@@ -807,10 +807,30 @@ Not your job to fix, but worth knowing if Jon raises them:
   Imposter chosen and was deliberately NOT re-pegged, since Easy is already at
   zero dice exhausted and pegging it would cost the meaning of "Easy".
 
-- **The lab does not know about the Imposters yet.** `playtest/dist/catalog.json`
-  lists the deck so the card browser shows it, but the finale lab in
-  `playtest/dist/suite.js` has no Imposter picker and implements none of the ten
-  abilities. That is the outstanding piece of this change.
+- **The lab plays all ten Imposter sides.** Added 2026-10-31; before that the
+  card browser listed the deck and the finale lab had no picker at all. Pick an
+  Imposter beside the difficulty and Build - it is a setup decision, so it takes
+  effect on Build and says so if you change it mid-Scenario. Four points worth
+  knowing before you touch `renderNRJImposter` or `nrjUseImposter`:
+
+  1. **Three sides are ARMED rather than spent by their button**, because they
+     need a target chosen afterwards. Precedent and Early Admittance are spent
+     inside `nrjApply`, where the barred die actually goes through, so an Apply
+     with nothing barred in it leaves them armed and unspent. Sleight of Hand
+     and Requisition are spent when you tap the die.
+  2. **Requisition has to be tapped and cannot be "selected"**, because an
+     exhausted die is not selectable in the dice row outside a recovery. That
+     was a real bug in the first cut and the browser caught it.
+  3. **One counter serves all ten** - `impCount` and `impSession` - since you
+     only ever hold one side.
+  4. **`nrjAllowed(s)` stays pure.** Double Doors widens the CURRENT session
+     only, through `nrjAllowedNow()`, because the Rewards look ahead with
+     `nrjAllowed(n.session + 1)` when they pay out after a session ends.
+
+  `NRJ_IMPOSTERS` carries build_nrj.py's `when` and `text` strings verbatim -
+  they are rendered as innerHTML, so the `<i>` tags and entities stay - and
+  `check_app_sync.py` compares all ten sides to the printed cards field for
+  field. Change a card and the check tells you which field drifted.
 
 - **The Candidates answer nothing, and there is now exactly one measured way
   to change that - AWAITING JON'S CALL.** The Research Pool is the 18 Tier III
@@ -911,13 +931,70 @@ Not your job to fix, but worth knowing if Jon raises them:
   `check_app_sync.py` now compares all five registries for all 30 decks so it
   cannot drift again.
 
-- **One deck spells it "Impostor" and everything else spells it "Imposter".**
-  The split is semantic rather than random: the character, the finale and the
-  scenario are all "the Imposter", while NAP's Tier II deck is
-  `NRJ_NAP_ImpostorTasks` / "Impostor Tasks". Both spellings appear in
-  `rules/nrj.html`. Renaming the deck would touch the deck KEY, the manifest,
-  `pack.py`, `tts/decks.py`, the lab's `catalog.json` and the rendered card
-  faces, so it is being raised rather than fixed.
+- **The Time Slots were getting the FINF card back in TTS.** The same sheet,
+  found the same day. `NAP_SlotsFINF` is 3 Time Slots + 3 FINF, and the two
+  halves want different backs, but a TTS deck carries exactly one `BackURL`, so
+  as one deck three of the six were always wrong. It is now two decks over one
+  face sheet: `tts/decks.py` entries may name a `sheet` other than their key and
+  a `first` offset into it, since TTS addresses a card as `deck_id * 100 + its
+  index in the grid`. `w` and `h` stay the WHOLE grid in both, because NumWidth
+  is what slices the image. The generator had been saying so all along - the
+  `NAP_SlotsFINF_cards.json` manifest records `back` as a LIST of six when the
+  cards do not share one, which is exactly the 3 + 3 the split is cut to.
+
+- **`tts/build_mod.py` could not run anywhere but the machine it was written
+  on.** It read `dice_objects.json` from a hardcoded `/home/claude/cards/` path
+  though the file is checked in beside the script. Fixed 2026-10-31; the mod now
+  builds here, 53 objects and 240 cards, with no missing images.
+
+- **Nothing performed the copy into `images/` and `playtest/dist/assets/`, so
+  it was done by hand.** That is the root cause of the drift recorded below, and
+  it is now `generator/deploy.py`:
+
+  ```bash
+  cd generator
+  python deploy.py              # promote out/, and report anything stale
+  python deploy.py --prune      # also delete the stale files
+  python deploy.py --release    # also cut release/tts and release/print
+  ```
+
+  It takes the list of sheets from the `*_cards.json` manifests rather than a
+  hardcoded list, so a deck that is renamed, added or dropped is picked up
+  without editing it - which is what makes `--prune` safe, and `--prune` is
+  what the Imposter rename needed. It is idempotent: a second run reports
+  nothing written.
+
+  **The two releases differ only in resolution.** `release/print` is 300 DPI
+  exactly as rendered. `release/tts` scales every sheet so neither side exceeds
+  4096 px, which is all Tabletop Simulator will draw - a 10000 px `NAP_Tasks`
+  sheet is 1000 px a card where TTS shows about 400.
+
+  One trap if you change that scaling. **Resizing ALONE made the TTS folder
+  BIGGER than the 300 DPI one** - 174% of it. The art is flat colour over large
+  areas, which is why a 21-megapixel sheet is under 3 MB: PNG's filters predict
+  a flat run almost perfectly, and LANCZOS puts an interpolated ramp on every
+  edge and destroys that. Quantising back to a 256-colour palette restores the
+  flat runs and costs nothing visible at 400 px a card. With it the folder is
+  8.0 MB against 12.0 MB of sheets. `release/` is gitignored, since it is
+  entirely derivable from `images/`, `print-and-play/` and `rules/`.
+
+- **It is spelled "Imposter" everywhere, as of 2026-10-31.** One deck used to
+  spell it "Impostor" - NAP's Tier II `NRJ_NAP_ImpostorTasks` - and the
+  Exhibits deck was worse, titled "Impostor Scenarios" in the catalog while its
+  own sheet was named `NRJ_ImposterScenarios_TTS.png`. Both spellings are good
+  American English, which is why it survived so long; having both in one set is
+  not. The rename touched the deck key, the sheet filenames, the manifest,
+  `pack.py`, `tts/decks.py`, `catalog.json`, the rules, the simulation and the
+  rendered card faces, and the NAP base card "Final Impostor Examination" with
+  them.
+
+  The table identifier did NOT simply become `IMPOSTER`: `build_nrj.py` already
+  has `IMPOSTERS`, the five hero cards, and two names a letter apart for two
+  unrelated decks is worse than the original fault. It is `IMPOSTER_TASKS`.
+
+  What made the rename safe to do at all is that **rendering is byte
+  reproducible** - re-rendering a family with nothing changed rewrites nothing
+  in `generator/out/` - so the only diffs were the intended ones.
 
 - **`images/` had drifted BEHIND `playtest/dist/assets/`, and both behind the
   generator.** Caught 2026-10-28 on the first full render this repo has had in
@@ -1124,7 +1201,7 @@ Not your job to fix, but worth knowing if Jon raises them:
   5.1, and 16% of games touch two dice or fewer at their worst point against
   8% before. Still the slackest in the set: `dicetension.py` puts BAT's
   battle at a mean of 4.6 and the finale at 5.0.
-- **NAP Impostor Tasks print a recovery-colour dot as of 2026-10-31**:
+- **NAP Imposter Tasks print a recovery-colour dot as of 2026-10-31**:
   Anatomy P, Engineering B, Procedure Y, Theory G. They had none, and three
   printed NAP rules read "that Assignment's color dot" - Required Effort,
   completing or storing progress, and the colour the Primary queues - so

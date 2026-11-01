@@ -50,7 +50,7 @@ GAMES = {
         ('NRJ_BAT_Protocols', 'Experimental Protocols'),
         ('NRJ_BAT_Modifications', 'Unauthorized Modifications'),
         ('NRJ_BAT_ResearchNotes', 'Research Notes'),
-        ('NRJ_NAP_ImpostorTasks', 'Impostor Tasks'),
+        ('NRJ_NAP_ImposterTasks', 'Imposter Tasks'),
         ('NRJ_NAP_FollowingSetbacks', 'Following Setbacks'),
         ('NRJ_NAP_DeviousOpportunities', 'Devious Opportunities'),
         ('NRJ_AoS_Interference', 'Nobulous Interference'),

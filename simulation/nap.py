@@ -99,9 +99,9 @@ FINF_SETTINGS = ["+3", "+2", "+1", "-1", "-2", "-3"]
 # ---------------------------------------------------------------------------
 # NRJ overlay tiers. Each tier includes the ones before it.
 #   I   - 3 of the 4 Following Setbacks replace 3 base Setbacks
-#   II  - 4 Impostor Tasks, one per subject, each replacing a Credit Task
+#   II  - 4 Imposter Tasks, one per subject, each replacing a Credit Task
 #   III - 6 Devious Opportunities replace the 6 Opportunities
-# Card data from the FOLLOWING / IMPOSTOR / DEVIOUS tables in build_nrj.py.
+# Card data from the FOLLOWING / IMPOSTER_TASKS / DEVIOUS tables in build_nrj.py.
 # ---------------------------------------------------------------------------
 
 # (Target, extra cost per slot unresolved). All four are harsher than the base
@@ -112,8 +112,8 @@ FOLLOWING = [(7, 1), (7, 1), (8, 1), (8, 1)]
 # Credits - "You still have to clear them; clearing them advances nothing."
 # subject, printed dot, Request Target, Demand Target. The dot is printed
 # on the card as of 2026-10-30; before that this model inherited the dot of
-# the Credit Task each Impostor Task replaced, which was never on any card.
-IMPOSTOR = [("Anatomy", 'P', 5, 6), ("Engineering", 'B', 4, 5),
+# the Credit Task each Imposter Task replaced, which was never on any card.
+IMPOSTER_TASKS = [("Anatomy", 'P', 5, 6), ("Engineering", 'B', 4, 5),
             ("Procedure", 'Y', 4, 5), ("Theory", 'G', 4, 5)]
 
 # (Target, payout). Two resolve on completion; the other four are kept and
@@ -392,9 +392,9 @@ class Game(object):
             card.index = i
             deck.append(card)
 
-        # Tier II: each Impostor Task replaces a Credit Task of its subject.
+        # Tier II: each Imposter Task replaces a Credit Task of its subject.
         if tier in ("II", "III"):
-            for subject, dot, rt, dt in IMPOSTOR:
+            for subject, dot, rt, dt in IMPOSTER_TASKS:
                 same = [c for c in deck
                         if c.kind == "task" and c.subject == subject]
                 victim = self.rng.choice(same)
@@ -578,11 +578,11 @@ class Game(object):
             drawn.append(card)
         if not drawn:
             return None
-        # A Setback among the two must be the one you take, and Impostor Tasks
+        # A Setback among the two must be the one you take, and Imposter Tasks
         # are Mandatory, so they are forced in the same way.
         forced = [c for c in drawn if c.kind in ("setback", "impostor")]
         if self.ability == "dodge_setback" and len(drawn) > 1:
-            # The Slacker may leave a revealed Setback behind; an Impostor Task
+            # The Slacker may leave a revealed Setback behind; an Imposter Task
             # is still Mandatory.
             forced = [c for c in forced if c.kind == "impostor"]
             drawn = [c for c in drawn if c.kind != "setback"] or drawn
@@ -638,7 +638,7 @@ class Game(object):
                 # Base Opportunities are optional and, with their rewards
                 # unmodeled, worth nothing - so they are left alone. Devious
                 # Opportunities pay out, so they are worth working.
-                # Impostor Tasks are Mandatory and come first among Tasks;
+                # Imposter Tasks are Mandatory and come first among Tasks;
                 # otherwise chase Credits, nearest-to-done next.
                 workable = [c for c in self.row
                             if c.kind in ("task", "impostor")
@@ -649,7 +649,7 @@ class Game(object):
                 if not workable:
                     return False
                 # A Following Setback is worked first - its printed text asks
-                # for a die before anything else - then Impostor Tasks.
+                # for a die before anything else - then Imposter Tasks.
                 card = min(workable, key=lambda c: (not (c.kind == "setback" and c.upkeep),
                                                     c.kind != "impostor",
                                                     c.subject is None,

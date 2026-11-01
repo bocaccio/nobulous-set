@@ -84,7 +84,7 @@ def main(games=DEFAULT):
         notes=("",
                "  * Standard difficulty. Mean of the six Apprentices.",
                "  Tier I   3 of 4 Following Setbacks replace 3 base Setbacks",
-               "  Tier II  4 Impostor Tasks - Mandatory, and grant no Credits",
+               "  Tier II  4 Imposter Tasks - Mandatory, and grant no Credits",
                "  Tier III 6 Devious Opportunities replace the 6 base ones"),
     )
     nap.CREDITS_TO_LEAVE, nap.SETBACKS_IN_DECK = NAP_LEVELS["Standard"]

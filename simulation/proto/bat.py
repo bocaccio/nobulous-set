@@ -186,7 +186,7 @@ TIER_ORDER = ["protocol", "mods", "notes"]
 #   TIER1_EXTRA_SPECIMEN - Tier I carries a flat handicap, the way Following
 #       Setbacks and Nobulous Interference do, instead of only a Protocol.
 #   MODS_REPLACE - the 6 Modifications REPLACE 6 ordinary Upgrades rather than
-#       being added alongside, the way Impostor Tasks replace Credit Tasks.
+#       being added alongside, the way Imposter Tasks replace Credit Tasks.
 # All of these are OFF: each tier should be one deck to swap in or add, not a
 # card plus a side instruction. They remain so the measurements reproduce.
 TIER1_EXTRA_SPECIMEN = False  # superseded by TIER1_BANISH
