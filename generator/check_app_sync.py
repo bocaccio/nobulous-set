@@ -454,6 +454,40 @@ for name in sorted(js_rewards):
           name in sim and name in rules)
 
 print()
+print("THE DECK REGISTRIES - sheet, manifest, TTS and the lab")
+# EVERY DECK IS REGISTERED IN FIVE PLACES and until 2026-10-31 nothing
+# compared them. NAP_SlotsFINF had been 3 Time Slots + 1 FINF card; when
+# FINF went to one card per Slot the sheet grew to six 1050x750 cells and
+# CARD_MANIFEST.txt and tts/decks.py were left saying four. tts/build_mod.py
+# writes NumWidth straight into the saved object, so TTS sliced the 6300px
+# sheet into four 1575px columns - every face mis-cut, two cards missing.
+# The lab was right because build_catalog.py counts the generator's tables.
+cat = json.loads(text("playtest/dist/catalog.json"))
+tts_src = text("tts/decks.py")
+man = text("CARD_MANIFEST.txt")
+man = man[man.index("DECK SHEETS AND BACKS"):man.index("CARD BACKS")]
+for game in sorted(cat):
+    for d in cat[game]["decks"]:
+        key = d["sheet"].replace("_TTS.png", "")
+        n, cols, rows = len(d["cards"]), d["cols"], d["rows"]
+        ent = re.search(r"dict\(key='%s',([^)]*)\)" % re.escape(key),
+                        tts_src)
+        if ent:
+            body = ent.group(1)
+            got = dict(re.findall(r"(count|w|h)=(\d+)", body))
+            check("  %s is %dx%d in TTS and the lab" % (key, cols, rows),
+                  got.get("w") == str(cols) and got.get("h") == str(rows)
+                  and got.get("count") == str(n))
+        elif key not in ("AoS_ElementMats",):
+            check("  %s is in tts/decks.py" % key, False)
+        row = re.search(r"\n  %s\s+(\d+)x(\d+)\s+(portrait|landscape)"
+                        % re.escape(key), man)
+        check("  %s matches CARD_MANIFEST" % key,
+              bool(row) and (int(row.group(1)), int(row.group(2)),
+                             row.group(3) == "landscape")
+              == (cols, rows, d["landscape"]))
+
+print()
 print("BAT - rules and app")
 jb = text("playtest/dist/bat.js")
 hb = text("rules/bat.html")

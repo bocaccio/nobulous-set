@@ -865,11 +865,51 @@ Not your job to fix, but worth knowing if Jon raises them:
   claim-nothing campaign +0.6, because 15 Exhibits at undiminished Targets are
   lost whatever you are holding.
 
+  **Aim it BACKWARD and it costs nothing at all.** At "any color" the job
+  degrades the whole attention lane - Precedent and both Usher sides go
+  negative at the handicapped rungs, because all of them compete for the same
+  spare wrong-color die. But nobody occupies backward: Precedent takes any
+  color, Early Admittance one step forward, Double Doors a third color
+  forward. Aimed at the color the attention has just LEFT, the job reads
+  54.3 / 33.4 / 24.8 / 14.3 - worth +2.6 to +3.8, spread 1.1 - and Precedent
+  keeps its job, so no Imposter side needs replacing.
+
+  Three replacement Archivist sides were drafted and measured before that was
+  found, and all three failed: Filed Twice (split a retained card into two 1s)
+  is +5.5 at Easy and -0.8 at Nobulous even capped at one use, because the
+  pool's REACH is bounded by its card count rather than its total value, so
+  splitting buys tempo and tempo is what Easy already has; Certified Copy
+  scales because it adds Target reduction, which is dice by another name; and
+  Duplicate Filed is worth +7.5 to +11.3, three times the band.
+
   Nothing has been changed in the cards or the rules. `finale.py` is still the
   calibrated build with no Candidate job; the dials and the full tables are in
   `simulation/proto/candidates.py` (`python candidates.py currencies`) and
   `simulation/proto/imposters.py`. Until this is decided, the Candidates stay
   on the table and one Imposter card is built around spending them.
+
+- **The AoS lab could not finish an ordinary Program.** `completeProgram` in
+  `playtest/dist/app.js` looked the card's prose up as
+  `PROGRAM_FLAVOR[state.deck]`, but `state.deck` holds the DIFFICULTY
+  (`Easy`/`Standard`/`Hard`/`Nobulous`) while `PROGRAM_FLAVOR` is keyed by deck
+  (`Routine`/`Specialized`/`Unstable`/`Advanced`), so the lookup was always
+  `undefined` and the handler threw every time. It is the one site missed when
+  decks moved from one-deck-per-game to a per-Program `src`; the render path
+  two hundred lines below already went through `programSource()`. Fixed to use
+  the same accessor, and reproduced and re-verified in the browser - COMPLETED
+  went 0 to 1 and the Catastrophic Failure took its HP. Found 2026-10-31 by
+  auditing, not by playing: the crash leaves no visible trace except that the
+  button does nothing.
+
+- **NAP_SlotsFINF was registered as 4 cards and is 6.** The deck is 3 Time
+  Slots + 3 FINF cards on a 6300x750 sheet, which is six 1050x750 cells, but
+  `CARD_MANIFEST.txt` and `tts/decks.py` still said 4x1 from when FINF was one
+  card. `tts/build_mod.py` writes `NumWidth` straight into the saved object, so
+  TTS sliced the sheet into four 1575px columns: every face mis-cut and two
+  cards never created. The lab was right throughout, because
+  `build_catalog.py` counts the generator's own tables. Fixed, and
+  `check_app_sync.py` now compares all five registries for all 30 decks so it
+  cannot drift again.
 
 - **One deck spells it "Impostor" and everything else spells it "Imposter".**
   The split is semantic rather than random: the character, the finale and the

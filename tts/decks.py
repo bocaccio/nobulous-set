@@ -34,7 +34,12 @@ DECKS = [
          land=True, game='NAP', label='Setbacks'),
     dict(key='NAP_FinalExams', count=12, w=10, h=2, back='CardBack_NAP_FinalExam',
          land=True, game='NAP', label='Final Exams'),
-    dict(key='NAP_SlotsFINF', count=4, w=4, h=1, back='CardBack_NAP_Assignment',
+    # 3 Time Slots + 3 FINF. The three Slots want CardBack_NAP_TimeSlot
+    # and the three FINF want the Assignment back; TTS allows one back a
+    # deck, and the Assignment back is the one that matters, because FINF
+    # cards are shuffled into the Assignment deck while the Slots are laid
+    # out face up and never hidden.
+    dict(key='NAP_SlotsFINF', count=6, w=6, h=1, back='CardBack_NAP_Assignment',
          land=True, game='NAP', label='Time Slots + FINF'),
     # ---- AoS -------------------------------------------------------------
     dict(key='AoS_Technicians', count=3, w=3, h=1, back='unique', land=True,

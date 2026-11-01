@@ -88,16 +88,48 @@ WHAT IT COSTS TO SHIP, measured, which is Jon's call:
   * NOT the claim decision. Claiming is worth 42 points, not 6: a campaign
     that claims nothing in all three games reads 8.4% at Easy against
     50.6%. The gap WIDENS, from -42.2 to -44.7.
-  * IT COSTS PRECEDENT. The Archivist's side B is "apply 1 die of any
-    color, ignoring the attention entirely", free, once a Scenario, worth
-    about +3 (+2.5 in the roster table, +2.9 re-measured beside the job).
-    The job is that same ability bought with cards, worth +3.1. They are
-    ONE ability, and a free once is dominated by four spare cards twice. If
-    this ships, Archivist B needs replacing. Note the model does not know
-    to stop paying for what Precedent gives away, so "Precedent with the
-    job" reads WORSE at every handicapped rung (38.5 / 31.5 / 19.2 against
-    41.9 / 33.9 / 21.2) - that much is a modelling artifact, but two cards
-    doing one job is not.
+  * AT "ANY COLOR" IT COSTS PRECEDENT, AND THE FIX IS TO AIM IT
+    BACKWARD. The Archivist's side B is "apply 1 die of any color,
+    ignoring the attention entirely", free, once a Scenario, worth about
+    +3. An any-color job is that same ability bought with cards, worth
+    +3.1, so the two are ONE ability - and with the job in, Precedent and
+    both Usher sides go NEGATIVE at the handicapped rungs, because all
+    three are competing for the same spare wrong-color die. The job does
+    not cost one card; it degrades the whole attention lane, three of ten
+    sides.
+
+    Nobody, though, occupies BACKWARD. Precedent takes any color, Early
+    Admittance one step forward, Double Doors a third color forward. Aim
+    the job at the color the attention has just LEFT and it keeps the flat
+    mechanism and collides with nothing:
+
+      job / side (4000 x 5)        Easy    r11    r13    r16   spread
+      4 Cand, one step BACK       54.3%  33.4%  24.8%  14.3%    1.1
+      4 Cand, any color           53.7%  33.3%  26.7%  13.7%    2.0
+      Precedent alone             53.5%  33.9%  25.0%  13.9%    0.4
+      Precedent + backward job    55.3%  31.9%  24.6%  13.4%    3.5
+      Double Doors + backward     55.7%  33.1%  25.0%  14.2%    2.6
+      Double Doors + any color    55.8%  32.0%  24.6%  13.7%    3.9
+
+    So the backward job is the one to ship if any is: spread 1.1, worth
+    +2.6 to +3.8, and Precedent keeps its job. NO REPLACEMENT ARCHIVIST
+    SIDE IS NEEDED.
+
+  * AND THE REPLACEMENT SIDES ALL FAILED ANYWAY, which is worth keeping
+    because of what it says about the pool. Measured with a job in, the
+    band is about 0 to +4:
+      Filed Twice (split a card into two 1s)  +5.5 Easy, -0.8 r16, x1
+      Certified Copy (one card takes 4, once) +2.6 Easy, +8.6 r16
+      Duplicate Filed (first card comes back) +7.5 .. +11.3
+    Filed Twice is INVERSE and a use cap cannot fix it - uncapped it reads
+    +18.9 at Easy - because the pool's REACH is bounded by its card count
+    and not by its total value, one card an Exhibit, so splitting doubles
+    how many Exhibits it touches. That is the same fact section 6 of the
+    finale report records as "eight cards worth 1.5 beat six worth 2".
+    Reach buys TEMPO, and tempo is what Easy already has. Certified Copy
+    SCALES because it adds reduction, and reduction is dice by another
+    name. Side A is flat only because it is gated to Target 5 and adds no
+    reduction at all: it relaxes WHICH card may answer, nothing more.
 
 AND ONE RATIONALE BELOW IS WRONG. The note further down says a job is
 "automatically a consolation for the player whose three games could not

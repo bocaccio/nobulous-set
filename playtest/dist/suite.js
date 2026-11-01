@@ -1091,7 +1091,7 @@
         const d=exhausted().find(x=>x.color===want&&!took.includes(x));
         if(d){back(d);took.push(d);}
       }
-      if(!took.length)return `${SCENARIOS[e.id][0]} pays nothing: no exhausted dice of the colours coming up.`;
+      if(!took.length)return `${SCENARIOS[e.id][0]} pays nothing: no exhausted dice of the colors coming up.`;
       return `${SCENARIOS[e.id][0]}: recovered ${took.map(d=>d.color).join(" and ")}.`;
     }
     return "";
@@ -1135,7 +1135,7 @@
     $("nrjAttention").innerHTML=NRJ_WHEEL.map((c,i)=>{
       const on=allowed.includes(c),now=c===att;
       return `<span class="nrj-wheel-step ${on?"on":""} ${now?"now":""}"><i class="die ${c}"></i>${c}${now?" · now":on?" · next":""}</span>`;
-    }).join("")+`<span class="nrj-wheel-note">Only ${allowed.join(" and ")} may be applied this session. Other colours may still be committed and rolled.</span>`;
+    }).join("")+`<span class="nrj-wheel-note">Only ${allowed.join(" and ")} may be applied this session. Other colors may still be committed and rolled.</span>`;
     renderDiscard("nrj",n.buried,i=>SCENARIOS[i][0]);
     // The Exhibits on the table.
     const host=$("nrjExhibits");

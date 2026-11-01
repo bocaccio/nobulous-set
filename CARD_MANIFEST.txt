@@ -354,7 +354,7 @@ DECK SHEETS AND BACKS
   NAP_FinalExams                 10x2    landscape  CardBack_NAP_FinalExam
   NAP_Opportunities              6x1     landscape  CardBack_NAP_Assignment
   NAP_Setbacks                   6x1     landscape  CardBack_NAP_Assignment
-  NAP_SlotsFINF                  4x1     landscape  CardBack_NAP_Assignment
+  NAP_SlotsFINF                  6x1     landscape  CardBack_NAP_TimeSlot x3 + CardBack_NAP_Assignment x3
   NAP_Tasks                      10x3    landscape  CardBack_NAP_Assignment
   NRJ_AoS_BackdoorRoutines       6x1     portrait   CardBack_NRJ_BackdoorRoutine
   NRJ_AoS_CorruptedLimitations   6x1     portrait   CardBack_AoS_Limitation

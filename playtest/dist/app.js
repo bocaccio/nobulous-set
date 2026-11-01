@@ -557,7 +557,12 @@
     } else {
       state.advancedDone += 1; state.nextAdvancedOverheated = failed >= 2;
     }
-    state.discard.push(`${programSource(state.current).deck}: ${PROGRAM_FLAVOR[state.current.mode === "advanced" ? "Advanced" : state.deck][state.current.id].name}`);
+    // state.deck is the DIFFICULTY ("Standard"), not a deck name, so
+    // PROGRAM_FLAVOR[state.deck] was always undefined and finishing
+    // any ordinary Program threw. programSource() is the accessor
+    // every other per-deck lookup already uses - see the render path.
+    const finished = programSource(state.current);
+    state.discard.push(`${finished.deck}: ${PROGRAM_FLAVOR[finished.deck][state.current.id].name}`);
     if(state.limitation !== null)state.discard.push(`Limitation: ${limitationName(state.limitation)}`);
     state.currentCompleted = true; state.lastResultFailed = failed > 0;
     log(`Program completed with ${failed} failed element${failed === 1 ? "" : "s"}.`);

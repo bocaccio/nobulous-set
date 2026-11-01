@@ -147,6 +147,12 @@ CANDIDATE_COST = 0
 # "reroll" - discard CANDIDATE_COST Candidates, reroll one committed die
 #            that applied nothing. Adds no die, so it is bounded by how many
 #            you were able to commit in the first place.
+# "back"   - discard CANDIDATE_COST Candidates, apply 1 die of the color
+#            the attention has just LEFT. Same flat mechanism as "colour" -
+#            one otherwise-unusable die becomes usable - but backward round
+#            the wheel, which no Imposter touches: Precedent takes any
+#            color, Early Admittance one step forward, Double Doors a third
+#            color forward. So this one costs no side its job.
 # "soak"   - discard CANDIDATE_COST Candidates, prevent 1 Damage
 # "cheap"  - discard CANDIDATE_COST Candidates, cheapest of the top 3 of the
 #            Dossier to the top
@@ -165,9 +171,14 @@ CANDIDATE_USES = 0
 # three-colour window reads 90%, so those three are not ability space.
 HERO = None
 ARCHIVIST_USES = 2         # how often Cross-Referenced answers off-domain
+SPLIT_USES = 1             # how often Filed Twice splits a card. 0 is
+#                            uncapped, which reads +18.9 at Easy.
 HEROES = ("archivist_a", "archivist_b", "understudy_a", "understudy_b",
           "usher_a", "usher_b", "porter_a", "porter_b",
           "steward_a", "steward_b")
+# Candidates to REPLACE archivist_b (Precedent), which the global Candidate
+# job would duplicate. See proto/candidates.py for that job.
+ARCHIVIST_B = ("archivist_b", "archivist_b1", "archivist_b2", "archivist_b3")
 
 
 def cand_cost(g):
@@ -474,8 +485,40 @@ class Game(object):
                     cards = sorted(cands, key=lambda c: -c.value)
                 c = cards[0]
                 cut = c.value
+                # archivist_b1, Filed Twice: a card may be spent as two
+                # separate 1s rather than one 2. No new reduction at all -
+                # this is pure ALLOCATION, and the generator's own finding
+                # is that spreading beats concentrating on the same total
+                # (eight cards worth 1.5 beat six worth 2). It also stops
+                # the max(1, ...) waste of a 2 on a Target-2 Exhibit, and
+                # `damage` reads the CURRENT target, so a single 1 is
+                # enough to drop a Target 5 from Damage 2 to Damage 1.
+                # UNCAPPED THIS READ +18.9 AT EASY and -0.2 at Nobulous,
+                # because the pool's REACH is bounded by its card count and
+                # not by its total value - one card an Exhibit - so
+                # splitting every card doubles how many Exhibits the pool
+                # touches. SPLIT_USES is therefore the whole design.
+                if (self.hero == "archivist_b1" and cut > 1
+                        and (not SPLIT_USES
+                             or self.once["split"] < SPLIT_USES)):
+                    self.once["split"] += 1
+                    cut = 1
+                    self.pool.append(Card(c.game, c.value - 1))
+                # archivist_b2, Certified Copy: once a Scenario one card
+                # takes double. This is a straight ADDITION in Targets,
+                # which is the ladder's own currency, so it is here as the
+                # control that is expected to scale.
+                if (self.hero == "archivist_b2" and not self.once["cert"]
+                        and e.target >= BIG):
+                    self.once["cert"] = 1
+                    cut *= 2
                 e.target = max(1, e.target - cut)
                 self.pool.remove(c)
+                # archivist_b3, Duplicate Filed: once a Scenario the first
+                # card you spend comes back. Worth a whole extra card.
+                if self.hero == "archivist_b3" and not self.once["dup"]:
+                    self.once["dup"] = 1
+                    self.pool.append(Card(c.game, c.value))
                 if policy != "dump":
                     break          # one card an Exhibit unless told otherwise
 
@@ -628,6 +671,21 @@ def session(g, pace, recov, rew, commit, res):
             if got:
                 g.sess["inv"] = 1
                 c = got[0]
+                g.available.remove(c)
+                spent[c] += 1
+                take = take + [c]
+        if (CANDIDATE_JOB == "back" and CANDIDATE_COST
+                and g.candidates >= cand_cost(g)
+                and (not CANDIDATE_USES or g.once["cand"] < CANDIDATE_USES)
+                and sum(EV_REROLL[c] for c in g.available if c in ok)
+                < sum(e.left for e in g.active)):
+            # One step BACK round the wheel: the session just gone.
+            gone = g.next_colour(-1)
+            pick = [c for c in g.available if c == gone and c not in ok]
+            if pick:
+                g.once["cand"] += 1
+                g.candidates -= cand_cost(g)
+                c = pick[0]
                 g.available.remove(c)
                 spent[c] += 1
                 take = take + [c]
@@ -810,7 +868,7 @@ KW = ("pace", "recov", "rew", "commit", "res")
 DIALS = ("SESSIONS", "DEAL", "HEALTH", "STRAT", "REC_BASE", "BIG", "CARRY",
          "RESEARCH", "RETAIN", "CARD_VALUE", "LAID_OUT",
          "CANDIDATE_COST", "CANDIDATE_JOB", "CANDIDATE_USES",
-         "HERO", "ARCHIVIST_USES",
+         "HERO", "ARCHIVIST_USES", "SPLIT_USES",
          "START_TIRED", "TARGET_OFFSET", "WINDOW",
          "PAY_REWARDS")
 
