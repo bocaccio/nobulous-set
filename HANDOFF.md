@@ -931,6 +931,24 @@ Not your job to fix, but worth knowing if Jon raises them:
   `check_app_sync.py` now compares all five registries for all 30 decks so it
   cannot drift again.
 
+- **Serve the lab with `playtest/serve.py`, not `python -m http.server`.**
+  The plain server sends no Cache-Control at all, so the browser guesses, and
+  it guesses badly for the one file that must never go stale: every asset
+  carries a `?v=` token and may cache forever, but `index.html` is what NAMES
+  those tokens, so a cached copy pins you to the old build however many times
+  they are bumped. On 2026-10-31 a fresh tab was served `?v=dpi300`, several
+  builds behind, and the Imposter picker simply was not in the page - no error,
+  just an absent feature, which reads exactly like code that was never written.
+  `serve.py` revalidates HTML and `catalog.json` and caches the rest for a year:
+
+  ```bash
+  python playtest/serve.py        # or: python playtest/serve.py 8080
+  ```
+
+  `index.html` also carries a no-cache meta now, but a meta cannot evict an
+  entry cached before it existed - only the header can. If a browser is already
+  holding a stale page, one hard reload (Ctrl+Shift+R) clears it.
+
 - **The Time Slots were getting the FINF card back in TTS.** The same sheet,
   found the same day. `NAP_SlotsFINF` is 3 Time Slots + 3 FINF, and the two
   halves want different backs, but a TTS deck carries exactly one `BackURL`, so

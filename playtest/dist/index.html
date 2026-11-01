@@ -6,6 +6,15 @@
   <meta name="theme-color" content="#171b20">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <!-- Revalidate THIS document every load. Everything it links carries a
+       ?v= token and may cache forever, but the page itself is what names
+       those tokens, so a cached copy of it pins a playtester to the old
+       build no matter how many times the tokens are bumped. That is not
+       hypothetical: a fresh tab against the dev server served the
+       ?v=dpi300 scripts on 2026-10-31, several builds behind, and the
+       Imposter picker simply was not there. python -m http.server sends
+       no cache headers at all, so the browser is free to guess. -->
+  <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
   <title>Nobulous Playtest Lab</title>
   <meta name="description" content="An iPad-first playtest lab for BAT, NAP, AoS, and the NRJ Imposter finale.">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
