@@ -277,29 +277,85 @@ SUB_SIZE, SUB_GAP, PT_MM = 6.4, 0.7, 25.4 / 72.0
 # padding alone suggests.
 CARD_BORDER_MM = 0.5 * PT_MM
 # WeasyPrint lays the title out with Pango; title_lines measures it with
-# PIL. They agree to about a percent, and a percent is not enough. On
-# 2026-11-02 "Undocumented Dependencies" measured 99.86% of the available
-# width, so hdr_fit reserved no second line - and Pango wrapped it anyway.
-# The body then rode up and cut the subtitle in half.
+# PIL, and PIL runs a little short. On 2026-11-02 "Undocumented
+# Dependencies" measured 99.86% of the available width, so hdr_fit
+# reserved no second line - and Pango wrapped it anyway. The body then
+# rode up and cut the subtitle in half.
 #
-# Across all 240 card titles in the set that one is the only thing above
-# 96.1%, so any margin between 1% and 4% catches it and touches nothing
-# else. 2% sits in the middle of that gap. Treat a title this close to the
-# edge as wrapping: reserving a line that turns out not to be needed costs
-# a slightly deeper header, while not reserving one costs a clipped card.
+# This margin was first picked, not measured: the set happened to have an
+# empty band between 96.1% and 99.86%, so anything inside it caught that
+# one title and touched nothing else. Sizing titles by measurement (see
+# title_cls) fills that band, so the margin had to be measured properly.
+#
+# It now is. Every multi-word title in the set was laid out by WeasyPrint
+# itself in a box of a known width in mm, narrowing until it wrapped - the
+# narrowest box a title survives IS Pango's width for it. Pango needs at
+# most 1.014x PIL's estimate (`Rapid Approach`, `Maintain Balance` and
+# `Climb an Incline`, all at 11.6pt), so anything at or below 1/1.014 =
+# 0.9862 is safe. 0.98 keeps about 0.6% in hand. One-word titles are
+# excluded: they cannot wrap at any width, which is why an earlier sweep
+# that included them appeared to show an 18% spread.
+#
+# Do not read widths out of WeasyPrint's box tree to redo this - those
+# came out ~12% under what the shipped art plainly shows. Ask whether it
+# WRAPPED.
+#
+# Err low rather than high: reserving a line that turns out not to be
+# needed costs a slightly deeper header, while not reserving one costs a
+# clipped card.
 TITLE_SAFETY = 0.98
-# The three printed title sizes, largest first, with the class that selects
-# each one in the CSS above.
-TITLE_LADDER = ((11.0, ''), (9.2, ' long'), (8.2, ' xlong'))
-# EVERY header is this deep, so a row of face-up cards lines up: title,
-# subtitle and the top of the body sit at one height whatever the card and
-# whatever size its title is set at. The depth is what a ONE-LINE header
-# needs at the largest title size, so a smaller title leaves a little more
-# clear band under its subtitle rather than making the card a different
-# shape. It is the same number for portrait and landscape, since none of
-# the terms depends on the card's width.
-HDR_H_MM = (HDR_PAD[0] + TITLE_LADDER[0][0] * 1.04 * PT_MM
-            + SUB_GAP + SUB_SIZE * 1.25 * PT_MM + HDR_PAD[1])
+# The worst Pango-over-PIL ratio measured across the set, for
+# check_app_sync.py to hold TITLE_SAFETY against.
+TITLE_PANGO_RATIO = 1.014
+# How a header is really printed: the title sizes largest-first with the
+# class that selects each one in the CSS above, the subtitle size, and any
+# extra side padding the markup adds. Two decks do not print the header the
+# stylesheet above describes, and a title measured against the wrong one is
+# a title that wraps:
+#
+#   - build_aos.py renders with its BIG stylesheet, which sets `.hdr .t` to
+#     11.6pt and `.hdr .s` to 6.8pt. The `.long` and `.xlong` rules still
+#     win on specificity, so only AoS's TOP rung moves.
+#   - BAT's dotted cards pad the header's right edge out to 10mm to clear
+#     the colour dot, leaving the title 7.6mm less room than HDR_PAD says.
+#
+# Every caller that lays out a header names its style, and
+# build_catalog.py publishes the choice per deck so check_app_sync.py can
+# check the real rule. Spelled out in full rather than derived from one
+# base, because both of those readers parse this as a literal.
+#
+# Add a style here rather than overriding header sizes or padding in a
+# build script and leaving this file to guess.
+HDR_STYLES = {
+    '':    (((11.0, ''), (9.2, ' long'), (8.2, ' xlong')), 6.4, 0.0),
+    'aos': (((11.6, ''), (9.2, ' long'), (8.2, ' xlong')), 6.8, 0.0),
+    'dot': (((11.0, ''), (9.2, ' long'), (8.2, ' xlong')), 6.4, 7.6),
+}
+TITLE_LADDER = HDR_STYLES[''][0]
+
+
+def hdr_depth_mm(title_pt, sub_pt=SUB_SIZE, lines=1):
+    """The depth a header of this many title lines needs, in mm."""
+    return (HDR_PAD[0] + lines * title_pt * 1.04 * PT_MM
+            + SUB_GAP + sub_pt * 1.25 * PT_MM + HDR_PAD[1])
+
+
+# EVERY header in the set is this deep, so a row of face-up cards lines up:
+# title, subtitle and the top of the body sit at one height whatever the
+# card and whatever size its title is set at. A title set below its style's
+# top rung leaves a little more clear band under its subtitle rather than
+# making the card a different shape, and the number is the same for
+# portrait and landscape since none of the terms depends on the card's
+# width.
+#
+# It has to be the DEEPEST style's one-line header, not the default's,
+# because min-height is a floor and not a ceiling: WeasyPrint grows a
+# header whose content does not fit. The first version of this used the
+# default style's 11.46mm, so AoS's 11.6pt titles pushed their own headers
+# to 11.86mm and that family shipped on 2026-11-02 three pixels deeper than
+# the rest of the set - the exact unevenness the constant exists to remove.
+HDR_H_MM = max(hdr_depth_mm(ladder[0][0], sub_pt)
+               for ladder, sub_pt, _pad in HDR_STYLES.values())
 
 
 def title_lines(title, size_pt, width_mm):
@@ -326,47 +382,59 @@ def _plain(title):
             .replace('&#8209;', '-').replace('&middot;', '.'))
 
 
-def title_width_mm(size=PORTRAIT):
+def title_width_mm(size=PORTRAIT, style=''):
     """The room a title actually has, inside the inset, border and padding."""
-    return size[0] - 2 * CARD_INSET_MM - 2 * CARD_BORDER_MM - 2 * HDR_PAD[2]
+    return (size[0] - 2 * CARD_INSET_MM - 2 * CARD_BORDER_MM
+            - 2 * HDR_PAD[2] - HDR_STYLES[style][2])
 
 
-def title_cls(title, size=PORTRAIT):
-    """The size class for a title: its printed size, stepped down only as
-    far as it must go to keep the title on one line.
+def title_pt(cls='', style=''):
+    """The point size the CSS will print a title of this class at."""
+    ladder = HDR_STYLES[style][0]
+    # Largest-last, because 'long' is a substring of 'xlong'.
+    for pt, c in reversed(ladder):
+        if c and c.strip() in cls:
+            return pt
+    return ladder[0][0]
 
-    This used to be five separate copies of one character-count expression,
-    and a count is the wrong instrument: it cannot know that a landscape
-    card is 88.9mm wide where a portrait one is 63.5, nor that
+
+def title_cls(title, size=PORTRAIT, style=''):
+    """The size class for a title: the LARGEST rung on its style's ladder
+    that still keeps the title to one line.
+
+    This used to be five copies of one character-count expression, and a
+    count is the wrong instrument in both directions. It cannot know that
     "Undocumented Dependencies" sets wider than "Emergency Specimen
-    Handling" despite being three characters shorter. Three titles were
-    printed at a size they did not fit.
+    Handling" despite being three characters shorter, so three titles were
+    printed at a size they did not fit. And it cannot know that a landscape
+    card is 88.9mm wide where a portrait one is 63.5, so it shrank 82
+    titles that had room to spare - most of a whole landscape deck, set two
+    sizes down for no reason a reader could see.
 
-    The count still picks the STARTING size, so the set looks as it did.
-    Measurement only ever steps DOWN, and only when the title would
-    otherwise wrap and take the subtitle with it.
+    Measuring answers both. Nothing here is a judgement about how a card
+    should look: the ladder is still the three sizes the CSS offers, and a
+    title only leaves the top rung when it genuinely does not fit on it.
     """
     plain = _plain(title)
-    i = 2 if len(plain) > 30 else 1 if len(plain) > 19 else 0
-    while (i < len(TITLE_LADDER) - 1
-           and title_lines(plain, TITLE_LADDER[i][0], title_width_mm(size)) > 1):
-        i += 1
-    return TITLE_LADDER[i][1]
+    ladder = HDR_STYLES[style][0]
+    for pt, cls in ladder[:-1]:
+        if title_lines(plain, pt, title_width_mm(size, style)) < 2:
+            return cls
+    return ladder[-1][1]
 
 
-def hdr_fit(title, cls='', size=PORTRAIT):
-    """The header's depth, as a style. One number for the whole set.
+def hdr_fit(title, cls='', size=PORTRAIT, style=''):
+    """The header's depth, as a style attribute. One number for the set.
 
     A title that still wraps at the smallest size gets a deeper header
     rather than a clipped subtitle. title_cls makes that unreachable for
     every card in the set today, and check_app_sync.py keeps it that way.
     """
-    size_pt = 8.2 if 'xlong' in cls else 9.2 if 'long' in cls else 11.0
-    lines = title_lines(_plain(title), size_pt, title_width_mm(size))
+    size_pt = title_pt(cls, style)
+    lines = title_lines(_plain(title), size_pt, title_width_mm(size, style))
     if lines < 2:
         return 'min-height:%.2fmm' % HDR_H_MM
-    return 'min-height:%.2fmm' % (HDR_PAD[0] + HDR_PAD[1] + lines * size_pt * 1.04 * PT_MM
-                                  + SUB_GAP + SUB_SIZE * 1.25 * PT_MM)
+    return 'min-height:%.2fmm' % hdr_depth_mm(size_pt, HDR_STYLES[style][1], lines)
 
 
 # Tabletop Simulator will not load a custom deck image above 10000 px on a

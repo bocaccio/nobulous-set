@@ -97,13 +97,17 @@ SPEC_GOLD = '#b08a2e'
 
 def C(title, sub, body, ftr='', warn=False, acc=None, tint=None, flavor='', dot=None):
     f = ('<div class="ftr%s">%s</div>' % (' warn' if warn else '', ftr)) if ftr else ''
-    cls = title_cls(title, CARD_SIZE)
+    # A dotted card pads its header's right edge out to clear the dot, so
+    # the title has 7.6mm less room than the rest of the set. Say which
+    # style it is or title_cls measures a card that is not this one.
+    hstyle = 'dot' if dot else ''
+    cls = title_cls(title, CARD_SIZE, hstyle)
     st = ' style="--a:%s"' % acc if acc else ''
     bs = ' style="background:%s"' % tint if tint else ''
     flavor_html = ('<div style="font-size:8.6pt;font-style:italic;text-align:center;'
                    'line-height:1.25;margin:1mm 0">%s</div>' % flavor) if flavor else ''
     # An optional color dot sits in the top-right corner of the title band.
-    fit, dot_html = hdr_fit(title, cls, CARD_SIZE), ''
+    fit, dot_html = hdr_fit(title, cls, CARD_SIZE, hstyle), ''
     hs = ' style="%s"' % fit if fit else ''
     if dot:
         hs = ' style="position:relative;padding-right:10mm;%s"' % fit

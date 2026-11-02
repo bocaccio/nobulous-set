@@ -41,8 +41,9 @@ def C(title, sub, body, ftr='', warn=False, acc=None, flavor=''):
     # Flavor text sits at the bottom of the card, just above the footer.
     fl = '<div class="flavor">%s</div>' % flavor if flavor else ''
     st = ' style="--a:%s"' % acc if acc else ''
-    cls = title_cls(title, CARD_SIZE)
-    fit = hdr_fit(title, cls, CARD_SIZE)
+    # BIG below sets this family's header sizes, so measure against those.
+    cls = title_cls(title, CARD_SIZE, 'aos')
+    fit = hdr_fit(title, cls, CARD_SIZE, 'aos')
     return ('<div class="card"%s><div class="hdr"%s><div class="t%s">%s</div><div class="s">%s</div></div>'
             '<div class="body">%s<div class="spacer"></div>%s%s</div></div>'
             % (st, ' style="%s"' % fit if fit else '', cls, title, sub, body, fl, f))
@@ -122,6 +123,6 @@ for i in range(1, 6):
                  '<div style="font-size:7.4pt;line-height:1.26;text-align:center;margin-top:2.4mm;'
                  'color:#4a4239">Place all dice assigned to this element here before running '
                  'the Program.</div></div></div>'
-                 % (DECK_ACCENT['Mat'], hdr_fit('Element 1'), i))
+                 % (DECK_ACCENT['Mat'], hdr_fit('Element 1', '', PORTRAIT, 'aos'), i))
 print('Element mats', render_deck('AoS_ElementMats', cards, 'AoS', PORTRAIT, BIG, back='CardBack_AoS_ElementMat'))
 

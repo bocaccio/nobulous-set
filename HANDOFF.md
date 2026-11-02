@@ -789,47 +789,121 @@ Each of these only appears a few turns in.
 
 Not your job to fix, but worth knowing if Jon raises them:
 
-- **Every header in the set is now one depth, `gen.HDR_H_MM` = 11.46mm.**
-  Asked for on 2026-11-02 after the clipped subtitle below: make the colour
-  band the same height on every card and nudge font sizes if that is what it
-  takes. The band used to follow the title's size - 135px at 11pt, 127px at
-  9.2, ~123px at 8.2 - so a row of face-up cards stepped up and down.
+- **Every header in the set is one depth, `gen.HDR_H_MM` = 11.86mm, and
+  every title is sized by MEASUREMENT rather than by counting characters.**
+  Asked for in two steps on 2026-11-02: first make the colour band the same
+  height on every card, nudging font sizes if that is what it takes; then
+  make the titles the count had been over-shrinking bigger too. The band
+  used to follow the title's size - 135px at 11pt, 127px at 9.2, ~123px at
+  8.2 - so a row of face-up cards stepped up and down.
 
   The depth is derived, not chosen: top padding + ONE line at the largest
   title size + the subtitle gap + the subtitle + bottom padding. None of
   those terms depends on the card's width, so portrait and landscape come
-  out to the same number. A smaller title now leaves a little more clear
-  band under its subtitle instead of making the card a different shape.
+  out to the same number. A title below its style's top rung leaves a
+  little more clear band under its subtitle instead of making the card a
+  different shape.
 
-  One depth is only possible while every title fits on ONE line, and the
-  size was being picked by CHARACTER COUNT in five separate copies of the
-  same expression. A count cannot know that a landscape card is 88.9mm
-  wide where a portrait one is 63.5, nor that "Undocumented Dependencies"
-  sets wider than "Emergency Specimen Handling" despite being shorter.
-  `gen.title_cls` replaces all five: the count still picks the STARTING
-  size, so the set looks as it did, and measurement only ever steps DOWN.
-  **Three titles moved, 9.2pt to 8.2pt** - Undocumented Dependencies,
-  Independent Performance Trial, The Night Watchman's Account. Nothing
-  else changed size.
+  **It has to be the DEEPEST style's one-line header, and the first
+  version got that wrong.** `min-height` is a floor, not a ceiling -
+  WeasyPrint grows a header whose content does not fit. `build_aos.py`
+  renders with its own `BIG` stylesheet, which sets `.hdr .t` to 11.6pt
+  and `.hdr .s` to 6.8pt (the `.long` and `.xlong` rules still win on
+  specificity, so only AoS's TOP rung moves). So AoS's short-titled cards
+  pushed their own headers out to 11.86mm and that family shipped three
+  pixels deeper than the rest of the set - the exact unevenness the
+  constant exists to remove. It was reported as verified because the
+  verification checked only what `hdr_fit` EMITS, which was the same
+  string on all 240 cards.
 
-  Choosing purely by measurement was tried and rejected: it would have
-  made 82 titles BIGGER, mostly on landscape cards the count had been
-  over-shrinking. That is a real improvement available if Jon wants it,
-  but it is a set-wide restyling rather than a fix.
+  `gen.HDR_STYLES` now records what each family really prints, and
+  `HDR_H_MM` is the max over it:
+
+  | style | top rung | subtitle | extra side padding | printed by |
+  |---|---|---|---|---|
+  | `''` | 11.0pt | 6.4pt | - | everything else |
+  | `'aos'` | 11.6pt | 6.8pt | - | every deck `build_aos.py` renders |
+  | `'dot'` | 11.0pt | 6.4pt | 7.6mm | BAT Tyrant Attacks |
+
+  The `'dot'` entry is the other thing a title can be measured wrong
+  against: a dotted card sets `padding-right:10mm` on its header to clear
+  the colour dot, leaving the title 7.6mm less room than `HDR_PAD` says.
+  **If you override header sizes or padding in a build script, add a style
+  here.** `build_catalog.py` publishes each deck's choice so
+  `check_app_sync.py` can measure a title the way the card really sets it;
+  the lab ignores the field.
+
+  Title size was being picked by CHARACTER COUNT, in five copies of the
+  same expression, and a count is the wrong instrument in both directions.
+  It cannot know that "Undocumented Dependencies" sets wider than
+  "Emergency Specimen Handling" despite being three characters shorter, so
+  three titles printed at a size they did not fit. And it cannot know that
+  a landscape card is 88.9mm wide where a portrait one is 63.5, so it also
+  shrank titles with room to spare. `gen.title_cls` replaces all five and
+  simply takes the largest rung the title fits on.
+
+  **57 card faces got a bigger title** (44 of them 9.2 -> 11.0, ten AoS
+  faces 9.2 -> 11.6, three landscape faces 8.2 -> 11.0: `Following in
+  Nobulous' Footsteps`). **Three titles got smaller**, 9.2 -> 8.2:
+  Undocumented Dependencies, Independent Performance Trial, The Night
+  Watchman's Account - those are the three that were clipping. Nothing
+  else moved.
+
+  **Sizing by measurement cost the safety margin its justification, so
+  the margin was measured too.** `TITLE_SAFETY` was 0.98 because the set
+  happened to have an empty band between 96.1% and 99.86% of the line, so
+  anything inside it caught the one title that wrapped and touched nothing
+  else. Measured titles sit wherever they fit, which fills that band - two
+  now land at 97.1% and 97.2%. So every multi-word title in the set was
+  laid out by WeasyPrint itself in a box of known width in mm, narrowing
+  until it wrapped: the narrowest box a title survives IS Pango's width
+  for it. **Pango needs at most 1.014x PIL's estimate** (`Rapid Approach`,
+  `Maintain Balance`, `Climb an Incline`, all at 11.6pt), so 0.98 is safe
+  with about 0.6% in hand. `gen.TITLE_PANGO_RATIO` records it and
+  `check_app_sync.py` holds the margin against it.
+
+  Two traps if you re-measure that. One-word titles cannot wrap at any
+  width, so including them makes the disagreement look like an 18% spread.
+  And reading widths out of WeasyPrint's box tree gives numbers ~12% under
+  what the shipped art plainly shows - ask whether the title WRAPPED, not
+  how wide it is.
+
+  An earlier count of "82 titles" was wrong and worth knowing why: it came
+  from walking `catalog.json`, and 26 of those were NAP Assignments, which
+  have no `.hdr` band at all - their name is set vertically down a spine
+  at its own computed size. Count what the BUILD does, by wrapping
+  `gen.title_cls` and recording its real calls, not what the catalog
+  lists.
 
   The AoS Element mats hand-roll their header outside the normal helper
-  and had to have the depth applied explicitly, or they are the one odd
-  card in the set. Note how: as a `%s` FORMAT ARGUMENT, not by `+`
+  and have to be given the depth and the style explicitly, or they are the
+  one odd card in the set. Note how: as a `%s` FORMAT ARGUMENT, not by `+`
   concatenation - `%` binds tighter than `+`, so a `+` there applies the
   format to the last fragment alone and the accent colour lands on `%d`.
 
-  Verified by construction rather than by eye: all 240 titles emit
-  `min-height:11.46mm` and none needs a second line. `check_app_sync.py`
-  asserts both. The pixel detector used earlier reports 62 false
-  positives here - cards with a second colour strip under the header
-  (SPECIMEN, UNAUTHORIZED) and the Element mats' tinted body - which is
-  the third time a pixel heuristic has lied about this. Ask the
-  generator, not the image.
+  Verified three ways, none of them by eye:
+
+  - From the generator: all 240 titles emit `min-height:11.86mm`, none
+    needs a second line, and the sizes in use are 11.6pt x35, 11.0pt x180,
+    9.2pt x22, 8.2pt x3. `check_app_sync.py` asserts the first two, plus
+    that every deck names a style `gen.py` defines.
+  - Against the old art, for overflow: raising `HDR_H_MM` starts every
+    non-AoS body 5px lower, so the question is whether any card had less
+    than 5px of slack in its `.spacer`. One number per card face - the
+    lowest row holding ink - compared old render to new, across 309 faces.
+    One moved: `BAT_BuffHP`, whose track layout has no spacer, by 4px, and
+    it still clears the bottom of the face by 31px.
+  - By re-render diff: 36 sheets changed, 16 unchanged (the 14 card backs
+    carry no title; NAP Assignments and NRJ Imposter Tasks use the spine
+    layout).
+
+  Do not reach for a pixel clipping detector here. The one used earlier
+  reports 62 false positives on this art - cards with a second colour
+  strip under the header (SPECIMEN, UNAUTHORIZED) and the Element mats'
+  tinted body - and a single-column probe stops at the first title glyph.
+  That is four pixel heuristics that have lied about this. Ask the
+  generator, not the image; where an image is the only witness, make it a
+  DIFFERENTIAL test on one number, as the overflow check above is.
 
 - **A card title wrapped, the header did not grow, and the subtitle was cut
   in half.** Reported 2026-11-02 as "text is being cut off at the top" on

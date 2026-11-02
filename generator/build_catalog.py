@@ -102,7 +102,8 @@ def grid(sheet, n):
     return cols, rows, cw > ch, cw, ch
 
 
-def deck(title, sheet, card_names, kind, back=None, back_kind=None, back_names=None):
+def deck(title, sheet, card_names, kind, back=None, back_kind=None,
+         back_names=None, hdr=''):
     per_card = isinstance(back, (list, tuple))
     cols, rows, landscape, cw, ch = grid(sheet, len(card_names))
     # The inset is a physical 2mm, so at this cell's own scale it is that
@@ -111,6 +112,10 @@ def deck(title, sheet, card_names, kind, back=None, back_kind=None, back_names=N
     entry = {
         'title': title, 'sheet': sheet, 'cols': cols, 'rows': rows, 'landscape': landscape,
         'cell': [cw, ch], 'gutter': int(round(cw * GEN['CARD_INSET_MM'] / mm_w)),
+        # Which gen.HDR_STYLES entry this deck's build script prints with.
+        # check_app_sync.py needs it to measure a title the way the card
+        # really sets it; the lab ignores it.
+        'hdr': hdr,
         'cards': [{'name': n, 'kind': kind(n, i) if callable(kind) else kind}
                   for i, n in enumerate(card_names)],
     }
@@ -148,8 +153,9 @@ CATALOG['bat']['decks'] += [
     deck('Specimens', 'BAT_Specimens_TTS.png', names(build_bat.SPECIMENS),
          lambda n, i: 'Specimen card · %s' % build_bat.SPECIMENS[i][1].split(' ')[0],
          'CardBack_BAT_Upgrade.png'),
+    # The only deck with a colour dot in the header, which narrows the title.
     deck('Tyrant Attacks', 'BAT_TyrantAttacks_TTS.png', names(build_bat.ATTACKS),
-         'Tyrant Attack card', 'CardBack_BAT_TyrantAttack.png'),
+         'Tyrant Attack card', 'CardBack_BAT_TyrantAttack.png', hdr='dot'),
     # Two-sided decks print the odd-indexed entries on the back sheet.
     deck('Lab Rats', 'BAT_Rats_TTS.png', names(build_bat.RATS[0::2]), 'Lab Rat card · side A',
          'BAT_Rats_TTS_back.png', 'Lab Rat card · side B', names(build_bat.RATS[1::2])),
@@ -205,6 +211,10 @@ CATALOG['aos']['decks'] += [
          ['Element mat %d' % i for i in range(1, 6)],
          'Element allocation mat', 'CardBack_AoS_ElementMat.png'),
 ]
+# Every AoS deck renders through build_aos.BIG, which sets its own header
+# sizes - one statement for the family rather than a keyword on seven calls.
+for _d in CATALOG['aos']['decks']:
+    _d['hdr'] = 'aos'
 
 # ---- NRJ -------------------------------------------------------------------
 CATALOG['nrj']['decks'] += [

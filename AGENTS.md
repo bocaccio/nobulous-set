@@ -88,3 +88,10 @@ Card geometry has ONE owner, `gen.py` - `PORTRAIT`, `LANDSCAPE`, `DPI` and
 gutter into `catalog.json`, and the lab reads them from there. Do not
 reintroduce a pixel literal anywhere else; `check_app_sync.py` now checks all
 three agree.
+
+So does the header: `gen.HDR_STYLES` says what each family really prints
+(title sizes, subtitle size, extra side padding) and `gen.HDR_H_MM` is the one
+depth every card's colour band gets. If a build script overrides a header size
+or padding in its own stylesheet, add a style there and pass its name to
+`title_cls`/`hdr_fit` - otherwise titles are measured against a card that does
+not exist, and they wrap.

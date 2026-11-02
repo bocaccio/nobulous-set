@@ -13,6 +13,7 @@
      1050
     ],
     "gutter": 24,
+    "hdr": "",
     "cards": [
      {
       "name": "Baseline Calibration",
@@ -110,6 +111,7 @@
      1050
     ],
     "gutter": 24,
+    "hdr": "",
     "cards": [
      {
       "name": "Serrated Claws",
@@ -191,6 +193,7 @@
      1050
     ],
     "gutter": 24,
+    "hdr": "",
     "cards": [
      {
       "name": "Titanium-Toothed Mole",
@@ -240,6 +243,7 @@
      1050
     ],
     "gutter": 24,
+    "hdr": "dot",
     "cards": [
      {
       "name": "Overwhelming Mass",
@@ -285,6 +289,7 @@
      750
     ],
     "gutter": 24,
+    "hdr": "",
     "cards": [
      {
       "name": "Rummage",
@@ -322,6 +327,7 @@
      1050
     ],
     "gutter": 24,
+    "hdr": "",
     "cards": [
      {
       "name": "Buff HP track",
@@ -348,6 +354,7 @@
      714
     ],
     "gutter": 22,
+    "hdr": "",
     "cards": [
      {
       "name": "Organize the Specimen Cabinet",
@@ -469,6 +476,7 @@
      750
     ],
     "gutter": 24,
+    "hdr": "",
     "cards": [
      {
       "name": "Take an Unauthorized Break",
@@ -510,6 +518,7 @@
      750
     ],
     "gutter": 24,
+    "hdr": "",
     "cards": [
      {
       "name": "Power Failure",
@@ -551,6 +560,7 @@
      714
     ],
     "gutter": 22,
+    "hdr": "",
     "cards": [
      {
       "name": "Cranial Integrity Inspection",
@@ -616,6 +626,7 @@
      750
     ],
     "gutter": 24,
+    "hdr": "",
     "cards": [
      {
       "name": "Prodigy",
@@ -648,6 +659,7 @@
      750
     ],
     "gutter": 24,
+    "hdr": "",
     "cards": [
      {
       "name": "Morning",
@@ -702,6 +714,7 @@
      1050
     ],
     "gutter": 24,
+    "hdr": "aos",
     "cards": [
      {
       "name": "Maintain Balance",
@@ -751,6 +764,7 @@
      1050
     ],
     "gutter": 24,
+    "hdr": "aos",
     "cards": [
      {
       "name": "Traverse Difficult Terrain",
@@ -800,6 +814,7 @@
      1050
     ],
     "gutter": 24,
+    "hdr": "aos",
     "cards": [
      {
       "name": "Navigate Without Guidance",
@@ -849,6 +864,7 @@
      1050
     ],
     "gutter": 24,
+    "hdr": "aos",
     "cards": [
      {
       "name": "Rapid Approach",
@@ -898,6 +914,7 @@
      1050
     ],
     "gutter": 24,
+    "hdr": "aos",
     "cards": [
      {
       "name": "Yellow Shortage",
@@ -939,6 +956,7 @@
      750
     ],
     "gutter": 24,
+    "hdr": "aos",
     "cards": [
      {
       "name": "Architect",
@@ -971,6 +989,7 @@
      1050
     ],
     "gutter": 24,
+    "hdr": "aos",
     "cards": [
      {
       "name": "Element mat 1",
@@ -1013,6 +1032,7 @@
      1050
     ],
     "gutter": 24,
+    "hdr": "",
     "cards": [
      {
       "name": "Cross-Contamination",
@@ -1054,6 +1074,7 @@
      1050
     ],
     "gutter": 24,
+    "hdr": "",
     "cards": [
      {
       "name": "Extra Limbs",
@@ -1095,6 +1116,7 @@
      1050
     ],
     "gutter": 24,
+    "hdr": "",
     "cards": [
      {
       "name": "Unexpected Resilience",
@@ -1136,6 +1158,7 @@
      750
     ],
     "gutter": 24,
+    "hdr": "",
     "cards": [
      {
       "name": "Neural Extraction Practicum",
@@ -1169,6 +1192,7 @@
      750
     ],
     "gutter": 24,
+    "hdr": "",
     "cards": [
      {
       "name": "Nobulous Needs This Now",
@@ -1202,6 +1226,7 @@
      750
     ],
     "gutter": 24,
+    "hdr": "",
     "cards": [
      {
       "name": "Borrow the Master's Notes",
@@ -1243,6 +1268,7 @@
      1050
     ],
     "gutter": 24,
+    "hdr": "",
     "cards": [
      {
       "name": "I Don't Have Time for This",
@@ -1284,6 +1310,7 @@
      1050
     ],
     "gutter": 24,
+    "hdr": "",
     "cards": [
      {
       "name": "Uneven Architecture",
@@ -1325,6 +1352,7 @@
      1050
     ],
     "gutter": 24,
+    "hdr": "",
     "cards": [
      {
       "name": "Diagnostic Port",
@@ -1366,6 +1394,7 @@
      1050
     ],
     "gutter": 24,
+    "hdr": "",
     "cards": [
      {
       "name": "The Physician's Greeting",
@@ -1479,6 +1508,7 @@
      750
     ],
     "gutter": 24,
+    "hdr": "",
     "cards": [
      {
       "name": "The Archivist",

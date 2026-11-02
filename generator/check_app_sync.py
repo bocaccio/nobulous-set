@@ -642,16 +642,13 @@ print("Card titles - the gap between measuring and rendering")
 # hdr_fit reserves a second line of header when a title wraps, because
 # WeasyPrint sizes the flex header from one line and the body then covers
 # the subtitle. It measures with PIL; WeasyPrint lays out with Pango, and
-# the two agree only to about a percent. "Undocumented Dependencies"
-# measured 99.86% of the available width on 2026-11-02, so nothing was
-# reserved and Pango wrapped it anyway - the subtitle was cut in half on
-# the printed card.
+# PIL runs short. "Undocumented Dependencies" measured 99.86% of the
+# available width on 2026-11-02, so nothing was reserved and Pango wrapped
+# it anyway - the subtitle was cut in half on the printed card.
 #
-# TITLE_SAFETY treats anything within 2% of the edge as wrapping. That
-# works because the set has an empty band between 96.1% and 99.86%. This
-# check fails if a new card name lands in that band, where neither the
-# measurement nor the margin can be trusted - rename it, or widen the
-# margin and re-render.
+# TITLE_SAFETY is the margin that covers that gap, and gen.py records the
+# measured size of the gap next to it. These checks hold the margin
+# against the measurement and every printed title against the margin.
 try:
     from PIL import ImageFont
 except ImportError:
@@ -659,63 +656,109 @@ except ImportError:
           "skipped: Pillow not installed")
 else:
     _gs = text("generator/gen.py")
+    # gen.py renders on import, so its constants are read out of the source
+    # rather than imported. HDR_STYLES is spelled out as a literal there so
+    # this can read it; if that stops being true, this check stops running
+    # rather than quietly measuring the default style for every deck.
     _gv = {}
-    for _line in _gs.splitlines():
-        for _k in ("PORTRAIT", "LANDSCAPE", "DPI", "CARD_INSET_MM",
-                   "TITLE_SAFETY", "HDR_PAD"):
-            if _line.startswith(_k + " = "):
-                _gv[_k] = ast.literal_eval(_line.split(" = ", 1)[1].split("#")[0].strip())
+    for _n in ast.parse(_gs).body:
+        if isinstance(_n, ast.Assign) and isinstance(_n.targets[0], ast.Name) \
+                and _n.targets[0].id in ("PORTRAIT", "LANDSCAPE", "DPI",
+                                         "CARD_INSET_MM", "TITLE_SAFETY",
+                                         "TITLE_PANGO_RATIO", "HDR_PAD",
+                                         "HDR_STYLES"):
+            try:
+                _gv[_n.targets[0].id] = ast.literal_eval(_n.value)
+            except ValueError:
+                pass
     _pt_mm = 25.4 / 72.0
     _border = 0.5 * _pt_mm
     _fdir = os.path.join(ROOT, "fonts", "DejaVuSans-Bold.ttf")
-    _risky, _worst = [], (0.0, "")
+
+    _missing = [_k for _k in ("HDR_STYLES", "HDR_PAD", "TITLE_SAFETY")
+                if _k not in _gv]
+    check("gen.py still declares the header styles this check reads",
+          not _missing, "cannot literal_eval: %r" % (_missing,))
+
+    def _limit(deck):
+        """The title's room in px, in the style this deck really prints."""
+        _size = _gv["LANDSCAPE"] if deck["landscape"] else _gv["PORTRAIT"]
+        _extra = _gv["HDR_STYLES"][deck.get("hdr", "")][2]
+        return ((_size[0] - 2 * _gv["CARD_INSET_MM"] - 2 * _border
+                 - 2 * _gv["HDR_PAD"][2] - _extra) * _gv["DPI"] / 25.4)
+
+    def _width(name, pt):
+        _px = max(8, int(round(pt * _pt_mm * _gv["DPI"] / 25.4)))
+        return ImageFont.truetype(_fdir, _px).getlength(name)
+
+    def _printed_pt(name, deck):
+        """Mirror of gen.title_cls: the largest rung that keeps one line."""
+        _ladder = _gv["HDR_STYLES"][deck.get("hdr", "")][0]
+        for _pt, _c in _ladder[:-1]:
+            if _width(name, _pt) <= _limit(deck) * _gv["TITLE_SAFETY"]:
+                return _pt
+        return _ladder[-1][0]
+
+    # A deck whose build script overrides the header sizes or padding
+    # without declaring a style here is a deck measured as something it is
+    # not - which is how AoS shipped 3px deeper than the rest of the set.
+    _styles = set()
     for _game in _cat.values():
         for _d in _game["decks"]:
-            _size = _gv["LANDSCAPE"] if _d["landscape"] else _gv["PORTRAIT"]
-            _avail = (_size[0] - 2 * _gv["CARD_INSET_MM"] - 2 * _border
-                      - 2 * _gv["HDR_PAD"][2])
-            _lim = _avail * _gv["DPI"] / 25.4
+            _styles.add(_d.get("hdr", "\u2014 not published"))
+    _unknown = sorted(_styles - set(_gv["HDR_STYLES"]))
+    check("every deck names a header style gen.py defines",
+          not _unknown, "unknown: %r" % (_unknown,))
+
+    # Titles are sized by measurement now, so they sit wherever they fit
+    # rather than in a tidy band well clear of the cut. What keeps them
+    # safe is no longer distance from the edge - it is that TITLE_SAFETY
+    # is below the reciprocal of the worst Pango-over-PIL ratio actually
+    # measured across the set. Re-measure (gen.py says how) and update
+    # TITLE_PANGO_RATIO if the fonts or the sizes change.
+    _ratio = _gv.get("TITLE_PANGO_RATIO")
+    check("TITLE_SAFETY %.3f covers the measured Pango gap of %sx"
+          % (_gv["TITLE_SAFETY"], _ratio),
+          _ratio is not None and _gv["TITLE_SAFETY"] <= 1.0 / _ratio,
+          "needs <= %.4f" % (1.0 / _ratio) if _ratio else "gen.py has no ratio")
+
+    _worst = (0.0, "")
+    for _game in _cat.values():
+        for _d in _game["decks"]:
+            if _d.get("hdr", "") not in _gv["HDR_STYLES"]:
+                continue
+            _lim = _limit(_d)
             for _c in _d["cards"]:
                 _nm = _c["name"]
-                _pt = 8.2 if len(_nm) > 30 else 9.2 if len(_nm) > 19 else 11.0
-                _px = max(8, int(round(_pt * _pt_mm * _gv["DPI"] / 25.4)))
-                _w = ImageFont.truetype(_fdir, _px).getlength(_nm)
-                _r = _w / _lim
+                _r = _width(_nm, _printed_pt(_nm, _d)) / _lim
                 if _r > _worst[0] and _r <= _gv["TITLE_SAFETY"]:
                     _worst = (_r, _nm)
-                # Only a title that fits on one line can be caught out; one
-                # that is already over the limit wraps and is reserved.
-                if _gv["TITLE_SAFETY"] - 0.01 < _r <= _gv["TITLE_SAFETY"]:
-                    _risky.append("%s (%.1f%%)" % (_nm, _r * 100))
-    check("no card title sits in the measure/render gap", not _risky,
-          "; ".join(_risky[:3]))
     check("widest safe title is %.1f%% of the line, margin %.1f%% to the %d%% cut"
           % (_worst[0] * 100, (_gv["TITLE_SAFETY"] - _worst[0]) * 100,
              _gv["TITLE_SAFETY"] * 100), True, _worst[1])
 
     # Every header in the set is one depth, so a row of face-up cards lines
-    # up. That holds only while every title fits on ONE line: hdr_fit
-    # returns gen.HDR_H_MM for a single line and a deeper header for two,
-    # so a title that wraps is also a title that breaks the row. title_cls
-    # steps a title down the size ladder until it fits, and these two
-    # checks are what keep that promise honest.
+    # up. Two things have to hold for that. Every title must fit on ONE
+    # line, because hdr_fit returns gen.HDR_H_MM for one line and a deeper
+    # header for two - a title that wraps is a title that breaks the row.
+    # And HDR_H_MM must be the DEEPEST style's one-line header, since
+    # min-height is a floor: a header whose content does not fit grows past
+    # it, which is what AoS's 11.6pt titles did.
     check("gen.py gives every header one depth (HDR_H_MM)",
           "HDR_H_MM = " in _gs and "min-height:%.2fmm' % HDR_H_MM" in _gs)
+    _deepest = max((_l[0][0], _s, _k) for _k, (_l, _s, _p) in _gv["HDR_STYLES"].items())
+    check("HDR_H_MM is taken from the deepest style (%r, %.1fpt/%.1fpt)"
+          % (_deepest[2], _deepest[0], _deepest[1]),
+          "HDR_H_MM = max(" in _gs and "HDR_STYLES.values()" in _gs)
     _wrap = []
     for _game in _cat.values():
         for _d in _game["decks"]:
-            _size = _gv["LANDSCAPE"] if _d["landscape"] else _gv["PORTRAIT"]
-            _avail = (_size[0] - 2 * _gv["CARD_INSET_MM"] - 2 * _border
-                      - 2 * _gv["HDR_PAD"][2])
-            _lim = _avail * _gv["DPI"] / 25.4
+            if _d.get("hdr", "") not in _gv["HDR_STYLES"]:
+                continue
+            _lim = _limit(_d)
             for _c in _d["cards"]:
                 _nm = _c["name"]
-                _i = 2 if len(_nm) > 30 else 1 if len(_nm) > 19 else 0
-                for _pt in (11.0, 9.2, 8.2)[_i:]:
-                    _p = max(8, int(round(_pt * _pt_mm * _gv["DPI"] / 25.4)))
-                    if ImageFont.truetype(_fdir, _p).getlength(_nm) <= _lim * _gv["TITLE_SAFETY"]:
-                        break
-                else:
+                if _width(_nm, _printed_pt(_nm, _d)) > _lim * _gv["TITLE_SAFETY"]:
                     _wrap.append(_nm)
     check("every card title fits on one line at its printed size",
           not _wrap, "%d wrap: %r" % (len(_wrap), _wrap[:3]))
