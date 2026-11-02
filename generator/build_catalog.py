@@ -35,6 +35,7 @@ stub.elements = lambda *a, **k: ''
 stub.skulls = lambda *a, **k: ''
 stub.subj_icon = lambda *a, **k: ''
 stub.hdr_fit = lambda *a, **k: ''
+stub.title_cls = lambda *a, **k: ''
 # gen.py is the authority on card geometry and is not imported here (it
 # renders on import), so its constants are read out of the source. A second
 # hand-kept copy is exactly the drift this file exists to prevent.

@@ -1,5 +1,5 @@
 import sys; sys.path.insert(0, '/home/claude/cards')
-from gen import render_deck, render_duplex, make_back, elements, hdr_fit, LANDSCAPE, PORTRAIT, DOT
+from gen import render_deck, render_duplex, make_back, elements, hdr_fit, title_cls, LANDSCAPE, PORTRAIT, DOT
 
 # The shape of the cards being built, for header measurement.
 CARD_SIZE = PORTRAIT
@@ -97,7 +97,7 @@ SPEC_GOLD = '#b08a2e'
 
 def C(title, sub, body, ftr='', warn=False, acc=None, tint=None, flavor='', dot=None):
     f = ('<div class="ftr%s">%s</div>' % (' warn' if warn else '', ftr)) if ftr else ''
-    cls = ' xlong' if len(title) > 30 else (' long' if len(title) > 19 else '')
+    cls = title_cls(title, CARD_SIZE)
     st = ' style="--a:%s"' % acc if acc else ''
     bs = ' style="background:%s"' % tint if tint else ''
     flavor_html = ('<div style="font-size:8.6pt;font-style:italic;text-align:center;'

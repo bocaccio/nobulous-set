@@ -1,5 +1,5 @@
 import sys; sys.path.insert(0, '/home/claude/cards')
-from gen import render_deck, render_duplex, make_back, hdr_fit, DOT_NAP as DOT, LANDSCAPE, PORTRAIT, skulls, subj_icon
+from gen import render_deck, render_duplex, make_back, hdr_fit, title_cls, DOT_NAP as DOT, LANDSCAPE, PORTRAIT, skulls, subj_icon
 
 # Every NAP card built through C() is landscape.
 CARD_SIZE = LANDSCAPE
@@ -113,7 +113,7 @@ def C(title, sub, body, ftr='', warn=False, acc=None, bg=None, flavor=''):
           'color:#6f675a;margin:1.2mm 0 1mm">%s</div>' % flavor) if flavor else ''
     st = ' style="--a:%s"' % acc if acc else ''
     bs = ' style="background:%s"' % bg if bg else ''
-    cls = ' xlong' if len(title) > 30 else (' long' if len(title) > 19 else '')
+    cls = title_cls(title, CARD_SIZE)
     fit = hdr_fit(title, cls, CARD_SIZE)
     return ('<div class="card"%s><div class="hdr"%s><div class="t%s">%s</div><div class="s">%s</div></div>'
             '<div class="body"%s>%s<div class="spacer"></div>%s%s</div></div>'

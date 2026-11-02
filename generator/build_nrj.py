@@ -1,5 +1,5 @@
 import sys; sys.path.insert(0, '/home/claude/cards')
-from gen import render_deck, render_duplex, make_back, hdr_fit, DOT, LANDSCAPE, PORTRAIT, subj_icon
+from gen import render_deck, render_duplex, make_back, hdr_fit, title_cls, DOT, LANDSCAPE, PORTRAIT, subj_icon
 
 # The shape of the cards being built, for header measurement.
 CARD_SIZE = PORTRAIT
@@ -15,7 +15,7 @@ MOD_STRIP = '#4a4238'
 
 def C(title, sub, body, ftr='', warn=False, acc=None, tint=None, hdr=None):
     f = ('<div class="ftr%s">%s</div>' % (' warn' if warn else '', ftr)) if ftr else ''
-    cls = ' xlong' if len(title) > 30 else (' long' if len(title) > 19 else '')
+    cls = title_cls(title, CARD_SIZE)
     st = ' style="--a:%s"' % acc if acc else ''
     bs = ' style="background:%s"' % tint if tint else ''
     # `hdr` fixes the header depth for a whole deck, so a two-line title does
@@ -298,7 +298,7 @@ def _hdr_mm(style):
 
 
 def _cls(title):
-    return ' xlong' if len(title) > 30 else (' long' if len(title) > 19 else '')
+    return title_cls(title, CARD_SIZE)
 
 
 # The deepest header any Exhibit title needs, applied to all of them, so the

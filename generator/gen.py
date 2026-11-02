@@ -288,6 +288,18 @@ CARD_BORDER_MM = 0.5 * PT_MM
 # edge as wrapping: reserving a line that turns out not to be needed costs
 # a slightly deeper header, while not reserving one costs a clipped card.
 TITLE_SAFETY = 0.98
+# The three printed title sizes, largest first, with the class that selects
+# each one in the CSS above.
+TITLE_LADDER = ((11.0, ''), (9.2, ' long'), (8.2, ' xlong'))
+# EVERY header is this deep, so a row of face-up cards lines up: title,
+# subtitle and the top of the body sit at one height whatever the card and
+# whatever size its title is set at. The depth is what a ONE-LINE header
+# needs at the largest title size, so a smaller title leaves a little more
+# clear band under its subtitle rather than making the card a different
+# shape. It is the same number for portrait and landscape, since none of
+# the terms depends on the card's width.
+HDR_H_MM = (HDR_PAD[0] + TITLE_LADDER[0][0] * 1.04 * PT_MM
+            + SUB_GAP + SUB_SIZE * 1.25 * PT_MM + HDR_PAD[1])
 
 
 def title_lines(title, size_pt, width_mm):
@@ -309,14 +321,50 @@ def title_lines(title, size_pt, width_mm):
     return lines
 
 
+def _plain(title):
+    return (re.sub('<[^>]+>', ' ', title)
+            .replace('&#8209;', '-').replace('&middot;', '.'))
+
+
+def title_width_mm(size=PORTRAIT):
+    """The room a title actually has, inside the inset, border and padding."""
+    return size[0] - 2 * CARD_INSET_MM - 2 * CARD_BORDER_MM - 2 * HDR_PAD[2]
+
+
+def title_cls(title, size=PORTRAIT):
+    """The size class for a title: its printed size, stepped down only as
+    far as it must go to keep the title on one line.
+
+    This used to be five separate copies of one character-count expression,
+    and a count is the wrong instrument: it cannot know that a landscape
+    card is 88.9mm wide where a portrait one is 63.5, nor that
+    "Undocumented Dependencies" sets wider than "Emergency Specimen
+    Handling" despite being three characters shorter. Three titles were
+    printed at a size they did not fit.
+
+    The count still picks the STARTING size, so the set looks as it did.
+    Measurement only ever steps DOWN, and only when the title would
+    otherwise wrap and take the subtitle with it.
+    """
+    plain = _plain(title)
+    i = 2 if len(plain) > 30 else 1 if len(plain) > 19 else 0
+    while (i < len(TITLE_LADDER) - 1
+           and title_lines(plain, TITLE_LADDER[i][0], title_width_mm(size)) > 1):
+        i += 1
+    return TITLE_LADDER[i][1]
+
+
 def hdr_fit(title, cls='', size=PORTRAIT):
-    """'min-height:..mm' when the title wraps onto more than one line, else ''."""
+    """The header's depth, as a style. One number for the whole set.
+
+    A title that still wraps at the smallest size gets a deeper header
+    rather than a clipped subtitle. title_cls makes that unreachable for
+    every card in the set today, and check_app_sync.py keeps it that way.
+    """
     size_pt = 8.2 if 'xlong' in cls else 9.2 if 'long' in cls else 11.0
-    plain = re.sub('<[^>]+>', ' ', title).replace('&#8209;', '-').replace('&middot;', '.')
-    lines = title_lines(plain, size_pt, size[0] - 2 * CARD_INSET_MM
-                        - 2 * CARD_BORDER_MM - 2 * HDR_PAD[2])
+    lines = title_lines(_plain(title), size_pt, title_width_mm(size))
     if lines < 2:
-        return ''
+        return 'min-height:%.2fmm' % HDR_H_MM
     return 'min-height:%.2fmm' % (HDR_PAD[0] + HDR_PAD[1] + lines * size_pt * 1.04 * PT_MM
                                   + SUB_GAP + SUB_SIZE * 1.25 * PT_MM)
 

@@ -1,4 +1,4 @@
-from gen import render_deck, render_duplex, make_back, elements, hdr_fit, LANDSCAPE, PORTRAIT
+from gen import render_deck, render_duplex, make_back, elements, hdr_fit, title_cls, LANDSCAPE, PORTRAIT
 
 # The shape of the cards being built, for header measurement.
 CARD_SIZE = PORTRAIT
@@ -41,7 +41,7 @@ def C(title, sub, body, ftr='', warn=False, acc=None, flavor=''):
     # Flavor text sits at the bottom of the card, just above the footer.
     fl = '<div class="flavor">%s</div>' % flavor if flavor else ''
     st = ' style="--a:%s"' % acc if acc else ''
-    cls = ' xlong' if len(title) > 30 else (' long' if len(title) > 19 else '')
+    cls = title_cls(title, CARD_SIZE)
     fit = hdr_fit(title, cls, CARD_SIZE)
     return ('<div class="card"%s><div class="hdr"%s><div class="t%s">%s</div><div class="s">%s</div></div>'
             '<div class="body">%s<div class="spacer"></div>%s%s</div></div>'
@@ -109,13 +109,19 @@ print('Technicians', render_duplex('AoS_Technicians', tech_a, tech_b, 'AoS', LAN
 cards = []
 for i in range(1, 6):
     cards.append('<div class="card" style="--a:%s">'
-                 '<div class="hdr"><div class="t">Element %d</div>'
+                 # Hand-rolled header, so the set's depth has to be applied
+                 # explicitly or the mats are the one odd card out. It goes
+                 # in as a format argument, not by concatenation: `%` binds
+                 # tighter than `+`, so a `+` here would apply the format to
+                 # the last fragment alone.
+                 '<div class="hdr" style="%s"><div class="t">Element %d</div>'
                  '<div class="s">Dice Allocation</div></div>'
                  '<div class="body" style="padding:3mm;background:#e8e4d8">'
                  '<div style="flex:1;border:1.2pt dashed #8d8676;border-radius:2mm;'
                  'background:#f7f4ea;box-shadow:inset 0 0 0 1.6mm #e8e4d8"></div>'
                  '<div style="font-size:7.4pt;line-height:1.26;text-align:center;margin-top:2.4mm;'
                  'color:#4a4239">Place all dice assigned to this element here before running '
-                 'the Program.</div></div></div>' % (DECK_ACCENT['Mat'], i))
+                 'the Program.</div></div></div>'
+                 % (DECK_ACCENT['Mat'], hdr_fit('Element 1'), i))
 print('Element mats', render_deck('AoS_ElementMats', cards, 'AoS', PORTRAIT, BIG, back='CardBack_AoS_ElementMat'))
 

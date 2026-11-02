@@ -693,6 +693,33 @@ else:
           % (_worst[0] * 100, (_gv["TITLE_SAFETY"] - _worst[0]) * 100,
              _gv["TITLE_SAFETY"] * 100), True, _worst[1])
 
+    # Every header in the set is one depth, so a row of face-up cards lines
+    # up. That holds only while every title fits on ONE line: hdr_fit
+    # returns gen.HDR_H_MM for a single line and a deeper header for two,
+    # so a title that wraps is also a title that breaks the row. title_cls
+    # steps a title down the size ladder until it fits, and these two
+    # checks are what keep that promise honest.
+    check("gen.py gives every header one depth (HDR_H_MM)",
+          "HDR_H_MM = " in _gs and "min-height:%.2fmm' % HDR_H_MM" in _gs)
+    _wrap = []
+    for _game in _cat.values():
+        for _d in _game["decks"]:
+            _size = _gv["LANDSCAPE"] if _d["landscape"] else _gv["PORTRAIT"]
+            _avail = (_size[0] - 2 * _gv["CARD_INSET_MM"] - 2 * _border
+                      - 2 * _gv["HDR_PAD"][2])
+            _lim = _avail * _gv["DPI"] / 25.4
+            for _c in _d["cards"]:
+                _nm = _c["name"]
+                _i = 2 if len(_nm) > 30 else 1 if len(_nm) > 19 else 0
+                for _pt in (11.0, 9.2, 8.2)[_i:]:
+                    _p = max(8, int(round(_pt * _pt_mm * _gv["DPI"] / 25.4)))
+                    if ImageFont.truetype(_fdir, _p).getlength(_nm) <= _lim * _gv["TITLE_SAFETY"]:
+                        break
+                else:
+                    _wrap.append(_nm)
+    check("every card title fits on one line at its printed size",
+          not _wrap, "%d wrap: %r" % (len(_wrap), _wrap[:3]))
+
 print()
 print("%d check(s) failed" % len(FAILS))
 for f in FAILS:

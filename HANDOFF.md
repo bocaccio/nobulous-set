@@ -789,6 +789,48 @@ Each of these only appears a few turns in.
 
 Not your job to fix, but worth knowing if Jon raises them:
 
+- **Every header in the set is now one depth, `gen.HDR_H_MM` = 11.46mm.**
+  Asked for on 2026-11-02 after the clipped subtitle below: make the colour
+  band the same height on every card and nudge font sizes if that is what it
+  takes. The band used to follow the title's size - 135px at 11pt, 127px at
+  9.2, ~123px at 8.2 - so a row of face-up cards stepped up and down.
+
+  The depth is derived, not chosen: top padding + ONE line at the largest
+  title size + the subtitle gap + the subtitle + bottom padding. None of
+  those terms depends on the card's width, so portrait and landscape come
+  out to the same number. A smaller title now leaves a little more clear
+  band under its subtitle instead of making the card a different shape.
+
+  One depth is only possible while every title fits on ONE line, and the
+  size was being picked by CHARACTER COUNT in five separate copies of the
+  same expression. A count cannot know that a landscape card is 88.9mm
+  wide where a portrait one is 63.5, nor that "Undocumented Dependencies"
+  sets wider than "Emergency Specimen Handling" despite being shorter.
+  `gen.title_cls` replaces all five: the count still picks the STARTING
+  size, so the set looks as it did, and measurement only ever steps DOWN.
+  **Three titles moved, 9.2pt to 8.2pt** - Undocumented Dependencies,
+  Independent Performance Trial, The Night Watchman's Account. Nothing
+  else changed size.
+
+  Choosing purely by measurement was tried and rejected: it would have
+  made 82 titles BIGGER, mostly on landscape cards the count had been
+  over-shrinking. That is a real improvement available if Jon wants it,
+  but it is a set-wide restyling rather than a fix.
+
+  The AoS Element mats hand-roll their header outside the normal helper
+  and had to have the depth applied explicitly, or they are the one odd
+  card in the set. Note how: as a `%s` FORMAT ARGUMENT, not by `+`
+  concatenation - `%` binds tighter than `+`, so a `+` there applies the
+  format to the last fragment alone and the accent colour lands on `%d`.
+
+  Verified by construction rather than by eye: all 240 titles emit
+  `min-height:11.46mm` and none needs a second line. `check_app_sync.py`
+  asserts both. The pixel detector used earlier reports 62 false
+  positives here - cards with a second colour strip under the header
+  (SPECIMEN, UNAUTHORIZED) and the Element mats' tinted body - which is
+  the third time a pixel heuristic has lied about this. Ask the
+  generator, not the image.
+
 - **A card title wrapped, the header did not grow, and the subtitle was cut
   in half.** Reported 2026-11-02 as "text is being cut off at the top" on
   the Interference card **Undocumented Dependencies**, and it was real, on
