@@ -76,7 +76,11 @@ echo.
 rem Open the browser after the server has had time to start. Use Windows' URL
 rem handler directly; PowerShell Start-Process can be blocked on some systems.
 start "" /B "%ComSpec%" /d /c "ping -n 3 127.0.0.1 >nul & start http://localhost:%PORT%/"
-"%PYTHON_EXE%" %PYTHON_ARGS% -m http.server %PORT% --directory "%WEBROOT%"
+rem serve.py, not -m http.server: the plain server sends no cache headers,
+rem so the browser caches index.html - the one file that names the ?v=
+rem token on every script and sheet. A playtester then sits on an old
+rem build with no error to show for it.
+"%PYTHON_EXE%" %PYTHON_ARGS% "%~dp0playtest\serve.py" %PORT%
 set "SERVER_EXIT=%ERRORLEVEL%"
 
 echo.

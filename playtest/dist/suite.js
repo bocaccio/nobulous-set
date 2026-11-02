@@ -582,7 +582,7 @@
     return `NRJ Tier ${tierName(tier)} active${over?" (table override)":""} \u00b7 module cards are mixed in.`;
   }
 
-  const ruleFiles={bat:["assets/BAT_Rulebook.pdf?v=imposter2","BAT rules PDF"],nap:["assets/NAP_Rulebook.pdf?v=imposter2","NAP rules PDF"],aos:["assets/AoS_Rulebook.pdf?v=imposter2","AoS rules PDF"],nrj:["assets/NRJ_Campaign_Supplement.pdf?v=imposter2","NRJ rules PDF"]};
+  const ruleFiles={bat:["assets/BAT_Rulebook.pdf?v=geometry1","BAT rules PDF"],nap:["assets/NAP_Rulebook.pdf?v=geometry1","NAP rules PDF"],aos:["assets/AoS_Rulebook.pdf?v=geometry1","AoS rules PDF"],nrj:["assets/NRJ_Campaign_Supplement.pdf?v=geometry1","NRJ rules PDF"]};
   function updateTopbar(){const game=$("gameNav")?.value||"home",link=$("rulesLink"),resetBtn=$("resetBtn"),record=$("recordBtn");
     const rules=ruleFiles[game];if(rules){link.href=rules[0];link.textContent=rules[1];link.hidden=false}else link.hidden=true;
     resetBtn.hidden=game==="home";resetBtn.textContent=game==="nrj"?"New finale":"New test";
@@ -600,12 +600,30 @@
       .then(data=>{cardCatalog=data;return data;});
     return catalogPending;
   }
-  // Every sheet cell is 500x700 (or 700x500) with the card art inset by GUTTER.
-  // The preview crops to the art itself so every card fills the box the same way:
-  // otherwise a card whose body matches the cream gutter looks smaller than the rest.
+  // Sheet geometry is PUBLISHED, never assumed: build_catalog.py writes each
+  // deck's real cell size and its cream gutter, read from the finished sheet
+  // and from gen.py's CARD_INSET_MM. It has to be published, because it is
+  // not one number - fit_tts shrinks a sheet that would pass Tabletop
+  // Simulator's ceiling, so NAP Assignments are 1000x714 where every other
+  // portrait deck is 750x1050.
+  //
+  // These constants are the fallback for a catalog written before 2026-11-02,
+  // and they are the bug they replace: 200 DPI pixels, left behind when the
+  // art moved to 300 on 2026-10-30. Nothing caught it because 15/500 and
+  // 23.6/750 are nearly the same ratio, so the preview stayed almost right -
+  // it just cropped away the card's entire 2mm margin, border and rounded
+  // corner, which puts the title hard against the frame and reads as text
+  // cut off at the top.
   const CELL_LONG=700,CELL_SHORT=500,GUTTER=15;
+  // The preview shows the WHOLE cell, margin included, so a card looks like a
+  // card. Nothing is gained by cropping to the printed face: every deck has
+  // the same 2mm inset, so trimming it cannot make one card match another.
+  const cellOf=deck=>{
+    const c=deck.cell||(deck.landscape?[CELL_LONG,CELL_SHORT]:[CELL_SHORT,CELL_LONG]);
+    return {w:c[0],h:c[1]};
+  };
   // Every card image carries this tag; bump it whenever the sheets are rebuilt.
-  const ART_VERSION="?v=imposter2";
+  const ART_VERSION="?v=geometry1";
   function peekStyle(deck,index,side,boxW){
     const back=side==="back"&&deck.back;
     // A deck may name one back for all its cards, or one per card.
@@ -613,22 +631,24 @@
     const cols=back&&!deck.backIsSheet?1:deck.cols,rows=back&&!deck.backIsSheet?1:deck.rows;
     const i=back&&!deck.backIsSheet?0:index;
     const col=i%cols,row=Math.floor(i/cols);
-    const cellW=deck.landscape?CELL_LONG:CELL_SHORT,cellH=deck.landscape?CELL_SHORT:CELL_LONG;
-    const k=boxW/(cellW-2*GUTTER);
+    const {w:cellW,h:cellH}=cellOf(deck);
+    const k=boxW/cellW;
     return `background-image:url('${ASSET}${sheet}${ART_VERSION}');`
       +`background-size:${(cols*cellW*k).toFixed(1)}px ${(rows*cellH*k).toFixed(1)}px;`
-      +`background-position:${(-(col*cellW+GUTTER)*k).toFixed(1)}px ${(-(row*cellH+GUTTER)*k).toFixed(1)}px`;
+      +`background-position:${(-col*cellW*k).toFixed(1)}px ${(-row*cellH*k).toFixed(1)}px`;
   }
   function showCardPeek(el){
     const peek=$("cardPeek"),deck=el._peekDeck;if(!deck)return;
     peek.className=`card-peek ${deck.landscape?"landscape":"portrait"}`;
     const r=el.getBoundingClientRect();
-    // The art is 470x670 at 200dpi. Showing it at those pixels means no resampling,
-    // so the print stays as crisp as the card itself; shrink only to fit the window.
-    const artW=deck.landscape?CELL_LONG-2*GUTTER:CELL_SHORT-2*GUTTER;
-    const artH=deck.landscape?CELL_SHORT-2*GUTTER:CELL_LONG-2*GUTTER;
-    const fit=Math.min(1,(innerHeight-24)/artH,(innerWidth-24)/artW);
-    const w=Math.round(artW*fit),h=Math.round(artH*fit);
+    const cell=cellOf(deck);
+    // 500x700 is the box the preview wants on screen, not a claim about the
+    // sheet: the card is downscaled into it and the HEIGHT comes from the
+    // cell's own shape, so a deck whose sheet was shrunk is not stretched.
+    const boxW=deck.landscape?CELL_LONG:CELL_SHORT;
+    const boxH=deck.landscape?CELL_SHORT:CELL_LONG;
+    const fit=Math.min(1,(innerHeight-24)/boxH,(innerWidth-24)/boxW);
+    const w=Math.round(boxW*fit),h=Math.round(w*cell.h/cell.w);
     peek.setAttribute("style",peekStyle(deck,Number(el.dataset.peekIndex),el.dataset.peekSide,w));
     peek.style.width=`${w}px`;peek.style.height=`${h}px`;
     // Prefer the left of the row; fall back to the right when the card will not fit.

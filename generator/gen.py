@@ -19,6 +19,15 @@ LANDSCAPE = (88.9, 63.5)
 # largest sheet, a 10x3 grid, goes from 5000x2100 to 7500x3150 px, still
 # inside what Tabletop Simulator will load.
 DPI = 300
+# The cream margin between a card's printed face and the edge of its cell on
+# the sheet. ONE number with three readers: the CSS below insets the card by
+# it, build_catalog.py publishes it per deck so the playtest lab can size a
+# preview without guessing, and check_app_sync.py holds the three together.
+# Until 2026-11-02 the lab carried its own copy as a 200 DPI pixel literal,
+# left behind when the art moved to 300 on 2026-10-30. Nothing caught it
+# because 15/500 and 23.6/750 are near enough the same ratio that the
+# preview stayed almost right - it just ate the card's whole margin.
+CARD_INSET_MM = 2.0
 
 ACCENT = {'BAT': '#2c5f4a', 'NAP': '#6b3f8c', 'AoS': '#8a3d2e',
           'NRJ': '#1f4e6b', 'IMP': '#4a3b6b'}
@@ -57,7 +66,7 @@ def css(w, h):
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: "DejaVu Sans", sans-serif; width: %fmm; height: %fmm;
        background: #f6f3ea; color: #201c17; position: relative; }
-.card { position:absolute; inset:2.0mm; border:0.5pt solid #b8b0a0; border-radius:1.6mm;
+.card { position:absolute; inset:%fmm; border:0.5pt solid #b8b0a0; border-radius:1.6mm;
         background:#fbf9f3; overflow:hidden; display:flex; flex-direction:column; }
 /* NRJ module marker: a solid edge band along the foot of every NRJ card face */
 .card.nrj > .body { margin-bottom:3.4mm; }
@@ -121,7 +130,7 @@ body { font-family: "DejaVu Sans", sans-serif; width: %fmm; height: %fmm;
 .band { font-size:7pt; font-weight:bold; letter-spacing:.16em; text-transform:uppercase;
         color:#fff; text-align:center; padding:1.1mm; flex:0 0 auto; }
 .band.d180 { transform:rotate(180deg); }
-""" % (w, h, w, h)
+""" % (w, h, w, h, CARD_INSET_MM)
 
 
 # ---------------------------------------------------------------------------

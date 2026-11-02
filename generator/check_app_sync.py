@@ -592,6 +592,52 @@ check("rules/nrj.html lists all 10 abilities by name", not missing,
       "%r" % (missing,))
 
 print()
+print("Card geometry - gen.py vs catalog.json vs the lab")
+# The lab has to know a sheet's cell size and the cream margin inside it to
+# place a preview. It used to assume them, as 200 DPI pixel literals, and
+# went on assuming them through the move to 300 DPI on 2026-10-30 - the
+# ratios are close enough that the preview merely cropped the card's whole
+# margin away instead of breaking outright. gen.py owns the numbers now and
+# build_catalog.py publishes them per deck; this is what keeps that true.
+gen_src = text("generator/gen.py")
+check("gen.py's CSS insets the card by CARD_INSET_MM, not a literal",
+      "inset:%fmm" in gen_src and "CARD_INSET_MM = " in gen_src)
+_g = {}
+for _line in gen_src.splitlines():
+    for _k in ("PORTRAIT", "LANDSCAPE", "DPI", "CARD_INSET_MM"):
+        if _line.startswith(_k + " = "):
+            _g[_k] = ast.literal_eval(_line.split(" = ", 1)[1].strip())
+with io.open(os.path.join(ROOT, "playtest", "dist", "catalog.json"),
+             encoding="utf-8") as _fh:
+    _cat = json.load(_fh)
+_decks = [d for _game in _cat.values() for d in _game["decks"]]
+_have = [d for d in _decks if "cell" in d and "gutter" in d]
+check("every catalog deck publishes its cell size and gutter",
+      len(_have) == len(_decks), "%d of %d" % (len(_have), len(_decks)))
+
+
+def _want_gutter(d):
+    """The 2mm inset is physical, so at a cell's own scale it is that
+    fraction of the card's width - which survives fit_tts shrinking a sheet
+    (NAP Assignments are 1000x714 where every other portrait deck is
+    750x1050, and its gutter is 22px rather than 24)."""
+    mm = (_g["LANDSCAPE"] if d["landscape"] else _g["PORTRAIT"])[0]
+    return int(round(d["cell"][0] * _g["CARD_INSET_MM"] / mm))
+
+
+_off = ["%s %s vs %s" % (d["sheet"], d["gutter"], _want_gutter(d))
+        for d in _have if abs(d["gutter"] - _want_gutter(d)) > 1]
+check("each gutter is gen.py's %.1fmm inset at that cell size"
+      % _g["CARD_INSET_MM"], not _off, "; ".join(_off[:3]))
+_square = [d["sheet"] for d in _have
+           if (d["cell"][0] > d["cell"][1]) != bool(d["landscape"])]
+check("every cell's shape agrees with the deck's orientation", not _square,
+      "%r" % (_square,))
+_sj = text("playtest/dist/suite.js")
+check("the lab reads the published geometry instead of assuming it",
+      "deck.cell" in _sj and "cellOf" in _sj)
+
+print()
 print("%d check(s) failed" % len(FAILS))
 for f in FAILS:
     print("   -", f)

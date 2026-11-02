@@ -789,6 +789,71 @@ Each of these only appears a few turns in.
 
 Not your job to fix, but worth knowing if Jon raises them:
 
+- **The card preview cropped a 300 DPI card by a 200 DPI margin, and the
+  geometry now has one owner.** Reported 2026-11-02 as "NRJ text cut off at
+  the top" in the lab's card browser. Nothing was clipped: the preview was
+  cropping away the card's entire 2mm cream margin, its printed border and
+  its rounded corner, which puts the title hard against the frame and reads
+  exactly like clipped text.
+
+  `suite.js` carried `CELL_LONG=700, CELL_SHORT=500, GUTTER=15` with a
+  comment stating them as fact. Those are 200 DPI pixels. The art moved to
+  300 DPI on 2026-10-30 and nothing caught it, because 15/500 and 23.6/750
+  are near enough the same ratio that the preview stayed *almost* right -
+  it cropped 22.5px of a 23.6px margin instead of breaking outright. A
+  wrong number that is 95% right survives any amount of looking.
+
+  The geometry is **published** now, not assumed. `gen.py` owns `PORTRAIT`,
+  `LANDSCAPE`, `DPI` and the new `CARD_INSET_MM`, and its own CSS reads the
+  last of those rather than repeating `2.0mm`. `build_catalog.py` writes
+  each deck's real `cell` and `gutter` into `catalog.json`, reading the cell
+  from the finished sheet. The lab reads both and shows the WHOLE cell, so a
+  card looks like a card. `check_app_sync.py` holds the three together.
+
+  **It had to be published, because it was never one number.** `fit_tts`
+  shrinks any sheet that would pass Tabletop Simulator's ceiling, so
+  `NAP_Tasks` is 10000x2142 - cells of 1000x714 with a 22px gutter - where
+  every other portrait deck is 750x1050 with 24. No single constant could
+  have been right for both, and the old code used 700x500 for it.
+
+  `build_catalog.py` had also been keeping its own copy of `PORTRAIT` and
+  `LANDSCAPE` to stub `gen` with; it reads them out of `gen.py`'s source
+  now. Re-rendering NRJ after the CSS change gave 9 of 9 sheets
+  byte-identical, so the change is inert on the art.
+
+- **The dependencies are written down, in `requirements.txt`.** There was no
+  manifest of any kind. HANDOFF section 8 listed four packages in prose for
+  the card generator only and missed `beautifulsoup4`, which
+  `rules/make_editable.py` imports. The file says which script needs which,
+  and spells out the two that pip cannot install - WeasyPrint's GTK
+  libraries, found through `PATH` and not through Python, and `pdftoppm`.
+  Both fail without naming themselves: the first dies with `OSError: cannot
+  load library 'libgobject-2.0-0'`, which reads as a broken install rather
+  than a missing `PATH` entry, and it is what `check_cards.py` does when run
+  exactly as AGENTS.md documented it.
+
+  Two other undocumented orderings, both now written down: `build_nap.py`
+  must run before `build_nrj.py` into a fresh output directory, because NRJ's
+  Imposter Tasks and Devious Opportunities print NAP's Assignment back; and
+  `SETUP.md` claimed re-running a build script "rewrites the sheet in
+  `images/` and the PnP pages together", which has not been true since
+  `deploy.py` became the only thing that promotes `out/`. That false
+  sentence is the documented version of the drift recorded further down.
+
+- **`Start_Playtest.bat` served the lab with `python -m http.server`.** So
+  did `README.md` and `playtest/README.md`, after `AGENTS.md` had been
+  changed to forbid it. The launcher is the one a playtester double-clicks,
+  so every playtester was getting the cache trap that hid the Imposter
+  picker on 2026-10-31. All three now run `playtest/serve.py`.
+
+- **`generator/out/python_deps` is 48 MB of vendored packages that nothing
+  references.** Pillow, fontTools, cffi, pydyf, pyphen, cssselect2 and more,
+  sitting inside the gitignored `out/`, so it has never been committed and a
+  clone has never had it. Nothing puts it on `sys.path`. It is almost
+  certainly the leftovers of an attempt to run the generator without a real
+  environment. Left alone - deleting 48 MB that might be load-bearing on
+  some other machine is Jon's call, not a cleanup to do in passing.
+
 - **Five Imposters, ten abilities, and the two rules they obey.** Added
   2026-10-31. You choose one Imposter card and one of its two sides at setup;
   all five print the finale's own 5 HP / 2 STR / 3 REC, because the house rule

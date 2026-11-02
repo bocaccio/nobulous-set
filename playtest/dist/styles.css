@@ -477,7 +477,7 @@ button.attention{animation:attention-pulse 1.1s ease-in-out 2}
 .card-row-sides{display:flex;gap:.3rem;flex:none}
 .card-side{min-height:30px;padding:.15rem .5rem;font-size:.73rem;font-weight:700;border-radius:7px}
 .card-side:hover,.card-side:focus-visible{border-color:var(--gold);color:var(--gold)}
-.card-peek{position:fixed;z-index:60;border-radius:10px;border:1px solid var(--line);box-shadow:0 14px 34px rgba(0,0,0,.55);background-repeat:no-repeat;pointer-events:none}
+.card-peek{position:fixed;z-index:60;border-radius:10px;border:1px solid var(--line);box-shadow:0 14px 34px rgba(0,0,0,.55);background-repeat:no-repeat;background-color:#f6f3ea;pointer-events:none}
 .card-peek.hidden{display:none}
 @media(max-width:760px){.game-cards{max-height:320px}.card-peek{display:none!important}}
 

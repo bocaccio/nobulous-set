@@ -59,3 +59,32 @@ did change something.
 
 The card generator has environment-specific output paths; inspect `gen.py`
 before rebuilding on a new machine.
+
+## Dependencies
+
+`requirements.txt` lists them and says which script needs which. Two cannot be
+installed by pip and both fail without naming themselves:
+
+- **WeasyPrint's GTK libraries** are found through `PATH`, not through Python.
+  Without them any script that imports WeasyPrint - `build_*.py`,
+  `check_cards.py`, `rules/build.py` - dies with `OSError: cannot load library
+  'libgobject-2.0-0'`, which reads as a broken install. On this machine:
+
+  ```bash
+  PATH="/c/Users/weeks/miniforge3/Library/bin:$PATH"
+  ```
+
+- **`pdftoppm`** (poppler-utils) must be on `PATH`; `gen.py` shells out to it.
+
+Nothing a player touches needs any of this. The lab is static files, the
+sheets and PDFs are committed, and `simulation/` is pure Python.
+
+Run `build_nap.py` before `build_nrj.py` into a fresh output directory: NRJ's
+Imposter Tasks and Devious Opportunities print NAP's Assignment back and
+`make_back` has to have built it first.
+
+Card geometry has ONE owner, `gen.py` - `PORTRAIT`, `LANDSCAPE`, `DPI` and
+`CARD_INSET_MM`. `build_catalog.py` publishes each deck's real cell size and
+gutter into `catalog.json`, and the lab reads them from there. Do not
+reintroduce a pixel literal anywhere else; `check_app_sync.py` now checks all
+three agree.

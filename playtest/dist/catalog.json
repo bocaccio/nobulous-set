@@ -8,6 +8,11 @@
     "cols": 10,
     "rows": 2,
     "landscape": false,
+    "cell": [
+     750,
+     1050
+    ],
+    "gutter": 24,
     "cards": [
      {
       "name": "Baseline Calibration",
@@ -100,6 +105,11 @@
     "cols": 10,
     "rows": 2,
     "landscape": false,
+    "cell": [
+     750,
+     1050
+    ],
+    "gutter": 24,
     "cards": [
      {
       "name": "Serrated Claws",
@@ -176,6 +186,11 @@
     "cols": 8,
     "rows": 1,
     "landscape": false,
+    "cell": [
+     750,
+     1050
+    ],
+    "gutter": 24,
     "cards": [
      {
       "name": "Titanium-Toothed Mole",
@@ -220,6 +235,11 @@
     "cols": 7,
     "rows": 1,
     "landscape": false,
+    "cell": [
+     750,
+     1050
+    ],
+    "gutter": 24,
     "cards": [
      {
       "name": "Overwhelming Mass",
@@ -260,6 +280,11 @@
     "cols": 4,
     "rows": 1,
     "landscape": true,
+    "cell": [
+     1050,
+     750
+    ],
+    "gutter": 24,
     "cards": [
      {
       "name": "Rummage",
@@ -292,6 +317,11 @@
     "cols": 1,
     "rows": 1,
     "landscape": false,
+    "cell": [
+     750,
+     1050
+    ],
+    "gutter": 24,
     "cards": [
      {
       "name": "Buff HP track",
@@ -313,6 +343,11 @@
     "cols": 10,
     "rows": 3,
     "landscape": true,
+    "cell": [
+     1000,
+     714
+    ],
+    "gutter": 22,
     "cards": [
      {
       "name": "Organize the Specimen Cabinet",
@@ -429,6 +464,11 @@
     "cols": 6,
     "rows": 1,
     "landscape": true,
+    "cell": [
+     1050,
+     750
+    ],
+    "gutter": 24,
     "cards": [
      {
       "name": "Take an Unauthorized Break",
@@ -465,6 +505,11 @@
     "cols": 6,
     "rows": 1,
     "landscape": true,
+    "cell": [
+     1050,
+     750
+    ],
+    "gutter": 24,
     "cards": [
      {
       "name": "Power Failure",
@@ -501,6 +546,11 @@
     "cols": 10,
     "rows": 2,
     "landscape": true,
+    "cell": [
+     1000,
+     714
+    ],
+    "gutter": 22,
     "cards": [
      {
       "name": "Cranial Integrity Inspection",
@@ -561,6 +611,11 @@
     "cols": 3,
     "rows": 1,
     "landscape": true,
+    "cell": [
+     1050,
+     750
+    ],
+    "gutter": 24,
     "cards": [
      {
       "name": "Prodigy",
@@ -588,6 +643,11 @@
     "cols": 6,
     "rows": 1,
     "landscape": true,
+    "cell": [
+     1050,
+     750
+    ],
+    "gutter": 24,
     "cards": [
      {
       "name": "Morning",
@@ -637,6 +697,11 @@
     "cols": 8,
     "rows": 1,
     "landscape": false,
+    "cell": [
+     750,
+     1050
+    ],
+    "gutter": 24,
     "cards": [
      {
       "name": "Maintain Balance",
@@ -681,6 +746,11 @@
     "cols": 8,
     "rows": 1,
     "landscape": false,
+    "cell": [
+     750,
+     1050
+    ],
+    "gutter": 24,
     "cards": [
      {
       "name": "Traverse Difficult Terrain",
@@ -725,6 +795,11 @@
     "cols": 8,
     "rows": 1,
     "landscape": false,
+    "cell": [
+     750,
+     1050
+    ],
+    "gutter": 24,
     "cards": [
      {
       "name": "Navigate Without Guidance",
@@ -769,6 +844,11 @@
     "cols": 8,
     "rows": 1,
     "landscape": false,
+    "cell": [
+     750,
+     1050
+    ],
+    "gutter": 24,
     "cards": [
      {
       "name": "Rapid Approach",
@@ -813,6 +893,11 @@
     "cols": 6,
     "rows": 1,
     "landscape": false,
+    "cell": [
+     750,
+     1050
+    ],
+    "gutter": 24,
     "cards": [
      {
       "name": "Yellow Shortage",
@@ -849,6 +934,11 @@
     "cols": 3,
     "rows": 1,
     "landscape": true,
+    "cell": [
+     1050,
+     750
+    ],
+    "gutter": 24,
     "cards": [
      {
       "name": "Architect",
@@ -876,6 +966,11 @@
     "cols": 5,
     "rows": 1,
     "landscape": false,
+    "cell": [
+     750,
+     1050
+    ],
+    "gutter": 24,
     "cards": [
      {
       "name": "Element mat 1",
@@ -913,6 +1008,11 @@
     "cols": 6,
     "rows": 1,
     "landscape": false,
+    "cell": [
+     750,
+     1050
+    ],
+    "gutter": 24,
     "cards": [
      {
       "name": "Cross-Contamination",
@@ -949,6 +1049,11 @@
     "cols": 6,
     "rows": 1,
     "landscape": false,
+    "cell": [
+     750,
+     1050
+    ],
+    "gutter": 24,
     "cards": [
      {
       "name": "Extra Limbs",
@@ -985,6 +1090,11 @@
     "cols": 6,
     "rows": 1,
     "landscape": false,
+    "cell": [
+     750,
+     1050
+    ],
+    "gutter": 24,
     "cards": [
      {
       "name": "Unexpected Resilience",
@@ -1021,6 +1131,11 @@
     "cols": 4,
     "rows": 1,
     "landscape": true,
+    "cell": [
+     1050,
+     750
+    ],
+    "gutter": 24,
     "cards": [
      {
       "name": "Neural Extraction Practicum",
@@ -1049,6 +1164,11 @@
     "cols": 4,
     "rows": 1,
     "landscape": true,
+    "cell": [
+     1050,
+     750
+    ],
+    "gutter": 24,
     "cards": [
      {
       "name": "Nobulous Needs This Now",
@@ -1077,6 +1197,11 @@
     "cols": 6,
     "rows": 1,
     "landscape": true,
+    "cell": [
+     1050,
+     750
+    ],
+    "gutter": 24,
     "cards": [
      {
       "name": "Borrow the Master's Notes",
@@ -1113,6 +1238,11 @@
     "cols": 6,
     "rows": 1,
     "landscape": false,
+    "cell": [
+     750,
+     1050
+    ],
+    "gutter": 24,
     "cards": [
      {
       "name": "I Don't Have Time for This",
@@ -1149,6 +1279,11 @@
     "cols": 6,
     "rows": 1,
     "landscape": false,
+    "cell": [
+     750,
+     1050
+    ],
+    "gutter": 24,
     "cards": [
      {
       "name": "Uneven Architecture",
@@ -1185,6 +1320,11 @@
     "cols": 6,
     "rows": 1,
     "landscape": false,
+    "cell": [
+     750,
+     1050
+    ],
+    "gutter": 24,
     "cards": [
      {
       "name": "Diagnostic Port",
@@ -1221,6 +1361,11 @@
     "cols": 10,
     "rows": 3,
     "landscape": false,
+    "cell": [
+     750,
+     1050
+    ],
+    "gutter": 24,
     "cards": [
      {
       "name": "The Physician's Greeting",
@@ -1329,6 +1474,11 @@
     "cols": 5,
     "rows": 1,
     "landscape": true,
+    "cell": [
+     1050,
+     750
+    ],
+    "gutter": 24,
     "cards": [
      {
       "name": "The Archivist",

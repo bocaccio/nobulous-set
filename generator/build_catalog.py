@@ -6,8 +6,14 @@ The card names come from the build scripts themselves, so the catalog cannot
 drift from the printed cards. The build scripts render on import, so `gen` is
 stubbed out first: nothing is drawn, only the data lists are read.
 
-Grid size is read from the finished sheet in out/: portrait cards are 500x700
-and landscape cards 700x500, so the sheet's own pixel size gives cols and rows.
+Grid size is read from the finished sheet in out/, never assumed: at 300 DPI
+a portrait cell is 750x1050 and a landscape one 1050x750, and fit_tts may
+shrink a sheet to something else again.
+
+Each deck also publishes `cell` and `gutter` - the cell's real pixel size and
+gen.py's CARD_INSET_MM expressed at that size. The lab needs both to place a
+sprite and had been hard-coding them, which is how it ended up cropping a
+300 DPI card by a 200 DPI margin.
 """
 import io
 import json
@@ -29,8 +35,27 @@ stub.elements = lambda *a, **k: ''
 stub.skulls = lambda *a, **k: ''
 stub.subj_icon = lambda *a, **k: ''
 stub.hdr_fit = lambda *a, **k: ''
-stub.LANDSCAPE = (88.9, 63.5)
-stub.PORTRAIT = (63.5, 88.9)
+# gen.py is the authority on card geometry and is not imported here (it
+# renders on import), so its constants are read out of the source. A second
+# hand-kept copy is exactly the drift this file exists to prevent.
+def gen_consts():
+    import ast
+    with io.open(os.path.join(HERE, 'gen.py'), encoding='utf-8') as fh:
+        tree = ast.parse(fh.read())
+    want = ('PORTRAIT', 'LANDSCAPE', 'DPI', 'CARD_INSET_MM')
+    out = {}
+    for node in tree.body:
+        if isinstance(node, ast.Assign) and isinstance(node.targets[0], ast.Name)                 and node.targets[0].id in want:
+            out[node.targets[0].id] = ast.literal_eval(node.value)
+    missing = [k for k in want if k not in out]
+    if missing:
+        raise SystemExit('gen.py no longer defines %s' % ', '.join(missing))
+    return out
+
+
+GEN = gen_consts()
+stub.LANDSCAPE = GEN['LANDSCAPE']
+stub.PORTRAIT = GEN['PORTRAIT']
 
 
 class _Dots(dict):
@@ -72,14 +97,19 @@ def grid(sheet, n):
         w, h = im.size
     cols = min(10, n)
     rows = int(math.ceil(n / float(cols)))
-    return cols, rows, (w / float(cols)) > (h / float(rows))
+    cw, ch = w // cols, h // rows
+    return cols, rows, cw > ch, cw, ch
 
 
 def deck(title, sheet, card_names, kind, back=None, back_kind=None, back_names=None):
     per_card = isinstance(back, (list, tuple))
-    cols, rows, landscape = grid(sheet, len(card_names))
+    cols, rows, landscape, cw, ch = grid(sheet, len(card_names))
+    # The inset is a physical 2mm, so at this cell's own scale it is that
+    # fraction of the card's width - which survives fit_tts shrinking a sheet.
+    mm_w = (GEN['LANDSCAPE'] if landscape else GEN['PORTRAIT'])[0]
     entry = {
         'title': title, 'sheet': sheet, 'cols': cols, 'rows': rows, 'landscape': landscape,
+        'cell': [cw, ch], 'gutter': int(round(cw * GEN['CARD_INSET_MM'] / mm_w)),
         'cards': [{'name': n, 'kind': kind(n, i) if callable(kind) else kind}
                   for i, n in enumerate(card_names)],
     }

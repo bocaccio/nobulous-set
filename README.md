@@ -34,8 +34,15 @@ window open while playing.
 You can instead run the server manually from a Miniforge Prompt:
 
 ```bat
-python -m http.server 8000 -d playtest/dist
+python playtest/serve.py
 ```
+
+Use `serve.py` rather than `python -m http.server`. The plain server sends no
+cache headers, so the browser caches `index.html` - and that file is what names
+the `?v=` token on every script and sheet, so a cached copy pins you to an old
+build no matter how often those tokens change. The symptom is a feature that is
+simply missing, with no error. `serve.py` revalidates the HTML and caches the
+rest for a year, which is what the tokens are for.
 
 Then open `http://localhost:8000/`. To stop the server without closing the
 terminal, press **Ctrl+C**. Progress is stored locally in that browser. If the
@@ -98,6 +105,13 @@ python3 build_mod.py --user YOU --ref v1.0
 ```
 
 ---
+
+## Rebuilding any of this
+
+Nothing here is needed to play: the card sheets, the PDFs and the lab are all
+committed. To rebuild them, `pip install -r requirements.txt`, then read the
+notes at the top of that file - two of the dependencies cannot be installed by
+pip, and both fail in ways that do not name themselves.
 
 ## Print and play
 

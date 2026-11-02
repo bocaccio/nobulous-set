@@ -6,8 +6,14 @@ and the NRJ Imposter finale.
 From the repository root, run:
 
 ```bash
-python -m http.server 8000 -d playtest/dist
+python playtest/serve.py
 ```
+
+Not `python -m http.server`: it sends no cache headers, the browser caches
+`index.html`, and since that file names the `?v=` token on every script and
+sheet, a cached copy pins you to an old build however often they are bumped.
+A feature then appears to be missing rather than stale. `serve.py` is the same
+static server with headers that tell the truth.
 
 Then open `http://localhost:8000/`. Windows users can instead double-click the
 top-level `Start_Playtest.bat` file. The launcher recognizes common Miniforge
