@@ -789,9 +789,54 @@ Each of these only appears a few turns in.
 
 Not your job to fix, but worth knowing if Jon raises them:
 
+- **A card title wrapped, the header did not grow, and the subtitle was cut
+  in half.** Reported 2026-11-02 as "text is being cut off at the top" on
+  the Interference card **Undocumented Dependencies**, and it was real, on
+  the printed card and not only on screen.
+
+  `hdr_fit` exists for exactly this: WeasyPrint sizes the flex header from
+  one line, so when a title wraps the body rides up and covers the
+  subtitle, and `hdr_fit` reserves the height to stop it. It measures the
+  title with **PIL**. WeasyPrint lays it out with **Pango**. The two agree
+  to about a percent, and a percent is not enough: this title measured
+  **99.86%** of the available width, `hdr_fit` returned no min-height, and
+  Pango wrapped it anyway.
+
+  Two corrections in `gen.py`. `title_lines` now subtracts `CARD_BORDER_MM`,
+  because `.card` draws a 0.5pt border and `box-sizing: border-box` takes it
+  out of the content width - correct, but on its own it still left the title
+  fitting by 0.8px. The one that matters is `TITLE_SAFETY = 0.98`: a title
+  within 2% of the edge is treated as wrapping.
+
+  **2% is not a guess.** Measured across all 240 card titles in the set,
+  two already wrap and are reserved (`The Night Watchman's Account` 104.7%,
+  `Independent Performance Trial` 104.7%), this one sat at 99.86%, and the
+  next is `Methodological Optimization` at **96.1%**. The band between 96.1
+  and 99.86 is empty, so any margin from 1% to 4% catches this card and no
+  other. Re-rendering all four families confirmed it: **1 sheet changed out
+  of 52**, and the other 51 came back byte-identical.
+
+  `check_app_sync.py` now fails if a new card name lands in the 1% below
+  the cut, where neither the measurement nor the margin can be trusted.
+  It also prints the margin - today 1.9%. If it ever reports a title at
+  97.5%, rename the card or widen `TITLE_SAFETY` and re-render; do not
+  assume it is fine because it rendered correctly once.
+
+  **How NOT to look for this.** Three pixel detectors were written before
+  one worked, and the first two produced confident, entirely wrong lists of
+  clipped cards - a centre-column probe stops at the first letter of the
+  title, and a row-composition probe stops where a long title covers half
+  the row. The detector that worked finds the band's foot as the first row
+  that is mostly body cream and the subtitle's foot by ink coverage. But
+  the answer that actually settled it came from the renderer: change the
+  measurement, re-render everything, and diff. The sheets that move ARE the
+  affected cards. Reach for that first.
+
 - **The card preview cropped a 300 DPI card by a 200 DPI margin, and the
-  geometry now has one owner.** Reported 2026-11-02 as "NRJ text cut off at
-  the top" in the lab's card browser. Nothing was clipped: the preview was
+  geometry now has one owner.** Found 2026-11-02 while chasing the clipped
+  subtitle above - a second, unrelated fault on the same screen, and the
+  reason that one looked worse than it was. The preview clipped nothing: it
+  was
   cropping away the card's entire 2mm cream margin, its printed border and
   its rounded corner, which puts the title hard against the frame and reads
   exactly like clipped text.

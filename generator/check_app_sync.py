@@ -638,6 +638,62 @@ check("the lab reads the published geometry instead of assuming it",
       "deck.cell" in _sj and "cellOf" in _sj)
 
 print()
+print("Card titles - the gap between measuring and rendering")
+# hdr_fit reserves a second line of header when a title wraps, because
+# WeasyPrint sizes the flex header from one line and the body then covers
+# the subtitle. It measures with PIL; WeasyPrint lays out with Pango, and
+# the two agree only to about a percent. "Undocumented Dependencies"
+# measured 99.86% of the available width on 2026-11-02, so nothing was
+# reserved and Pango wrapped it anyway - the subtitle was cut in half on
+# the printed card.
+#
+# TITLE_SAFETY treats anything within 2% of the edge as wrapping. That
+# works because the set has an empty band between 96.1% and 99.86%. This
+# check fails if a new card name lands in that band, where neither the
+# measurement nor the margin can be trusted - rename it, or widen the
+# margin and re-render.
+try:
+    from PIL import ImageFont
+except ImportError:
+    check("card titles are clear of the measure/render gap", True,
+          "skipped: Pillow not installed")
+else:
+    _gs = text("generator/gen.py")
+    _gv = {}
+    for _line in _gs.splitlines():
+        for _k in ("PORTRAIT", "LANDSCAPE", "DPI", "CARD_INSET_MM",
+                   "TITLE_SAFETY", "HDR_PAD"):
+            if _line.startswith(_k + " = "):
+                _gv[_k] = ast.literal_eval(_line.split(" = ", 1)[1].split("#")[0].strip())
+    _pt_mm = 25.4 / 72.0
+    _border = 0.5 * _pt_mm
+    _fdir = os.path.join(ROOT, "fonts", "DejaVuSans-Bold.ttf")
+    _risky, _worst = [], (0.0, "")
+    for _game in _cat.values():
+        for _d in _game["decks"]:
+            _size = _gv["LANDSCAPE"] if _d["landscape"] else _gv["PORTRAIT"]
+            _avail = (_size[0] - 2 * _gv["CARD_INSET_MM"] - 2 * _border
+                      - 2 * _gv["HDR_PAD"][2])
+            _lim = _avail * _gv["DPI"] / 25.4
+            for _c in _d["cards"]:
+                _nm = _c["name"]
+                _pt = 8.2 if len(_nm) > 30 else 9.2 if len(_nm) > 19 else 11.0
+                _px = max(8, int(round(_pt * _pt_mm * _gv["DPI"] / 25.4)))
+                _w = ImageFont.truetype(_fdir, _px).getlength(_nm)
+                _r = _w / _lim
+                if _r > _worst[0] and _r <= _gv["TITLE_SAFETY"]:
+                    _worst = (_r, _nm)
+                # Only a title that fits on one line can be caught out; one
+                # that is already over the limit wraps and is reserved.
+                if _gv["TITLE_SAFETY"] - 0.01 < _r <= _gv["TITLE_SAFETY"]:
+                    _risky.append("%s (%.1f%%)" % (_nm, _r * 100))
+    check("no card title sits in the measure/render gap", not _risky,
+          "; ".join(_risky[:3]))
+    check("widest safe title is %.1f%% of the line, margin %.1f%% to the %d%% cut"
+          % (_worst[0] * 100, (_gv["TITLE_SAFETY"] - _worst[0]) * 100,
+             _gv["TITLE_SAFETY"] * 100), True, _worst[1])
+
+print()
 print("%d check(s) failed" % len(FAILS))
 for f in FAILS:
     print("   -", f)

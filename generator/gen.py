@@ -272,6 +272,22 @@ def _manifest(name, sheet_cols, sheet_rows, count, card_px, back, back_is_sheet)
 # title here and reserving the height keeps every header honest.
 HDR_PAD = (1.9, 2.0, 2.4)          # top, bottom, side (mm)
 SUB_SIZE, SUB_GAP, PT_MM = 6.4, 0.7, 25.4 / 72.0
+# `.card` draws a 0.5pt border and `* { box-sizing: border-box }` takes it
+# out of the content width, so the title has this much less room than the
+# padding alone suggests.
+CARD_BORDER_MM = 0.5 * PT_MM
+# WeasyPrint lays the title out with Pango; title_lines measures it with
+# PIL. They agree to about a percent, and a percent is not enough. On
+# 2026-11-02 "Undocumented Dependencies" measured 99.86% of the available
+# width, so hdr_fit reserved no second line - and Pango wrapped it anyway.
+# The body then rode up and cut the subtitle in half.
+#
+# Across all 240 card titles in the set that one is the only thing above
+# 96.1%, so any margin between 1% and 4% catches it and touches nothing
+# else. 2% sits in the middle of that gap. Treat a title this close to the
+# edge as wrapping: reserving a line that turns out not to be needed costs
+# a slightly deeper header, while not reserving one costs a clipped card.
+TITLE_SAFETY = 0.98
 
 
 def title_lines(title, size_pt, width_mm):
@@ -286,7 +302,7 @@ def title_lines(title, size_pt, width_mm):
     lines, line = 1, ''
     for word in title.split():
         trial = (line + ' ' + word).strip()
-        if font.getlength(trial) <= limit or not line:
+        if font.getlength(trial) <= limit * TITLE_SAFETY or not line:
             line = trial
         else:
             lines, line = lines + 1, word
@@ -297,7 +313,8 @@ def hdr_fit(title, cls='', size=PORTRAIT):
     """'min-height:..mm' when the title wraps onto more than one line, else ''."""
     size_pt = 8.2 if 'xlong' in cls else 9.2 if 'long' in cls else 11.0
     plain = re.sub('<[^>]+>', ' ', title).replace('&#8209;', '-').replace('&middot;', '.')
-    lines = title_lines(plain, size_pt, size[0] - 2 * 2.0 - 2 * HDR_PAD[2])
+    lines = title_lines(plain, size_pt, size[0] - 2 * CARD_INSET_MM
+                        - 2 * CARD_BORDER_MM - 2 * HDR_PAD[2])
     if lines < 2:
         return ''
     return 'min-height:%.2fmm' % (HDR_PAD[0] + HDR_PAD[1] + lines * size_pt * 1.04 * PT_MM
