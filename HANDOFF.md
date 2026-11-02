@@ -821,6 +821,20 @@ Not your job to fix, but worth knowing if Jon raises them:
   now. Re-rendering NRJ after the CSS change gave 9 of 9 sheets
   byte-identical, so the change is inert on the art.
 
+- **`serve.py` was single-threaded, and wedged.** Found 2026-11-02 when the
+  lab stopped answering on port 8000: the port was still LISTENING and every
+  request timed out, which looks like the machine refusing the lab rather
+  than the server being stuck. The first cut used `socketserver.TCPServer`,
+  which handles one request at a time - and `python -m http.server`, the
+  thing serve.py was written to replace, has used `ThreadingHTTPServer`
+  since Python 3.7. So the replacement was strictly worse at exactly what
+  the lab does: a browser opens six connections at once for a page pulling
+  fifty card sheets, and one stuck or idle-held connection starves the rest.
+  It subclasses `ThreadingHTTPServer` now, with `daemon_threads` so Ctrl+C
+  does not wait on a half-read connection. If it ever stops answering again,
+  check for a LISTENING socket with no accept behind it before assuming the
+  port is taken.
+
 - **The dependencies are written down, in `requirements.txt`.** There was no
   manifest of any kind. HANDOFF section 8 listed four packages in prose for
   the card generator only and missed `beautifulsoup4`, which

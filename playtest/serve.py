@@ -27,7 +27,6 @@ clears it, and this server keeps it from happening again.
 import functools
 import http.server
 import os
-import socketserver
 import sys
 
 DIST = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dist")
@@ -55,11 +54,30 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 self, fmt, *args)
 
 
+class Server(http.server.ThreadingHTTPServer):
+    """Threaded, and that is not a detail.
+
+    The first cut of this file used socketserver.TCPServer, which handles one
+    request at a time. `python -m http.server` has used ThreadingHTTPServer
+    since Python 3.7, so the server written to replace it was strictly worse
+    at the one thing a page full of card sheets needs: a browser opens six
+    connections at once, and a single-threaded server that is mid-request -
+    or holding a connection a browser opened and never used - accepts none of
+    them. The port stays open and listening while every request times out,
+    which looks like the machine refusing the lab rather than the server
+    being busy.
+
+    daemon_threads so Ctrl+C does not wait on a half-read connection.
+    """
+
+    daemon_threads = True
+    allow_reuse_address = True
+
+
 def main():
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 8000
-    socketserver.TCPServer.allow_reuse_address = True
     handler = functools.partial(Handler, directory=DIST)
-    with socketserver.TCPServer(("", port), handler) as httpd:
+    with Server(("", port), handler) as httpd:
         print("playtest lab -> http://localhost:%d" % port)
         print("  %s" % DIST)
         print("  HTML and catalog.json revalidate; versioned assets cache.")
