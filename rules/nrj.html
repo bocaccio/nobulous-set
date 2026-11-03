@@ -256,9 +256,16 @@ Council&rsquo;s attention comes back around.</p>
   <li><b>Strategy, twice.</b> Commit dice, roll, and apply hits to your standing Exhibits: a hit is 1 success, a
       Crit is 2, and only the allowed colors may be applied. Then take up any dice you have not applied, add
       more if you want, and throw again. Nothing is compulsory.</li>
-  <li><b>Resolve.</b> Every Exhibit <em>still standing</em> deals its Damage to you. Then exhaust every
-      committed die that applied nothing, and every die lying on an Exhibit that has just fallen. Recover up to
-      <b>REC</b> exhausted dice, advance the attention, and tick the clock.</li>
+  <li><b>Resolve</b>, in this order:
+      <br>&nbsp;&nbsp;1. Every Exhibit <em>still standing</em> deals its Damage to you.
+      <br>&nbsp;&nbsp;2. Exhaust every committed die that applied nothing, and every die lying on an Exhibit
+      that has just fallen.
+      <br>&nbsp;&nbsp;3. Take the Reward of each Exhibit that fell, if it is one of the five that pay.
+      <br>&nbsp;&nbsp;4. Recover up to <b>REC</b> exhausted dice.
+      <br>&nbsp;&nbsp;5. Advance the attention and tick the clock.
+      <br>Steps 2 to 4 are in that order for a reason: a Reward that recovers dice may take back the very
+      dice that just buried the card, and it is read <em>before</em> your REC recovery, while the most dice
+      are still exhausted.</li>
 </ol>
 <p>An Exhibit falls when the successes on it reach its Target. <b>Dice applied to an Exhibit that is still
 standing stay on it, and the successes they scored stay with them</b> &mdash; progress on an Exhibit is never
@@ -266,8 +273,9 @@ lost, and those dice are neither available nor exhausted until the card falls.</
 
 <h3>What the Council lets slip</h3>
 <p>Every Exhibit prints a Reward and <b>five of them pay</b>. Those five are printed in <b>bold</b> and
-begin &ldquo;<em>When this Exhibit falls</em>&rdquo;; take the Reward during the Resolve step, after the
-dice on the fallen Exhibit have come back. The other nineteen are printed in <em>italics</em> and are worth
+begin &ldquo;<em>When this Exhibit falls</em>&rdquo;; take the Reward at <b>step 3 of Resolve</b> &mdash;
+after the dice on the fallen Exhibit have been exhausted, and before your REC recovery. The other nineteen
+are printed in <em>italics</em> and are worth
 exactly what the Council intends them to be worth.</p>
 <ul>
   <li><b>The Chamber Mechanism</b> &mdash; recover 2 exhausted dice.</li>
@@ -276,8 +284,12 @@ exactly what the Council intends them to be worth.</p>
   <li><b>Tracks in the Yard</b> &mdash; recover 1 exhausted die of each of two colors.</li>
   <li><b>The Narrow Stair</b> &mdash; the next Exhibit you deploy has its Target reduced by 1.</li>
 </ul>
-<p>These are the only reason it matters <em>which</em> Exhibit you finish first. Four of the five are Target
-3 as dealt, so the cheapest evidence is the evidence that pays.</p>
+<p>A Reward is one reason it matters <em>which</em> Exhibit you finish first, and not the only one: a
+standing Exhibit deals its Damage every session, and the dice lying on it are neither available nor
+exhausted until it falls. Burying the high&#8209;Damage card, and freeing a die that has been held for
+three sessions, both pay without any Reward involved. What the Rewards add is a reason to go after the
+<em>cheap</em> evidence as well: four of the five are Target 3 as dealt, so the cheapest evidence is also
+the evidence that pays.</p>
 
 <h3>Answering an Exhibit</h3>
 <p>A <b>retained</b> card answers only its own domain, and reduces the Target of one Exhibit you have just
