@@ -49,15 +49,50 @@ AoS  Automaton of Shale
   difficulty = the Routine/Specialized/Unstable mix
 
                             no NRJ    Tier I   Tier II  Tier III
-  Easy  5/3/0                79.6%     68.4%     61.1%     65.0%
-  Standard  4/3/1            71.2%     59.1%     50.7%     54.2%
-  Hard  3/3/2                62.8%     49.3%     40.8%     44.9%
-  Nobulous  2/3/3            52.6%     40.2%     32.0%     35.2%
+  Easy  5/3/0                68.8%     54.1%     38.1%     41.0%
+  Standard  4/3/1            57.8%     43.9%     28.8%     31.4%
+  Hard  3/3/2                48.0%     34.2%     21.6%     23.7%
+  Nobulous  2/3/3            38.4%     26.6%     15.3%     17.4%
   
-    Mean of the six Technicians.
+    Mean of the six Technicians, ALLOC_MODE = honest.
     Tier I   1 of 6 Nobulous Interference cards drawn at setup
     Tier II  6 Corrupted Limitations in the Limitation deck
     Tier III 6 Backdoor Routines, at most 2 claimed per game
+
+  RE-MEASURED 2026-11-03 WITH REQUIRED COLOURS IMPLEMENTED.
+  Every AoS figure published before this date was taken without
+  them - they were absent from the model entirely.  What they
+  read before: 79.6 / 71.2 / 62.8 / 52.6 at no NRJ, and
+  65.0 / 54.2 / 44.9 / 35.2 at Tier III.
+
+  The solo column falls 11 to 14 points and KEEPS ITS SHAPE.
+  The tier columns fall much further - Tier II at Standard goes
+  50.7 -> 28.8 - because a Corrupted Limitation withholds 2 dice
+  of a random colour, and a colour withheld is a colour that
+  cannot answer a dot.  The two rules compound, which neither
+  did alone.  "Cannot supply a required colour" fires on 6.1% of
+  Programs at no NRJ.  THE TIER PITCH NEEDS A DECISION; nothing
+  has been re-tuned.
+
+  AND THE PUBLISHED POLICY IS NOT COMPETENT PLAY.  The same
+  table under ALLOC_MODE = sacrifice - give up the dearest
+  element with no required dot and spend its dice on the rest:
+
+                            no NRJ    Tier I   Tier II  Tier III
+    Easy  5/3/0              78.4%     58.9%     36.5%     39.1%
+    Standard  4/3/1          73.8%     54.0%     33.4%     35.5%
+    Hard  3/3/2              70.4%     48.9%     29.5%     32.1%
+    Nobulous  2/3/3          64.6%     45.0%     26.9%     28.6%
+
+  Required colours do NOT close that line: it is still worth 10
+  to 27 points, because there is nearly always a dotless element
+  to give up.  And it FLATTENS THE LADDER - 78 / 74 / 70 / 65 is
+  14 points across four levels where the honest table spans 30.
+  So under good play the difficulty dial barely works, which is
+  the open question this review leaves behind.  Note too that
+  sacrifice play at Standard reads 73.8% against the 71.2% that
+  used to be published: the old number was about right by
+  accident, for a game that was missing a rule.
 
   IMPLEMENTATION COVERAGE: TWO GAPS, ONE OF THEM SERIOUS (2026-11-03)
   Asked by review whether the model compares deliberate
