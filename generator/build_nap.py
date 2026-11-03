@@ -109,8 +109,7 @@ APPS = [
 def C(title, sub, body, ftr='', warn=False, acc=None, bg=None, flavor=''):
     f = ('<div class="ftr%s">%s</div>' % (' warn' if warn else '', ftr)) if ftr else ''
     # Flavor text sits at the bottom of the card, just above the footer.
-    fl = ('<div style="font-size:7.4pt;font-style:italic;text-align:center;line-height:1.25;'
-          'color:#6f675a;margin:1.2mm 0 1mm">%s</div>' % flavor) if flavor else ''
+    fl = ('<div class="flavor c">%s</div>' % flavor) if flavor else ''
     st = ' style="--a:%s"' % acc if acc else ''
     bs = ' style="background:%s"' % bg if bg else ''
     cls = title_cls(title, CARD_SIZE)

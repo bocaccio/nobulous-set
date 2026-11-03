@@ -83,13 +83,25 @@ body { font-family: "DejaVu Sans", sans-serif; width: %fmm; height: %fmm;
 .big { font-size:30pt; font-weight:bold; text-align:center; line-height:1; color:var(--a); }
 .biglbl { font-size:6.2pt; letter-spacing:.14em; text-transform:uppercase; text-align:center;
           color:#8a8272; margin-top:.7mm; }
-.txt { font-size:8.4pt; line-height:1.3; margin-top:2mm; }
+/* Body text, subheads, the below-the-line footer and flavour text have ONE
+   owner: here. These are the sizes build_aos.py used to set for itself in
+   its BIG stylesheet while the other three families printed a smaller set;
+   asked for set-wide on 2026-11-03. Do not override a size below in a build
+   script - the whole point is that a row of cards from different families
+   reads as one game. `.txt.sm` deliberately stays at 7.4pt: see HANDOFF. */
+.txt { font-size:9.4pt; line-height:1.3; margin-top:2mm; }
 .txt.c { text-align:center; }
 .txt.sm { font-size:7.4pt; }
-.sub { font-size:6.6pt; letter-spacing:.09em; text-transform:uppercase; color:var(--a);
+.sub { font-size:7.2pt; letter-spacing:.09em; text-transform:uppercase; color:var(--a);
        font-weight:bold; margin-bottom:.9mm; }
 .spacer { flex:1; }
-.ftr { font-size:6.2pt; line-height:1.22; letter-spacing:.03em; color:#7d7566;
+/* Flavour is the one thing on a card that is not a rule, so it is the one
+   thing set in italics and in grey rather than near-black. `.c` because
+   three families centre it and AoS sets it flush left. */
+.flavor { font-size:7.1pt; line-height:1.28; font-style:italic; color:#6f675a;
+          margin:2.4mm 0 1.4mm; }
+.flavor.c { text-align:center; }
+.ftr { font-size:6.8pt; line-height:1.22; letter-spacing:.03em; color:#7d7566;
        border-top:.4pt solid #ddd6c6; padding-top:1.1mm; margin-top:1.5mm; }
 .ftr.warn { color:#a5502a; }
 .row { display:flex; align-items:center; gap:1.6mm; }

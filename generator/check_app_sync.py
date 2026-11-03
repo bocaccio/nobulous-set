@@ -821,6 +821,57 @@ else:
           not _wrap, "%d wrap: %r" % (len(_wrap), _wrap[:3]))
 
 print()
+print("BODY TEXT, FOOTERS AND FLAVOUR - ONE OWNER")
+# build_aos.py used to set its own body, subhead, footer and flavour sizes
+# in its BIG stylesheet while the other three families printed gen.py's
+# smaller base set, so a row of face-up cards from different families did
+# not read as one game. On 2026-11-03 AoS's sizes became the base ones for
+# everybody. The way that comes undone is quiet: a build script setting one
+# of these sizes for itself again, or a card hand-rolling an italic flavour
+# div instead of using the class. Both are caught here.
+_genss = text("generator/gen.py")
+_BODY = (('.txt', '9.4pt'), ('.sub', '7.2pt'), ('.ftr', '6.8pt'),
+         ('.flavor', '7.1pt'))
+_FAMILIES = ("generator/build_bat.py", "generator/build_nap.py",
+             "generator/build_aos.py", "generator/build_nrj.py")
+
+for _sel, _pt in _BODY:
+    check("gen.py sets %-8s at %s" % (_sel, _pt),
+          re.search(re.escape(_sel) + r"\s*\{[^}]*font-size:" + re.escape(_pt),
+                    _genss) is not None)
+check("flavour is italic and grey, not near-black",
+      bool(re.search(r"\.flavor\s*\{[^}]*font-style:italic", _genss)) and
+      bool(re.search(r"\.flavor\s*\{[^}]*color:#6f675a", _genss)))
+
+# `.txt.sm` is deliberately NOT scaled with `.txt`: it is the reduced size
+# for a secondary line (the NAP Credit note, the NRJ Exhibit Reward), and
+# leaving it at 7.4pt is what keeps the Exhibit Reward the same size it was
+# signed off at. Asserted so that scaling it becomes a decision rather than
+# a tidy-up.
+check("gen.py keeps .txt.sm at 7.4pt",
+      re.search(r"\.txt\.sm\s*\{[^}]*font-size:7\.4pt", _genss) is not None)
+
+_reowned = []
+for _rel in _FAMILIES:
+    _src = text(_rel)
+    for _sel, _pt in _BODY:
+        # `.txt.sm`/`.txt.c` would match `.txt`, so require the brace.
+        if re.search(re.escape(_sel) + r"\s*\{[^}]*font-size", _src):
+            _reowned.append("%s sets %s" % (_rel.split("/")[-1], _sel))
+check("no build script sets a body size for itself",
+      not _reowned, repr(_reowned))
+
+_inline = [_r.split("/")[-1] for _r in _FAMILIES
+           if "font-style:italic" in text(_r)]
+check("no card hand-rolls an italic flavour div",
+      not _inline, "still inline in %r" % (_inline,))
+
+_noclass = [_r.split("/")[-1] for _r in _FAMILIES
+            if 'class="flavor' not in text(_r)]
+check("all four families print flavour through the class",
+      not _noclass, "not using it: %r" % (_noclass,))
+
+print()
 print("%d check(s) failed" % len(FAILS))
 for f in FAILS:
     print("   -", f)

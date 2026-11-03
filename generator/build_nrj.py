@@ -18,8 +18,7 @@ def C(title, sub, body, ftr='', warn=False, acc=None, tint=None, hdr=None,
       flavor=''):
     f = ('<div class="ftr%s">%s</div>' % (' warn' if warn else '', ftr)) if ftr else ''
     # Flavour sits under the rules and above the footer, as build_bat.C does.
-    fl = ('<div style="font-size:7.6pt;font-style:italic;text-align:center;'
-          'line-height:1.25;color:#6f675a;margin:1.4mm 0 0">%s</div>' % flavor) if flavor else ''
+    fl = ('<div class="flavor c">%s</div>' % flavor) if flavor else ''
     cls = title_cls(title, CARD_SIZE)
     st = ' style="--a:%s"' % acc if acc else ''
     bs = ' style="background:%s"' % tint if tint else ''
@@ -395,8 +394,9 @@ def exhibit_body(name, target):
     # The <b> lives here rather than in EXHIBIT_REWARD so that the table
     # stays plain strings - check_app_sync.py and finale.py read it.
     def italic(text, top):
-        return ('<div style="font-size:7.4pt;font-style:italic;text-align:center;'
-                'line-height:1.25;color:#6f675a;margin-top:%smm">%s</div>'
+        # Mid-body, under the Reward subhead rather than above the footer, so
+        # the top margin is the only thing set here; gen.py owns the rest.
+        return ('<div class="flavor c" style="margin:%smm 0 0">%s</div>'
                 % (top, text))
 
     stats += '<div class="sub" style="margin-top:3.2mm">Reward</div>'
@@ -503,8 +503,7 @@ def impcard(n, role, side, trig, an, at, fl):
              'REC %d</div>'
              '<div class="sub" style="margin-top:3mm">%s &middot; %s</div>'
              '<div class="txt" style="margin-top:.4mm">%s</div>'
-             '<div style="font-size:7.4pt;font-style:italic;text-align:center;'
-             'line-height:1.25;color:#6f675a;margin:1.6mm 0 0">%s</div>'
+             '<div class="flavor c" style="margin:1.6mm 0 0">%s</div>'
              % (hp, st, rec, trig, an, at, fl),
              'Choose one Imposter and one of its sides at setup.',
              acc=IMP_ACC[n])

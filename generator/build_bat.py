@@ -111,8 +111,7 @@ def C(title, sub, body, ftr='', warn=False, acc=None, tint=None, flavor='', dot=
     cls = title_cls(title, CARD_SIZE, hstyle)
     st = ' style="--a:%s"' % acc if acc else ''
     bs = ' style="background:%s"' % tint if tint else ''
-    flavor_html = ('<div style="font-size:8.6pt;font-style:italic;text-align:center;'
-                   'line-height:1.25;margin:1mm 0">%s</div>' % flavor) if flavor else ''
+    flavor_html = ('<div class="flavor c">%s</div>' % flavor) if flavor else ''
     # An optional color dot sits in the top-right corner of the title band.
     fit, dot_html = hdr_fit(title, cls, CARD_SIZE, hstyle), ''
     hs = ' style="%s"' % fit if fit else ''

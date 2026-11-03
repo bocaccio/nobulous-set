@@ -28,12 +28,13 @@ DECK_ACCENT = {'Routine': '#315c49', 'Specialized': '#4c4a75', 'Unstable': '#7a3
                'Advanced': '#8a5a20', 'Limitation': '#2f5966', 'Technician': '#3f5260',
                'Mat': '#555555'}
 
-BIG = ('.txt{font-size:9.4pt;line-height:1.3}.sub{font-size:7.2pt}.ftr{font-size:6.8pt}'
-       '.hdr .t{font-size:11.6pt}.hdr .s{font-size:6.8pt}'
+# Body text, subheads, the footer and flavour used to be set here and are
+# now in gen.py's base stylesheet, printed by every family. What is left is
+# genuinely AoS-only: the top header rung (gen.HDR_STYLES['aos'] records it,
+# and it is what makes HDR_H_MM what it is) and the element circles.
+BIG = ('.hdr .t{font-size:11.6pt}.hdr .s{font-size:6.8pt}'
        '.el .n{width:8.6mm;height:8.6mm;line-height:8.4mm;font-size:12.5pt}'
-       '.el .d{width:3.8mm;height:3.8mm}.el .sp{height:3.8mm}.bar{margin-top:4.2mm}'
-       '.flavor{font-size:7.1pt;line-height:1.28;font-style:italic;color:#6f675a;'
-       'margin:2.4mm 0 1.4mm}')
+       '.el .d{width:3.8mm;height:3.8mm}.el .sp{height:3.8mm}.bar{margin-top:4.2mm}')
 
 
 def C(title, sub, body, ftr='', warn=False, acc=None, flavor=''):

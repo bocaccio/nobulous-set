@@ -582,7 +582,7 @@
     return `NRJ Tier ${tierName(tier)} active${over?" (table override)":""} \u00b7 module cards are mixed in.`;
   }
 
-  const ruleFiles={bat:["assets/BAT_Rulebook.pdf?v=flavor57","BAT rules PDF"],nap:["assets/NAP_Rulebook.pdf?v=flavor57","NAP rules PDF"],aos:["assets/AoS_Rulebook.pdf?v=flavor57","AoS rules PDF"],nrj:["assets/NRJ_Campaign_Supplement.pdf?v=flavor57","NRJ rules PDF"]};
+  const ruleFiles={bat:["assets/BAT_Rulebook.pdf?v=onesize","BAT rules PDF"],nap:["assets/NAP_Rulebook.pdf?v=onesize","NAP rules PDF"],aos:["assets/AoS_Rulebook.pdf?v=onesize","AoS rules PDF"],nrj:["assets/NRJ_Campaign_Supplement.pdf?v=onesize","NRJ rules PDF"]};
   function updateTopbar(){const game=$("gameNav")?.value||"home",link=$("rulesLink"),resetBtn=$("resetBtn"),record=$("recordBtn");
     const rules=ruleFiles[game];if(rules){link.href=rules[0];link.textContent=rules[1];link.hidden=false}else link.hidden=true;
     resetBtn.hidden=game==="home";resetBtn.textContent=game==="nrj"?"New finale":"New test";
@@ -623,7 +623,7 @@
     return {w:c[0],h:c[1]};
   };
   // Every card image carries this tag; bump it whenever the sheets are rebuilt.
-  const ART_VERSION="?v=flavor57";
+  const ART_VERSION="?v=onesize";
   function peekStyle(deck,index,side,boxW){
     const back=side==="back"&&deck.back;
     // A deck may name one back for all its cards, or one per card.

@@ -789,6 +789,68 @@ Each of these only appears a few turns in.
 
 Not your job to fix, but worth knowing if Jon raises them:
 
+- **BODY TEXT, SUBHEADS, FOOTERS AND FLAVOUR NOW HAVE ONE OWNER - `gen.py`'s
+  base stylesheet - and the sizes are the ones AoS had been keeping to
+  itself.** Asked for on 2026-11-03: the main text, the flavour text and the
+  below-the-line text on an AoS card are the right size and colour, so print
+  them that way everywhere.
+
+  `build_aos.py` renders through its own `BIG` stylesheet, and `BIG` had been
+  quietly carrying four rules that are not AoS-specific at all. So three
+  quarters of the set printed smaller than the quarter Jon was reading:
+
+  | | BAT, NAP, NRJ printed | everybody now prints |
+  |---|---|---|
+  | `.txt` main text | 8.4pt | **9.4pt** |
+  | `.sub` subhead | 6.6pt | **7.2pt** |
+  | `.ftr` below the line | 6.2pt | **6.8pt** |
+  | flavour | four different inline styles | **`.flavor` 7.1pt italic #6f675a** |
+
+  Flavour was the worse half. There was no class outside AoS: `build_bat.C`,
+  `build_nap.C`, `build_nrj.C`, `build_nrj.exhibit_body` and
+  `build_nrj.impcard` each hand-rolled a `<div style=...>` at 8.6, 7.4, 7.6,
+  7.4 and 7.4pt. **BAT's set no colour at all**, so the one family whose
+  flavour was biggest also printed it in near-black body colour instead of
+  grey - it read as a rule. All five now emit `class="flavor c"`.
+  `.flavor` carries size, colour, italics and the margins; `.c` centres it,
+  because three families centre their flavour and AoS sets it flush left.
+  Where flavour sits MID-BODY rather than above the footer (the Exhibit
+  courtesy under its Reward subhead, and the Imposter cards) the call still
+  passes a `style="margin:..."` - the margin is that site's business, the
+  size and colour are not.
+
+  **`.txt.sm` deliberately did NOT scale with `.txt`.** It stayed at 7.4pt,
+  so the gap to `.txt` went from 1.0pt to 2.0pt. Its two users are the NAP
+  Credit note and the NRJ Exhibit Reward, and the Exhibit Reward is the line
+  Jon had just signed off in bold - growing it would have re-opened a card
+  that was finished. `check_app_sync.py` asserts the 7.4 so that scaling it
+  later is a decision rather than a tidy-up.
+
+  **Headers were not touched.** `HDR_STYLES['aos']` still carries AoS's
+  11.6pt/6.8pt top rung, `HDR_H_MM` is unchanged, and no title moved - which
+  is why none of this disturbed the title-measurement machinery above.
+
+  Verified three ways, none by eye:
+
+  - **AoS is byte-identical.** All of its sheets, and its PnP PDF, reproduce
+    exactly. The family Jon picked as the reference did not move, which is
+    the strongest statement available that the base now IS what AoS printed.
+    24 sheets changed, every one of them BAT, NAP or NRJ.
+  - **Nothing was clipped.** Bigger text makes bodies taller; a card with
+    slack absorbs it in the `.spacer{flex:1}` and a card without has its
+    footer pushed past the card edge, where `overflow:hidden` eats it. One
+    number per face - rows between the lowest inked row and the card's
+    bottom inner edge - old render against new, over all 287 faces. 212 did
+    not move; 74 lost 1px; the six NRJ Corrupted Limitations lost 6px
+    (0.51mm) because their footers now wrap to three lines, and still clear
+    the foot band by 2.8mm. **No face went from having clearance to having
+    none.** Exclude the NRJ foot band (`.nrjtag`) when redoing this or it
+    is ink at clearance zero on every NRJ card in the set, and exclude empty
+    grid cells or they report as clipped.
+  - `check_app_sync.py` has a new section: no build script may set a size
+    for `.txt`/`.sub`/`.ftr`/`.flavor` again, no card may hand-roll
+    `font-style:italic`, and all four families must use the class.
+
 - **THE LAB KEEPS ITS OWN COPY OF SOME FLAVOUR TEXT, and nothing used to
   notice when it went stale.** `playtest/dist/app.js` carries all 32 AoS
   programs with BOTH sides and the 6 Limitations; `bat_experiments.js`
@@ -825,8 +887,10 @@ Not your job to fix, but worth knowing if Jon raises them:
   THE RISK IS A PLAYER READING A COURTESY AS A RULE, and three things
   guard against it:
 
-  - A real Reward is BOLD upright; a courtesy is italic, in the set's own
-    flavour style (7.4pt, #6f675a, centred). Weight is the signal that
+  - A real Reward is BOLD upright `.txt.sm` at 7.4pt; a courtesy is
+    italic, in the set's own flavour class (`.flavor c` - 7.1pt, #6f675a,
+    centred; it was an inline 7.4pt before gen.py took it over on
+    2026-11-03). Weight is the signal that
     survives distance - across a table you can see which Exhibit pays
     without being able to read it, which italics alone do not give you.
   - All five real Rewards open "When this Exhibit falls". No courtesy may
