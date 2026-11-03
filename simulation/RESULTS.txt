@@ -51,7 +51,57 @@ AoS  Automaton of Shale
     Tier II  6 Corrupted Limitations in the Limitation deck
     Tier III 6 Backdoor Routines, at most 2 claimed per game
 
-  DELIBERATE FAILURE IS NOT A ROUTE THROUGH AoS (2026-11-03)
+  IMPLEMENTATION COVERAGE: TWO GAPS, ONE OF THEM SERIOUS (2026-11-03)
+  Asked by review whether the model compares deliberate
+  single-element sacrifice with reward-seeking play.  It did not,
+  and the answer matters:
+
+    ALLOC_MODE       honest   sacrifice_short   sacrifice always
+    Easy  5/3/0       79.9%      89.7%  +9.9       88.9%  +9.1
+    Standard  4/3/1   70.8%      85.6% +14.8       87.6% +16.9
+    Hard  3/3/2       62.7%      80.6% +17.9       84.6% +21.9
+    Nobulous  2/3/3   52.6%      72.9% +20.2       82.3% +29.6
+
+  Writing off the most expensive element and spending its dice on
+  the rest beats the calibrated policy by 10 to 30 points, and
+  FLATTENS THE LADDER to 89/88/85/82.  The rules bless it in two
+  adjacent sentences - an element may be left with no dice and
+  then simply fails, and failing exactly one element costs no
+  Health - and a bare element exhausts no dice, so it is free in
+  both currencies.  The only price is the Program Reward.
+
+  REQUIRED COLOURS ARE NOT IMPLEMENTED.  grep -i required over
+  simulation/aos.py returns nothing, and PROGRAM_TARGETS holds
+  bare integers with no colours.  Missing: the dot that must be
+  funded on a named element before allocation, Red being unable
+  to satisfy one, 2 dots on Specialized and Advanced against 1 on
+  Routine and Unstable, and the "cannot supply a required colour:
+  do not execute, lose 1 Health" branch.  So the figures above
+  are an upper bound on the printed game, not a measurement of
+  it: 1 or 2 elements per Program cannot be left bare.  Until
+  this is closed no AoS number describes the printed game.
+
+  NAP: TWO PRINTED RULES, ONE MISSING AND ONE AMBIGUOUS
+  End of Day burns a card off the Assignment deck and nothing in
+  nap.py does it; self.day only gates once-per-day abilities.
+  And the review asked when reaching the Credit goal ends the
+  apprenticeship: play() tests at the top of the loop, so the
+  model leaves at the end of that TIME SLOT, while the rulebook
+  says "play DAYS until" and the exam's Preparation performs "the
+  queued MORNING recovery" - both of which read as Day.  Both
+  measured, mean of six Apprentices, 7200 games a cell:
+
+                        as now   +burn   +end of Day    both
+    Easy (5 Cr, 4 Sb)    56.1%   +1.1       -1.8        -1.8
+    Standard (6, 4)      49.6%   +1.2       -1.0        -1.4
+    Hard (7, 5)          38.0%   +1.5       -1.1        -0.7
+    Nobulous (8, 6)      28.1%   +1.2       -0.3        +1.9
+
+  Both are within 2 points, so NAP's pitch survives either
+  reading.  The timing question is a CLARITY job, not a
+  calibration risk - which is the opposite of the AoS finding.
+
+  MASS DUMPING IS NOT A ROUTE THROUGH AoS (2026-11-03)
   Raised in review: failing Programs shortens the deck, an empty
   deck advances the game, and Advanced Programming is won by
   SURVIVING three Programs rather than completing them - so failing

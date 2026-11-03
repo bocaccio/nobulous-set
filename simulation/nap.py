@@ -300,6 +300,14 @@ ABILITIES = {"Prodigy": None, "Slacker": "discard", "Technician": "setback_windo
 CREDITS_TO_LEAVE = 6      # Easy 5, Standard 6, Hard 7, Nobulous 8
 # Difficulty is the pair (Credit goal, Setbacks in the deck).
 LEVELS = {"Easy": (5, 4), "Standard": (6, 4), "Hard": (7, 5), "Nobulous": (8, 6)}
+# End of Day burns one card off the Assignment deck, text ignored - printed
+# in rules/nap.html and never implemented here. False is what every NAP
+# number was measured with.
+END_OF_DAY_BURN = False
+# Does reaching the Credit goal end the apprenticeship at the end of that
+# TIME SLOT (False, what play() does and what the numbers were taken with)
+# or at the end of that DAY (True, which is how the rulebook reads)?
+LEAVE_AT_END_OF_DAY = False
 ROW_MAX = 4
 SLOTS_PER_DAY = 3
 
@@ -1044,6 +1052,11 @@ class Game(object):
         self.rec -= carried["rec"]
         self.crit_bonus = 0
         self.setback_window = False
+        if END_OF_DAY_BURN and self.slot == 2 and self.deck:
+            # "After Evening, resolve End of Day ... Reveal and discard the
+            # top card of the Assignment deck. Ignore all of its text,
+            # effects and Skulls."
+            self.deck.pop()
         return self.hp > 0
 
     # ------------------------------------------------------------------
@@ -1143,7 +1156,12 @@ class Game(object):
         guard = 0
         while self.hp > 0 and guard < 60:
             guard += 1
-            if self.credit_total >= CREDITS_TO_LEAVE or not self.deck:
+            if not self.deck:
+                break
+            if self.credit_total >= CREDITS_TO_LEAVE and (
+                    not LEAVE_AT_END_OF_DAY or self.slot == 2):
+                # self.slot is the slot just played, so slot 2 means the
+                # Evening is done and the Day is complete.
                 break
             if not self.time_slot():
                 return False

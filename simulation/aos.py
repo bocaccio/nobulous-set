@@ -273,6 +273,12 @@ NEGATES_PER_CYCLE = 0
 #              honestly - the mixed line, which keeps the Program Rewards
 #              (the only way Health is ever regained) while still burning
 #              the costly Programs out of the deck
+#   sacrifice  write off the single most expensive element and fund the rest
+#              properly. One failed element costs NO Health, and an element
+#              with no dice on it exhausts none, so the only price is the
+#              Program Reward. This is deliberate triage, not dumping.
+#   sacrifice_short  the same, but only when the pool cannot fill every
+#              element anyway - triage when short, reward-seeking when rich
 #
 # MEASURED 2026-11-03. Deliberate failure LOSES, monotonically in how much
 # of it you do - at Standard: 70.8% honest, 64.1% dumping Unstable, 18.9%
@@ -524,6 +530,35 @@ class Game(object):
             return len(self.available) < sum(targets)
         return False
 
+    def sacrifice_allocate(self, targets):
+        """Give up one element deliberately and spend its dice elsewhere.
+
+        The victim is the highest Target: the element that costs most to
+        reach and is likeliest to fail anyway. It gets NO dice, so it
+        exhausts none when it fails, and failing exactly one element costs
+        no Health. Everything saved goes into the elements that are left,
+        which is the point - the same pool, concentrated.
+
+        Forfeits the Program Reward, since that needs every element to land.
+        """
+        if len(targets) <= 1:
+            return self.allocate(targets)
+        pool = pick_order(self.available, self.rng)
+        # Filling every element to its cap costs this much.
+        need = sum(t + 1 for t in targets)
+        if ALLOC_MODE == "sacrifice_short" and len(pool) >= need:
+            return self.allocate(targets)
+        self.wide = set()           # allocate() owns the Engineer's widening
+        victim = max(range(len(targets)), key=lambda i: targets[i])
+        plan = [[] for _ in targets]
+        for i, t in enumerate(targets):
+            if i == victim:
+                continue
+            cap = t if (i == 0 and self.intf == "cap_first") else t + 1
+            while pool and len(plan[i]) < cap:
+                plan[i].append(pool.pop(0))
+        return plan
+
     def dump_allocate(self, targets):
         """Fail the Program on purpose, as cheaply as possible.
 
@@ -586,8 +621,14 @@ class Game(object):
         dumping = allow_dump and (
             ALLOC_MODE == "dump"
             or (ALLOC_MODE == "dump_hard" and deck in DUMP_DECKS))
-        plan = (self.dump_allocate(targets) if dumping
-                else self.allocate(targets))
+        if dumping:
+            plan = self.dump_allocate(targets)
+        elif ALLOC_MODE in ("sacrifice", "sacrifice_short"):
+            # Triage is a legal way to play a Program, not a way of ducking
+            # it, so it is NOT gated on allow_dump.
+            plan = self.sacrifice_allocate(targets)
+        else:
+            plan = self.allocate(targets)
         rerolls = max(0, self.str_ - 1)
         failed = 0
         misses_on_failed = 0   # misses available to negate a Catastrophic

@@ -806,7 +806,43 @@ Each of these only appears a few turns in.
 
 ## 10. Known open items
 
-- **AoS: "FAILING ON PURPOSE" IS ALREADY SHUT, AND NOT BY THE NEGATE RULE.**
+- **AoS: SINGLE-ELEMENT SACRIFICE BEATS REWARD-SEEKING PLAY BY 10 TO 30
+  POINTS, AND THE MODEL CANNOT PRICE IT PROPERLY.** Read this before the
+  entry below it, which is narrower than it sounds.
+
+  Measured 2026-11-03 (`aos.ALLOC_MODE = "sacrifice"`): write off the single
+  most expensive element on purpose and spend its dice on the rest, and AoS
+  goes 79.9 -> 88.9 at Easy, 70.8 -> 87.6 at Standard, 62.7 -> 84.6 at Hard,
+  52.6 -> 82.3 at Nobulous. **The ladder collapses to 89/88/85/82** - the
+  difficulty dial stops working. The printed rules bless it twice, in
+  adjacent sentences: "An element may be left with no dice at all - it then
+  simply fails" and "Failing exactly one element in a Program costs no
+  Health." A bare element exhausts no dice either, so the sacrifice is free
+  in Health AND in dice; the only price is the Program Reward.
+
+  **So the calibrated allocation policy is far from optimal.** `allocate()`
+  fills every element to Target + 1 left to right, and a thinking player
+  beats it by 10 to 30 points. Every AoS number in RESULTS.txt was taken
+  against that policy.
+
+  **AND REQUIRED COLOURS ARE NOT IN THE MODEL AT ALL.** `grep -i required
+  simulation/aos.py` returns nothing; `PROGRAM_TARGETS` holds bare integers
+  per element and no colours. So the model is missing: the required-colour
+  dot that must be funded on a named element before allocation, Red being
+  unable to satisfy one, the 2 dots on Specialized and Advanced Programs
+  against 1 on Routine and Unstable, and the whole "if you cannot supply a
+  required colour, do not execute, lose 1 Health" branch. That is why the
+  30-point figure above is an upper bound rather than a measurement of the
+  printed game: in the real game 1 or 2 elements per Program CANNOT be left
+  bare, and if the expensive one carries the dot the sacrifice is not free.
+
+  **Do not re-pitch AoS until required colours are implemented.** The gap
+  cuts both ways - it removes a constraint AND a failure mode - so the sign
+  of the correction is not obvious, and no AoS figure can be called a
+  measurement of the printed game until it is closed.
+
+- **AoS: MASS DUMPING is shut, and not by the negate rule.** (Narrower than
+  it reads - see the entry above: the SINGLE-element version is not shut.)
   A 2026-11-03 review worked out that failing Programs shortens the deck,
   an empty deck advances the game, and Advanced Programming is won by
   surviving three Programs rather than completing them - so dumping
