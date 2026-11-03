@@ -51,9 +51,11 @@
 </ol>
 
 <h2>Object of the game</h2>
-<p>Cycle your 8&#8209;card Program deck three times, then face three Advanced Programs. Finish Advanced Programming with at
-least 1 Health to win. <b>If your Health reaches 0 at any point you lose.</b> Health can be raised by Program
-Rewards but never above 6.</p>
+<p>Cycle your 8&#8209;card Program deck three times, then face three Advanced Programs. <b>Surviving Advanced
+Programming is the win condition</b>: get through all three with at least 1 Health and you have won, whether or
+not you completed them. <b>If your Health reaches 0 at any point you lose.</b> Health can be raised by Program
+Rewards but never above 6 &mdash; and a Reward needs a Program finished with <em>no</em> failed elements, so the
+only way to heal is to do the work.</p>
 
 <h3>Cycling the deck</h3>
 <p>A <b>cycle</b> is one pass through every Program still in the deck: shuffle it, then run each Program once,
@@ -152,15 +154,25 @@ permanent, and remove that Program from the deck when claimed. Advanced Programs
   <li>Select 3 Advanced Programs. They are longer &mdash; 4 or 5 elements &mdash; and each carries 2
       required&#8209;color dots resolved by the normal pre&#8209;allocation rule.</li>
   <li>Recover between Advanced Programs.</li>
-  <li><b>Tucking:</b> set&#8209;aside Programs may be tucked under the left or right edge of an Advanced Program;
-      the exposed edge Target adds an element. If the marked overheated element is first or last, that edge must
-      be used; if it is internal, you choose.</li>
   <li>Advanced Program 1 begins Stable.</li>
   <li>The next Advanced Program begins <b>Overheated</b> if this one ended in Catastrophic Failure, and
       <b>Stable</b> otherwise. Catastrophic Failure does not stop Advanced Programming unless Health
       reaches 0.</li>
 </ul>
-<p>Complete all three with Health remaining to win AoS.</p>
+<p>Work through all three with Health remaining to win AoS. &ldquo;Work through&rdquo; is the whole
+requirement: an Advanced Program you fail still counts as faced, and failing one costs you the game only
+through the Health it takes.</p>
+
+<div class="box">
+  <span class="lbl">Failing on purpose is not a shortcut</span>
+  The arithmetic looks inviting. Failing a Program moves it toward being set aside, a set&#8209;aside Program
+  leaves the deck, an empty deck sends you to Advanced Programming, and Advanced Programming is won by
+  surviving. So why not throw the hard Programs away and walk into the finale early?
+  <p>Because of the line in <em>Object of the game</em>. Health is <em>only</em> ever regained by a Program
+  Reward, and a Reward requires a Program finished with no failed elements &mdash; so failing on purpose
+  forfeits the one thing that heals you. Each Program also needs two failures to retire, once to overheat it
+  and once more to set it aside. You run out of Health long before the deck runs out of Programs.</p>
+</div>
 
 <h2>Carrying AoS forward</h2>
 <p><em>Only relevant if you are playing the Nobulous Research Journal (NRJ) campaign, which is Tier III

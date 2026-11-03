@@ -1,3 +1,81 @@
+2026-11-03  A RULES REVIEW, AND FOUR LEVERS THAT DID NOT SHIP
+An outside read of all four rulebooks raised sixteen points.  Every one was
+real.  Eleven were stale text with an authoritative answer already in the
+repo, and are fixed: BAT's "set the dial to 20" against a difficulty table
+of 9-14 (the dial is not built until Awakening); the Tyrant's six dice when
+borrowing has banished the colour (start_battle recalls a banished die of
+that colour straight into the bag); whether a breaking Splice may banish
+dice you just committed (it may - splice_breaks runs before the Recover step
+exhausts anything); NAP's "shuffle 3 of the 6 Setbacks" against a table of
+4/4/5/6 (nap.LEVELS and RESULTS.txt both say the table); NAP recovering at
+both ends of a slot (it recovers ONCE, at the top - time_slot recovers
+before reveal and end_of_slot recovers nothing); NAP's objective implying
+the Credit goal is the only road to the exam; NAP's blurb promising an exam
+"built out of everything you neglected" when the pool is built from the
+subjects you DID earn Credits in; AoS's blurb putting the Limitation after
+the required-colour commitment; AoS's catastrophe mitigation reading as
+redundant, which it is, on purpose; NRJ's reward timing, which session()
+fixes as damage, exhaust, pay rewards, recover REC, advance; and NRJ's claim
+that the five Rewards are the "only reason" finishing order matters, which
+the same page contradicts twice.
+
+DELIBERATE FAILURE IN AoS IS NOT A ROUTE, AND NEEDS NO NEW RULE.  The review
+worked out that failing Programs shortens the deck, an empty deck advances
+the game, and Advanced Programming is won by surviving rather than
+completing - so dumping Programs looks efficient.  Measured, it is strictly
+worse the more of it you do, down to 0.2% at Standard against 70.8% honest,
+and 99.4% of those games are dead of Health before Advanced Programming is
+reached at all.  The brake is the Program Reward: Health is only ever
+regained by one, and a Reward needs zero failed elements, so failing on
+purpose forfeits the only healing in the game.
+
+Four levers were tried against it and NONE SHIPPED.  Capping the negate rule
+per cycle costs honest play 14-18 points and the exploit nothing.  Retiring
+the card on a Catastrophic Failure reads like a discount for dumpers but
+actually deletes the Stable->Overheated escalation, so it flattens the ladder
+AND makes dumping the best line at Standard.  A declared abandon priced in
+Health is a dead button, because failing costs the same 1 Health with a ~68%
+save attached.  Replaying the failed card at once is the best behaved of the
+four and still wrong: it IMPROVES the dumping lines, because forcing a real
+retry drags a dumper back to playing properly - it confiscates a choice
+instead of punishing a strategy, and charges the honest player ~7 points.
+All four are in simulation/aos.py, off, with their numbers beside them.
+
+So the fix is the WORDING, which is what was actually broken.  "Complete all
+three with Health remaining" never said whether the Advanced Programs have
+to be completed; it is now "work through all three", with the survival rule
+stated in Object of the game and a box saying plainly why failing on purpose
+is not a shortcut.  No number moves.
+
+THREE ORPHAN RULES REMOVED OR DEFINED.  Each was in the rulebook and nowhere
+else - no card, no model, no lab - so none of them has ever been part of a
+measurement:
+
+  - NAP's "spend 1 STR to remove the initial Assignment" is deleted.  It
+    never said which Assignment, when, or whether a mandatory Setback could
+    go that way, and it duplicated FINF Reduce, which is the designed valve
+    and is tied to its card's number.  (The loose any-card version of FINF
+    Reduce was removed from the rulebook earlier for the same reason; see
+    nap.FINF_REDUCE_ANY_CARD.)  If a STR-for-removal valve is wanted it is a
+    new mechanic and wants simulating first.
+  - AoS's Tucking is deleted.  As written set-aside Programs MAY be tucked
+    under an Advanced Program and the exposed edge adds an element, which is
+    pure added work for no return, so no player would ever choose it.  The
+    intent was clearly that failures follow you into the finale, and the
+    version that carries it is MANDATORY tucking - but that is an unmeasured
+    difficulty increase on the endgame, so the dead text goes and the live
+    option is recorded here rather than printed.
+  - NAP's full row is defined rather than deleted.  A full row means no
+    Primary is taken, and the Primary is what queues the next recovery
+    colour, so nothing said what happens.  reveal() returns before
+    `self.queued = primary.dot`, so the queued colour is UNCHANGED and the
+    next slot recovers on the same colour again.  Printed.
+
+STILL OPEN: NRJ states win rates in player-facing voice - 51% and 9% for a
+full and empty Research Pool, "about 6 points" for a Research Note, "no more
+than about four games in a hundred" for an Imposter ability - without the
+simulation policy behind them.  They read as measured fact about play.
+
 2026-10-31  NRJ: THE FIVE IMPOSTERS
 Choose one Imposter and one of its two sides at setup.  All five print the
 finale's own 5 HP / 2 STR / 3 REC and differ only in ability, as the AoS
