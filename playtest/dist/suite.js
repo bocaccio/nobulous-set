@@ -582,7 +582,7 @@
     return `NRJ Tier ${tierName(tier)} active${over?" (table override)":""} \u00b7 module cards are mixed in.`;
   }
 
-  const ruleFiles={bat:["assets/BAT_Rulebook.pdf?v=bigtitles","BAT rules PDF"],nap:["assets/NAP_Rulebook.pdf?v=bigtitles","NAP rules PDF"],aos:["assets/AoS_Rulebook.pdf?v=bigtitles","AoS rules PDF"],nrj:["assets/NRJ_Campaign_Supplement.pdf?v=bigtitles","NRJ rules PDF"]};
+  const ruleFiles={bat:["assets/BAT_Rulebook.pdf?v=napgrid","BAT rules PDF"],nap:["assets/NAP_Rulebook.pdf?v=napgrid","NAP rules PDF"],aos:["assets/AoS_Rulebook.pdf?v=napgrid","AoS rules PDF"],nrj:["assets/NRJ_Campaign_Supplement.pdf?v=napgrid","NRJ rules PDF"]};
   function updateTopbar(){const game=$("gameNav")?.value||"home",link=$("rulesLink"),resetBtn=$("resetBtn"),record=$("recordBtn");
     const rules=ruleFiles[game];if(rules){link.href=rules[0];link.textContent=rules[1];link.hidden=false}else link.hidden=true;
     resetBtn.hidden=game==="home";resetBtn.textContent=game==="nrj"?"New finale":"New test";
@@ -623,7 +623,7 @@
     return {w:c[0],h:c[1]};
   };
   // Every card image carries this tag; bump it whenever the sheets are rebuilt.
-  const ART_VERSION="?v=bigtitles";
+  const ART_VERSION="?v=napgrid";
   function peekStyle(deck,index,side,boxW){
     const back=side==="back"&&deck.back;
     // A deck may name one back for all its cards, or one per card.

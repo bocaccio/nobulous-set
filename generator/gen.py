@@ -195,6 +195,14 @@ def paginate(ims, mirror=False, lay=None):
     lay = lay or pnp_layout(ims[0].size)
     pw, ph, cols, rows, ox, oy = lay
     w, h = ims[0].size
+    # The grid strides by one card size, so a card of any other size would
+    # be pasted over its neighbour instead of into its own cell. Mixing
+    # sizes is how the NAP pages broke; it fails here now rather than
+    # printing.
+    odd = next((im.size for im in ims if im.size != (w, h)), None)
+    if odd:
+        raise SystemExit('paginate: card sizes differ on one page - %dx%d and %dx%d'
+                         % (w, h, odd[0], odd[1]))
     per = cols * rows
     pages = []
     for i in range(0, len(ims), per):
@@ -264,6 +272,9 @@ def _manifest(name, sheet_cols, sheet_rows, count, card_px, back, back_is_sheet)
     with open(os.path.join(OUT, '%s_cards.json' % name), 'w', encoding='utf-8') as fh:
         json.dump({'name': name, 'sheet': '%s_TTS.png' % name,
                    'cols': sheet_cols, 'rows': sheet_rows, 'count': count,
+                   # The cell size BEFORE fit_tts. Dividing the sheet gives
+                   # the shrunk one, and pack.py has to know the difference.
+                   'card': [w, h],
                    'landscape': w > h, 'back': back, 'backIsSheet': back_is_sheet}, fh, indent=1)
 
 
@@ -438,12 +449,38 @@ def hdr_fit(title, cls='', size=PORTRAIT, style=''):
 
 
 # Tabletop Simulator will not load a custom deck image above 10000 px on a
-# side. At 300 DPI a card is 750x1050, so a 10-wide grid is 7500 across -
-# fine - but NAP's 26 Tasks and 12 Final Exams pack 14 and 10 to a row and
-# came out 10500. The PRINT resolution is the one that matters at 300 DPI,
-# so the sheet is downscaled to fit rather than the cards re-gridded: the
-# PnP pages are built from the full-resolution card images, not from this.
+# side. At 300 DPI a card is 750x1050, so a 10-wide grid of portrait cards
+# is 7500 across - fine - but NAP's 26 Tasks and 12 Final Exams are
+# LANDSCAPE, ten 1050px cards to a row, and came out 10500.
+#
+# That used to be handled by downscaling the finished sheet, on the grounds
+# that "the PnP pages are built from the full-resolution card images, not
+# from this". That was true of each deck's own <deck>_PnP.pdf and FALSE of
+# the shipped per-game one: pack.py cuts its cards back out of the TTS
+# sheet. So those two decks printed at 1000x714 where the rest of NAP
+# printed at 750x1050, and because paginate strides by the first card's
+# size, every full-size card after them sat 36px right and 50px low of its
+# cell and overlapped its neighbour. NAP pages 3-7 were unusable.
+#
+# So the grid is narrowed instead and nothing is resampled: 26 Tasks go
+# 9x3 rather than 10x3. fit_tts stays as a backstop for a deck that cannot
+# be made to fit any grid, and pack.py scales such a deck's cards back up
+# rather than letting the page grid break again.
 TTS_MAX = 10000
+
+
+def tts_grid(n, card_px):
+    """(cols, rows) for an n-card sheet: the widest grid up to 10 that TTS
+    will still load. Fewer columns means more rows, so a deck can only run
+    out of room if it will not fit in any grid - then this gives the 10-wide
+    one and fit_tts shrinks it."""
+    w, h = card_px
+    for cols in range(min(10, n), 0, -1):
+        rows = math.ceil(n / cols)
+        if cols * w <= TTS_MAX and rows * h <= TTS_MAX:
+            return cols, rows
+    cols = min(10, n)
+    return cols, math.ceil(n / cols)
 
 
 def fit_tts(sheet, cols, rows):
@@ -471,8 +508,7 @@ def render_deck(name, cards, accent_key, size=PORTRAIT, extra='', back=None):
     if not ims:
         return 0
     w, h = ims[0].size
-    cols = min(10, len(ims))
-    rows = math.ceil(len(ims) / cols)
+    cols, rows = tts_grid(len(ims), (w, h))
     sheet = Image.new('RGB', (cols * w, rows * h), '#f6f3ea')
     for i, im in enumerate(ims):
         sheet.paste(im, ((i % cols) * w, (i // cols) * h))
@@ -530,8 +566,7 @@ def render_duplex(name, fronts, backs, accent_key, size=PORTRAIT, extra=''):
         os.remove(p)
     w, h = ims['f'][0].size
     n = len(ims['f'])
-    cols = min(10, n)
-    rows = math.ceil(n / cols)
+    cols, rows = tts_grid(n, (w, h))
     for tag, suffix in (('f', ''), ('b', '_back')):
         sheet = Image.new('RGB', (cols * w, rows * h), '#f6f3ea')
         for i, im in enumerate(ims[tag]):

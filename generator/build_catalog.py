@@ -6,9 +6,10 @@ The card names come from the build scripts themselves, so the catalog cannot
 drift from the printed cards. The build scripts render on import, so `gen` is
 stubbed out first: nothing is drawn, only the data lists are read.
 
-Grid size is read from the finished sheet in out/, never assumed: at 300 DPI
-a portrait cell is 750x1050 and a landscape one 1050x750, and fit_tts may
-shrink a sheet to something else again.
+Grid size is read from the manifest the renderer wrote, never assumed: at
+300 DPI a portrait cell is 750x1050 and a landscape one 1050x750, gen.py
+narrows the grid for a deck too wide for Tabletop Simulator, and fit_tts may
+still shrink a sheet to something else again.
 
 Each deck also publishes `cell` and `gutter` - the cell's real pixel size and
 gen.py's CARD_INSET_MM expressed at that size. The lab needs both to place a
@@ -17,7 +18,6 @@ sprite and had been hard-coding them, which is how it ended up cropping a
 """
 import io
 import json
-import math
 import os
 import sys
 import types
@@ -79,25 +79,36 @@ def names(rows):
 
 
 def grid(sheet, n):
-    """(cols, rows, landscape) for a sprite sheet of n cards.
+    """(cols, rows, landscape, cell_w, cell_h) for a sprite sheet of n cards.
 
-    The layout is READ FROM THE RULE gen.py uses - cols = min(10, n), rows =
-    ceil(n / cols) - rather than inferred by dividing the sheet by a card
-    size. Inferring it was hard-coded to 500x700, which is 200 DPI; gen.py
-    went to 300 DPI on 2026-10-30 and nothing re-ran this script, so every
-    sheet then divided by the wrong number and all 29 decks came out with
-    the wrong cols, rows and orientation (Lab Rats 4x1 landscape read as
-    8x1 portrait). No pixel size can work in any case, because fit_tts()
-    shrinks a sheet past TTS's 10000px ceiling to a non-integral cell:
-    NAP_Tasks is 10000x2142, which is 10x3 cells of 1000x714.
+    The layout is READ FROM THE MANIFEST render_deck wrote beside the sheet,
+    not inferred by dividing the sheet by a card size and not recomputed
+    from a rule kept in step by hand. Both of those have failed here.
+    Inferring was hard-coded to 500x700, which is 200 DPI; gen.py went to
+    300 DPI on 2026-10-30 and nothing re-ran this script, so all 29 decks
+    came out with the wrong cols, rows and orientation (Lab Rats 4x1
+    landscape read as 8x1 portrait). And no fixed pixel size can work while
+    fit_tts may shrink a sheet to a smaller cell. A copy of gen.py's own
+    rule then went stale the moment that rule changed. The renderer's
+    record is the only thing that cannot drift.
 
-    Only the ORIENTATION still comes from the sheet, as the cell's shape.
+    The CELL is still divided out of the real sheet, because that is what
+    the lab has to crop, shrunk or not.
     """
     from PIL import Image
+    stem = sheet.replace('_TTS_back.png', '').replace('_TTS.png', '')
+    mf = os.path.join(OUT, '%s_cards.json' % stem)
+    if not os.path.exists(mf):
+        raise SystemExit('build_catalog: no manifest for %s - run the build '
+                         'scripts first' % sheet)
+    with io.open(mf, encoding='utf-8') as fh:
+        m = json.load(fh)
+    if m['count'] != n:
+        raise SystemExit('build_catalog: %s has %d cards, the manifest says %d'
+                         % (sheet, n, m['count']))
+    cols, rows = m['cols'], m['rows']
     with Image.open(os.path.join(OUT, sheet)) as im:
         w, h = im.size
-    cols = min(10, n)
-    rows = int(math.ceil(n / float(cols)))
     cw, ch = w // cols, h // rows
     return cols, rows, cw > ch, cw, ch
 

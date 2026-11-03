@@ -351,12 +351,12 @@ DECK SHEETS AND BACKS
   BAT_TyrantAttacks              7x1     portrait   CardBack_BAT_TyrantAttack
   BAT_Upgrades                   10x2    portrait   CardBack_BAT_Upgrade
   NAP_Apprentices                3x1     landscape  NAP_Apprentices_TTS_back.png  (Unique Backs)
-  NAP_FinalExams                 10x2    landscape  CardBack_NAP_FinalExam
+  NAP_FinalExams                 9x2     landscape  CardBack_NAP_FinalExam
   NAP_Opportunities              6x1     landscape  CardBack_NAP_Assignment
   NAP_Setbacks                   6x1     landscape  CardBack_NAP_Assignment
   NAP_SlotsFINF                  6x1     landscape  CardBack_NAP_TimeSlot x3 + CardBack_NAP_Assignment x3
                                                     (two TTS decks over one sheet: NAP_Slots cells 1-3, NAP_FINF cells 4-6)
-  NAP_Tasks                      10x3    landscape  CardBack_NAP_Assignment
+  NAP_Tasks                      9x3     landscape  CardBack_NAP_Assignment
   NRJ_AoS_BackdoorRoutines       6x1     portrait   CardBack_NRJ_BackdoorRoutine
   NRJ_AoS_CorruptedLimitations   6x1     portrait   CardBack_AoS_Limitation
   NRJ_AoS_Interference           6x1     portrait   CardBack_NRJ_Interference

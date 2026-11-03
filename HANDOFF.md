@@ -789,6 +789,56 @@ Each of these only appears a few turns in.
 
 Not your job to fix, but worth knowing if Jon raises them:
 
+- **A card is 750x1050 at 300 DPI everywhere, and the per-game PnP pages
+  used to be gridded on 714x1000.** Reported on 2026-11-02 as "NAP page 6,
+  something is off", then as "the opportunity and setback cards are too
+  large". The Opportunities and Setbacks were the correct size. The Tasks
+  and the Final Exams were small, and the page grid followed them.
+
+  `fit_tts` shrinks any sheet over TTS's 10000px ceiling. NAP's Tasks (26)
+  and Final Exams (12) are the only two decks in the set that trip it: they
+  are LANDSCAPE, so ten to a row is 10500px where ten portrait cards are
+  7500. Their TTS cells came out 1000x714.
+
+  That was supposed to be harmless, on the grounds gen.py recorded - "the
+  PnP pages are built from the full-resolution card images, not from this".
+  True of each deck's own `<deck>_PnP.pdf`, FALSE of the four files that
+  actually ship: `pack.py` cuts its cards back out of the TTS sheets. So
+  21 of NAP's 59 cards were 750x1050 in a 714x1000 grid. `paginate` strides
+  by the first card's size and pastes each card at its own, so every
+  full-size card landed 36px right and 50px low of its cell and overlapped
+  its neighbour. NAP pages 3-7 were unusable on both sides. BAT, AoS and
+  NRJ were never affected - no deck of theirs trips the ceiling.
+
+  Four changes, because one of them alone would only have moved the fault:
+
+  - `gen.tts_grid(n, card_px)` picks the widest grid up to 10 columns that
+    TTS will still load, so Tasks are 9x3 and Final Exams 9x2 and NOTHING
+    IS RESAMPLED. Those two decks now print at their rendered resolution
+    for the first time.
+  - The manifest records `card`, the cell size BEFORE fit_tts, and pack.py
+    scales a shrunk deck back up to it. fit_tts stays as a backstop, so a
+    future deck that fits no grid degrades in sharpness instead of
+    breaking the page.
+  - `paginate` refuses a page whose cards are not all one size. That is the
+    invariant the stride has always assumed and never stated.
+  - `build_catalog.grid()` reads cols/rows from the manifest `render_deck`
+    wrote. It had been recomputing them from a hand-kept copy of gen.py's
+    rule, which is exactly what went stale the moment the rule changed.
+
+  A DECK'S GRID IS REGISTERED IN FOUR PLACES and only one of them is
+  derived: `gen.tts_grid`, the manifest (written), `CARD_MANIFEST.txt` and
+  `tts/decks.py` (both by hand). `check_app_sync.py` caught the two hand
+  ones on the first run after the regrid, which is what it is for -
+  `tts/build_mod.py` writes `w`/`h` straight into the saved object as
+  NumWidth, so a stale 10 there mis-cuts every NAP face in Tabletop
+  Simulator. `tts/NobulousSet.json` is gitignored and rebuilt from
+  `decks.py`; it reproduces byte-for-byte, so regenerate rather than
+  hand-editing NumWidth.
+
+  Anyone with the mod loaded must re-import those two sheets: the image
+  changed shape, not just content.
+
 - **Every header in the set is one depth, `gen.HDR_H_MM` = 11.86mm, and
   every title is sized by MEASUREMENT rather than by counting characters.**
   Asked for in two steps on 2026-11-02: first make the colour band the same

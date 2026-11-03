@@ -346,14 +346,14 @@
    {
     "title": "Assignments",
     "sheet": "NAP_Tasks_TTS.png",
-    "cols": 10,
+    "cols": 9,
     "rows": 3,
     "landscape": true,
     "cell": [
-     1000,
-     714
+     1050,
+     750
     ],
-    "gutter": 22,
+    "gutter": 24,
     "hdr": "",
     "cards": [
      {
@@ -552,14 +552,14 @@
    {
     "title": "Final Exams",
     "sheet": "NAP_FinalExams_TTS.png",
-    "cols": 10,
+    "cols": 9,
     "rows": 2,
     "landscape": true,
     "cell": [
-     1000,
-     714
+     1050,
+     750
     ],
-    "gutter": 22,
+    "gutter": 24,
     "hdr": "",
     "cards": [
      {

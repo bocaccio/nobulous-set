@@ -26,13 +26,16 @@ DECKS = [
     # ---- NAP -------------------------------------------------------------
     dict(key='NAP_Apprentices', count=3, w=3, h=1, back='unique', land=True,
          game='NAP', label='Apprentices'),
-    dict(key='NAP_Tasks', count=26, w=10, h=3, back='CardBack_NAP_Assignment',
+    # 9 wide, not 10: 26 landscape cards at 1050px would be a 10500px
+    # sheet and TTS stops at 10000. gen.tts_grid picks the width.
+    dict(key='NAP_Tasks', count=26, w=9, h=3, back='CardBack_NAP_Assignment',
          land=True, game='NAP', label='Tasks'),
     dict(key='NAP_Opportunities', count=6, w=6, h=1, back='CardBack_NAP_Assignment',
          land=True, game='NAP', label='Opportunities'),
     dict(key='NAP_Setbacks', count=6, w=6, h=1, back='CardBack_NAP_Assignment',
          land=True, game='NAP', label='Setbacks'),
-    dict(key='NAP_FinalExams', count=12, w=10, h=2, back='CardBack_NAP_FinalExam',
+    # 9 wide for the same reason as NAP_Tasks above.
+    dict(key='NAP_FinalExams', count=12, w=9, h=2, back='CardBack_NAP_FinalExam',
          land=True, game='NAP', label='Final Exams'),
     # 3 Time Slots + 3 FINF share ONE 6x1 sheet and need TWO backs, so they
     # are two TTS decks over the same face: a TTS deck carries exactly one
