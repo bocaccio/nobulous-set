@@ -242,6 +242,38 @@ for deck, key in (("Routine", "ROUTINE"), ("Specialized", "SPECIALIZED"),
     rows("%s back == front +1 at the mark" % deck,
          want, jpt[deck]["back"], {"targets": (lambda r: r, lambda r: r)})
 
+# Required-colour dots. simulation/aos.py's PROGRAM_REQS is GENERATED from
+# generator/aos.py's REQ_MAP, so the only way it goes wrong is someone
+# editing a dot on one side and not the other. Dot counts are NOT uniform
+# per deck: rules/aos.html claims two for Specialized and Advanced and three
+# cards disagree, which is a card-vs-rulebook question rather than drift.
+_LONG = {"G": "green", "P": "purple", "Y": "yellow", "B": "blue"}
+_req = ga["REQ_MAP"]
+_sim_req = sa["PROGRAM_REQS"]
+_wrong = []
+for deck, key in (("Routine", "ROUTINE"), ("Specialized", "SPECIALIZED"),
+                  ("Unstable", "UNSTABLE"), ("Advanced", "ADVANCED")):
+    for pid, row in enumerate(ga[key]):
+        name, targets = row[0], row[1]
+        want = [_LONG[d] if d else None
+                for d in (list(_req.get(name, [])) + [None] * len(targets))
+                [:len(targets)]]
+        got = list(_sim_req[deck][pid])
+        if got != want:
+            _wrong.append("%s: %r != %r" % (name, got, want))
+        elif len(got) != len(targets):
+            _wrong.append("%s: %d dots for %d elements"
+                          % (name, len(got), len(targets)))
+check("PROGRAM_REQS matches generator REQ_MAP for all 32 Programs",
+      not _wrong, "; ".join(_wrong[:3]))
+_asrc = text("simulation/aos.py")
+check("the model actually applies required colours",
+      "REQUIRED_COLORS = True" in _asrc and "PROGRAM_REQS[deck][pid]" in _asrc)
+check("a required die is not charged for twice",
+      "for held in locked:" in _asrc)
+check("rules/aos.html still teaches the required-colour commitment",
+      "required&#8209;color dice" in text("rules/aos.html"))
+
 jsrc = text("playtest/dist/app.js")
 check("MISSES_TO_NEGATE: aos.py %r == app.js" % sa.get("MISSES_TO_NEGATE"),
       ("const MISSES_TO_NEGATE = %d;" % sa["MISSES_TO_NEGATE"]) in jsrc)

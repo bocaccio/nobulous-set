@@ -40,6 +40,67 @@ PROGRAM_TARGETS = {
 }
 
 # Reward earned for completing a Program with no failed Element.
+# Required-colour dots, element by element, GENERATED from
+# generator/aos.py's REQ_MAP - the authoritative card data. One entry
+# per element, a colour name or None, and the same dots on both faces
+# of a card. check_app_sync.py holds this against the generator.
+#
+# Dot counts are NOT uniform per deck, whatever rules/aos.html says:
+# Routine and Unstable carry 1 each, Specialized carry 2 except Carry
+# a Moving Load which carries 4, and Advanced carry 2 except Rapid
+# Approach and Unobserved Entry which carry 3.
+PROGRAM_REQS = {
+    "Routine": [
+        ["green", None, None],                       # Maintain Balance
+        ["purple", None, None],                      # Lift a Heavy Object
+        [None, None, "yellow"],                      # Climb an Incline
+        [None, "blue", None],                        # Move at Speed
+        ["green", None, None],                       # Navigate a Passage
+        [None, None, "purple", None],                # Cross Uneven Ground
+        ["yellow", None, None],                      # Manipulate an Object
+        [None, None, "blue", None],                  # Detect an Obstacle
+    ],
+    "Specialized": [
+        ["purple", None, "yellow"],                  # Traverse Difficult Terrain
+        ["green", None, "blue", None],               # Move Without Detection
+        [None, "yellow", "purple"],                  # Track a Moving Subject
+        ["blue", None, None, "green"],               # Climb a Vertical Surface
+        ["purple", "yellow", None],                  # Clear an Obstacle
+        [None, "green", None, "blue"],               # Operate in Low Light
+        ["yellow", None, "purple", None],            # Maintain a Pursuit
+        ["yellow", "purple", "blue", "green"],       # Carry a Moving Load
+    ],
+    "Unstable": [
+        ["purple", None, None, None],                # Navigate Without Guidance
+        [None, None, "yellow", None],                # Evade Observation
+        [None, "blue", None, None],                  # Overcome a Barrier
+        [None, None, "green", None],                 # Intercept a Moving Subject
+        ["yellow", None, None, None],                # Maintain Control of a Load
+        [None, None, None, "purple"],                # Adapt to Changing Terrain
+        [None, "green", None, None],                 # Execute a Complex Route
+        [None, None, "blue", None],                  # Operate Autonomously
+    ],
+    "Advanced": [
+        ["purple", None, "green", "yellow", None],   # Rapid Approach
+        ["yellow", "green", None, "blue"],           # Unobserved Entry
+        ["yellow", None, None, "purple", None],      # Subject Acquisition
+        [None, "blue", None, "green"],               # Difficult Extraction
+        ["green", None, None, "yellow", None],       # Autonomous Infiltration
+        [None, "purple", None, "blue"],              # Controlled Restraint
+        ["blue", None, None, "green", None],         # Adaptive Pursuit
+        ["yellow", None, "purple", None, None],      # Council Extraction Protocol
+    ],
+}
+
+# Required-colour dots are now modelled. False reproduces every AoS figure
+# published before 2026-11-03, all of which were taken without them.
+REQUIRED_COLORS = True
+# Programs begun, and Programs that could not be executed because a required
+# colour was not available. The second over the first is how often the new
+# "lose 1 Health and move on" branch actually fires.
+REQ_TRIED = [0]
+REQ_SHORT = [0]
+
 PROGRAM_REWARDS = {
     "Routine": ["hp", "recover", "rec", "unheat", "str", "banish", "recover", "unheat"],
     "Specialized": ["hp", "str", "recover", "rec", "unheat", "banish", "recover", "unheat"],
@@ -475,7 +536,7 @@ class Game(object):
                 held.append(best)
         return held
 
-    def allocate(self, targets):
+    def allocate(self, targets, locked=None):
         """Fill each element to its cap.
 
         Target + 1 is a hard cap in the rules, raised to Target + 2 on up to
@@ -485,7 +546,9 @@ class Game(object):
         going past it is never worth the dice, so it became a limit.
         """
         pool = pick_order(self.available, self.rng)
-        plan = [[] for _ in targets]
+        # Required-colour dice are already on their elements and count
+        # toward both the Target and the Target + 1 cap.
+        plan = [list(x) for x in locked] if locked else [[] for _ in targets]
         # Redundancy: the two biggest Targets get the wider threshold.
         self.wide = set()
         if self.tech == "engineer":
@@ -530,7 +593,7 @@ class Game(object):
             return len(self.available) < sum(targets)
         return False
 
-    def sacrifice_allocate(self, targets):
+    def sacrifice_allocate(self, targets, locked=None):
         """Give up one element deliberately and spend its dice elsewhere.
 
         The victim is the highest Target: the element that costs most to
@@ -542,15 +605,23 @@ class Game(object):
         Forfeits the Program Reward, since that needs every element to land.
         """
         if len(targets) <= 1:
-            return self.allocate(targets)
+            return self.allocate(targets, locked)
         pool = pick_order(self.available, self.rng)
         # Filling every element to its cap costs this much.
         need = sum(t + 1 for t in targets)
         if ALLOC_MODE == "sacrifice_short" and len(pool) >= need:
-            return self.allocate(targets)
+            return self.allocate(targets, locked)
         self.wide = set()           # allocate() owns the Engineer's widening
-        victim = max(range(len(targets)), key=lambda i: targets[i])
-        plan = [[] for _ in targets]
+        plan = [list(x) for x in locked] if locked else [[] for _ in targets]
+        # A REQUIRED-COLOUR DOT CANNOT BE ABANDONED: its die is already on
+        # that element, so the cheapest element to give up is the dearest one
+        # carrying NO dot. If every element carries one, nothing can be left
+        # bare and the sacrifice is only partial - the victim keeps its
+        # required die and gets nothing more. This is the constraint the
+        # model was missing when the sacrifice measured +10 to +30.
+        free = [i for i in range(len(targets)) if not plan[i]]
+        victim = max(free or list(range(len(targets))),
+                     key=lambda i: targets[i])
         for i, t in enumerate(targets):
             if i == victim:
                 continue
@@ -559,7 +630,7 @@ class Game(object):
                 plan[i].append(pool.pop(0))
         return plan
 
-    def dump_allocate(self, targets):
+    def dump_allocate(self, targets, locked=None):
         """Fail the Program on purpose, as cheaply as possible.
 
         Every element but one is left bare, so it fails for nothing. The one
@@ -571,10 +642,11 @@ class Game(object):
         """
         if not targets:
             return []
-        plan = [[] for _ in targets]
+        # The required dice are already committed and cannot be taken back.
+        plan = [list(x) for x in locked] if locked else [[] for _ in targets]
         pool = sorted(self.available, key=lambda c: EV[c])
         i = max(range(len(targets)), key=lambda k: targets[k])
-        plan[i] = pool[:DUMP_DICE]
+        plan[i] = plan[i] + pool[:DUMP_DICE]
         return plan
 
     def element_values(self, index, dice):
@@ -613,6 +685,37 @@ class Game(object):
                     self.available.remove(color)
                     withheld.append(color)
 
+        # "Commit required-color dice. Every colored dot beside an element
+        # requires one available die of that color to be placed on that
+        # element now. These dice are locked there." Red can never satisfy a
+        # dot, and nor can a withheld die - it is not available, which is
+        # exactly what "not even for a required color" means.
+        locked = [[] for _ in targets]
+        if REQUIRED_COLORS:
+            REQ_TRIED[0] += 1
+            dots = PROGRAM_REQS[deck][pid]
+            missing = False
+            for i, color in enumerate(dots[:len(targets)]):
+                if not color:
+                    continue
+                if color in self.available:
+                    self.available.remove(color)
+                    locked[i].append(color)
+                else:
+                    missing = True
+                    break
+            if missing:
+                # "Do not execute the Program. Lose 1 Health. Return any
+                # withheld dice, discard the Limitation, and treat the
+                # Program as failed for Stable/Overheated progression."
+                for held in locked:
+                    self.available += held
+                self.available += withheld
+                self.hp -= 1
+                self.completed += 1
+                REQ_SHORT[0] += 1
+                return 1        # one failure: flips Stable, no Catastrophic
+
         if self.tech == "optimize" and targets:
             worst = max(range(len(targets)), key=lambda i: targets[i])
             if targets[worst] > 1:
@@ -622,13 +725,20 @@ class Game(object):
             ALLOC_MODE == "dump"
             or (ALLOC_MODE == "dump_hard" and deck in DUMP_DECKS))
         if dumping:
-            plan = self.dump_allocate(targets)
+            plan = self.dump_allocate(targets, locked)
         elif ALLOC_MODE in ("sacrifice", "sacrifice_short"):
             # Triage is a legal way to play a Program, not a way of ducking
             # it, so it is NOT gated on allow_dump.
-            plan = self.sacrifice_allocate(targets)
+            plan = self.sacrifice_allocate(targets, locked)
         else:
-            plan = self.allocate(targets)
+            plan = self.allocate(targets, locked)
+        # The required dice were taken out of `available` so no allocator
+        # could spend them twice. Put them back now the plan is fixed: the
+        # resolution loop below removes every die in the plan from
+        # `available`, and these are in the plan, so leaving them out here
+        # would charge for each of them twice over.
+        for held in locked:
+            self.available += held
         rerolls = max(0, self.str_ - 1)
         failed = 0
         misses_on_failed = 0   # misses available to negate a Catastrophic

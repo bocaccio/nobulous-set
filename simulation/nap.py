@@ -304,10 +304,13 @@ LEVELS = {"Easy": (5, 4), "Standard": (6, 4), "Hard": (7, 5), "Nobulous": (8, 6)
 # in rules/nap.html and never implemented here. False is what every NAP
 # number was measured with.
 END_OF_DAY_BURN = False
-# Does reaching the Credit goal end the apprenticeship at the end of that
-# TIME SLOT (False, what play() does and what the numbers were taken with)
-# or at the end of that DAY (True, which is how the rulebook reads)?
-LEAVE_AT_END_OF_DAY = False
+# Reaching the Credit goal ends the apprenticeship at the end of that DAY,
+# not of that Time Slot: decided 2026-11-03 and printed in rules/nap.html
+# under "How the apprenticeship ends". True is now the rule. False is the
+# older end-of-slot reading, kept because every NAP figure published before
+# 2026-11-03 was measured with it; the change costs 1.8 / 1.0 / 1.1 / 0.3
+# points across the four levels.
+LEAVE_AT_END_OF_DAY = True
 ROW_MAX = 4
 SLOTS_PER_DAY = 3
 
