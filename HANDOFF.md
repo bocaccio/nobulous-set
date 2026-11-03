@@ -829,6 +829,25 @@ Each of these only appears a few turns in.
   to be completed, so the route reads as open on paper even though the
   economy closes it. Still open as a rules-wording job.
 
+  **FOUR LEVERS WERE TRIED AGAINST IT AND NONE SHIPPED** (2026-11-03), so
+  do not reach for a fifth before reading RESULTS.txt. Capping the negate
+  rule costs honest play 14-18 points and the exploit nothing. Retiring the
+  card on a Catastrophic Failure (`CF_SETS_ASIDE`) reads like a discount for
+  dumpers but actually deletes the Stable->Overheated escalation, so it
+  flattens the ladder AND makes dumping the best line at Standard. A
+  declared abandon priced in Health (`ABANDON_MODE`) is a dead button,
+  because failing costs the same 1 Health with a ~68% save attached.
+  Replaying the failed card at once (`RETRY_IMMEDIATE`) is the best behaved
+  of the four and still should not ship: it IMPROVES the dumping lines,
+  because forcing a real retry drags a dumper back to playing properly. It
+  confiscates a choice instead of punishing a strategy, and charges the
+  honest player ~7 points for it.
+
+  The pattern across all four: Health is the wrong currency to charge in,
+  because the negate rule already makes a failure nearly free in Health.
+  Dice are what AoS is short of. A dice-priced abandon is the one variant
+  nobody has measured.
+
 Not your job to fix, but worth knowing if Jon raises them:
 
 - **NAVIGATION PROMPTS ARE SHARED NOW: `playtest/dist/steps.js`.** BAT had

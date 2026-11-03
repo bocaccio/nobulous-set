@@ -294,6 +294,60 @@ NEGATES_PER_CYCLE = 0
 ALLOC_MODE = "honest"
 DUMP_DICE = 3
 DUMP_DECKS = ("Unstable",)
+# A Catastrophic Failure sets the Program ASIDE at once, instead of a Stable
+# card flipping to Overheated and only the second failure retiring it. This
+# halves the cost of burning the deck down - 8 failures rather than 16 - so
+# it is the lever that decides whether deliberate failure can be a real
+# option instead of a trap. It is not dumping-only: an honest player's
+# Catastrophic Failures retire their Programs too, and with them the Program
+# Rewards those Programs would have paid.
+#
+# MEASURED 2026-11-03 AND NOT ADOPTED. It does not mainly discount dumping,
+# it DELETES THE ESCALATION PENALTY: today a bad failure makes a Program
+# harder next time, and under this it makes the Program go away. So honest
+# play gains (+3.4 / +2.9 / +4.4 / +7.5) and gains most at Nobulous, where
+# the Unstable cards that escalate are thickest - the ladder flattens,
+# which is the wrong direction for a difficulty dial. It also makes dumping
+# the BEST line at Standard, 74.9% against 73.7% honest: the one thing it
+# was meant to prevent.
+CF_SETS_ASIDE = False
+# A DECLARED abandon: take the Program out of the deck for a fixed price in
+# Health, before anything is rolled. Never available on an Advanced Program.
+#   none   no such action - the shipped rules
+#   broke  abandon only a Program the pool cannot fund (the release valve)
+#   hard   abandon the costly decks, per ABANDON_DECKS
+#   all    abandon every Program in the deck (the degenerate line)
+#
+# MEASURED 2026-11-03 AND NOT ADOPTED - a DEAD BUTTON. Every policy at every
+# price is strictly worse than not having it: broke -6.1/-8.3/-8.9/-8.3 at
+# 1 HP, hard down to -14.2, all down to -34.4. The reason is the negate rule
+# above: abandoning pays 1 Health CERTAINLY, where attempting the Program
+# and failing pays 1 Health with a ~68% saving throw and leaves the chance
+# the dice come good. A Health price can never compete with that, so no
+# rational player presses this. Pricing an abandon in DICE rather than
+# Health is the untested variant - dice are what AoS is actually short of.
+ABANDON_MODE = "none"
+ABANDON_COST = 1               # Health per abandon
+ABANDON_DECKS = ("Unstable",)
+# A failed Program is played again immediately, on its new Overheated face,
+# with dumping and abandoning both forbidden on that retry. Failing the
+# retry sets the card aside exactly as now, so the card still costs two
+# failures - they just happen back to back, and the second one has to be a
+# real attempt. This is the lever that takes away what dumping BUYS.
+#
+# MEASURED 2026-11-03 AND NOT ADOPTED, though it is the best behaved of the
+# three: dumping stays strictly dominated at every difficulty (at Standard,
+# honest 63.6% against 61.2% / 30.0% / 2.9%), the ladder keeps its shape - a
+# flat -6 to -8 rather than a flattening - and it adds almost no table time,
+# honest runs going 20.57 to 20.70 Programs at Standard.
+#
+# It is still not worth printing, and the numbers say why in a way worth
+# keeping: IT IMPROVES THE DUMPING LINES. Dump Specialized+Unstable gains
+# +8 to +11 and dump-everything +2 to +3, because forcing a real retry drags
+# a dumper back toward playing properly, which is better for them. The rule
+# does not punish the bad strategy, it CONFISCATES THE CHOICE - and the only
+# player who actually pays for it is the honest one, at about 7 points.
+RETRY_IMMEDIATE = False
 SAVES = None          # set to a list to record saves per game
 # How often the saving throw was WANTED versus taken: with a cap in place
 # the gap between them is exactly what the cap costs an honest player.
@@ -448,6 +502,28 @@ class Game(object):
                 plan[i].append(pool.pop(0))
         return plan
 
+    def want_abandon(self, deck, targets):
+        """Would this player declare the Program abandoned?
+
+        Never on an Advanced Program: those must be faced. Never at 1 Health
+        either, since paying the price would simply end the game - abandoning
+        is meant to buy tempo, not to be a way of losing.
+        """
+        if ABANDON_MODE == "none" or deck == "Advanced":
+            return False
+        if self.hp <= ABANDON_COST:
+            return False
+        if ABANDON_MODE == "all":
+            return True
+        if ABANDON_MODE == "hard":
+            return deck in ABANDON_DECKS
+        if ABANDON_MODE == "broke":
+            # Fewer dice than the Program needs successes: most elements are
+            # going to fail however they are arranged, so the Program is
+            # already lost and the only question is what it costs.
+            return len(self.available) < sum(targets)
+        return False
+
     def dump_allocate(self, targets):
         """Fail the Program on purpose, as cheaply as possible.
 
@@ -478,8 +554,15 @@ class Game(object):
     def element_total(self, index, dice):
         return sum(self.element_values(index, dice))
 
-    def run_program(self, deck, pid, face, slot=None):
+    def run_program(self, deck, pid, face, slot=None, allow_dump=True):
         targets = [t + TARGET_DELTA for t in self.targets_for(deck, pid, face)]
+
+        if allow_dump and self.want_abandon(deck, targets):
+            # Declared before the roll: pay in Health, and the card is gone.
+            # -1 tells play() to retire it rather than flip it Overheated.
+            self.hp -= ABANDON_COST
+            self.completed += 1
+            return -1
 
         # A Corrupted Limitation withholds 2 dice of a randomly selected
         # color before allocation; they come back once the Program resolves.
@@ -500,8 +583,9 @@ class Game(object):
             if targets[worst] > 1:
                 targets = list(targets)
                 targets[worst] -= 1
-        dumping = (ALLOC_MODE == "dump"
-                   or (ALLOC_MODE == "dump_hard" and deck in DUMP_DECKS))
+        dumping = allow_dump and (
+            ALLOC_MODE == "dump"
+            or (ALLOC_MODE == "dump_hard" and deck in DUMP_DECKS))
         plan = (self.dump_allocate(targets) if dumping
                 else self.allocate(targets))
         rerolls = max(0, self.str_ - 1)
@@ -764,14 +848,35 @@ class Game(object):
             face = "back" if prog["status"] == "overheated" else "front"
             failed = self.run_program(prog["deck"], prog["pid"], face,
                                       slot=pid)
-            if failed > 0:
-                if prog["status"] == "stable":
+            retry = False
+            if failed < 0:
+                # A declared abandon. Under RETRY_IMMEDIATE it buys nothing
+                # either: the card heats up and comes back at once.
+                if RETRY_IMMEDIATE:
                     prog["status"] = "overheated"
+                    retry = True
+                else:
+                    prog["status"] = "aside"
+            elif failed > 0:
+                if failed >= 2 and CF_SETS_ASIDE:
+                    # Catastrophic: retired on the spot, Stable or not.
+                    prog["status"] = "aside"
+                elif prog["status"] == "stable":
+                    prog["status"] = "overheated"
+                    retry = RETRY_IMMEDIATE
                 elif self.intf == "all_overheated":
                     # "cycle it to the bottom of its deck instead of setting
                     # it aside" - the Program keeps coming back.
                     self.queue.append(pid)
                 else:
+                    prog["status"] = "aside"
+            if retry and self.hp > 0:
+                # Straight back at you, on the harder face, and this time it
+                # has to be played. Fail it again and it is set aside, as a
+                # second failure always has.
+                again = self.run_program(prog["deck"], prog["pid"], "back",
+                                         slot=pid, allow_dump=False)
+                if again > 0:
                     prog["status"] = "aside"
         if self.hp <= 0:
             return False

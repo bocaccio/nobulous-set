@@ -82,6 +82,44 @@ AoS  Automaton of Shale
     0.1 to 0.4, because there is no exploit there to tax.  Honest
     play wants the save ~3.2 times a game; a cap of 1 denies 39%.
 
+  THREE MORE LEVERS, NONE ADOPTED (2026-11-03)
+  Asked whether deliberate failure could be made a real option
+  rather than a trap.  All three are in aos.py, off, with the
+  numbers beside them.  Win rate, honest play, 4200 games a cell:
+
+                        honest now   cap 1   CF->aside  abandon  retry
+    Easy  5/3/0              79.2%   -13.7      +3.4      -6.1   -6.2
+    Standard  4/3/1          70.8%   -16.6      +2.9      -8.3   -7.2
+    Hard  3/3/2              62.8%   -17.2      +4.4      -8.9   -7.8
+    Nobulous  2/3/3          52.1%   -18.3      +7.5      -8.3   -6.8
+
+    CF_SETS_ASIDE (a Catastrophic Failure retires the card) does
+    not discount dumping so much as delete the Stable->Overheated
+    escalation: a bad failure stops making the card harder and
+    starts making it vanish.  Honest play gains most at Nobulous,
+    so the ladder FLATTENS, and dumping Unstable becomes the best
+    line at Standard - 74.9% against 73.7% honest.
+
+    ABANDON_MODE (declare it, pay Health, card leaves the deck) is
+    a dead button at every price: abandoning costs 1 Health for
+    certain where failing costs 1 Health with a ~68% save and might
+    still come good.  Nobody would press it.
+
+    RETRY_IMMEDIATE (replay the failed card at once, no dumping)
+    is the best behaved - dumping stays dominated everywhere, the
+    ladder keeps its shape, and it adds no table time.  But it
+    IMPROVES the dumping lines by +2 to +11, because forcing a real
+    retry drags a dumper back to playing properly.  It confiscates
+    a choice rather than punishing a strategy, and the only player
+    who pays is the honest one, about 7 points.
+
+    CONCLUSION: nothing is wrong with the system - the economy
+    already punishes deliberate failure by 50 to 80 points, because
+    Health comes only from Program Rewards and a Reward needs zero
+    failed elements.  What is wrong is the WORDING, which never
+    says the three Advanced Programs must be completed.  Fix the
+    sentence, not the system.
+
 ==================================================================
 NRJ  Imposter Scenario (the campaign finale)
 ==================================================================
