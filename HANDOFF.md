@@ -837,17 +837,27 @@ Not your job to fix, but worth knowing if Jon raises them:
   and upside down a 9 reads as a 6**, right next to its Request 5. That is a
   hazard on the printed card too.
 
-- **`demandSide` means two different things, and an Opportunity gets
-  rotated for the wrong one.** For a Task it means "flipped to the Demand
-  half". For an Opportunity it is an age marker: `suite.js` sets
-  `a.demandSide=true` on EVERY unresolved card when a Time Slot ends, and
-  an Opportunity that already had it is discarded as expired. But
-  `renderNAPSlots` rotates on `a.demandSide` whatever the type, so an
-  Opportunity in its second slot is drawn upside down despite having no
-  Demand half to show. Found by reading the code on 2026-11-03 while adding
-  the turn control; NOT fixed, because the fix is a judgement about what
-  the age marker should look like. Splitting the flag in two, or gating the
-  class on `a.type==="t"`, are both one-liners.
+- **`demandSide` MEANS TWO DIFFERENT THINGS, and only one of them is a
+  rotation.** On a Task it means "flipped to the Demand half". On an
+  Opportunity it means LAST CHANCE: `advanceNAP` sets `a.demandSide=true`
+  on every unresolved card when a Time Slot ends, and an Opportunity that
+  already had it is discarded - "Last chance expired: ... discarded". On a
+  Setback it is bookkeeping with no face to show.
+
+  `renderNAPSlots` used to rotate on the flag whatever the type, so an
+  Opportunity in its second slot was drawn UPSIDE DOWN with no Demand half
+  to show. Fixed on 2026-11-03 in two parts, because removing the rotation
+  alone would have removed information:
+
+  - the rotation is gated on `a.type==="t"`, since only a Task is printed
+    with a second half;
+  - an Opportunity on its last slot now says so, in the card's OWN PRINTED
+    WORD - its footer reads "Last chance: if unresolved again, discard this
+    Opportunity", so the label is "Last chance" and not an invention.
+
+  If you ever need the flag to carry a fourth meaning, split it rather than
+  adding another `a.type===` test: three readings of one boolean is already
+  the reason this bug existed.
 
 - **BODY TEXT, SUBHEADS, FOOTERS AND FLAVOUR NOW HAVE ONE OWNER - `gen.py`'s
   base stylesheet - and the sizes are the ones AoS had been keeping to

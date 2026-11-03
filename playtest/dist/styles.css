@@ -240,7 +240,18 @@ main{width:100%;max-width:none;margin:0}.game-screen{width:100%;max-width:none;m
 #screen-nap #napChoice h3{margin:.25rem 0 0}
 #screen-nap #napChoice .suite-cards.two{grid-template-columns:repeat(2,minmax(0,var(--play-card-landscape)));justify-content:start}
 #screen-nap #napChoice .suite-card{width:100%}
+/* ONLY A TASK MAY BE TURNED. `demandSide` is overloaded: on a Task it means
+   "flipped to the Demand half", but on an Opportunity it is a LAST CHANCE
+   marker and on a Setback it is bookkeeping. Opportunities, Setbacks and
+   Final Exams are single-faced cards that happen to be landscape too, so
+   rotating one showed a card with no second half upside down. The caller
+   gates this on a.type==="t"; the rule is kept narrow here as a reminder. */
 #screen-nap .nap-demand{transform:rotate(180deg)}
+/* What the rotation used to stand in for on an Opportunity, said instead -
+   in the card's own printed word: "Last chance: if unresolved again,
+   discard this Opportunity." */
+#screen-nap .nap-last-chance{color:#f0b45d;font-size:.72rem;font-weight:800;
+  text-transform:uppercase;letter-spacing:.08em}
 /* Half of an Assignment is printed upside down, to be read by turning the
    card on the table. A card in a Time Slot turns itself when it flips to
    Demand (above); in the choice panel you are comparing two cards you have

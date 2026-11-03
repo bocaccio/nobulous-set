@@ -582,7 +582,7 @@
     return `NRJ Tier ${tierName(tier)} active${over?" (table override)":""} \u00b7 module cards are mixed in.`;
   }
 
-  const ruleFiles={bat:["assets/BAT_Rulebook.pdf?v=napturn2","BAT rules PDF"],nap:["assets/NAP_Rulebook.pdf?v=napturn2","NAP rules PDF"],aos:["assets/AoS_Rulebook.pdf?v=napturn2","AoS rules PDF"],nrj:["assets/NRJ_Campaign_Supplement.pdf?v=napturn2","NRJ rules PDF"]};
+  const ruleFiles={bat:["assets/BAT_Rulebook.pdf?v=lastchance","BAT rules PDF"],nap:["assets/NAP_Rulebook.pdf?v=lastchance","NAP rules PDF"],aos:["assets/AoS_Rulebook.pdf?v=lastchance","AoS rules PDF"],nrj:["assets/NRJ_Campaign_Supplement.pdf?v=lastchance","NRJ rules PDF"]};
   function updateTopbar(){const game=$("gameNav")?.value||"home",link=$("rulesLink"),resetBtn=$("resetBtn"),record=$("recordBtn");
     const rules=ruleFiles[game];if(rules){link.href=rules[0];link.textContent=rules[1];link.hidden=false}else link.hidden=true;
     resetBtn.hidden=game==="home";resetBtn.textContent=game==="nrj"?"New finale":"New test";
@@ -623,7 +623,7 @@
     return {w:c[0],h:c[1]};
   };
   // Every card image carries this tag; bump it whenever the sheets are rebuilt.
-  const ART_VERSION="?v=napturn2";
+  const ART_VERSION="?v=lastchance";
   function peekStyle(deck,index,side,boxW){
     const back=side==="back"&&deck.back;
     // A deck may name one back for all its cards, or one per card.
@@ -909,7 +909,7 @@
         const effect=a.nrj?(napCard(a.type,a.i,a.nrj,a.dot).text||"")
           :a.type==="t"&&!a.demandSide?NAP_REQUEST_EFFECTS[a.i]
           :a.type==="o"?NAP_OPPORTUNITY_EFFECTS[a.i]:"";
-        card.innerHTML=`<div class="suite-card landscape ${a.completed?"nap-completed":a.demandSide?"nap-demand":""}"></div>${a.completed?`<span>Completed${a.rewardClaimed===false?" · reward available":""}</span>`:a.type==="o"?"":`<span>Stored ${a.progress}</span>${storedDiceRow(a)}`}${a.ignored?`<span>Restrictions ignored</span>`:""}${a.source==="finf"||a.source==="skull"?`<span>Added by ${a.source==="finf"?"FINF":"Skull"} · its Skulls ignored</span>`:""}${a.completed&&effect?`<small class="nap-completed-effect">${effect}</small>`:""}<div class="assignment-actions">${i===state.nap.slot&&!a.completed?`<button data-nap-assign="${a.id}">Apply selected dice</button><button data-complete="${a.id}" class="primary">Complete</button>`:""}${i===state.nap.slot&&!a.completed&&a.type==="s"&&!a.ignored&&(state.nap.deviousCoupons||[]).length&&!state.nap.pendingReward?`<button data-nap-dev-ignore="${a.id}">Discard a Devious card: ignore this Setback</button>`:""}${i===state.nap.slot&&!a.completed&&finfHeldFor(i)&&a.type!=="e"&&!state.nap.pendingReward?`<button data-nap-reduce="${a.id}">Use FINF ${i+1} (${FINF_SLOTS[i]}) to remove this card</button>`:""}${i===state.nap.slot&&!a.completed&&a.type!=="o"&&!state.nap.pendingReward?(state.nap.coupons||[]).map((ci,slot)=>NAP_COUPONS[ci].progress?`<button data-nap-coupon-use="${slot},${a.id}">${NAP_OPPS[ci]}: +${NAP_COUPONS[ci].progress} ${NAP_COUPONS[ci].progress===1?"success":"successes"}</button>`:"").join(""):""}</div>`;
+        card.innerHTML=`<div class="suite-card landscape ${a.completed?"nap-completed":a.demandSide&&a.type==="t"?"nap-demand":""}"></div>${a.completed?`<span>Completed${a.rewardClaimed===false?" · reward available":""}</span>`:a.type==="o"?(a.demandSide?`<span class="nap-last-chance">Last chance</span>`:""):`<span>Stored ${a.progress}</span>${storedDiceRow(a)}`}${a.ignored?`<span>Restrictions ignored</span>`:""}${a.source==="finf"||a.source==="skull"?`<span>Added by ${a.source==="finf"?"FINF":"Skull"} · its Skulls ignored</span>`:""}${a.completed&&effect?`<small class="nap-completed-effect">${effect}</small>`:""}<div class="assignment-actions">${i===state.nap.slot&&!a.completed?`<button data-nap-assign="${a.id}">Apply selected dice</button><button data-complete="${a.id}" class="primary">Complete</button>`:""}${i===state.nap.slot&&!a.completed&&a.type==="s"&&!a.ignored&&(state.nap.deviousCoupons||[]).length&&!state.nap.pendingReward?`<button data-nap-dev-ignore="${a.id}">Discard a Devious card: ignore this Setback</button>`:""}${i===state.nap.slot&&!a.completed&&finfHeldFor(i)&&a.type!=="e"&&!state.nap.pendingReward?`<button data-nap-reduce="${a.id}">Use FINF ${i+1} (${FINF_SLOTS[i]}) to remove this card</button>`:""}${i===state.nap.slot&&!a.completed&&a.type!=="o"&&!state.nap.pendingReward?(state.nap.coupons||[]).map((ci,slot)=>NAP_COUPONS[ci].progress?`<button data-nap-coupon-use="${slot},${a.id}">${NAP_OPPS[ci]}: +${NAP_COUPONS[ci].progress} ${NAP_COUPONS[ci].progress===1?"success":"successes"}</button>`:"").join(""):""}</div>`;
         setSprite(card.querySelector(".suite-card"),c.file,c.i,c.cols,c.rows);row.appendChild(card);
       });
       if(i===state.nap.slot){box.querySelector(".nap-slot-left").insertBefore(actions,box.querySelector(".nap-recovery"));const bottom=document.createElement("div");bottom.className="nap-active-bottom";bottom.append(roller);box.append(choice,reward,bottom);}

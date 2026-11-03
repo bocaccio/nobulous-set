@@ -942,6 +942,14 @@ check("the turn control is wired in suite.js",
 # just show it upside down.
 check("the turn is offered only for two-sided Tasks",
       'const twoSided=x.type==="t"' in _suite and "tb.hidden=!twoSided" in _suite)
+# Same rule in the Time Slots, where the lab turns a card for you. It used
+# to turn ANY card carrying `demandSide`, and that flag means something
+# different on an Opportunity - see HANDOFF.
+check("only a Task is turned in the Time Slots",
+      'a.demandSide&&a.type==="t"?"nap-demand"' in _suite)
+check("an Opportunity says Last chance instead of being turned",
+      "nap-last-chance" in _suite and
+      "nap-last-chance" in text("playtest/dist/styles.css"))
 
 print()
 print("%d check(s) failed" % len(FAILS))
