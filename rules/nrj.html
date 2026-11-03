@@ -93,7 +93,12 @@
       claimed 2 you cannot claim more, even if you meet the other conditions.</td></tr>
 </table>
 <p>Corrupted Limitations are revealed before required&#8209;color dice are committed, exactly like native
-Limitations, and withhold 2 dice of a <em>randomly selected</em> color on top of their printed corruption.</p>
+Limitations, and withhold 2 dice of a <em>randomly selected</em> color on top of their printed corruption
+&mdash; <b>a color the Program does not require</b>. If the Program requires every color, select any.</p>
+<p>The exclusion matters more than it sounds. A withheld color cannot answer a required&#8209;color dot, so
+without it a Corrupted Limitation could take away a color the Program demands and leave you unable to run it
+at all &mdash; a Health lost with no roll and no decision in it. Excluding the required colors keeps the
+corruption biting without ever turning a Program into a card you simply hand back.</p>
 
 <h2>Playing the campaign</h2>
 <ol class="seq">
@@ -127,8 +132,8 @@ table records that, and a campaign can sit for weeks between games.</p>
   <tr><th>Game</th><th>Retain at most</th><th>Why that many</th></tr>
   <tr><td>NAP</td><td><b>3</b></td><td>an Opportunity is worked like an Assignment, and apprentices finish
       about two and a half of them</td></tr>
-  <tr><td>BAT</td><td><b>2</b></td><td>a second Note already costs the Rats nine points of win rate, and a
-      third is never worth taking</td></tr>
+  <tr><td>BAT</td><td><b>2</b></td><td>a second Note already costs the Rats about nine points in the
+      model, and a third is never worth taking</td></tr>
   <tr><td>AoS</td><td><b>2</b></td><td>AoS&rsquo;s own claim limit</td></tr>
 </table>
 <p>Every retained card reduces one Exhibit&rsquo;s Target by <b>2</b>. If you claimed more than you may
@@ -140,9 +145,11 @@ for the rest of it.</p>
   a Research Note costs the next Upgrade a completed Experiment earns, a Backdoor Routine the next Program
   Reward. So the campaign asks each game a question it cannot answer on its own &mdash; how much of your own
   margin will you give up to arm the Imposter?
-  <p>It is a real price, not a flourish. One Research Note costs BAT about 6 points of win rate and a second
-  about 9 more; one Backdoor Routine costs AoS about 6. And it buys the whole finale: walking in with a full
-  pool reads 51%, and walking in with none reads 9%.</p>
+  <p>It is a real price, not a flourish. In the design model a Research Note costs BAT about 6 points of win
+  rate and a second about 9 more, and a Backdoor Routine costs AoS a Program Reward it misses badly. And it
+  buys the whole finale: the model reads about 51% walking in with a full pool against about 9% with none.
+  Those are figures from the simulation rather than from recorded play &mdash; see
+  <em>About the percentages</em>.</p>
 </div>
 
 <h2>The Imposter Scenario</h2>
@@ -174,13 +181,25 @@ ordinary recovery, so the handicap costs tempo rather than dice: it bites hardes
 when the Dossier is full and falling behind the clock is how you lose.</p>
 <table>
   <tr><th>Level</th><th><span class="sw Y"></span> Yellow</th><th><span class="sw G"></span> Green</th>
-      <th><span class="sw B"></span> Blue</th><th><span class="sw P"></span> Purple</th><th>Wins in</th></tr>
+      <th><span class="sw B"></span> Blue</th><th><span class="sw P"></span> Purple</th>
+      <th>Model win rate</th></tr>
   <tr><td>Easy</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td>
       <td>about 1 game in 2</td></tr>
   <tr><td>Standard</td><td>3</td><td>2</td><td>2</td><td>2</td><td>about 2 games in 5</td></tr>
   <tr><td>Hard</td><td>3</td><td>3</td><td>3</td><td>2</td><td>about 3 games in 10</td></tr>
   <tr><td>Nobulous</td><td>3</td><td>3</td><td>4</td><td>4</td><td>about 1 game in 5</td></tr>
 </table>
+<div class="box">
+  <span class="lbl">About the percentages</span>
+  Every percentage in this supplement comes from the design simulation, not from recorded play. Each is the
+  mean of twenty thousand games played by one fixed policy &mdash; a competent policy, but neither an optimal
+  one nor a human one. They are the targets the difficulty was tuned against, and they are the right way to
+  compare one rung, one Imposter or one Research Pool against another.
+  <p>They are not a promise about your table. A real group will beat them or miss them depending mostly on
+  how it reads the clock. And a figure quoted for BAT, NAP or AoS was measured inside that game&rsquo;s own
+  model rather than across the campaign, so treat it as a price tag on a decision rather than a forecast.</p>
+</div>
+
 <p>The single <span class="sw R"></span> Red die is never exhausted at setup: session 5 allows only Red and
 Yellow, and you own exactly one Red. The counts are spread across the colors on purpose. Exhausting whole
 colors instead would empty whichever window the attention opens on &mdash; all four Yellow and all four
@@ -190,8 +209,8 @@ wheel&rsquo;s phase the difficulty rather than the handicap.</p>
 <h3>The five Imposters</h3>
 <p>Choose one Imposter and one of its two sides. All five begin at <b>5 HP / 2 STR / 3 REC</b> and differ
 only in ability &mdash; which side you take is a decision about how you intend to play, not about how hard
-the Scenario is. Every ability was measured at Easy and at a hard setting, and none is worth more than about
-four games in a hundred.</p>
+the Scenario is. Every ability was measured at Easy and at a hard setting, and in the model none is worth
+more than about four games in a hundred.</p>
 <table>
   <tr><th>Imposter</th><th>Ability</th><th>When</th><th>What it does</th></tr>
   <tr><td>The Archivist</td><td>Cross&#8209;Referenced</td><td>Passive</td>

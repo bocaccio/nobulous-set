@@ -292,6 +292,55 @@ check("simulation/aos.py enforces the floor (MIN_DICE_PER_ELEMENT %r)"
 check("the lab refuses to roll an element with no dice",
       "Allocate at least one die first." in text("playtest/dist/app.js"))
 
+# A CORRUPTED LIMITATION WITHHOLDS A COLOUR THE PROGRAM DOES NOT REQUIRE.
+# Four owners: the card, the supplement, the model and the lab. The lab is
+# the one that can silently go wrong, because it is the only one that has to
+# CHOOSE the colour, and it needs the dots to do it.
+_jsrc_a = text("playtest/dist/app.js")
+check("the Corrupted Limitation card prints the exclusion",
+      "does <b>not</b> require" in text("generator/build_nrj.py"))
+check("the card covers the all-colours case",
+      "If the Program requires every color, select any."
+      in text("generator/build_nrj.py"))
+check("rules/nrj.html states the exclusion",
+      "a color the Program does not require" in text("rules/nrj.html"))
+check("the model applies it (CORRUPT_AVOID_REQUIRED %r)"
+      % sa.get("CORRUPT_AVOID_REQUIRED"),
+      sa.get("CORRUPT_AVOID_REQUIRED") is True)
+check("the lab screens the corrupt colour against the dots",
+      "function currentReqs()" in _jsrc_a and "need.has(c)" in _jsrc_a)
+# Each reveal re-rolls: the cards say "a randomly selected color" and
+# "randomly select one element", which is per card, not per game.
+check("the lab re-rolls the corruption picks on every reveal",
+      "state.corruptColor = null; state.corruptElement = null;" in _jsrc_a)
+# The lab's dot table is generated from the same REQ_MAP as the model's.
+_jreq = js_literal("playtest/dist/app.js", "PROGRAM_REQS")
+_lab_wrong = []
+for deck, key in (("Routine", "ROUTINE"), ("Specialized", "SPECIALIZED"),
+                  ("Unstable", "UNSTABLE"), ("Advanced", "ADVANCED")):
+    for pid, row in enumerate(ga[key]):
+        name, targets = row[0], row[1]
+        want = [_LONG[d] if d else None
+                for d in (list(_req.get(name, [])) + [None] * len(targets))
+                [:len(targets)]]
+        if list(_jreq[deck][pid]) != want:
+            _lab_wrong.append("%s: %r != %r" % (name, _jreq[deck][pid], want))
+check("the lab's PROGRAM_REQS matches generator REQ_MAP",
+      not _lab_wrong, "; ".join(_lab_wrong[:3]))
+
+# rules/aos.html must not claim a uniform dot count: three cards break it.
+check("rules/aos.html names the three dot-count exceptions",
+      all(n in _arules for n in ("Carry a Moving Load", "Rapid Approach",
+                                 "Unobserved Entry"))
+      and "carry two required&#8209;color dots; Routine" not in _arules)
+# Percentages in the supplement are model output and must say so.
+_nrules = text("rules/nrj.html")
+check("rules/nrj.html says where its percentages come from",
+      "About the percentages" in _nrules
+      and "not from recorded play" in _nrules)
+check("no bare win-rate claim is left in rules/aos.html",
+      "points of win rate" not in _arules)
+
 jsrc = text("playtest/dist/app.js")
 check("MISSES_TO_NEGATE: aos.py %r == app.js" % sa.get("MISSES_TO_NEGATE"),
       ("const MISSES_TO_NEGATE = %d;" % sa["MISSES_TO_NEGATE"]) in jsrc)

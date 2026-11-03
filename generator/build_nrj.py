@@ -221,10 +221,12 @@ BACKDOOR = [
 intf = [C(n, "NRJ &middot; Nobulous Interference", '<div class="sub">Draw 1 at setup</div>' + T(e),
            'Tier I &mdash; Agenda.', acc=AOS_H) for n, e in INTF]
 corr = [C(n, "NRJ &middot; Corrupted Limitation",
-            T("Withhold 2 available dice of a <b>randomly selected</b> color.") +
+            T("Withhold 2 available dice of a <b>randomly selected</b> color "
+              "that this Program does <b>not</b> require.") +
             '<div class="sub" style="margin-top:2.5mm">Corruption</div>' + T(e),
             'Reveal before committing required-color dice. Withheld dice cannot be used in this Program. '
-            'Tier II &mdash; Contamination.', acc=AOS_LIM) for n, e in CORRUPT]
+            'If the Program requires every color, select any. Tier II &mdash; Contamination.',
+            acc=AOS_LIM) for n, e in CORRUPT]
 bkd = [C(n, "NRJ &middot; Backdoor Routine",
             '<div class="sub">Maximum 2 Backdoor Routines claimed per game</div>' + T(c) +
             '<div class="sub" style="margin-top:2.5mm">Reward</div>' + T(r),

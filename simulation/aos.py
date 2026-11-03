@@ -247,7 +247,12 @@ CORRUPT_WITHHOLD = 2
 # dot needs, and the Program then cannot be executed at all: 1 Health, no
 # roll, no decision. That compounding is what dropped Tier II and III by 20
 # points when required colours were implemented.
-CORRUPT_AVOID_REQUIRED = False
+# PRINTED 2026-11-03, so True is now the rule: a Corrupted Limitation draws
+# its colour from the ones the Program does not require. It lifts Tier II
+# and III about 8 points and, more to the point, restores their shape - the
+# drop from the pre-required-colour figures becomes near-uniform across the
+# three tiers instead of twice as deep at II and III.
+CORRUPT_AVOID_REQUIRED = True
 
 # Backdoor Routines: at most 2 claimed per game. The two modeled are the ones
 # whose rewards change an outcome rather than an allocation choice - "treat one

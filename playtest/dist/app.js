@@ -127,8 +127,21 @@
     ["Works on My Machine","A Crit rolled on the second element counts as 3 successes. Crits on every other element count as basic successes."],
     ["Memory Leak","Whenever you over-allocate an element, exhaust 1 additional available die after resolving the Program."],
   ];
-  // Corrupted Limitations sit in the Limitation deck. Each withholds 2 dice of
-  // a randomly chosen color on top of the printed corruption.
+  // Required-colour dots per element, GENERATED from
+  // generator/aos.py's REQ_MAP - the same source the simulation's
+  // PROGRAM_REQS comes from. Counts are not uniform per deck: Carry a
+  // Moving Load needs all four colours, Rapid Approach and Unobserved
+  // Entry three. check_app_sync.py holds all three copies together.
+  const PROGRAM_REQS = {
+    Routine: [["green",null,null], ["purple",null,null], [null,null,"yellow"], [null,"blue",null], ["green",null,null], [null,null,"purple",null], ["yellow",null,null], [null,null,"blue",null]],
+    Specialized: [["purple",null,"yellow"], ["green",null,"blue",null], [null,"yellow","purple"], ["blue",null,null,"green"], ["purple","yellow",null], [null,"green",null,"blue"], ["yellow",null,"purple",null], ["yellow","purple","blue","green"]],
+    Unstable: [["purple",null,null,null], [null,null,"yellow",null], [null,"blue",null,null], [null,null,"green",null], ["yellow",null,null,null], [null,null,null,"purple"], [null,"green",null,null], [null,null,"blue",null]],
+    Advanced: [["purple",null,"green","yellow",null], ["yellow","green",null,"blue"], ["yellow",null,null,"purple",null], [null,"blue",null,"green"], ["green",null,null,"yellow",null], [null,"purple",null,"blue"], ["blue",null,null,"green",null], ["yellow",null,"purple",null,null]],
+  };
+  // Corrupted Limitations sit in the Limitation deck. Each withholds 2 dice
+  // of a randomly chosen color THE PROGRAM DOES NOT REQUIRE, on top of the
+  // printed corruption - a withheld color cannot answer a required dot, so
+  // without the exclusion the Program could not be run at all.
   const AOS_CORRUPT = [
     ["Uneven Architecture","The first element must receive more dice than the last."],
     ["Memory Collision","No two adjacent elements may receive the same number of dice."],
@@ -378,7 +391,8 @@
   const SHORTAGE_COLORS = ["yellow", "green", "blue", "purple"];
   // Checks the withheld dice against the active Limitation. Returns an error message, or "" when resolved.
   // Limitations 0-5 are native; 6-11 are the Tier II Corrupted Limitations,
-  // which withhold 2 dice of a randomly chosen color on top of their text.
+  // which withhold 2 dice of a randomly chosen color on top of their text -
+  // excluding the colors this Program requires.
   const isCorrupt = lim => lim >= 6;
   function limitationName(lim){
     return isCorrupt(lim) ? AOS_CORRUPT[lim-6][0] : LIMITATION_FLAVOR[lim].name;
@@ -386,8 +400,20 @@
   function limitationText(lim){
     return isCorrupt(lim) ? AOS_CORRUPT[lim-6][1] : LIMITATION_FLAVOR[lim].text;
   }
+  function currentReqs(){
+    if(!state.current)return [];
+    const s=programSource(state.current);
+    return (s&&PROGRAM_REQS[s.deck]&&PROGRAM_REQS[s.deck][s.pid])||[];
+  }
   function corruptColor(){
-    if(!state.corruptColor)state.corruptColor=shuffle(["purple","blue","green","yellow"])[0];
+    // "a randomly selected color that this Program does not require", and
+    // "if the Program requires every color, select any" - which is not a
+    // hypothetical: Carry a Moving Load requires all four.
+    if(!state.corruptColor){
+      const need=new Set(currentReqs().filter(Boolean));
+      const open=["purple","blue","green","yellow"].filter(c=>!need.has(c));
+      state.corruptColor=shuffle(open.length?open:["purple","blue","green","yellow"])[0];
+    }
     return state.corruptColor;
   }
   function limitationProblem() {
@@ -465,6 +491,11 @@
     state.architectUsed = false; state.architectMode = false; state.debuggerUsed = false; state.optimizerUsed = false; state.rewardApplied = false;
     if (!state.limitationQueue.length) {state.limitationQueue = shuffle([0,1,2,3,4,5].filter(x => !state.banishedLimitations.includes(x)));state.discard=state.discard.filter(name=>!name.startsWith("Limitation:"));}
     state.limitation = state.limitationQueue.pop();
+    // A Corrupted Limitation's random picks belong to THIS reveal, not to
+    // the game: "a randomly selected color", "randomly select one element".
+    // corruptColor() also screens out the colours this Program requires, so
+    // it has to be chosen now that state.current is set, not once at setup.
+    state.corruptColor = null; state.corruptElement = null;
     state.dice.filter(d => d.zone === "withheld" || d.zone === "allocated").forEach(d => { d.zone = "available"; d.element = null; d.face = null; });
     state.elementCount = currentElementCount();
     state.elements = currentTargets().map((target, i) => ({ ...elementTemplate(i), target }));
