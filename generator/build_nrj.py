@@ -364,11 +364,15 @@ def exhibit_body(name, target):
              '<div><div class="big">%d</div><div class="biglbl">Damage</div></div>'
              '</div>' % (target, damage))
     # The band is on all 24; only the five in EXHIBIT_REWARD do anything.
-    # Upright text is a rule, italic text is the Council being gracious.
+    # Bold upright text is a rule, italic text is the Council being
+    # gracious. The weight carries across a table where the italics do not:
+    # at arm's length you can see WHICH Exhibit pays without reading it.
+    # The <b> lives here rather than in EXHIBIT_REWARD so that the table
+    # stays plain strings - check_app_sync.py and finale.py read it.
     stats += '<div class="sub" style="margin-top:3.2mm">Reward</div>'
     reward = EXHIBIT_REWARD.get(name)
     if reward:
-        stats += T(reward, 'txt c sm')
+        stats += T('<b>%s</b>' % reward, 'txt c sm')
     else:
         stats += ('<div style="font-size:7.4pt;font-style:italic;text-align:center;'
                   'line-height:1.25;color:#6f675a;margin-top:2mm">%s</div>'

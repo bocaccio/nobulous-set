@@ -807,8 +807,10 @@ Not your job to fix, but worth knowing if Jon raises them:
   THE RISK IS A PLAYER READING A COURTESY AS A RULE, and three things
   guard against it:
 
-  - A real Reward is upright; a courtesy is italic, in the set's own
-    flavour style (7.4pt, #6f675a, centred).
+  - A real Reward is BOLD upright; a courtesy is italic, in the set's own
+    flavour style (7.4pt, #6f675a, centred). Weight is the signal that
+    survives distance - across a table you can see which Exhibit pays
+    without being able to read it, which italics alone do not give you.
   - All five real Rewards open "When this Exhibit falls". No courtesy may
     contain that phrase.
   - No courtesy may NAME A THING THE GAME HAS. The first version of this

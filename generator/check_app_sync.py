@@ -442,8 +442,9 @@ check("the Research Pool is the Tier III cards, not the games' own decks",
 # finale.py's REWARDS. A renamed card would silently stop paying, so the
 # names are checked against the deck.
 #
-# ALL 24 EXHIBITS PRINT A REWARD BAND and only those five do anything; the
-# other nineteen carry a courtesy, which is flavour set in italics. The
+# ALL 24 EXHIBITS PRINT A REWARD BAND and only those five do anything.
+# Those five are bold; the other nineteen carry a courtesy, which is
+# flavour set in italics. The
 # danger is a courtesy that reads like a rule, so the wording is checked
 # too: it may not borrow the five's cue phrase, and it may not name a
 # thing the game has. Mood is not the test - "Help yourself to anything
