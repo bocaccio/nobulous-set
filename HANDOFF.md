@@ -810,9 +810,17 @@ Not your job to fix, but worth knowing if Jon raises them:
   - A real Reward is upright; a courtesy is italic, in the set's own
     flavour style (7.4pt, #6f675a, centred).
   - All five real Rewards open "When this Exhibit falls". No courtesy may
-    contain that phrase, and none is imperative - they are observations,
-    never instructions. `build_nrj.py` refuses to build if either rule is
-    broken, and `check_app_sync.py` checks both again.
+    contain that phrase.
+  - No courtesy may NAME A THING THE GAME HAS. The first version of this
+    entry said "none is imperative" and that was the wrong rule: Jon's
+    final wording includes "Help yourself to anything that isn't
+    smoking", which is imperative and plainly flavour, while "the next
+    Exhibit you deploy has its Target reduced by 1" is a flat statement
+    and plainly a rule. Mood is not the test. Having nothing in the line
+    that can be acted on is - a brooch, a candlestick and a moth are not
+    components. `build_nrj.COURTESY_FORBIDDEN` lists the words;
+    `build_nrj.py` refuses to build on a hit and `check_app_sync.py`
+    reads the same list, so it fails the check people actually run.
   - The rulebook says it twice: at setup, and under "What the Council lets
     slip".
 

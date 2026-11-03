@@ -445,7 +445,11 @@ check("the Research Pool is the Tier III cards, not the games' own decks",
 # ALL 24 EXHIBITS PRINT A REWARD BAND and only those five do anything; the
 # other nineteen carry a courtesy, which is flavour set in italics. The
 # danger is a courtesy that reads like a rule, so the wording is checked
-# too: a courtesy may not open with the five's cue phrase.
+# too: it may not borrow the five's cue phrase, and it may not name a
+# thing the game has. Mood is not the test - "Help yourself to anything
+# that isn't smoking" is imperative and plainly flavour. Having nothing
+# in it that can be acted on is the test, and build_nrj's
+# COURTESY_FORBIDDEN is the list this reads.
 print()
 print("NRJ - the Reward band, and the five that pay")
 scen = gr["SCEN"]
@@ -470,6 +474,9 @@ check("all 5 paying Rewards open with the cue phrase",
 check("no courtesy borrows the cue phrase",
       not any(CUE in t for t in courtesy.values()),
       "%s" % sorted(n for n, t in courtesy.items() if CUE in t))
+_banned = re.compile(r"(%s)" % "|".join(gr["COURTESY_FORBIDDEN"]), re.I)
+_leaks = sorted(n for n, t in courtesy.items() if _banned.search(t))
+check("no courtesy names a thing the game has", not _leaks, "%s" % _leaks)
 check("the rulebook says every Exhibit prints one and five pay",
       "Every Exhibit prints a Reward and <b>five of them pay</b>" in rules)
 check("suite.js names 5 Reward cards", len(js_rewards) == 5,

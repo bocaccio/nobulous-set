@@ -1,3 +1,4 @@
+import re
 import sys; sys.path.insert(0, '/home/claude/cards')
 from gen import render_deck, render_duplex, make_back, hdr_fit, title_cls, DOT, LANDSCAPE, PORTRAIT, subj_icon
 
@@ -287,8 +288,15 @@ EXHIBIT_REWARD = {
 # TWO RULES KEEP THEM READABLE AS FLAVOUR, and both are enforced below:
 #   - a courtesy NEVER opens "When this Exhibit falls". That phrase belongs
 #     to the five that pay, and it is the player's cue.
-#   - a courtesy is never imperative. Nothing in it tells the player to do
-#     anything, so there is nothing to mistake for an instruction.
+#   - a courtesy NEVER names a thing the game has. That is the checkable
+#     form of "it must not read as a rule"; grammatical mood is not, since
+#     "Help yourself to anything that isn't smoking" is imperative and
+#     plainly flavour, while "the next Exhibit you deploy" is a statement
+#     of fact and plainly a rule. What makes a line safe is that nothing
+#     in it can be acted on: a brooch, a candlestick and a moth are not
+#     components. COURTESY_FORBIDDEN is the list; check_app_sync.py reads
+#     it from here and applies it, so a courtesy that drifts fails the
+#     check people actually run rather than only the build.
 # Sixteen of these cards were never Reward cards at all - they were
 # Constraints, Aggravators and Reliefs, and the rework drops every Scenario
 # clause. The other three (An Unwelcome Embrace, The Night Watchman's
@@ -298,37 +306,50 @@ EXHIBIT_REWARD = {
 # the four difficulty rungs hold to, so they get a courtesy like the rest.
 EXHIBIT_COURTESY = {
     # Knowledge
-    "The Physician's Greeting": "The physician withdraws his greeting. He asks that this be minuted.",
-    "An Old Injury": "The Council accepts that the injury is old. It remains an injury.",
-    "Failed Apparatus": "You may keep the apparatus. It has never worked.",
-    "Order of Precedence": "You move up one place in the order of precedence. There is no one behind you.",
-    "A Disputed Citation": "The citation is struck from the record, and read aloud twice more.",
-    "The Long Argument": "The argument is adjourned. You are thanked for your time, at length.",
+    "The Physician's Greeting": "For once, the physician warms his hands.",
+    "An Old Injury": "Your limp is entered into the minutes as a longstanding commitment to the institution.",
+    "Failed Apparatus": "Help yourself to anything that isn’t smoking.",
+    "Order of Precedence": "After considerable debate, you are permitted to enter before the sandwiches.",
+    "A Disputed Citation": "The disputed passage is located in the Chairman’s own book, bringing this fruitful exchange to an abrupt conclusion.",
+    "The Long Argument": "You have the last word, delivered to a room of empty chairs.",
     # Physical
-    "The Ceremonial Seal": "The seal is broken. A clerk is sent for another.",
-    "An Unwelcome Embrace": "The embrace is returned. It is no more welcome the second time.",
-    "A Sudden Fall": "The Council agrees the fall was sudden. They are less certain it was a fall.",
-    "The Long Session": "The session is extended by an hour in your honor.",
-    "Tainted Wine": "You are offered more wine.",
-    "Across the Chamber": "You are permitted to sit nearer the door.",
-    "The Darkened Corridor": "A lamp is ordered for the corridor. It will arrive next winter.",
+    "The Ceremonial Seal": "A handsome lump of wax, yours to treasure.",
+    "An Unwelcome Embrace": "Released at last, you discover that you have acquired a brooch and lost a button.",
+    "A Sudden Fall": "“Excellent reflexes,” observes the member who was standing behind you.",
+    "The Long Session": "By dawn, even your enemies are voting to let you leave.",
+    "Tainted Wine": "A better vintage is brought up from the cellar while someone quietly waters the fern with yours.",
+    "Across the Chamber": "Your procession back to your seat is accompanied by the single clap of a member killing a moth.",
+    "The Darkened Corridor": "You may borrow the candlestick, provided you stop asking about the scratches around the lock.",
     # Cover-Up
-    "The Night Watchman's Account": "The watchman is commended for his memory. He remembers you distinctly.",
-    "An Open Window": "The window is closed. You are thanked for raising it.",
-    "Someone Was Seen": "It is agreed that someone was seen. The Council thanks you for narrowing it down.",
-    "Rope Burns": "The Council accepts that rope is abrasive. The record will reflect it.",
-    "The Missing Hours": "Two of the missing hours are found. They are not the two you needed.",
-    "A Second Search": "A third search is scheduled, for completeness.",
+    "The Night Watchman's Account": "The watchman retracts his statement in exchange for a chair facing away from the courtyard.",
+    "An Open Window": "A little fresh air does wonders for a room in which nobody has been outside all evening, apparently.",
+    "Someone Was Seen": "For your assistance with the inquiry, you are allowed to describe your own distinguishing features.",
+    "Rope Burns": "The cord is returned to you in a gift box.",
+    "The Missing Hours": "You are excused from accounting for the hours between midnight and three, a courtesy several members seem eager to reciprocate.",
+    "A Second Search": "This time they let you watch.",
 }
+
+# Words that name something the game has. A courtesy containing one of
+# these is either a rule or reads like one; nineteen pieces of Council
+# flavour have no business mentioning any of them.
+COURTESY_FORBIDDEN = (
+    "die", "dice", "target", "damage", "health", "exhibit", "exhibits",
+    "card", "cards", "success", "successes", "crit", "crits", "recover",
+    "exhaust", "exhausted", "color", "colors", "session", "sessions",
+    "dossier", "suspicion", "deploy", "banish", "commit",
+)
 
 _overlap = sorted(set(EXHIBIT_REWARD) & set(EXHIBIT_COURTESY))
 _absent = sorted(n for n, _d, _c, _t, _e in SCEN
                  if n not in EXHIBIT_REWARD and n not in EXHIBIT_COURTESY)
-_imperative = sorted(n for n, t in EXHIBIT_COURTESY.items()
-                     if t.startswith("When this Exhibit falls"))
-if _overlap or _absent or _imperative:
-    raise SystemExit("Exhibit Rewards: %s pay twice, %s print nothing, %s read "
-                     "as a real Reward" % (_overlap, _absent, _imperative))
+_cue = sorted(n for n, t in EXHIBIT_COURTESY.items()
+              if "When this Exhibit falls" in t)
+_names = sorted(n for n, t in EXHIBIT_COURTESY.items()
+                if re.search(r'(%s)' % '|'.join(COURTESY_FORBIDDEN), t, re.I))
+if _overlap or _absent or _cue or _names:
+    raise SystemExit("Exhibit Rewards: %s pay twice, %s print nothing, %s borrow "
+                     "the cue phrase, %s name something the game has"
+                     % (_overlap, _absent, _cue, _names))
 
 
 def exhibit_body(name, target):
