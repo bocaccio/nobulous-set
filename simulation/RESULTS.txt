@@ -49,10 +49,10 @@ AoS  Automaton of Shale
   difficulty = the Routine/Specialized/Unstable mix
 
                             no NRJ    Tier I   Tier II  Tier III
-  Easy  5/3/0                72.8%     57.0%     39.3%     42.6%
-  Standard  4/3/1            63.1%     46.6%     30.2%     33.2%
-  Hard  3/3/2                52.9%     37.3%     22.3%     24.7%
-  Nobulous  2/3/3            44.2%     28.7%     16.7%     18.6%
+  Easy  5/3/0                72.8%     57.0%     48.7%     52.1%
+  Standard  4/3/1            63.1%     46.6%     38.1%     41.6%
+  Hard  3/3/2                52.9%     37.3%     28.6%     32.0%
+  Nobulous  2/3/3            44.2%     28.7%     21.6%     24.3%
   
     Mean of the six Technicians, ALLOC_MODE = honest.
     Tier I   1 of 6 Nobulous Interference cards drawn at setup
@@ -77,40 +77,45 @@ AoS  Automaton of Shale
   at Hard and 3.0 at Nobulous on the solo column.  So honest is a
   sound published policy again, and the ladder spans 28.6 points.
 
-  THE TIER COLUMNS ARE THE REMAINING PROBLEM, and the cause is
-  one interaction rather than general difficulty.  A Corrupted
-  Limitation withholds 2 dice of a RANDOM colour; when that is a
-  colour a dot needs, the Program cannot be executed at all - 1
-  Health, no roll, no decision.  Against the old figures, Tier I
-  falls 12.3 points at Standard while Tier II and III fall 20.1
-  and 21.2.  That ~8-point excess IS the compounding.
+  THE TIER COMPOUNDING IS FIXED, AND THE SHAPE IS BACK.  A
+  Corrupted Limitation used to withhold 2 dice of a RANDOM
+  colour; when that was a colour a dot needed, the Program could
+  not be executed at all - 1 Health, no roll, no decision in it.
+  Tier II and III carried that twice over, falling 20.1 and 21.2
+  points at Standard where Tier I fell 12.5.
 
-  MEASURED, 9000 games a cell, Standard / Tier III:
+  Swept at 9000 games a cell, Standard / Tier III: as printed
+  33.0%, withhold a non-required colour 41.0%, withhold 1 any
+  colour 42.9%, withhold 0 49.5%.  Only withholding NOTHING
+  reached the 47-57 band and it was rejected: at withhold 0,
+  Standard Tier II reads 47.0 against Tier I's 46.8, so Tier II
+  stops being the pressure peak it is designed to be.  It buys
+  the band figure by flattening the tiers.
 
-    as printed (withhold 2, any colour)      33.0%
-    withhold a colour NOT required           41.0%
-    withhold 1, any colour                   42.9%
-    withhold 0                               49.5%   in band
+  PRINTED INSTEAD: the withheld colour is drawn from the ones the
+  Program does not require.  It keeps the full 2-dice bite, can
+  never produce an unplayable Program, and the drop from the old
+  figures is now UNIFORM - at Standard, 12.5 / 12.6 / 12.6 across
+  Tiers I, II and III, against 12.5 / 20.1 / 21.2 before.  The
+  tiers sit in their intended order again, and Easy / Tier III
+  is back in band at 52.1%.
 
-  Only withholding nothing reaches the 47-57 band, and it should
-  NOT be chosen: at withhold 0 Standard Tier II reads 47.0 and
-  Tier I reads 46.8, so Tier II stops being the pressure peak it
-  is designed to be.  It buys the band number by flattening the
-  tiers.
-
-  RECOMMENDED INSTEAD: draw the withheld colour from the ones the
-  Program does not require (aos.CORRUPT_AVOID_REQUIRED, off until
-  printed).  It keeps the full 2-dice bite, can never produce an
-  unplayable Program, and restores the SHAPE: the drop from the
-  old figures becomes near-uniform at 12.3 / 13.0 / 13.2 across
-  Tiers I, II and III instead of 12.3 / 20.1 / 21.2.
-
-  What is left after that is a uniform ~13-point drop at every
-  tier, which is not a tier problem - it is the whole of AoS
-  being harder now that required colours are modelled.  If that
-  is to be re-pitched the lever is the DECK MIX, which is AoS's
-  actual difficulty dial, not the corruption.  Nothing has been
+  WHAT REMAINS IS NOT A TIER PROBLEM.  A uniform ~12.6-point drop
+  at every tier, and 8.1 on the solo column, is the whole of AoS
+  being harder now that required colours are modelled and an
+  element can no longer be abandoned for free.  Standard / Tier
+  III reads 41.6% against the 53.5% that used to be AoS's in-band
+  reference.  If that is to be re-pitched the lever is the DECK
+  MIX, AoS's actual difficulty dial - not the corruption, which
+  is now doing exactly what it was meant to do.  Nothing has been
   re-tuned.
+
+  POLICY, FINAL.  With the floor and the exclusion in, honest
+  play leads in 10 of these 16 cells; ALLOC_MODE = sacrifice wins
+  only at the hard end, by 0.5 to 4.3 points, where giving up an
+  element genuinely pays.  A residual gap that size is judgement
+  being rewarded rather than a dominant line, so honest stays the
+  published policy.
 
   IMPLEMENTATION COVERAGE: TWO GAPS, ONE OF THEM SERIOUS (2026-11-03)
   Asked by review whether the model compares deliberate
