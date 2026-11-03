@@ -241,6 +241,13 @@ TARGET_DELTA = 0   # flat rise on every printed element Target
 
 CORRUPT_CHANCE = 0.5
 CORRUPT_WITHHOLD = 2
+# A Corrupted Limitation draws its withheld colour from the ones this
+# Program does NOT require. False is the printed rule - "withhold 2 dice of
+# a randomly selected color" - under which the withheld colour may be one a
+# dot needs, and the Program then cannot be executed at all: 1 Health, no
+# roll, no decision. That compounding is what dropped Tier II and III by 20
+# points when required colours were implemented.
+CORRUPT_AVOID_REQUIRED = False
 
 # Backdoor Routines: at most 2 claimed per game. The two modeled are the ones
 # whose rewards change an outcome rather than an allocation choice - "treat one
@@ -718,7 +725,13 @@ class Game(object):
             self.rng.shuffle(self.lim_queue)
         withheld += self.withhold_for(self.lim_queue.pop())
         if self.corrupt and self.rng.random() < CORRUPT_CHANCE:
-            color = self.rng.choice(COLORS)
+            choices = COLORS
+            if CORRUPT_AVOID_REQUIRED and REQUIRED_COLORS:
+                need = set(c for c in PROGRAM_REQS[deck][pid] if c)
+                # If a Program requires every colour there is nothing safe
+                # to take, so the corruption falls back to any of them.
+                choices = [c for c in COLORS if c not in need] or COLORS
+            color = self.rng.choice(list(choices))
             for _ in range(CORRUPT_WITHHOLD):
                 if color in self.available:
                     self.available.remove(color)

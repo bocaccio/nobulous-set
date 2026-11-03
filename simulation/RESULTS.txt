@@ -49,50 +49,68 @@ AoS  Automaton of Shale
   difficulty = the Routine/Specialized/Unstable mix
 
                             no NRJ    Tier I   Tier II  Tier III
-  Easy  5/3/0                68.8%     54.1%     38.1%     41.0%
-  Standard  4/3/1            57.8%     43.9%     28.8%     31.4%
-  Hard  3/3/2                48.0%     34.2%     21.6%     23.7%
-  Nobulous  2/3/3            38.4%     26.6%     15.3%     17.4%
+  Easy  5/3/0                72.8%     57.0%     39.3%     42.6%
+  Standard  4/3/1            63.1%     46.6%     30.2%     33.2%
+  Hard  3/3/2                52.9%     37.3%     22.3%     24.7%
+  Nobulous  2/3/3            44.2%     28.7%     16.7%     18.6%
   
     Mean of the six Technicians, ALLOC_MODE = honest.
     Tier I   1 of 6 Nobulous Interference cards drawn at setup
     Tier II  6 Corrupted Limitations in the Limitation deck
     Tier III 6 Backdoor Routines, at most 2 claimed per game
 
-  RE-MEASURED 2026-11-03 WITH REQUIRED COLOURS IMPLEMENTED.
-  Every AoS figure published before this date was taken without
-  them - they were absent from the model entirely.  What they
-  read before: 79.6 / 71.2 / 62.8 / 52.6 at no NRJ, and
-  65.0 / 54.2 / 44.9 / 35.2 at Tier III.
+  RE-MEASURED 2026-11-03, with REQUIRED COLOURS implemented and
+  the ALLOCATION FLOOR printed.  Every AoS figure published
+  before this date was taken with neither: required colours were
+  absent from the model entirely, and the rulebook said an
+  element could be left bare.  What they read before:
+  79.6 / 71.2 / 62.8 / 52.6 at no NRJ, 65.0 / 54.2 / 44.9 / 35.2
+  at Tier III.
 
-  The solo column falls 11 to 14 points and KEEPS ITS SHAPE.
-  The tier columns fall much further - Tier II at Standard goes
-  50.7 -> 28.8 - because a Corrupted Limitation withholds 2 dice
-  of a random colour, and a colour withheld is a colour that
-  cannot answer a dot.  The two rules compound, which neither
-  did alone.  "Cannot supply a required colour" fires on 6.1% of
-  Programs at no NRJ.  THE TIER PITCH NEEDS A DECISION; nothing
-  has been re-tuned.
+  THE POLICY QUESTION IS CLOSED.  Before the floor, giving up one
+  element on purpose was free - no Health, and no dice, since a
+  bare element exhausts none - and beat this policy by up to 27
+  points, which would have forced the published policy to change
+  and left the ladder flattened to 14 points.  With the floor in,
+  ALLOC_MODE = sacrifice is WORSE than honest in 14 of these 16
+  cells, losing 9 points at Easy / Tier II; it still wins by 1.0
+  at Hard and 3.0 at Nobulous on the solo column.  So honest is a
+  sound published policy again, and the ladder spans 28.6 points.
 
-  AND THE PUBLISHED POLICY IS NOT COMPETENT PLAY.  The same
-  table under ALLOC_MODE = sacrifice - give up the dearest
-  element with no required dot and spend its dice on the rest:
+  THE TIER COLUMNS ARE THE REMAINING PROBLEM, and the cause is
+  one interaction rather than general difficulty.  A Corrupted
+  Limitation withholds 2 dice of a RANDOM colour; when that is a
+  colour a dot needs, the Program cannot be executed at all - 1
+  Health, no roll, no decision.  Against the old figures, Tier I
+  falls 12.3 points at Standard while Tier II and III fall 20.1
+  and 21.2.  That ~8-point excess IS the compounding.
 
-                            no NRJ    Tier I   Tier II  Tier III
-    Easy  5/3/0              78.4%     58.9%     36.5%     39.1%
-    Standard  4/3/1          73.8%     54.0%     33.4%     35.5%
-    Hard  3/3/2              70.4%     48.9%     29.5%     32.1%
-    Nobulous  2/3/3          64.6%     45.0%     26.9%     28.6%
+  MEASURED, 9000 games a cell, Standard / Tier III:
 
-  Required colours do NOT close that line: it is still worth 10
-  to 27 points, because there is nearly always a dotless element
-  to give up.  And it FLATTENS THE LADDER - 78 / 74 / 70 / 65 is
-  14 points across four levels where the honest table spans 30.
-  So under good play the difficulty dial barely works, which is
-  the open question this review leaves behind.  Note too that
-  sacrifice play at Standard reads 73.8% against the 71.2% that
-  used to be published: the old number was about right by
-  accident, for a game that was missing a rule.
+    as printed (withhold 2, any colour)      33.0%
+    withhold a colour NOT required           41.0%
+    withhold 1, any colour                   42.9%
+    withhold 0                               49.5%   in band
+
+  Only withholding nothing reaches the 47-57 band, and it should
+  NOT be chosen: at withhold 0 Standard Tier II reads 47.0 and
+  Tier I reads 46.8, so Tier II stops being the pressure peak it
+  is designed to be.  It buys the band number by flattening the
+  tiers.
+
+  RECOMMENDED INSTEAD: draw the withheld colour from the ones the
+  Program does not require (aos.CORRUPT_AVOID_REQUIRED, off until
+  printed).  It keeps the full 2-dice bite, can never produce an
+  unplayable Program, and restores the SHAPE: the drop from the
+  old figures becomes near-uniform at 12.3 / 13.0 / 13.2 across
+  Tiers I, II and III instead of 12.3 / 20.1 / 21.2.
+
+  What is left after that is a uniform ~13-point drop at every
+  tier, which is not a tier problem - it is the whole of AoS
+  being harder now that required colours are modelled.  If that
+  is to be re-pitched the lever is the DECK MIX, which is AoS's
+  actual difficulty dial, not the corruption.  Nothing has been
+  re-tuned.
 
   IMPLEMENTATION COVERAGE: TWO GAPS, ONE OF THEM SERIOUS (2026-11-03)
   Asked by review whether the model compares deliberate
