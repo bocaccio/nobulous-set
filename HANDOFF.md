@@ -789,6 +789,46 @@ Each of these only appears a few turns in.
 
 Not your job to fix, but worth knowing if Jon raises them:
 
+- **All 24 Exhibits print a Reward band; nineteen of them are COURTESIES
+  and do nothing.** Asked for on 2026-11-02, after "shouldn't all the
+  imposter exhibits have rewards". The answer to that as a mechanic is no -
+  the five that pay are worth +7.8 points and are the reason REC is 3
+  rather than 4, so a sixth is a balance change - but the complaint behind
+  it was sound: nineteen cards read Target and Damage over an inch of white
+  space and looked unfinished, and a Reward band on only five of them told
+  everyone at the table which five mattered before a card was turned over.
+
+  So the band is on all 24 and the other nineteen carry flavour.
+  `build_nrj.EXHIBIT_COURTESY` holds them, `EXHIBIT_REWARD` still holds the
+  five that pay, and the two tables may not overlap. NOTHING MECHANICAL
+  MOVED: no Target, no Damage, no Reward text, and `simulation/` was not
+  touched. The whole diff in the generator is one comment and one branch.
+
+  THE RISK IS A PLAYER READING A COURTESY AS A RULE, and three things
+  guard against it:
+
+  - A real Reward is upright; a courtesy is italic, in the set's own
+    flavour style (7.4pt, #6f675a, centred).
+  - All five real Rewards open "When this Exhibit falls". No courtesy may
+    contain that phrase, and none is imperative - they are observations,
+    never instructions. `build_nrj.py` refuses to build if either rule is
+    broken, and `check_app_sync.py` checks both again.
+  - The rulebook says it twice: at setup, and under "What the Council lets
+    slip".
+
+  Sixteen of the nineteen were never Reward cards - they were Constraints,
+  Aggravators and Reliefs, and the rework drops every Scenario clause. The
+  other three (An Unwelcome Embrace, The Night Watchman's Account, Across
+  the Chamber) WERE printed Rewards, of a kind this finale has no unit for.
+  finale.py puts restoring them at +1.3 points, which is outside the
+  one-point tolerance the four rungs hold to, so they get a courtesy too.
+  If Jon ever wants them real, that +1.3 needs a compensating change
+  somewhere, not just a rewording.
+
+  While here: suite.js said the five Rewards were measured at +3.8 points.
+  finale.py says +7.8 in two places and prints 50.5 against 42.7. The
+  comment was stale and is corrected; nothing read it.
+
 - **A card is 750x1050 at 300 DPI everywhere, and the per-game PnP pages
   used to be gridded on 714x1000.** Reported on 2026-11-02 as "NAP page 6,
   something is off", then as "the opportunity and setback cards are too

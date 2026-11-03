@@ -399,9 +399,11 @@ check("the Exhibit face prints Target and Damage",
       and '<div class="biglbl">Damage</div>' in nrjgen)
 check("and the rulebook no longer asks for the subtraction",
       "minus 5" not in nrj
-      and "Each Exhibit prints its <b>Target</b> and its <b>Damage</b>" in nrj)
-check("the five Rewards are reworded for the finale",
-      nrjgen.count("When this Exhibit falls") == 5)
+      and "Each Exhibit prints its <b>Target</b>, its <b>Damage</b>" in nrj)
+# The five Rewards being reworded for the finale is checked further down,
+# against EXHIBIT_REWARD itself. It used to be counted by grepping the
+# generator for the cue phrase, which also counted the comments that
+# explain the phrase.
 
 # THE FIVE IMPOSTERS. Ten sides, one statline, and every ability name has
 # to reach the rulebook - a side that only exists on the card is a side
@@ -435,20 +437,47 @@ check("the Research Pool is the Tier III cards, not the games' own decks",
       and "6 Devious Opportunities" in text("rules/nrj.html")
       and "6 Backdoor Routines" in text("rules/nrj.html"))
 
-# The finale restores five printed Rewards by NAME, in three places: the
-# rulebook, suite.js's NRJ_REWARDS and finale.py's REWARDS. A renamed card
-# would silently stop paying, so the names are checked against the deck.
+# The finale restores five printed Rewards by NAME, in four places: the
+# card (build_nrj.EXHIBIT_REWARD), the rulebook, suite.js's NRJ_REWARDS and
+# finale.py's REWARDS. A renamed card would silently stop paying, so the
+# names are checked against the deck.
+#
+# ALL 24 EXHIBITS PRINT A REWARD BAND and only those five do anything; the
+# other nineteen carry a courtesy, which is flavour set in italics. The
+# danger is a courtesy that reads like a rule, so the wording is checked
+# too: a courtesy may not open with the five's cue phrase.
 print()
-print("NRJ - the five restored Reward cards")
+print("NRJ - the Reward band, and the five that pay")
 scen = gr["SCEN"]
 printed_rewards = set(r[0] for r in scen if r[2].endswith("Reward"))
+paying = gr["EXHIBIT_REWARD"]
+courtesy = gr["EXHIBIT_COURTESY"]
 js_rewards = set(js_literal("playtest/dist/suite.js", "NRJ_REWARDS"))
 sim = text("simulation/finale.py")
 rules = text("rules/nrj.html")
+names = [r[0] for r in scen]
+check("every Exhibit prints a Reward band",
+      all(n in paying or n in courtesy for n in names),
+      "%s" % sorted(n for n in names if n not in paying and n not in courtesy))
+check("exactly 5 of the %d pay" % len(names), len(paying) == 5,
+      "%d: %s" % (len(paying), sorted(paying)))
+check("no Exhibit carries both a Reward and a courtesy",
+      not (set(paying) & set(courtesy)), "%s" % sorted(set(paying) & set(courtesy)))
+CUE = "When this Exhibit falls"
+check("all 5 paying Rewards open with the cue phrase",
+      all(t.startswith(CUE) for t in paying.values()),
+      "%s" % sorted(n for n, t in paying.items() if not t.startswith(CUE)))
+check("no courtesy borrows the cue phrase",
+      not any(CUE in t for t in courtesy.values()),
+      "%s" % sorted(n for n, t in courtesy.items() if CUE in t))
+check("the rulebook says every Exhibit prints one and five pay",
+      "Every Exhibit prints a Reward and <b>five of them pay</b>" in rules)
 check("suite.js names 5 Reward cards", len(js_rewards) == 5,
       "%d: %s" % (len(js_rewards), sorted(js_rewards)))
 missing = sorted(js_rewards - printed_rewards)
 check("every one is printed as a Reward card", not missing, "%s" % missing)
+check("suite.js and the card agree on which five pay",
+      js_rewards == set(paying), "%s" % sorted(js_rewards ^ set(paying)))
 for name in sorted(js_rewards):
     check("  %s in finale.py and the rulebook" % name,
           name in sim and name in rules)

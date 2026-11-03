@@ -264,8 +264,10 @@ BIG_TARGET = 5
 
 # The five Rewards that still pay in a currency this finale has. "If you
 # succeed" is reworded to the event the finale actually has: the Exhibit
-# falling. The other three printed Rewards modified a single attempt, which
-# this scenario does not have, so they print no Reward at all.
+# falling. These five are worth +7.8 points of win rate and are the reason
+# REC is 3 rather than 4 - see simulation/finale.py. DO NOT ADD TO THIS
+# TABLE without re-running the grid; a sixth paying Reward is a balance
+# change, not a text change.
 EXHIBIT_REWARD = {
     "The Chamber Mechanism": "When this Exhibit falls, recover 2 exhausted dice.",
     "The Sedative Ledger": "When this Exhibit falls, recover 3 exhausted dice.",
@@ -273,6 +275,60 @@ EXHIBIT_REWARD = {
     "Tracks in the Yard": "When this Exhibit falls, recover 1 exhausted die of each of two colors.",
     "The Narrow Stair": "When this Exhibit falls, the next Exhibit you deploy has its Target reduced by 1.",
 }
+
+# THE OTHER NINETEEN ARE COURTESIES, AND THEY DO NOTHING. Every Exhibit
+# prints a Reward band, because nineteen cards reading Target and Damage
+# over an inch of white space look unfinished, and because a Reward band on
+# only five of them tells a player across the table which five matter
+# before anything is turned over. The courtesies cost nothing: they are
+# flavour, set in italics where a real Reward is upright, and no simulation
+# number moves.
+#
+# TWO RULES KEEP THEM READABLE AS FLAVOUR, and both are enforced below:
+#   - a courtesy NEVER opens "When this Exhibit falls". That phrase belongs
+#     to the five that pay, and it is the player's cue.
+#   - a courtesy is never imperative. Nothing in it tells the player to do
+#     anything, so there is nothing to mistake for an instruction.
+# Sixteen of these cards were never Reward cards at all - they were
+# Constraints, Aggravators and Reliefs, and the rework drops every Scenario
+# clause. The other three (An Unwelcome Embrace, The Night Watchman's
+# Account, Across the Chamber) WERE printed Rewards whose effect modified a
+# single attempt, which this finale has no unit for. finale.py puts
+# restoring them at +1.3 points, which is outside the one-point tolerance
+# the four difficulty rungs hold to, so they get a courtesy like the rest.
+EXHIBIT_COURTESY = {
+    # Knowledge
+    "The Physician's Greeting": "The physician withdraws his greeting. He asks that this be minuted.",
+    "An Old Injury": "The Council accepts that the injury is old. It remains an injury.",
+    "Failed Apparatus": "You may keep the apparatus. It has never worked.",
+    "Order of Precedence": "You move up one place in the order of precedence. There is no one behind you.",
+    "A Disputed Citation": "The citation is struck from the record, and read aloud twice more.",
+    "The Long Argument": "The argument is adjourned. You are thanked for your time, at length.",
+    # Physical
+    "The Ceremonial Seal": "The seal is broken. A clerk is sent for another.",
+    "An Unwelcome Embrace": "The embrace is returned. It is no more welcome the second time.",
+    "A Sudden Fall": "The Council agrees the fall was sudden. They are less certain it was a fall.",
+    "The Long Session": "The session is extended by an hour in your honor.",
+    "Tainted Wine": "You are offered more wine.",
+    "Across the Chamber": "You are permitted to sit nearer the door.",
+    "The Darkened Corridor": "A lamp is ordered for the corridor. It will arrive next winter.",
+    # Cover-Up
+    "The Night Watchman's Account": "The watchman is commended for his memory. He remembers you distinctly.",
+    "An Open Window": "The window is closed. You are thanked for raising it.",
+    "Someone Was Seen": "It is agreed that someone was seen. The Council thanks you for narrowing it down.",
+    "Rope Burns": "The Council accepts that rope is abrasive. The record will reflect it.",
+    "The Missing Hours": "Two of the missing hours are found. They are not the two you needed.",
+    "A Second Search": "A third search is scheduled, for completeness.",
+}
+
+_overlap = sorted(set(EXHIBIT_REWARD) & set(EXHIBIT_COURTESY))
+_absent = sorted(n for n, _d, _c, _t, _e in SCEN
+                 if n not in EXHIBIT_REWARD and n not in EXHIBIT_COURTESY)
+_imperative = sorted(n for n, t in EXHIBIT_COURTESY.items()
+                     if t.startswith("When this Exhibit falls"))
+if _overlap or _absent or _imperative:
+    raise SystemExit("Exhibit Rewards: %s pay twice, %s print nothing, %s read "
+                     "as a real Reward" % (_overlap, _absent, _imperative))
 
 
 def exhibit_body(name, target):
@@ -286,10 +342,16 @@ def exhibit_body(name, target):
              '<div><div class="big">%d</div><div class="biglbl">Target</div></div>'
              '<div><div class="big">%d</div><div class="biglbl">Damage</div></div>'
              '</div>' % (target, damage))
+    # The band is on all 24; only the five in EXHIBIT_REWARD do anything.
+    # Upright text is a rule, italic text is the Council being gracious.
+    stats += '<div class="sub" style="margin-top:3.2mm">Reward</div>'
     reward = EXHIBIT_REWARD.get(name)
     if reward:
-        stats += ('<div class="sub" style="margin-top:3.2mm">Reward</div>'
-                  + T(reward, 'txt c sm'))
+        stats += T(reward, 'txt c sm')
+    else:
+        stats += ('<div style="font-size:7.4pt;font-style:italic;text-align:center;'
+                  'line-height:1.25;color:#6f675a;margin-top:2mm">%s</div>'
+                  % EXHIBIT_COURTESY[name])
     return stats
 
 
