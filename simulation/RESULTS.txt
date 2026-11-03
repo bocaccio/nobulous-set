@@ -51,6 +51,37 @@ AoS  Automaton of Shale
     Tier II  6 Corrupted Limitations in the Limitation deck
     Tier III 6 Backdoor Routines, at most 2 claimed per game
 
+  DELIBERATE FAILURE IS NOT A ROUTE THROUGH AoS (2026-11-03)
+  Raised in review: failing Programs shortens the deck, an empty
+  deck advances the game, and Advanced Programming is won by
+  SURVIVING three Programs rather than completing them - so failing
+  on purpose might be efficient.  Measured with aos.ALLOC_MODE,
+  6000 games a cell, the negate rule as shipped:
+
+                       honest  dump Uns  dump S+U  dump all
+    Easy  5/3/0         79.9%     79.9%     33.6%      0.3%
+    Standard  4/3/1     70.8%     64.1%     18.9%      0.2%
+    Hard  3/3/2         62.7%     43.8%      9.3%      0.2%
+    Nobulous  2/3/3     52.6%     26.9%      4.4%      0.3%
+
+    Strictly worse, monotonically in how much you dump.  (Easy has
+    no Unstable Programs, so dumping them is honest play - which is
+    why those two cells agree exactly.)  The premise never lands:
+    99.4% of dump-everything games are dead of Health BEFORE
+    Advanced Programming, against 21% of honest ones at Standard.
+
+    The brake is NOT the negate rule.  It is that Health is only
+    ever regained through a Program Reward, and a Reward requires
+    ZERO failed elements - so failing on purpose forfeits the only
+    healing in the game, from a start of 2 HP, needing ~16 failures
+    to burn the deck down, with negation only a ~68% save.
+
+    Capping the negate rule per cycle was considered and dropped:
+    it costs honest play 13.7 / 16.6 / 17.2 / 18.3 points (cap 1)
+    or 3.2 / 5.3 / 5.8 / 6.7 (cap 2) and costs the dumping line
+    0.1 to 0.4, because there is no exploit there to tax.  Honest
+    play wants the save ~3.2 times a game; a cap of 1 denies 39%.
+
 ==================================================================
 NRJ  Imposter Scenario (the campaign finale)
 ==================================================================

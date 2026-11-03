@@ -806,6 +806,29 @@ Each of these only appears a few turns in.
 
 ## 10. Known open items
 
+- **AoS: "FAILING ON PURPOSE" IS ALREADY SHUT, AND NOT BY THE NEGATE RULE.**
+  A 2026-11-03 review worked out that failing Programs shortens the deck,
+  an empty deck advances the game, and Advanced Programming is won by
+  surviving three Programs rather than completing them - so dumping
+  Programs looks like an efficient route. It is not: measured, it is
+  strictly worse the more of it you do, down to 0.2% at Standard against
+  70.8% honest, and 99.4% of those games are dead of Health before
+  Advanced Programming is reached at all.
+
+  **The brake is the Program Reward.** Health is only ever regained by a
+  Reward, and a Reward requires ZERO failed elements - so failing on
+  purpose forfeits the only healing in the game. Do not "fix" this by
+  capping the Catastrophic Failure negate rule: measured at one per cycle
+  it costs honest play 13.7 to 18.3 points, because honest play leans on
+  that save about 3.2 times a game, and it costs the dumping line nothing.
+  `aos.ALLOC_MODE` and `aos.NEGATES_PER_CYCLE` are the levers, both off,
+  with the numbers beside them; RESULTS.txt has the table.
+
+  What IS wrong is the wording. "Complete all three with Health remaining"
+  and "face three Advanced Programs" never say the Advanced Programs have
+  to be completed, so the route reads as open on paper even though the
+  economy closes it. Still open as a rules-wording job.
+
 Not your job to fix, but worth knowing if Jon raises them:
 
 - **NAVIGATION PROMPTS ARE SHARED NOW: `playtest/dist/steps.js`.** BAT had

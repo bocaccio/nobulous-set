@@ -242,7 +242,63 @@ CLAIM_INSTEAD = 0
 # being there - which is why it fires on 68% of Catastrophic Failures. Set
 # to 0 to recover the rule as printed before 2026-10-28.
 MISSES_TO_NEGATE = 2
+# How many Catastrophic Failures ONE CYCLE of the Program deck may negate,
+# with Advanced Programming getting its own allowance. 0 is unlimited - the
+# shipped rule. Jon's 2026-11-03 proposal is 1, and the reason is the line
+# above: negating is free in dice, so nothing stops a player from failing
+# on purpose, over and over, to burn the deck down to Advanced Programming
+# (which an empty deck reaches, and which is won by surviving rather than
+# by succeeding). A cap is the cheapest thing that makes deliberate failure
+# cost Health again without touching a single printed Target.
+#
+# MEASURED 2026-11-03 AND NOT ADOPTED. A cap of 1 per cycle costs honest
+# play 13.7 / 16.6 / 17.2 / 18.3 points across the four difficulties, which
+# is a re-pitch of the whole ladder, not a patch: honest play wants the
+# saving throw about 3.2 times a game and a cap of 1 denies 39% of them. A
+# cap of 2 costs 3.2 / 5.3 / 5.8 / 6.7. And it buys nothing, because
+# deliberate failure is not a winning line to begin with - see ALLOC_MODE.
+NEGATES_PER_CYCLE = 0
+# DELIBERATE FAILURE. "dump" abandons every element but one, which fails the
+# Program on purpose: two failures is one Catastrophic Failure costing 1
+# Health, and the negate rule above may wipe even that. The point of failing
+# is that it SHORTENS THE DECK - a Stable Program flips to Overheated and an
+# Overheated one is set aside - and an empty deck goes straight to Advanced
+# Programming, which is won by surviving three Programs rather than by
+# completing them. DUMP_DICE is how many dice are left on the one element
+# that is still played, which is the only place the misses needed to negate
+# can come from. "honest" is the shipped policy.
+#   honest     the shipped policy: fund every element
+#   dump       abandon every element but one, every Program
+#   dump_hard  dump only Programs from the DUMP_DECKS list, play the rest
+#              honestly - the mixed line, which keeps the Program Rewards
+#              (the only way Health is ever regained) while still burning
+#              the costly Programs out of the deck
+#
+# MEASURED 2026-11-03. Deliberate failure LOSES, monotonically in how much
+# of it you do - at Standard: 70.8% honest, 64.1% dumping Unstable, 18.9%
+# dumping Specialized too, 0.2% dumping everything. The premise never comes
+# off: 99.4% of dump-everything games are dead of Health BEFORE Advanced
+# Programming, against 21% of honest ones.
+#
+# THE BRAKE IS NOT THE NEGATE RULE, it is that Health is only ever regained
+# through a Program Reward and a Reward needs ZERO failed elements. Failing
+# on purpose forfeits the only healing in the game, from a start of 2 HP,
+# with roughly 16 failures needed to burn the deck down and negation only a
+# ~68% saving throw. So the route the rules appear to leave open is already
+# shut by the economy, and no cap is needed to shut it.
+#
+# What IS wrong is the wording: "Complete all three with Health remaining"
+# and "face three Advanced Programs" never say the Advanced Programs must
+# be completed, so the route reads as open on paper. That is a rulebook
+# fix, not a mechanical one.
+ALLOC_MODE = "honest"
+DUMP_DICE = 3
+DUMP_DECKS = ("Unstable",)
 SAVES = None          # set to a list to record saves per game
+# How often the saving throw was WANTED versus taken: with a cap in place
+# the gap between them is exactly what the cap costs an honest player.
+NEG_WANTED = [0]
+NEG_USED = [0]
 # Instrumentation, like FIRINGS below: set to a Counter to record how many
 # misses were sitting on the failed Elements each time a Program reaches
 # Catastrophic Failure. That distribution is what decides whether the
@@ -291,6 +347,8 @@ class Game(object):
         self.rng.shuffle(self.queue)
         self.advanced_done = 0
         self.completed = 0
+        # -1 is unlimited; see NEGATES_PER_CYCLE.
+        self.negates_left = NEGATES_PER_CYCLE or -1
         self.lim_queue = list(LIMITATIONS)
         self.rng.shuffle(self.lim_queue)
 
@@ -390,6 +448,24 @@ class Game(object):
                 plan[i].append(pool.pop(0))
         return plan
 
+    def dump_allocate(self, targets):
+        """Fail the Program on purpose, as cheaply as possible.
+
+        Every element but one is left bare, so it fails for nothing. The one
+        exception carries DUMP_DICE of the WEAKEST dice available: weakest
+        because those dice are going to be exhausted whatever happens, and
+        because misses are the currency the negate rule spends. It goes on
+        the hardest element, which is the one least likely to spoil the plan
+        by succeeding.
+        """
+        if not targets:
+            return []
+        plan = [[] for _ in targets]
+        pool = sorted(self.available, key=lambda c: EV[c])
+        i = max(range(len(targets)), key=lambda k: targets[k])
+        plan[i] = pool[:DUMP_DICE]
+        return plan
+
     def element_values(self, index, dice):
         """Roll one element, honoring Works on My Machine if it is in play."""
         values = [roll(c, self.rng) for c in dice]
@@ -424,7 +500,10 @@ class Game(object):
             if targets[worst] > 1:
                 targets = list(targets)
                 targets[worst] -= 1
-        plan = self.allocate(targets)
+        dumping = (ALLOC_MODE == "dump"
+                   or (ALLOC_MODE == "dump_hard" and deck in DUMP_DECKS))
+        plan = (self.dump_allocate(targets) if dumping
+                else self.allocate(targets))
         rerolls = max(0, self.str_ - 1)
         failed = 0
         misses_on_failed = 0   # misses available to negate a Catastrophic
@@ -609,7 +688,14 @@ class Game(object):
                 NEGATE_STATS[min(misses_on_failed, 9)] += 1
             if (MISSES_TO_NEGATE
                     and misses_on_failed >= MISSES_TO_NEGATE):
+                NEG_WANTED[0] += 1
+            if (MISSES_TO_NEGATE
+                    and misses_on_failed >= MISSES_TO_NEGATE
+                    and self.negates_left != 0):
                 misses_on_failed -= MISSES_TO_NEGATE
+                if self.negates_left > 0:
+                    self.negates_left -= 1
+                NEG_USED[0] += 1
                 if SAVES is not None:
                     SAVES[-1] += 1
             else:
@@ -668,6 +754,7 @@ class Game(object):
                           if p["status"] not in ("aside", "removed")]
                 if self.cycle < 3 and active:
                     self.cycle += 1
+                    self.negates_left = NEGATES_PER_CYCLE or -1
                     self.queue = [p["id"] for p in active]
                     self.rng.shuffle(self.queue)
                 else:
@@ -692,6 +779,9 @@ class Game(object):
         # setup, but only three are ever faced - running all eight made the
         # finale nearly three times as long as the rules call for.
         adv = self.rng.sample(range(8), 3)
+        # Advanced Programming is its own stretch, so it gets its own
+        # allowance rather than inheriting whatever the third cycle left.
+        self.negates_left = NEGATES_PER_CYCLE or -1
         overheated = False
         for pid in adv:
             if self.hp <= 0:
