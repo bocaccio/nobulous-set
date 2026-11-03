@@ -92,6 +92,22 @@ PROGRAM_REQS = {
     ],
 }
 
+# Every element must receive at least this many dice, so an element cannot
+# be given up for nothing. 0 is the printed rule, under which a bare element
+# "simply fails" and exhausts no dice - which is what makes deliberate
+# single-element sacrifice worth 10 to 27 points. 1 prices that triage in
+# dice without touching the negate rule, the escalation rule or any Target.
+#
+# PRINTED 2026-11-03, so 1 is now the rule: rules/aos.html, "Allocation floor
+# and cap". It cuts the sacrifice edge from +26.9 to +8.0, makes
+# indiscriminate sacrifice actively bad at Easy and Standard, RAISES honest
+# play 4.4 to 6.2 - the naive policy had been leaving late elements bare when
+# dice ran dry, and spreading is simply better - and keeps 28.7 points of
+# ladder spread against 13.9 under the exploit. The playtest lab had always
+# enforced it (rollElement: "Allocate at least one die first"), so the
+# rulebook was the odd one out. 0 is the old printed rule.
+MIN_DICE_PER_ELEMENT = 1
+
 # Required-colour dots are now modelled. False reproduces every AoS figure
 # published before 2026-11-03, all of which were taken without them.
 REQUIRED_COLORS = True
@@ -536,6 +552,22 @@ class Game(object):
                 held.append(best)
         return held
 
+    def seed_minimum(self, plan, targets, pool):
+        """Put the minimum on every element before anything is filled.
+
+        Takes from the WEAKEST end of the pool, because a player forced to
+        put a die somewhere they expect to lose spends their worst one. The
+        cap still binds, and if the pool runs out the remaining elements go
+        without - "place what you have".
+        """
+        if not MIN_DICE_PER_ELEMENT:
+            return
+        for i, t in enumerate(targets):
+            cap = t if (i == 0 and self.intf == "cap_first") else t + 1
+            want = min(MIN_DICE_PER_ELEMENT, cap)
+            while pool and len(plan[i]) < want:
+                plan[i].append(pool.pop())
+
     def allocate(self, targets, locked=None):
         """Fill each element to its cap.
 
@@ -549,6 +581,7 @@ class Game(object):
         # Required-colour dice are already on their elements and count
         # toward both the Target and the Target + 1 cap.
         plan = [list(x) for x in locked] if locked else [[] for _ in targets]
+        self.seed_minimum(plan, targets, pool)
         # Redundancy: the two biggest Targets get the wider threshold.
         self.wide = set()
         if self.tech == "engineer":
@@ -622,6 +655,9 @@ class Game(object):
         free = [i for i in range(len(targets)) if not plan[i]]
         victim = max(free or list(range(len(targets))),
                      key=lambda i: targets[i])
+        # The minimum lands on the victim too - that is the whole point of
+        # it. The victim is still given up, it just is not given up free.
+        self.seed_minimum(plan, targets, pool)
         for i, t in enumerate(targets):
             if i == victim:
                 continue
@@ -645,6 +681,9 @@ class Game(object):
         # The required dice are already committed and cannot be taken back.
         plan = [list(x) for x in locked] if locked else [[] for _ in targets]
         pool = sorted(self.available, key=lambda c: EV[c])
+        pool.reverse()          # seed_minimum pops the weakest off the end
+        self.seed_minimum(plan, targets, pool)
+        pool.reverse()
         i = max(range(len(targets)), key=lambda k: targets[k])
         plan[i] = plan[i] + pool[:DUMP_DICE]
         return plan

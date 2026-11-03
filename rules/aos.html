@@ -72,8 +72,9 @@ Reward removes them, so later cycles are shorter. After the third cycle &mdash; 
       Withheld dice cannot be used in this Program at all &mdash; not even for a required color.</li>
   <li><b>Commit required&#8209;color dice.</b> Every colored dot beside an element requires one available die
       of that color to be placed on that element <em>now</em>. These dice are locked there.</li>
-  <li><b>Finish the allocation.</b> Distribute the rest of your available dice across the elements. An element
-      may be left with no dice at all &mdash; it then simply fails.</li>
+  <li><b>Finish the allocation.</b> Distribute the rest of your available dice across the elements.
+      <b>Every element must receive at least one die.</b> If you hold fewer available dice than the Program
+      has elements, place what you have and the elements left bare fail.</li>
   <li><b>Execute.</b> Roll each element and resolve it. A hit is 1 success, a Crit is 2.</li>
   <li><b>Recover dice equal to your REC</b> at the end of every Program, before the next one is revealed.</li>
 </ol>
@@ -98,9 +99,12 @@ The same required colors appear on both faces of a Program card.</p>
 required&#8209;color dice are committed. Each withholds dice from your pool, as printed. Withheld dice return
 when the Program ends; discard the Limitation then.</p>
 
-<h3>Allocation cap</h3>
+<h3>Allocation floor and cap</h3>
 <p>An element may hold at most <b>Target + 1</b> dice, unless a card raises that cap &mdash; the Engineer
-does, for up to 2 elements per Program.</p>
+does, for up to 2 elements per Program &mdash; and <b>never fewer than one</b>.</p>
+<p>The floor is there because an element you abandon is one you have decided to lose, and that decision
+should cost something. A failed element exhausts every die allocated to it, so the floor is exactly the
+price of the decision: one die, your worst, gone. Nothing else about failing changes.</p>
 
 <h2>Rolling and the exhaustion gradient</h2>
 <p>Each element gets one Strategy roll. Additional rolls up to your STR form a <b>shared pool</b> spent anywhere
@@ -164,14 +168,20 @@ requirement: an Advanced Program you fail still counts as faced, and failing one
 through the Health it takes.</p>
 
 <div class="box">
-  <span class="lbl">Failing on purpose is not a shortcut</span>
-  The arithmetic looks inviting. Failing a Program moves it toward being set aside, a set&#8209;aside Program
-  leaves the deck, an empty deck sends you to Advanced Programming, and Advanced Programming is won by
-  surviving. So why not throw the hard Programs away and walk into the finale early?
-  <p>Because of the line in <em>Object of the game</em>. Health is <em>only</em> ever regained by a Program
-  Reward, and a Reward requires a Program finished with no failed elements &mdash; so failing on purpose
-  forfeits the one thing that heals you. Each Program also needs two failures to retire, once to overheat it
-  and once more to set it aside. You run out of Health long before the deck runs out of Programs.</p>
+  <span class="lbl">Giving up an element is a decision, not a free move</span>
+  Writing off an element you cannot fund is proper play, not an exploit. One failed element costs no Health,
+  and its dice are often worth more concentrated on the elements you <em>can</em> finish &mdash; landing one
+  exactly on its Target pays <em>Optimal Implementation</em>. Knowing when to do it is most of the skill in
+  AoS.
+  <p>What it is not is free. Every element must hold a die, and a failed element exhausts every die on it, so
+  each element you give up costs you one. And a Program with any failed element pays <b>no Program
+  Reward</b>.</p>
+  <p>That last clause is what closes the door on failing your way through the game. The arithmetic looks
+  inviting &mdash; failures retire Programs, a retired Program leaves the deck, an empty deck sends you to
+  Advanced Programming, and Advanced Programming is won by surviving. But Health is <em>only</em> ever
+  regained by a Program Reward. Give up an element every Program and you give up every Reward, which is the
+  only healing there is, while still paying a die each time and still needing two failures to retire each
+  Program. The deck outlasts you.</p>
 </div>
 
 <h2>Carrying AoS forward</h2>

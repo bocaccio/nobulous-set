@@ -274,6 +274,24 @@ check("a required die is not charged for twice",
 check("rules/aos.html still teaches the required-colour commitment",
       "required&#8209;color dice" in text("rules/aos.html"))
 
+# THE ALLOCATION FLOOR has three owners and they must agree: the rulebook
+# prints it, simulation/aos.py enforces it through seed_minimum, and the lab
+# has enforced it all along in rollElement. The rulebook used to say the
+# OPPOSITE - "an element may be left with no dice at all" - which is what
+# made deliberate single-element sacrifice free and worth up to 27 points.
+_arules = text("rules/aos.html")
+check("rules/aos.html prints the allocation floor",
+      "Every element must receive at least one die." in _arules
+      and "never fewer than one" in _arules)
+check("rules/aos.html no longer says an element may be left bare",
+      "may be left with no dice at all" not in _arules)
+check("simulation/aos.py enforces the floor (MIN_DICE_PER_ELEMENT %r)"
+      % sa.get("MIN_DICE_PER_ELEMENT"),
+      sa.get("MIN_DICE_PER_ELEMENT") == 1
+      and "def seed_minimum" in _asrc)
+check("the lab refuses to roll an element with no dice",
+      "Allocate at least one die first." in text("playtest/dist/app.js"))
+
 jsrc = text("playtest/dist/app.js")
 check("MISSES_TO_NEGATE: aos.py %r == app.js" % sa.get("MISSES_TO_NEGATE"),
       ("const MISSES_TO_NEGATE = %d;" % sa["MISSES_TO_NEGATE"]) in jsrc)
