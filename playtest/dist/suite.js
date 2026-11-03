@@ -582,7 +582,7 @@
     return `NRJ Tier ${tierName(tier)} active${over?" (table override)":""} \u00b7 module cards are mixed in.`;
   }
 
-  const ruleFiles={bat:["assets/BAT_Rulebook.pdf?v=splicectl","BAT rules PDF"],nap:["assets/NAP_Rulebook.pdf?v=splicectl","NAP rules PDF"],aos:["assets/AoS_Rulebook.pdf?v=splicectl","AoS rules PDF"],nrj:["assets/NRJ_Campaign_Supplement.pdf?v=splicectl","NRJ rules PDF"]};
+  const ruleFiles={bat:["assets/BAT_Rulebook.pdf?v=napturn2","BAT rules PDF"],nap:["assets/NAP_Rulebook.pdf?v=napturn2","NAP rules PDF"],aos:["assets/AoS_Rulebook.pdf?v=napturn2","AoS rules PDF"],nrj:["assets/NRJ_Campaign_Supplement.pdf?v=napturn2","NRJ rules PDF"]};
   function updateTopbar(){const game=$("gameNav")?.value||"home",link=$("rulesLink"),resetBtn=$("resetBtn"),record=$("recordBtn");
     const rules=ruleFiles[game];if(rules){link.href=rules[0];link.textContent=rules[1];link.hidden=false}else link.hidden=true;
     resetBtn.hidden=game==="home";resetBtn.textContent=game==="nrj"?"New finale":"New test";
@@ -623,7 +623,7 @@
     return {w:c[0],h:c[1]};
   };
   // Every card image carries this tag; bump it whenever the sheets are rebuilt.
-  const ART_VERSION="?v=splicectl";
+  const ART_VERSION="?v=napturn2";
   function peekStyle(deck,index,side,boxW){
     const back=side==="back"&&deck.back;
     // A deck may name one back for all its cards, or one per card.
@@ -783,7 +783,11 @@
     n.notice=`FINF ${slot+1} (${FINF_SLOTS[slot]}) drawn: ${where}.`;
     return drawNAPAssignment();
   }
-  function revealNAP(){const n=state.nap;if(n.phase!=="apprenticeship")return;if(n.choice||openNAPCount(napRow())>=napRowMax()||!n.deck.length)return;const choice=[];while(choice.length<2&&n.deck.length){const card=drawNAPAssignment();if(card)choice.push(card);}n.choice=choice.length?choice:null;if(!n.choice)placePendingFINF(napRow());save();renderNAP();}
+  // Which of the two choice cards is being shown turned. VIEW STATE ONLY:
+  // it is deliberately not in `state`, never saved, and reset whenever a new
+  // pair is dealt, so a turn left on card A cannot carry to the next pair.
+  let napTurned=[false,false];
+  function revealNAP(){const n=state.nap;if(n.phase!=="apprenticeship")return;if(n.choice||openNAPCount(napRow())>=napRowMax()||!n.deck.length)return;const choice=[];while(choice.length<2&&n.deck.length){const card=drawNAPAssignment();if(card)choice.push(card);}n.choice=choice.length?choice:null;napTurned=[false,false];if(!n.choice)placePendingFINF(napRow());save();renderNAP();}
   function placePendingFINF(row){for(const extra of state.nap.finf.pendingCurrent.splice(0)){if(openNAPCount(row)<napRowMax())row.unshift({...extra,demandSide:false,progress:0,storedDice:[],id:`finf-${Date.now()}-current`,source:"finf"});else state.nap.discard.push(extra);}}
   function chooseNAP(which){
     const n=state.nap;if(!n.choice?.[which])return;
@@ -942,7 +946,7 @@
     }
     const done=document.createElement("button");done.textContent=p.kind==="peek"?"Return cards to deck":"Done with reward";done.dataset.napRewardDone="";host.append(done);
   }
-  function renderNAP(){const n=state.nap;$("napOverlay").textContent=overlayText("nap");renderTierPickers();$("napStats").innerHTML=stat("Day",n.day)+stat("Time",["Morning","Afternoon","Evening"][n.slot])+stat("HP",n.hp)+stat("STR",n.str)+stat("REC",n.rec)+stat("Credits",`${n.credits} / ${n.creditGoal}`)+stat("Deck",n.deck.length)+stat("Rolls",`${n.rollsUsed} / ${n.str}`);renderNAPDiscard();renderNAPApprentice();renderNAPCoupons();renderNAPSlots();renderNAPReward();renderNAPFINF();renderNAPExam();$("napNotice").textContent=n.notice||"";$("napNotice").classList.toggle("hidden",!n.notice);$("napChoice").classList.toggle("hidden",!n.choice);$("napChoiceB").parentElement.classList.toggle("hidden",!n.choice?.[1]);if(n.choice)n.choice.forEach((x,i)=>{const c=napCard(x.type,x.i,x.nrj,x.dot);setSprite($(i?"napChoiceB":"napChoiceA"),c.file,c.i,c.cols,c.rows);});renderRoller("nap");}
+  function renderNAP(){const n=state.nap;$("napOverlay").textContent=overlayText("nap");renderTierPickers();$("napStats").innerHTML=stat("Day",n.day)+stat("Time",["Morning","Afternoon","Evening"][n.slot])+stat("HP",n.hp)+stat("STR",n.str)+stat("REC",n.rec)+stat("Credits",`${n.credits} / ${n.creditGoal}`)+stat("Deck",n.deck.length)+stat("Rolls",`${n.rollsUsed} / ${n.str}`);renderNAPDiscard();renderNAPApprentice();renderNAPCoupons();renderNAPSlots();renderNAPReward();renderNAPFINF();renderNAPExam();$("napNotice").textContent=n.notice||"";$("napNotice").classList.toggle("hidden",!n.notice);$("napChoice").classList.toggle("hidden",!n.choice);$("napChoiceB").parentElement.classList.toggle("hidden",!n.choice?.[1]);if(n.choice)n.choice.forEach((x,i)=>{const c=napCard(x.type,x.i,x.nrj,x.dot),el=$(i?"napChoiceB":"napChoiceA");setSprite(el,c.file,c.i,c.cols,c.rows);const twoSided=x.type==="t";if(!twoSided)napTurned[i]=false;const turned=!!napTurned[i];el.classList.toggle("nap-demand",turned);const tb=document.querySelector(`[data-nap-turn="${i}"]`);if(tb){tb.hidden=!twoSided;tb.textContent=turned?"Turn to Request":"Turn to Demand";tb.setAttribute("aria-pressed",String(turned));tb.title=`${c.name}: read the ${turned?"Request":"Demand"} half`;}});renderRoller("nap");}
 
   // ---- the Research Pool as cards -------------------------------------
   // rules/nrj.html, "Standalone Imposter mode": the Research Pool IS the
@@ -1642,7 +1646,7 @@
     sel.onchange=e=>{window.NOBULOUS_TIER.setOverride(game,e.target.value);};
   });
   window.addEventListener("nobulous-tier",()=>{renderTierPickers();window.AOS_LAB?.render?.();if(!$("screen-nap").classList.contains("hidden"))renderNAP();window.BAT_LAB?.render?.();});
-  $("napReveal").onclick=revealNAP;$("napAdvance").onclick=advanceNAP;document.querySelectorAll("[data-nap-choice]").forEach(b=>b.onclick=()=>chooseNAP(Number(b.dataset.napChoice)));
+  $("napReveal").onclick=revealNAP;$("napAdvance").onclick=advanceNAP;document.querySelectorAll("[data-nap-choice]").forEach(b=>b.onclick=()=>chooseNAP(Number(b.dataset.napChoice)));document.querySelectorAll("[data-nap-turn]").forEach(b=>b.onclick=()=>{const i=Number(b.dataset.napTurn);napTurned[i]=!napTurned[i];renderNAP();});
   $("napCreditGoal").value=String(state.nap.creditGoal||6);
   $("napCreditGoal").onchange=e=>{
     const n=state.nap,goal=Number(e.target.value);

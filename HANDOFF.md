@@ -808,6 +808,47 @@ Each of these only appears a few turns in.
 
 Not your job to fix, but worth knowing if Jon raises them:
 
+- **An Assignment Task prints half of itself upside down, and in the choice
+  panel there is now a button to turn it.** Asked for on 2026-11-03 after
+  the Demand half of a card in "Choose the Primary" turned out to be
+  unreadable. Nothing was wrong with the card: its data matches
+  `build_nap.py`, the art the lab draws is pixel-identical to the
+  generator's, and the sprite box is 357x255 against a cell of 1.400, so
+  nothing is stretched. The Demand half is *meant* to be upside down - you
+  turn the card on the table.
+
+  A card sitting in a Time Slot already turned itself, through
+  `#screen-nap .nap-demand{transform:rotate(180deg)}`, once it flipped to
+  Demand. The choice panel had no equivalent, and that is the one place you
+  have to read BOTH halves before committing. The button reuses the same
+  class: the rotation is the class, the game state is not.
+
+  **It is view state and must stay that way.** `napTurned` lives beside
+  `revealNAP`, not in `state.nap`; the handler calls `renderNAP()` and
+  deliberately not `save()`; and `revealNAP` resets it when a new pair is
+  dealt, so a turn left on card A cannot carry into the next pair.
+  `chooseNAP` is untouched and still takes the Request side.
+
+  **Only Tasks are two-sided.** Opportunities, Setbacks and Final Exams are
+  single-faced cards that happen to be landscape too - every NAP deck
+  publishes a 1050x750 cell - so the control is hidden for them.
+
+  Worth knowing why it mattered: **Recalibrate the Bone Saw has Demand 9,
+  and upside down a 9 reads as a 6**, right next to its Request 5. That is a
+  hazard on the printed card too.
+
+- **`demandSide` means two different things, and an Opportunity gets
+  rotated for the wrong one.** For a Task it means "flipped to the Demand
+  half". For an Opportunity it is an age marker: `suite.js` sets
+  `a.demandSide=true` on EVERY unresolved card when a Time Slot ends, and
+  an Opportunity that already had it is discarded as expired. But
+  `renderNAPSlots` rotates on `a.demandSide` whatever the type, so an
+  Opportunity in its second slot is drawn upside down despite having no
+  Demand half to show. Found by reading the code on 2026-11-03 while adding
+  the turn control; NOT fixed, because the fix is a judgement about what
+  the age marker should look like. Splitting the flag in two, or gating the
+  class on `a.type==="t"`, are both one-liners.
+
 - **BODY TEXT, SUBHEADS, FOOTERS AND FLAVOUR NOW HAVE ONE OWNER - `gen.py`'s
   base stylesheet - and the sizes are the ones AoS had been keeping to
   itself.** Asked for on 2026-11-03: the main text, the flavour text and the

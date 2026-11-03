@@ -927,6 +927,22 @@ _js = text("playtest/dist/bat.js")
 check("nothing in bat.js still renders a Buff HP cell",
       "bat-buff" not in _js and '"Buff HP"' not in _js)
 
+# An Assignment Task prints its Demand half upside down, to be read by
+# turning the card over. In a Time Slot the lab turns it for you; in the
+# Choose-the-Primary panel you are comparing two cards you have not taken,
+# so there is a turn button per card. Three things have to stay true or it
+# silently stops working.
+_suite = text("playtest/dist/suite.js")
+check("both choice cards have a turn control",
+      _idx.count('data-nap-turn="0"') == 1 and _idx.count('data-nap-turn="1"') == 1)
+check("the turn control is wired in suite.js",
+      "[data-nap-turn]" in _suite and "napTurned" in _suite)
+# Only Tasks are two-sided. Opportunities, Setbacks and Final Exams are
+# single-faced cards that happen to be landscape too, and turning one would
+# just show it upside down.
+check("the turn is offered only for two-sided Tasks",
+      'const twoSided=x.type==="t"' in _suite and "tb.hidden=!twoSided" in _suite)
+
 print()
 print("%d check(s) failed" % len(FAILS))
 for f in FAILS:

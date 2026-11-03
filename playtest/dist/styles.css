@@ -241,6 +241,20 @@ main{width:100%;max-width:none;margin:0}.game-screen{width:100%;max-width:none;m
 #screen-nap #napChoice .suite-cards.two{grid-template-columns:repeat(2,minmax(0,var(--play-card-landscape)));justify-content:start}
 #screen-nap #napChoice .suite-card{width:100%}
 #screen-nap .nap-demand{transform:rotate(180deg)}
+/* Half of an Assignment is printed upside down, to be read by turning the
+   card on the table. A card in a Time Slot turns itself when it flips to
+   Demand (above); in the choice panel you are comparing two cards you have
+   not taken yet, so the turn is a button. It is a view control, not a move -
+   small and grey like the Splice toggle, gold only while it is held on. Why
+   it matters: Recalibrate the Bone Saw has Demand 9, and upside down a 9
+   reads as a 6 next to its Request 5. */
+#screen-nap #napChoice .suite-card{transition:transform .28s ease}
+@media(prefers-reduced-motion:reduce){#screen-nap #napChoice .suite-card{transition:none}}
+#screen-nap .nap-turn{min-height:26px;padding:2px 9px;font-size:.68rem;
+  font-weight:600;border-radius:8px;background:transparent;
+  border-color:#39434d;color:var(--muted)}
+#screen-nap .nap-turn:hover{background:#1b2228;border-color:#5c6872;color:var(--text)}
+#screen-nap .nap-turn[aria-pressed="true"]{border-color:var(--gold);color:#f0d69d}
 #screen-nap .nap-completed-assignment{border-color:#b6a36c;background:#242820}
 #screen-nap .nap-completed{transform:rotate(90deg);transform-origin:center center;margin:56px 0}
 #screen-nap .nap-completed-effect{display:block;color:var(--gold);line-height:1.35}
