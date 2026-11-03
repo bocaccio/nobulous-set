@@ -582,7 +582,7 @@
     return `NRJ Tier ${tierName(tier)} active${over?" (table override)":""} \u00b7 module cards are mixed in.`;
   }
 
-  const ruleFiles={bat:["assets/BAT_Rulebook.pdf?v=lastchance","BAT rules PDF"],nap:["assets/NAP_Rulebook.pdf?v=lastchance","NAP rules PDF"],aos:["assets/AoS_Rulebook.pdf?v=lastchance","AoS rules PDF"],nrj:["assets/NRJ_Campaign_Supplement.pdf?v=lastchance","NRJ rules PDF"]};
+  const ruleFiles={bat:["assets/BAT_Rulebook.pdf?v=navsteps5","BAT rules PDF"],nap:["assets/NAP_Rulebook.pdf?v=navsteps5","NAP rules PDF"],aos:["assets/AoS_Rulebook.pdf?v=navsteps5","AoS rules PDF"],nrj:["assets/NRJ_Campaign_Supplement.pdf?v=navsteps5","NRJ rules PDF"]};
   function updateTopbar(){const game=$("gameNav")?.value||"home",link=$("rulesLink"),resetBtn=$("resetBtn"),record=$("recordBtn");
     const rules=ruleFiles[game];if(rules){link.href=rules[0];link.textContent=rules[1];link.hidden=false}else link.hidden=true;
     resetBtn.hidden=game==="home";resetBtn.textContent=game==="nrj"?"New finale":"New test";
@@ -623,7 +623,7 @@
     return {w:c[0],h:c[1]};
   };
   // Every card image carries this tag; bump it whenever the sheets are rebuilt.
-  const ART_VERSION="?v=lastchance";
+  const ART_VERSION="?v=navsteps5";
   function peekStyle(deck,index,side,boxW){
     const back=side==="back"&&deck.back;
     // A deck may name one back for all its cards, or one per card.
@@ -787,7 +787,11 @@
   // it is deliberately not in `state`, never saved, and reset whenever a new
   // pair is dealt, so a turn left on card A cannot carry to the next pair.
   let napTurned=[false,false];
-  function revealNAP(){const n=state.nap;if(n.phase!=="apprenticeship")return;if(n.choice||openNAPCount(napRow())>=napRowMax()||!n.deck.length)return;const choice=[];while(choice.length<2&&n.deck.length){const card=drawNAPAssignment();if(card)choice.push(card);}n.choice=choice.length?choice:null;napTurned=[false,false];if(!n.choice)placePendingFINF(napRow());save();renderNAP();}
+  // ONE owner for "can you reveal?". The button's disabled state and the
+  // handler's own guard have to be the same question, or the step strip -
+  // which reads the button - will offer a step that does nothing.
+  const canRevealNAP=()=>{const n=state.nap;return n.phase==="apprenticeship"&&!n.choice&&openNAPCount(napRow())<napRowMax()&&!!n.deck.length;};
+  function revealNAP(){const n=state.nap;if(!canRevealNAP())return;const choice=[];while(choice.length<2&&n.deck.length){const card=drawNAPAssignment();if(card)choice.push(card);}n.choice=choice.length?choice:null;napTurned=[false,false];if(!n.choice)placePendingFINF(napRow());save();renderNAP();}
   function placePendingFINF(row){for(const extra of state.nap.finf.pendingCurrent.splice(0)){if(openNAPCount(row)<napRowMax())row.unshift({...extra,demandSide:false,progress:0,storedDice:[],id:`finf-${Date.now()}-current`,source:"finf"});else state.nap.discard.push(extra);}}
   function chooseNAP(which){
     const n=state.nap;if(!n.choice?.[which])return;
@@ -946,7 +950,34 @@
     }
     const done=document.createElement("button");done.textContent=p.kind==="peek"?"Return cards to deck":"Done with reward";done.dataset.napRewardDone="";host.append(done);
   }
-  function renderNAP(){const n=state.nap;$("napOverlay").textContent=overlayText("nap");renderTierPickers();$("napStats").innerHTML=stat("Day",n.day)+stat("Time",["Morning","Afternoon","Evening"][n.slot])+stat("HP",n.hp)+stat("STR",n.str)+stat("REC",n.rec)+stat("Credits",`${n.credits} / ${n.creditGoal}`)+stat("Deck",n.deck.length)+stat("Rolls",`${n.rollsUsed} / ${n.str}`);renderNAPDiscard();renderNAPApprentice();renderNAPCoupons();renderNAPSlots();renderNAPReward();renderNAPFINF();renderNAPExam();$("napNotice").textContent=n.notice||"";$("napNotice").classList.toggle("hidden",!n.notice);$("napChoice").classList.toggle("hidden",!n.choice);$("napChoiceB").parentElement.classList.toggle("hidden",!n.choice?.[1]);if(n.choice)n.choice.forEach((x,i)=>{const c=napCard(x.type,x.i,x.nrj,x.dot),el=$(i?"napChoiceB":"napChoiceA");setSprite(el,c.file,c.i,c.cols,c.rows);const twoSided=x.type==="t";if(!twoSided)napTurned[i]=false;const turned=!!napTurned[i];el.classList.toggle("nap-demand",turned);const tb=document.querySelector(`[data-nap-turn="${i}"]`);if(tb){tb.hidden=!twoSided;tb.textContent=turned?"Turn to Request":"Turn to Demand";tb.setAttribute("aria-pressed",String(turned));tb.title=`${c.name}: read the ${turned?"Request":"Demand"} half`;}});renderRoller("nap");}
+  // The four things you do in a Time Slot. Each step points at the control
+  // that already exists for it; step 3 belongs to whichever Assignment you
+  // are working, so it has no single button and says so instead.
+  function napSteps(){
+    const n=state.nap,open=napRow().filter(a=>!a.completed).length;
+    return [
+      // A pending choice keeps step 1 lit: Reveal is spent, but choosing is
+      // the same step and its buttons are in the panel below.
+      {label:"Reveal 2 Assignments",ctrl:"#napReveal",ready:!!n.choice,
+       note:n.choice?"Choose the Primary below":""},
+      {label:"Commit and roll Strategy dice",ctrl:'#napRoller [data-roll="nap"]',
+       note:`Rolls ${n.rollsUsed} / ${n.str}`},
+      {label:"Apply dice to an Assignment",ready:!n.choice&&open>0,
+       note:open?`${open} open in this slot`:"none open"},
+      {label:"End time slot",ctrl:"#napAdvance"}
+    ];
+  }
+  function nrjSteps(){
+    const n=state.nrj;
+    return [
+      {label:"Build the finale",ctrl:"#nrjBuildPool"},
+      {label:"Deploy an Exhibit",ctrl:"#nrjDeploy",
+       note:n.dossier?`${n.dossier.length} left in the Dossier`:""},
+      {label:"Commit dice and answer the evidence",ctrl:'#nrjRoller [data-roll="nrj"]'},
+      {label:"End session",ctrl:"#nrjEndSession"}
+    ];
+  }
+  function renderNAP(){const n=state.nap;$("napOverlay").textContent=overlayText("nap");renderTierPickers();$("napStats").innerHTML=stat("Day",n.day)+stat("Time",["Morning","Afternoon","Evening"][n.slot])+stat("HP",n.hp)+stat("STR",n.str)+stat("REC",n.rec)+stat("Credits",`${n.credits} / ${n.creditGoal}`)+stat("Deck",n.deck.length)+stat("Rolls",`${n.rollsUsed} / ${n.str}`);renderNAPDiscard();renderNAPApprentice();renderNAPCoupons();renderNAPSlots();renderNAPReward();renderNAPFINF();renderNAPExam();$("napNotice").textContent=n.notice||"";$("napNotice").classList.toggle("hidden",!n.notice);$("napChoice").classList.toggle("hidden",!n.choice);$("napChoiceB").parentElement.classList.toggle("hidden",!n.choice?.[1]);if(n.choice)n.choice.forEach((x,i)=>{const c=napCard(x.type,x.i,x.nrj,x.dot),el=$(i?"napChoiceB":"napChoiceA");setSprite(el,c.file,c.i,c.cols,c.rows);const twoSided=x.type==="t";if(!twoSided)napTurned[i]=false;const turned=!!napTurned[i];el.classList.toggle("nap-demand",turned);const tb=document.querySelector(`[data-nap-turn="${i}"]`);if(tb){tb.hidden=!twoSided;tb.textContent=turned?"Turn to Request":"Turn to Demand";tb.setAttribute("aria-pressed",String(turned));tb.title=`${c.name}: read the ${turned?"Request":"Demand"} half`;}});renderRoller("nap");$("napReveal").disabled=!canRevealNAP();$("napAdvance").disabled=n.phase!=="apprenticeship";window.LabSteps&&window.LabSteps.render("napSteps",napSteps());}
 
   // ---- the Research Pool as cards -------------------------------------
   // rules/nrj.html, "Standalone Imposter mode": the Research Pool IS the
@@ -1422,7 +1453,7 @@
     host.querySelectorAll("[data-nrj-answer]").forEach(b=>b.onclick=()=>nrjAnswer(Number(b.dataset.nrjAnswer)));
     $("nrjDeploy").disabled=!!n.outcome||!n.dossier.length;
     $("nrjEndSession").disabled=!!n.outcome;
-    renderNRJImposter();renderNRJPool();renderRoller("nrj");
+    renderNRJImposter();renderNRJPool();renderRoller("nrj");window.LabSteps&&window.LabSteps.render("nrjSteps",nrjSteps());
   }
   function renderNRJPool(){
     const n=state.nrj,host=$("nrjPoolCards"),inputs=$("nrjPoolInputs"),sample=!!n.cards;

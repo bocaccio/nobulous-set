@@ -808,6 +808,49 @@ Each of these only appears a few turns in.
 
 Not your job to fix, but worth knowing if Jon raises them:
 
+- **NAVIGATION PROMPTS ARE SHARED NOW: `playtest/dist/steps.js`.** BAT had
+  numbered step chips for the Tyrant battle and the other three screens had
+  nothing. Asked for on 2026-11-03: give NAP, AoS and the Imposter Scenario
+  the same thing.
+
+  **A chip's button is a PROXY, not a copy.** A step names a CSS selector
+  for a control that already exists on the page; the strip reads that
+  control's label, is enabled exactly when it is, and a click on the chip
+  clicks the real element. So the strip cannot drift from the game or
+  disagree with it about what is legal - it does not decide anything, it
+  reports. Add a step by naming a control, never by restating a rule. The
+  thing that silently breaks a step is therefore RENAMING A CONTROL, and
+  `check_app_sync.py` now holds every `ctrl:"#id"` against index.html.
+
+  A step whose action belongs to a particular card (apply dice to an
+  Assignment, assign dice to an Element) has no control to point at and
+  passes `ready` instead; it renders as a label, because those buttons
+  belong on the cards. `ready` ALSO forces a step live when its proxy is
+  spent but the step is not finished - NAP's Choose the Primary, where
+  Reveal is disabled but choosing is still step 1. Without that the strip
+  walked past step 1 and lit "End time slot" while a choice was open.
+
+  **"Now" is the first step you can act on, not a cursor.** A NAP Time Slot
+  and an AoS Program are loops - roll, apply, roll again - so a marker
+  marching 1-2-3-4 would be lying.
+
+  Two things fell out of building it:
+
+  - **Hidden SCREENS are not hidden panels.** A game renders at least once
+    while its screen is off-stage, and judging availability by whether the
+    control is visible made every AoS step read dead until something
+    re-rendered. `steps.js` asks whether a control is shut away *within*
+    its screen and ignores the screen itself.
+  - **`napReveal` and `napAdvance` were never disabled** - they just
+    returned early. A strip that mirrors `disabled` showed Reveal as
+    available forever. `canRevealNAP()` is now the single owner of that
+    question, used by both the handler and the button.
+
+  The strip's CSS was `bat-*` and is now `.step`, `.step-row`, `.step-num`,
+  `.step-stack`, `.step-dice`, shared by all four screens. BAT emits the
+  new names and renders identically; verified by measuring `.step.now`
+  against `--gold` rather than by reaching a battle.
+
 - **An Assignment Task prints half of itself upside down, and in the choice
   panel there is now a button to turn it.** Asked for on 2026-11-03 after
   the Demand half of a card in "Choose the Primary" turned out to be

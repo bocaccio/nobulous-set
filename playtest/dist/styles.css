@@ -53,15 +53,29 @@
 .bat-battle-panel{padding:1rem}
 .bat-track{display:grid;grid-template-columns:repeat(7,minmax(0,1fr)) minmax(200px,240px);gap:10px;align-items:start;margin-top:4px}
 .bat-battle-head{display:flex;flex-wrap:wrap;align-items:center;gap:14px}
-.bat-tyrant-steps{display:flex;flex-wrap:wrap;align-items:stretch;gap:10px;flex:1 1 auto;justify-content:flex-end}
-.bat-step{display:flex;align-items:center;gap:8px;padding:6px;border:1px solid #303b44;border-radius:12px;background:#0e1418}
-.bat-step.done{opacity:.55}
-.bat-step.now{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset}
-.bat-step-num{font-size:.62rem;font-weight:900;color:var(--muted);letter-spacing:.06em}
-.bat-step.now .bat-step-num{color:var(--gold)}
-.bat-step-dice{display:flex;gap:6px}
-.bat-step-dice .rat-dice-zone{padding:4px 6px;min-width:0}
-.bat-step-dice h4{margin:0 0 3px;font-size:.58rem}
+/* The numbered step strip. It began as BAT's Tyrant/Rat prompts and is now
+   shared with NAP, AoS and the Imposter Scenario through steps.js, so the
+   names are no longer bat-*. One owner: do not restyle a strip per screen. */
+.step-row{display:flex;flex-wrap:wrap;align-items:stretch;gap:10px;flex:1 1 auto;justify-content:flex-end}
+.step{display:flex;align-items:center;gap:8px;padding:6px;border:1px solid #303b44;border-radius:12px;background:#0e1418}
+.step.done{opacity:.55}
+.step.now{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset}
+.step-num{font-size:.62rem;font-weight:900;color:var(--muted);letter-spacing:.06em}
+.step.now .step-num{color:var(--gold)}
+.step-dice{display:flex;gap:6px}
+.step-dice .rat-dice-zone{padding:4px 6px;min-width:0}
+.step-dice h4{margin:0 0 3px;font-size:.58rem}
+/* A step whose action belongs to a particular card has no button to proxy,
+   so it reads as a label. It is still numbered: the point of the strip is
+   the ORDER, and leaving a step out would break it. */
+.step-label{font-size:.78rem;font-weight:750;color:var(--text);padding:0 2px}
+.step-note{font-size:.66rem;color:var(--muted);padding:0 2px}
+.step.now .step-note{color:#e0c488}
+/* On NAP, AoS and NRJ the strip is a band of its own under the heading
+   rather than sharing a section head as BAT's does. */
+.step-panel{display:flex;align-items:center;gap:12px;padding:10px 12px}
+.step-panel .step-row{justify-content:flex-start}
+.step-panel>.kicker{white-space:nowrap;margin:0}
 .bat-track-hint{margin:8px 0 0;font-size:.7rem}
 .bat-end-dialog{width:min(520px,calc(100% - 2rem));padding:24px 26px;border:1px solid #6b2a24;border-radius:16px;background:#0f1317;color:inherit;text-align:center}
 .bat-end-dialog.won{border-color:var(--gold)}
@@ -74,7 +88,7 @@
 .bat-end-question{margin:0 0 12px;font-weight:700}
 .bat-end-actions{justify-content:center}
 .bat-end-actions button{min-width:110px}
-.bat-step-stack{display:flex;flex-direction:column;gap:3px;align-items:stretch}
+.step-stack{display:flex;flex-direction:column;gap:3px;align-items:stretch}
 .bat-commit-color{display:flex;align-items:center;justify-content:center;gap:5px;font-size:.66rem;font-weight:800;letter-spacing:.02em}
 .bat-commit-color.due{color:#e0735f}.bat-commit-color.ok{color:var(--muted)}
 .bat-dot{display:inline-block;width:11px;height:11px;border-radius:50%;border:1px solid rgba(0,0,0,.35)}
@@ -117,7 +131,7 @@
 .bat-tyrant-actions{display:grid;gap:5px;margin-top:8px}
 .bat-tyrant-actions button{min-height:34px;font-size:.78rem;padding:.3rem .5rem}
 .bat-tyrant-dice-row .rat-die{cursor:default}
-@media(max-width:1300px){.bat-track{grid-template-columns:repeat(4,minmax(0,1fr))}.bat-tyrant{grid-column:1/-1}.bat-tyrant-steps{justify-content:flex-start}}
+@media(max-width:1300px){.bat-track{grid-template-columns:repeat(4,minmax(0,1fr))}.bat-tyrant{grid-column:1/-1}.step-row{justify-content:flex-start}}
 @media(max-width:700px){.bat-track{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .bat-splice-name{min-height:30px;padding:3px 8px;border:1px solid #4e5b63;border-radius:8px;background:#1a2329;color:#f4f1e9;font-size:.72rem;font-weight:700;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .bat-splice-name.tapped{border-color:#b78a52;background:#30261f;color:#f0c58b;text-decoration:line-through}

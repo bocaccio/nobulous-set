@@ -952,6 +952,41 @@ check("an Opportunity says Last chance instead of being turned",
       "nap-last-chance" in text("playtest/dist/styles.css"))
 
 print()
+print("NAVIGATION PROMPTS - THE SHARED STEP STRIP")
+# BAT had numbered step prompts and the other three screens had nothing.
+# steps.js is that strip generalised; each screen passes its own step list.
+# A chip's button is a PROXY for a control that already exists on the page,
+# so the thing that silently breaks a step is renaming that control.
+_steps = text("playtest/dist/steps.js")
+_app = text("playtest/dist/app.js")
+_css = text("playtest/dist/styles.css")
+check("steps.js defines the shared component",
+      "window.LabSteps" in _steps and "data-step-proxy" in _steps)
+# It must be parsed before any screen renders, or the first render of a
+# game silently skips its strip.
+_order = [_idx.find('src="steps.js'), _idx.find('src="app.js'),
+          _idx.find('src="suite.js'), _idx.find('src="bat.js')]
+check("index.html loads steps.js before the screens that use it",
+      _order[0] >= 0 and all(_order[0] < _o for _o in _order[1:]))
+for _host, _src, _where in (("napSteps", _suite, "suite.js"),
+                            ("nrjSteps", _suite, "suite.js"),
+                            ("aosSteps", _app, "app.js")):
+    check("%s has a host and %s renders it" % (_host, _where),
+          ('id="%s"' % _host) in _idx and ('"%s"' % _host) in _src)
+# The strip's CSS is shared, so no screen may keep a private copy and BAT
+# must not still be emitting the old names.
+check("the strip's CSS is named for the strip, not for BAT",
+      ".step{" in _css and "bat-step" not in _css and
+      "bat-step" not in text("playtest/dist/bat.js"))
+# Every control a step points at by id has to exist, or that step is a
+# chip that can never light.
+_missing = sorted({_m for _src in (_suite, _app)
+                   for _m in re.findall(r'ctrl: ?"#([A-Za-z][\w-]*)"', _src)
+                   if ('id="%s"' % _m) not in _idx})
+check("every step points at a control that exists",
+      not _missing, "no such id: %r" % (_missing,))
+
+print()
 print("%d check(s) failed" % len(FAILS))
 for f in FAILS:
     print("   -", f)

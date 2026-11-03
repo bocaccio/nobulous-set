@@ -739,7 +739,7 @@
     const specimen=card.type==="s",cols=specimen?8:10,rows=specimen?1:2;
     const col=card.i%cols,row=Math.floor(card.i/cols);
     el.classList.remove("placeholder-card");el.innerHTML="";
-    el.style.backgroundImage=`url('assets/${specimen?"BAT_Specimens_TTS.png":"BAT_Upgrades_TTS.png"}?v=lastchance')`;
+    el.style.backgroundImage=`url('assets/${specimen?"BAT_Specimens_TTS.png":"BAT_Upgrades_TTS.png"}?v=navsteps5')`;
     el.style.backgroundSize=`${cols*100}% ${rows*100}%`;
     el.style.backgroundPosition=`${cols===1?0:col/(cols-1)*100}% ${rows===1?0:row/(rows-1)*100}%`;
   }
@@ -802,7 +802,7 @@
         return `<div class="bat-borrow-row"><button data-bat-borrow="${i}" ${blocked?"disabled":""}>Lend selected die to ${active().name}</button>${blocked?`<span class="bat-borrow-note">${blocked}</span>`:""}</div>`;
       })()}`;
       const sprite=box.querySelector(".bat-rat-card"),col=i;
-      sprite.style.backgroundImage=`url('assets/${rat.side==="front"?"BAT_Rats_TTS.png":"BAT_Rats_TTS_back.png"}?v=lastchance')`;
+      sprite.style.backgroundImage=`url('assets/${rat.side==="front"?"BAT_Rats_TTS.png":"BAT_Rats_TTS_back.png"}?v=navsteps5')`;
       sprite.style.backgroundSize="400% 100%";sprite.style.backgroundPosition=`${col/3*100}% 0`;
       
       host.appendChild(box);
@@ -1025,7 +1025,7 @@
     const dmg=rolledDamage();
     const step=b.needRec?3:anyRolled?2:1;
     // Step 1 stays live (not dimmed) while rerolls remain after the first roll.
-    const cls=n=>`bat-step ${step===n?"now":(n===1&&step===2&&!spent)?"":step>n?"done":""}`;
+    const cls=n=>`step ${step===n?"now":(n===1&&step===2&&!spent)?"":step>n?"done":""}`;
     // Step 1 doubles as the reroll: select misses among the rolled dice.
     const max=strFor(rat),used=b.ratRolls||0,spent=used>=max;
     const rollLabel=b.needRec
@@ -1044,7 +1044,7 @@
     const cap=RAT_REC[state.activeRat]+2;
     const picked=personalDice().filter(d=>d.selected&&d.zone==="exhausted").length;
     host.innerHTML=
-      `<div class="${cls(1)}"><span class="bat-step-num">1</span><div class="bat-step-stack">`
+      `<div class="${cls(1)}"><span class="step-num">1</span><div class="step-stack">`
       +`<button data-pool-roll class="${step===1||(step===2&&rerollPick)?"primary":""} ${step===1&&rollOK?"bat-rec-due":""}" ${rollOK?"":"disabled"}>${rollLabel}</button>`
       +(()=>{const need=commitColor(b);if(!need||anyRolled||b.needRec)return "";
         const chk=colorCheck(b,selected().filter(d=>d.zone==="available"));
@@ -1053,8 +1053,8 @@
       +(()=>{const src=strSources(rat);return src.length
         ?`<span class="bat-str-bonus">+${src.length} STR this turn · ${src.map(escape).join(", ")}</span>`:"";})()
       +`</div></div>`
-      +`<div class="${cls(2)}"><span class="bat-step-num">2</span>${second}</div>`
-      +`<div class="${cls(3)}"><span class="bat-step-num">3</span>`
+      +`<div class="${cls(2)}"><span class="step-num">2</span>${second}</div>`
+      +`<div class="${cls(3)}"><span class="step-num">3</span>`
       +`<button data-pool-recover class="${step===3?"primary bat-rec-due":""}" ${step===3?"":"disabled"}>Recover ${picked}/${cap} Selected (REC ${RAT_REC[state.activeRat]} + 2)</button></div>`;
   }
 
@@ -1091,7 +1091,7 @@
       return;
     }
     const step=!b.revealed?1:!b.rolled?2:3;
-    const cls=n=>`bat-step ${step===n?"now":step>n?"done":""}`;
+    const cls=n=>`step ${step===n?"now":step>n?"done":""}`;
     const tgt=state.rats[b.attackRat!=null?b.attackRat:state.activeRat]||active();
     let third;
     if(step<3) third=`<button disabled>Apply Damage</button>`;
@@ -1104,15 +1104,15 @@
       third=`<button data-apply-hits="1" class="primary bat-rec-due">No Damage — End the Tyrant's Turn</button>`;
     }
     host.innerHTML=
-      `<div class="${cls(1)}"><span class="bat-step-num">1</span>`
+      `<div class="${cls(1)}"><span class="step-num">1</span>`
       +`<button data-tyrant-attack class="${step===1?"primary bat-rec-due":""}" ${step===1?"":"disabled"}>Reveal Next Attack Card</button></div>`
-      +`<div class="${cls(2)}"><span class="bat-step-num">2</span>`
+      +`<div class="${cls(2)}"><span class="step-num">2</span>`
       +`<button data-tyrant-draw="${draws}" class="${step===2?"primary bat-rec-due":""}" ${step===2?"":"disabled"}>Draw ${draws} Dice and Roll</button>`
-      +`<div class="bat-step-dice">`
+      +`<div class="step-dice">`
       +`<div class="rat-dice-zone"><h4>Bag</h4><div class="bat-tyrant-dice-row">${bag.map(tyrantDie).join("")||'<span class="rat-zone-empty">Empty</span>'}</div></div>`
       +`<div class="rat-dice-zone"><h4>Rolled</h4><div class="bat-tyrant-dice-row">${drawn.map(tyrantDie).join("")||'<span class="rat-zone-empty">—</span>'}</div></div>`
       +`</div></div>`
-      +`<div class="${cls(3)}"><span class="bat-step-num">3</span>${third}</div>`;
+      +`<div class="${cls(3)}"><span class="step-num">3</span>${third}</div>`;
   }
 
   function renderBattle() {
@@ -1165,7 +1165,7 @@
       const i=art.dataset.attackArt;
       if(i===""){art.classList.add("placeholder-card");art.innerHTML="<span>Tyrant Attack</span>";return;}
       art.classList.remove("placeholder-card");art.innerHTML="";
-      art.style.backgroundImage="url('assets/BAT_TyrantAttacks_TTS.png?v=lastchance')";
+      art.style.backgroundImage="url('assets/BAT_TyrantAttacks_TTS.png?v=navsteps5')";
       art.style.backgroundSize=`${ATTACK_NAMES.length*100}% 100%`;
       art.style.backgroundPosition=`${Number(i)/(ATTACK_NAMES.length-1)*100}% 0%`;
     });

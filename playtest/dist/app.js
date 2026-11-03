@@ -781,7 +781,25 @@
     $("withholdSelectedBtn").disabled = gateOpen && !!state.limitationResolved;
     renderCard(); renderTech(); renderElements(); renderPools(); renderMetrics();
     if (document.activeElement !== $("notes")) $("notes").value = state.notes || "";
+    renderSteps();
     save();
+  }
+
+  // One Program, as five steps. Every step but the third points at the
+  // control that already exists for it; assigning dice happens on the
+  // Element cards themselves, so that one is a label. See steps.js - the
+  // strip reads the controls rather than re-deciding what is legal.
+  function renderSteps() {
+    if (!window.LabSteps) return;
+    const running = !!state.current && !state.currentCompleted;
+    window.LabSteps.render("aosSteps", [
+      { label: "Draw a Program", ctrl: "#drawBtn" },
+      { label: "Resolve the Limitation", ctrl: "#limitationResolveBtn" },
+      { label: "Assign dice to the Elements",
+        ready: running && !!state.limitationResolved },
+      { label: "Complete the Program", ctrl: "#finishProgramBtn" },
+      { label: "Recover", ctrl: "#recoverSelectedBtn" }
+    ]);
   }
 
   function summary() {
