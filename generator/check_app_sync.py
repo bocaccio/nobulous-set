@@ -491,6 +491,26 @@ for name in sorted(js_rewards):
           name in sim and name in rules)
 
 print()
+print("FLAVOUR TEXT THE LAB KEEPS ITS OWN COPY OF")
+# The lab does not read flavour out of the generators: app.js carries all
+# 32 AoS programs (both sides) and the 6 Limitations, and
+# bat_experiments.js carries all 20 Experiments. On 2026-11-02 a 57-line
+# flavour revision landed in the generators and those two files had to be
+# walked by hand, which is the moment a copy goes stale. These checks are
+# cheap and would have caught it.
+_lab = "".join(text("playtest/dist/%s" % f)
+               for f in ("app.js", "bat_experiments.js", "suite.js", "bat.js"))
+_gb, _ga = py_tables("generator/build_bat.py"), py_tables("generator/aos.py")
+for _label, _lines in (
+        ("BAT Experiments", [r[3] for r in _gb["EXPERIMENTS"]]),
+        ("AoS Stable sides", [v[0] for v in _ga["FLAVOR"].values()]),
+        ("AoS Overheated sides", [v[1] for v in _ga["FLAVOR"].values()]),
+        ("AoS Limitations", [r[2] for r in _ga["LIMITATIONS"]])):
+    _stale = [t for t in _lines if t and t not in _lab]
+    check("  the lab's %d %s lines match the generator" % (len(_lines), _label),
+          not _stale, "%d stale, e.g. %r" % (len(_stale), _stale[:1]))
+
+print()
 print("THE DECK REGISTRIES - sheet, manifest, TTS and the lab")
 # EVERY DECK IS REGISTERED IN FIVE PLACES and until 2026-10-31 nothing
 # compared them. NAP_SlotsFINF had been 3 Time Slots + 1 FINF card; when

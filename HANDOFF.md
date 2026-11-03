@@ -789,6 +789,24 @@ Each of these only appears a few turns in.
 
 Not your job to fix, but worth knowing if Jon raises them:
 
+- **THE LAB KEEPS ITS OWN COPY OF SOME FLAVOUR TEXT, and nothing used to
+  notice when it went stale.** `playtest/dist/app.js` carries all 32 AoS
+  programs with BOTH sides and the 6 Limitations; `bat_experiments.js`
+  carries all 20 Experiments. They are hand-kept, not generated, and the
+  lab does not read `aos.FLAVOR` or `build_bat.EXPERIMENTS` at all.
+
+  This surfaced on 2026-11-02 when a 57-line flavour revision landed in
+  the generators: 26 of those lines also existed in the lab and had to be
+  walked across by hand. `check_app_sync.py` now holds all four tables
+  against the generators, so the next revision fails the check instead of
+  shipping two different jokes on the same card.
+
+  The other decks do NOT duplicate flavour - BAT Upgrades and Specimens,
+  the NRJ Imposters, the Exhibit courtesies and the Tyrant Attack and
+  Modification lines exist only in the generators, and the lab shows them
+  by displaying the card sprite. If you add a flavour field to the lab,
+  add it to that check in the same commit.
+
 - **All 24 Exhibits print a Reward band; nineteen of them are COURTESIES
   and do nothing.** Asked for on 2026-11-02, after "shouldn't all the
   imposter exhibits have rewards". The answer to that as a mechanic is no -

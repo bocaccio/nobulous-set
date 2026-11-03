@@ -79,41 +79,41 @@
   const PROGRAM_FLAVOR = {
     Routine: [
       { name:"Maintain Balance", front:"The shale frame holds steady while Nobulous adds one unnecessary clipboard.", back:"The frame still balances, provided nobody breathes near it." },
-      { name:"Lift a Heavy Object", front:"The automaton raises the test mass with reassuring precision.", back:"The test mass rises. The floor follows." },
-      { name:"Climb an Incline", front:"Measured steps carry the chassis cleanly up the graded ramp.", back:"Each step lands harder than the last; the ramp files a complaint." },
+      { name:"Lift a Heavy Object", front:"The test mass rises smoothly, with Nobulous still standing on it.", back:"The test mass rises. The floor follows." },
+      { name:"Climb an Incline", front:"It reaches the top. Nobulous raises the ramp.", back:"Each step lands harder than the last; the ramp files a complaint." },
       { name:"Move at Speed", front:"The timing gates agree: it is fast, controlled, and technically indoors.", back:"It clears the final gate before the first one stops shaking." },
-      { name:"Navigate a Passage", front:"The frame folds through the mock corridor without touching a wall.", back:"The corridor is now wider, though not by design." },
-      { name:"Cross Uneven Ground", front:"Independent joints keep the load level over broken ground.", back:"The joints correct so violently that the ground becomes the stable part." },
-      { name:"Manipulate an Object", front:"Stone fingers turn the instrument exactly one calibrated notch.", back:"The instrument turns three notches and ceases to be calibrated." },
-      { name:"Detect an Obstacle", front:"Its sensors mark every obstruction before contact.", back:"It detects each obstruction immediately after impact." }
+      { name:"Navigate a Passage", front:"No contact with either wall. The plasterers are sent home.", back:"The corridor is now wider, though not by design." },
+      { name:"Cross Uneven Ground", front:"The chassis crosses the rubble without spilling Nobulous's tea.", back:"The joints correct so violently that the ground becomes the stable part." },
+      { name:"Manipulate an Object", front:"Stone fingers adjust a screw the apprentices have been rounding off all morning.", back:"The instrument turns three notches and ceases to be calibrated." },
+      { name:"Detect an Obstacle", front:"It stops for the glass wall, to the disappointment of the spectators.", back:"It detects each obstruction immediately after impact." }
     ],
     Specialized: [
-      { name:"Traverse Difficult Terrain", front:"The chassis reads the terrain and places each step where the ground will hold.", back:"It reads the terrain correctly, then challenges every conclusion." },
+      { name:"Traverse Difficult Terrain", front:"Nobulous follows in its footsteps until the gaps become inconvenient.", back:"It reads the terrain correctly, then challenges every conclusion." },
       { name:"Move Without Detection", front:"Noise dampers reduce a stone machine to a passing draft.", back:"The dampers hold; the footprints still resemble impact craters." },
-      { name:"Track a Moving Subject", front:"Sensors maintain a calm lock through every change of direction.", back:"The lock tightens until every movement looks like an escape attempt." },
-      { name:"Climb a Vertical Surface", front:"Anchors bite, release, and rise in a clean mechanical rhythm.", back:"The anchors bite deeper; sections of wall begin climbing too." },
-      { name:"Clear an Obstacle", front:"It measures the barrier and clears it with centimeters to spare.", back:"It clears the barrier. The barrier does not clear it." },
-      { name:"Operate in Low Light", front:"Passive sensors map the dark without announcing their presence.", back:"The map is perfect; the glowing heat signature is less subtle." },
-      { name:"Maintain a Pursuit", front:"It matches the subject's pace without closing too quickly.", back:"Pursuit logic discards 'too quickly' as an unnecessary constraint." },
-      { name:"Carry a Moving Load", front:"Compensators cradle the shifting load through every turn.", back:"The load remains secure while everything beneath it shifts." }
+      { name:"Track a Moving Subject", front:"The assistant ducks behind a screen. The head keeps turning.", back:"The lock tightens until every movement looks like an escape attempt." },
+      { name:"Climb a Vertical Surface", front:"A bell rings at the ceiling. Now for the descent.", back:"The anchors bite deeper; sections of wall begin climbing too." },
+      { name:"Clear an Obstacle", front:"The apprentice is allowed to put the ladder away.", back:"It clears the barrier. The barrier does not clear it." },
+      { name:"Operate in Low Light", front:"It finds the switch without needing the light.", back:"The map is perfect; the glowing heat signature is less subtle." },
+      { name:"Maintain a Pursuit", front:"The subject slows to a walk. So does the automaton, with considerably less wheezing.", back:"Pursuit logic discards 'too quickly' as an unnecessary constraint." },
+      { name:"Carry a Moving Load", front:"The crate objects throughout the journey but arrives upright.", back:"The load remains secure while everything beneath it shifts." }
     ],
     Unstable: [
-      { name:"Navigate Without Guidance", front:"The automaton builds a route from landmarks and quiet inference.", back:"It builds several routes and attempts all of them at once." },
+      { name:"Navigate Without Guidance", front:"It takes the short route that Nobulous insists he was about to suggest.", back:"It builds several routes and attempts all of them at once." },
       { name:"Evade Observation", front:"Timing and cover reduce a stone chassis to a rumor.", back:"It avoids every observer except the ones staring at the new hole." },
-      { name:"Overcome a Barrier", front:"The frame tests the obstruction, then applies exactly enough force.", back:"It applies exactly enough force to redefine the obstruction." },
-      { name:"Intercept a Moving Subject", front:"Prediction places the automaton precisely in the subject's path.", back:"Prediction becomes certainty; the path has no remaining alternatives." },
-      { name:"Maintain Control of a Load", front:"Micro-corrections keep unstable cargo centered and intact.", back:"Corrections accelerate until the cargo is the calmest thing in motion." },
+      { name:"Overcome a Barrier", front:"The door opens. Nobulous checks that it can still close.", back:"It applies exactly enough force to redefine the obstruction." },
+      { name:"Intercept a Moving Subject", front:"It waits at the corner while the assistant discovers how predictable he is.", back:"Prediction becomes certainty; the path has no remaining alternatives." },
+      { name:"Maintain Control of a Load", front:"The crate stays level through every lunge from inside.", back:"Corrections accelerate until the cargo is the calmest thing in motion." },
       { name:"Adapt to Changing Terrain", front:"The gait rewrites itself as the ground changes.", back:"The gait keeps rewriting after the ground stops." },
-      { name:"Execute a Complex Route", front:"Every turn arrives on time, in sequence, and without hesitation.", back:"The sequence remains flawless; the surrounding architecture does not." },
-      { name:"Operate Autonomously", front:"It completes the objective without instruction or improvisation.", back:"It completes a different objective with alarming confidence." }
+      { name:"Execute a Complex Route", front:"It takes a turn missing from the diagram. Nobulous pencils it in.", back:"The sequence remains flawless; the surrounding architecture does not." },
+      { name:"Operate Autonomously", front:"Nobulous leaves it to work and returns to find his instructions followed exactly.", back:"It completes a different objective with alarming confidence." }
     ],
     Advanced: [
       { name:"Rapid Approach", front:"It reaches the target before the warning can become an alarm.", back:"It reaches the target before the warning—and most of the doorway." },
       { name:"Unobserved Entry", front:"Locks open, cameras loop, and the corridor never learns it was occupied.", back:"Locks open, cameras loop, and the corridor becomes difficult to explain." },
-      { name:"Subject Acquisition", front:"It identifies, isolates, and secures the designated subject without disturbing the room.", back:"It secures the subject, several bystanders, and the room's structural supports." },
+      { name:"Subject Acquisition", front:"Only the designated subject is inconvenienced. Nobulous checks the designation twice.", back:"It secures the subject, several bystanders, and the room's structural supports." },
       { name:"Difficult Extraction", front:"It carries the subject through the least impossible route.", back:"The route becomes less impossible as walls become optional." },
-      { name:"Autonomous Infiltration", front:"It enters, adapts, and advances without a single transmitted instruction.", back:"Silence is maintained because it has stopped accepting instructions." },
-      { name:"Controlled Restraint", front:"Force sensors hold the subject firmly below the injury threshold.", back:"The threshold remains documented, if no longer especially relevant." },
+      { name:"Autonomous Infiltration", front:"The observer at the controls has nothing to do but look essential.", back:"Silence is maintained because it has stopped accepting instructions." },
+      { name:"Controlled Restraint", front:"“Can you breathe?” “Unfortunately,” says the subject.", back:"The threshold remains documented, if no longer especially relevant." },
       { name:"Adaptive Pursuit", front:"It learns each evasion and closes the next escape before it begins.", back:"It learns too quickly; every movement becomes evidence of escape." },
       { name:"Council Extraction Protocol", front:"The automaton escorts the Councilor out beneath a veil of perfect procedure.", back:"The Councilor is extracted. The Council chamber is now an open-plan space." }
     ]
@@ -151,7 +151,7 @@
     { name:"Green Shortage", text:"Mobility actuators have been reassigned to a 'more urgent' prototype." },
     { name:"Blue Shortage", text:"Sensor stock is low; confidence remains inexplicably high." },
     { name:"Purple Shortage", text:"Load-bearing modules are delayed. The load is not." },
-    { name:"Diversity Protocol", text:"Nobulous demands cross-functional resilience with fewer functions." },
+    { name:"Diversity Protocol", text:"Nobulous removes two components to demonstrate how little you needed them." },
     { name:"Red Quarantine", text:"The emergency die is perfectly safe inside the locked cabinet." }
   ];
   const TECHS = [

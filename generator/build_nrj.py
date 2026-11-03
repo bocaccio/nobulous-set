@@ -14,8 +14,12 @@ DOMAIN = {'Knowledge': NAP_H, 'Physical': BAT_H, 'Cover-Up': AOS_H}
 MOD_STRIP = '#4a4238'
 
 
-def C(title, sub, body, ftr='', warn=False, acc=None, tint=None, hdr=None):
+def C(title, sub, body, ftr='', warn=False, acc=None, tint=None, hdr=None,
+      flavor=''):
     f = ('<div class="ftr%s">%s</div>' % (' warn' if warn else '', ftr)) if ftr else ''
+    # Flavour sits under the rules and above the footer, as build_bat.C does.
+    fl = ('<div style="font-size:7.6pt;font-style:italic;text-align:center;'
+          'line-height:1.25;color:#6f675a;margin:1.4mm 0 0">%s</div>' % flavor) if flavor else ''
     cls = title_cls(title, CARD_SIZE)
     st = ' style="--a:%s"' % acc if acc else ''
     bs = ' style="background:%s"' % tint if tint else ''
@@ -24,9 +28,9 @@ def C(title, sub, body, ftr='', warn=False, acc=None, tint=None, hdr=None):
     hs = hdr_fit(title, cls, CARD_SIZE) if hdr is None else hdr
     return ('<div class="card nrj"%s><div class="hdr"%s><div class="t%s">%s</div>'
             '<div class="s">%s</div></div>'
-            '<div class="body"%s>%s<div class="spacer"></div>%s</div>'
+            '<div class="body"%s>%s<div class="spacer"></div>%s%s</div>'
             '<div class="nrjtag">Nobulous Research Journal</div></div>'
-            % (st, ' style="%s"' % hs if hs else '', cls, title, sub, bs, body, f))
+            % (st, ' style="%s"' % hs if hs else '', cls, title, sub, bs, body, fl, f))
 
 
 def dotspan(c):
@@ -55,12 +59,18 @@ PROTOCOLS = [
  ("Questionable Methodology", "After revealing the two Upgrades for an Experiment with printed Target 5+, Splice the stronger one into the Tyrant and reveal a replacement. This is not optional."),
 ]
 MODS = [
- ("Extra Limbs", "Mobility &middot; Value 4", "Tap: roll 1 exhausted Green or Yellow die. While held, the holder may not borrow dice."),
- ("Secondary Brain", "Senses &middot; Value 4", "Tap before rolling: +1 STR for this Experiment/attack. While held, the holder may not use the Red die."),
- ("Adrenal Gland", "Power &middot; Value 5", "Tap: +3 damage. While held, the holder has 1 less Health, minimum 1."),
- ("Bone Plating", "Defense &middot; Value 4", "Reduce incoming damage by 2. While held, the holder has -1 REC, minimum 1."),
- ("Redundant Organs", "Defense &middot; Value 5", "The first time the holder would be knocked out, discard this card instead; the holder remains at 1 Health. While held, the holder cannot be selected as active on consecutive turns."),
- ("Hypermetabolism", "Senses &middot; Value 4", "Tap: recover +2 dice. While held, exhaust 1 available die at the end of each Experiment the holder attempts, Purple first; if it holds no Purple, exhaust its weakest."),
+ ("Extra Limbs", "Mobility &middot; Value 4", "Tap: roll 1 exhausted Green or Yellow die. While held, the holder may not borrow dice.",
+  "The tailor asks how many sleeves. Nobulous asks how soon he needs to know."),
+ ("Secondary Brain", "Senses &middot; Value 4", "Tap before rolling: +1 STR for this Experiment/attack. While held, the holder may not use the Red die.",
+  "A second opinion, now available during the first."),
+ ("Adrenal Gland", "Power &middot; Value 5", "Tap: +3 damage. While held, the holder has 1 less Health, minimum 1.",
+  "The gland arrives packed in ice. The ice is sweating."),
+ ("Bone Plating", "Defense &middot; Value 4", "Reduce incoming damage by 2. While held, the holder has -1 REC, minimum 1.",
+  "The skeleton has taken an interest in exterior work."),
+ ("Redundant Organs", "Defense &middot; Value 5", "The first time the holder would be knocked out, discard this card instead; the holder remains at 1 Health. While held, the holder cannot be selected as active on consecutive turns.",
+  "Nobulous counts the kidneys twice. He prefers the larger answer."),
+ ("Hypermetabolism", "Senses &middot; Value 4", "Tap: recover +2 dice. While held, exhaust 1 available die at the end of each Experiment the holder attempts, Purple first; if it holds no Purple, exhaust its weakest.",
+  "The feeding schedule has been replaced by a chute."),
 ]
 NOTES = [
  ("Unexpected Resilience", "Claim after a Rat completes an Experiment without committing Red. Claiming gives up the next Upgrade a completed Experiment earns.", "Once per game, recover all of that Rat's dice."),
@@ -86,7 +96,7 @@ mods = [C(n, "NRJ &middot; " + s,
             'text-transform:uppercase;text-align:center;padding:.9mm;margin:-2.4mm -2.4mm 0">'
             'Unauthorized</div>' % MOD_STRIP + T(e),
             'Either a Rat or the Tyrant may hold this card. Tier II &mdash; Contamination.',
-            acc=CAT[s.split(' ')[0]], tint='#f6f2ea') for n, s, e in MODS]
+            flavor=fl, acc=CAT[s.split(' ')[0]], tint='#f6f2ea') for n, s, e, fl in MODS]
 notes = [C(n, "NRJ &middot; Research Note", '<div class="sub">Claim when earned</div>' + T(c) +
             '<div class="sub" style="margin-top:2.5mm">Reward</div>' + T(r),
             'Tier III &mdash; Exploitation.', acc=BAT_H) for n, c, r in NOTES]
@@ -310,7 +320,7 @@ EXHIBIT_COURTESY = {
     "An Old Injury": "Your limp is entered into the minutes as a longstanding commitment to the institution.",
     "Failed Apparatus": "Help yourself to anything that isn’t smoking.",
     "Order of Precedence": "After considerable debate, you are permitted to enter before the sandwiches.",
-    "A Disputed Citation": "The disputed passage is located in the Chairman’s own book, bringing this fruitful exchange to an abrupt conclusion.",
+    "A Disputed Citation": "The passage is found in the Chairman’s own book. He proposes a short recess.",
     "The Long Argument": "You have the last word, delivered to a room of empty chairs.",
     # Physical
     "The Ceremonial Seal": "A handsome lump of wax, yours to treasure.",
@@ -318,15 +328,27 @@ EXHIBIT_COURTESY = {
     "A Sudden Fall": "“Excellent reflexes,” observes the member who was standing behind you.",
     "The Long Session": "By dawn, even your enemies are voting to let you leave.",
     "Tainted Wine": "A better vintage is brought up from the cellar while someone quietly waters the fern with yours.",
-    "Across the Chamber": "Your procession back to your seat is accompanied by the single clap of a member killing a moth.",
+    "Across the Chamber": "A solitary clap greets your return. The moth had been bothering him all evening.",
     "The Darkened Corridor": "You may borrow the candlestick, provided you stop asking about the scratches around the lock.",
     # Cover-Up
     "The Night Watchman's Account": "The watchman retracts his statement in exchange for a chair facing away from the courtyard.",
-    "An Open Window": "A little fresh air does wonders for a room in which nobody has been outside all evening, apparently.",
-    "Someone Was Seen": "For your assistance with the inquiry, you are allowed to describe your own distinguishing features.",
+    "An Open Window": "“Fresh air,” explains the Chairman, brushing soil from his cuffs.",
+    "Someone Was Seen": "You are invited to supply a less distinctive description of yourself.",
     "Rope Burns": "The cord is returned to you in a gift box.",
-    "The Missing Hours": "You are excused from accounting for the hours between midnight and three, a courtesy several members seem eager to reciprocate.",
+    "The Missing Hours": "Midnight through three is struck from the inquiry. A member asks whether eleven might also be available.",
     "A Second Search": "This time they let you watch.",
+}
+
+# A narrative line under each of the five that pay. Flavour only, like a
+# courtesy, and held to the same rules - it may not borrow the cue phrase
+# and may not name a thing the game has. It is set in the courtesy's
+# italics so that the bold Reward above it stays the thing you read.
+EXHIBIT_REWARD_FLAVOR = {
+    "The Chamber Mechanism": "The clerk demonstrates the catch from behind someone else’s chair.",
+    "The Vote": "The Chairman empties his pockets. The motion passes.",
+    "The Narrow Stair": "You are offered the service stairs, where fewer portraits can watch you struggle.",
+    "Tracks in the Yard": "The gardener is asked to rake more discreetly.",
+    "The Sedative Ledger": "Your dose is crossed out in a hand you recognize.",
 }
 
 # Words that name something the game has. A courtesy containing one of
@@ -342,14 +364,17 @@ COURTESY_FORBIDDEN = (
 _overlap = sorted(set(EXHIBIT_REWARD) & set(EXHIBIT_COURTESY))
 _absent = sorted(n for n, _d, _c, _t, _e in SCEN
                  if n not in EXHIBIT_REWARD and n not in EXHIBIT_COURTESY)
-_cue = sorted(n for n, t in EXHIBIT_COURTESY.items()
+_flavour = dict(EXHIBIT_COURTESY, **EXHIBIT_REWARD_FLAVOR)
+_cue = sorted(n for n, t in _flavour.items()
               if "When this Exhibit falls" in t)
-_names = sorted(n for n, t in EXHIBIT_COURTESY.items()
+_names = sorted(n for n, t in _flavour.items()
                 if re.search(r'(%s)' % '|'.join(COURTESY_FORBIDDEN), t, re.I))
-if _overlap or _absent or _cue or _names:
+_unpaid = sorted(set(EXHIBIT_REWARD_FLAVOR) - set(EXHIBIT_REWARD))
+if _overlap or _absent or _cue or _names or _unpaid:
     raise SystemExit("Exhibit Rewards: %s pay twice, %s print nothing, %s borrow "
-                     "the cue phrase, %s name something the game has"
-                     % (_overlap, _absent, _cue, _names))
+                     "the cue phrase, %s name something the game has, %s carry a "
+                     "Reward flavour line without a Reward"
+                     % (_overlap, _absent, _cue, _names, _unpaid))
 
 
 def exhibit_body(name, target):
@@ -369,14 +394,21 @@ def exhibit_body(name, target):
     # at arm's length you can see WHICH Exhibit pays without reading it.
     # The <b> lives here rather than in EXHIBIT_REWARD so that the table
     # stays plain strings - check_app_sync.py and finale.py read it.
+    def italic(text, top):
+        return ('<div style="font-size:7.4pt;font-style:italic;text-align:center;'
+                'line-height:1.25;color:#6f675a;margin-top:%smm">%s</div>'
+                % (top, text))
+
     stats += '<div class="sub" style="margin-top:3.2mm">Reward</div>'
     reward = EXHIBIT_REWARD.get(name)
     if reward:
+        # The narrative line is tucked closer to the Reward than a courtesy
+        # is to the band, so it reads as a remark on the Reward rather than
+        # as a second clause of it.
         stats += T('<b>%s</b>' % reward, 'txt c sm')
+        stats += italic(EXHIBIT_REWARD_FLAVOR[name], '1.6')
     else:
-        stats += ('<div style="font-size:7.4pt;font-style:italic;text-align:center;'
-                  'line-height:1.25;color:#6f675a;margin-top:2mm">%s</div>'
-                  % EXHIBIT_COURTESY[name])
+        stats += italic(EXHIBIT_COURTESY[name], '2')
     return stats
 
 
@@ -428,7 +460,7 @@ IMP_STATS = (5, 2, 3)
 IMPOSTERS = [
  ("The Archivist", "Records Clerk", 'A', "Passive", "Cross-Referenced",
   "A retained card may answer an Exhibit at Target 5 of <i>any</i> domain, not only its own.",
-  "Every document is about something. With enough patience, it is about this."),
+  "He finds your alibi filed under Building Maintenance."),
  ("The Archivist", "Records Clerk", 'B', "Once per Scenario", "Precedent",
   "Apply 1 die of <i>any</i> color, ignoring the attention entirely.",
   "Every ruling has a precedent. Finding it is merely clerical."),
@@ -443,7 +475,7 @@ IMPOSTERS = [
   "The doors open at the hour. The hour is a matter of interpretation."),
  ("The Usher", "Doorkeeper", 'B', "Once per Scenario", "Double Doors",
   "For one session, the attention covers a <i>third</i> color &mdash; one step beyond its usual two.",
-  "Both doors open only for a crowd, and a crowd can be arranged."),
+  "He admits your entourage before you have acquired one."),
  ("The Porter", "Chamber Hand", 'A', "Once per Session", "Sleight of Hand",
   "Take 1 die lying on a standing Exhibit and exhaust it. That Exhibit keeps its successes.",
   "Nothing was removed. Things were carried."),
@@ -452,7 +484,7 @@ IMPOSTERS = [
   "Two crates, one trip, and a brief disregard for the manifest."),
  ("The Steward", "Chamber Steward", 'A', "Once per Scenario", "Requisition",
   "Commit 1 exhausted die of a color the attention allows. It remains exhausted afterward.",
-  "The requisition was approved retroactively, the only way it was ever going to be."),
+  "Your requisition was approved yesterday. He suggests dating it accordingly."),
  ("The Steward", "Chamber Steward", 'B', "Once per Scenario", "Standing Order",
   "Take a third Strategy phase this session.",
   "The session runs until the business concludes. He decides what the business is."),

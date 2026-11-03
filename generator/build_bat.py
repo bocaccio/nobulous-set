@@ -8,7 +8,7 @@ SPEC_FTR = 'If at least one revealed Upgrade is a Specimen, +1 Target total.'
 TAP_FTR = 'Tap to use. A tapped Upgrade cannot absorb damage.'
 
 EXPERIMENTS = [
-    ("Baseline Calibration", 3, "Flip the active Lab Rat to its other side. That side remains active until another effect flips it.", "Every breakthrough begins by proving the researcher probably still works."),
+    ("Baseline Calibration", 3, "Flip the active Lab Rat to its other side. That side remains active until another effect flips it.", "Nobulous checks your pulse, then marks the equipment fit for use."),
     ("Fine Motor Trial", 3, "A Yellow die must be committed to this Experiment. If unable to do so, increase the Target by 1.", "Tiny claws. Tiny screws. Absolutely no margin for error."),
     ("Structural Stress Trial", 4, "Reveal 1 additional Upgrade for this Experiment. Resolve the normal Upgrade choice using all revealed options.", "Nobulous calls the third prototype a control. Nobody asks what it controls."),
     ("Contaminated Tissue", 4, "Discard the revealed Upgrades and reveal 2 new Upgrades. These become the Upgrades for this Experiment.", "The sample was sterile until Nobulous explained his definition of sterile."),
@@ -19,7 +19,7 @@ EXPERIMENTS = [
     ("Full-Spectrum Trial", 4, "Committed dice must include 3 different colors.", "Nobulous requested versatility. The equipment requested mercy."),
     ("Workspace Efficiency Study", 4, "You may only commit two dice to this Experiment.", "Four researchers. One bench. Zero lessons learned."),
     ("Restricted Materials Trial", 4, "Place the Red die on the active Rat. Red cannot be used for this Experiment.", "The best reagent is unavailable for reasons marked administrative."),
-    ("Independent Performance Trial", 4, "You cannot borrow a die during this Experiment.", "Collaboration introduces confounds. Nobulous has generously removed collaboration."),
+    ("Independent Performance Trial", 4, "You cannot borrow a die during this Experiment.", "Your colleagues may observe from behind the glass. Nobulous has disconnected the intercom."),
     ("Resource Depletion Study", 4, "During your second Strategy phase, you may commit no additional dice.", "There was a second prototype. Past tense."),
     ("Reliability Trial", 4, "Hits and Crits on Purple and Blue dice in the first Strategy phase must be rerolled.", "It only fails when you need it, which is remarkably consistent."),
     ("Reagent Exclusion Trial", 4, "Randomly select one available die belonging to the active Rat. That die cannot be committed to this Experiment.", "Science advances rapidly once you stop checking the labels."),
@@ -27,7 +27,7 @@ EXPERIMENTS = [
     ("Endurance Trial", 5, "STR is 1 for this Experiment.", "The experiment is repeatable. Unfortunately, so is the overtime."),
     ("Field Retrofit Trial", 5, "If successful, you may swap one of the active Rat's Upgrades with one of the revealed Upgrades. Specimens cannot be swapped.", "The replacement fits perfectly once you stop asking what it replaced."),
     ("Methodological Optimization", 5, "You may reduce the Target to 0. If you do, take the weaker revealed Upgrade and Splice the stronger revealed Upgrade into the Prototyrant. If tied, choose which to take.", "Why test both prototypes when the Prototyrant can test the better one?"),
-    ("Degraded Tissue Study", 5, "If successful, reduce the Prototyrant's Health dial by 2.", "The tissue is weaker than projected. Nobulous has classified this as progress."),
+    ("Degraded Tissue Study", 5, "If successful, reduce the Prototyrant's Health dial by 2.", "The tissue tears neatly along the dotted line Nobulous insists he did not draw."),
 ]
 
 UPGRADES = [
@@ -37,16 +37,16 @@ UPGRADES = [
     ("Piercing Horn", "P4 - Power", 4, "Add +2 damage. If you roll a Yellow hit or Crit, bypass one Defense Upgrade when assigning this attack.", "Evolution took millennia. Nobulous used a drill press."),
     ("Spring-Loaded Legs", "M1 - Mobility", 2, "Roll 1 exhausted Green die. It must match a color already committed to the attack; exhaust it afterward.", "The landing remains an unsolved engineering problem."),
     ("Prehensile Tail", "M2 - Mobility", 2, "Roll 1 exhausted Yellow die. It must match a color already committed to the attack; exhaust it afterward.", "Another limb means another place to hold something dangerous."),
-    ("Tripwire Tendons", "M3 - Mobility", 3, "Opponent exhausts one Green die; if unable, one Yellow die, if able.", "Anatomically questionable. Tactically hilarious."),
+    ("Tripwire Tendons", "M3 - Mobility", 3, "Opponent exhausts one Green die; if unable, one Yellow die, if able.", "The first demonstration trips the observer."),
     ("Evasive Reflexes", "M4 - Mobility", 3, "Remove 1 success from the opponent's next attack.", "The nervous system now reacts several moments before good judgment."),
     ("Thickened Hide", "D1 - Defense", 2, "Reduce incoming damage by 1.", "Subtle? No. Puncture-resistant? Increasingly."),
-    ("Layered Carapace", "D2 - Defense", 3, "Reduce incoming damage by 2.", "Nobulous discovered the elegant principle of adding more shell."),
-    ("Chromatic Plating", "D3 - Defense", 3, "Reduce damage dealt by Blue and Green dice by 1 each. Yellow dice are unaffected.", "The coating blocks two wavelengths and several reasonable questions."),
+    ("Layered Carapace", "D2 - Defense", 3, "Reduce incoming damage by 2.", "Nobulous adds another layer and orders wider doorways."),
+    ("Chromatic Plating", "D3 - Defense", 3, "Reduce damage dealt by Blue and Green dice by 1 each. Yellow dice are unaffected.", "Color-coded armor saves Nobulous the trouble of remembering what he installed."),
     ("Reactive Shell", "D4 - Defense", 4, "Reduce damage dealt by Purple and Yellow dice by 1 each.", "It hardens on impact. It also hardens when startled."),
     ("Acute Hearing", "S1 - Senses", 2, "+1 STR during your next turn.", "You can hear the Tyrant coming. You can also hear Nobulous chewing."),
     ("Predatory Focus", "S2 - Senses", 3, "+1 STR for the current attack.", "Everything unnecessary disappears, including most ethical concerns."),
     ("Rapid Metabolism", "S3 - Senses", 2, "Recover 1 additional die this turn.", "Calories in. Violence out. The lab has charts."),
-    ("Neural Overclock", "S4 - Senses", 4, "Recover 2 additional dice this turn.", "The brain is operating beyond specification. So is the smoke."),
+    ("Neural Overclock", "S4 - Senses", 4, "Recover 2 additional dice this turn.", "It solves the problem before Nobulous finishes explaining why it cannot be solved."),
 ]
 
 SPECIMENS = [
@@ -55,19 +55,26 @@ SPECIMENS = [
     ("Blink Hare", "Mobility Specimen", "Roll up to 2 exhausted dice matching colors already committed to this attack.", "It does not teleport. Nobulous is almost certain."),
     ("Ghost Gecko", "Mobility Specimen", "Remove 2 successes from the opponent's next attack.", "The camera sees it. The eye does not. The paperwork sees neither."),
     ("Ironback Beetle", "Defense Specimen", "Reduce incoming damage by 3.", "The shell survived the press. The press has been replaced."),
-    ("Prismatic Tortoise", "Defense Specimen", "Reduce damage from two colors of your choice by 1 per die for this attack.", "Its shell refracts light, force, and straightforward explanations."),
+    ("Prismatic Tortoise", "Defense Specimen", "Reduce damage from two colors of your choice by 1 per die for this attack.", "Nobulous spent an hour aiming at the wrong tortoise."),
     ("Echo Bat", "Senses Specimen", "+1 STR for this turn and recover 1 additional die afterward.", "One squeak maps the room. Two squeaks map your fillings."),
     ("Regenerator Newt", "Senses Specimen", "Recover 3 additional dice this turn.", "Nobulous stopped asking what grows back. The answer was \"yes.\""),
 ]
 
 ATTACKS = [
-    ("Overwhelming Mass", "This attack deals +3 damage."),
-    ("Adaptive Strike", "This attack is made against the next Lab Rat clockwise from the active Rat instead of the active Rat, wrapping around the table. Skip any Rat that has been knocked out."),
-    ("Predatory Instinct", "This attack is made against the Rat holding the greatest total Upgrade Value instead of the active Rat. If tied, the player chooses. If only one Rat remains, it is the target."),
-    ("Spliced Reflexes", "This attack deals +1 damage for each Splice the Tyrant still holds."),
-    ("Terrifying Roar", "The Tyrant deals no damage this attack. Instead, exhaust 1 die from the shared battle pool. The player chooses which die."),
-    ("Crushing Blow", "1 damage from this attack is dealt directly to the target Rat's Health and cannot be absorbed by Upgrades. Any remaining damage is absorbed normally."),
-    ("Unstable Growth", "Resolve this attack. If the target was not knocked out, the Tyrant immediately attacks again, committing 2 dice. Do not reveal a Tyrant Attack card for the second attack."),
+    ("Overwhelming Mass", "This attack deals +3 damage.",
+     "The observation window is holding. Its frame is coming with it."),
+    ("Adaptive Strike", "This attack is made against the next Lab Rat clockwise from the active Rat instead of the active Rat, wrapping around the table. Skip any Rat that has been knocked out.",
+     "You were beginning to enjoy watching someone else get hit."),
+    ("Predatory Instinct", "This attack is made against the Rat holding the greatest total Upgrade Value instead of the active Rat. If tied, the player chooses. If only one Rat remains, it is the target.",
+     "Your finest work has attracted professional interest."),
+    ("Spliced Reflexes", "This attack deals +1 damage for each Splice the Tyrant still holds.",
+     "It remembers what each donated limb was for."),
+    ("Terrifying Roar", "The Tyrant deals no damage this attack. Instead, exhaust 1 die from the shared battle pool. The player chooses which die.",
+     "Nobulous reaches for his notes. Everyone else reaches for Nobulous."),
+    ("Crushing Blow", "1 damage from this attack is dealt directly to the target Rat's Health and cannot be absorbed by Upgrades. Any remaining damage is absorbed normally.",
+     "The armor holds its shape better than its occupant."),
+    ("Unstable Growth", "Resolve this attack. If the target was not knocked out, the Tyrant immediately attacks again, committing 2 dice. Do not reveal a Tyrant Attack card for the second attack.",
+     "The measurements need revising. Please hold the tape while it grows."),
 ]
 
 RATS = [
@@ -155,7 +162,8 @@ cards = [C(n, "Tyrant Attack",
            '<div class="sub">Reveal after Rat turn</div>'
            '<div class="txt">%s</div>' % e,
            'Discard after resolving. Reshuffle the discard when the deck is empty.',
-           acc=ATTACK_ACC, tint='#f7f0ee', dot=DOT[ATTACK_DOTS[i]]) for i, (n, e) in enumerate(ATTACKS)]
+           acc=ATTACK_ACC, tint='#f7f0ee', flavor=fl,
+           dot=DOT[ATTACK_DOTS[i]]) for i, (n, e, fl) in enumerate(ATTACKS)]
 print("Attacks", render_deck('BAT_TyrantAttacks', cards, 'BAT', back='CardBack_BAT_TyrantAttack'))
 
 def ratcard(n, s, hp, st, rec, an, at):
