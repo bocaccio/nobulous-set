@@ -143,11 +143,18 @@ ELEMENT_COST = 0         # dice exhausted per resolved element, win or lose:
 # (Routine, Specialized, Unstable), summing to the 8 Programs you cycle.
 # Specialized is held at 3 and each step up trades one Routine Program for
 # one Unstable, so the ladder is a single substitution repeated.
+# Retuned 2026-11-03, one rung harder across the board. AoS read 63.1% solo
+# at Standard against BAT's 53.2 and NAP's 48.2, because every earlier pitch
+# was made against a model with no required colours and a free abandon. The
+# mix is AoS's difficulty dial and the steps are an even ~9 points:
+#   5/3/0 72.7   4/3/1 63.1   3/3/2 52.5   2/3/3 44.0   1/3/4 35.6   0/3/5 28.1
+# Specialized stays at 3 and each rung trades one Routine for one Unstable,
+# which is what rules/aos.html prints.
 LEVELS = {
-    "Easy": (5, 3, 0),
-    "Standard": (4, 3, 1),
-    "Hard": (3, 3, 2),
-    "Nobulous": (2, 3, 3),
+    "Easy": (4, 3, 1),
+    "Standard": (3, 3, 2),
+    "Hard": (2, 3, 3),
+    "Nobulous": (1, 3, 4),
 }
 LEVEL_NAMES = ["Easy", "Standard", "Hard", "Nobulous"]
 

@@ -341,6 +341,32 @@ check("rules/nrj.html says where its percentages come from",
 check("no bare win-rate claim is left in rules/aos.html",
       "points of win rate" not in _arules)
 
+# THE DECK MIX IS AoS'S DIFFICULTY DIAL and it had three unchecked copies:
+# simulation/aos.py's LEVELS, the lab's AOS_LEVELS and the printed table.
+# Retuned 2026-11-03, so hold them together from here on.
+_slv = sa["LEVELS"]
+_jlv = js_literal("playtest/dist/app.js", "AOS_LEVELS")
+_mix_wrong = []
+for lvl in ("Easy", "Standard", "Hard", "Nobulous"):
+    want = list(_slv[lvl])
+    if list(_jlv[lvl]) != want:
+        _mix_wrong.append("%s: lab %r != model %r" % (lvl, _jlv[lvl], want))
+    # the printed table prints the same three numbers on one row
+    row = "<tr><td>%s</td><td>%d</td><td>%d</td><td>%d</td></tr>" % (
+        lvl, want[0], want[1], want[2])
+    bold = ("<tr><td><b>%s</b></td><td><b>%d</b></td><td><b>%d</b></td>"
+            "<td><b>%d</b></td></tr>" % (lvl, want[0], want[1], want[2]))
+    if row not in _arules and bold not in _arules:
+        _mix_wrong.append("%s: not printed as %r" % (lvl, want))
+check("the deck mix agrees across model, lab and rulebook",
+      not _mix_wrong, "; ".join(_mix_wrong[:4]))
+# Specialized at 3 every rung is what the printed sentence promises.
+check("every rung still holds Specialized at 3",
+      all(_slv[l][1] == 3 for l in _slv),
+      "%r" % ({l: _slv[l] for l in _slv},))
+check("rules/aos.html still states the trade-one rule",
+      "each step up trades one Routine Program for one Unstable" in _arules)
+
 jsrc = text("playtest/dist/app.js")
 check("MISSES_TO_NEGATE: aos.py %r == app.js" % sa.get("MISSES_TO_NEGATE"),
       ("const MISSES_TO_NEGATE = %d;" % sa["MISSES_TO_NEGATE"]) in jsrc)

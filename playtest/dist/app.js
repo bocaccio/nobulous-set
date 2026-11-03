@@ -28,11 +28,14 @@
   // only the Targets and element counts.
   // Specialized held at 3; each step up trades one Routine Program for one
   // Unstable. Measured 45.8 / 34.0 / 24.5 / 17.5.
+  // Retuned 2026-11-03, one rung harder. Must match aos.LEVELS in
+  // simulation/aos.py and the table in rules/aos.html; check_app_sync.py
+  // holds all three together.
   const AOS_LEVELS = {
-    Easy:     [5, 3, 0],
-    Standard: [4, 3, 1],
-    Hard:     [3, 3, 2],
-    Nobulous: [2, 3, 3],
+    Easy:     [4, 3, 1],
+    Standard: [3, 3, 2],
+    Hard:     [2, 3, 3],
+    Nobulous: [1, 3, 4],
   };
   const AOS_DECK_NAMES = ["Routine", "Specialized", "Unstable"];
   // A Program knows which deck it came from, so every per-deck lookup goes
