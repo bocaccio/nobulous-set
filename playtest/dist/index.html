@@ -18,7 +18,7 @@
   <title>Nobulous Playtest Lab</title>
   <meta name="description" content="An iPad-first playtest lab for BAT, NAP, AoS, and the NRJ Imposter finale.">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <link rel="stylesheet" href="styles.css?v=onesize">
+  <link rel="stylesheet" href="styles.css?v=splicectl">
 </head>
 <body>
   <header class="topbar">
@@ -32,7 +32,7 @@
         <option value="home">Choose game…</option><option value="bat">BAT</option><option value="nap">NAP</option><option value="aos">AoS</option><option value="nrj">NRJ Imposter</option>
       </select>
       <button class="ghost" id="recordBtn" aria-pressed="false">Playtest record</button>
-            <a class="button-link ghost" id="rulesLink" href="assets/AoS_Rulebook.pdf?v=onesize" target="_blank" rel="noopener">AoS rules PDF</a>
+            <a class="button-link ghost" id="rulesLink" href="assets/AoS_Rulebook.pdf?v=splicectl" target="_blank" rel="noopener">AoS rules PDF</a>
       <button class="danger ghost" id="resetBtn">New test</button>
     </div>
   </header>
@@ -71,7 +71,7 @@
     </section>
 
     <section id="screen-bat" class="game-screen hidden suite-screen">
-      <div class="suite-heading panel"><div><p class="kicker">Build-a-Tyrant</p><h2>BAT playtest table</h2></div><div class="compact-actions"><label class="tier-pick" for="batTier">NRJ tier<select id="batTier"><option value="">Follow campaign</option><option value="0">None</option><option value="1">Tier I &middot; Agenda</option><option value="2">Tier II &middot; Contamination</option><option value="3">Tier III &middot; Exploitation</option></select></label><a class="button-link ghost" href="assets/BAT_Rulebook.pdf?v=onesize" target="_blank">BAT rules PDF</a><button data-new-game="bat" class="danger ghost">New BAT test</button></div></div>
+      <div class="suite-heading panel"><div><p class="kicker">Build-a-Tyrant</p><h2>BAT playtest table</h2></div><div class="compact-actions"><label class="tier-pick" for="batTier">NRJ tier<select id="batTier"><option value="">Follow campaign</option><option value="0">None</option><option value="1">Tier I &middot; Agenda</option><option value="2">Tier II &middot; Contamination</option><option value="3">Tier III &middot; Exploitation</option></select></label><a class="button-link ghost" href="assets/BAT_Rulebook.pdf?v=splicectl" target="_blank">BAT rules PDF</a><button data-new-game="bat" class="danger ghost">New BAT test</button></div></div>
       <p id="batOverlay" class="overlay-note"></p>
       <div class="suite-stats panel bat-stat-bar"><div class="bat-stat-controls"><label for="batDifficulty">Difficulty</label><select id="batDifficulty"><option>Easy</option><option selected>Standard</option><option>Hard</option><option>Nobulous</option></select><label for="batRat">Active Rat</label><select id="batRat"><option>Rummage</option><option>Fidget</option><option>Whiz</option><option>Mottle</option></select></div><div id="batStats" class="bat-stat-list"></div></div>
       <section id="batModules" class="panel bat-modules hidden"></section>
@@ -85,7 +85,7 @@
       <section class="panel bat-battle-panel" id="batBattlePanel" hidden>
         <div class="section-head bat-battle-head"><div><p class="kicker">Tyrant battle</p><h2>Tyrant track</h2></div><div class="bat-tyrant-steps" id="batTyrantSteps"></div></div>
         <div class="bat-track" id="batTrack"></div>
-        <p class="hint bat-track-hint">Damage runs left to right: Buff HP, then each Splice, then Health.</p>
+        <p class="hint bat-track-hint">Damage runs left to right: each Splice in turn, then Health. A Splice must be met in one blow; the remainder carries on.</p>
       </section>
       <div class="bat-table-top">
         <div class="suite-cards bat-cards panel"><div class="resolution bat-resolution"><h3>Resolve this Experiment</h3><div id="batBanked" class="bat-banked hidden"></div><div class="compact-actions"><button id="batSuccessA" class="primary">Success · keep A</button><button id="batSuccessB" class="primary">Success · keep B</button><button id="batSuccessC" class="primary hidden">Success · keep C</button><button id="batFail" class="danger">Failure · splice stronger</button></div></div><article><p class="mini-label">Experiment</p><div id="batEncounter" class="suite-card portrait placeholder-card"><span>Reveal an Experiment</span></div><div id="batEncounterText" class="card-caption"></div><div id="batEffectActions" class="bat-effect-actions hidden"></div></article><article><p class="mini-label">Upgrade A</p><div id="batUpgradeA" class="suite-card portrait placeholder-card"><span>Upgrade A</span></div></article><article><p class="mini-label">Upgrade B</p><div id="batUpgradeB" class="suite-card portrait placeholder-card"><span>Upgrade B</span></div></article><div id="batSwapPrompt" class="bat-swap-prompt hidden"></div><article id="batUpgradeCPanel" class="hidden"><p class="mini-label">Upgrade C</p><div id="batUpgradeC" class="suite-card portrait placeholder-card"><span>Upgrade C</span></div></article></div>
@@ -95,7 +95,7 @@
     </section>
 
     <section id="screen-nap" class="game-screen hidden suite-screen">
-      <div class="suite-heading panel"><div><p class="kicker">Nobulous' Apprentice Program</p><h2>NAP playtest table</h2></div><div class="compact-actions"><a class="button-link ghost" href="assets/NAP_Rulebook.pdf?v=onesize" target="_blank">Full NAP rules</a><button data-new-game="nap" class="danger ghost">New NAP test</button></div></div>
+      <div class="suite-heading panel"><div><p class="kicker">Nobulous' Apprentice Program</p><h2>NAP playtest table</h2></div><div class="compact-actions"><a class="button-link ghost" href="assets/NAP_Rulebook.pdf?v=splicectl" target="_blank">Full NAP rules</a><button data-new-game="nap" class="danger ghost">New NAP test</button></div></div>
       <p id="napOverlay" class="overlay-note"></p>
       <div class="suite-stats panel nap-stat-bar"><div class="nap-stat-controls"><label for="napCreditGoal">Difficulty</label><select id="napCreditGoal">
           <option value="5">Easy &middot; 5 Cr, 4 Setbacks</option>
@@ -124,7 +124,7 @@
     </section>
 
     <section id="screen-nrj" class="game-screen hidden suite-screen">
-      <div class="suite-heading panel"><div><p class="kicker">Nobulous Research Journal</p><h2>Imposter Scenario</h2></div><div class="compact-actions"><a class="button-link ghost" href="assets/NRJ_Campaign_Supplement.pdf?v=onesize" target="_blank">Full NRJ rules</a><button data-new-game="nrj" class="danger ghost">New finale</button></div></div>
+      <div class="suite-heading panel"><div><p class="kicker">Nobulous Research Journal</p><h2>Imposter Scenario</h2></div><div class="compact-actions"><a class="button-link ghost" href="assets/NRJ_Campaign_Supplement.pdf?v=splicectl" target="_blank">Full NRJ rules</a><button data-new-game="nrj" class="danger ghost">New finale</button></div></div>
       <div class="suite-controls panel"><label>Pool setup<select id="nrjPoolMode"><option value="sample">Standalone sample (18 cards)</option><option value="campaign">Campaign pool (manual)</option></select></label><label>Difficulty<select id="nrjLevel"><option value="easy">Easy &middot; no dice exhausted</option><option value="standard">Standard &middot; 3/2/2/2</option><option value="hard">Hard &middot; 3/3/3/2</option><option value="nobulous">Nobulous &middot; 3/3/4/4</option></select></label><label>Imposter<select id="nrjImposter"></select></label><button id="nrjBuildPool">Build / reset finale</button><button id="nrjDeploy" class="primary">Deploy an Exhibit</button><button id="nrjEndSession">End session</button><p id="nrjOverlay" class="overlay-note"></p></div>
       <div class="suite-stats panel" id="nrjStats"></div>
       <details class="discard-panel panel"><summary>Buried Exhibits <strong id="nrjDiscardCount">0</strong><span id="nrjDiscardTop">Empty</span></summary><ol id="nrjDiscardList"></ol></details>
@@ -269,9 +269,9 @@
   </dialog>
 
   <div id="toast" role="status" aria-live="polite"></div>
-  <script src="app.js?v=onesize"></script>
+  <script src="app.js?v=splicectl"></script>
   <script src="bat_experiments.js"></script>
-  <script src="suite.js?v=onesize"></script>
-  <script src="bat.js?v=onesize"></script>
+  <script src="suite.js?v=splicectl"></script>
+  <script src="bat.js?v=splicectl"></script>
 </body>
 </html>

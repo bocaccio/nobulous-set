@@ -678,27 +678,17 @@ button.attention{animation:attention-pulse 1.1s ease-in-out 2}
   opacity:1;
 }
 
-/* The Buff HP card is the one component with a physical tracker on it: 15
-   square spaces, 3 across and 5 down, with the Health die sitting on the
-   current value. */
-/* Stands in for the Buff HP card in the Tyrant track, so it keeps the card's
-   footprint and the row does not reflow when the Buff is destroyed. */
-.bat-buff-track{display:grid;grid-template-columns:repeat(3,1fr);
-  grid-template-rows:repeat(5,1fr);gap:4px;aspect-ratio:5/7;
-  padding:7px;border:1px solid #4a5560;border-radius:13px;background:#11171c}
-.bat-buff-space{display:grid;place-items:center;
-  border:1px solid #2f3942;border-radius:4px;background:#161d23;
-  font-size:.62rem;font-weight:700;color:#5d6b77}
-.bat-buff-space.marked{border-color:#e4457c;background:rgba(199,16,84,.18)}
-.bat-buff-die{display:grid;place-items:center;width:86%;aspect-ratio:1;
-  border-radius:4px;background:var(--die-red);color:#fff;font-size:.68rem;
+/* The one Health die that runs the whole Tyrant: it sits on the Splice
+   currently taking damage and shows what that card has left. It was the
+   Buff HP card's die, and that card printed a 15-space grid for it to sit
+   in; the lab stopped modelling Buff HP when Health became the difficulty
+   dial, and the grid (.bat-buff-track/.bat-buff-space) went with it. A
+   Splice has no printed grid, so the cell makes one. */
+.bat-track-die{display:grid;place-items:center;margin:6px 0 2px;min-height:34px}
+.bat-health-die{display:grid;place-items:center;width:34px;height:34px;
+  border-radius:4px;background:var(--die-red);color:#fff;font-size:.95rem;
   font-weight:900;text-shadow:0 1px 2px rgba(0,0,0,.6);
   box-shadow:0 0 0 1px rgba(255,255,255,.35) inset}
-
-/* The die as it sits on a Splice - the Buff HP card has its printed grid to
-   sit in, the Splices do not. */
-.bat-track-die{display:grid;place-items:center;margin:6px 0 2px;min-height:34px}
-.bat-track-die .bat-buff-die{width:34px;height:34px;aspect-ratio:auto;font-size:.95rem}
 
 /* A Rat's Health is correctable by hand - and raising a knocked-out Rat above
    0 is the only way to undo a knockout. */
@@ -708,22 +698,24 @@ button.attention{animation:attention-pulse 1.1s ease-in-out 2}
 .bat-hp-edit strong{min-width:3.2rem;text-align:center}
 .bat-down-tag{color:#efb1aa;font-size:.68rem;font-style:italic;font-weight:800}
 
-/* The difficulty starts are printed gold on the card. The die's own space has
-   to out-rank them, so .marked is restated last - a gold space is where some
-   difficulty STARTS, .marked is where the die is NOW. */
-.bat-buff-space.gold{border-color:#8a6d1f;background:#241f12;color:#c8a84a}
-.bat-buff-space.marked,.bat-buff-space.gold.marked{
-  border-color:#e4457c;background:rgba(199,16,84,.18)}
-
 /* The containment clock. It goes red for the last two rounds, because a
    timer you cannot see is not a timer. */
 .bat-clock-late strong{color:#ff6f9c}
 .bat-clock-late{border-color:#e4457c;background:rgba(199,16,84,.12)}
 
-/* A Splice is whole or gone, so its control is one button, not a stepper. */
-.bat-splice-toggle{gap:7px}
-.bat-splice-toggle strong{min-width:4.2rem;text-align:center}
-.bat-splice-toggle button{padding:3px 9px;font-size:.72rem}
+/* A Splice is whole or gone, so its control is one button, not a stepper.
+   It is a CORRECTION control - it exists so a misread blow can be undone,
+   not so the Tyrant can be fought with it - so it is small and grey, and
+   only colours up under the pointer. Damage is applied by
+   applyTyrantDamage, never by this. */
+.bat-splice-toggle{display:flex;align-items:center;justify-content:space-between;gap:7px}
+.bat-splice-toggle strong{min-width:0;text-align:left}
+.bat-splice-toggle button{min-height:22px;padding:1px 7px;font-size:.62rem;
+  font-weight:600;border-radius:7px;background:transparent;
+  border-color:#39434d;color:var(--muted)}
+.bat-splice-toggle button:hover:not(:disabled){background:#1b2228;
+  border-color:#5c6872;color:var(--text)}
+.bat-splice-toggle button:disabled{opacity:.45}
 .nrj-pool-cards{display:grid;gap:10px;margin-bottom:12px}.nrj-pool-group h3{margin:0 0 5px;font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}.nrj-pool-row{display:flex;flex-wrap:wrap;gap:6px}.nrj-pool-card{display:grid;gap:2px;text-align:left;padding:7px 9px;border-radius:10px;border:1px solid #3b4650;background:#141a20;font-size:.74rem;line-height:1.25;min-width:118px}.nrj-pool-card strong{font-size:.95rem;color:#9aa3ac}.nrj-pool-card.match{border-color:#6c7f45}.nrj-pool-card.match strong{color:#cfe09a}.nrj-pool-card.sel{outline:2px solid var(--gold);outline-offset:1px;background:#1d242b}.nrj-pool-card.spent{opacity:.32;filter:grayscale(.8)}.nrj-pool-card.nap{border-left:3px solid #ad74c8}.nrj-pool-card.bat{border-left:3px solid #bd644b}.nrj-pool-card.aos{border-left:3px solid #d5a44c}
 
 /* ---- The Imposter finale: the attention wheel and the Exhibits ------- */

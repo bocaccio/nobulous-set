@@ -383,11 +383,30 @@ The Rat box's "2 HP" summary is now a stepper, and `down` follows the Health
 reports "<name> is back on N HP."
 
 Armor, for the record, is already right and should stay that way: a Rat's
-Upgrade either meets the blow's damage and shatters, or bounces it off
-entirely. It never takes partial damage and nothing spills past it to Health
-(except Crushing Blow's 1, which is printed to bypass armor). That is
-rules/bat.html's "Two kinds of armor" box - the Tyrant's Splices accumulate
-damage, a Rat's Upgrades do not.
+Upgrade stops the attack dead whatever the blow was worth and is spent for
+it either way. It never takes partial damage and nothing spills past it to
+Health (except Crushing Blow's 1, which is printed to bypass armor).
+
+That is rules/bat.html's "Two kinds of armor" box, and the end of this
+paragraph used to read "the Tyrant's Splices accumulate damage, a Rat's
+Upgrades do not". **NEITHER KIND CHIPS.** That sentence was written before
+the Tyrant battle was reworked - `b57eedd` is the checkpoint taken just
+before it - and has been wrong ever since. The two armors are NOT mirror
+images of each other, which is the thing to get right if this comes up
+again (checked against rules/bat.html and playtest/dist/bat.js, which
+agree, on 2026-11-03):
+
+| | Tyrant Splice | Rat Upgrade |
+|---|---|---|
+| threshold | the blow must MEET its printed Value in this one attack, or it bounces off and the whole attack is wasted | none - it stops any blow dead, "whatever the blow was worth" |
+| when it is lost | only to a blow that meets the Value | the moment it blocks |
+| the excess | CARRIES ON - may break the next Splice, and what survives all five comes off Health, which does chip | NOTHING carries over; at most one Upgrade is lost |
+| left part-damaged | never | never |
+
+So "a blow of at least the Value removes it, and nothing partial carries"
+is two different rules welded together: the threshold is the Splice's, the
+no-carryover is the Rat's. Only the last row is true of both. Health is the
+one thing in the battle that chips.
 
 ## 9a000000. The Buff HP card shows its die
 

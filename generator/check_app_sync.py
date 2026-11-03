@@ -872,6 +872,62 @@ check("all four families print flavour through the class",
       not _noclass, "not using it: %r" % (_noclass,))
 
 print()
+print("THE RULEBOOKS THE APP SERVES, AND THE RULES IT RESTATES")
+# The lab links the rulebook PDFs out of playtest/dist/assets/, which are
+# deployment copies of rules/*.pdf, which are built from rules/*.html. A
+# player reading "Full BAT rules" in the lab and a player reading the PDF
+# have to be reading the same document, and nothing checked that.
+#
+# This does NOT check rules/*.pdf against rules/*.html - that needs
+# WeasyPrint and a full rebuild. `cd rules && python build.py` is the test:
+# the build is byte reproducible, so if it rewrites nothing, the PDFs are
+# current. Verified that way on 2026-11-03.
+_books = ("BAT_Rulebook.pdf", "NAP_Rulebook.pdf", "AoS_Rulebook.pdf",
+          "NRJ_Campaign_Supplement.pdf")
+_stale = []
+for _b in _books:
+    _src = os.path.join(ROOT, "rules", _b)
+    _dst = os.path.join(ROOT, "playtest", "dist", "assets", _b)
+    if not os.path.exists(_dst):
+        _stale.append(_b + " (not deployed)")
+    elif io.open(_src, "rb").read() != io.open(_dst, "rb").read():
+        _stale.append(_b)
+check("the app serves the rulebooks that rules/ built",
+      not _stale, "differ from rules/: %r" % (_stale,))
+
+_idx = text("playtest/dist/index.html")
+_linked = [_b for _b in _books if _b in _idx]
+check("the app links all four rulebooks (%d)" % len(_linked),
+      len(_linked) == len(_books),
+      "missing: %r" % ([_b for _b in _books if _b not in _linked],))
+
+# BAT's two armors are not mirror images of each other, and a HANDOFF
+# paragraph claimed they were for three days because nothing held the claim
+# against the book. These pin the four facts that distinguish them. If a
+# rewording trips one, read rules/bat.html and HANDOFF 9a0000000 before
+# "fixing" the check - the rule is the thing being protected, not the
+# phrasing.
+_bat = text("rules/bat.html")
+for _label, _needle in (
+        ("a Splice does not chip", "A Splice does not chip"),
+        ("a broken Splice's remainder carries on", "the remainder carries on"),
+        ("a Rat's Upgrade has no threshold", "whatever the blow was worth"),
+        ("nothing carries over past a Rat's Upgrade", "nothing carries over")):
+    check("rules/bat.html still says %s" % _label, _needle in _bat)
+
+# The lab stopped modelling Buff HP when Health became the difficulty dial,
+# so its Tyrant track is five Splices and nothing else. The track hint said
+# damage ran through Buff HP first until 2026-11-03.
+_hint = re.search(r'<p class="hint bat-track-hint">([^<]*Damage runs[^<]*)</p>',
+                  _idx)
+check("the Tyrant track hint describes the track the lab draws",
+      bool(_hint) and "Buff HP" not in _hint.group(1),
+      "hint: %r" % (_hint.group(1) if _hint else None,))
+_js = text("playtest/dist/bat.js")
+check("nothing in bat.js still renders a Buff HP cell",
+      "bat-buff" not in _js and '"Buff HP"' not in _js)
+
+print()
 print("%d check(s) failed" % len(FAILS))
 for f in FAILS:
     print("   -", f)

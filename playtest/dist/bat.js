@@ -739,7 +739,7 @@
     const specimen=card.type==="s",cols=specimen?8:10,rows=specimen?1:2;
     const col=card.i%cols,row=Math.floor(card.i/cols);
     el.classList.remove("placeholder-card");el.innerHTML="";
-    el.style.backgroundImage=`url('assets/${specimen?"BAT_Specimens_TTS.png":"BAT_Upgrades_TTS.png"}?v=onesize')`;
+    el.style.backgroundImage=`url('assets/${specimen?"BAT_Specimens_TTS.png":"BAT_Upgrades_TTS.png"}?v=splicectl')`;
     el.style.backgroundSize=`${cols*100}% ${rows*100}%`;
     el.style.backgroundPosition=`${cols===1?0:col/(cols-1)*100}% ${rows===1?0:row/(rows-1)*100}%`;
   }
@@ -802,7 +802,7 @@
         return `<div class="bat-borrow-row"><button data-bat-borrow="${i}" ${blocked?"disabled":""}>Lend selected die to ${active().name}</button>${blocked?`<span class="bat-borrow-note">${blocked}</span>`:""}</div>`;
       })()}`;
       const sprite=box.querySelector(".bat-rat-card"),col=i;
-      sprite.style.backgroundImage=`url('assets/${rat.side==="front"?"BAT_Rats_TTS.png":"BAT_Rats_TTS_back.png"}?v=onesize')`;
+      sprite.style.backgroundImage=`url('assets/${rat.side==="front"?"BAT_Rats_TTS.png":"BAT_Rats_TTS_back.png"}?v=splicectl')`;
       sprite.style.backgroundSize="400% 100%";sprite.style.backgroundPosition=`${col/3*100}% 0`;
       
       host.appendChild(box);
@@ -939,17 +939,16 @@
   // shows what that card has left, then moves right and is set to the next
   // card's Value.
   const healthDie = n =>
-    `<span class="bat-buff-die" title="Health die \u00b7 ${n} left on this card">${n}</span>`;
-  // The Buff HP card is a 15-space track with the Health die sitting on the
-  // current value - 3 across and 5 down, counting DOWN from 15 at the
-  // top-left, exactly as generator/build_bat.py prints it. The four gold
-  // spaces are the difficulty starts.
+    `<span class="bat-health-die" title="Health die \u00b7 ${n} left on this card">${n}</span>`;
+  // One cell of the Tyrant track. Every cell is a Splice: Buff HP stopped
+  // being modelled here when Health became the difficulty dial, and the
+  // 15-space grid it used to print went with it.
   function trackCell(slot,card,hp,max,front,editable) {
     const dead=hp<=0;
     return `<div class="bat-track-cell ${dead?"destroyed":""} ${front===slot?"front":""}">`
       +`<div class="suite-card portrait bat-track-art" data-track-art="${slot}"></div>`
       +(front===slot&&hp>0?`<div class="bat-track-die">${healthDie(hp)}</div>`:"")
-      +`<div class="bat-track-name">${escape(card?cardName(card):"Buff HP")}</div>`
+      +`<div class="bat-track-name">${escape(cardName(card))}</div>`
       +`<div class="bat-hp-selector bat-splice-toggle"><strong>Value ${max}</strong>`
       +`<button data-track-hp="${slot}" ${editable?"":"disabled"} title="${dead?"Put this Splice back on the track":"Mark this Splice destroyed"}">`
       +`${dead?"Restore":"Destroy"}</button></div>`
@@ -988,10 +987,13 @@
     return pick;
   }
 
-  // Damage runs Buff HP, then each Splice in order, then Health. Buff HP
-  // chips; a Splice does NOT - the blow must meet its printed Value in this
-  // one attack or it bounces off and the whole attack is wasted. Overflow
-  // from a broken Splice carries on and may break the next one too.
+  // Damage runs each Splice in order, then Health. A Splice does NOT chip:
+  // the blow must meet its printed Value in this one attack or it bounces
+  // off and the whole attack is wasted. Overflow from a broken Splice
+  // carries on and may break the next one too, and Health is the only
+  // thing in the battle that chips. The Rats' armor is the OTHER rule and
+  // not a mirror of this one - no Value to meet, spent the moment it
+  // blocks, nothing carries over. HANDOFF section 9a0000000 has the table.
   function applyTyrantDamage(n){
     const b=state.battle;if(!b)return 0;
     let left=n;
@@ -1163,13 +1165,13 @@
       const i=art.dataset.attackArt;
       if(i===""){art.classList.add("placeholder-card");art.innerHTML="<span>Tyrant Attack</span>";return;}
       art.classList.remove("placeholder-card");art.innerHTML="";
-      art.style.backgroundImage="url('assets/BAT_TyrantAttacks_TTS.png?v=onesize')";
+      art.style.backgroundImage="url('assets/BAT_TyrantAttacks_TTS.png?v=splicectl')";
       art.style.backgroundSize=`${ATTACK_NAMES.length*100}% 100%`;
       art.style.backgroundPosition=`${Number(i)/(ATTACK_NAMES.length-1)*100}% 0%`;
     });
     host.querySelectorAll("[data-track-art]").forEach(art=>{
       const slot=art.dataset.trackArt;
-      // The Buff HP card is drawn as its own track now, so only Splices
+      // Every cell on the track is a Splice.
       setSprite(art,state.spliceCards[b.order[Number(slot)]]);
     });
   }
