@@ -367,6 +367,48 @@ check("every rung still holds Specialized at 3",
 check("rules/aos.html still states the trade-one rule",
       "each step up trades one Routine Program for one Unstable" in _arules)
 
+# THE FOURTH COPY.  7f01a88 retuned the mix in three places and said there were
+# three; the <option> labels in index.html are a fourth, and they were missed,
+# so the lab built 3/3/2 under a label reading "Standard 4/3/1" - a mix that is
+# still real, one rung along, which is why it did not look wrong.  Read the
+# labels and compare them with the models.  NAP's are checked too: they were
+# right, but nothing was holding them either.
+_idx = text("playtest/dist/index.html")
+
+
+def options(select_id):
+    """The (value, label) pairs of one <select>, in document order."""
+    m = re.search(r'<select id="%s"[^>]*>(.*?)</select>' % select_id,
+                  _idx, re.S)
+    if not m:
+        return []
+    return [(v, lab.strip()) for v, lab in
+            re.findall(r'<option value="([^"]*)"[^>]*>(.*?)</option>',
+                       m.group(1), re.S)]
+
+
+_lbl_wrong = []
+_aos_opts = dict(options("deckSelect"))
+for lvl in ("Easy", "Standard", "Hard", "Nobulous"):
+    want = "%s &middot; %d/%d/%d" % ((lvl,) + tuple(sa["LEVELS"][lvl]))
+    got = _aos_opts.get(lvl)
+    if got != want:
+        _lbl_wrong.append("AoS %s: label %r, model wants %r" % (lvl, got, want))
+check("the lab's AoS difficulty labels name the mix it builds",
+      len(_aos_opts) == 4 and not _lbl_wrong, "; ".join(_lbl_wrong[:4]))
+
+_nap_wrong = []
+_nap_opts = dict(options("napCreditGoal"))
+for lvl in ("Easy", "Standard", "Hard", "Nobulous"):
+    goal, sb = sn["LEVELS"][lvl]
+    want = "%s &middot; %d Cr, %d Setbacks" % (lvl, goal, sb)
+    got = _nap_opts.get(str(goal))
+    if got != want:
+        _nap_wrong.append("NAP %s: label %r, model wants %r"
+                          % (lvl, got, want))
+check("the lab's NAP difficulty labels name the goal it plays",
+      len(_nap_opts) == 4 and not _nap_wrong, "; ".join(_nap_wrong[:4]))
+
 jsrc = text("playtest/dist/app.js")
 check("MISSES_TO_NEGATE: aos.py %r == app.js" % sa.get("MISSES_TO_NEGATE"),
       ("const MISSES_TO_NEGATE = %d;" % sa["MISSES_TO_NEGATE"]) in jsrc)
