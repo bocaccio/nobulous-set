@@ -409,6 +409,22 @@ for lvl in ("Easy", "Standard", "Hard", "Nobulous"):
 check("the lab's NAP difficulty labels name the goal it plays",
       len(_nap_opts) == 4 and not _nap_wrong, "; ".join(_nap_wrong[:4]))
 
+# EVERY LAB ASSET MUST CARRY THE CACHE TOKEN, on ONE token. AGENTS.md: a
+# cached index.html "pins you to an old build however often you bump them",
+# and the symptom "reads exactly like code that was never written".
+# bat_experiments.js carried none until 2026-11-04 and nothing noticed.
+_assets = re.findall(r'(?:src|href)="([^"]+\.(?:js|css)[^"]*)"', _idx)
+_untokened = sorted(set(a for a in _assets if "?v=" not in a))
+check("every script and stylesheet index.html loads carries ?v=",
+      _assets and not _untokened, ", ".join(_untokened))
+# Read the tokens out of the LINKS, not out of the file text: index.html's
+# own comment recounts the ?v=dpi300 incident, and a check that scanned the
+# prose counted that as a live second token.
+_linked = re.findall(r'(?:src|href)="([^"]*\?v=[^"]*)"', _idx)
+_tokens = sorted(set(re.findall(r"\?v=([A-Za-z0-9._-]+)", " ".join(_linked))))
+check("index.html links one cache token, not several (%s)"
+      % ", ".join(_tokens), len(_tokens) == 1)
+
 jsrc = text("playtest/dist/app.js")
 check("MISSES_TO_NEGATE: aos.py %r == app.js" % sa.get("MISSES_TO_NEGATE"),
       ("const MISSES_TO_NEGATE = %d;" % sa["MISSES_TO_NEGATE"]) in jsrc)
