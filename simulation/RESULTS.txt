@@ -140,12 +140,74 @@ AoS  Automaton of Shale
   element genuinely pays, and 5 points of situational edge is
   judgement rewarded rather than a dominant line.
 
-  POLICY, FINAL.  With the floor and the exclusion in, honest
-  play leads in 10 of these 16 cells; ALLOC_MODE = sacrifice wins
-  only at the hard end, by 0.5 to 4.3 points, where giving up an
-  element genuinely pays.  A residual gap that size is judgement
-  being rewarded rather than a dominant line, so honest stays the
-  published policy.
+  POLICY, NOT FINAL AFTER ALL - REOPENED BY THE 2026-11-04 AUDIT.
+  What this paragraph used to say: "With the floor and the
+  exclusion in, honest play leads in 10 of these 16 cells;
+  ALLOC_MODE = sacrifice wins only at the hard end, by 0.5 to 4.3
+  points ... so honest stays the published policy."  That is true
+  of ALLOC_MODE = sacrifice and it was the only variant re-tested
+  after the floor went in.  sacrifice_SHORT was not, and it is
+  the one that measured strongest BEFORE the floor (+9.9 to
+  +20.2, the table 20 lines below).
+
+  Re-measured 2026-11-04, 12000 games a cell, all three policies
+  over the full grid:
+
+                      no NRJ   Tier I  Tier II Tier III
+    honest     Easy     62.8%    46.8%   37.7%   41.0%
+               Standard 52.7%    36.9%   28.9%   32.1%
+               Hard     44.0%    28.8%   21.6%   24.2%
+               Nobulous 35.9%    22.4%   15.8%   17.7%
+    sacrifice  Standard 54.1%    37.8%   30.9%   31.3%
+    sac_short  Easy     69.0%    49.5%   43.5%   45.0%
+               Standard 60.6%    41.9%   35.4%   37.5%
+               Hard     52.0%    35.0%   29.2%   30.2%
+               Nobulous 43.6%    27.8%   21.8%   23.9%
+
+  SACRIFICE_SHORT BEATS HONEST IN ALL SIXTEEN CELLS, by +2.7 to
+  +8.0, mean about +6.  sacrifice-always does not: it LOSES 1.5
+  to 4.1 at Easy and wins 2.9 to 5.2 at the hard end, which is
+  the shape the old paragraph described.  sacrifice_short has no
+  such weakness, so it is a dominant line, and at Standard it
+  puts AoS at 60.6% - ABOVE the 47-57 band, where honest reads
+  52.7%.
+
+  WHAT IT IS, EXACTLY.  Give the dearest element only the single
+  die the allocation floor obliges you to give it, and fill every
+  other element to its Target+1 cap - but ONLY when the pool
+  cannot fill them all anyway (aos.py: len(pool) < sum(t+1)).
+  That gate is what separates it from sacrifice-always, which
+  does it even when the dice are there, and wastes the Program
+  Reward for nothing.  It is legal as printed, it needs no memory,
+  and the trigger is countable on the table, so a playtester will
+  find it.
+
+  WHY IT IS NOT THE SAME HOLE THE FLOOR CLOSED.  The floor took
+  away the FREE version - a bare element exhausted no dice and
+  cost no Health - and that was worth up to +27.  What is left
+  is worth about +6 and is paid for: the victim still takes a
+  die, and the Program Reward is still forfeit.  The residue is
+  the value of CONCENTRATING dice, which is the decision the game
+  is about, so it cannot be removed without removing the game.
+
+  TWO WAYS TO SETTLE IT, both measured, NEITHER APPLIED - this
+  is a design decision and it is Jon's:
+
+    1. Pitch against the better policy.  One more rung harder
+       puts sacrifice_short's Standard at 2/3/3 = 52.0%, in band,
+       and honest at 44.0%, below it.  That makes the published
+       ladder a floor rather than a target, and it is a four-
+       number change to the same three places the retune touched.
+    2. Leave it.  +6 for a policy a player has to notice, and
+       which costs the Reward every time it fires, is a skill
+       ceiling rather than an exploit, and the printed ladder
+       stays honest about ordinary play.  AoS then ships pitched
+       at 52.9% for the policy the rulebook describes and about
+       60.6% for the best one available.
+
+  Option 2 is what the set already does elsewhere - the finale
+  spans 0.5% played blind to 51.3% played well - so the gap is
+  not out of character.  It is recorded rather than resolved.
 
   IMPLEMENTATION COVERAGE: TWO GAPS, ONE OF THEM SERIOUS (2026-11-03)
   Asked by review whether the model compares deliberate
@@ -722,3 +784,137 @@ THE RULE WAS RIGHT IN ONE PLACE AND STALE IN TWO. bat.html was rewritten so
   5 Health, which is the Standard rung.
 
 finished in 564.8s
+
+==================================================================
+THE FULL AUDIT, 2026-11-04
+==================================================================
+  Everything below was re-run from scratch on 2026-11-04, after
+  the deck retune, to find out what the recent changes had left
+  stale.  What the models say is in the tables at the top of this
+  file and they reproduced exactly: NAP 55.4/48.2/36.2/27.3, BAT
+  62.7/53.2/40.1/28.1, AoS 63.1/52.9/44.2/36.0 on the solo
+  column at 20000 games a cell, and the finale 50.5% from
+  finale.py's own five-seed pitch, which matched the committed
+  finale.txt to the decimal.
+
+  THE PIPELINE IS SOUND.  All four card families were re-rendered
+  from the build scripts into an empty directory, in the
+  documented order, and compared with what is committed: 52
+  sheets, 109 byte comparisons, every one identical, plus the
+  four PnP PDFs and PNP_CONTENTS.txt.  All four rulebook PDFs
+  rebuild byte-identical from their HTML.  catalog.json is
+  current.  check_cards.py passes 287 cards in 38 decks with no
+  overflow.  check_app_sync.py passes with 0 failures.  audit.py
+  finds no card unreachable and none inert - the one gap is
+  BAT's Controlled Failure, which needs a deliberate zero-dice
+  turn the policy never takes, and that is recorded in bat.py.
+
+  WHAT WAS WRONG WAS DOCUMENTATION, AND ONE LABEL.
+
+  1. THE LAB NAMED THE WRONG DIFFICULTY (fixed, e042b78).  The
+     deck retune updated aos.LEVELS, app.js's AOS_LEVELS and the
+     printed table, and the commit said the mix "had three
+     unchecked copies".  It had four: the <option> labels in
+     playtest/dist/index.html.  The lab therefore BUILT the
+     retuned deck and TOLD the playtester the old one - "Standard
+     4/3/1" while dealing 3/3/2.  Nothing looked broken because
+     every old string is still a real mix one rung along.
+     check_app_sync.py now reads those labels, and NAP's, out of
+     index.html and compares them with the models.
+
+  2. table.py CONTRADICTED ITS OWN GRID (fixed, c5db3a0).  Its
+     calibration footer claimed AoS "still high on its own,
+     70.8%" forty lines under a grid reading 52.9%, BAT 53.9
+     against a measured 53.2, NAP 49.2/51.4 against 48.2/50.2,
+     and the finale 53.1 against 50.5.  The footer is now
+     COMPUTED from the cells grid() returns, so it cannot drift
+     again.
+
+  3. THE FINALE'S 53.1% WAS IN FIVE PLACES.  It is the figure
+     from before the five Reward cards were restored; the finale
+     reads 50.5%.  Corrected here, in simulation/README.md,
+     in table.py and in suite.js.  HANDOFF.md already carried
+     the correction 80 lines below its own stale copy.
+
+  4. aos.py's DUMPING LADDER WAS PRE-REQUIRED-COLOURS.  It read
+     70.8 honest / 64.1 / 18.9 / 0.2, numbers from earlier the
+     same day.  Re-measured: 52.7 / 34.8 / 6.7 / 0.1.  The
+     conclusion got stronger, the numbers all moved.
+
+  5. simulation/README.md credited rules/bat.html with a
+     ~70/63/56/49/42 win-rate ladder.  No rulebook prints a win
+     rate any more, and that ladder had five rungs where BAT has
+     four.
+
+  6. suite.js DESCRIBED THE POOL TWICE AND DISAGREED - "3
+     retained and 3 Candidates from each six" plus a spent/unspent
+     coin, against RETAIN={NAP:3,BAT:2,AoS:2} and no coin, 240
+     lines apart.  The code was right; the comment described a
+     9-card pool and a mechanic dropped on 2026-10-30.
+
+  THREE THINGS RAISED, NOT TOUCHED.  Each is a decision rather
+  than a defect, and each is described where it belongs - the
+  allocation policy above, and these:
+
+  A. THE PRINTED END-OF-DAY BURN IS NOT IMPLEMENTED ANYWHERE.
+     rules/nap.html, "End of Day": "Reveal and discard the top
+     card of the Assignment deck.  Ignore all of its text,
+     effects and Skulls."  nap.py has the lever
+     (END_OF_DAY_BURN) and ships it False, saying so; the lab
+     has nothing.  So every NAP figure ever published measures a
+     game missing one printed rule.  Measured 2026-11-04, 12000
+     games a cell, it makes NAP EASIER and more so as difficulty
+     rises - Easy +0.2, Standard +0.7, Hard +1.6, Nobulous +2.4
+     on the solo column, and up to +3.0 at Tier III.  The burn
+     takes Setbacks more often than it takes Tasks the player
+     wanted, and the hard rungs carry more Setbacks.  Standard
+     stays in band either way (48.2 against 48.9), so this is a
+     correctness question, not a balance one: implement it in
+     both places and re-publish, or drop it from the rulebook.
+
+  B. THE LAB CANNOT PLAY THE SHORT POOL THE RULEBOOK DESCRIBES.
+     rules/aos.html: "If you hold fewer available dice than the
+     Program has elements, place what you have and the elements
+     left bare fail."  In app.js, readyToRoll (app.js:755)
+     requires EVERY element to be resolved or hold a die before
+     ANY element may be rolled, beginResolve refuses an element
+     that has not rolled, and completeProgram refuses to finish
+     while one is unresolved.  So a short pool does not strand
+     the bare element - it deadlocks the Program.  Measured: the
+     state arises in 0.17% of allocations at Easy solo rising to
+     1.00% at Nobulous / Tier III, which over roughly 15 to 17
+     allocations a game is a few games in a hundred at the easy
+     end and around one in ten at the hard end.  A playtester
+     will meet it.
+
+  C. THE TTS MOD STILL POINTS AT THE PLACEHOLDER.  Every sheet
+     in tts/NobulousSet.json loads from
+     cdn.jsdelivr.net/gh/YOUR-GITHUB-USERNAME/nobulous-set@main/
+     - 36 URLs, none filled in - so as committed the mod shows
+     no card faces at all.  tts/REQUIRED_IMAGES.txt is stale with
+     it, listing ControlPanel.png as MISSING when it has been in
+     images/ since 17 September.  Neither can have been
+     regenerated on this machine, because tts/build_mod.py
+     defaults OUT to /home/claude/tts/NobulousSet.json and dies
+     without TTS_OUT set - gen.py was given NOBULOUS_CARD_OUT for
+     exactly this and build_mod.py was not.  One command fixes
+     the URLs once the branch is on main:
+       TTS_OUT=... python build_mod.py --user bocaccio
+     The @main ref is the catch: the mod will only resolve once
+     this branch is merged, so it is deliberately left alone.
+
+  TWO SMALLER ONES, ALSO LEFT.  playtest/dist/assets/ serves
+  AoS_Full_Rules.pdf, a 17 September "Full rules" document that
+  nothing links and deploy.py protects from --prune by name.  It
+  contradicts the shipping rules on seven points, among them "An
+  element may receive no dice and will then fail" - the exact
+  sentence the allocation floor replaced - the old pick-one-deck
+  difficulty model, tucking, the NRJ carry-forward, and it is
+  missing the Catastrophic-Failure negate rule entirely.  It is
+  reachable over the lab at HTTP 200.  And the game's own name
+  is printed three ways: "Nobulous Apprenticeship Program" in
+  rules/nap.html and rules/nrj.html, "Nobulous' Apprentice
+  Program" in build_catalog.py, catalog.json and index.html, and
+  "Nobulous' Apprenticeship Program" in table.py.  The rulebook
+  is the authority and the other two disagree with it.
+

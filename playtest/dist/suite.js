@@ -982,13 +982,20 @@
   // ---- the Research Pool as cards -------------------------------------
   // rules/nrj.html, "Standalone Imposter mode": the Research Pool IS the
   // three Tier III decks - 6 Research Notes, 6 Devious Opportunities, 6
-  // Backdoor Routines - so the finale needs no other box. 3 retained and 3
-  // Candidates from each six, and a coin for every retained card decides
-  // whether it was ever spent in its own game.
+  // Backdoor Routines - so the finale needs no other box. Draw 3
+  // Opportunities, 2 Notes and 2 Routines as retained - the campaign's own
+  // caps, 3/2/2 - and leave the other eleven as Candidates. See RETAIN
+  // below, which is the code that does it.
+  // (This block used to say "3 retained and 3 Candidates from each six,
+  // and a coin for every retained card decides whether it was ever spent"
+  // - a 9-card pool and a mechanic dropped on 2026-10-30. The code 240
+  // lines below was right and this comment was not; corrected 2026-11-04.)
   // ---- The Imposter finale -------------------------------------------
   // Rules: rules/nrj.html, "The Imposter Scenario". Calibrated by
-  // simulation/finale.py, which reads 53.1% at these numbers against a
-  // 47-57% community band. Every constant here has a measured reason:
+  // simulation/finale.py, which reads 50.5% at these numbers against a
+  // 47-57% community band (53.1% until 2026-11-04 here, which was the
+  // figure from before the five Reward cards were restored).
+  // Every constant here has a measured reason:
   // nine sessions puts the Red session in the middle and ends on Purple,
   // and the attention window is two colours because one is unplayable
   // (0.0%) and three inverts the recovery decision (90.6%).
