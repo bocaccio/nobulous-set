@@ -376,11 +376,18 @@ NEGATES_PER_CYCLE = 0
 #   sacrifice_short  the same, but only when the pool cannot fill every
 #              element anyway - triage when short, reward-seeking when rich
 #
-# MEASURED 2026-11-03. Deliberate failure LOSES, monotonically in how much
-# of it you do - at Standard: 70.8% honest, 64.1% dumping Unstable, 18.9%
-# dumping Specialized too, 0.2% dumping everything. The premise never comes
-# off: 99.4% of dump-everything games are dead of Health BEFORE Advanced
-# Programming, against 21% of honest ones.
+# RE-MEASURED 2026-11-04, 12000 games a cell, on this model as it now stands
+# - required colours on, the allocation floor at 1, the corruption exclusion
+# on, and the retuned mix. Deliberate failure LOSES, monotonically in how much
+# of it you do, and the conclusion is STRONGER than it was: at Standard 3/3/2,
+# 52.7% honest, 34.8% dumping Unstable (-18.0), 6.7% dumping Specialized too
+# (-46.0), 0.1% dumping everything (-52.7). The premise never comes off.
+#
+# The figures this block used to carry - 70.8 / 64.1 / 18.9 / 0.2 - were taken
+# earlier the same day, BEFORE required colours, the floor and the exclusion
+# went in and before the retune, so 70.8% honest is a number this model cannot
+# produce any more. The conclusion survived the re-measurement; the numbers did
+# not, which is why they are dated.
 #
 # THE BRAKE IS NOT THE NEGATE RULE, it is that Health is only ever regained
 # through a Program Reward and a Reward needs ZERO failed elements. Failing

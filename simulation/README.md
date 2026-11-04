@@ -131,14 +131,23 @@ The 20 Strong Community Game Stats sheet records the published titles at
 **47-57%, and 53% across 955 games** (Solar Sentinels 49%, Too Many Bones 55%,
 Hoplomachus 53%, Tanglewoods Red/White/Gold 47/53/57%). A finished game in this
 system sits near 50%, and that is the yardstick for everything below. The BAT
-ladder published in `rules/bat.html` (~70/63/56/49/42) straddles that band.
+ladder published in `rules/bat.html` is Specimens and Tyrant Health - 5/9, 6/10,
+7/12, 8/14 - and not win rates: no rulebook prints a win rate any more, and the
+five-rung `~70/63/56/49/42` this sentence used to quote was a ladder from a
+rulebook that no longer publishes one, with five rungs where BAT has four.
 
-Against that band the three games now read Easy 62.7 / 56.8 / 79.6% and
-Standard 53.2 / 49.8 / 71.2% (BAT / NAP / AoS) on the no-NRJ axis, with the
-finale at 53.1% since it was rebuilt on 2026-10-29 (`finale.py`; the
-nine-attempt version it replaced read 61.5%). BAT and NAP are in the band at Standard. AoS is in it at
-Standard on the campaign axis (54.2% at Tier III) but still reads high played
-on its own.
+Against that band the three games read, re-measured 2026-11-04 at 20,000 games
+a cell, Easy 62.7 / 55.4 / 63.1% and Standard **53.2 / 48.2 / 52.9%**
+(BAT / NAP / AoS) on the no-NRJ axis, with the finale at **50.5%**
+(`finale.py`; the nine-attempt version it replaced reads 61.6% in `nrj.py`,
+which still models it). All three games and the finale are in the band at
+Standard on their own column - AoS since the 2026-11-03 deck retune, which is
+the first pitch it has had against a model that implements required colours.
+
+The figures this paragraph used to carry - AoS 71.2% at Standard, the finale at
+53.1% - were from before required colours and before the Rewards were restored.
+An audit on 2026-11-04 found them here, in `table.py`'s calibration footer and
+in `RESULTS.txt`.
 
 Two changes on 2026-10-28 moved NAP and AoS there, and neither was a
 difficulty dial. **NAP had every printed Target raised by 1** - the 26 Task

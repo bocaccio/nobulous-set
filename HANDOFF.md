@@ -36,7 +36,7 @@ Run `git log --oneline` first in case Jon already did it.
 ## 3. Repository layout
 
 ```
-images/           49 PNGs — card sheets and backs. The TTS mod points here.
+images/           53 PNGs — card sheets and backs. The TTS mod points here.
 rules/            4 player rulebooks (PDF) + RULES_CHANGELOG.txt
 print-and-play/   4 PnP PDFs, Letter, 9 cards/page + PNP_CONTENTS.txt
 playtest/         browser playtest lab for BAT, NAP, AoS and the NRJ finale

@@ -46,6 +46,12 @@ def pct(x):
 
 
 def grid(title, subtitle, rows, runner, games, notes=()):
+    """Print one game's table AND return its cells, keyed by difficulty.
+
+    The return value is what the calibration footer reads. It used to repeat
+    those figures from memory and an audit on 2026-11-04 found it contradicting
+    this grid on three of four games, so there is now one owner: the run.
+    """
     print()
     print("=" * 66)
     print(title)
@@ -53,11 +59,21 @@ def grid(title, subtitle, rows, runner, games, notes=()):
     print("  %s" % subtitle)
     print()
     print("  %-22s %9s %9s %9s %9s" % ("", "no NRJ", "Tier I", "Tier II", "Tier III"))
+    measured = {}
     for label, key in rows:
-        cells = [pct(runner(key, t, games)) for t in TIERS]
-        print("  %-22s %9s %9s %9s %9s" % tuple([label] + cells))
+        got = [runner(key, t, games) for t in TIERS]
+        measured[key] = got
+        print("  %-22s %9s %9s %9s %9s"
+              % tuple([label] + [pct(x) for x in got]))
     for n in notes:
         print("  %s" % n)
+    return measured
+
+
+def band(w):
+    """Where one win rate sits against the 47-57% community band."""
+    return "in band" if 47.0 <= 100 * w <= 57.0 else (
+        "above the band" if 100 * w > 57.0 else "below the band")
 
 
 def main(games=DEFAULT):
@@ -73,7 +89,7 @@ def main(games=DEFAULT):
         each = max(200, g // len(NAP_APPS))
         return sum(nap.run(a, "-1", each, tier=tier) for a in NAP_APPS) / len(NAP_APPS)
 
-    grid(
+    nap_cells = grid(
         "NAP  Nobulous' Apprenticeship Program",
         "difficulty = Credit goal / Setbacks in the deck; FINF at Reduce 1",
         [(("%s (%d Cr, %d Sb)" % (k, NAP_LEVELS[k][0], NAP_LEVELS[k][1]))
@@ -90,7 +106,7 @@ def main(games=DEFAULT):
     nap.CREDITS_TO_LEAVE, nap.SETBACKS_IN_DECK = NAP_LEVELS["Standard"]
 
     # ---------------------------------------------------------------- BAT
-    grid(
+    bat_cells = grid(
         "BAT  Build-a-Tyrant",
         "difficulty = Specimens added / Tyrant Health; random Rat sides",
         [(d, d) for d in ("Easy", "Standard", "Hard", "Nobulous")],
@@ -112,7 +128,7 @@ def main(games=DEFAULT):
         return sum(aos.run(level, each, tier=tier, tech=k)
                    for k in aos.TECHS) / len(aos.TECHS)
 
-    grid(
+    aos_cells = grid(
         "AoS  Automaton of Shale",
         "difficulty = the Routine/Specialized/Unstable mix",
         [("%s  %d/%d/%d" % ((k,) + aos.LEVELS[k]), k) for k in aos.LEVEL_NAMES],
@@ -147,17 +163,36 @@ def main(games=DEFAULT):
         print("  %-24s %7d %8d%%" % (name, n, rate))
     print()
     print("  Source: 20 Strong Community Game Stats, read 2026-09-20.")
-    print("  A finished game in this system sits near 50%. Against that,")
-    print("  after the 2026-10-27 policy retune:")
-    print("    BAT  in band at Standard (53.9%), above at Easy, below from Hard.")
-    print("    NAP  in band at Standard (49.2% on its own, 51.4% at Tier III)")
-    print("         since every printed Target rose by 1; below from Hard up.")
-    print("    AoS  in band at Standard on the campaign axis (53.5%) since")
-    print("         the misses-negate rule; still high on its own, 70.8%.")
-    print("    NRJ  in band at 53.1% since the finale was rebuilt on")
-    print("         2026-10-29 - run simulation/finale.py. The 61.5% this")
-    print("         table measures is the SUPERSEDED nine-attempt finale,")
-    print("         because nrj.py still models it; see finale.txt.")
+    print("  A finished game in this system sits near 50%. These four")
+    print("  lines are COMPUTED from the grids above - %d games a cell -"
+          % games)
+    print("  so they cannot drift from them:")
+    print("    BAT  Standard %s (%s solo), Easy %s."
+          % (band(bat_cells["Standard"][0]), pct(bat_cells["Standard"][0]),
+             band(bat_cells["Easy"][0])))
+    print("    NAP  Standard %s (%s solo, %s at Tier III)"
+          % (band(nap_cells["Standard"][0]), pct(nap_cells["Standard"][0]),
+             pct(nap_cells["Standard"][3])))
+    print("         since every Target rose by 1; Hard %s."
+          % band(nap_cells["Hard"][0]))
+    print("    AoS  Standard %s on its OWN column (%s) since the"
+          % (band(aos_cells["Standard"][0]), pct(aos_cells["Standard"][0])))
+    print("         2026-11-03 deck retune, the first pitch AoS has had")
+    print("         against a model that implements required colours;")
+    print("         Standard at Tier III %s (%s)."
+          % (band(aos_cells["Standard"][3]), pct(aos_cells["Standard"][3])))
+    print("    NRJ  the finale that SHIPS reads 50.5% - run")
+    print("         simulation/finale.py, whose report is finale.txt. The")
+    print("         NRJ figure above is the SUPERSEDED nine-attempt")
+    print("         finale, because nrj.py still models it.")
+    print()
+    print("  THIS FOOTER USED TO CONTRADICT THE GRID ABOVE IT, on three of")
+    print("  the four games, and an audit on 2026-11-04 is what caught it:")
+    print("  it claimed BAT 53.9, NAP 49.2/51.4, AoS 53.5 on the campaign")
+    print("  axis and 70.8 solo, and the finale at 53.1. The AoS pair was")
+    print("  the giveaway - 70.8% is a number from before required colours")
+    print("  existed, printed directly beneath a grid reading 52.9%. Figures")
+    print("  here are now dated, and the dates are what to distrust first.")
     print()
     print("  THE RETUNE IS WHY, AND IT INVALIDATES EVERY DIFFICULTY DIAL.")
     print("  These models used to play one fixed policy that was 6 to 34")
