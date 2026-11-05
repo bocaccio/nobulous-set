@@ -13,12 +13,24 @@ sys.path.insert(0, os.path.dirname(__file__))
 from decks import DECKS, GAME_COLOR
 
 # Where the images live. Set with --user / --repo / --ref, or edit GH_USER.
-GH_USER, GH_REPO, GH_REF = "YOUR-GITHUB-USERNAME", "nobulous-set", "main"
+# GH_USER was "YOUR-GITHUB-USERNAME" until 2026-11-05, which meant the default
+# build produced a mod whose every sheet URL 404s - it loads with no card
+# faces. The repo's own remote names the owner, so this was never a guess.
+# GH_REF stays "main" even when you build from a branch: these URLs are for
+# the published mod and resolve once the branch merges. Pass --ref to aim at
+# a branch, or --local to build file:/// URLs against SHEETS.
+GH_USER, GH_REPO, GH_REF = "bocaccio", "nobulous-set", "main"
 CDN = "https://cdn.jsdelivr.net/gh/%s/%s@%s/images"      # cached, fast, recommended
 RAW = "https://raw.githubusercontent.com/%s/%s/%s/images"  # works, uncached
 BASE_URL = ""
-OUT = os.environ.get("TTS_OUT", "/home/claude/tts/NobulousSet.json")
-SHEETS = os.environ.get("TTS_SHEETS", "/home/claude/cards/out")
+# Repo-relative so this runs wherever the repo is checked out. The defaults
+# used to be /home/claude paths from the sandbox that wrote the script, so
+# OUT died with FileNotFoundError and SHEETS made REQUIRED_IMAGES.txt report
+# every image MISSING. images/ is where deploy.py puts the TTS sheets and
+# what the CDN template above already points at. The env vars still win.
+_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+OUT = os.environ.get("TTS_OUT", os.path.join(_REPO, "tts", "NobulousSet.json"))
+SHEETS = os.environ.get("TTS_SHEETS", os.path.join(_REPO, "images"))
 
 rng = random.Random(20260823)
 USED = set()

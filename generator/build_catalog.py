@@ -150,7 +150,7 @@ def deck(title, sheet, card_names, kind, back=None, back_kind=None,
 
 
 CATALOG = {'bat': {'title': 'Build-a-Tyrant', 'decks': []},
-           'nap': {'title': "Nobulous' Apprentice Program", 'decks': []},
+           'nap': {'title': "Nobulous Apprenticeship Program", 'decks': []},
            'aos': {'title': 'Automaton of Shale', 'decks': []},
            'nrj': {'title': 'Nobulous Research Journal', 'decks': []}}
 

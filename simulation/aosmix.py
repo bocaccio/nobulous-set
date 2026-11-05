@@ -14,8 +14,12 @@ import sys
 
 import aos
 
-CURRENT = {(5, 3, 0): "Easy", (4, 3, 1): "Standard",
-           (3, 3, 2): "Hard", (2, 3, 3): "Nobulous"}
+# ONE OWNER: the ladder is aos.LEVELS, never a copy. This dict was written by
+# hand and still read Easy 5/3/0, Standard 4/3/1 after the 2026-11-03 retune
+# moved every rung - so the one script whose entire job is comparing mixes was
+# labelling them a rung wrong, and the 2026-11-05 re-pitch would have left it
+# two rungs wrong. Derived, it cannot drift.
+CURRENT = {mix: name for name, mix in aos.LEVELS.items()}
 
 
 def mixes():

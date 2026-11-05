@@ -847,9 +847,16 @@ Each of these only appears a few turns in.
   an empty deck advances the game, and Advanced Programming is won by
   surviving three Programs rather than completing them - so dumping
   Programs looks like an efficient route. It is not: measured, it is
-  strictly worse the more of it you do, down to 0.2% at Standard against
-  70.8% honest, and 99.4% of those games are dead of Health before
-  Advanced Programming is reached at all.
+  strictly worse the more of it you do, and 99.4% of those games are dead of
+  Health before Advanced Programming is reached at all.
+
+  (The figures first written here - 0.2% against 70.8% honest - predate
+  required colours, the allocation floor and the corruption exclusion, so
+  this model cannot produce them any more. Re-measured 2026-11-04 at the mix
+  then called Standard: 52.7% honest against 0.1% for dumping everything.
+  The conclusion came out stronger; the numbers did not survive. The current
+  ones live in the ALLOC_MODE block of `simulation/aos.py`, which is their
+  one owner - do not restate them here.)
 
   **The brake is the Program Reward.** Health is only ever regained by a
   Reward, and a Reward requires ZERO failed elements - so failing on
@@ -1722,8 +1729,10 @@ Not your job to fix, but worth knowing if Jon raises them:
   tab now carry the design `proto/finale10.py` prototyped — a **Dossier** of
   15 **Exhibits**, the Council's **attention** rotating through the die
   colours, and a pace you set yourself against a nine-session clock.
-  `simulation/finale.py` is the calibrated model and reads **53.1%** against
-  a band whose mean is 53.0%; `simulation/finale.txt` is its report.
+  `simulation/finale.py` is the calibrated model and `simulation/finale.txt`
+  is its report, which is where to read the current figure rather than here.
+  It read **53.1%** when this entry was written and reads **50.5%** since the
+  five Reward cards were restored, against a band whose mean is 53%.
   `simulation/nrj.py` and `simulation/imposter.py` now describe rules that
   no longer ship and say so at the top.
 

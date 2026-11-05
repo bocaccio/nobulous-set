@@ -90,7 +90,7 @@ def main(games=DEFAULT):
         return sum(nap.run(a, "-1", each, tier=tier) for a in NAP_APPS) / len(NAP_APPS)
 
     nap_cells = grid(
-        "NAP  Nobulous' Apprenticeship Program",
+        "NAP  Nobulous Apprenticeship Program",
         "difficulty = Credit goal / Setbacks in the deck; FINF at Reduce 1",
         [(("%s (%d Cr, %d Sb)" % (k, NAP_LEVELS[k][0], NAP_LEVELS[k][1]))
           + (" *" if k == "Standard" else ""), k)

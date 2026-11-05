@@ -264,8 +264,11 @@ def audit_aos(games):
             print("    %-3d run %5.0f%% of games%s"
                   % (i, pct(n, games), "   <-- never run" if not n else ""))
         if dead:
-            print("    NOTE: %d of 8 never run at this mix (Standard is 4/3/1,"
-                  " so whole decks are thinned)" % dead)
+            # Read the mix from aos.LEVELS; this used to print the
+            # literal "4/3/1", which went stale at the 2026-11-03 retune.
+            print("    NOTE: %d of 8 never run at this mix (Standard is"
+                  " %d/%d/%d, so whole decks are thinned)"
+                  % ((dead,) + tuple(aos.LEVELS["Standard"])))
 
     print()
     print("  AoS - Limitations (%d cards)" % len(aos.LIMITATIONS))

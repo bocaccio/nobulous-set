@@ -143,18 +143,33 @@ ELEMENT_COST = 0         # dice exhausted per resolved element, win or lose:
 # (Routine, Specialized, Unstable), summing to the 8 Programs you cycle.
 # Specialized is held at 3 and each step up trades one Routine Program for
 # one Unstable, so the ladder is a single substitution repeated.
-# Retuned 2026-11-03, one rung harder across the board. AoS read 63.1% solo
-# at Standard against BAT's 53.2 and NAP's 48.2, because every earlier pitch
-# was made against a model with no required colours and a free abandon. The
-# mix is AoS's difficulty dial and the steps are an even ~9 points:
-#   5/3/0 72.7   4/3/1 63.1   3/3/2 52.5   2/3/3 44.0   1/3/4 35.6   0/3/5 28.1
-# Specialized stays at 3 and each rung trades one Routine for one Unstable,
-# which is what rules/aos.html prints.
+# Retuned 2026-11-03 one rung harder, and AGAIN on 2026-11-05 for the reason
+# under ALLOC_MODE below. Specialized stays at 3 and each rung trades one
+# Routine Program for one Unstable, which is what rules/aos.html prints, so
+# the ladder is a single substitution repeated and 0/3/5 is just its last
+# rung - the re-pitch needed no new rules sentence, only a new table row.
+#
+# TWO LADDERS, because the pitch depends on how the dice are allocated and
+# the two lines sit about 8 points apart:
+#   honest          5/3/0 72.7  4/3/1 63.1  3/3/2 52.5  2/3/3 44.0  1/3/4 35.6  0/3/5 28.1
+#   sacrifice_short             4/3/1 69.1  3/3/2 60.6  2/3/3 52.0  1/3/4 43.6  0/3/5 35.6
+#
+# The 2026-11-03 pitch was made against honest play, which put Standard
+# 3/3/2 at 52.5%, centre of the band. But honest play is not the best line
+# the printed rules allow - sacrifice_short beats it in all sixteen cells -
+# so the band was describing a game nobody who notices the move would play.
+# The ladder is now pitched to the strong line: every name moved one rung
+# down and 0/3/5 is the new bottom.
+#
+# Standard therefore reads 52.0% to a player who triages and 44.0% to one who
+# funds everything. That is the intended shape: the band covers good play, and
+# funding every element when the pool cannot fill them is a mistake worth
+# about 8 points rather than the baseline the ladder is built on.
 LEVELS = {
-    "Easy": (4, 3, 1),
-    "Standard": (3, 3, 2),
-    "Hard": (2, 3, 3),
-    "Nobulous": (1, 3, 4),
+    "Easy": (3, 3, 2),
+    "Standard": (2, 3, 3),
+    "Hard": (1, 3, 4),
+    "Nobulous": (0, 3, 5),
 }
 LEVEL_NAMES = ["Easy", "Standard", "Hard", "Nobulous"]
 
@@ -363,7 +378,9 @@ NEGATES_PER_CYCLE = 0
 # completing them. DUMP_DICE is how many dice are left on the one element
 # that is still played, which is the only place the misses needed to negate
 # can come from. "honest" is the shipped policy.
-#   honest     the shipped policy: fund every element
+#   honest     fund every element, even when the pool cannot fill them all
+#              to their caps. Shipped until 2026-11-05; it is not the best
+#              line available, which is why it no longer sets the pitch.
 #   dump       abandon every element but one, every Program
 #   dump_hard  dump only Programs from the DUMP_DECKS list, play the rest
 #              honestly - the mixed line, which keeps the Program Rewards
@@ -373,13 +390,15 @@ NEGATES_PER_CYCLE = 0
 #              properly. One failed element costs NO Health, and an element
 #              with no dice on it exhausts none, so the only price is the
 #              Program Reward. This is deliberate triage, not dumping.
-#   sacrifice_short  the same, but only when the pool cannot fill every
-#              element anyway - triage when short, reward-seeking when rich
+#   sacrifice_short  THE SHIPPED POLICY. The same, but only when the pool
+#              cannot fill every element anyway - triage when short,
+#              reward-seeking when rich
 #
 # RE-MEASURED 2026-11-04, 12000 games a cell, on this model as it now stands
 # - required colours on, the allocation floor at 1, the corruption exclusion
 # on, and the retuned mix. Deliberate failure LOSES, monotonically in how much
-# of it you do, and the conclusion is STRONGER than it was: at Standard 3/3/2,
+# of it you do, and the conclusion is STRONGER than it was: at 3/3/2 (which
+# was Standard at that date and is Easy since the 2026-11-05 re-pitch),
 # 52.7% honest, 34.8% dumping Unstable (-18.0), 6.7% dumping Specialized too
 # (-46.0), 0.1% dumping everything (-52.7). The premise never comes off.
 #
@@ -400,7 +419,29 @@ NEGATES_PER_CYCLE = 0
 # and "face three Advanced Programs" never say the Advanced Programs must
 # be completed, so the route reads as open on paper. That is a rulebook
 # fix, not a mechanical one.
-ALLOC_MODE = "honest"
+# THE SHIPPED POLICY IS sacrifice_short, changed from "honest" 2026-11-05.
+#
+# Honest play is not the best line the printed rules allow, and the gap is not
+# small. Measured over the full grid, 12000 games a cell, sacrifice_short
+# beats honest in ALL SIXTEEN cells by +2.7 to +8.0, and at Standard by +7.8.
+# A ladder pitched to honest play therefore put the band on a game that
+# nobody who notices the move would play, so the ladder moved to the strong
+# line instead - see LEVELS above.
+#
+# It cannot be forbidden, because two printed rules provide for it: the
+# allocation floor ("Every element must receive at least one die") and the
+# short pool ("place what you have and the elements left bare fail"). The
+# rulebook even prices the move, at "one die, your worst, gone", so it is a
+# contemplated line with a stated cost; the measurement only says the cost is
+# about 8 points too low. Raising it is a rules change and re-pitching is
+# not, which is what decided this.
+#
+# Note what this does NOT license: DUMPING. sacrifice_short gives up exactly
+# ONE element and funds the rest properly. Dumping abandons everything but
+# one, and it still loses monotonically in how much of it you do - the
+# re-measurement above is unaffected, because the brake on dumping is that
+# Health is only ever regained through a Program Reward.
+ALLOC_MODE = "sacrifice_short"
 DUMP_DICE = 3
 DUMP_DECKS = ("Unstable",)
 # A Catastrophic Failure sets the Program ASIDE at once, instead of a Stable

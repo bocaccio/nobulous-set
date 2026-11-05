@@ -61,8 +61,16 @@ Image.MAX_IMAGE_PIXELS = None
 # Lives in images/ and is NOT generated - the TTS control panel was drawn by
 # hand. So it is kept rather than copied, and never pruned.
 EXTRA_IMAGES = ("ControlPanel.png",)
-# Lives in playtest/dist/assets but has no source in rules/ - left alone.
-ASSET_KEEP = ("AoS_Full_Rules.pdf",)
+# Anything living in playtest/dist/assets with no source in rules/ would be
+# named here and kept rather than pruned. It held AoS_Full_Rules.pdf until
+# 2026-11-05: a 17 September "Full rules" PDF that nothing linked, that
+# --prune could not remove because this tuple protected it by name, and that
+# the lab served at HTTP 200 regardless. It contradicted the shipping
+# rulebook on seven points - including printing "An element may receive no
+# dice and will then fail", the sentence the allocation floor replaced - so
+# a reader who found it got the old game. Deleted; keep this empty unless
+# something genuinely has no source and genuinely has to ship.
+ASSET_KEEP = ()
 GAMES = ("BAT", "NAP", "AoS", "NRJ")
 
 

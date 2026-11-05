@@ -27,15 +27,25 @@
   // pick. All three carry the same reward multiset, so mixing them changes
   // only the Targets and element counts.
   // Specialized held at 3; each step up trades one Routine Program for one
-  // Unstable. Measured 45.8 / 34.0 / 24.5 / 17.5.
-  // Retuned 2026-11-03, one rung harder. Must match aos.LEVELS in
-  // simulation/aos.py and the table in rules/aos.html; check_app_sync.py
-  // holds all three together.
+  // Unstable, so 0/3/5 is simply the ladder's last rung and the printed
+  // construction sentence did not have to change.
+  // Retuned 2026-11-03 one rung harder, and AGAIN 2026-11-05 when the pitch
+  // moved from honest allocation to the strongest line the rules allow - see
+  // ALLOC_MODE in simulation/aos.py. Measured 60.6 / 52.0 / 43.6 / 35.6 solo
+  // for a player who triages, 52.5 / 44.0 / 35.6 / 28.1 for one who funds
+  // every element.
+  // The figures that used to sit here - "Measured 45.8 / 34.0 / 24.5 / 17.5"
+  // - named mixes two rungs back and predated required colours, the
+  // allocation floor and the corruption exclusion. Neither retune touched
+  // them, which is the same disease as the difficulty labels in index.html.
+  // Must match aos.LEVELS in simulation/aos.py and the table in
+  // rules/aos.html; check_app_sync.py holds all three together, and the
+  // labels in index.html are a fourth copy it also checks.
   const AOS_LEVELS = {
-    Easy:     [4, 3, 1],
-    Standard: [3, 3, 2],
-    Hard:     [2, 3, 3],
-    Nobulous: [1, 3, 4],
+    Easy:     [3, 3, 2],
+    Standard: [2, 3, 3],
+    Hard:     [1, 3, 4],
+    Nobulous: [0, 3, 5],
   };
   const AOS_DECK_NAMES = ["Routine", "Specialized", "Unstable"];
   // A Program knows which deck it came from, so every per-deck lookup goes
@@ -545,7 +555,15 @@
     const el = state.elements[i]; const dice = state.dice.filter(d => d.zone === "allocated" && d.element === i);
     if (state.architectMode) { toast("Finish or cancel Reconfigure first."); return; }
     if (recoveryPending()) { toast("Recover your dice first."); return; }
-    if (!dice.length || el.resolved) { toast("Allocate at least one die first."); return; }
+    if (el.resolved) return;
+    if (!dice.length && !shortPool()) { toast("Allocate at least one die first."); return; }
+    if (!dice.length) {
+      // Left bare because the pool ran out. It fails without being rolled -
+      // there is nothing to roll - and resolving it exhausts nothing.
+      el.successes = 0; el.rolled = true;
+      log(`Element ${i + 1} left bare: no dice were available, so it fails.`, "bad");
+      render(); return;
+    }
     if (!reroll && (el.rolled || i !== nextElementToRoll())) { toast("Roll the Elements in order, left to right."); return; }
     if (reroll) {
       const limit = Math.max(0, state.str - 1);
@@ -749,10 +767,34 @@
   // Elements are rolled strictly left to right: only the leftmost unresolved Element may roll.
   function nextElementToRoll() { return state.elements.findIndex(e => !e.resolved); }
 
+  // THE SHORT POOL. rules/aos.html, "Finish the allocation": "Every element
+  // must receive at least one die. If you hold fewer available dice than the
+  // Program has elements, place what you have and the elements left bare
+  // fail." Until 2026-11-05 the roll gate demanded a die on every unresolved
+  // element with no exception, so running short jammed the Program: no legal
+  // move and no message saying why. The one state the rulebook spells out was
+  // the one state the lab could not play.
+  // Bare is allowed only when the available pool is SPENT and the dice held
+  // were spread one per element as far as they went. Stacking dice on one
+  // element while another sits bare is what the floor forbids - that is not
+  // short, it is giving an element up, and allowing it would hand over the
+  // sacrifice line for nothing. Withheld dice are not available, per the
+  // Limitation step, so only the available zone is counted.
+  function elementDice(n) { return state.dice.filter(d => d.zone === "allocated" && d.element === n); }
+  function shortPool() {
+    const open = state.elements.map((e, n) => n).filter(n => !state.elements[n].resolved);
+    if (!open.some(n => !elementDice(n).length)) return false;   // nothing bare
+    if (zoneDice("available").length) return false;              // dice left to place
+    return !open.some(n => elementDice(n).length > 1);           // spread, not stacked
+  }
+  function rollGateOpen() {
+    return state.elements.every((e, n) => e.resolved || elementDice(n).length) || shortPool();
+  }
+
   function renderElements() {
     const wrap = $("elements");
     const nextRoll = nextElementToRoll(), pend = recoveryPending();
-    const readyToRoll = state.elements.every((e, n) => e.resolved || state.dice.some(d => d.zone === "allocated" && d.element === n));
+    const readyToRoll = rollGateOpen();
     wrap.innerHTML = state.elements.map((el, i) => {
       const dice = state.dice.filter(d => d.zone === "allocated" && d.element === i).sort(byColor);
       const status = (el.resolved ? (el.failed ? "failed" : "resolved") : "")

@@ -409,6 +409,58 @@ for lvl in ("Easy", "Standard", "Hard", "Nobulous"):
 check("the lab's NAP difficulty labels name the goal it plays",
       len(_nap_opts) == 4 and not _nap_wrong, "; ".join(_nap_wrong[:4]))
 
+# END OF DAY IS PRINTED, SO ALL THREE SOURCES MUST PLAY IT. rules/nap.html:
+# "Reveal and discard the top card of the Assignment deck." The lab burned a
+# card from the day it shipped and simulation/nap.py never did, so every
+# published NAP figure measured a game missing a printed rule until
+# 2026-11-05. Nothing compared the three, which is why it sat.
+_nap_rules = text("rules/nap.html")
+check("rules/nap.html still prints the End-of-Day burn",
+      "top card of the Assignment deck" in _nap_rules)
+check("simulation/nap.py plays the printed End-of-Day burn",
+      sn.get("END_OF_DAY_BURN") is True,
+      "END_OF_DAY_BURN = %r" % (sn.get("END_OF_DAY_BURN"),))
+check("the lab burns a card at the day rollover too",
+      "n.discard.push(n.deck.pop())" in text("playtest/dist/suite.js"))
+
+# NAP'S NAME, ONE SPELLING. rules/nap.html is the authority and its <h1>
+# reads "Nobulous Apprenticeship Program (NAP)". Until 2026-11-05 the set
+# printed it three ways: "Nobulous' Apprentice Program" in build_catalog.py
+# - so in catalog.json, which the lab reads and DISPLAYS - and twice in
+# index.html, plus "Nobulous' Apprenticeship Program" in nap.py and
+# table.py. Nothing compared them, so all three looked deliberate.
+_NAP_NAME = "Nobulous Apprenticeship Program"
+_nap_h1 = re.search(r"<h1>(.*?)</h1>", text("rules/nap.html"), re.S)
+_nap_h1 = " ".join(re.sub(r"<[^>]+>", " ", _nap_h1.group(1)).split()) if _nap_h1 else ""
+check("rules/nap.html still prints the canonical NAP name",
+      _NAP_NAME in _nap_h1, _nap_h1[:60])
+_nap_strays = []
+for _rel in ("generator/build_catalog.py", "playtest/dist/index.html",
+             "playtest/dist/catalog.json", "simulation/nap.py",
+             "simulation/table.py", "README.md", "rules/nrj.html",
+             "rules/make_editable.py"):
+    _t = text(_rel)
+    for _wrong in ("Nobulous' Apprentice Program",
+                   "Nobulous' Apprenticeship Program",
+                   "Nobulous Apprentice Program"):
+        if _wrong in _t:
+            _nap_strays.append("%s has %r" % (_rel, _wrong))
+check("NAP's name is spelled one way across every source",
+      not _nap_strays, "; ".join(_nap_strays[:3]))
+
+# NO ORPHAN ASSETS. AoS_Full_Rules.pdf lived in playtest/dist/assets from
+# 17 September to 2026-11-05 with nothing linking it. The lab served it at
+# HTTP 200, it contradicted the shipping rulebook on seven points - it still
+# printed "An element may receive no dice and will then fail", the sentence
+# the allocation floor replaced - and deploy.py's ASSET_KEEP protected it
+# from --prune BY NAME, so no promotion could ever clear it. Anyone who
+# found it got the old game. This fires on the next one.
+_assets_dir = os.path.join(ROOT, "playtest", "dist", "assets")
+_asset_pdfs = sorted(f for f in os.listdir(_assets_dir) if f.endswith(".pdf"))
+_orphan_pdfs = [f for f in _asset_pdfs if f not in _idx]
+check("every PDF in playtest/dist/assets is linked from index.html",
+      _asset_pdfs and not _orphan_pdfs, ", ".join(_orphan_pdfs))
+
 # EVERY LAB ASSET MUST CARRY THE CACHE TOKEN, on ONE token. AGENTS.md: a
 # cached index.html "pins you to an old build however often you bump them",
 # and the symptom "reads exactly like code that was never written".

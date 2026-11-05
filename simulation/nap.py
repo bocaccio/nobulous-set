@@ -1,4 +1,4 @@
-"""Nobulous' Apprenticeship Program: work the Assignment row, then sit three
+"""Nobulous Apprenticeship Program: work the Assignment row, then sit three
 Final Exams.
 
 Rules source: rules/nap.html. Card data is transcribed verbatim - the 26
@@ -300,10 +300,28 @@ ABILITIES = {"Prodigy": None, "Slacker": "discard", "Technician": "setback_windo
 CREDITS_TO_LEAVE = 6      # Easy 5, Standard 6, Hard 7, Nobulous 8
 # Difficulty is the pair (Credit goal, Setbacks in the deck).
 LEVELS = {"Easy": (5, 4), "Standard": (6, 4), "Hard": (7, 5), "Nobulous": (8, 6)}
-# End of Day burns one card off the Assignment deck, text ignored - printed
-# in rules/nap.html and never implemented here. False is what every NAP
-# number was measured with.
-END_OF_DAY_BURN = False
+# End of Day burns one card off the Assignment deck, text ignored.
+# rules/nap.html prints it under "End of Day" - "Reveal and discard the top
+# card of the Assignment deck. Ignore all of its text, effects and Skulls" -
+# and the lab has always done it (playtest/dist/suite.js, at the day
+# rollover: n.discard.push(n.deck.pop())). This model shipped False, so until
+# 2026-11-05 every published NAP figure described a game missing a printed
+# rule: two sources out of three played it and the one that published the
+# numbers did not.
+#
+# True is now the rule. MEASURED 2026-11-05, 20,000 games a cell, six
+# Apprentices averaged: turning it on is worth +0.1 / +0.6 / +1.3 / +2.4 solo
+# across the four levels and up to +2.7 at Tier III. It helps, and it helps
+# MORE the harder the level, which tracks the Setbacks in the deck (4/4/5/6) -
+# a burned card is likeliest to have been one of those. Standard moves
+# 48.2 -> 48.8 and stays inside the 47-57% band, so this is a correctness fix
+# and not a re-pitch of the ladder.
+#
+# False is kept because every NAP figure published before 2026-11-05 was
+# measured with it. check_app_sync.py now holds the model, the lab and the
+# rulebook together on this; nothing compared them before, which is why it
+# sat.
+END_OF_DAY_BURN = True
 # Reaching the Credit goal ends the apprenticeship at the end of that DAY,
 # not of that Time Slot: decided 2026-11-03 and printed in rules/nap.html
 # under "How the apprenticeship ends". True is now the rule. False is the
