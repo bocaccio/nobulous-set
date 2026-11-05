@@ -136,13 +136,19 @@ ladder published in `rules/bat.html` is Specimens and Tyrant Health - 5/9, 6/10,
 five-rung `~70/63/56/49/42` this sentence used to quote was a ladder from a
 rulebook that no longer publishes one, with five rungs where BAT has four.
 
-Against that band the three games read, re-measured 2026-11-04 at 20,000 games
-a cell, Easy 62.7 / 55.4 / 63.1% and Standard **53.2 / 48.2 / 52.9%**
+Against that band the three games read, re-measured 2026-11-05 at 20,000 games
+a cell, Easy 62.7 / 55.5 / 60.1% and Standard **53.2 / 48.8 / 51.7%**
 (BAT / NAP / AoS) on the no-NRJ axis, with the finale at **50.5%**
 (`finale.py`; the nine-attempt version it replaced reads 61.6% in `nrj.py`,
-which still models it). All three games and the finale are in the band at
-Standard on their own column - AoS since the 2026-11-03 deck retune, which is
-the first pitch it has had against a model that implements required colours.
+which still models it and is not what ships). All three games and the finale
+are in the band at Standard on their own column - AoS since the 2026-11-05
+re-pitch onto the strongest allocation line the printed rules allow, and NAP
+since the model started playing the printed End-of-Day burn.
+
+Do not retype these. `table.py` computes the calibration verdicts from the
+grids it just ran, and `RESULTS.txt` is its transcript; this paragraph is a
+summary that has gone stale twice, once in the figures and once in the
+conclusion drawn from them.
 
 The figures this paragraph used to carry - AoS 71.2% at Standard, the finale at
 53.1% - were from before required colours and before the Rewards were restored.
@@ -398,29 +404,41 @@ Specimens are the Value-5 cards).
 
 ### AoS - Program deck x NRJ tier
 
+Measured 2026-11-05, 20,000 games a cell, `ALLOC_MODE = sacrifice_short`.
+
 | difficulty | no NRJ | Tier I | Tier II | Tier III |
 |---|---|---|---|---|
-| Easy 5/3/0 | 79.6% | 68.4% | 61.1% | 65.0% |
-| Standard 4/3/1 | 71.2% | 59.1% | 50.7% | 54.2% |
-| Hard 3/3/2 | 62.8% | 49.3% | 40.8% | 44.9% |
-| Nobulous 2/3/3 | 52.6% | 40.2% | 32.0% | 35.2% |
+| Easy 3/3/2 | 60.1% | 41.7% | 35.3% | 37.3% |
+| Standard 2/3/3 | **51.7%** | 35.2% | 29.2% | 30.4% |
+| Hard 1/3/4 | 43.8% | 28.0% | 22.0% | 23.9% |
+| Nobulous 0/3/5 | 36.0% | 22.7% | 17.0% | 18.1% |
 
-Measured after the misses-negate rule of 2026-10-28. Before it the same cells
-read 47.0 / 35.2 / 24.9 / 38.7% at Easy and 35.0 / 25.3 / 16.9 / 27.9% at
-Standard, which is where every earlier copy of this table sits.
+The ladder names moved one rung down on 2026-11-05, when the pitch moved from
+honest allocation to the strongest line the printed rules allow. The outcome
+barely moved with it - Standard went 52.9% to 51.7% and Nobulous did not
+budge - because a harder ladder and a stronger policy very nearly cancel. The
+point of the change was not the level but what the level describes: the
+figures now measure the line a player who triages actually takes. A player who
+funds every element reads about 8 points lower, 44.0% at Standard.
 
-The axis changed. This table used to be indexed by whole Program decks
-(Routine 43.3%, Specialized 9.3%, Unstable 2.2%); difficulty is now the MIX
-of Routine / Specialized / Unstable in the deck, which is why these rows do
-not line up with any earlier copy of this table.
+Every earlier copy of this table is wrong twice over, and this one was too
+until 2026-11-05: it was indexed Easy 5/3/0 ... Nobulous 2/3/3, the ladder
+from before the 2026-11-03 retune, with figures from before required colours,
+the allocation floor and the corruption exclusion. Earlier still it was
+indexed by whole Program decks (Routine 43.3%, Specialized 9.3%, Unstable
+2.2%) rather than by the mix. Three different axes have been called "AoS
+difficulty", so match the ladder before trusting any row.
 
-It is still the cleanest tier response of the three and matches the design
-intent exactly: Tier II is the trough (Easy 79.6% -> 61.1%) and Tier III claws
-most of it back (65.0%). What the negate rule did NOT fix is the gap between
-the two axes: AoS now lands in band at Standard on the campaign axis (54.2%)
-while reading 71.2% played on its own, so the solo game is the loose end.
-NAP's +1 pass closed its own version of that gap - 49.8% against 51.4% - by
-raising the Final Exam Targets, and AoS has no equivalent card to lean on.
+**The loose end is now the CAMPAIGN axis, not the solo one.** Tier II is the
+trough as intended (Standard 51.7% -> 29.2%) but Tier III claws back only
+1.2 points where the design wants most of it, so Standard sits 16.6 points
+below the band on every tier column. This is not a consequence of the
+re-pitch: the honest model read 52.9% solo against 32.0% at Tier III, the same
+21-point spread. It is the reverse of the gap this section used to describe -
+"71.2% played on its own, so the solo game is the loose end" - which was
+written against a model that had no required colours. AoS is also the only one
+of the three that loses ground at Tier III: NAP GAINS there (48.8% -> 52.3%)
+and BAT gives back 9.8 points against AoS's 21.3.
 
 ### NRJ - the finale
 

@@ -2,16 +2,23 @@
 THE NOBULOUS SET - results by difficulty and NRJ tier
 20000 games per cell
 
+Figures: python table.py 20000, run 2026-11-05.
+The GRIDS below are that run's output.  The notes indented under
+them, and everything after the CALIBRATION block, are written by
+hand - so where prose disagrees with a grid, the grid wins and the
+prose is what went stale.  Re-run rather than retyping: table.py
+computes its own calibration verdicts from the cells it measured.
+
 ==================================================================
-NAP  Nobulous' Apprenticeship Program
+NAP  Nobulous Apprenticeship Program
 ==================================================================
   difficulty = Credit goal / Setbacks in the deck; FINF at Reduce 1
 
                             no NRJ    Tier I   Tier II  Tier III
-  Easy (5 Cr, 4 Sb)          55.4%     51.8%     40.9%     56.1%
-  Standard (6 Cr, 4 Sb) *     48.2%     44.6%     34.7%     50.2%
-  Hard (7 Cr, 5 Sb)          36.2%     33.2%     24.9%     41.2%
-  Nobulous (8 Cr, 6 Sb)      27.3%     23.2%     19.8%     33.8%
+  Easy (5 Cr, 4 Sb)          55.5%     51.9%     41.7%     56.9%
+  Standard (6 Cr, 4 Sb) *     48.8%     44.2%     36.1%     52.3%
+  Hard (7 Cr, 5 Sb)          37.5%     33.1%     28.1%     43.9%
+  Nobulous (8 Cr, 6 Sb)      29.7%     25.5%     22.1%     36.2%
   
     * Standard difficulty. Mean of the six Apprentices.
     Re-measured 2026-11-03 with the end-of-Day rule: the Final
@@ -22,6 +29,15 @@ NAP  Nobulous' Apprenticeship Program
     Day costs 1 to 1.6 points at every rung: the extra slots
     bill Demand penalties faster than they earn Credits.  The
     pitch is unchanged and the ladder keeps its shape.
+    RE-MEASURED 2026-11-05 with the END-OF-DAY BURN, which
+    rules/nap.html prints and the lab has always played but this
+    model never did: "Reveal and discard the top card of the
+    Assignment deck."  Turning it on is worth +0.1 / +0.6 / +1.3
+    / +2.4 across the four rungs, growing with difficulty in step
+    with the Setbacks in the deck (4/4/5/6), since a burned card
+    is likeliest to have been one of those.  Before it these read
+    55.4 / 48.2 / 36.2 / 27.3 at no NRJ.  Standard stays in band,
+    so this was a correctness fix and not a re-pitch.
     Tier I   3 of 4 Following Setbacks replace 3 base Setbacks
     Tier II  4 Imposter Tasks - Mandatory, and grant no Credits
     Tier III 6 Devious Opportunities replace the 6 base ones
@@ -49,12 +65,20 @@ AoS  Automaton of Shale
   difficulty = the Routine/Specialized/Unstable mix
 
                             no NRJ    Tier I   Tier II  Tier III
-  Easy  4/3/1                63.1%     46.6%     38.1%     41.6%
-  Standard  3/3/2            52.9%     37.3%     28.6%     32.0%
-  Hard  2/3/3                44.2%     28.7%     21.6%     24.3%
-  Nobulous  1/3/4            36.0%     22.2%     15.9%     17.5%
+  Easy  3/3/2                60.1%     41.7%     35.3%     37.3%
+  Standard  2/3/3            51.7%     35.2%     29.2%     30.4%
+  Hard  1/3/4                43.8%     28.0%     22.0%     23.9%
+  Nobulous  0/3/5            36.0%     22.7%     17.0%     18.1%
   
-    Mean of the six Technicians, ALLOC_MODE = honest.
+    Mean of the six Technicians, ALLOC_MODE = sacrifice_short.
+    RE-PITCHED 2026-11-05 onto the strongest allocation line the
+    printed rules allow: every difficulty name moved one rung
+    down and 0/3/5 is the new bottom, which is the printed
+    construction rule's own next step.  On the honest policy and
+    the 11-03 ladder these read 63.1 / 52.9 / 44.2 / 36.0 at no
+    NRJ, so the pitch barely moved - a harder ladder and a
+    stronger policy very nearly cancel, and Nobulous did not move
+    at all.  See the POLICY section below for why.
     Tier I   1 of 6 Nobulous Interference cards drawn at setup
     Tier II  6 Corrupted Limitations in the Limitation deck
     Tier III 6 Backdoor Routines, at most 2 claimed per game
@@ -67,7 +91,10 @@ AoS  Automaton of Shale
   79.6 / 71.2 / 62.8 / 52.6 at no NRJ, 65.0 / 54.2 / 44.9 / 35.2
   at Tier III.
 
-  THE POLICY QUESTION IS CLOSED.  Before the floor, giving up one
+  THE POLICY QUESTION IS CLOSED (2026-11-03).  IT WAS NOT - this
+  was closed on the wrong variant.  See "POLICY - REOPENED BY THE
+  2026-11-04 AUDIT, SETTLED 2026-11-05" below before believing
+  anything in this block.  Before the floor, giving up one
   element on purpose was free - no Health, and no dice, since a
   bare element exhausts none - and beat this policy by up to 27
   points, which would have forced the published policy to change
@@ -134,13 +161,15 @@ AoS  Automaton of Shale
   two Unstable and breaks the pattern above.  The band governs
   Standard, not the extremes, so the pattern was kept.
 
-  POLICY after the retune: honest still leads at Easy (+3.5) and
+  POLICY after the retune (SUPERSEDED: sacrifice_short was never
+  tested here, and it is the variant that wins - see the
+  2026-11-05 settlement below).  Honest still leads at Easy (+3.5) and
   is within 1.0 at Standard, with sacrifice ahead by 3.0 at Hard
   and 5.1 at Nobulous - the hard rungs are where giving up an
   element genuinely pays, and 5 points of situational edge is
   judgement rewarded rather than a dominant line.
 
-  POLICY, NOT FINAL AFTER ALL - REOPENED BY THE 2026-11-04 AUDIT.
+  POLICY - REOPENED BY THE 2026-11-04 AUDIT, SETTLED 2026-11-05.
   What this paragraph used to say: "With the floor and the
   exclusion in, honest play leads in 10 of these 16 cells;
   ALLOC_MODE = sacrifice wins only at the hard end, by 0.5 to 4.3
@@ -190,24 +219,47 @@ AoS  Automaton of Shale
   the value of CONCENTRATING dice, which is the decision the game
   is about, so it cannot be removed without removing the game.
 
-  TWO WAYS TO SETTLE IT, both measured, NEITHER APPLIED - this
-  is a design decision and it is Jon's:
+  TWO WAYS TO SETTLE IT, both measured.  The choice was a design
+  decision and it was Jon's; he took option 1 on 2026-11-05.
 
-    1. Pitch against the better policy.  One more rung harder
-       puts sacrifice_short's Standard at 2/3/3 = 52.0%, in band,
-       and honest at 44.0%, below it.  That makes the published
-       ladder a floor rather than a target, and it is a four-
-       number change to the same three places the retune touched.
-    2. Leave it.  +6 for a policy a player has to notice, and
-       which costs the Reward every time it fires, is a skill
-       ceiling rather than an exploit, and the printed ladder
-       stays honest about ordinary play.  AoS then ships pitched
-       at 52.9% for the policy the rulebook describes and about
-       60.6% for the best one available.
+    1. CHOSEN.  Pitch against the better policy.  Every
+       difficulty name moves one rung down - Easy 3/3/2,
+       Standard 2/3/3, Hard 1/3/4, Nobulous 0/3/5 - and
+       ALLOC_MODE ships as sacrifice_short.  0/3/5 is the printed
+       construction rule's OWN next step ("Specialized stays at 3
+       throughout; each step up trades one Routine Program for
+       one Unstable"), so no rules SENTENCE changed - only the
+       table in rules/aos.html, the labels in index.html, and
+       aos.LEVELS.
+    2. NOT CHOSEN.  Leave it, treating +6 for a policy a player
+       has to notice, and which costs the Reward every time it
+       fires, as a skill ceiling rather than an exploit, with the
+       printed ladder honest about ordinary play.
 
-  Option 2 is what the set already does elsewhere - the finale
-  spans 0.5% played blind to 51.3% played well - so the gap is
-  not out of character.  It is recorded rather than resolved.
+  WHAT IT ACTUALLY COST: almost nothing.  Measured 2026-11-05 at
+  20,000 games a cell, the harder ladder and the stronger policy
+  very nearly cancel.
+
+                      before            after
+                  (honest, 3/3/2)  (sac_short, 2/3/3)
+    Easy               63.1%             60.1%
+    Standard           52.9%             51.7%
+    Hard               44.2%             43.8%
+    Nobulous           36.0%             36.0%
+
+  Nobulous did not move at all and Standard moved 1.2 points, so
+  the published pitch survives and so does the calibration behind
+  it.  What changed is what the pitch DESCRIBES: the band now
+  covers the line a player who triages actually takes, instead of
+  a weaker line that any attentive player abandons.
+
+  THE ONE THING TO WATCH.  Honest play on the new ladder reads
+  52.5 / 44.0 / 35.6 / 28.1, so a first-time player's Standard is
+  BELOW the band where it used to be centred, and funding every
+  element is now a mistake worth about 8 points rather than the
+  baseline.  That is the intended shape of option 1 and the price
+  of it.  If playtesting says new players bounce off Standard,
+  the answer is option 2, not a third policy.
 
   IMPLEMENTATION COVERAGE: TWO GAPS, ONE OF THEM SERIOUS (2026-11-03)
   Asked by review whether the model compares deliberate
@@ -335,8 +387,13 @@ NRJ  Imposter Scenario (the campaign finale)
   the finale has no difficulty dial. Its variable is the Research
   Pool.
 
-  standalone         61.6%
-  campaign           61.6%
+  as it SHIPS      50.5%   finale.py, 6000 finales x 5 seeds
+
+  SUPERSEDED - the nine-attempt Suspicion scenario the Dossier
+  finale replaced on 2026-10-29. Kept because nrj.py is still
+  the only model of it; it is NOT the finale that ships:
+    standalone         61.6%
+    campaign           61.6%
 
 ==================================================================
 CALIBRATION - published 20 Strong titles, community-recorded
@@ -352,24 +409,36 @@ CALIBRATION - published 20 Strong titles, community-recorded
   all titles                   955       53%
 
   Source: 20 Strong Community Game Stats, read 2026-09-20.
-  A finished game in this system sits near 50%. Against that,
-  after the 2026-10-27 policy retune:
-    BAT  in band at Standard (53.9%), above at Easy, below from Hard.
-    NAP  in band at Standard (48.2% on its own, 50.2% at Tier III)
-         since every printed Target rose by 1, re-measured with
-         the end-of-Day rule; below from Hard up.
-    AoS  in band on its OWN column at Standard (52.9%) since the
-         2026-11-03 deck retune, which is the first pitch it has
-         had against a model that implements required colours.
-    NRJ  above the band at 61.5%.
-         [2026-10-29: this whole file measures the SUPERSEDED
-          nine-attempt finale, because table.py drives nrj.py. The
-          finale that ships is the Dossier scenario and reads 50.5%
-          - simulation/finale.py and finale.txt, re-confirmed
-          2026-11-04. (This line said 53.1% until then, which was the
-          figure from before the five Reward cards were restored.)
-          Nothing else in this file is affected; the tiers never
-          applied to the finale.]
+  A finished game in this system sits near 50%.  table.py COMPUTES
+  these four verdicts from the grids above, so they cannot drift
+  from them; what follows is a transcription of that output.
+    BAT  Standard in band (53.2% solo), Easy above the band.
+    NAP  Standard in band (48.8% solo, 52.3% at Tier III) since
+         every Target rose by 1 and the model started playing the
+         printed End-of-Day burn; Hard below the band.
+    AoS  Standard in band on its OWN column (51.7%) since the
+         2026-11-05 re-pitch onto the strongest allocation line
+         the printed rules allow (ALLOC_MODE = sacrifice_short);
+         Standard at Tier III below the band (30.4%).
+    NRJ  the finale that SHIPS is in band (50.5%), computed from
+         finale.py over 6000 finales x 5 seeds; finale.txt is its
+         full report.  The superseded nine-attempt scenario is
+         printed above it, labelled, because nrj.py still models
+         it - it is not what ships.
+
+  WHAT THIS FOOTER USED TO SAY, and why it is generated now.  It
+  claimed "BAT in band at Standard (53.9%)" directly above a grid
+  reading 53.2%, and gave the NRJ verdict as "above the band at
+  61.5%" - which is the SUPERSEDED finale, so the one line anyone
+  would read off this file for the finale described a scenario
+  that has not shipped since 2026-10-29.  The 2026-11-04 audit
+  caught table.py's copy of this footer contradicting its own grid
+  on three of the four games and made that one compute from the
+  run; the same disease was still sitting here.  Both are
+  generated now.  AoS at Tier III is the one verdict worth
+  arguing with rather than fixing: 30.4% is 16.6 points below the
+  band, it was 32.0% before the re-pitch, and it is the campaign
+  axis - see simulation/README.md for why that is the loose end.
 
   THE RETUNE IS WHY, AND IT INVALIDATES EVERY DIFFICULTY DIAL.
   These models used to play one fixed policy that was 6 to 34
@@ -917,4 +986,12 @@ THE FULL AUDIT, 2026-11-04
   Program" in build_catalog.py, catalog.json and index.html, and
   "Nobulous' Apprenticeship Program" in table.py.  The rulebook
   is the authority and the other two disagree with it.
+
+  BOTH RESOLVED 2026-11-05.  AoS_Full_Rules.pdf is deleted, and
+  deploy.py ASSET_KEEP - the tuple that protected it from --prune
+  BY NAME for seven weeks - is now empty; check_app_sync fails on
+  any PDF in playtest/dist/assets that index.html does not link,
+  so the next orphan cannot sit there silently.  The name is one
+  spelling everywhere, the rulebook's, and a check holds the
+  eight sources that print it.
 

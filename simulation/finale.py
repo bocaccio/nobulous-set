@@ -133,6 +133,11 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from dice import COLORS, EV_REROLL, FACES, roll
 
 GAMES = 6000
+# The pitch is a FIVE-SEED mean: one 6000-game cell lands about a point
+# either side of it, so a single seed is not a pitch. Module-level because
+# table.py reads these rather than copying them - a copied seed set gives a
+# different mean and the two files then disagree about what the finale reads.
+SEEDS = (11, 23, 47, 101, 7)
 
 # --- the components ---------------------------------------------------------
 # Every domain of the Council Test library prints this Target spread, and the
@@ -664,7 +669,7 @@ if __name__ == "__main__":
     print("   Five seeds, because one is not a pitch: a single %d-game cell"
           % GAMES)
     print("   lands about a point either side of the mean.")
-    seeds = (11, 23, 47, 101, 7)
+    seeds = SEEDS
     for lab, over in (("as it ships", {}),
                       ("without the five Reward cards", {"PAY_REWARDS": False}),
                       ("without the Research Pool", {"RESEARCH": False}),

@@ -17,6 +17,7 @@ import time
 import aos
 import bat
 import cards
+import finale
 import nap
 import nrj
 
@@ -135,7 +136,11 @@ def main(games=DEFAULT):
         aos_level,
         games,
         notes=("",
-               "  Mean of the six Technicians.",
+               # Name the allocation policy: the whole AoS pitch depends
+               # on it (see ALLOC_MODE in aos.py), and a footnote that did
+               # not say which line was measured is how the policy question
+               # got closed twice on the wrong variant. Read, not typed.
+               "  Mean of the six Technicians, ALLOC_MODE = %s." % aos.ALLOC_MODE,
                "  Tier I   1 of 6 Nobulous Interference cards drawn at setup",
                "  Tier II  6 Corrupted Limitations in the Limitation deck",
                "  Tier III 6 Backdoor Routines, at most 2 claimed per game"),
@@ -150,8 +155,21 @@ def main(games=DEFAULT):
     print("  the finale has no difficulty dial. Its variable is the Research")
     print("  Pool.")
     print()
+    # THE SHIPPING FINALE IS finale.py. This section used to print nrj.py's
+    # numbers and nothing else, so the headline NRJ figure on the results
+    # table came from the superseded nine-attempt Suspicion scenario, while
+    # the figure that ships was a hardcoded literal in the footer below.
+    # Both are computed now, and finale.py's own seed set is read from it.
+    finale_pitch = sum(finale.run(finale.GAMES, seed=sd)
+                       for sd in finale.SEEDS) / len(finale.SEEDS)
+    print("  as it SHIPS      %8.1f%%   finale.py, %d finales x %d seeds"
+          % (finale_pitch, finale.GAMES, len(finale.SEEDS)))
+    print()
+    print("  SUPERSEDED - the nine-attempt Suspicion scenario the Dossier")
+    print("  finale replaced on 2026-10-29. Kept because nrj.py is still")
+    print("  the only model of it; it is NOT the finale that ships:")
     for mode in nrj.POOL_MODES:
-        print("  %-14s %9s" % (mode, pct(nrj.run(mode, games))))
+        print("    %-14s %9s" % (mode, pct(nrj.run(mode, games))))
 
     # ---------------------------------------------------------------- refs
     print()
@@ -177,14 +195,17 @@ def main(games=DEFAULT):
           % band(nap_cells["Hard"][0]))
     print("    AoS  Standard %s on its OWN column (%s) since the"
           % (band(aos_cells["Standard"][0]), pct(aos_cells["Standard"][0])))
-    print("         2026-11-03 deck retune, the first pitch AoS has had")
-    print("         against a model that implements required colours;")
+    print("         2026-11-05 re-pitch onto the strongest allocation")
+    print("         line the printed rules allow (ALLOC_MODE = %s);"
+          % aos.ALLOC_MODE)
     print("         Standard at Tier III %s (%s)."
           % (band(aos_cells["Standard"][3]), pct(aos_cells["Standard"][3])))
-    print("    NRJ  the finale that SHIPS reads 50.5% - run")
-    print("         simulation/finale.py, whose report is finale.txt. The")
-    print("         NRJ figure above is the SUPERSEDED nine-attempt")
-    print("         finale, because nrj.py still models it.")
+    print("    NRJ  the finale that SHIPS %s (%.1f%%), computed from"
+          % (band(finale_pitch / 100.0), finale_pitch))
+    print("         finale.py over %d finales x %d seeds; finale.txt is"
+          % (finale.GAMES, len(finale.SEEDS)))
+    print("         its full report. This line used to be a hardcoded")
+    print("         50.5% printed under a grid of the WRONG finale.")
     print()
     print("  THIS FOOTER USED TO CONTRADICT THE GRID ABOVE IT, on three of")
     print("  the four games, and an audit on 2026-11-04 is what caught it:")

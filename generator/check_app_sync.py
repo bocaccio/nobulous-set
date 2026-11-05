@@ -461,6 +461,20 @@ _orphan_pdfs = [f for f in _asset_pdfs if f not in _idx]
 check("every PDF in playtest/dist/assets is linked from index.html",
       _asset_pdfs and not _orphan_pdfs, ", ".join(_orphan_pdfs))
 
+# THE TRANSCRIPTS MUST NAME THE CURRENT LADDER. RESULTS.txt and
+# simulation/README.md each carry a hand-maintained copy of the AoS grid, and
+# on 2026-11-05 both were TWO generations stale - indexed by a ladder that had
+# moved twice, with figures from before required colours. The figures cannot
+# be checked here, since they need a 20,000-game run, but the row LABELS can,
+# and a row labelled with a mix the model no longer has is the tell that the
+# numbers beside it are stale too.
+_aos_mixes = ["%d/%d/%d" % tuple(sa["LEVELS"][k])
+              for k in ("Easy", "Standard", "Hard", "Nobulous")]
+for _rel in ("simulation/RESULTS.txt", "simulation/README.md"):
+    _missing = [m for m in _aos_mixes if m not in text(_rel)]
+    check("%s names the current AoS ladder" % _rel,
+          not _missing, "does not mention %s" % ", ".join(_missing))
+
 # EVERY LAB ASSET MUST CARRY THE CACHE TOKEN, on ONE token. AGENTS.md: a
 # cached index.html "pins you to an old build however often you bump them",
 # and the symptom "reads exactly like code that was never written".
