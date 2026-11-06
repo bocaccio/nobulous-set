@@ -475,6 +475,29 @@ for _rel in ("simulation/RESULTS.txt", "simulation/README.md"):
     check("%s names the current AoS ladder" % _rel,
           not _missing, "does not mention %s" % ", ".join(_missing))
 
+# THE SIX TECHNICIAN ABILITIES ARE WRITTEN TWICE: in generator/build_aos.py,
+# which prints them on the cards, and in playtest/dist/app.js, which shows
+# them to the playtester. Nothing compared them until 2026-11-05, so a card
+# whose text changed could have gone to print while the lab taught the old
+# ability - the same shape of bug as the difficulty labels. The lab joins the
+# ability name to its text with an em dash; that is the only difference
+# allowed.
+_gen_techs = py_tables("generator/build_aos.py").get("TECHS") or []
+_lab_techs = js_literal("playtest/dist/app.js", "TECHS")
+_tech_bad = []
+if len(_gen_techs) != len(_lab_techs):
+    _tech_bad.append("%d on the cards, %d in the lab"
+                     % (len(_gen_techs), len(_lab_techs)))
+else:
+    for _g, _lab in zip(_gen_techs, _lab_techs):
+        _name, _ability, _txt = _g
+        if _lab.get("name") != _name:
+            _tech_bad.append("order: %s vs %s" % (_name, _lab.get("name")))
+        elif _lab.get("ability") != u"%s — %s" % (_ability, _txt):
+            _tech_bad.append(_name)
+check("the lab prints the Technician abilities the cards print",
+      _gen_techs and not _tech_bad, "; ".join(_tech_bad[:3]))
+
 # EVERY LAB ASSET MUST CARRY THE CACHE TOKEN, on ONE token. AGENTS.md: a
 # cached index.html "pins you to an old build however often you bump them",
 # and the symptom "reads exactly like code that was never written".

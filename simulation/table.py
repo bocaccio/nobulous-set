@@ -151,9 +151,20 @@ def main(games=DEFAULT):
     print("=" * 66)
     print("NRJ  Imposter Scenario (the campaign finale)")
     print("=" * 66)
-    print("  The tiers apply to the three games above, not to the finale, and")
-    print("  the finale has no difficulty dial. Its variable is the Research")
-    print("  Pool.")
+    # "The finale has no difficulty dial" was WRONG, and said so in the
+    # published table until 2026-11-05: finale.py's own docstring opens
+    # "THE LADDER IS CUT WITH DICE, not with a dial - see START_TIRED".
+    # The old wording described nrj.py, whose variable really was the pool.
+    print("  The NRJ tiers apply to the three games above, NOT to the")
+    print("  finale, which has a ladder of its own - cut with dice rather")
+    print("  than with a dial. START_TIRED is how many you begin with")
+    print("  exhausted: 0/0/0/0, 3/2/2/2, 3/3/3/2, 3/3/4/4 across Easy to")
+    print("  Nobulous, aiming at 50/40/30/20 rather than at the 47-57%")
+    print("  band. The figure below is the EASY rung, which is the pitch.")
+    print("  finale.py also carries no HERO code, so the ten Imposter")
+    print("  sides are measured as deltas against it in")
+    print("  simulation/proto/imposters.py - see that file, do not retype")
+    print("  its numbers here.")
     print()
     # THE SHIPPING FINALE IS finale.py. This section used to print nrj.py's
     # numbers and nothing else, so the headline NRJ figure on the results

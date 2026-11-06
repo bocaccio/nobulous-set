@@ -383,9 +383,17 @@ AoS  Automaton of Shale
 ==================================================================
 NRJ  Imposter Scenario (the campaign finale)
 ==================================================================
-  The tiers apply to the three games above, not to the finale, and
-  the finale has no difficulty dial. Its variable is the Research
-  Pool.
+  The NRJ tiers apply to the three games above, NOT to the finale,
+  which has a ladder of its own - cut with dice rather than with a
+  dial.  START_TIRED is how many dice you begin with exhausted:
+  0/0/0/0, 3/2/2/2, 3/3/3/2, 3/3/4/4 across Easy to Nobulous,
+  aiming at 50/40/30/20 rather than at the 47-57% band.  The
+  figure below is the EASY rung, which is the pitch.
+  ("The finale has no difficulty dial" stood here until
+  2026-11-05 and was simply false - finale.py's docstring opens
+  "THE LADDER IS CUT WITH DICE, not with a dial".  The old
+  sentence described nrj.py, whose variable really was the pool,
+  and it survived the switch to reporting the finale that ships.)
 
   as it SHIPS      50.5%   finale.py, 6000 finales x 5 seeds
 

@@ -220,6 +220,25 @@ TECHS = ["architect", "debugger", "optimizer", "engineer", "operator", "compiler
 #   analyse      reroll one whole element and keep the better total
 COMPILER_ABILITY = "compile"
 
+# OPTIMIZER CANDIDATES. The printed card - "Once per Program, Target +1
+# successes may count as Optimal Implementation" - reads 67.8% at Standard
+# against a six-Technician mean of 51.4%, and read 66.4% against 53.3% under
+# the honest policy before that, so it has been the roster's high outlier
+# throughout and not only since the 2026-11-05 re-pitch. Optimal
+# Implementation hands back OPTIMAL_BONUS dice, and dice are the binding
+# resource, so doubling how often it fires is the strongest thing a
+# Technician can do. Two cheaper versions, drafted 2026-11-05:
+#   optimizer   the printed card, kept for comparison
+#   opt_one     Target +1 counts, but recovers 1 die instead of 2
+#   opt_game    Target +1 counts at the full 2 dice, once per GAME
+#   opt_cycle   the same, once per CYCLE - one pass through the deck, so
+#               about three uses a game. "Cycle" is a printed AoS term and
+#               the natural middle cadence between Program and game.
+# NOTE ON WORDING: this was first drafted as "once per Scenario", which is
+# NRJ vocabulary - rules/aos.html does not contain the word. AoS nests
+# element < Program < cycle < Advanced Programming < game.
+OPTIMIZE_TECHS = ("optimizer", "opt_one", "opt_game", "opt_cycle")
+
 # An extra STR roll rerolls the dice you pick and keeps the rest. With this
 # False the model throws the whole element again, which is how it behaved
 # before the base Strategy phase was modelled properly.
@@ -858,14 +877,51 @@ class Game(object):
         recovery = max(0, self.rec + RECOVERY_DELTA)   # plus the Optimal bonus
         used_debug = used_optimize = False
         carry = 0              # link: a surplus success held for a later element
-        link_spent = cache_spent = analyse_spent = False
-        # Reconfigure: up to 2 dice move from an element that is over its
-        # Target to one the pool left short of its Target.
-        if self.tech == "architect":
+        link_spent = cache_spent = analyse_spent = save2_spent = False
+        # RECONFIGURE IS A MAY, NOT A MUST. The card prints "move UP TO 2
+        # allocated dice", and up to 2 includes zero. Until 2026-11-05 this
+        # moved dice whenever an element sat above its Target and another sat
+        # below, which under ALLOC_MODE = sacrifice_short is a self-inflicted
+        # wound: triage leaves the survivors on Target+1 (so "rich") and the
+        # abandoned element on its single floor die (so "short"), and the move
+        # therefore stripped two dice off elements that were going to pass -
+        # costing them the buffer - to load the one element already given up,
+        # which still fails. It undid its own allocation twice a Program.
+        # MEASURED, 20000 games at Standard 2/3/3: the defect cost 3.4 points
+        # under sacrifice_short (32.9 -> 36.3) and 1.4 under honest. It is
+        # NOT the whole of the Architect's deficit - see the card note below.
+        #
+        # A die only earns its move if the RECEIVER reaches its Target. The
+        # giver has to stay at or above its own, which len(plan) > t already
+        # guarantees. When the pool is short no such move exists, so
+        # Reconfigure declines - which is what a player does.
+        if self.tech in ("architect", "architect_forced"):
             moved = 0
             while moved < 2:
-                short = [i for i, t in enumerate(targets) if len(plan[i]) < t]
-                rich = [i for i, t in enumerate(targets) if len(plan[i]) > t]
+                if self.tech == "architect_forced":
+                    # The pre-2026-11-05 rule, kept only for measurement.
+                    short = [i for i, t in enumerate(targets)
+                             if len(plan[i]) < t]
+                else:
+                    short = [i for i, t in enumerate(targets)
+                             if len(plan[i]) < t
+                             and t - len(plan[i]) <= 2 - moved]
+                if self.tech == "architect_forced":
+                    rich = [i for i, t in enumerate(targets)
+                            if len(plan[i]) > t]
+                else:
+                    # THE GIVER MUST KEEP ITS BUFFER. A die averages exactly
+                    # 1 success, so an element on Target+1 dice is near
+                    # certain and one on Target dice is a coin flip. Taking
+                    # the buffer to part-fund the abandoned element turns one
+                    # sure pass and one sure fail into TWO coin flips - and
+                    # one failure is free while two is a Catastrophic Failure
+                    # costing Health, so the trade is strictly bad. Requiring
+                    # the giver to stay above Target+1 means no legal move
+                    # exists once allocation is capped, which is why
+                    # Reconfigure declines under the shipped policy.
+                    rich = [i for i, t in enumerate(targets)
+                            if len(plan[i]) > t + 1]
                 if not short or not rich:
                     break
                 give = max(rich, key=lambda i: len(plan[i]) - targets[i])
@@ -958,7 +1014,18 @@ class Game(object):
                 failed += 1
                 misses_on_failed += values.count(0)
             if used_reroll or miss:
-                self.exhausted += dice          # the whole Element exhausts
+                if self.tech == "arch_save2" and not save2_spent and len(dice) >= 2:
+                    # Keep 2 dice off a failing element. They must go BACK to
+                    # available: dice were removed from the pool at allocation,
+                    # so anything neither exhausted nor returned is destroyed -
+                    # the first cut of this read 0.1% for exactly that reason.
+                    # A player keeps their BEST two, so exhaust the worst.
+                    save2_spent = True
+                    order2 = sorted(dice, key=lambda c: EV[c])
+                    self.exhausted += order2[:-2]
+                    self.available += order2[-2:]
+                else:
+                    self.exhausted += dice      # the whole Element exhausts
             else:
                 # Allocation is capped, so there is never an excess to burn;
                 # only overshooting the Target itself costs a die.
@@ -972,6 +1039,9 @@ class Game(object):
                 # used to burn the BEST dice on the element. A player gives up
                 # the worst.
                 order = sorted(dice, key=lambda c: EV[c])
+                if self.tech == "arch_save2" and not save2_spent and burn >= 2:
+                    save2_spent = True
+                    burn = max(0, burn - 2)
                 self.exhausted += order[:burn]
                 self.available += order[burn:]  # the rest come straight back
                 # link: bank one success from an element that cleared with room.
@@ -987,10 +1057,14 @@ class Game(object):
                         del self.exhausted[-burn:]
                 if total == t:                  # Optimal Implementation
                     recovery += OPTIMAL_BONUS
-                elif (self.tech == "optimizer" and not used_optimize
-                      and total == t + 1):
+                elif (self.tech in OPTIMIZE_TECHS and total == t + 1
+                      and not used_optimize
+                      and not (self.tech in ("opt_game", "opt_cycle")
+                               and getattr(self, "_opt_long", False))):
                     used_optimize = True        # Optimize: Target + 1 counts
-                    recovery += OPTIMAL_BONUS
+                    if self.tech in ("opt_game", "opt_cycle"):
+                        self._opt_long = True   # once per game / per cycle
+                    recovery += 1 if self.tech == "opt_one" else OPTIMAL_BONUS
 
         # Which Backdoor Routines this Program could have been claimed off.
         # Measured before Root Access negates anything, so "without failing
@@ -1102,6 +1176,8 @@ class Game(object):
                 if self.cycle < 3 and active:
                     self.cycle += 1
                     self.negates_left = NEGATES_PER_CYCLE or -1
+                    if self.tech == "opt_cycle":
+                        self._opt_long = False   # a new cycle, a new use
                     self.queue = [p["id"] for p in active]
                     self.rng.shuffle(self.queue)
                 else:
