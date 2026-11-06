@@ -59,14 +59,16 @@
     ["Containment Drill","Theory","G",4,5,"If unresolved, exhaust 1 available die before flipping it to Demand."],
   ];
   // Devious Opportunities. "exam" cards are kept and spent during the Final
-  // Exam; "now" cards resolve on completion.
+  // Exam; "now" cards resolve on completion. Targets raised 2026-11-06 to
+  // 4/4/5/5/4/5, which is what the six base Opportunities these replace
+  // cost; see DEVIOUS in generator/build_nrj.py.
   const NAP_DEVIOUS = [
-    ["Borrow the Master's Notes","G",3,"Exhaust 2 available dice to immediately complete one Request-side non-Credit Task with printed Target 4 or less.","now"],
-    ["Raid the Supply Cabinet","Y",3,"Final Exam: recover 3 exhausted dice of different colors before any one exam.","exam"],
-    ["Extra Credit?","G",3,"Gain 1 Credit in the subject of the most recently completed Task; then reveal an additional Assignment.","now"],
-    ["Helpful Test Subject","B",3,"Final Exam: after rolling one exam, reroll any number of failed dice.","exam"],
+    ["Borrow the Master's Notes","G",4,"Exhaust 2 available dice to immediately complete one Request-side non-Credit Task with printed Target 4 or less.","now"],
+    ["Raid the Supply Cabinet","Y",4,"Final Exam: recover 3 exhausted dice of different colors before any one exam.","exam"],
+    ["Extra Credit?","G",5,"Gain 1 Credit in the subject of the most recently completed Task; then reveal an additional Assignment.","now"],
+    ["Helpful Test Subject","B",5,"Final Exam: after rolling one exam, reroll any number of failed dice.","exam"],
     ["Nobulous Owes You One","P",4,"Final Exam: reduce one exam's Target by 3.","exam"],
-    ["Definitely Curriculum-Approved","Y",3,"Final Exam: ignore one exam's printed restriction.","exam"],
+    ["Definitely Curriculum-Approved","Y",5,"Final Exam: ignore one exam's printed restriction.","exam"],
   ];
   function napTier(){return window.NOBULOUS_TIER?window.NOBULOUS_TIER.forGame("nap"):"0";}
   function napExamCard(i){const e=NAP_EXAMS[i];return{name:e[0],file:"NAP_FinalExams_TTS.png",i,cols:10,rows:2,target:e[3],demand:e[3],dot:e[2],skulls:0};}

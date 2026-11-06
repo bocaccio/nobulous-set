@@ -404,19 +404,26 @@ Specimens are the Value-5 cards).
 
 ### AoS - Program deck x NRJ tier
 
-Measured 2026-11-05, 20,000 games a cell, `ALLOC_MODE = sacrifice_short`.
-
-Regenerated after the Debugger's ability was replaced the same day. The two
-model fixes pushed Standard from 51.7% to 57.4% and replacing that card
-brought it back to 52.0%, so the row ends the day within 0.3 of where it
-started - the game did not change, only what the model and one card did.
+Measured 2026-11-06, 20,000 games a cell, `ALLOC_MODE = sacrifice_short`.
 
 | difficulty | no NRJ | Tier I | Tier II | Tier III |
 |---|---|---|---|---|
-| Easy 3/3/2 | 59.6% | 42.0% | 35.6% | 37.2% |
-| Standard 2/3/3 | **52.0%** | 34.7% | 28.4% | 29.7% |
-| Hard 1/3/4 | 43.3% | 27.0% | 21.7% | 22.8% |
-| Nobulous 0/3/5 | 35.2% | 22.1% | 15.7% | 16.9% |
+| Easy 3/3/2 | 59.6% | 42.0% | 35.6% | 48.2% |
+| Standard 2/3/3 | **52.0%** | 34.7% | 28.4% | **40.7%** |
+| Hard 1/3/4 | 43.3% | 27.0% | 21.7% | 33.6% |
+| Nobulous 0/3/5 | 35.2% | 22.1% | 15.7% | 25.6% |
+
+**The Tier III column moved 11 points on 2026-11-06 and no AoS card
+changed.** The model gave Tier III two *fungible* charges and spent every one
+of them as Root Access, in any cycle; the card prints "During Advanced
+Programming", and the other five Backdoor rewards did nothing at all. Each
+claim now does what its card prints, so Standard goes 29.7% to 40.7%. The
+figure published before that date was not a measurement of this module - it
+was a measurement of part of one card. `BACKDOOR_REWARDS = False` in `aos.py`
+restores the pooled model every earlier figure was measured on.
+
+The solo, Tier I and Tier II columns are untouched by it, which is the check
+that the change is contained: only Tier III grants a Routine.
 
 The ladder names moved one rung down on 2026-11-05, when the pitch moved from
 honest allocation to the strongest line the printed rules allow. The outcome
@@ -434,16 +441,55 @@ indexed by whole Program decks (Routine 43.3%, Specialized 9.3%, Unstable
 2.2%) rather than by the mix. Three different axes have been called "AoS
 difficulty", so match the ladder before trusting any row.
 
-**The loose end is now the CAMPAIGN axis, not the solo one.** Tier II is the
-trough as intended (Standard 52.0% -> 28.4%) but Tier III claws back only
-1.3 points where the design wants most of it, so Standard sits 17.3 points
-below the band on every tier column. This is not a consequence of the
-re-pitch: the honest model read 52.9% solo against 32.0% at Tier III, the same
-21-point spread. It is the reverse of the gap this section used to describe -
-"71.2% played on its own, so the solo game is the loose end" - which was
-written against a model that had no required colours. AoS is also the only one
-of the three that loses ground at Tier III: NAP GAINS there (48.8% -> 52.3%)
-and BAT gives back 9.8 points against AoS's 22.3.
+**THE LOOSE END IS THE CAMPAIGN AXIS, AND IT IS TIER I, NOT TIER III.**
+Read the tiers as STEPS rather than as levels and the three games say:
+
+| Standard | solo | -> Tier I | -> Tier II | -> Tier III |
+|---|---|---|---|---|
+| BAT | 53.2% | -3.1 | -11.4 | +4.7 |
+| NAP | 48.8% | -4.6 | -8.1 | +3.9 |
+| AoS | 52.0% | **-17.3** | -6.3 | +12.3 |
+
+BAT is the shape the design wants - Tier III beats Tier II and stays below
+solo, at 81-85% of its own solo cell on every rung. AoS's Tier II step is now
+the *shallowest* of the three and its Tier III step the largest, so "Tier II
+is the trough" is true of the level and false of the cause. **The hole is dug
+at Tier I, by one card drawn at setup**, and Tier III cannot climb out of it:
+even recovering 12.3 points it reaches only 78.3% of solo against BAT's
+81.6%.
+
+Priced one card at a time at Standard, 6,000 games a cell, against a 51.8%
+solo column, the six Nobulous Interference cards read:
+
+| Tier I, alone in the deck | | |
+|---|---|---|
+| I Don't Have Time for This | **1.2%** | -50.5 |
+| Memory Leak | 34.5% | -17.3 |
+| Works on My Machine | 37.6% | -14.1 |
+| Legacy Hardware | 40.5% | -11.3 |
+| Undocumented Dependencies | 41.7% | -10.1 |
+| Nobulous Was Here | 51.1% | -0.7 |
+
+**"I Don't Have Time for This" is a 1.2% card** - not a difficulty setting, a
+loss - and splitting its two clauses says which one: begin all Programs
+Overheated is worth roughly nothing, and *"when an already-Overheated Program
+fails, cycle it to the bottom of its deck instead of setting it aside"* is the
+whole -50. The mechanism is the interaction and it is invisible on the card.
+Normal escalation is stable -> overheated -> aside; clause one starts
+everything at the second step, so clause two replaces the *third* and nothing
+can ever leave the deck. A Program you cannot beat comes back until it kills
+you. The clause that reads as mercy is the trap.
+
+Capping how many times one Program may return reads, at Tier I: 3 -> 18.9%,
+2 -> 24.3%, **1 -> 34.8%**, clause deleted -> 53.3%. A limit of 1 puts the
+card among the other five; deleting the clause puts it above the solo column,
+so it wants capping rather than cutting. The one-word candidate is "**the
+first time** an already-Overheated Program fails". RAISED, NOT APPLIED - the
+knobs that measured it are not in `aos.py`.
+
+A second thing this table says: the six Interference cards span 0.7 to 50.5
+points. That is a 70-fold spread inside one six-card deck, and it is the same
+complaint the Backdoor rewards draw below.
 
 ### NRJ - the finale
 

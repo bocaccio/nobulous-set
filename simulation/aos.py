@@ -422,10 +422,60 @@ CORRUPT_WITHHOLD = 2
 # three tiers instead of twice as deep at II and III.
 CORRUPT_AVOID_REQUIRED = True
 
-# Backdoor Routines: at most 2 claimed per game. The two modeled are the ones
-# whose rewards change an outcome rather than an allocation choice - "treat one
-# failed element as successful" and "recover 2 exhausted dice".
+# Backdoor Routines: at most 2 claimed per game.
 BACKDOOR_CLAIMS = 2
+
+# EACH CLAIMED ROUTINE DOES WHAT IT PRINTS. Until 2026-11-06 this model gave
+# Tier III 2 fungible charges and spent every one of them on a single reward -
+# Root Access, "treat one failed element as successful" - in any cycle. That
+# was wrong twice over, and in opposite directions:
+#
+#   * Root Access prints "DURING ADVANCED PROGRAMMING, treat one failed
+#     element as successful". Spending it in cycle 1 is not something the card
+#     allows, so the module was being measured too GENEROUSLY on its one
+#     modeled card.
+#   * the other five rewards did nothing at all, so the module was being
+#     measured at one sixth of its size.
+#
+# This is the defect RESULTS.txt already records against BAT's Tier III -
+# "six separate once-per-game cards modelled as one fungible token spent on
+# two of them" - and the net of the two errors was large: Standard reads 39.9%
+# against the 29.0% the pooled model gave, so the published 29.7% was never a
+# measurement of this module. It was a measurement of part of one card.
+#
+# Priced one at a time at Standard, 6000 games a cell, against a Tier II
+# trough of 28.2%:
+#
+#   fork      Resource Fork        recover 2 exhausted dice           +6.2
+#   garbage   Garbage Collection   recover 1 die of each of 2 colours +5.8
+#   root      Root Access          1 failed element succeeds, in       +1.6
+#                                  Advanced Programming only
+#   diag      Diagnostic Port      reroll one entire Strategy roll     +1.4
+#   escalate  Privilege Escalation ignore one Limitation               +1.0
+#   sniff     Packet Sniffer       look at the next Limitation         +0.0
+#
+# THE SPREAD IS THE DESIGN QUESTION THIS RAISES, and it is not settled here.
+# The two recovery Routines are worth four times the other four, so "claim the
+# best two" is solved rather than chosen: Tier III reads 77.0% of the solo
+# column on fork+garbage and 65.5% on root+diag. Raised, not fixed.
+#
+# Packet Sniffer's 0.0 is BY CONSTRUCTION, not by measurement. The reward is
+# information - "look at the next Limitation before selecting a Program" - and
+# this model has no Program-selection choice for it to inform, so it is left
+# unmodeled rather than guessed at.
+BACKDOOR_REWARDS = True
+
+# The order a player claims in, best first, which is the order measured above.
+# The policy takes the first BACKDOOR_CLAIMS of these. Set BACKDOOR_PICK to
+# name the claims instead, which is how the table above was measured.
+BACKDOOR_ORDER = ("fork", "garbage", "root", "diag", "escalate", "sniff")
+BACKDOOR_PICK = None
+
+# When to cash a recovery Routine: the pool is this far short of the dice the
+# Program in front of you wants. Swept 0 to 6 at Standard and flat across all
+# of it, 37.2% to 40.7%, which is inside the noise of a 6000-game cell - so
+# this is not a tuned number and nothing rests on its value.
+BACKDOOR_REFILL_AT = 3
 
 # THE SIX CLAIM CONDITIONS. Each Backdoor Routine prints a condition as well
 # as a later one-shot use, and the NRJ campaign retains the Routines you
@@ -452,13 +502,14 @@ BACKDOOR_CLAIMS = 2
 BACKDOOR_NAMES = ("Diagnostic Port", "Privilege Escalation", "Resource Fork",
                   "Packet Sniffer", "Garbage Collection", "Root Access")
 
-# WHEN TO SPEND ONE. The NRJ campaign retains a claimed Routine either way,
-# but a Routine still HELD at the end is worth more to the finale than one
-# cashed in - the campaign's challenge is to win each game using as few of
-# these buffs as it can. So spending is a policy, not a reflex:
+# WHEN TO SPEND ONE, under the POOLED model only - BACKDOOR_REWARDS off. The
+# NRJ campaign retains a claimed Routine either way, but a Routine still HELD
+# at the end is worth more to the finale than one cashed in - the campaign's
+# challenge is to win each game using as few of these buffs as it can. So
+# spending is a policy, not a reflex:
 #
-#   greedy   negate every Catastrophic Failure you can. The shipped model,
-#            and the default, so the calibrated win rates do not move.
+#   greedy   negate every Catastrophic Failure you can. The default, and what
+#            the figures published before 2026-11-06 were measured on.
 #   last     negate only when the Health it costs would end the game.
 #   hoard    never negate; carry both Routines into the finale.
 BACKDOOR_POLICY = "greedy"
@@ -705,7 +756,8 @@ class Game(object):
         # --- NRJ overlay ---
         self.intf = None
         self.corrupt = False
-        self.backdoors = 0
+        self.backdoors = 0     # pooled charges, BACKDOOR_REWARDS off
+        self.bkd = {}          # the named Routines held, and their one use
         self.met = set()       # claim conditions met, observation only
         self.worked = 0        # ...and how many were claimed
         if tier in ("I", "II", "III"):
@@ -721,7 +773,17 @@ class Game(object):
         if tier in ("II", "III"):
             self.corrupt = True
         if tier == "III":
-            self.backdoors = BACKDOOR_CLAIMS
+            if BACKDOOR_REWARDS:
+                # 2 claims, so 2 NAMED cards, each good for one use of what it
+                # prints. Granted at setup for the same reason the pooled
+                # charges were: five of the six claim conditions fire in
+                # 76-100% of games, so claiming is not the binding decision -
+                # see CLAIMING BY WORKING IT above, and `met` below, which
+                # records which conditions a game actually met.
+                picks = BACKDOOR_PICK or BACKDOOR_ORDER
+                self.bkd = {k: 1 for k in picks[:BACKDOOR_CLAIMS]}
+            else:
+                self.backdoors = BACKDOOR_CLAIMS
 
     def targets_for(self, deck, pid, face):
         return PROGRAM_TARGETS[deck][face][pid]
@@ -764,6 +826,39 @@ class Game(object):
                 self.available.append(held.pop())
                 held.append(best)
         return held
+
+    def withhold_would_bite(self, lim):
+        """Would this Limitation actually take a die? Does not mutate."""
+        if lim == "diversity":
+            return any(c != "red" for c in self.available)
+        if lim == "red":
+            return "red" in self.available
+        return lim in self.available
+
+    def spend_refill(self, targets):
+        """Resource Fork and Garbage Collection: put dice back in the pool.
+
+        Both are "Later, recover ..." rewards with no printed trigger, so the
+        model cashes one when the pool is short of the Program in front of it.
+        BACKDOOR_REFILL_AT says how short, and nothing rests on the value.
+        """
+        want = sum(targets) + len(targets)
+        if len(self.available) >= want - BACKDOOR_REFILL_AT:
+            return
+        if self.bkd.get("fork") and self.exhausted:
+            # "Later, recover 2 exhausted dice." A player takes the best 2.
+            self.bkd["fork"] = 0
+            for _ in range(min(2, len(self.exhausted))):
+                best = max(self.exhausted, key=lambda c: EV[c])
+                self.exhausted.remove(best)
+                self.available.append(best)
+        elif self.bkd.get("garbage") and self.exhausted:
+            # "Later, recover one die of each of two different colors", so
+            # unlike Resource Fork this one cannot take 2 of the same colour.
+            self.bkd["garbage"] = 0
+            for c in sorted(set(self.exhausted), key=lambda c: -EV[c])[:2]:
+                self.exhausted.remove(c)
+                self.available.append(c)
 
     def seed_minimum(self, plan, targets, pool):
         """Put the minimum on every element before anything is filled.
@@ -1039,7 +1134,17 @@ class Game(object):
         if not self.lim_queue:
             self.lim_queue = list(LIMITATIONS)
             self.rng.shuffle(self.lim_queue)
-        withheld += self.withhold_for(self.lim_queue.pop())
+        lim = self.lim_queue.pop()
+        if self.bkd.get("escalate") and self.withhold_would_bite(lim):
+            # Privilege Escalation: "Later, ignore one Limitation." Cashed the
+            # first time the revealed Limitation would really take a die off
+            # the table. CONSERVATIVE: this ignores the base Limitation only.
+            # Under Tier II a Corrupted Limitation is stacked on top and is
+            # the one a player would rather be rid of, so the +1.0 this card
+            # measures is a floor on it.
+            self.bkd["escalate"] = 0
+        else:
+            withheld += self.withhold_for(lim)
         if self.corrupt and self.rng.random() < CORRUPT_CHANCE:
             choices = COLORS
             if CORRUPT_AVOID_REQUIRED and REQUIRED_COLORS:
@@ -1089,6 +1194,8 @@ class Game(object):
             if targets[worst] > 1:
                 targets = list(targets)
                 targets[worst] -= 1
+        if self.bkd:
+            self.spend_refill(targets)
         dumping = allow_dump and (
             ALLOC_MODE == "dump"
             or (ALLOC_MODE == "dump_hard" and deck in DUMP_DECKS))
@@ -1239,6 +1346,13 @@ class Game(object):
                     values = list(values)
                     values[k] = self.element_values(i, [dice[k]])[0]
                     total = sum(values)
+            if total < t and rerolls == 0 and self.bkd.get("diag"):
+                # Diagnostic Port: "Later, reroll one entire Strategy roll."
+                # A Strategy roll IS one element's roll, so the reward buys
+                # one more of the extra rolls this game already has and the
+                # machinery below throws the element under the printed rule.
+                self.bkd["diag"] = 0
+                rerolls += 1
             used_reroll = False
             if total < t and rerolls > 0:  # spend an extra STR roll
                 rerolls -= 1
@@ -1387,11 +1501,18 @@ class Game(object):
             if sum(1 for _n, t2, tot, _c, _m in seen if tot == t2) >= 2:
                 self.met.add("Root Access")
 
-        # Root Access: treat one failed element as successful. Spent to save a
-        # Program from Catastrophic Failure, which is the only thing that costs
-        # Health.
+        # Root Access: treat one failed element as successful. Under the pooled
+        # model this is every charge, spent in any cycle to save a Program from
+        # Catastrophic Failure - the only thing that costs Health.
         if failed >= 2 and self.backdoors > 0 and self.spend_backdoor():
             self.backdoors -= 1
+            failed -= 1
+        elif failed and deck == "Advanced" and self.bkd.get("root"):
+            # The card as printed: "DURING ADVANCED PROGRAMMING, treat one
+            # failed element as successful." Not gated on a Catastrophic
+            # Failure, because turning one failure of two into a success is
+            # exactly what keeps a Program off one.
+            self.bkd["root"] = 0
             failed -= 1
 
         self.available += withheld

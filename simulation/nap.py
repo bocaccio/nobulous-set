@@ -124,8 +124,15 @@ IMPOSTER_TASKS = [("Anatomy", 'P', 5, 6), ("Engineering", 'B', 4, 5),
 #   exam_reroll    reroll the misses on one exam
 #   exam_target    one exam's Target drops by 3
 #   exam_ignore    ignore one exam's printed restriction (unmodeled here)
-DEVIOUS = [(3, "free_task"), (3, "exam_recover"), (3, "credit"),
-           (3, "exam_reroll"), (4, "exam_target"), (3, "exam_ignore")]
+# TARGETS RAISED 2026-11-06 from 3/3/3/3/4/3 to 4/4/5/5/4/5 - what the six
+# base OPPORTUNITIES these replace cost. Tier III was handing out six cards
+# that were both stronger and cheaper than the ones they displaced, and it
+# showed: Tier III read ABOVE the no-tier column at every rung (Standard
+# 52.3% against 48.8% solo, and 121.9% of solo at Nobulous), where BAT sits
+# at 81-85% of its own solo cell. At the base Targets it reads 85.6% of solo
+# at Standard and 86-88% across the ladder.
+DEVIOUS = [(4, "free_task"), (4, "exam_recover"), (5, "credit"),
+           (5, "exam_reroll"), (4, "exam_target"), (5, "exam_ignore")]
 
 TIERS = ["none", "I", "II", "III"]
 

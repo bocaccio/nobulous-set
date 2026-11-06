@@ -128,13 +128,20 @@ FOLLOWING = [
 # name, dot, successes, effect, when: "exam" keeps the card for the Final Exam,
 # "now" resolves on completion. Tier III banks its help for the exams, where NAP
 # is actually lethal; the two immediate cards do things an exam has no room for.
+# TARGETS RAISED 2026-11-06 to 4/4/5/5/4/5, which is what the six base
+# Opportunities these REPLACE cost - nap.OPPORTUNITIES. They were 3/3/3/3/4/3,
+# a mean of 3.17 against the base 4.50, so Tier III was handing out six cards
+# that were both stronger and cheaper than the ones they displaced. Tier I's
+# own note already states the principle: the Following Setbacks "displace base
+# Setbacks of similar weight". This is the same rule applied to Tier III, and
+# it is a cost correction, not a re-pitch - see simulation/RESULTS.txt.
 DEVIOUS = [
- ("Borrow the Master's Notes", 'G', 3, "Exhaust 2 available dice to immediately complete one Request-side non-Credit Task with printed Target 4 or less.", "now"),
- ("Raid the Supply Cabinet", 'Y', 3, "Final Exam: recover 3 exhausted dice of different colors before any one exam.", "exam"),
- ("Extra Credit?", 'G', 3, "Gain 1 Credit in the subject of the most recently completed Task; then reveal an additional Assignment.", "now"),
- ("Helpful Test Subject", 'B', 3, "Final Exam: after rolling one exam, reroll any number of failed dice.", "exam"),
+ ("Borrow the Master's Notes", 'G', 4, "Exhaust 2 available dice to immediately complete one Request-side non-Credit Task with printed Target 4 or less.", "now"),
+ ("Raid the Supply Cabinet", 'Y', 4, "Final Exam: recover 3 exhausted dice of different colors before any one exam.", "exam"),
+ ("Extra Credit?", 'G', 5, "Gain 1 Credit in the subject of the most recently completed Task; then reveal an additional Assignment.", "now"),
+ ("Helpful Test Subject", 'B', 5, "Final Exam: after rolling one exam, reroll any number of failed dice.", "exam"),
  ("Nobulous Owes You One", 'P', 4, "Final Exam: reduce one exam's Target by 3.", "exam"),
- ("Definitely Curriculum-Approved", 'Y', 3, "Final Exam: ignore one exam's printed restriction.", "exam"),
+ ("Definitely Curriculum-Approved", 'Y', 5, "Final Exam: ignore one exam's printed restriction.", "exam"),
 ]
 DEV_FOOTER = {
  "now": "Optional. No storage. Resolve immediately. Tier III &mdash; Exploitation.",

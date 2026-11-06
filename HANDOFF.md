@@ -1971,11 +1971,113 @@ Not your job to fix, but worth knowing if Jon raises them:
   describe rules that no longer ship. Promoting `proto/bat.py` over it, and
   re-running the cross-tab, is the outstanding job.
 
+- **READ THE CAMPAIGN TIERS AS STEPS, NOT AS LEVELS.** This is the frame that
+  found both of the 2026-11-06 changes, and it is worth keeping. At Standard,
+  what each tier DOES to its own game reads:
+
+  | | solo | → Tier I | → Tier II | → Tier III | III/solo |
+  |---|---|---|---|---|---|
+  | BAT | 53.2% | −3.1 | −11.4 | +4.7 | 81.6% |
+  | NAP *(before)* | 48.8% | −4.6 | −8.1 | +16.2 | **107.2%** |
+  | NAP *(now)* | 48.8% | −4.6 | −8.1 | +3.9 | **82.0%** |
+  | AoS *(before)* | 52.0% | −17.3 | −6.3 | +1.3 | **57.1%** |
+  | AoS *(now)* | 52.0% | **−17.3** | −6.3 | +12.3 | 78.3% |
+
+  **BAT is the shape the design wants** and is the reference for the other
+  two: Tier III beats Tier II and stays below the solo column, at 81–85% of
+  its own solo cell on every rung. Read as levels, AoS looks like a Tier III
+  problem. Read as steps, its Tier II is the *shallowest* of the three and
+  the hole is dug at Tier I — so "Tier II is the trough" is true of the level
+  and false of the cause. AoS is the one still out of shape, and **what is
+  left is Tier I**, not Tier III.
+
+- **Two cards changed on 2026-11-06, both in Tier III, and only one of them
+  is a card.** NAP's six Devious Opportunities had their Targets raised to
+  what the cards they replace cost; AoS's Tier III was not changed at all,
+  its MODEL was. See the two bullets below, and `simulation/RESULTS.txt`.
+
+- **NAP's Devious Opportunities now cost what they displace.** They were
+  Targets `3 3 3 3 4 3`, a mean of 3.17, and they REPLACE the six base
+  Opportunities at `4 4 5 5 4 5`, a mean of 4.50 — so Tier III was handing
+  out six cards that were both stronger *and* cheaper than the ones they
+  displaced. It showed: Tier III read **above the solo column at every rung**
+  (Standard 52.3% against 48.8% solo, and 121.9% of solo at Nobulous), which
+  is the one shape the design says a tier must not have.
+
+  Tier I's own note already states the principle — the Following Setbacks
+  "displace base Setbacks of similar weight" — so this is that rule applied
+  to Tier III, and a cost correction rather than a re-pitch. Nothing else on
+  the cards moved: the dots, the effects and the dual use are untouched, and
+  `rules/nrj.html` prints no Targets so it needed no edit. The dual use
+  ("discard it during the apprenticeship to ignore one Setback's
+  restrictions") was measured first and is worth **0.2 points** — it was
+  never the problem.
+
+  Three source sites carry these numbers and `check_app_sync.py` compares two
+  of them: `DEVIOUS` in `generator/build_nrj.py`, `DEVIOUS` in
+  `simulation/nap.py`, and `NAP_DEVIOUS` in `playtest/dist/suite.js`
+  (consumed at `suite.js:720` as `target: c[2]`, swapped in for the base
+  Opportunities at `suite.js:759` when the tier is 3).
+
+- **AoS Tier III was never measured; the model implemented one sixth of it.**
+  No AoS card changed. `simulation/aos.py` gave Tier III two *fungible*
+  charges and spent every one on a single reward — Root Access, "treat one
+  failed element as successful" — in any cycle. That was wrong twice, in
+  opposite directions: Root Access prints "**During Advanced Programming**",
+  so the one modelled card was too strong, and the other five rewards did
+  nothing at all, so the module was five-sixths absent. This is the defect
+  `RESULTS.txt` already records against BAT's Tier III, "six separate
+  once-per-game cards modelled as one fungible token spent on two of them".
+
+  Each claim is now a named card doing what it prints. Standard Tier III goes
+  **29.7% → 40.7%** on the published 20,000-game grid, so the figure before
+  2026-11-06 was not a measurement of the module — it was a measurement of
+  part of one card. The solo, Tier I and Tier II columns do not move at all,
+  which is the check that the change is contained: only Tier III grants a
+  Routine. The pooled model is still reachable with `BACKDOOR_REWARDS =
+  False`, which is what every figure before this date was measured on.
+
+  **The open question this raises is the SPREAD, and it is not settled.**
+  Priced one at a time at 6,000 games a cell against a 28.2% trough: Resource
+  Fork +6.2, Garbage Collection +5.8, Root Access +1.6, Diagnostic Port +1.4,
+  Privilege Escalation +1.0, Packet Sniffer +0.0. The two recovery Routines
+  are worth four times the other four, so with only 2 claims a game "claim
+  the best two" is solved rather than chosen — Tier III reads 77.0% of solo
+  on fork+garbage and 65.5% on root+diag. Packet Sniffer's 0.0 is by
+  construction, not measurement: its reward is information and the model has
+  no Program-selection choice for it to inform. The published grid takes the
+  best pair, which is what a player takes.
+
+  **The claim cap is NOT the constraint and was not touched.** Under the old
+  pooled model even 6 charges reached only 66.2% of solo, and 1 charge scored
+  the same as 2, because the second was always spent on a Catastrophic
+  Failure the free miss-negation would have absorbed for nothing.
+
+- **STILL OPEN, AND THE BIGGEST ONE: AoS's Tier I.** One Nobulous
+  Interference card is drawn at setup, and priced alone at Standard the six
+  read 1.2% / 34.5% / 37.6% / 40.5% / 41.7% / 51.1% against a 51.8% solo
+  column. **"I Don't Have Time for This" is a 1.2% card** — not a difficulty
+  setting, a loss. Its two clauses were split: clause one (begin all Programs
+  Overheated) is worth roughly nothing, and clause two ("when an
+  already-Overheated Program fails, cycle it to the bottom of its deck
+  instead of setting it aside") is the whole −50. The mechanism is the
+  interaction and it is invisible on the card: normal escalation is stable →
+  overheated → aside, clause one starts everything at the second step, so
+  clause two replaces the *third* and nothing can ever leave the deck. The
+  clause that reads as mercy is the trap.
+
+  Measured repairs, Tier I: recycle capped at 3 → 18.9%, at 2 → 24.3%, at
+  **1 → 34.8%** (which puts the card among the other five), clause deleted →
+  53.3% (above the solo column, so deleting is wrong). A one-word fix,
+  "**the first time** an already-Overheated Program fails", is the candidate.
+  **Not applied — raised.** The knobs that measured it live in the scratchpad
+  copy, not in `aos.py`.
+
 - **Two cards changed on 2026-11-05, the Optimizer and the Debugger.** They
-  are the only card text changed since the set was calibrated. The Optimizer
-  kept its ability and had its cadence slowed; the Debugger kept its name
-  and had its ability replaced outright. The difference between those two
-  outcomes is the lesson, and it is spelled out below.
+  are the only AoS card text changed since the set was calibrated. The
+  Optimizer kept its ability and had its cadence slowed; the Debugger kept
+  its name and had its ability replaced outright. The difference between
+  those two outcomes is the lesson, and it is spelled out below.
 
   **Optimize now reads "Once per cycle and once in Advanced Programming,
   Target +1 successes may count as Optimal Implementation."** It was once
