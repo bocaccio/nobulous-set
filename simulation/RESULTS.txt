@@ -568,7 +568,7 @@ CALIBRATION - published 20 Strong titles, community-recorded
     AoS  Standard in band on its OWN column (52.0%) since the
          2026-11-05 re-pitch onto the strongest allocation line
          the printed rules allow (ALLOC_MODE = sacrifice_short);
-         Standard at Tier III below the band (30.4%).
+         Standard at Tier III below the band (29.7%).
     NRJ  the finale that SHIPS is in band (50.5%), computed from
          finale.py over 6000 finales x 5 seeds; finale.txt is its
          full report.  The superseded nine-attempt scenario is
@@ -585,7 +585,7 @@ CALIBRATION - published 20 Strong titles, community-recorded
   on three of the four games and made that one compute from the
   run; the same disease was still sitting here.  Both are
   generated now.  AoS at Tier III is the one verdict worth
-  arguing with rather than fixing: 30.4% is 16.6 points below the
+  arguing with rather than fixing: 29.7% is 17.3 points below the
   band, it was 32.0% before the re-pitch, and it is the campaign
   axis - see simulation/README.md for why that is the loose end.
 
