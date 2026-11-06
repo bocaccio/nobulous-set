@@ -71,8 +71,20 @@ MODS = [
  ("Hypermetabolism", "Senses &middot; Value 4", "Tap: recover +2 dice. While held, exhaust 1 available die at the end of each Experiment the holder attempts, Purple first; if it holds no Purple, exhaust its weakest.",
   "The feeding schedule has been replaced by a chute."),
 ]
+# UNEXPECTED RESILIENCE CARRIES ITS RESTRICTION ON THE CARD. It printed
+# "Once per game, recover all of that Rat's dice" with no timing, and the
+# model only ever reached for it when a Rat could not attack at all - so the
+# card measured 0% spent against 91% claimed and the restriction existed
+# only in simulation/bat.py. Played at any competent moment the unrestricted
+# card is worth +10.2 on its own and puts BAT's Tier III at 57.9%, ABOVE its
+# own 53.2% solo column, which is the one shape a tier must not have.
+# Capping the DICE does not fix it - even a single recovered die reads +7.0,
+# because the Tyrant battle's binding constraint is the shared pool and the
+# value is in the timing, not the amount. So the timing is what the card now
+# prints, and it is what the name always suggested.
+# See RESILIENCE_TRIGGER in simulation/bat.py.
 NOTES = [
- ("Unexpected Resilience", "Claim after a Rat completes an Experiment without committing Red. Claiming gives up the next Upgrade a completed Experiment earns.", "Once per game, recover all of that Rat's dice."),
+ ("Unexpected Resilience", "Claim after a Rat completes an Experiment without committing Red. Claiming gives up the next Upgrade a completed Experiment earns.", "Once per game, when a Rat has no available dice, recover all of them."),
  ("Successful Integration", "Claim when a Rat holds a Specimen. Claiming gives up the next Upgrade a completed Experiment earns.", "Once per game, ignore the +1 Target from revealing a Specimen."),
  ("Acceptable Losses", "Claim after failing 3 Experiments within the same four-Rat rotation. Claiming gives up the next Upgrade a completed Experiment earns.", "Once per game after another failure, choose which revealed Upgrade is Spliced."),
  ("Cross-Species Compatibility", "Claim after a Rat completes an Experiment using a borrowed die. Claiming gives up the next Upgrade a completed Experiment earns.", "Once during the Tyrant battle, the active Rat may tap an Upgrade held by another surviving Rat."),

@@ -1977,16 +1977,24 @@ Not your job to fix, but worth knowing if Jon raises them:
 
   | | solo | → Tier I | → Tier II | → Tier III | III/solo |
   |---|---|---|---|---|---|
-  | BAT | 53.2% | −3.1 | −11.4 | +4.7 | 81.6% |
+  | BAT *(morning)* | 53.2% | −3.1 | −11.4 | +4.7 | 81.6% |
+  | BAT *(now, Notes modelled)* | 53.2% | −3.1 | −11.4 | **+9.2** | **90.0%** |
   | NAP *(before)* | 48.8% | −4.6 | −8.1 | +16.2 | **107.2%** |
   | NAP *(now)* | 48.8% | −4.6 | −8.1 | +3.9 | **82.0%** |
   | AoS *(morning)* | 52.0% | −17.3 | −6.3 | +1.3 | **57.1%** |
   | AoS *(Tier III modelled)* | 52.0% | −17.3 | −6.3 | +12.3 | 78.3% |
   | AoS *(now, Tier I capped)* | 52.0% | **−11.2** | −7.2 | +13.0 | **89.6%** |
 
-  **BAT is the shape the design wants** and is the reference for the other
-  two: Tier III beats Tier II and stays below the solo column, at 81–85% of
-  its own solo cell on every rung. Read as levels, AoS looked like a Tier III
+  **The reference moved on 2026-11-06, and it was the bug.** BAT's 81.6% was
+  the shape this table called correct, and the figure NAP's Devious
+  Opportunities were re-priced to match — and it was measured through the
+  pooled-token defect in BAT's own Tier III. Honest, BAT reads **90.0%**, so
+  no game in the set has the 81–85% shape any more. All three still obey the
+  rule — Tier III beats Tier II and stays under solo — but by rung BAT runs
+  86.4 / 90.0 / 92.8 / **97.2%**, which is flat at Nobulous, and NAP at
+  82–87% is now the one furthest from the others. **What the campaign axis
+  should cost is a decision that has not been made**; until today it was
+  being read off a number that was wrong. Read as levels, AoS looked like a Tier III
   problem; read as steps, the hole was dug at Tier I — so "Tier II is the
   trough" was true of the level and false of the cause. Both ends are now
   fixed, and the remaining complaint has swapped ends: AoS's Tier III is the
@@ -2093,13 +2101,57 @@ Not your job to fix, but worth knowing if Jon raises them:
   was checking either deck**, which is exactly how a change that has to be
   made in two places drifts — and this one had to be made in three.
 
+- **FIXED 2026-11-06: BAT's Research Notes were one pooled token.** The six
+  Tier III cards shared one counter, `self.notes`, spendable on two of the
+  six printed rewards; the other four did nothing. Same defect as AoS's
+  Backdoor Routines, found by going looking for it. **And it was worse than
+  the count suggests: of the two implemented, one never fired.** Unexpected
+  Resilience was reached for only when a Rat could not attack at all — 0%
+  spent against a 91% claim rate — so BAT's published Tier III column was
+  measuring *one card*, Successful Integration. Standard **43.4% → 47.9%**;
+  `NOTE_REWARDS = False` reproduces the old grid exactly.
+
+  Priced one at a time with `NOTE_PICK` (claim / spend rates from 20,000
+  ordinary Tier III games; the no-Note floor is 38.7%, which is Tier II):
+
+  | Research Note | claimed | spent | alone |
+  |---|---|---|---|
+  | Acceptable Losses | 74% | 45% | **+11.9** |
+  | Successful Integration | 81% | 78% | +2.4 |
+  | Red Means Go | 81% | 75% | +2.3 |
+  | Cross-Species Compatibility | 96% | 46% | +1.7 |
+  | Unexpected Resilience | 91% | 0% | +0.0 |
+  | Controlled Failure | 0% | 0% | +0.0 |
+
+  **Acceptable Losses carries the module** at +11.9 against +1.7 to +2.4 —
+  and it was one of the four that did nothing. Same band complaint the
+  Backdoor rewards draw: which to claim is solved, not chosen. Raised.
+
+- **ONE CARD CHANGED WITH IT: Unexpected Resilience took its restriction
+  onto the card.** It printed "Once per game, recover all of that Rat's
+  dice" with no timing, and the restriction `bat.py` assumed existed nowhere
+  else. Played at any competent moment the unrestricted card is **+10.2
+  alone and puts Tier III at 57.9%, above the 53.2% solo column**. Capping
+  the *dice* does not fix it — 1 die reads 55.0%, 2 reads 57.4%, 3 reads
+  58.5% — because the battle's binding constraint is the shared pool, so the
+  value is in the timing. It now prints *"Once per game, when a Rat has no
+  available dice, recover all of them."* `RESILIENCE_TRIGGER = "short"` is
+  the unrestricted card, kept because it prices the restriction: 47.9%
+  against 57.9%.
+
+  A bug fell out of fixing it: the recovery re-picked the battle pool with a
+  raw EV sort instead of `commit_for_splice`, ignoring the leftmost Splice's
+  colour requirement. Present from the start, harmless only because the
+  branch never fired. Corrected; it moves no published figure.
+
 - **NOW THE OTHER END OF THE SAME AXIS: AoS Tier III is too shallow.** The
   Tier I repair lifted all three tier columns by 5-6 points, because all
   three draw that card, so Tier III went 40.7% → 46.6% without anything in
-  Tier III changing. At Standard that is **89.6% of its own solo column
-  against BAT's 81.6%**, and at Easy 95.5% — nearly flat. It still obeys the
-  rule (above Tier II, below solo), so this is a shape question rather than a
-  defect. Raised, not touched.
+  Tier III changing. At Standard that is **89.6% of its own solo column**,
+  and at Easy 95.5% — nearly flat. It read that way against BAT's 81.6%;
+  BAT re-measured at 90.0% the same day, so the complaint is shared rather
+  than AoS's alone. Both still obey the rule (above Tier II, below solo), so
+  this is a shape question rather than a defect. Raised, not touched.
 
 - **Two cards changed on 2026-11-05, the Optimizer and the Debugger.** They
   are the only AoS card text changed since the set was calibrated. The

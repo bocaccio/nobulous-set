@@ -265,7 +265,7 @@
     ["Hypermetabolism","Senses \u00b7 Value 4","Tap: recover +2 dice. While held, exhaust 1 available die at the end of each Experiment the holder attempts, Purple first; if it holds no Purple, exhaust its weakest.",4],
   ];
   const BAT_NOTES = [
-    ["Unexpected Resilience","Claim after a Rat completes an Experiment without committing Red. Claiming gives up the next Upgrade a completed Experiment earns.","Once per game, recover all of that Rat's dice."],
+    ["Unexpected Resilience","Claim after a Rat completes an Experiment without committing Red. Claiming gives up the next Upgrade a completed Experiment earns.","Once per game, when a Rat has no available dice, recover all of them."],
     ["Successful Integration","Claim when a Rat holds a Specimen. Claiming gives up the next Upgrade a completed Experiment earns.","Once per game, ignore the +1 Target from revealing a Specimen."],
     ["Acceptable Losses","Claim after failing 3 Experiments within the same four-Rat rotation. Claiming gives up the next Upgrade a completed Experiment earns.","Once per game after another failure, choose which revealed Upgrade is Spliced."],
     ["Cross-Species Compatibility","Claim after a Rat completes an Experiment using a borrowed die. Claiming gives up the next Upgrade a completed Experiment earns.","Once during the Tyrant battle, the active Rat may tap an Upgrade held by another surviving Rat."],

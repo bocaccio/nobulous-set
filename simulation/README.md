@@ -454,13 +454,19 @@ Read the tiers as STEPS rather than as levels and the three games say:
 
 | Standard | solo | -> Tier I | -> Tier II | -> Tier III | III/solo |
 |---|---|---|---|---|---|
-| BAT | 53.2% | -3.1 | -11.4 | +4.7 | 81.6% |
+| BAT | 53.2% | -3.1 | -11.4 | **+9.2** | **90.0%** |
 | NAP | 48.8% | -4.6 | -8.1 | +3.9 | 82.0% |
 | AoS | 52.0% | **-11.2** | -7.2 | +13.0 | **89.6%** |
 
-BAT is the shape the design wants - Tier III beats Tier II and stays below
-solo, at 81-85% of its own solo cell on every rung. **AoS now has that shape
-and overshoots it.** Its Tier I step was -17.3 until 2026-11-06, when the
+**The reference moved on 2026-11-06, and it was the bug.** BAT's 81.6% - the
+figure this section called the shape the design wants, and the figure NAP's
+Devious Opportunities were re-priced to match - was measured through the
+pooled-token defect in BAT's own Tier III. Honest, BAT reads 90.0%, so no
+game in the set now has the 81-85% shape. By rung, III/solo reads BAT 86.4 /
+90.0 / 92.8 / 97.2, NAP 83.8 / 82.0 / 84.8 / 86.9, AoS 95.5 / 89.6 / 89.8 /
+87.2. All three obey the rule - Tier III beats Tier II, stays under solo -
+but BAT at Nobulous is 97.2%, which is flat, and NAP is now the outlier in
+the other direction. **AoS also overshoots.** Its Tier I step was -17.3 until 2026-11-06, when the
 card that dug the hole was capped; at -11.2 it is still the deepest of the
 three. Tier III clears Tier II and stays below solo, which is BAT's rule, but
 at 89.6% of its own solo column it is the *shallowest* campaign penalty of

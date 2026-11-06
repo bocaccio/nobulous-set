@@ -68,10 +68,22 @@ BAT  Build-a-Tyrant
   difficulty = Specimens added / Tyrant Health; random Rat sides
 
                             no NRJ    Tier I   Tier II  Tier III
-  Easy                       62.7%     58.4%     45.5%     50.7%
-  Standard                   53.2%     50.1%     38.7%     43.4%
-  Hard                       40.1%     38.6%     27.9%     33.4%
-  Nobulous                   28.1%     26.3%     18.6%     23.9%
+  Easy                       62.7%     58.4%     45.5%     54.2%
+  Standard                   53.2%     50.1%     38.7%     47.9%
+  Hard                       40.1%     38.6%     27.9%     37.2%
+  Nobulous                   28.1%     26.3%     18.6%     27.3%
+
+    THE TIER III COLUMN ROSE 4.5 POINTS ON 2026-11-06 AND THE
+    ONLY CARD THAT CHANGED WAS ONE REWARD'S TIMING.  Until then
+    bat.py pooled every claim into one counter spendable on two
+    of the six printed rewards - the same fungible-token defect
+    AoS's Backdoor Routines had, found here by looking for it
+    after that one was fixed.  Worse: of those two, ONE NEVER
+    FIRED, so the published column was measuring a single card.
+    NOTE_REWARDS = False in bat.py restores the pooled model and
+    reproduces 53.2 / 50.1 / 38.7 / 43.4 exactly.
+    The solo, Tier I and Tier II columns did not move, which is
+    the check: only Tier III grants a Note.
   
     Tier I   1 of 6 Experimental Protocols drawn at setup
     Tier II  6 Unauthorized Modifications in the Upgrade deck
@@ -600,23 +612,40 @@ THE CAMPAIGN AXIS - read the tiers as STEPS, not as levels
   2026-11-06 changes:
 
                       solo    ->I     ->II    ->III   III/solo
-    BAT              53.2%   -3.1   -11.4    +4.7      81.6%
+    BAT              53.2%   -3.1   -11.4    +9.2      90.0%
     NAP              48.8%   -4.6    -8.1    +3.9      82.0%
     AoS              52.0%  -11.2    -7.2   +13.0      89.6%
 
-  BAT IS THE SHAPE THE DESIGN WANTS and is the reference for the
-  other two: Tier III beats Tier II and stays BELOW the solo
-  column, at 81-85% of its own solo cell on every rung.  NAP sat
-  at 107-122% of solo until its Devious Opportunities were priced
-  against the cards they replace; it now reads 82-87%.
+  THE REFERENCE MOVED ON 2026-11-06, AND IT WAS THE BUG.  BAT's
+  81.6% - the figure this section used to call the shape the
+  design wants, and the figure NAP's Devious Opportunities were
+  re-priced to match - was measured through the pooled-token
+  defect in its own Tier III.  Honest, BAT reads 90.0%.  So
+  there is no longer a game in the set with the 81-85% shape;
+  the three read 82.0, 89.6 and 90.0, and III/solo by rung is
+  BAT 86.4 / 90.0 / 92.8 / 97.2, NAP 83.8 / 82.0 / 84.8 / 86.9,
+  AoS 95.5 / 89.6 / 89.8 / 87.2.  All three obey the RULE -
+  Tier III beats Tier II and stays under solo - but BAT at
+  Nobulous is 97.2% of its own solo cell, which is flat, and NAP
+  is now the one furthest from the others.  What the campaign
+  axis should cost is a design decision that has not been made;
+  until today it was being read off a number that was wrong.
+
+  BAT WAS THE SHAPE THE DESIGN WANTS and was the reference for
+  the other two - until its own Tier III was re-measured.  NAP
+  sat at 107-122% of solo until its Devious Opportunities were
+  priced against the cards they replace; it now reads 82-87%,
+  and is the tightest of the three.
 
   AoS NOW HAS THE SHAPE, AND OVERSHOOTS IT.  Its Tier I step was
   -17.3 until 2026-11-06, when the card that dug the hole was
   capped; it is -11.2 now, and still the deepest of the three.
   Tier III clears Tier II and stays below solo, which is the rule
-  BAT sets, but at 89.6% of its own solo column against BAT's
-  81.6% it is the SHALLOWEST campaign penalty of the three, and
-  at Easy it is 95.5% - nearly flat.  That is the next thing to
+  BAT sets, but at 89.6% of its own solo column - against BAT's
+  81.6% AS IT READ THAT MORNING - it looked like the shallowest
+  campaign penalty of the three, and at Easy it is 95.5%, nearly
+  flat.  BAT re-measured at 90.0% the same day, so the complaint
+  is shared rather than AoS's alone.  That is the next thing to
   look at on this axis, and it is a consequence of the Tier I
   repair rather than of anything Tier III does: capping one of
   six setup cards lifted all three tier columns by the same 5-6
@@ -791,8 +820,8 @@ CALIBRATION - published 20 Strong titles, community-recorded
   capped.  Both of those were defects rather than dials, and the
   column they moved is the campaign axis.  What is now worth
   arguing with is the OTHER end of it - see THE CAMPAIGN AXIS
-  above, where the same column reaches 89.6% of its own solo cell
-  against BAT's 81.6%.
+  above, where AoS reaches 89.6% of its own solo cell and BAT,
+  re-measured the same day, reaches 90.0%.
 
   THE RETUNE IS WHY, AND IT INVALIDATES EVERY DIFFICULTY DIAL.
   These models used to play one fixed policy that was 6 to 34
@@ -931,9 +960,10 @@ CAVEATS
   clause seems inert, check when it fires before making it bigger - and
   check what its trigger is gated on before trusting the figure later.
 
-  BAT'S TIER III RECOVERS WEAKLY, AND THE REASON MOVED. Tier II is the
-  trough as intended and Tier III gains +4.7 back at Standard, against
-  NAP's +5.4 and AoS's +11.0. The first diagnosis was the claim side:
+  BAT'S TIER III RECOVERED WEAKLY, AND THE REASON MOVED TWICE. Tier II is
+  the trough as intended. Tier III gained only +4.7 back at Standard until
+  the reward side was fixed on 2026-11-06; it gains +9.2 now, against NAP's
+  +3.9 and AoS's +13.0. The first diagnosis was the claim side:
   two of the six Research Notes were nearly dead paper, and the rest
   averaged 2.0 claims a game. Loosening two conditions and rewriting the
   dead one - Cross-Species Compatibility now claims on completing an
@@ -943,17 +973,79 @@ CAVEATS
   Controlled Failure, needs a deliberate zero-dice turn the policy never
   takes.
 
-  It barely moved the column, because the limit is the REWARD side. bat.py
-  pools every claim into one counter, `self.notes`, and spends it on two of
-  the six printed rewards: recovering a Rat's dice in the battle, and
-  ignoring the +1 Target a revealed Specimen adds. The other four printed
-  rewards do nothing at all - choosing which Upgrade is Spliced after a
-  failure, tapping another Rat's Upgrade in the battle, discarding a
-  revealed Experiment, and placing Red directly on a Rat. Six separate
-  once-per-game cards are modelled as one fungible token spent on two of
-  them. Giving each claimed Note its own printed reward is the next lever
-  on this column, and it is a structural change to the module, not a
-  number.
+  It barely moved the column, because the limit was the REWARD side. Until
+  2026-11-06 bat.py pooled every claim into one counter, `self.notes`, and
+  spent it on two of the six printed rewards. The other four did nothing at
+  all. Six separate once-per-game cards were one fungible token spent on
+  two of them - the same defect AoS's Backdoor Routines had.
+
+  FIXED 2026-11-06, AND IT WAS WORSE THAN THE COUNT SUGGESTS. Of the two
+  rewards the pooled model implemented, ONE NEVER FIRED: Unexpected
+  Resilience was reached for only when a Rat could not attack at all, which
+  measured a 0% spend rate against a 91% claim rate. So BAT's published
+  Tier III column was measuring ONE card - Successful Integration, ignoring
+  a Specimen's +1 Target. Each claim now grants its own named card and its
+  own one use of what that card prints; NOTE_REWARDS = False restores the
+  pooled model and reproduces the old grid exactly, which is the check that
+  nothing else moved. Standard Tier III 43.4% -> 47.9%.
+
+  THE SIX, PRICED ONE AT A TIME.  NOTE_PICK forces a hand of
+  exactly one at setup; claim and spend rates are from 20000
+  ordinary Tier III games.  The floor - Tier III holding NO Note
+  - is 38.7%, which is the Tier II column, as it must be.
+
+                                claimed   spent     alone
+    Acceptable Losses            choose what is Spliced
+                                74%      45%     +11.9
+    Successful Integration       ignore a Specimen's +1
+                                81%      78%      +2.4
+    Red Means Go                 place Red, skip the aside
+                                81%      75%      +2.3
+    Cross-Species Compatibility  tap another Rat's Upgrade
+                                96%      46%      +1.7
+    Unexpected Resilience        recover a Rat's dice
+                                91%       0%      +0.0
+    Controlled Failure           reveal the next Experiment
+                                 0%       0%      +0.0
+
+  ACCEPTABLE LOSSES CARRIES THE MODULE at +11.9 against +1.7 to
+  +2.4 for the other three live cards - and it was one of the
+  four that did nothing before today.  It is the same band
+  complaint the Backdoor rewards draw: with six cards spanning
+  0.0 to 11.9, which to claim is solved rather than chosen.
+  Raised, not fixed.
+
+  CONTROLLED FAILURE IS CLAIMED IN 0% OF GAMES, because its
+  condition is deliberately committing zero dice and no policy
+  here does that.  That gap predates the fix and is recorded
+  above; NOTE_PICK is what makes the card reachable at all, and
+  it prices at +0.0 even when handed over free - a blind swap of
+  a known Target 5 for the deck's 4.15 mean, paid for by burning
+  a card out of a finite Experiment deck.
+
+  UNEXPECTED RESILIENCE TOOK A RESTRICTION ONTO THE CARD.  It
+  printed "Once per game, recover all of that Rat's dice" with
+  no timing, and the restriction this model assumed - only when
+  the Rat cannot attack at all - existed nowhere but bat.py.
+  Played at any competent moment the unrestricted card is +10.2
+  on its own and takes Tier III to 57.9%, ABOVE the 53.2% solo
+  column.  Capping the DICE does not fix it: 1 die reads 55.0%,
+  2 reads 57.4%, 3 reads 58.5%, all of them 57.9%, because the
+  Tyrant battle's binding constraint is the shared pool and the
+  value is in the TIMING, not the amount.  So the timing is what
+  the card prints now, and it is what the name always suggested:
+  "Once per game, WHEN A RAT HAS NO AVAILABLE DICE, recover all
+  of them."  RESILIENCE_TRIGGER = "short" in bat.py is the
+  unrestricted card, kept because it is what the restriction is
+  worth - 47.9% against 57.9%.
+
+  AND ONE BUG FOUND BY FIXING IT: the recovery re-picked the
+  battle pool with a raw sort by EV instead of going through
+  commit_for_splice, so it ignored the leftmost Splice's colour
+  requirement.  It had been there from the start and was
+  harmless only because the branch never fired.  Corrected; it
+  moves no published figure, because under the shipped trigger
+  the branch still never fires.
 
   INDEPENDENT FUNDING NEEDED A NEW TRIGGER, not a new number. The old card
   paid the LENDER a die, and the lender's dice are not the binding resource,

@@ -283,6 +283,61 @@ NOTES_POLICY = "greedy"
 # the calibrated win rates do not move.
 NOTES_INSTEAD = 0
 
+# WHAT A CLAIM BUYS. Until 2026-11-06 every claim went into ONE counter,
+# self.notes, and any charge could be spent on either of the two rewards this
+# model implemented - so six separate once-per-game cards were a pool of
+# fungible tokens, and four of the six printed rewards did nothing at all.
+# It is the same defect AoS's Backdoor Routines had, found here by looking
+# for it after that one was fixed. The claim CONDITIONS were never the
+# problem: claim_notes has always checked those as printed.
+#
+#   NOTE_REWARDS  True gives each claimed Note its own card and its own one
+#                 use of what that card prints. False restores the pooled
+#                 counter every figure before 2026-11-06 was measured on.
+#   NOTE_ORDER    the six, in the order NOTES_BONUS hands them out.
+#   NOTE_PICK     force exactly these Notes at setup, for pricing one reward
+#                 at a time. This is also the only way to reach Controlled
+#                 Failure, whose claim condition - deliberately committing
+#                 zero dice - no policy in this model takes.
+NOTE_REWARDS = True
+NOTE_ORDER = ("resilience", "integration", "losses", "compatibility",
+              "controlled", "red_means_go")
+NOTE_PICK = None
+# The two rewards the POOLED model implemented. With NOTE_REWARDS off the
+# other four must stay dark, or "off" would be a third model - stronger than
+# the one every figure before 2026-11-06 was measured on - rather than that
+# model. This tuple is what makes NOTE_REWARDS = False a true reproduction.
+POOLED_REWARDS = ("resilience", "integration")
+# WHEN UNEXPECTED RESILIENCE FIRES. The card printed "Once per game, recover
+# all of that Rat's dice" with no timing on it, and this model only ever
+# reached for it when the Rat could not attack at all - 0% spent against a
+# 91% claim rate, so the one reward the pooled model implemented besides
+# Successful Integration was dead and six cards were really one.
+#
+# Modelling the other five exposed the real question: what is the card worth
+# PLAYED? Unrestricted it is +10.2 on its own and takes Tier III to 57.9%,
+# ABOVE the 53.2% solo column. Capping the DICE does not help - a single
+# recovered die still reads +7.0 - because the Tyrant battle's binding
+# constraint is the shared pool, so the value is in the timing. On
+# 2026-11-06 the card took the restriction this model always assumed: "when
+# a Rat has no available dice, recover all of them."
+#   "empty"  the card as it now prints. Shipped.
+#   "short"  the unrestricted card, spent whenever the Rat is under its
+#            dice cap with RESILIENCE_FLOOR+ exhausted. Kept because it is
+#            what the restriction is worth: 47.9% against 57.9%.
+RESILIENCE_TRIGGER = "empty"
+# How short "short" waits before spending, and how many dice come back.
+# RESILIENCE_DICE = -1 is all of them; a positive number caps it. Swept
+# 2026-11-06: 1 die 55.0%, 2 57.4%, 3 58.5%, all 57.9% - so the number of
+# dice is not the lever and no cap on it would have saved the card.
+RESILIENCE_FLOOR = 2
+RESILIENCE_DICE = -1
+# Controlled Failure discards a revealed Experiment and reveals the next.
+# The deck is 2 Target-3, 13 Target-4 and 5 Target-5, so swapping away a 5
+# trades a known 5 for an unknown 4.15 and swapping a 4 trades down. The
+# card also BURNS a card from a finite deck, which shortens the phase.
+CONTROLLED_FLOOR = 5
+
 # Candidate fixes for BAT's tier ladder, which currently rises where NAP's and
 # AoS's dip. Both mirror what those two games already do:
 #   TIER1_EXTRA_SPECIMEN - Tier I carries a flat handicap, the way Following
@@ -748,7 +803,8 @@ class Game(object):
 
         # --- NRJ overlay ---
         self.protocol = None
-        self.notes = 0
+        self.notes = 0         # pooled charges, NOTE_REWARDS off
+        self.note = {}         # the named Notes held, and their one use
         if module_active("protocol", tier):
             self.protocol = FORCE_PROTOCOL or self.rng.choice(PROTOCOLS)
             if TIER1_EXTRA_SPECIMEN:
@@ -811,6 +867,14 @@ class Game(object):
                 self.upgrade_deck.append(("s", self.rng.choice(pool)))
         self.rng.shuffle(self.upgrade_deck)
         self.notes = NOTES_BONUS if module_active("notes", tier) else 0
+        if NOTE_REWARDS:
+            # Named cards rather than a pool. NOTE_PICK forces a hand for
+            # pricing; otherwise NOTES_BONUS hands out the first few in
+            # NOTE_ORDER, which is what the flat allowance meant.
+            self.notes = 0
+            if module_active("notes", tier):
+                picks = NOTE_PICK or NOTE_ORDER[:NOTES_BONUS]
+                self.note = {k: 1 for k in picks}
         # Research Notes claimed and not yet spent
         self.claimed = set()   # which Notes have been claimed
         self.worked = 0        # ...and how many were traded for, not met
@@ -835,6 +899,33 @@ class Game(object):
     def available(self, rat):
         return [d for d in rat.dice if d.zone == "available"]
 
+    def grant_note(self, key):
+        """Claim one Research Note - the named card, or a pooled charge."""
+        if NOTE_REWARDS:
+            if NOTE_PICK is not None:
+                return   # pricing: the hand is fixed at setup, claims add none
+            self.note[key] = 1
+        else:
+            self.notes += 1
+
+    def hold_note(self, key):
+        """Is this Note's one use still available? Spends nothing."""
+        if NOTE_REWARDS:
+            return bool(self.note.get(key))
+        return key in POOLED_REWARDS and self.notes > 0
+
+    def use_note(self, key):
+        """Spend this Note's one use, or one pooled charge when pooled."""
+        if NOTE_REWARDS:
+            if self.note.get(key):
+                self.note[key] = 0
+                return True
+            return False
+        if key in POOLED_REWARDS and self.notes > 0:
+            self.notes -= 1
+            return True
+        return False
+
     def spend_note(self, target):
         """A revealed Specimen is about to add +1 Target. Spend a Note?"""
         if NOTES_POLICY == "hoard":
@@ -853,9 +944,11 @@ class Game(object):
         deliberately committing zero dice to an Experiment, which no policy
         in this model takes.
 
-        What a claim buys is a different matter - see self.notes, which
-        pools every claim into one counter and spends it on two of the six
-        printed rewards. That is the live limit on BAT's Tier III column.
+        What a claim BUYS was a different matter until 2026-11-06: every
+        claim went into one counter and any charge bought either of the two
+        rewards this model implemented, so six separate cards were a pool of
+        fungible tokens and four printed rewards did nothing. Each claim now
+        grants its own named card - see NOTE_REWARDS, and grant_note below.
         """
         if not module_active("notes", self.tier):
             return
@@ -866,19 +959,19 @@ class Game(object):
         # printed card also barred Purple, which held it to 16% of games.
         if "resilience" not in self.claimed and success and not used_red:
             self.claimed.add("resilience")
-            self.notes += 1
+            self.grant_note("resilience")
         # Successful Integration: a Rat holds a Specimen. The printed card
         # wanted two, which happened in 19% of games. Matched by name: two
         # Unauthorized Modifications also carry Value 5.
         _spec = sum(1 for u in rat.upgrades if u.name in SPECIMEN_NAMES)
         if "integration" not in self.claimed and _spec >= 1:
             self.claimed.add("integration")
-            self.notes += 1
+            self.grant_note("integration")
         # Acceptable Losses: 3 Experiments failed in the same four-Rat rotation.
         if "losses" not in self.claimed and len(self.recent) == 4 and \
                 self.recent.count(False) >= 3:
             self.claimed.add("losses")
-            self.notes += 1
+            self.grant_note("losses")
         # Cross-Species Compatibility: claimed on the act of sharing, which
         # is what the card is about - its reward is tapping another Rat's
         # Upgrade. "All four Rats hold 2+ Upgrades" never happened in 1500
@@ -887,12 +980,12 @@ class Game(object):
         if "compatibility" not in self.claimed and success and \
                 getattr(self, "borrowed_this_turn", False):
             self.claimed.add("compatibility")
-            self.notes += 1
+            self.grant_note("compatibility")
         # Red Means Go: Red completed it and a borrowed die was in the throw.
         if "red_means_go" not in self.claimed and success and used_red and \
                 getattr(self, "borrowed_this_turn", False):
             self.claimed.add("red_means_go")
-            self.notes += 1
+            self.grant_note("red_means_go")
 
     def borrow_for(self, rat):
         """Take the best die the borrower's Upgrade count still allows."""
@@ -967,6 +1060,12 @@ class Game(object):
             self.discard = []
 
         _exp = self.deck.pop()
+        # Controlled Failure: "after revealing an Experiment, discard it and
+        # reveal the next one instead." Blind - the replacement is unknown -
+        # so it is only worth taking on the worst Target the deck prints.
+        if self.deck and EXPERIMENT_TARGETS[_exp] >= CONTROLLED_FLOOR \
+                and self.use_note("controlled"):
+            _exp = self.deck.pop()
         self.exp_effect = EXPERIMENT_EFFECT.get(_exp)
         target = EXPERIMENT_TARGETS[_exp] + TARGET_DELTA
         if self.exp_effect == "burn_two":
@@ -999,10 +1098,10 @@ class Game(object):
             options.append(self.upgrade_deck.pop())
             target = max(1, target + METHODOLOGY_DELTA)
         if any(kind == "s" for kind, _ in options):
-            # Successful Integration can be spent to ignore the +1 Target a
-            # revealed Specimen would add.
-            if self.notes > 0 and self.spend_note(target):
-                self.notes -= 1
+            # Successful Integration: "ignore the +1 Target from revealing a
+            # Specimen." NOTES_POLICY decides whether it is worth the card.
+            if self.spend_note(target) and self.use_note("integration"):
+                pass
             else:
                 target += 1
 
@@ -1258,6 +1357,22 @@ class Game(object):
                 # Red is set aside, not exhausted, and moves to a non-active
                 # Rat at the start of the next turn.
                 self.red_aside = True
+                # Red Means Go: "place it directly on any non-active Rat
+                # rather than setting it aside." Two things come with that -
+                # Red skips the aside turn, so it is ready NEXT turn rather
+                # than the one after, and the Rat is chosen rather than
+                # random. The active-Rat policy prefers whoever holds a
+                # ready Red, so this also steers the next turn.
+                standing = [r for r in self.rats
+                            if r is not rat and not r.down]
+                if standing and self.hold_note("red_means_go") \
+                        and self.use_note("red_means_go"):
+                    self.red_holder = max(
+                        standing,
+                        key=lambda r: (len(self.available(r)),
+                                       sum(EV[d.color]
+                                           for d in self.available(r))))
+                    self.red_aside = False
             if borrowed is not None and phase == 0:
                 successes += roll(borrowed.color, self.rng)
 
@@ -1296,7 +1411,13 @@ class Game(object):
                 # card the Rat does not take is discarded below, as it is at
                 # the Upgrade limit.
                 self.worked += 1
-                self.notes += 1
+                # A traded Upgrade banks the first Note not already held.
+                if NOTE_REWARDS:
+                    spare = [k for k in NOTE_ORDER if k not in self.note]
+                    if spare:
+                        self.grant_note(spare[0])
+                else:
+                    self.notes += 1
                 took = False
             if took:
                 rat.upgrades.append(Upgrade(splice_value(best),
@@ -1349,8 +1470,25 @@ class Game(object):
                                       PROTOCOL_COLOR["accelerated_trials"]):
                     d.zone = "exhausted"
         else:
-            self.splices.append(Splice(splice_value(best), splice_cat(best), splice_effect(best), splice_colors(best)))
-            if best[0] == "m":
+            # Acceptable Losses: "choose which revealed Upgrade is Spliced."
+            # The Tyrant otherwise eats `best`, which is the same card the
+            # Rat would have taken on a success, so the card is worth the
+            # gap between the strongest revealed Upgrade and the weakest.
+            victim = best
+            rest = [c for c in options if c is not best]
+            if rest:
+                weakest = min(rest, key=splice_value)
+                if splice_value(weakest) < splice_value(best) \
+                        and self.use_note("losses"):
+                    victim = weakest
+                    if victim in self.discard:
+                        self.discard.remove(victim)
+                    self.discard.append(best)
+            self.splices.append(Splice(splice_value(victim),
+                                       splice_cat(victim),
+                                       splice_effect(victim),
+                                       splice_colors(victim)))
+            if victim[0] == "m":
                 self.splice_mods += 1
 
         # Hypermetabolism burns a die every Experiment its holder attempts.
@@ -1698,13 +1836,27 @@ class Game(object):
                         want = i
                 cap = want or cap
         pool = self.commit_for_splice(cap)
-        if not pool and self.notes > 0:
-            # Unexpected Resilience: recover all of that Rat's dice.
-            self.notes -= 1
-            for d in rat.dice:
-                if d.zone == "exhausted":
-                    d.zone = "available"
-            pool = sorted(self.shared_pool(), key=lambda d: -EV[d.color])[:cap]
+        spent = sum(1 for d in rat.dice if d.zone == "exhausted")
+        # NOTE_REWARDS off is a reproduction of the pooled model, so the
+        # trigger it ran on comes with it: "short" is a named-card policy.
+        short = (NOTE_REWARDS and RESILIENCE_TRIGGER == "short"
+                 and len(pool) < cap and spent >= RESILIENCE_FLOOR)
+        if (not pool or short) and self.use_note("resilience"):
+            # Unexpected Resilience: "recover all of that Rat's dice", or
+            # RESILIENCE_DICE of them where the card caps the number.
+            back = [d for d in rat.dice if d.zone == "exhausted"]
+            if RESILIENCE_DICE >= 0:
+                back = sorted(back, key=lambda d: -EV[d.color])
+                back = back[:RESILIENCE_DICE]
+            for d in back:
+                d.zone = "available"
+            # Re-pick through commit_for_splice, NOT a raw sort by EV: the
+            # leftmost Splice's colour requirement applies to this throw
+            # like any other. The raw sort was here from the start and was
+            # harmless only because the branch never fired - the first
+            # trigger that reached it handed the Rat a colour-illegal pool
+            # and read +7 for a single recovered die.
+            pool = self.commit_for_splice(cap)
         if not pool:
             return False
 
@@ -1724,6 +1876,19 @@ class Game(object):
         # Red's 1.17 average damage.
         tappable = [u for u in rat.upgrades
                     if not u.tapped] if self.card_effects else []
+        # Cross-Species Compatibility: "once during the Tyrant battle, the
+        # active Rat may tap an Upgrade held by another surviving Rat." Only
+        # from a Rat that keeps a blocker afterwards, by the same rule that
+        # stops this Rat spending its last one: untapped, an Upgrade blocks
+        # a whole attack outright, so the last is never worth tapping.
+        lent = []
+        if self.card_effects and self.hold_note("compatibility"):
+            for other in self.rats:
+                if other is rat or other.down:
+                    continue
+                free = [u for u in other.upgrades if not u.tapped]
+                if self.tapped_defends or len(free) > 1:
+                    lent += free
         tap_soak = 0
         # Three options: tap an Upgrade for damage, tap one for defense, or
         # commit Red for its 1.17 average. Pick whichever is worth most.
@@ -1744,24 +1909,30 @@ class Game(object):
             return 0
 
         options = []
-        for u in tappable:
+        for u in tappable + lent:
+            own = any(u is t for t in tappable)
             dmg_v = u.effect[0] + bonus_for(u)
             def_v = u.effect[1] + u.effect[2]
             rec_v = u.effect[4] * EV_REROLL["green"]
             if dmg_v:
-                options.append((dmg_v, "dmg", u))
+                options.append((dmg_v, "dmg", u, own))
             if def_v:
-                options.append((def_v + bonus_for(u), "soak", u))
+                options.append((def_v + bonus_for(u), "soak", u, own))
             if rec_v:
-                options.append((rec_v + bonus_for(u), "recover", u))
+                options.append((rec_v + bonus_for(u), "recover", u, own))
         spare = self.tapped_defends or len(tappable) > 1
-        best = max(options, key=lambda o: o[0]) if options else None
+        # A Rat's own last Upgrade is never worth tapping. A borrowed one
+        # came from a Rat that keeps a blocker, so it needs no such spare.
+        offer = [o for o in options if spare or not o[3]]
+        best = max(offer, key=lambda o: o[0]) if offer else None
         # Tapping normally forgoes Red, so an effect must beat Red's 1.17
         # average to be worth it. Under "free" there is nothing to forgo, so
         # any positive effect is worth tapping.
         floor = 0 if self.tap_bonus == "free" else EV_REROLL["red"]
-        if spare and best is not None and best[0] > floor:
-            _, kind, card = best
+        if best is not None and best[0] > floor:
+            _, kind, card, own = best
+            if not own:
+                self.use_note("compatibility")
             card.tapped = True
             if self.tap_bonus == "free":
                 dmg += roll("red", self.rng)
