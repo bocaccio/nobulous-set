@@ -182,7 +182,7 @@
   ];
   const TECHS = [
     { name: "Architect", side: "front", index: 0, ability: "Reconfigure — Once per Program, before rolling an element, move up to 2 allocated dice between unresolved elements." },
-    { name: "Debugger", side: "back", index: 0, ability: "Debug — Once per Program, after failing by exactly 1 success, reroll 1 allocated die. If it still fails, exhaust that die." },
+    { name: "Debugger", side: "back", index: 0, ability: "Debug — Once per Program, before rolling an element, swap 1 of its dice for a die from your available pool." },
     { name: "Optimizer", side: "front", index: 1, ability: "Optimize — Once per cycle and once in Advanced Programming, Target +1 successes may count as Optimal Implementation." },
     { name: "Engineer", side: "back", index: 1, ability: "Redundancy — For up to 2 elements per Program, the allocation cap is Target +2 instead of Target +1." },
     { name: "Operator", side: "front", index: 2, ability: "Workaround — When a non-Red Limitation would withhold 2 dice, you may withhold 1 of those dice as another non-Red color instead." },
@@ -305,7 +305,7 @@
     tier: aosTier(), interference: aosDrawInterference(), backdoors: aosFreshBackdoors(), corruptColor: null, corruptElement: null,
     currentFace: "front", currentCompleted: false, lastResultFailed: false, limitation: null, limitationRevealed: false, limitationResolved: false, limitationQueue: aosLimitationQueue(), banishedLimitations: [],
     advancedQueue: [], nextAdvancedOverheated: false, advancedDone: 0, dice: freshDice(), elements: [], elementCount: 3,
-    rerollsUsed: 0, recoveryCredits: 0, recoverySource: "", architectUsed: false, architectMode: false, debuggerUsed: false, optimizerUsed: false, rewardApplied: false,
+    rerollsUsed: 0, recoveryCredits: 0, recoverySource: "", architectUsed: false, architectMode: false, debuggerUsed: false, debugMode: false, optimizerUsed: false, rewardApplied: false,
     targetsVersion: 1, metrics: freshMetrics(), notes: "", log: [], finished: false
   });
   let state = freshState();
@@ -503,8 +503,10 @@
     state.currentCompleted = false; state.lastResultFailed = false; state.limitationRevealed = true; state.limitationResolved = false; state.rerollsUsed = 0; state.recoveryCredits = 0;
     // state.optimizerUsed is deliberately NOT reset here. Optimize is once
     // per CYCLE and once more during Advanced Programming, so it is cleared
-    // at the cycle boundary below and in beginAdvanced(), not per Program.
-    state.architectUsed = false; state.architectMode = false; state.debuggerUsed = false; state.rewardApplied = false;
+    // at the cycle boundary above and in beginAdvanced(), not per Program.
+    // Reconfigure and Debug are both once per Program, so they reset here.
+    state.architectUsed = false; state.architectMode = false; state.rewardApplied = false;
+    state.debuggerUsed = false; state.debugMode = false;
     if (!state.limitationQueue.length) {state.limitationQueue = shuffle([0,1,2,3,4,5].filter(x => !state.banishedLimitations.includes(x)));state.discard=state.discard.filter(name=>!name.startsWith("Limitation:"));}
     state.limitation = state.limitationQueue.pop();
     // A Corrupted Limitation's random picks belong to THIS reveal, not to
@@ -557,6 +559,7 @@
   function rollElement(i, reroll = false) {
     const el = state.elements[i]; const dice = state.dice.filter(d => d.zone === "allocated" && d.element === i);
     if (state.architectMode) { toast("Finish or cancel Reconfigure first."); return; }
+    if (state.debugMode) { toast("Finish or cancel Debug first."); return; }
     if (recoveryPending()) { toast("Recover your dice first."); return; }
     if (el.resolved) return;
     if (!dice.length && !shortPool()) { toast("Allocate at least one die first."); return; }
@@ -640,6 +643,7 @@
   function adjustStat(stat, delta) { state[stat] = Math.max(stat === "hp" ? 0 : 1, Math.min(6, state[stat] + delta)); render(); }
   function assignSelected(i) {
     if (state.architectMode) { moveArchitectDice(i); return; }
+    if (state.debugMode) { swapDebugDie(i); return; }
     if (!state.limitationResolved) { toast("Resolve the Limitation before committing dice."); return; }
     if (rollingStarted()) { toast("Dice are locked once the first Element rolls."); return; }
     const dice = selectedAvailable(); if (!dice.length) { toast("Select available dice first."); return; }
@@ -668,16 +672,29 @@
     dice.forEach(d => { d.element = destination; selectedDice.delete(d.id); });
     state.architectUsed = true; state.architectMode = false; log(`Architect moved ${dice.length} allocated die${dice.length === 1 ? "" : "s"} to Element ${destination + 1}.`); render();
   }
-  function debugElement(i) {
+  // DEBUG. "Once per Program, before rolling an element, swap 1 of its dice
+  // for a die from your available pool." A mode, like Reconfigure, because
+  // selecting an allocated die on an element that has not rolled otherwise
+  // means "take it back". The element's own button is the confirm, so the
+  // player learns one gesture for both Technicians.
+  function toggleDebugMode() {
+    if (TECHS[state.tech].name !== "Debugger" || !state.current || state.currentCompleted || state.debuggerUsed) return;
+    state.debugMode = !state.debugMode; selectedDice.clear();
+    toast(state.debugMode ? "Select 1 die on an element that has not rolled and 1 from your available pool, then tap Swap selected here." : "Debug canceled.");
+    render();
+  }
+  function swapDebugDie(i) {
+    if (!state.debugMode || state.debuggerUsed) return;
     const el = state.elements[i];
-    if (TECHS[state.tech].name !== "Debugger" || state.debuggerUsed || !el?.rolled || el.resolved || el.successes !== el.target - 1) return;
-    const dice = state.dice.filter(d => d.zone === "allocated" && d.element === i && selectedDice.has(d.id));
-    if (dice.length !== 1) { toast("Select exactly 1 die from this element to Debug."); return; }
-    const die = dice[0]; const before = value(die.face);
-    die.face = FACES[die.color][Math.floor(Math.random() * 6)]; selectedDice.delete(die.id);
-    el.successes += value(die.face) - before; state.debuggerUsed = true;
-    if (el.successes < el.target) { die.zone = "exhausted"; die.element = null; state.metrics.diceExhausted += 1; log(`Debugger rerolled 1 die; Element ${i + 1} still failed, so that die was exhausted.`); }
-    else log(`Debugger rerolled 1 die; Element ${i + 1} reached its Target.`);
+    if (!el || el.resolved || el.rolled) { toast("Debug swaps a die on an element that has not rolled."); return; }
+    const here = state.dice.filter(d => d.zone === "allocated" && d.element === i && selectedDice.has(d.id));
+    const pool = state.dice.filter(d => d.zone === "available" && selectedDice.has(d.id));
+    if (here.length !== 1 || pool.length !== 1) { toast("Select 1 die on this Element and 1 from your available pool."); return; }
+    const out = here[0], into = pool[0];
+    out.zone = "available"; out.element = null; out.face = null;
+    into.zone = "allocated"; into.element = i; into.face = null;
+    selectedDice.clear(); state.debuggerUsed = true; state.debugMode = false;
+    log(`Debugger swapped a ${out.color} die on Element ${i + 1} for a ${into.color} die.`);
     render();
   }
   function moveSelected(zone) {
@@ -693,6 +710,18 @@
       if (!selectedDice.has(id) && selectedDice.size >= recoveryOwed()) { toast(`You may recover ${recoveryOwed()} ${recoveryOwed() === 1 ? "die" : "dice"}.`); return; }
       selectedDice.has(id) ? selectedDice.delete(id) : selectedDice.add(id); render(); return;
     }
+    if (state.debugMode) {
+      // Keep at most one of each, so the confirm is never ambiguous.
+      const drop = z => [...selectedDice].forEach(x => { const o = dieById(x); if (o && o.zone === z && o.id !== id) selectedDice.delete(x); });
+      if (d.zone === "allocated") {
+        const el = state.elements[d.element];
+        if (!el || el.resolved || el.rolled) { toast("Debug swaps a die on an element that has not rolled."); return; }
+        drop("allocated");
+      } else if (d.zone === "available") {
+        drop("available");
+      } else { toast("Debug swaps an allocated die for one from your available pool."); return; }
+      selectedDice.has(id) ? selectedDice.delete(id) : selectedDice.add(id); render(); return;
+    }
     if (state.architectMode) {
       const el = d.zone === "allocated" ? state.elements[d.element] : null;
       if (!el || el.resolved || el.rolled) { toast("Reconfigure selects allocated dice from unresolved elements."); return; }
@@ -706,7 +735,7 @@
         if (el.pendingExhaust === 0) finalizeElement(el); else render(); return;
       }
       if (!el?.rolled) { if (rollingStarted()) { toast("Dice are locked once the first Element rolls."); return; } d.zone = "available"; d.element = null; selectedDice.delete(id); render(); }
-      else if ((TECHS[state.tech].name === "Compiler" || (TECHS[state.tech].name === "Debugger" && !state.debuggerUsed && el.successes === el.target - 1)) && !el.resolved) { selectedDice.has(id) ? selectedDice.delete(id) : selectedDice.add(id); render(); }
+      else if (TECHS[state.tech].name === "Compiler" && !el.resolved) { selectedDice.has(id) ? selectedDice.delete(id) : selectedDice.add(id); render(); }
       return;
     }
     if (d.zone === "banished") return;
@@ -743,7 +772,7 @@
     sprite($("techCard"), tech.side === "front" ? "AoS_Technicians_TTS.png" : "AoS_Technicians_TTS_back.png", tech.index, 3);
     const hints = {
       Architect: "Use Reconfigure, select up to 2 allocated dice from unresolved elements, then tap Move selected here on their destination.",
-      Debugger: "After missing a Target by exactly 1, tap one die in that element and choose Debug selected.",
+      Debugger: "Use Debug, select 1 die on an element that has not rolled and 1 from your available pool, then tap Swap selected here. Once per Program.",
       Optimizer: "After rolling Target +1, choose Count as optimal on that element. Usable once per cycle, and once more during Advanced Programming.",
       Engineer: "Choose Safe T+2 before rolling on up to 2 elements per Program.",
       Operator: "Apply Workaround manually by selecting the substitute non-Red die and using Withhold.",
@@ -751,11 +780,16 @@
     };
     $("techHint").textContent = hints[tech.name];
     const architect = tech.name === "Architect";
+    const isDebugger = tech.name === "Debugger";
     $("techAction").classList.toggle("hidden", !state.started);
-    $("techActionBtn").classList.toggle("hidden", !architect);
+    $("techActionBtn").classList.toggle("hidden", !(architect || isDebugger));
     if (architect) {
       $("techActionBtn").textContent = state.architectMode ? "Cancel Reconfigure" : (state.architectUsed ? "Reconfigure used" : "Use Reconfigure");
       $("techActionBtn").disabled = !state.current || state.currentCompleted || (state.architectUsed && !state.architectMode);
+    }
+    if (isDebugger) {
+      $("techActionBtn").textContent = state.debugMode ? "Cancel Debug" : (state.debuggerUsed ? "Debug used" : "Use Debug");
+      $("techActionBtn").disabled = !state.current || state.currentCompleted || (state.debuggerUsed && !state.debugMode);
     }
   }
   function zoomCard(source) {
@@ -808,13 +842,12 @@
       // so on the button - otherwise it reads as a bug in the next Program.
       const optimizeLabel = el.optimizerUsed ? "✓ Optimal" : (state.optimizerUsed ? (state.mode === "advanced" ? "Optimize used" : "Optimize used this cycle") : "Count as optimal");
       const optimizer = TECHS[state.tech].name === "Optimizer" ? `<button data-optimize="${i}" ${optimizerEligible ? "" : "disabled"}>${optimizeLabel}</button>` : "";
-      const debuggerButton = TECHS[state.tech].name === "Debugger" ? `<button data-debug="${i}" ${el.rolled && !el.resolved && el.successes === el.target - 1 && !state.debuggerUsed ? "" : "disabled"}>Debug selected</button>` : "";
       const engineer = TECHS[state.tech].name === "Engineer" ? `<button data-safe="${i}" ${el.rolled ? "disabled" : ""}>${el.thresholdBonus === 2 ? "✓ " : ""}Safe T+2</button>` : "";
-      const assignLabel = state.architectMode ? "Move selected here" : "Commit selected";
+      const assignLabel = state.architectMode ? "Move selected here" : (state.debugMode ? "Swap selected here" : "Commit selected");
       const locked = rollingStarted();
-      const canCommit = state.architectMode ? !el.rolled && !el.resolved : state.limitationResolved && !locked && !el.resolved;
+      const canCommit = state.architectMode || state.debugMode ? !el.rolled && !el.resolved : state.limitationResolved && !locked && !el.resolved;
       const left = extraRollsLeft();
-      return `<article class="element ${status}${readyToRoll && i === nextRoll ? " next" : ""}"><div class="element-head"><h3>Element ${i + 1}</h3><div class="target" aria-label="Printed Target"><span class="target-label">Printed Target</span><strong>${el.target}</strong></div></div><div class="element-drop" data-assign="${i}">${dice.map(dieButton).join("") || "<span class='hint'>No dice assigned</span>"}</div><div class="element-actions"><button data-assign="${i}" ${canCommit ? "" : "disabled"}${state.limitationResolved || state.architectMode ? "" : ' title="Resolve the Limitation first"'}>${assignLabel}</button><button data-unassign="${i}" ${!dice.length || el.rolled || locked ? "disabled" : ""}>Return dice</button><button data-roll="${i}" ${!readyToRoll || el.rolled || i !== nextRoll || pend ? "disabled" : ""}${readyToRoll ? (i > nextRoll && !el.resolved ? ' title="Roll the Elements in order, left to right"' : "") : ' title="Allocate dice to every Element first"'}>Roll</button><button data-reroll="${i}" ${!el.rolled || el.resolved || left <= 0 || pend ? "disabled" : ""}>${left > 0 ? `Extra roll (${left} left)` : "No extra rolls"}</button><button data-resolve="${i}" ${!el.rolled || el.resolved || pend ? "disabled" : ""}>Resolve</button>${engineer}${optimizer}${debuggerButton}</div><div class="element-score">${score}</div></article>`;
+      return `<article class="element ${status}${readyToRoll && i === nextRoll ? " next" : ""}"><div class="element-head"><h3>Element ${i + 1}</h3><div class="target" aria-label="Printed Target"><span class="target-label">Printed Target</span><strong>${el.target}</strong></div></div><div class="element-drop" data-assign="${i}">${dice.map(dieButton).join("") || "<span class='hint'>No dice assigned</span>"}</div><div class="element-actions"><button data-assign="${i}" ${canCommit ? "" : "disabled"}${state.limitationResolved || state.architectMode || state.debugMode ? "" : ' title="Resolve the Limitation first"'}>${assignLabel}</button><button data-unassign="${i}" ${!dice.length || el.rolled || locked ? "disabled" : ""}>Return dice</button><button data-roll="${i}" ${!readyToRoll || el.rolled || i !== nextRoll || pend ? "disabled" : ""}${readyToRoll ? (i > nextRoll && !el.resolved ? ' title="Roll the Elements in order, left to right"' : "") : ' title="Allocate dice to every Element first"'}>Roll</button><button data-reroll="${i}" ${!el.rolled || el.resolved || left <= 0 || pend ? "disabled" : ""}>${left > 0 ? `Extra roll (${left} left)` : "No extra rolls"}</button><button data-resolve="${i}" ${!el.rolled || el.resolved || pend ? "disabled" : ""}>Resolve</button>${engineer}${optimizer}</div><div class="element-score">${score}</div></article>`;
     }).join("") + Array.from({ length: Math.max(0, MAX_ELEMENTS - state.elements.length) }, (_, k) =>
       // Unused slots keep the board at five Elements; they take no dice and every control stays disabled.
       `<article class="element unused" aria-disabled="true"><div class="element-head"><h3>Element ${state.elements.length + k + 1}</h3><div class="target" aria-label="Printed Target"><span class="target-label">Printed Target</span><strong>—</strong></div></div><div class="element-drop"><span class='hint'>Not used on this Program</span></div><div class="element-actions"><button disabled>Commit selected</button><button disabled>Return dice</button><button disabled>Roll</button><button disabled>Extra roll</button><button disabled>Resolve</button></div><div class="element-score">&nbsp;</div></article>`
@@ -916,7 +949,7 @@
 
     $("flipBtn").addEventListener("click", () => { state.currentFace = state.currentFace === "front" ? "back" : "front"; syncPrintedTargets(); render(); });
     $("finishProgramBtn").addEventListener("click", () => completeProgram(false)); $("requiredMissBtn").addEventListener("click", markRequiredMiss);
-    $("techActionBtn").addEventListener("click", toggleArchitectMode); $("applyRewardBtn").addEventListener("click", () => applyReward());
+    $("techActionBtn").addEventListener("click", () => { if (TECHS[state.tech].name === "Debugger") toggleDebugMode(); else toggleArchitectMode(); }); $("applyRewardBtn").addEventListener("click", () => applyReward());
     $("resetBtn").addEventListener("click", reset); $("copySummaryBtn").addEventListener("click", copySummary);
     $("closeCardBtn").addEventListener("click", () => $("cardDialog").close());
     [$("programCard"), $("limitationCard"), $("techCard")].forEach(el => el.addEventListener("click", () => zoomCard(el)));
@@ -945,7 +978,6 @@
       const resolve=e.target.closest("[data-resolve]"); if(resolve){beginResolve(Number(resolve.dataset.resolve));return;}
       const safe=e.target.closest("[data-safe]"); if(safe){const el=state.elements[Number(safe.dataset.safe)];if(el.thresholdBonus===2){el.thresholdBonus=1;}else if(state.elements.filter(x=>x.thresholdBonus===2).length<2){el.thresholdBonus=2;}else{toast("Engineer can use Redundancy on up to 2 elements.");}render();return;}
       const optimize=e.target.closest("[data-optimize]"); if(optimize){const el=state.elements[Number(optimize.dataset.optimize)];if(!state.optimizerUsed&&el.rolled&&!el.resolved&&el.successes===el.target+1){el.optimizerUsed=true;state.optimizerUsed=true;log(`Optimizer counted Element ${el.id+1} at Target +1 as optimal.`);render();}return;}
-      const debug=e.target.closest("[data-debug]"); if(debug){debugElement(Number(debug.dataset.debug));return;}
       const stat=e.target.closest("[data-stat]"); if(stat){adjustStat(stat.dataset.stat,Number(stat.dataset.delta));return;}
       const signal=e.target.closest("[data-signal]"); if(signal){state.metrics[signal.dataset.signal]+=1;log(`Signal recorded: ${signal.dataset.signal}.`);render();}
     });

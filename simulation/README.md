@@ -406,6 +406,10 @@ Specimens are the Value-5 cards).
 
 Measured 2026-11-05, 20,000 games a cell, `ALLOC_MODE = sacrifice_short`.
 
+> **Stale.** This grid predates the Debugger's ability change on 2026-11-05
+> and has not been regenerated yet; Standard should land near 51.6%. The
+> per-Technician table further down is current. Run `python table.py`.
+
 | difficulty | no NRJ | Tier I | Tier II | Tier III |
 |---|---|---|---|---|
 | Easy 3/3/2 | 60.1% | 41.7% | 35.3% | 37.3% |
@@ -511,7 +515,7 @@ statlines really are identical the whole spread is ability text:
 
 | game | best | worst | spread |
 |---|---|---|---|
-| AoS Technicians | Debugger 88.4% | Compiler 47.1% | 41.3 |
+| AoS Technicians | Debugger 54.6% | Compiler 47.1% | 7.5 |
 | NAP Apprentices | Technician 80.8% | Prodigy 73.5% | 7.3 |
 | BAT Lab Rat sides | tool_keeper 53.2% | adaptation 49.6% | 3.6 |
 
@@ -521,27 +525,37 @@ all four Rats always play, so it is 16 side-combinations, and Rat abilities do
 not apply in the Tyrant Battle at all - which is why its spread is the
 narrowest.
 
-**AoS's 41 points is one card, and it is a live defect.** Five Technicians sit
-inside 47.1-53.8; the Debugger reads 88.4%. The giveaway is not the level but
-the slope: across Easy to Nobulous the other five lose 24.9 to 26.3 points
-while the Debugger loses **10.2** and still wins 81% on the hardest rung. Debug
-turns a near miss into a pass, harder rungs produce more near misses, so the
-ability scales with the difficulty and cancels it - picking the Debugger is not
-a choice of how to play but a choice to switch the ladder off.
+**AoS's spread was 41 points this morning, and it was one card.** The
+Debugger read 88.4% against five Technicians inside 47.1-54.3. The giveaway
+was not the level but the slope: across Easy to Nobulous the other five lose
+23.0 to 26.3 points while the Debugger lost **10.2** and still won 81% on the
+rung meant to be won one time in five. Its ability was "after failing by
+exactly 1 success, reroll 1 allocated die" - and a reroll only pays when you
+are short by exactly 1, so the ability grew with the difficulty it was
+supposed to be graded by and cancelled it. Picking the Debugger was not a
+choice of how to play but a choice to switch the ladder off, which is a worse
+problem than a card being strong: the ladder is the only thing the campaign
+axis has to say.
 
 This only became visible on 2026-11-05, when two model defects that had been
 hiding each other were fixed. The model forced the Debugger to spend its extra
-STR roll before Debug could fire, which understated it at 61.5%; it also made
-the Architect dismantle its own allocation, which overstated nothing and
-understated that card by 15 points. One card too strong and one too weak
-cancelled in the six-Technician mean, so the published AoS figures looked
-settled while both were wrong. Fixing them widened the spread from 35.6 to
-41.3 - the right direction, because the spread was always there.
+STR roll before Debug could fire, which understated it at 68.0%; it also made
+the Architect dismantle its own allocation, understating that card by 15
+points. One card too strong and one too weak cancelled in the six-Technician
+mean, so the published AoS figures looked settled while both were wrong.
 
-`dbg_cycle` in `aos.py` is the measured answer: once per cycle, matching the
-Optimizer's new cadence, reads 61.3% with a 23.9-point slope and brings the
-roster spread to 14.1 while leaving the published mean at 52.1% against 51.7%
-today. It is not applied - the card text is a design call, not a model fix.
+**The fix was a different ability, not a smaller one.** Metering the reroll
+does work - once per cycle and once in Advanced Programming reads 62.7% on a
+25.5-point slope - but it buys a second cadence clause and still leaves the
+card 8.4 clear of the roster, because the trigger is the problem and the
+frequency is only a brake on it. Debug now reads **"Once per Program, before
+rolling an element, swap 1 of its dice for a die from your available pool"**:
+one clause, no cadence, and a payout that does not depend on having missed.
+It reads **54.6%** on a **24.0** slope, 0.3 above the Architect, and adding it
+to the other five widens the roster spread from 7.2 to **7.5** - a sixth card
+that distorts nothing. `link` (carry a surplus success onward) is the same
+disease from another angle and reads slope 16.5; the full candidate table is
+in `RESULTS.txt` and every variant is still in `aos.py`.
 
 ## Fidelity
 

@@ -498,20 +498,24 @@ else:
 check("the lab prints the Technician abilities the cards print",
       _gen_techs and not _tech_bad, "; ".join(_tech_bad[:3]))
 
-# OPTIMIZE'S CADENCE, printed and implemented. The card went from "once per
-# Program" to "once per cycle and once in Advanced Programming" on
-# 2026-11-05, and the lab has to agree in CODE as well as in card text -
-# state.optimizerUsed must NOT be cleared in drawProgram(), and must be
-# cleared where a cycle turns over and where Advanced Programming starts.
-# The printed text alone would pass while the lab still handed out a use
-# every Program, which is the 14-point version of the card.
-_opt_txt = ""
-for _g in _gen_techs:
-    if _g[0] == "Optimizer":
-        _opt_txt = _g[2]
+# TWO CADENCES, printed and implemented, and they are NOT the same one.
+# Optimize went to "once per cycle and once in Advanced Programming" on
+# 2026-11-05; Debug was tried on that same clause the same day and then
+# replaced outright, because metering was never the fix - a reroll only
+# pays when you are short by exactly 1, so its value climbed with the
+# difficulty and flattened the ladder. Debug is now a pre-roll swap and is
+# back to once per Program. The lab has to agree in CODE as well as in
+# card text, and the two cards want OPPOSITE answers at all three reset
+# sites, so each is checked on its own.
+CADENCE = "Once per cycle and once in Advanced Programming"
+_tech_txt = {_g[0]: _g[2] for _g in _gen_techs}
 check("the Optimizer card is the per-cycle wording",
-      "Once per cycle and once in Advanced Programming" in _opt_txt,
-      _opt_txt[:60])
+      CADENCE in _tech_txt.get("Optimizer", ""),
+      _tech_txt.get("Optimizer", "")[:60])
+check("the Debugger card is the pre-roll swap, not a reroll",
+      "swap 1 of its dice" in _tech_txt.get("Debugger", "")
+      and "reroll" not in _tech_txt.get("Debugger", "").lower(),
+      _tech_txt.get("Debugger", "")[:60])
 _app = text("playtest/dist/app.js")
 
 
@@ -535,14 +539,27 @@ def _body(fn):
 
 _draw, _adv = _body("drawProgram"), _body("beginAdvanced")
 _cycle_turn = re.search(r"state\.cycle \+= 1;[^\n]*", _draw)
+# One regex, reused: the cycle-turn line is where Optimize comes back.
+_draw_np = _draw.replace(_cycle_turn.group(0), "") if _cycle_turn else _draw
 check("the lab does not refresh Optimize every Program",
-      _draw and "state.optimizerUsed = false" not in
-      re.sub(r"state\.cycle \+= 1;[^\n]*", "", _draw),
+      _draw and "state.optimizerUsed = false" not in _draw_np,
       "drawProgram() still clears it per Program")
 check("the lab refreshes Optimize when a cycle turns over",
       _cycle_turn and "state.optimizerUsed = false" in _cycle_turn.group(0))
 check("the lab refreshes Optimize for Advanced Programming",
       _adv and "state.optimizerUsed = false" in _adv)
+check("the lab refreshes Debug every Program",
+      _draw and "state.debuggerUsed = false" in _draw_np,
+      "drawProgram() does not clear it")
+check("the lab does not hand Debug back at a cycle turn",
+      _cycle_turn and "state.debuggerUsed = false" not in _cycle_turn.group(0))
+check("the lab does not hand Debug back in Advanced Programming",
+      _adv and "state.debuggerUsed = false" not in _adv)
+# ...and the reroll route has to be gone, not merely unused: a disabled
+# button and a live handler is how a replaced ability comes back.
+check("the lab implements Debug as a swap, with no reroll left behind",
+      "function swapDebugDie" in _app and "function toggleDebugMode" in _app
+      and "debugElement" not in _app and "data-debug" not in _app)
 
 # EVERY LAB ASSET MUST CARRY THE CACHE TOKEN, on ONE token. AGENTS.md: a
 # cached index.html "pins you to an old build however often you bump them",

@@ -201,9 +201,9 @@ LIMITATIONS = ["yellow", "green", "blue", "purple", "diversity", "red"]
 # The six Experimental Technicians. One ability each, once per Program unless
 # the card says otherwise.
 #   architect  move up to 2 allocated dice between unresolved elements
-#   debugger   after missing by exactly 1, reroll 1 die on that element
-#              - see the Debug note below; this is the strongest card on
-#              the roster by a wide margin once it is played properly
+#   debugger   swap 1 allocated die for one from the pool before an
+#              element rolls - see the Debug note below for what this
+#              card used to do and why the effect had to change
 #   optimizer  once per CYCLE and once in Advanced Programming, Target + 1
 #              may count as Optimal Implementation - see the cadence note
 #   engineer   the safe threshold is Target + 2 on up to 2 elements
@@ -256,27 +256,60 @@ OPT_LONG_TECHS = ("optimizer", "opt_game", "opt_cycle_strict")
 # ...and of those, the ones whose use comes back at a cycle boundary.
 OPT_CYCLE_TECHS = ("optimizer", "opt_cycle_strict")
 
-# DEBUG. "Once per Program, after failing by exactly 1 success, reroll 1
-# allocated die. If it still fails, exhaust that die." The penalty clause is
-# a no-op - a failed element already exhausts every die allocated to it - so
-# the card as printed costs nothing at all to use.
+# DEBUG. "Once per Program, before rolling an element, swap 1 of its dice
+# for a die from your pool."  One clause, and it needs no cadence beyond
+# "once per Program", which is why it replaced the card below.
 #
-# Until 2026-11-05 the model spent the extra STR roll greedily whenever an
-# element came up short, so Debug could only ever fire on the POST-reroll
-# total. That is strictly wrong play for this Technician: an extra roll is a
-# full reroll whose result stands "better or worse", and it exhausts that
-# element's dice regardless of outcome, while Debug is one die, free, and
-# cannot make things worse. A player sitting on Target-1 declines the extra
-# roll and Debugs instead - and may still spend the roll afterwards if Debug
-# missed too. Fixing that ordering moved the Debugger from 68.2% to 85.7%.
-# Candidates, if the card needs taming:
-#   debugger    the printed card, played properly
-#   debug_late  the old forced-STR-roll ordering, kept for measurement
-#   dbg_cycle   once per CYCLE instead of once per Program, matching the
-#               Optimizer's cadence
-#   dbg_cost    per Program, but the rerolled die exhausts even when it
-#               rescues the element - which gives the clause teeth
-DEBUG_TECHS = ("debugger", "dbg_cycle", "dbg_cost")
+# WHAT THE CARD USED TO BE, and why the wording kept growing. It read
+# "Once per Program, after failing by exactly 1 success, reroll 1 allocated
+# die. If it still fails, exhaust that die." - three clauses, and the last
+# of them a no-op, since a failed element already exhausts every die on it.
+# Played properly that is not a Technician, it is a difficulty switch: 88.4%
+# at Standard, and - the part that mattered - 10.2 points of slope from Easy
+# to Nobulous where the other five lose 23-26.
+#
+# THE TRIGGER IS WHAT BREAKS IT, NOT THE FREQUENCY. A reroll only pays when
+# you are short by exactly 1, harder rungs produce more near misses, so the
+# value climbs with the difficulty it is supposed to be graded by and
+# cancels it. Metering the card is then the only lever left, which is where
+# the extra clauses came from - and metering it to once per cycle and once
+# in Advanced Programming does work (62.7%, slope 25.5) but costs a second
+# cadence clause and still leaves the card 8.4 clear of the roster. `link`
+# is the same disease from another angle: a banked success is worth most
+# when you are short, and it reads slope 16.5.
+#
+# An ability whose payout does NOT depend on having missed needs no
+# metering at all. Measured, 10000 games a cell - Standard, then the slope:
+#   dbg_reroll        once per PROGRAM, the old card     88.4%    10.2
+#   link              carry 1 surplus success onward     77.4%    16.5
+#   optimize          1 element Target -1 each Program   75.5%    22.6
+#   dbg_rec           recover 1 additional die           72.9%    21.4
+#   dbg_reroll_cycle  the reroll, per cycle + Advanced   62.7%    25.5
+#   cache             1st element resolved burns none    57.3%    24.6
+#   dbg_trace         each Optimal recovers 1 more       56.6%    22.2
+#   debugger          THE SWAP, as the card now prints   54.6%    24.0
+#   dbg_clean         a clean Program recovers 2 more    50.9%    26.9
+#   plain             no ability at all                  47.2%    24.9
+# The swap is a colour upgrade worth about half a success, every Program,
+# whatever the rung - so it inherits the floor's slope. It lands 0.3 above
+# the Architect and leaves the roster spread at 7.5 against 7.2 for the
+# five without a Debugger at all: a sixth card that widens nothing.
+#
+# The reroll variants are kept so the comparison stays in the file:
+#   dbg_reroll        the old printed card, once per Program
+#   dbg_reroll_cycle  per cycle and once in Advanced Programming
+#   dbg_cycle_strict  the bare "once per cycle" reading, no Advanced use
+#   dbg_cost          per Program, the rerolled die burns even on a rescue
+#   debug_late        the old forced-STR-roll model ordering
+# dbg_cost (85.6%, slope 14.9) is why the penalty clause was never the
+# answer: the cost is one die and the ability buys Health, which is the
+# only thing that can lose the game.
+DEBUG_TECHS = ("dbg_reroll", "dbg_reroll_cycle", "dbg_cycle_strict",
+               "dbg_cost")
+# ...of those, limited to one use per cycle rather than one per Program.
+DBG_LONG_TECHS = ("dbg_reroll_cycle", "dbg_cycle_strict")
+# The shipped card. dbg_swap is kept as an alias so older scripts still run.
+SWAP_TECHS = ("debugger", "dbg_swap")
 
 # An extra STR roll rerolls the dice you pick and keeps the rest. With this
 # False the model throws the whole element again, which is how it behaved
@@ -1082,6 +1115,7 @@ class Game(object):
         used_debug = used_optimize = False
         carry = 0              # link: a surplus success held for a later element
         link_spent = cache_spent = analyse_spent = save2_spent = False
+        swap_spent = False
         # RECONFIGURE, THE BLIND VERSIONS. Both are kept only so the cost of
         # misplaying the card can be measured instead of asserted; the
         # playable version is adaptive and lives in the element loop below.
@@ -1142,6 +1176,24 @@ class Game(object):
                         or i >= len(targets) - 2):
                     if self.reconfigure(plan, targets, ahead, failed):
                         arch_used = True
+            # dbg_swap: "Once per Program, before rolling an element, swap
+            # 1 of its dice for a die from your pool." A colour upgrade,
+            # not a change of count - the payout is about half a success
+            # and does not depend on having missed anything. A die locked
+            # there by a coloured dot cannot be the one swapped out.
+            if self.tech in SWAP_TECHS and not swap_spent:
+                free_ix = list(range(len(locked[i]), len(plan[i])))
+                left = list(self.available)
+                for j in range(i, len(targets)):
+                    for c in plan[j]:
+                        if c in left:
+                            left.remove(c)
+                if free_ix and left:
+                    k = min(free_ix, key=lambda k: EV[plan[i][k]])
+                    best = max(left, key=lambda c: EV[c])
+                    if EV[best] > EV[plan[i][k]]:
+                        swap_spent = True
+                        plan[i][k] = best
             dice = plan[i]
             for c in dice:
                 if c in self.available:
@@ -1173,12 +1225,12 @@ class Game(object):
             # the element for nothing. debug_late keeps that for measurement.
             dbg_burn = False
             if (self.tech in DEBUG_TECHS and not used_debug and total == t - 1
-                    and not (self.tech == "dbg_cycle"
+                    and not (self.tech in DBG_LONG_TECHS
                              and getattr(self, "_dbg_long", False))):
                 miss_ix = [k for k, v in enumerate(values) if v == 0]
                 if miss_ix:
                     used_debug = True
-                    if self.tech == "dbg_cycle":
+                    if self.tech in DBG_LONG_TECHS:
                         self._dbg_long = True
                     dbg_burn = self.tech == "dbg_cost"
                     # A player rerolls the best die that missed, not the
@@ -1307,6 +1359,8 @@ class Game(object):
                         del self.exhausted[-burn:]
                 if total == t:                  # Optimal Implementation
                     recovery += OPTIMAL_BONUS
+                    if self.tech == "dbg_trace":
+                        recovery += 1
                 elif (self.tech in OPTIMIZE_TECHS and total == t + 1
                       and not used_optimize
                       and not (self.tech in OPT_LONG_TECHS
@@ -1352,6 +1406,12 @@ class Game(object):
             # it on a clean Program and a bad one leaves you short for the
             # next, which is how scarcity compounds instead of just biting.
             recovery = max(0, recovery - self.rec)
+        # Debugger candidates whose payout does NOT depend on having
+        # missed: dbg_rec is flat, dbg_clean pays only when nothing broke.
+        if self.tech == "dbg_rec":
+            recovery += 1
+        elif self.tech == "dbg_clean" and not failed:
+            recovery += 2
         for _ in range(min(recovery, len(self.exhausted))):
             self.available.append(self.exhausted.pop())
         if failed >= 2:
@@ -1428,7 +1488,7 @@ class Game(object):
                     self.negates_left = NEGATES_PER_CYCLE or -1
                     if self.tech in OPT_CYCLE_TECHS:
                         self._opt_long = False   # a new cycle, a new use
-                    if self.tech == "dbg_cycle":
+                    if self.tech in DBG_LONG_TECHS:
                         self._dbg_long = False
                     self.queue = [p["id"] for p in active]
                     self.rng.shuffle(self.queue)
@@ -1485,6 +1545,10 @@ class Game(object):
             # opt_cycle_strict is the bare "once per cycle" reading and gets
             # nothing here.
             self._opt_long = False
+        if self.tech == "dbg_reroll_cycle":
+            # The reroll variant that prints the Optimizer's cadence.
+            # dbg_cycle_strict is the bare reading and gets nothing here.
+            self._dbg_long = False
         overheated = False
         for pid in adv:
             if self.hp <= 0:

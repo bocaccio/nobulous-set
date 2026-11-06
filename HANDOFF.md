@@ -1971,9 +1971,11 @@ Not your job to fix, but worth knowing if Jon raises them:
   describe rules that no longer ship. Promoting `proto/bat.py` over it, and
   re-running the cross-tab, is the outstanding job.
 
-- **The Optimizer was reprinted on 2026-11-05, and the Debugger should be
-  next.** This is the only card text changed since the set was calibrated,
-  and it was changed because the card was 14 points clear of the roster.
+- **Two cards changed on 2026-11-05, the Optimizer and the Debugger.** They
+  are the only card text changed since the set was calibrated. The Optimizer
+  kept its ability and had its cadence slowed; the Debugger kept its name
+  and had its ability replaced outright. The difference between those two
+  outcomes is the lesson, and it is spelled out below.
 
   **Optimize now reads "Once per cycle and once in Advanced Programming,
   Target +1 successes may count as Optimal Implementation."** It was once
@@ -1993,22 +1995,64 @@ Not your job to fix, but worth knowing if Jon raises them:
   `beginAdvanced()`. `check_app_sync.py` now asserts all three, and the
   assertion was confirmed to fail when the per-Program reset is put back.
 
-  **The Debugger is the live defect and the card is untouched.** It reads
-  **88.4%** at Standard against five cards inside 47.1–54.3. The level is
-  not the worst of it — the slope is. The other five lose 23 to 26 points
-  from Easy to Nobulous; the Debugger loses **10.2** and still wins 81% on
-  the rung meant to be won one time in five. Debug converts a miss by
-  exactly 1 into a pass, harder rungs produce more near misses, so the
-  ability grows with the difficulty and cancels it. `dbg_cycle` in
-  `aos.py` is the measured answer — once per cycle, 61.3%, slope 23.9,
-  roster spread 41.3 → 14.1, published mean back to 52.1%. Making the
-  rerolled die always exhaust does **not** work (85.6%): the cost is one
-  die and the ability buys Health.
+  **The Debugger kept its name and lost its ability.** Debug now reads
+  **"Once per Program, before rolling an element, swap 1 of its dice for a
+  die from your available pool."** One clause, 99 characters, three printed
+  lines. It replaced "Once per Program, after failing by exactly 1 success,
+  reroll 1 allocated die. If it still fails, exhaust that die."
+
+  **The trigger was the problem, not the frequency — this is the part worth
+  carrying forward.** A reroll only pays when you are short by exactly 1.
+  Harder rungs produce more near misses, so the ability grew with the
+  difficulty it is supposed to be graded by and cancelled it: **88.4%** at
+  Standard against five cards inside 47.1–54.3, and a slope of **10.2**
+  where the other five lose 23–26. A card that flattens the ladder is a
+  worse problem than a card that is strong, because the ladder is the only
+  thing the campaign axis has to say.
+
+  Metering it *does* work — "once per cycle and once in Advanced
+  Programming", the Optimizer's clause word for word, reads 62.7% on a 25.5
+  slope — and that version was built, verified in the lab and then backed
+  out, because it buys a second cadence clause and still leaves the card 8.4
+  clear of the roster. Frequency is only a brake on a bad trigger. **An
+  ability whose payout does not depend on having missed needs no metering at
+  all**, which is why the swap needs one clause where the reroll needed
+  three (and the third of those, "exhaust that die", was a no-op: a failed
+  element already exhausts every die on it).
+
+  The swap is a colour upgrade worth about half a success every Program
+  whatever the rung, so it inherits the no-ability floor's slope. **54.6%,
+  slope 24.0**, 0.3 above the Architect, and adding it to the other five
+  widens the roster spread from 7.2 to **7.5** — a sixth Technician that
+  distorts nothing, where the reroll left 15.6 even after metering and 41.3
+  before it. Eight alternatives were measured; the table is in
+  `RESULTS.txt` and every variant is still selectable in `aos.py`
+  (`dbg_reroll`, `dbg_reroll_cycle`, `dbg_cycle_strict`, `dbg_cost`,
+  `cache`, `dbg_rec`, `dbg_clean`, `dbg_trace`, `link`, `optimize`).
+  `link` — carry a surplus success onward — is the same disease from another
+  angle at slope 16.5, so the rule generalises: **anything that pays you for
+  falling short will flatten this ladder.**
+
+  In the lab Debug is a *mode*, like Reconfigure, because selecting an
+  allocated die on an element that has not rolled otherwise means "take it
+  back". `Use Debug` arms it, you pick 1 die on the element and 1 from the
+  pool, and the element's own button — which reads `Swap selected here` —
+  is the confirm, so one gesture serves both Technicians. The reroll route
+  is gone rather than disabled: `debugElement` and `data-debug` no longer
+  exist, and `check_app_sync.py` asserts that, asserts the card text says
+  swap and not reroll, and asserts that Optimize and Debug get **opposite**
+  answers at all three reset sites (Optimize survives `drawProgram()` and
+  comes back at the cycle turn and in `beginAdvanced()`; Debug does the
+  reverse). Verified by driving the real UI: the swap moved the chosen die
+  both ways with the element count unchanged, locked for the rest of the
+  Program, and came back on the next one, with all 17 dice still accounted
+  for at the end of the game.
 
 - **Two AoS abilities were being MISPLAYED by the model, in opposite
   directions, and had been hiding each other.** Neither was a card problem.
-  Fixing them is why the published AoS row moved from 51.7% to 57.4% on
-  2026-11-05 without the game changing at all.
+  Fixing them moved the published AoS row from 51.7% to 57.4% on 2026-11-05
+  without the game changing at all; replacing the Debugger's ability later
+  the same day brought it back down. See the AoS grid for where it landed.
 
   `Debug` only ever fired on the POST-reroll total, because the model spent
   the extra STR roll whenever an element came up short. That is wrong play:

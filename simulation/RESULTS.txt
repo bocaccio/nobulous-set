@@ -14,6 +14,12 @@ NAP  Nobulous Apprenticeship Program
 ==================================================================
   difficulty = Credit goal / Setbacks in the deck; FINF at Reduce 1
 
+  *** THE FOUR COLUMNS BELOW ARE STALE. They were taken with the
+  Debugger's old reroll ability and have not yet been regenerated
+  with the swap that replaced it on 2026-11-05. Standard should
+  land near 51.6% - see THE SIX TECHNICIANS below, which IS
+  current. Run `python table.py` and replace this block. ***
+
                             no NRJ    Tier I   Tier II  Tier III
   Easy (5 Cr, 4 Sb)          55.5%     51.9%     41.7%     56.9%
   Standard (6 Cr, 4 Sb) *     48.8%     44.2%     36.1%     52.3%
@@ -80,22 +86,28 @@ AoS  Automaton of Shale
     stronger policy very nearly cancel, and Nobulous did not move
     at all.  See the POLICY section below for why.
 
-    THESE ROSE 5 TO 6 POINTS LATER ON 2026-11-05 AND NOT BY
-    DESIGN.  Standard read 51.7% that morning and reads 57.4%
-    now, at the very top of the 47-57 band.  Nothing about the
-    game changed: the row is a MEAN OF SIX TECHNICIANS, and two
-    of the six were being misplayed by the model in opposite
-    directions, so the error cancelled in this row while both
-    cards were wrong.  The model forced the Debugger to spend
-    its extra STR roll before Debug could fire, understating it
-    at 61.5% when the printed card is worth 88.4%; and it made
-    the Architect strip the buffer off elements that were going
-    to pass, understating that card by 15.  Fixing both is what
-    moved this grid.  The whole 5.7 points is the Debugger, and
-    taking it to once per cycle - the measured candidate, not
-    applied - puts Standard back at 52.1%.  Read the per-hero
-    table below before quoting this row: a mean across a roster
-    that spans 41 points is not a difficulty.
+    THIS ROW MOVED TWICE ON 2026-11-05 AND NEITHER MOVE WAS A
+    DESIGN CHANGE TO THE GAME.  It is a MEAN OF SIX TECHNICIANS,
+    so it reports the roster rather than the difficulty, and the
+    roster is what changed.
+
+    It read 51.7% that morning.  Two of the six were being
+    misplayed by the model in OPPOSITE directions, so the error
+    very nearly cancelled here while both cards were wrong: the
+    model forced the Debugger to spend its extra STR roll before
+    Debug could fire, understating it at 68.0% against a true
+    88.4%, and it made the Architect strip the buffer off
+    elements that were going to pass, understating that card by
+    15.  Fixing both pushed this row to 57.4%, the top of the
+    47-57 band, with nothing about the game changed - and the
+    whole 5.7 points was the Debugger.
+
+    That exposed the Debugger as a card whose value GREW with
+    the difficulty, so its ability was replaced the same day
+    with a pre-roll die swap, which brings the row back down.
+    Read THE SIX TECHNICIANS below before quoting this one: a
+    mean is only worth reading when the roster under it is
+    tight, and for most of today it was not.
     Tier I   1 of 6 Nobulous Interference cards drawn at setup
     Tier II  6 Corrupted Limitations in the Limitation deck
     Tier III 6 Backdoor Routines, at most 2 claimed per game
@@ -107,24 +119,29 @@ AoS  Automaton of Shale
   to pass to be a character rather than a difficulty setting.
 
                             Easy  Stand   Hard  Nobul  Easy-Nob
-    Debugger               91.3%  88.4%  84.9%  81.1%      10.2
-    Optimizer              61.9%  53.8%  45.8%  36.9%      25.0
+    Debugger               62.2%  54.6%  46.0%  38.2%      24.0
     Architect              62.1%  54.3%  46.4%  39.1%      23.0
+    Optimizer              61.9%  53.8%  45.8%  36.9%      25.0
     Operator               61.1%  52.2%  44.0%  35.5%      25.5
     Engineer               56.9%  47.5%  39.1%  30.5%      26.3
     Compiler               54.8%  47.1%  37.2%  29.6%      25.2
 
-  FIVE OF THE SIX ARE A ROSTER.  They sit inside 47.1-54.3 at
-  Standard and all lose 23.0 to 26.3 points down the ladder, so
-  picking one is a choice of HOW to play.  The Debugger is not
-  in that roster.  It is 34 points clear of the next card, and
-  the slope is the real tell: it loses 10.2 points where the
-  others lose 25, and still wins 81% on the rung meant to be
-  won one time in five.  Debug turns a miss by exactly 1 into a
-  pass, harder rungs produce more near misses, so the ability
-  grows as the difficulty does and cancels it.  Choosing the
-  Debugger is not a way to play AoS, it is a way to switch the
-  ladder off.
+  THE SIX ARE A ROSTER.  They sit inside 47.1-54.6 at Standard
+  and all lose 23.0 to 26.3 points down the ladder, so picking
+  one is a choice of HOW to play.  The Debugger is top of the
+  band by 0.3 over the Architect, and adding it to the other
+  five widens the spread from 7.2 to 7.5: a sixth card that
+  distorts nothing.
+
+  IT WAS NOT A ROSTER THIS MORNING.  The Debugger read 88.4%
+  at Standard, 34 points clear, and the slope was the real
+  tell: it lost 10.2 points where the others lose 25, and
+  still won 81% on the rung meant to be won one time in five.
+  Debug then turned a miss by exactly 1 into a pass, harder
+  rungs produce more near misses, so the ability grew with the
+  difficulty it is supposed to be graded by and cancelled it.
+  Choosing the Debugger was not a way to play AoS, it was a
+  way to switch the ladder off.
 
   WHY THIS ONLY SURFACED NOW.  Two model defects had been
   hiding each other since the abilities were first modelled:
@@ -135,7 +152,7 @@ AoS  Automaton of Shale
                 not a house rule - an extra roll is a full
                 reroll that stands "better or worse" AND
                 exhausts the element's dice regardless of
-                outcome, while Debug is one die and free, so a
+                outcome, while Debug was one die and free, so a
                 player on Target-1 declines the roll and Debugs.
                 Misplayed: 68.0%.  Played properly: 88.4%.
     Architect   Reconfigure prints "move UP TO 2" and the model
@@ -147,21 +164,67 @@ AoS  Automaton of Shale
 
   One card 20 points too strong and one 15 too weak very nearly
   cancel in a mean of six, which is exactly what the published
-  AoS row was.  The spread went from 35.6 points to 41.3 when
-  both were fixed - the right direction, because the spread was
-  always there and the mean was hiding it.
+  AoS row was.  Fixing both widened the spread from 35.6 points
+  to 41.3 - the right direction, because the spread was always
+  there and the mean was hiding it.  Replacing the Debugger's
+  ability then closed it to 7.5.
 
-  THE MEASURED FIX, NOT APPLIED.  Card text is a design call.
-    dbg_cycle   once per CYCLE, matching the Optimizer's new
-                cadence: 68.3 / 61.3 / 53.5 / 44.5, slope 23.9.
-                Roster spread 41.3 -> 14.1 at Standard, and the
-                published mean lands at 52.1% against the 51.7%
-                of the morning, so the calibration survives.
-    dbg_cost    the rerolled die exhausts even when it rescues
-                the element: 85.6%, slope 14.9.  Does not work.
-                The cost is one die and the ability buys Health,
-                which is the only thing that can lose the game.
-  Cadence is the only lever that bites.  Both live in aos.py.
+  THE FIX, APPLIED 2026-11-05: A DIFFERENT ABILITY, NOT A
+  SMALLER ONE.  Debug now reads "Once per Program, before
+  rolling an element, swap 1 of its dice for a die from your
+  available pool."  One clause, 99 characters, three printed
+  lines, and no cadence beyond once per Program.
+
+  THE TRIGGER WAS THE PROBLEM, NOT THE FREQUENCY.  The old
+  card read "Once per Program, after failing by exactly 1
+  success, reroll 1 allocated die.  If it still fails, exhaust
+  that die" - three clauses, the last of them a no-op, since a
+  failed element already exhausts every die on it.  A reroll
+  only pays when you are short by exactly 1, so its value
+  climbs with the difficulty, and metering is then the only
+  lever left.  Metering it DOES work - once per cycle and once
+  in Advanced Programming reads 62.7% on a 25.5 slope - but it
+  buys a second cadence clause and still leaves the card 8.4
+  clear of the roster.  An ability whose payout does not depend
+  on having missed needs no metering at all.
+
+  Measured, 10000 games a cell - Standard, then the slope:
+
+    dbg_reroll        once per PROGRAM, the old card   88.4%  10.2
+    dbg_cost          the rerolled die burns even on
+                      a rescue - the clause with teeth 85.6%  14.9
+    link              carry 1 surplus success onward   77.4%  16.5
+    optimize          1 element's Target is 1 lower    75.5%  22.6
+    dbg_rec           recover 1 additional die         72.9%  21.4
+    dbg_reroll_cycle  the reroll, per cycle + Adv      62.7%  25.5
+    cache             1st element resolved burns none  57.3%  24.6
+    dbg_trace         each Optimal recovers 1 more     56.6%  22.2
+    debugger          THE SWAP, as the card prints     54.6%  24.0
+    dbg_clean         a clean Program recovers 2 more  50.9%  26.9
+    plain             no ability at all                47.2%  24.9
+
+  The two worst slopes, dbg_reroll at 10.2 and link at 16.5,
+  are the same disease from two directions: a reroll and a
+  banked success are both worth most exactly when you are
+  short.  dbg_cost is why the penalty clause was never the
+  answer - the cost is one die and the ability buys Health,
+  which is the only thing that can lose the game.  The swap is
+  a colour upgrade worth about half a success every Program
+  whatever the rung, so it inherits the floor's slope.
+
+  WHAT THE ROSTER DOES UNDER EACH.  Mean of six, and the
+  spread between best and worst:
+
+                  the five alone   old card      the swap
+    Easy          59.4%   7.3     64.7%  36.5   59.8%   7.4
+    Standard      51.0%   7.2     57.2%  41.3   51.6%   7.5
+    Hard          42.5%   9.2     49.6%  47.8   43.1%   9.2
+    Nobulous      34.3%   9.5     42.1%  51.5   35.0%   9.5
+
+  A spread that grows from 36.5 to 51.5 as the ladder gets
+  harder is the signature of a card that flattens it.  The swap
+  tracks the five-card floor to within 0.3 at every rung, which
+  is what a sixth Technician is supposed to look like.
 
   RE-MEASURED 2026-11-03, with REQUIRED COLOURS implemented and
   the ALLOCATION FLOOR printed.  Every AoS figure published
@@ -771,18 +834,21 @@ CAVEATS
   Heroes move numbers a long way, and every bit of it is ability text. The
   printed statlines really are identical - Technicians 2/2/3, Apprentices
   2/2/2, both sides of each Lab Rat the same - so the spread comes entirely
-  from the abilities, which are now modeled: 41 points between the best and
-  worst Technician (Debugger 88.4% to Compiler 47.1% at Standard), about 7
+  from the abilities, which are now modeled: 8 points between the best and
+  worst Technician (Debugger 54.6% to Compiler 47.1% at Standard), about 7
   between Apprentices (80.8% to 73.5%) and under 4 across BAT's eight Rat
   sides (53.2% to 49.6%). This cross-tab reports their mean; the per-hero
   tables are below, and cards.py lists all twenty.
 
-  AoS's 41 points is ONE card and it is a defect, not a wide roster. Five
-  Technicians sit inside 47.1-53.8. The Debugger reads 88.4%, and the slope
-  gives it away: the other five lose 24.9 to 26.3 points from Easy to
-  Nobulous, the Debugger loses 10.2 and still wins 81% on the hardest rung,
+  AoS's spread was 41 points until 2026-11-05 and it was ONE card. The
+  Debugger read 88.4% against five Technicians inside 47.1-54.3, and the
+  slope gave it away: the other five lose 23.0 to 26.3 points from Easy to
+  Nobulous, the Debugger lost 10.2 and still won 81% on the hardest rung,
   because Debug converts near misses into passes and hard rungs produce more
-  near misses. See the DEBUG note in aos.py and the hero tables below.
+  near misses. Its ability was replaced with a pre-roll die swap, whose
+  payout does not depend on having missed, and it now reads 54.6% on a
+  24.0-point slope. See the DEBUG note in aos.py and the
+  hero tables below.
 
   Policy sensitivity is large. NRJ moved from 3.4% to 9.2% on how it spends
   the Research Pool, and from 12.6% to 33.1% on which exhausted dice REC
