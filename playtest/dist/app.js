@@ -183,7 +183,7 @@
   const TECHS = [
     { name: "Architect", side: "front", index: 0, ability: "Reconfigure — Once per Program, before rolling an element, move up to 2 allocated dice between unresolved elements." },
     { name: "Debugger", side: "back", index: 0, ability: "Debug — Once per Program, after failing by exactly 1 success, reroll 1 allocated die. If it still fails, exhaust that die." },
-    { name: "Optimizer", side: "front", index: 1, ability: "Optimize — Once per Program, Target +1 successes may count as Optimal Implementation." },
+    { name: "Optimizer", side: "front", index: 1, ability: "Optimize — Once per cycle and once in Advanced Programming, Target +1 successes may count as Optimal Implementation." },
     { name: "Engineer", side: "back", index: 1, ability: "Redundancy — For up to 2 elements per Program, the allocation cap is Target +2 instead of Target +1." },
     { name: "Operator", side: "front", index: 2, ability: "Workaround — When a non-Red Limitation would withhold 2 dice, you may withhold 1 of those dice as another non-Red color instead." },
     { name: "Compiler", side: "back", index: 2, ability: "Compile — When spending an additional STR roll, reroll any number of dice on that element while keeping the others." }
@@ -492,7 +492,7 @@
     if (recoveryPending()) { toast("Recover your dice before revealing the next Program."); return; }
     if (state.mode === "program" && state.queue.length === 0) {
       const active = state.programs.filter(p => p.status !== "aside" && p.status !== "removed").map(p => p.id);
-      if (state.cycle < 3 && active.length) { state.cycle += 1; state.queue = shuffle(active); state.discard=state.discard.filter(name=>name.startsWith("Limitation:")); log(`Cycle ${state.cycle} began with ${active.length} Programs.`); }
+      if (state.cycle < 3 && active.length) { state.cycle += 1; state.queue = shuffle(active); state.optimizerUsed = false; state.discard=state.discard.filter(name=>name.startsWith("Limitation:")); log(`Cycle ${state.cycle} began with ${active.length} Programs.`); }
       else { beginAdvanced(); return; }
     }
     if (state.mode === "advanced" && state.advancedQueue.length === 0) { finishGame(true); return; }
@@ -501,7 +501,10 @@
     state.current = { id, mode: state.mode };
     state.currentFace = state.mode === "advanced" ? (state.nextAdvancedOverheated ? "back" : "front") : (program.status === "overheated" ? "back" : "front");
     state.currentCompleted = false; state.lastResultFailed = false; state.limitationRevealed = true; state.limitationResolved = false; state.rerollsUsed = 0; state.recoveryCredits = 0;
-    state.architectUsed = false; state.architectMode = false; state.debuggerUsed = false; state.optimizerUsed = false; state.rewardApplied = false;
+    // state.optimizerUsed is deliberately NOT reset here. Optimize is once
+    // per CYCLE and once more during Advanced Programming, so it is cleared
+    // at the cycle boundary below and in beginAdvanced(), not per Program.
+    state.architectUsed = false; state.architectMode = false; state.debuggerUsed = false; state.rewardApplied = false;
     if (!state.limitationQueue.length) {state.limitationQueue = shuffle([0,1,2,3,4,5].filter(x => !state.banishedLimitations.includes(x)));state.discard=state.discard.filter(name=>!name.startsWith("Limitation:"));}
     state.limitation = state.limitationQueue.pop();
     // A Corrupted Limitation's random picks belong to THIS reveal, not to
@@ -515,7 +518,7 @@
     selectedDice.clear(); log(`${state.mode === "advanced" ? "Advanced" : (state.programs.find(x=>x.id===id)||{}).src || state.deck} Program ${id + 1} and Limitation ${state.limitation + 1} revealed (${state.elementCount} elements).`); render();
   }
   function beginAdvanced() {
-    state.mode = "advanced"; state.advancedQueue = shuffle([0,1,2,3,4,5,6,7]).slice(0,3); state.nextAdvancedOverheated = false; state.current = null;state.discard=state.discard.filter(name=>name.startsWith("Limitation:"));
+    state.mode = "advanced"; state.advancedQueue = shuffle([0,1,2,3,4,5,6,7]).slice(0,3); state.nextAdvancedOverheated = false; state.current = null;state.optimizerUsed = false;state.discard=state.discard.filter(name=>name.startsWith("Limitation:"));
     log("Advanced Programming began."); toast("Advanced Programming"); drawProgram();
   }
   function markRequiredMiss() {
@@ -741,7 +744,7 @@
     const hints = {
       Architect: "Use Reconfigure, select up to 2 allocated dice from unresolved elements, then tap Move selected here on their destination.",
       Debugger: "After missing a Target by exactly 1, tap one die in that element and choose Debug selected.",
-      Optimizer: "After rolling Target +1, choose Count as optimal on that element. Usable once per Program.",
+      Optimizer: "After rolling Target +1, choose Count as optimal on that element. Usable once per cycle, and once more during Advanced Programming.",
       Engineer: "Choose Safe T+2 before rolling on up to 2 elements per Program.",
       Operator: "Apply Workaround manually by selecting the substitute non-Red die and using Withhold.",
       Compiler: "After a roll, tap the dice you want to reroll, then choose Extra roll. With none selected, all dice reroll."
@@ -801,7 +804,10 @@
         + (i === markedElement() ? " marked" : "");
       const score = el.rolled ? `${el.successes} success${el.successes === 1 ? "" : "es"}${el.pendingExhaust ? ` · choose ${el.pendingExhaust} to exhaust` : ""}` : "Not rolled";
       const optimizerEligible = el.rolled && !el.resolved && el.successes === el.target + 1 && !state.optimizerUsed;
-      const optimizer = TECHS[state.tech].name === "Optimizer" ? `<button data-optimize="${i}" ${optimizerEligible ? "" : "disabled"}>${el.optimizerUsed ? "✓ Optimal" : "Count as optimal"}</button>` : "";
+      // The use is spent for the whole cycle, not just this Program, so say
+      // so on the button - otherwise it reads as a bug in the next Program.
+      const optimizeLabel = el.optimizerUsed ? "✓ Optimal" : (state.optimizerUsed ? (state.mode === "advanced" ? "Optimize used" : "Optimize used this cycle") : "Count as optimal");
+      const optimizer = TECHS[state.tech].name === "Optimizer" ? `<button data-optimize="${i}" ${optimizerEligible ? "" : "disabled"}>${optimizeLabel}</button>` : "";
       const debuggerButton = TECHS[state.tech].name === "Debugger" ? `<button data-debug="${i}" ${el.rolled && !el.resolved && el.successes === el.target - 1 && !state.debuggerUsed ? "" : "disabled"}>Debug selected</button>` : "";
       const engineer = TECHS[state.tech].name === "Engineer" ? `<button data-safe="${i}" ${el.rolled ? "disabled" : ""}>${el.thresholdBonus === 2 ? "✓ " : ""}Safe T+2</button>` : "";
       const assignLabel = state.architectMode ? "Move selected here" : "Commit selected";

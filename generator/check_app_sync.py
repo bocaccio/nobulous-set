@@ -498,6 +498,52 @@ else:
 check("the lab prints the Technician abilities the cards print",
       _gen_techs and not _tech_bad, "; ".join(_tech_bad[:3]))
 
+# OPTIMIZE'S CADENCE, printed and implemented. The card went from "once per
+# Program" to "once per cycle and once in Advanced Programming" on
+# 2026-11-05, and the lab has to agree in CODE as well as in card text -
+# state.optimizerUsed must NOT be cleared in drawProgram(), and must be
+# cleared where a cycle turns over and where Advanced Programming starts.
+# The printed text alone would pass while the lab still handed out a use
+# every Program, which is the 14-point version of the card.
+_opt_txt = ""
+for _g in _gen_techs:
+    if _g[0] == "Optimizer":
+        _opt_txt = _g[2]
+check("the Optimizer card is the per-cycle wording",
+      "Once per cycle and once in Advanced Programming" in _opt_txt,
+      _opt_txt[:60])
+_app = text("playtest/dist/app.js")
+
+
+def _body(fn):
+    """The source of one top-level function in app.js, brace-matched."""
+    m = re.search(r"function %s\(" % re.escape(fn), _app)
+    if not m:
+        return ""
+    i = _app.index("{", m.end() - 1)
+    depth, j = 0, i
+    while j < len(_app):
+        if _app[j] == "{":
+            depth += 1
+        elif _app[j] == "}":
+            depth -= 1
+            if depth == 0:
+                return _app[i:j + 1]
+        j += 1
+    return ""
+
+
+_draw, _adv = _body("drawProgram"), _body("beginAdvanced")
+_cycle_turn = re.search(r"state\.cycle \+= 1;[^\n]*", _draw)
+check("the lab does not refresh Optimize every Program",
+      _draw and "state.optimizerUsed = false" not in
+      re.sub(r"state\.cycle \+= 1;[^\n]*", "", _draw),
+      "drawProgram() still clears it per Program")
+check("the lab refreshes Optimize when a cycle turns over",
+      _cycle_turn and "state.optimizerUsed = false" in _cycle_turn.group(0))
+check("the lab refreshes Optimize for Advanced Programming",
+      _adv and "state.optimizerUsed = false" in _adv)
+
 # EVERY LAB ASSET MUST CARRY THE CACHE TOKEN, on ONE token. AGENTS.md: a
 # cached index.html "pins you to an old build however often you bump them",
 # and the symptom "reads exactly like code that was never written".

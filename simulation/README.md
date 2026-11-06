@@ -511,15 +511,37 @@ statlines really are identical the whole spread is ability text:
 
 | game | best | worst | spread |
 |---|---|---|---|
-| AoS Technicians | optimizer 43.4% | engineer 26.0% | 17.4 |
+| AoS Technicians | Debugger 88.4% | Compiler 47.1% | 41.3 |
 | NAP Apprentices | Technician 80.8% | Prodigy 73.5% | 7.3 |
 | BAT Lab Rat sides | tool_keeper 53.2% | adaptation 49.6% | 3.6 |
 
 At Standard with no tier module; the full tables are in `RESULTS.txt`, and all
-twenty cards are listed in `cards.py`. AoS's 17 points is a lot to rest on one
-card choice and is worth a look. BAT's axis is not a pick of one card: all four
-Rats always play, so it is 16 side-combinations, and Rat abilities do not apply
-in the Tyrant Battle at all - which is why its spread is the narrowest.
+twenty cards are listed in `cards.py`. BAT's axis is not a pick of one card:
+all four Rats always play, so it is 16 side-combinations, and Rat abilities do
+not apply in the Tyrant Battle at all - which is why its spread is the
+narrowest.
+
+**AoS's 41 points is one card, and it is a live defect.** Five Technicians sit
+inside 47.1-53.8; the Debugger reads 88.4%. The giveaway is not the level but
+the slope: across Easy to Nobulous the other five lose 24.9 to 26.3 points
+while the Debugger loses **10.2** and still wins 81% on the hardest rung. Debug
+turns a near miss into a pass, harder rungs produce more near misses, so the
+ability scales with the difficulty and cancels it - picking the Debugger is not
+a choice of how to play but a choice to switch the ladder off.
+
+This only became visible on 2026-11-05, when two model defects that had been
+hiding each other were fixed. The model forced the Debugger to spend its extra
+STR roll before Debug could fire, which understated it at 61.5%; it also made
+the Architect dismantle its own allocation, which overstated nothing and
+understated that card by 15 points. One card too strong and one too weak
+cancelled in the six-Technician mean, so the published AoS figures looked
+settled while both were wrong. Fixing them widened the spread from 35.6 to
+41.3 - the right direction, because the spread was always there.
+
+`dbg_cycle` in `aos.py` is the measured answer: once per cycle, matching the
+Optimizer's new cadence, reads 61.3% with a 23.9-point slope and brings the
+roster spread to 14.1 while leaving the published mean at 52.1% against 51.7%
+today. It is not applied - the card text is a design call, not a model fix.
 
 ## Fidelity
 

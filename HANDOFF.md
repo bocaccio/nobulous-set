@@ -1971,6 +1971,80 @@ Not your job to fix, but worth knowing if Jon raises them:
   describe rules that no longer ship. Promoting `proto/bat.py` over it, and
   re-running the cross-tab, is the outstanding job.
 
+- **The Optimizer was reprinted on 2026-11-05, and the Debugger should be
+  next.** This is the only card text changed since the set was calibrated,
+  and it was changed because the card was 14 points clear of the roster.
+
+  **Optimize now reads "Once per cycle and once in Advanced Programming,
+  Target +1 successes may count as Optimal Implementation."** It was once
+  per Program, which read 67.8% at Standard against a six-Technician mean
+  of 51.4% — Optimal Implementation hands back 2 exhausted dice and dice
+  are the binding resource, so how often it fires is the strongest dial a
+  Technician has. Per cycle gives about three uses a game, so it stays a
+  decision; it now reads 53.8% with a 25.0-point slope, both mid-pack. The
+  second clause is not padding: `rules/aos.html` defines a cycle as one
+  pass through the **Program deck**, and Advanced Programming is explicitly
+  after the last one, so a bare "once per cycle" would hand the Optimizer
+  nothing across the three Advanced Programs — the part of the game that
+  decides it. Both terms are already bolded, defined, player-facing
+  vocabulary, so **no rulebook edit was needed**. The lab implements the
+  cadence as well as printing it: `state.optimizerUsed` is no longer
+  cleared in `drawProgram()` and is cleared at the cycle turn and in
+  `beginAdvanced()`. `check_app_sync.py` now asserts all three, and the
+  assertion was confirmed to fail when the per-Program reset is put back.
+
+  **The Debugger is the live defect and the card is untouched.** It reads
+  **88.4%** at Standard against five cards inside 47.1–54.3. The level is
+  not the worst of it — the slope is. The other five lose 23 to 26 points
+  from Easy to Nobulous; the Debugger loses **10.2** and still wins 81% on
+  the rung meant to be won one time in five. Debug converts a miss by
+  exactly 1 into a pass, harder rungs produce more near misses, so the
+  ability grows with the difficulty and cancels it. `dbg_cycle` in
+  `aos.py` is the measured answer — once per cycle, 61.3%, slope 23.9,
+  roster spread 41.3 → 14.1, published mean back to 52.1%. Making the
+  rerolled die always exhaust does **not** work (85.6%): the cost is one
+  die and the ability buys Health.
+
+- **Two AoS abilities were being MISPLAYED by the model, in opposite
+  directions, and had been hiding each other.** Neither was a card problem.
+  Fixing them is why the published AoS row moved from 51.7% to 57.4% on
+  2026-11-05 without the game changing at all.
+
+  `Debug` only ever fired on the POST-reroll total, because the model spent
+  the extra STR roll whenever an element came up short. That is wrong play:
+  an extra roll is a full reroll that stands "better or worse" **and**
+  exhausts that element's dice regardless of outcome, while Debug is one
+  die and free. A player on Target-1 declines the roll and Debugs, and may
+  still spend the roll if Debug misses too. 68.0% → 88.4%.
+
+  `Reconfigure` prints "move **up to** 2 allocated dice", and up to 2
+  includes zero — it is a may. The model had no way to decline and moved
+  dice whenever one element sat above its Target and another below, which
+  under `sacrifice_short` is self-harm: triage leaves survivors on Target+1
+  (so "rich") and the abandoned element on its one floor die (so "short"),
+  so it stripped the buffer off elements that were going to pass to load
+  the element it had deliberately given up. 32.4%, against 47.2% for having
+  no ability at all.
+
+  **Reconfigure cannot be judged by any pre-roll rule.** The card says
+  "before rolling AN element" and elements roll one at a time, so it is an
+  option held open across the Program and the model has to choose *when*.
+  It now enumerates the legal redistributions and scores each against an
+  exact success distribution (`succ_dist`), weighing a Catastrophic Failure
+  at `ARCH_HP_WEIGHT` dice. Played that way it is worth +7 over no ability:
+  54.3%, slope 23.0, mid-pack. **Do not "improve" this by making it wait
+  for information** — holding the use until a failure has happened measures
+  *worse*, 50.7%, because waiting shrinks the set of unresolved elements
+  faster than the information is worth. `architect_hold` keeps that rule so
+  the comparison stays in the file, and `ARCH_HP_WEIGHT` — the one free
+  parameter in that decision — was swept 4→40 with Standard reading 54.5 /
+  54.4 / 54.3 / 55.2 / 54.9%, a spread inside the sampling noise.
+
+  A die is **not** worth 1 success, which is where the intuition fails
+  here: purple is 1.0 but blue is 0.83, green 0.67, yellow 0.5, and the
+  pool is 4/4/4/4/1, so the average die is 0.77 and an element on Target+1
+  dice is nowhere near safe.
+
 ---
 
 ## 11. Definition of done

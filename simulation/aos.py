@@ -11,7 +11,7 @@ to win.
 """
 import random
 
-from dice import COLORS, EV, policy_value, roll
+from dice import COLORS, EV, FACES, policy_value, roll
 
 ELEMENT_COUNTS = {
     "Routine": [3, 3, 3, 3, 3, 4, 3, 4],
@@ -202,7 +202,10 @@ LIMITATIONS = ["yellow", "green", "blue", "purple", "diversity", "red"]
 # the card says otherwise.
 #   architect  move up to 2 allocated dice between unresolved elements
 #   debugger   after missing by exactly 1, reroll 1 die on that element
-#   optimizer  Target + 1 may count as Optimal Implementation
+#              - see the Debug note below; this is the strongest card on
+#              the roster by a wide margin once it is played properly
+#   optimizer  once per CYCLE and once in Advanced Programming, Target + 1
+#              may count as Optimal Implementation - see the cadence note
 #   engineer   the safe threshold is Target + 2 on up to 2 elements
 #   operator   a colour shortage may withhold 1 die as another non-Red colour
 #   compiler   an extra STR roll rerolls only the dice that missed
@@ -220,24 +223,60 @@ TECHS = ["architect", "debugger", "optimizer", "engineer", "operator", "compiler
 #   analyse      reroll one whole element and keep the better total
 COMPILER_ABILITY = "compile"
 
-# OPTIMIZER CANDIDATES. The printed card - "Once per Program, Target +1
-# successes may count as Optimal Implementation" - reads 67.8% at Standard
-# against a six-Technician mean of 51.4%, and read 66.4% against 53.3% under
-# the honest policy before that, so it has been the roster's high outlier
-# throughout and not only since the 2026-11-05 re-pitch. Optimal
-# Implementation hands back OPTIMAL_BONUS dice, and dice are the binding
-# resource, so doubling how often it fires is the strongest thing a
-# Technician can do. Two cheaper versions, drafted 2026-11-05:
-#   optimizer   the printed card, kept for comparison
-#   opt_one     Target +1 counts, but recovers 1 die instead of 2
-#   opt_game    Target +1 counts at the full 2 dice, once per GAME
-#   opt_cycle   the same, once per CYCLE - one pass through the deck, so
-#               about three uses a game. "Cycle" is a printed AoS term and
-#               the natural middle cadence between Program and game.
-# NOTE ON WORDING: this was first drafted as "once per Scenario", which is
-# NRJ vocabulary - rules/aos.html does not contain the word. AoS nests
+# THE OPTIMIZER'S CADENCE. Until 2026-11-05 the card read "Once per Program,
+# Target +1 successes may count as Optimal Implementation", which measured
+# 67.8% at Standard against a six-Technician mean of 51.4% - and 66.4%
+# against 53.3% under the honest policy before the re-pitch, so it was the
+# roster's high outlier throughout rather than because of it. Optimal
+# Implementation hands back OPTIMAL_BONUS dice and dice are the binding
+# resource, so how often it fires is the strongest dial a Technician has.
+# The cadences measured, 10000 games a cell at Standard:
+#   opt_program  once per PROGRAM, the old printed card      67.8%
+#   opt_one      per Program but recovering 1 die not 2      60.0%
+#   optimizer    once per CYCLE, the card as it now prints   53.3%
+#   opt_game     once per GAME                               48.9%
+# Once per cycle is the shipped card: about three uses a game, so it stays a
+# decision, and it lands mid-pack where per-Program was 6 points clear of the
+# top and per-game 7 below the bottom.
+#
+# WHY THE CARD DOES NOT JUST SAY "once per cycle". The rulebook defines a
+# cycle as one pass through the Program deck, and Advanced Programming comes
+# after the last one - so a bare "once per cycle" gives the Optimizer nothing
+# across the three Advanced Programs, which is exactly where the game is won
+# or lost. The card therefore prints "Once per cycle and once in Advanced
+# Programming", which is what `optimizer` models. opt_cycle_strict is the
+# bare reading, kept so the cost of the ambiguity can be seen.
+# NOTE ON WORDING: first drafted as "once per Scenario", which is NRJ
+# vocabulary - rules/aos.html does not contain the word. AoS nests
 # element < Program < cycle < Advanced Programming < game.
-OPTIMIZE_TECHS = ("optimizer", "opt_one", "opt_game", "opt_cycle")
+OPTIMIZE_TECHS = ("optimizer", "opt_program", "opt_one", "opt_game",
+                  "opt_cycle_strict")
+# Limited to one use per longer stretch rather than one per Program.
+OPT_LONG_TECHS = ("optimizer", "opt_game", "opt_cycle_strict")
+# ...and of those, the ones whose use comes back at a cycle boundary.
+OPT_CYCLE_TECHS = ("optimizer", "opt_cycle_strict")
+
+# DEBUG. "Once per Program, after failing by exactly 1 success, reroll 1
+# allocated die. If it still fails, exhaust that die." The penalty clause is
+# a no-op - a failed element already exhausts every die allocated to it - so
+# the card as printed costs nothing at all to use.
+#
+# Until 2026-11-05 the model spent the extra STR roll greedily whenever an
+# element came up short, so Debug could only ever fire on the POST-reroll
+# total. That is strictly wrong play for this Technician: an extra roll is a
+# full reroll whose result stands "better or worse", and it exhausts that
+# element's dice regardless of outcome, while Debug is one die, free, and
+# cannot make things worse. A player sitting on Target-1 declines the extra
+# roll and Debugs instead - and may still spend the roll afterwards if Debug
+# missed too. Fixing that ordering moved the Debugger from 68.2% to 85.7%.
+# Candidates, if the card needs taming:
+#   debugger    the printed card, played properly
+#   debug_late  the old forced-STR-roll ordering, kept for measurement
+#   dbg_cycle   once per CYCLE instead of once per Program, matching the
+#               Optimizer's cadence
+#   dbg_cost    per Program, but the rerolled die exhausts even when it
+#               rescues the element - which gives the clause teeth
+DEBUG_TECHS = ("debugger", "dbg_cycle", "dbg_cost")
 
 # An extra STR roll rerolls the dice you pick and keeps the rest. With this
 # False the model throws the whole element again, which is how it behaved
@@ -246,6 +285,61 @@ PUSH_REROLL = True
 # Dice held back from each element. Target + 1 is a RULES cap and cannot be
 # exceeded, so this only ever fills less: 0 is the calibrated policy.
 FILL_MARGIN = 0
+
+# ---------------------------------------------------------------------------
+# Exact success distributions - what the Architect decides on
+# ---------------------------------------------------------------------------
+# Reconfigure is the one Technician ability whose whole value is in WHEN it is
+# used. The card says "before rolling AN element", elements roll one at a
+# time, so the player sees how many have already failed before committing -
+# and a second failure is the one that costs Health. A rule of thumb cannot
+# judge that card, because every rule of thumb is either too eager or a
+# no-op, and both read as a card problem. So the model weighs the move
+# instead, which needs real numbers.
+#
+# A die is not worth 1 success: purple is 1.0, blue 0.83, green 0.67, yellow
+# 0.5, red 1.17, and the pool is 4/4/4/4/1, so the average die is 0.77. An
+# element on Target+1 dice is therefore nowhere near certain, which is
+# exactly why guessing at this does not work.
+_DIST_CACHE = {}
+
+
+def succ_dist(colors, crit=2):
+    """P(total successes == k) for a bag of dice, as a list indexed by k.
+
+    `crit` is what a Crit face is worth - 3 on the second element when Works
+    on My Machine is the Interference. Cached on the colour multiset, and a
+    Program only ever shows a handful of those, so this costs nothing after
+    the first few Programs of a run.
+    """
+    key = (tuple(sorted(colors)), crit)
+    hit = _DIST_CACHE.get(key)
+    if hit is not None:
+        return hit
+    dist = [1.0]
+    for c in colors:
+        face = {}
+        for f in FACES[c]:
+            v = crit if f == 2 else f
+            face[v] = face.get(v, 0.0) + 1 / 6.0
+        nxt = [0.0] * (len(dist) + max(face))
+        for k, p in enumerate(dist):
+            if p:
+                for v, q in face.items():
+                    nxt[k + v] += p * q
+        dist = nxt
+    _DIST_CACHE[key] = dist
+    return dist
+
+
+# What one point of Health is worth in dice when the Architect weighs a move.
+# Health is the only way to lose and the pool is 17 dice, so it has to
+# dominate; 12 is deliberately blunt. It is also the only free parameter the
+# Architect's decision has, so it was swept: at 4, 8, 12, 20 and 40 - a
+# tenfold range - Standard reads 54.5 / 54.4 / 54.3 / 55.2 / 54.9%. That
+# 0.9-point spread is inside the +-1.1 sampling noise of an 8000-game cell,
+# so the card's reading is not an artifact of this number.
+ARCH_HP_WEIGHT = 12.0
 
 # ---------------------------------------------------------------------------
 # PLAYER MODEL. simulation/players.py sets these to approximate kinds of
@@ -774,6 +868,116 @@ class Game(object):
         plan[i] = plan[i] + pool[:DUMP_DICE]
         return plan
 
+    def arch_score(self, plan, targets, ahead, failed):
+        """How good the elements still to roll look: Health first, then dice.
+
+        `ahead` is the indices not yet resolved. The chance of reaching two
+        failed elements - a Catastrophic Failure, the only thing in AoS that
+        costs Health - carries ARCH_HP_WEIGHT. Dice are then counted at face
+        value, plus the OPTIMAL_BONUS an element hands back when it lands
+        exactly on its Target, which is what makes precision worth anything.
+        """
+        fail = []
+        dice_term = 0.0
+        for k in ahead:
+            t = targets[k]
+            crit = 3 if (self.intf == "crit_shift" and k == 1) else 2
+            d = succ_dist(plan[k], crit)
+            p_pass = sum(d[t:]) if t < len(d) else 0.0
+            p_exact = d[t] if t < len(d) else 0.0
+            fail.append(1.0 - p_pass)
+            dice_term += p_pass * len(plan[k]) + p_exact * OPTIMAL_BONUS
+        need = 2 - failed
+        if need <= 0:
+            p_cat = 1.0                 # already Catastrophic, nothing to save
+        else:
+            dist = [1.0]
+            for q in fail:
+                nxt = [0.0] * (len(dist) + 1)
+                for n, p in enumerate(dist):
+                    nxt[n] += p * (1.0 - q)
+                    nxt[n + 1] += p * q
+                dist = nxt
+            p_cat = sum(dist[need:]) if need < len(dist) else 0.0
+        return dice_term - ARCH_HP_WEIGHT * p_cat
+
+    def arch_moves(self, plan, ahead, cap):
+        """Every redistribution of up to 2 dice worth considering.
+
+        Not the whole move space. One die either way; both dice from one
+        element onto one other, which is the only way to actually rescue an
+        element the allocator gave up on; and one die each from two elements
+        onto a third. Giving the weakest die and giving the strongest are
+        both offered, because which one helps depends on whether the giver
+        or the receiver is the element in trouble. Yields {index: dice}.
+        """
+        rank = dict((k, sorted(plan[k], key=lambda c: EV[c])) for k in ahead)
+
+        def arrangement(gives, take):
+            out = dict((k, list(plan[k])) for k in ahead)
+            moved = []
+            for give, n, end in gives:
+                if len(plan[give]) - n < 1:
+                    return None         # no element may be left with nothing
+                pick = rank[give][:n] if end == "weak" else rank[give][-n:]
+                for c in pick:
+                    out[give].remove(c)
+                moved += list(pick)
+            out[take] = out[take] + moved
+            if len(out[take]) > cap[take]:
+                return None             # Target + 1 is a rules cap
+            return out
+
+        for take in ahead:
+            for give in ahead:
+                if give == take:
+                    continue
+                for end in ("weak", "strong"):
+                    for n in (1, 2):
+                        a = arrangement([(give, n, end)], take)
+                        if a:
+                            yield a
+            for g1 in ahead:
+                for g2 in ahead:
+                    if g1 >= g2 or take == g1 or take == g2:
+                        continue
+                    a = arrangement([(g1, 1, "weak"), (g2, 1, "weak")], take)
+                    if a:
+                        yield a
+
+    def reconfigure(self, plan, targets, ahead, failed):
+        """Reconfigure, played as a may. True if dice actually moved.
+
+        The card prints "move UP TO 2 allocated dice", and up to 2 includes
+        zero, so the only arrangement taken is one that scores better than
+        leaving the allocation alone.
+        """
+        if len(ahead) < 2:
+            return False
+        cap = dict((k, targets[k] + (2 if k in getattr(self, "wide", set())
+                                     else 1)) for k in ahead)
+        keep = dict((k, plan[k]) for k in ahead)
+        best = self.arch_score(plan, targets, ahead, failed)
+        chosen = None
+        # Materialized before the loop on purpose: arch_moves reads `plan`
+        # every time it is resumed, and the loop below writes to `plan` to
+        # score each trial. Leaving it lazy works only because the restore
+        # happens before the generator is resumed, which is the kind of
+        # thing that stops being true the next time someone edits this.
+        for trial in list(self.arch_moves(plan, ahead, cap)):
+            for k in ahead:
+                plan[k] = trial[k]
+            s = self.arch_score(plan, targets, ahead, failed)
+            for k in ahead:
+                plan[k] = keep[k]
+            if s > best + 1e-9:
+                best, chosen = s, trial
+        if chosen is None:
+            return False
+        for k in ahead:
+            plan[k] = chosen[k]
+        return True
+
     def element_values(self, index, dice):
         """Roll one element, honoring Works on My Machine if it is in play."""
         values = [roll(c, self.rng) for c in dice]
@@ -878,48 +1082,35 @@ class Game(object):
         used_debug = used_optimize = False
         carry = 0              # link: a surplus success held for a later element
         link_spent = cache_spent = analyse_spent = save2_spent = False
-        # RECONFIGURE IS A MAY, NOT A MUST. The card prints "move UP TO 2
-        # allocated dice", and up to 2 includes zero. Until 2026-11-05 this
-        # moved dice whenever an element sat above its Target and another sat
-        # below, which under ALLOC_MODE = sacrifice_short is a self-inflicted
-        # wound: triage leaves the survivors on Target+1 (so "rich") and the
-        # abandoned element on its single floor die (so "short"), and the move
-        # therefore stripped two dice off elements that were going to pass -
-        # costing them the buffer - to load the one element already given up,
-        # which still fails. It undid its own allocation twice a Program.
-        # MEASURED, 20000 games at Standard 2/3/3: the defect cost 3.4 points
-        # under sacrifice_short (32.9 -> 36.3) and 1.4 under honest. It is
-        # NOT the whole of the Architect's deficit - see the card note below.
+        # RECONFIGURE, THE BLIND VERSIONS. Both are kept only so the cost of
+        # misplaying the card can be measured instead of asserted; the
+        # playable version is adaptive and lives in the element loop below.
         #
-        # A die only earns its move if the RECEIVER reaches its Target. The
-        # giver has to stay at or above its own, which len(plan) > t already
-        # guarantees. When the pool is short no such move exists, so
-        # Reconfigure declines - which is what a player does.
-        if self.tech in ("architect", "architect_forced"):
+        #   architect_forced  the pre-2026-11-05 rule: move dice whenever one
+        #       element sits above its Target and another below. Under
+        #       ALLOC_MODE = sacrifice_short that is a self-inflicted wound,
+        #       because triage leaves the survivors on Target+1 (so "rich")
+        #       and the abandoned element on its one floor die (so "short"),
+        #       so it stripped the buffer off elements that were going to
+        #       pass to load the element it had deliberately given up, which
+        #       still failed. Twice a Program.
+        #   architect_blind   the giver must keep its buffer, which makes the
+        #       move illegal once allocation is capped at Target+1 - so this
+        #       always declines and is a no-op by construction. That is the
+        #       point: pre-roll there is no move worth making, and a model
+        #       that can only act pre-roll cannot judge this card at all.
+        if self.tech in ("architect_forced", "architect_blind"):
             moved = 0
             while moved < 2:
                 if self.tech == "architect_forced":
-                    # The pre-2026-11-05 rule, kept only for measurement.
                     short = [i for i, t in enumerate(targets)
                              if len(plan[i]) < t]
+                    rich = [i for i, t in enumerate(targets)
+                            if len(plan[i]) > t]
                 else:
                     short = [i for i, t in enumerate(targets)
                              if len(plan[i]) < t
                              and t - len(plan[i]) <= 2 - moved]
-                if self.tech == "architect_forced":
-                    rich = [i for i, t in enumerate(targets)
-                            if len(plan[i]) > t]
-                else:
-                    # THE GIVER MUST KEEP ITS BUFFER. A die averages exactly
-                    # 1 success, so an element on Target+1 dice is near
-                    # certain and one on Target dice is a coin flip. Taking
-                    # the buffer to part-fund the abandoned element turns one
-                    # sure pass and one sure fail into TWO coin flips - and
-                    # one failure is free while two is a Catastrophic Failure
-                    # costing Health, so the trade is strictly bad. Requiring
-                    # the giver to stay above Target+1 means no legal move
-                    # exists once allocation is capped, which is why
-                    # Reconfigure declines under the shipped policy.
                     rich = [i for i, t in enumerate(targets)
                             if len(plan[i]) > t + 1]
                 if not short or not rich:
@@ -928,8 +1119,29 @@ class Game(object):
                 take = min(short, key=lambda i: len(plan[i]) - targets[i])
                 plan[take].append(plan[give].pop())
                 moved += 1
+        arch_used = False
         seen = []              # per element: (dice, Target, total, crit, miss)
         for i, t in enumerate(targets):
+            # RECONFIGURE. "Once per Program, before rolling an element, move
+            # up to 2 allocated dice between unresolved elements." Elements
+            # roll one at a time, so this is an option held open across the
+            # whole Program, and the model has to choose WHEN to spend it.
+            #
+            # It spends it at the first boundary where a move scores better
+            # than leaving the allocation alone. The obvious alternative -
+            # hold it until a failure has actually happened, since a second
+            # failure is the one that costs Health - measures WORSE, 50.7%
+            # against 54.3% at Standard, and the reason is plain once seen:
+            # waiting shrinks the set of unresolved elements faster than the
+            # information is worth, and two dice you may no longer move
+            # anywhere buy nothing. architect_hold keeps that rule so the
+            # comparison stays in the file.
+            if self.tech in ("architect", "architect_hold") and not arch_used:
+                ahead = list(range(i, len(targets)))
+                if (self.tech == "architect" or failed
+                        or i >= len(targets) - 2):
+                    if self.reconfigure(plan, targets, ahead, failed):
+                        arch_used = True
             dice = plan[i]
             for c in dice:
                 if c in self.available:
@@ -946,6 +1158,35 @@ class Game(object):
                 again = self.element_values(i, dice)
                 if sum(again) > total:
                     values, total = again, sum(again)
+            # DEBUG, BEFORE ANY EXTRA STR ROLL. "Once per Program, after
+            # failing by exactly 1 success, reroll 1 allocated die. If it
+            # still fails, exhaust that die." The penalty clause is a no-op
+            # under the printed exhaust rules - a failed element exhausts all
+            # of its dice anyway - so there is nothing to model there.
+            #
+            # The ordering is the thing. Debug is free and risks nothing; an
+            # extra STR roll throws the whole element again and the new result
+            # stands even if it is worse. So a player Debugs first and only
+            # pays for the STR roll if Debug missed too. Until 2026-11-05 the
+            # model had this after the STR roll, where Debug could only fire
+            # on the post-reroll total - it threw away every chance to finish
+            # the element for nothing. debug_late keeps that for measurement.
+            dbg_burn = False
+            if (self.tech in DEBUG_TECHS and not used_debug and total == t - 1
+                    and not (self.tech == "dbg_cycle"
+                             and getattr(self, "_dbg_long", False))):
+                miss_ix = [k for k, v in enumerate(values) if v == 0]
+                if miss_ix:
+                    used_debug = True
+                    if self.tech == "dbg_cycle":
+                        self._dbg_long = True
+                    dbg_burn = self.tech == "dbg_cost"
+                    # A player rerolls the best die that missed, not the
+                    # first one in the list.
+                    k = max(miss_ix, key=lambda k: EV[dice[k]])
+                    values = list(values)
+                    values[k] = self.element_values(i, [dice[k]])[0]
+                    total = sum(values)
             used_reroll = False
             if total < t and rerolls > 0:  # spend an extra STR roll
                 rerolls -= 1
@@ -981,12 +1222,17 @@ class Game(object):
                     total = sum(values)
                 else:
                     total = self.element_total(i, dice)
-            # Debug: once per Program, after missing by exactly 1, reroll one die.
-            if (self.tech == "debugger" and not used_debug and total == t - 1):
-                misses = [c for c, v in zip(dice, values) if v == 0]
-                if misses:
+            # debug_late: Debug only after the extra STR roll, which is where
+            # the model had it until 2026-11-05. Kept for measurement - the
+            # playable ordering is above, before the STR roll.
+            if (self.tech == "debug_late" and not used_debug and total == t - 1):
+                miss_ix = [k for k, v in enumerate(values) if v == 0]
+                if miss_ix:
                     used_debug = True
-                    total += sum(self.element_values(i, misses[:1]))
+                    k = max(miss_ix, key=lambda k: EV[dice[k]])
+                    values = list(values)
+                    values[k] = self.element_values(i, [dice[k]])[0]
+                    total = sum(values)
             miss = total < t
             seen.append((len(dice), t, total,
                          any(v >= 2 for v in values), miss))
@@ -1034,7 +1280,11 @@ class Game(object):
                 overkill = over if OVERKILL_SCALE else (1 if over else 0)
                 if excess or overkill:
                     leaked += 1                 # this element over-allocated
-                burn = min(len(dice), excess + overkill + ELEMENT_COST)
+                # dbg_cost: the rerolled die exhausts even though the element
+                # held, which is the only version of Debug that costs
+                # anything on a success.
+                burn = min(len(dice), excess + overkill + ELEMENT_COST
+                           + (1 if dbg_burn else 0))
                 # allocate() hands these out strongest-first, so dice[:burn]
                 # used to burn the BEST dice on the element. A player gives up
                 # the worst.
@@ -1059,11 +1309,11 @@ class Game(object):
                     recovery += OPTIMAL_BONUS
                 elif (self.tech in OPTIMIZE_TECHS and total == t + 1
                       and not used_optimize
-                      and not (self.tech in ("opt_game", "opt_cycle")
+                      and not (self.tech in OPT_LONG_TECHS
                                and getattr(self, "_opt_long", False))):
                     used_optimize = True        # Optimize: Target + 1 counts
-                    if self.tech in ("opt_game", "opt_cycle"):
-                        self._opt_long = True   # once per game / per cycle
+                    if self.tech in OPT_LONG_TECHS:
+                        self._opt_long = True   # once per cycle / per game
                     recovery += 1 if self.tech == "opt_one" else OPTIMAL_BONUS
 
         # Which Backdoor Routines this Program could have been claimed off.
@@ -1176,8 +1426,10 @@ class Game(object):
                 if self.cycle < 3 and active:
                     self.cycle += 1
                     self.negates_left = NEGATES_PER_CYCLE or -1
-                    if self.tech == "opt_cycle":
+                    if self.tech in OPT_CYCLE_TECHS:
                         self._opt_long = False   # a new cycle, a new use
+                    if self.tech == "dbg_cycle":
+                        self._dbg_long = False
                     self.queue = [p["id"] for p in active]
                     self.rng.shuffle(self.queue)
                 else:
@@ -1226,6 +1478,13 @@ class Game(object):
         # Advanced Programming is its own stretch, so it gets its own
         # allowance rather than inheriting whatever the third cycle left.
         self.negates_left = NEGATES_PER_CYCLE or -1
+        if self.tech == "optimizer":
+            # "...and once in Advanced Programming", which the card prints
+            # precisely because the rulebook defines a cycle as a pass
+            # through the Program deck and this is after the last one.
+            # opt_cycle_strict is the bare "once per cycle" reading and gets
+            # nothing here.
+            self._opt_long = False
         overheated = False
         for pid in adv:
             if self.hp <= 0:
