@@ -641,9 +641,18 @@ check("the 4 Imposter Task dots agree in the cards, the lab and nap.py",
 # because the claim CONDITION now carries the cost clause that prices it -
 # "Claiming gives up..." - and a lab that kept the old wording would teach the
 # player a rule the rulebooks no longer have.
+# INTF and CORRUPT joined this list on 2026-11-06, when the recycle clause on
+# "I Don't Have Time for This" was capped: app.js:280 prints the Interference
+# card's text to the player and app.js:414 prints the Corrupted Limitation's,
+# so a copy that keeps the old wording teaches a rule no card has. Nothing
+# was comparing either deck until the cap had to be made in two places.
 for key, path, jsname in (("NOTES", "playtest/dist/bat.js", "BAT_NOTES"),
                           ("BACKDOOR", "playtest/dist/app.js",
-                           "AOS_BACKDOOR")):
+                           "AOS_BACKDOOR"),
+                          ("INTF", "playtest/dist/app.js",
+                           "AOS_INTERFERENCE"),
+                          ("CORRUPT", "playtest/dist/app.js",
+                           "AOS_CORRUPT")):
     try:
         j = js_literal(path, jsname)
     except KeyError as ex:
@@ -655,8 +664,19 @@ for key, path, jsname in (("NOTES", "playtest/dist/bat.js", "BAT_NOTES"),
               "%d vs %d rows" % (len(g), len(j)))
         continue
     bad = [a[0] for a, b in zip(g, j) if list(a[:3]) != list(b[:3])]
-    check("%s vs %s - %d cards, name, condition and effect"
+    check("%s vs %s - %d cards, every printed field"
           % (key, jsname, len(g)), not bad, "%r" % (bad[:3],))
+
+# THE RECYCLE CAP, in the card and in the model. Uncapped, this one card
+# measured 1.2% at Tier I against a 51.8% solo column and was drawn 1 game in
+# 6, so the two copies drifting apart is a 33-point drift in one sixth of all
+# AoS campaign games.
+check("'I Don't Have Time for This' caps the recycle at once per Program",
+      "The first time each already-Overheated Program fails"
+      in text("generator/build_nrj.py"))
+check("aos.py caps it the same way (RECYCLE_LIMIT / RECYCLE_SCOPE)",
+      "RECYCLE_LIMIT = 1" in text("simulation/aos.py")
+      and 'RECYCLE_SCOPE = "program"' in text("simulation/aos.py"))
 
 check("the Tier III claim cost is printed on all 12 BAT and AoS cards",
       text("generator/build_nrj.py").count(

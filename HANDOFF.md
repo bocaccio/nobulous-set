@@ -1980,16 +1980,19 @@ Not your job to fix, but worth knowing if Jon raises them:
   | BAT | 53.2% | −3.1 | −11.4 | +4.7 | 81.6% |
   | NAP *(before)* | 48.8% | −4.6 | −8.1 | +16.2 | **107.2%** |
   | NAP *(now)* | 48.8% | −4.6 | −8.1 | +3.9 | **82.0%** |
-  | AoS *(before)* | 52.0% | −17.3 | −6.3 | +1.3 | **57.1%** |
-  | AoS *(now)* | 52.0% | **−17.3** | −6.3 | +12.3 | 78.3% |
+  | AoS *(morning)* | 52.0% | −17.3 | −6.3 | +1.3 | **57.1%** |
+  | AoS *(Tier III modelled)* | 52.0% | −17.3 | −6.3 | +12.3 | 78.3% |
+  | AoS *(now, Tier I capped)* | 52.0% | **−11.2** | −7.2 | +13.0 | **89.6%** |
 
   **BAT is the shape the design wants** and is the reference for the other
   two: Tier III beats Tier II and stays below the solo column, at 81–85% of
-  its own solo cell on every rung. Read as levels, AoS looks like a Tier III
-  problem. Read as steps, its Tier II is the *shallowest* of the three and
-  the hole is dug at Tier I — so "Tier II is the trough" is true of the level
-  and false of the cause. AoS is the one still out of shape, and **what is
-  left is Tier I**, not Tier III.
+  its own solo cell on every rung. Read as levels, AoS looked like a Tier III
+  problem; read as steps, the hole was dug at Tier I — so "Tier II is the
+  trough" was true of the level and false of the cause. Both ends are now
+  fixed, and the remaining complaint has swapped ends: AoS's Tier III is the
+  *shallowest* campaign penalty of the three at 89.6% of its own solo cell,
+  and 95.5% at Easy. It still obeys BAT's rule, so that is a shape question
+  rather than a defect.
 
 - **Two cards changed on 2026-11-06, both in Tier III, and only one of them
   is a card.** NAP's six Devious Opportunities had their Targets raised to
@@ -2053,25 +2056,50 @@ Not your job to fix, but worth knowing if Jon raises them:
   the same as 2, because the second was always spent on a Catastrophic
   Failure the free miss-negation would have absorbed for nothing.
 
-- **STILL OPEN, AND THE BIGGEST ONE: AoS's Tier I.** One Nobulous
-  Interference card is drawn at setup, and priced alone at Standard the six
-  read 1.2% / 34.5% / 37.6% / 40.5% / 41.7% / 51.1% against a 51.8% solo
-  column. **"I Don't Have Time for This" is a 1.2% card** — not a difficulty
-  setting, a loss. Its two clauses were split: clause one (begin all Programs
+- **FIXED 2026-11-06: AoS's Tier I, the biggest thing on the campaign axis.**
+  One Nobulous Interference card is drawn at setup, and priced alone at
+  Standard **"I Don't Have Time for This" read 1.2%** against a 51.8% solo
+  column — not a difficulty setting, a loss, in a sixth of all AoS campaign
+  games. Its two clauses were split: clause one (begin all Programs
   Overheated) is worth roughly nothing, and clause two ("when an
   already-Overheated Program fails, cycle it to the bottom of its deck
-  instead of setting it aside") is the whole −50. The mechanism is the
+  instead of setting it aside") was the whole −50. The mechanism is the
   interaction and it is invisible on the card: normal escalation is stable →
   overheated → aside, clause one starts everything at the second step, so
-  clause two replaces the *third* and nothing can ever leave the deck. The
-  clause that reads as mercy is the trap.
+  clause two replaced the *third* and nothing could ever leave the deck. The
+  clause that reads as mercy was the trap.
 
-  Measured repairs, Tier I: recycle capped at 3 → 18.9%, at 2 → 24.3%, at
-  **1 → 34.8%** (which puts the card among the other five), clause deleted →
-  53.3% (above the solo column, so deleting is wrong). A one-word fix,
-  "**the first time** an already-Overheated Program fails", is the candidate.
-  **Not applied — raised.** The knobs that measured it live in the scratchpad
-  copy, not in `aos.py`.
+  Capping the recycle read 3 → 19.3%, 2 → 24.3%, **1 → 34.9%**, deleted →
+  52.1%. Deleting puts the card above the solo column, so it wanted capping.
+  The card now prints **"The first time each already-Overheated Program
+  fails"** and the model carries `RECYCLE_LIMIT` / `RECYCLE_SCOPE` in
+  `aos.py`, where `-1` restores the uncapped card every earlier figure used.
+
+  **The wording had to choose a scope.** *Each* Program gets one reprieve and
+  reads 34.9%, which puts the card second only to Memory Leak. Once per
+  *game* reads 49.8% — the harshest-sounding card in the deck would have
+  become the second mildest in it. Per Program is the one that lands in band.
+
+  The deck now reads 33.3 / **34.9** / 36.6 / 40.1 / 40.5 / 51.3, a 0.5-to-18.4
+  spread where it was 0.7-to-50.5. The card left outside the deck is now
+  **Nobulous Was Here at −0.5, too mild** — raised, not fixed.
+
+  **Two knobs and four checks came with it.** `INTF_PICK` forces the draw so
+  the per-card table is reproducible from the shipped model rather than from
+  a scratch harness — and it *makes* the draw and discards it, so each cell
+  runs the stream a real game would. `check_app_sync.py` now compares the
+  whole **Interference and Corrupted Limitation** decks against the
+  generator, and asserts the card and `aos.py` agree on the cap. **Nothing
+  was checking either deck**, which is exactly how a change that has to be
+  made in two places drifts — and this one had to be made in three.
+
+- **NOW THE OTHER END OF THE SAME AXIS: AoS Tier III is too shallow.** The
+  Tier I repair lifted all three tier columns by 5-6 points, because all
+  three draw that card, so Tier III went 40.7% → 46.6% without anything in
+  Tier III changing. At Standard that is **89.6% of its own solo column
+  against BAT's 81.6%**, and at Easy 95.5% — nearly flat. It still obeys the
+  rule (above Tier II, below solo), so this is a shape question rather than a
+  defect. Raised, not touched.
 
 - **Two cards changed on 2026-11-05, the Optimizer and the Debugger.** They
   are the only AoS card text changed since the set was calibrated. The

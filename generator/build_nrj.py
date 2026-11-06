@@ -201,8 +201,19 @@ print("Following Setbacks", render_deck('NRJ_NAP_FollowingSetbacks', fol, 'NRJ',
 print("Devious Opportunities", render_deck('NRJ_NAP_DeviousOpportunities', dev, 'NRJ', LANDSCAPE, back='CardBack_NAP_Assignment'))
 CARD_SIZE = PORTRAIT
 
+# THE RECYCLE CLAUSE IS CAPPED AT ONCE PER PROGRAM. It read "WHEN an
+# already-Overheated Program fails" until 2026-11-06, with no limit, and
+# measured 1.2% at Tier I against a 51.8% solo column - a loss rather than a
+# difficulty setting, drawn 1 game in 6. The clause is the whole of it: with
+# the recycle off the card reads 52.1%, ABOVE the solo column, so this wants
+# capping and not cutting. Normal escalation is stable -> overheated ->
+# aside; "begin all Programs Overheated" starts every Program at the SECOND
+# step, so the clause replaced the THIRD and nothing could ever leave the
+# deck. "The first time each" gives every Program one reprieve and reads
+# 34.9%, which puts the card beside Memory Leak as the harshest of the six
+# rather than outside the deck. See RECYCLE_LIMIT in simulation/aos.py.
 INTF = [
- ("I Don't Have Time for This", "Begin all Programs Overheated. When an already-Overheated Program fails, cycle it to the bottom of its deck instead of setting it aside."),
+ ("I Don't Have Time for This", "Begin all Programs Overheated. The first time each already-Overheated Program fails, cycle it to the bottom of its deck instead of setting it aside."),
  ("Legacy Hardware", "At setup, choose and banish 1 non-Red die."),
  ("Nobulous Was Here", "Randomly flip 2 Programs to their Overheated sides before play."),
  ("Undocumented Dependencies", "The first element of every Program must receive at least 1 die and no more than its Target."),

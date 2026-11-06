@@ -133,7 +133,7 @@
   };
   // --- NRJ module cards ----------------------------------------------
   const AOS_INTERFERENCE = [
-    ["I Don't Have Time for This","Begin all Programs Overheated. When an already-Overheated Program fails, cycle it to the bottom of its deck instead of setting it aside."],
+    ["I Don't Have Time for This","Begin all Programs Overheated. The first time each already-Overheated Program fails, cycle it to the bottom of its deck instead of setting it aside."],
     ["Legacy Hardware","At setup, choose and banish 1 non-Red die."],
     ["Nobulous Was Here","Randomly flip 2 Programs to their Overheated sides before play."],
     ["Undocumented Dependencies","The first element of every Program must receive at least 1 die and no more than its Target."],

@@ -189,6 +189,33 @@ INTERFERENCE = [
     "memory_leak",      # over-allocation costs 1 extra exhausted die
 ]
 
+# "I DON'T HAVE TIME FOR THIS" AND ITS RECYCLE CAP. The card printed "WHEN an
+# already-Overheated Program fails, cycle it to the bottom of its deck
+# instead of setting it aside", with no limit, and that measured 1.2% at Tier
+# I against a 51.8% solo column - a loss rather than a difficulty setting, in
+# 1 of 6 setup draws. The -50 is entirely THIS clause and not the "begin all
+# Programs Overheated" one: with the recycle off the card reads 52.1%, ABOVE
+# the solo column. The mechanism is the interaction and it is invisible on the
+# card. Normal escalation is stable -> overheated -> aside; clause one starts
+# every Program at the SECOND step, so clause two replaces the THIRD and
+# nothing can ever leave the deck. A Program you cannot beat comes back until
+# it kills you, and the clause that reads as mercy is the trap.
+#   RECYCLE_LIMIT  how many times a Program may be cycled back instead of
+#                  set aside. -1 is the unlimited card every figure before
+#                  2026-11-06 was measured on, and 0 deletes the clause.
+#   RECYCLE_SCOPE  "program" counts the cap per Program, "game" counts it
+#                  once for the whole game. The printed wording has to say
+#                  which, so these two are not interchangeable.
+RECYCLE_LIMIT = 1
+RECYCLE_SCOPE = "program"
+
+# Forces the Interference card rather than drawing one of the six, so each
+# can be priced on its own: the Tier I table in RESULTS.txt is this knob
+# swept over INTERFERENCE. None draws at random, as the card says. The draw
+# is made and discarded when it is set, so every cell of that table runs the
+# same random stream as the games the published grid averages.
+INTF_PICK = None
+
 # Base Limitations are not modeled, so Tier II is modeled as the chance of
 # drawing a Corrupted one: 6 corrupted cards added to a 6-card deck, so half
 # the Programs face one. A Corrupted Limitation withholds 2 dice of a randomly
@@ -755,13 +782,18 @@ class Game(object):
 
         # --- NRJ overlay ---
         self.intf = None
+        self.recycled = 0      # RECYCLE_SCOPE "game" counts here
         self.corrupt = False
         self.backdoors = 0     # pooled charges, BACKDOOR_REWARDS off
         self.bkd = {}          # the named Routines held, and their one use
         self.met = set()       # claim conditions met, observation only
         self.worked = 0        # ...and how many were claimed
         if tier in ("I", "II", "III"):
-            self.intf = self.rng.choice(INTERFERENCE)
+            # The draw happens either way, so a forced pick runs on the same
+            # random stream a real game that drew that card would - without
+            # it the six priced cells are not comparable with each other.
+            drawn = self.rng.choice(INTERFERENCE)
+            self.intf = INTF_PICK or drawn
             if self.intf == "banish_one":
                 self.available.remove(self.rng.choice(COLORS))
             elif self.intf == "flip_two":
@@ -1570,6 +1602,24 @@ class Game(object):
             return self.hp <= 1        # the Health loss would end the game
         return True
 
+    def may_recycle(self, prog):
+        """"I Don't Have Time for This": may this Program come back again?
+
+        Spends one of the cap's uses when it says yes, so the caller must
+        only ask when it is about to cycle the card.
+        """
+        if RECYCLE_LIMIT < 0:
+            return True
+        if RECYCLE_SCOPE == "game":
+            if self.recycled >= RECYCLE_LIMIT:
+                return False
+            self.recycled += 1
+            return True
+        if prog.get("recycled", 0) >= RECYCLE_LIMIT:
+            return False
+        prog["recycled"] = prog.get("recycled", 0) + 1
+        return True
+
     def retire(self, pid):
         """The card leaves the deck for good, shortening later cycles."""
         if pid is None:
@@ -1636,9 +1686,9 @@ class Game(object):
                 elif prog["status"] == "stable":
                     prog["status"] = "overheated"
                     retry = RETRY_IMMEDIATE
-                elif self.intf == "all_overheated":
+                elif self.intf == "all_overheated" and self.may_recycle(prog):
                     # "cycle it to the bottom of its deck instead of setting
-                    # it aside" - the Program keeps coming back.
+                    # it aside" - the Program comes back, RECYCLE_LIMIT times.
                     self.queue.append(pid)
                 else:
                     prog["status"] = "aside"

@@ -408,10 +408,18 @@ Measured 2026-11-06, 20,000 games a cell, `ALLOC_MODE = sacrifice_short`.
 
 | difficulty | no NRJ | Tier I | Tier II | Tier III |
 |---|---|---|---|---|
-| Easy 3/3/2 | 59.6% | 42.0% | 35.6% | 48.2% |
-| Standard 2/3/3 | **52.0%** | 34.7% | 28.4% | **40.7%** |
-| Hard 1/3/4 | 43.3% | 27.0% | 21.7% | 33.6% |
-| Nobulous 0/3/5 | 35.2% | 22.1% | 15.7% | 25.6% |
+| Easy 3/3/2 | 59.6% | 48.8% | 41.9% | 56.9% |
+| Standard 2/3/3 | **52.0%** | **40.8%** | 33.6% | **46.6%** |
+| Hard 1/3/4 | 43.3% | 32.6% | 25.5% | 38.9% |
+| Nobulous 0/3/5 | 35.2% | 25.2% | 18.0% | 30.7% |
+
+**All three tier columns rose 5-6 points on 2026-11-06 when one Tier I card
+was capped**, and they had to: "I Don't Have Time for This" is 1 of 6 drawn
+at setup and every tier includes that draw, so a card going 1.2% to 34.9% is
+worth (34.9 - 1.2) / 6 = 5.6 points to each of them. Tier I 34.7 -> 40.8,
+Tier II 28.4 -> 33.6, Tier III 40.7 -> 46.6. The three moving together by the
+predicted amount, with the solo column not moving at all, is the check that
+the cap is contained to the card.
 
 **The Tier III column moved 11 points on 2026-11-06 and no AoS card
 changed.** The model gave Tier III two *fungible* charges and spent every one
@@ -444,52 +452,73 @@ difficulty", so match the ladder before trusting any row.
 **THE LOOSE END IS THE CAMPAIGN AXIS, AND IT IS TIER I, NOT TIER III.**
 Read the tiers as STEPS rather than as levels and the three games say:
 
-| Standard | solo | -> Tier I | -> Tier II | -> Tier III |
-|---|---|---|---|---|
-| BAT | 53.2% | -3.1 | -11.4 | +4.7 |
-| NAP | 48.8% | -4.6 | -8.1 | +3.9 |
-| AoS | 52.0% | **-17.3** | -6.3 | +12.3 |
+| Standard | solo | -> Tier I | -> Tier II | -> Tier III | III/solo |
+|---|---|---|---|---|---|
+| BAT | 53.2% | -3.1 | -11.4 | +4.7 | 81.6% |
+| NAP | 48.8% | -4.6 | -8.1 | +3.9 | 82.0% |
+| AoS | 52.0% | **-11.2** | -7.2 | +13.0 | **89.6%** |
 
 BAT is the shape the design wants - Tier III beats Tier II and stays below
-solo, at 81-85% of its own solo cell on every rung. AoS's Tier II step is now
-the *shallowest* of the three and its Tier III step the largest, so "Tier II
-is the trough" is true of the level and false of the cause. **The hole is dug
-at Tier I, by one card drawn at setup**, and Tier III cannot climb out of it:
-even recovering 12.3 points it reaches only 78.3% of solo against BAT's
-81.6%.
+solo, at 81-85% of its own solo cell on every rung. **AoS now has that shape
+and overshoots it.** Its Tier I step was -17.3 until 2026-11-06, when the
+card that dug the hole was capped; at -11.2 it is still the deepest of the
+three. Tier III clears Tier II and stays below solo, which is BAT's rule, but
+at 89.6% of its own solo column it is the *shallowest* campaign penalty of
+the three, and at Easy it is 95.5% - nearly flat. That is the next thing to
+look at on this axis. It is a consequence of the Tier I repair rather than of
+anything Tier III does: capping one of six setup cards lifts all three tier
+columns equally, because all three draw it. One upside came with it - AoS
+Standard at Tier III is 46.6%, which brings the campaign column to within
+0.4 of the 47-57% band for the first time.
 
 Priced one card at a time at Standard, 6,000 games a cell, against a 51.8%
 solo column, the six Nobulous Interference cards read:
 
 | Tier I, alone in the deck | | |
 |---|---|---|
-| I Don't Have Time for This | **1.2%** | -50.5 |
-| Memory Leak | 34.5% | -17.3 |
-| Works on My Machine | 37.6% | -14.1 |
-| Legacy Hardware | 40.5% | -11.3 |
-| Undocumented Dependencies | 41.7% | -10.1 |
-| Nobulous Was Here | 51.1% | -0.7 |
+| Memory Leak | 33.3% | -18.4 |
+| **I Don't Have Time for This** | **34.9%** | **-16.9** |
+| Works on My Machine | 36.6% | -15.2 |
+| Legacy Hardware | 40.1% | -11.7 |
+| Undocumented Dependencies | 40.5% | -11.3 |
+| Nobulous Was Here | 51.3% | -0.5 |
 
-**"I Don't Have Time for This" is a 1.2% card** - not a difficulty setting, a
-loss - and splitting its two clauses says which one: begin all Programs
-Overheated is worth roughly nothing, and *"when an already-Overheated Program
-fails, cycle it to the bottom of its deck instead of setting it aside"* is the
-whole -50. The mechanism is the interaction and it is invisible on the card.
-Normal escalation is stable -> overheated -> aside; clause one starts
-everything at the second step, so clause two replaces the *third* and nothing
-can ever leave the deck. A Program you cannot beat comes back until it kills
-you. The clause that reads as mercy is the trap.
+This table is reproducible from the shipped model: `INTF_PICK` in `aos.py`
+forces the draw, and *makes* the draw and discards it, so every cell runs the
+same random stream as the games the grid averages. The version printed before
+2026-11-06 came from a scratch harness that skipped the draw, which moved
+each cell by about a point.
 
-Capping how many times one Program may return reads, at Tier I: 3 -> 18.9%,
-2 -> 24.3%, **1 -> 34.8%**, clause deleted -> 53.3%. A limit of 1 puts the
-card among the other five; deleting the clause puts it above the solo column,
-so it wants capping rather than cutting. The one-word candidate is "**the
-first time** an already-Overheated Program fails". RAISED, NOT APPLIED - the
-knobs that measured it are not in `aos.py`.
+**"I Don't Have Time for This" was a 1.2% card until 2026-11-06** - not a
+difficulty setting, a loss, drawn 1 game in 6 - and splitting its two clauses
+said which one: begin all Programs Overheated is worth roughly nothing, and
+*"when an already-Overheated Program fails, cycle it to the bottom of its
+deck instead of setting it aside"* was the whole -50. The mechanism is the
+interaction and it is invisible on the card. Normal escalation is stable ->
+overheated -> aside; clause one starts everything at the second step, so
+clause two replaced the *third* and nothing could ever leave the deck. A
+Program you cannot beat comes back until it kills you. The clause that reads
+as mercy was the trap.
 
-A second thing this table says: the six Interference cards span 0.7 to 50.5
-points. That is a 70-fold spread inside one six-card deck, and it is the same
-complaint the Backdoor rewards draw below.
+Capping how many times one Program may return read, at Tier I: 3 -> 19.3%,
+2 -> 24.3%, **1 -> 34.9%**, clause deleted -> 52.1%. Deleting puts the card
+above the solo column, so it wanted capping rather than cutting.
+
+**Applied.** The card now reads *"Begin all Programs Overheated. The first
+time each already-Overheated Program fails, cycle it to the bottom of its
+deck instead of setting it aside."* The cap is `RECYCLE_LIMIT` /
+`RECYCLE_SCOPE` in `aos.py`, where `-1` restores the uncapped card every
+figure before this date was measured on.
+
+The wording had to choose a scope and the two are not close: *each* Program
+gets one reprieve and reads 34.9%, while once per *game* reads 49.8% - which
+would make the harshest-sounding card in the deck the second mildest in it.
+
+A second thing this table says: the six Interference cards spanned 0.7 to
+50.5 points before the cap and 0.5 to 18.4 after it. Five of the six now sit
+between -11.3 and -18.4, which is a deck. The card left outside is now
+**Nobulous Was Here at -0.5, too mild rather than too harsh** - raised, not
+fixed, and the same complaint the Backdoor rewards draw below.
 
 ### NRJ - the finale
 

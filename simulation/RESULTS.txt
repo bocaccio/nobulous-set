@@ -85,10 +85,20 @@ AoS  Automaton of Shale
   difficulty = the Routine/Specialized/Unstable mix
 
                             no NRJ    Tier I   Tier II  Tier III
-  Easy  3/3/2                59.6%     42.0%     35.6%     48.2%
-  Standard  2/3/3            52.0%     34.7%     28.4%     40.7%
-  Hard  1/3/4                43.3%     27.0%     21.7%     33.6%
-  Nobulous  0/3/5            35.2%     22.1%     15.7%     25.6%
+  Easy  3/3/2                59.6%     48.8%     41.9%     56.9%
+  Standard  2/3/3            52.0%     40.8%     33.6%     46.6%
+  Hard  1/3/4                43.3%     32.6%     25.5%     38.9%
+  Nobulous  0/3/5            35.2%     25.2%     18.0%     30.7%
+
+    ALL THREE TIER COLUMNS ROSE 5-6 POINTS ON 2026-11-06 WHEN ONE
+    TIER I CARD WAS CAPPED, and they had to: "I Don't Have Time
+    for This" is 1 of 6 drawn at setup and every tier includes
+    that draw, so a card going 1.2% to 34.9% is worth (34.9 -
+    1.2) / 6 = 5.6 points to each column.  Tier I 34.7 -> 40.8,
+    Tier II 28.4 -> 33.6, Tier III 40.7 -> 46.6.  That the three
+    moved together, by the predicted amount, and that the solo
+    column did not move at all, is the check that the cap is
+    contained to the card.  See THE CAMPAIGN AXIS below.
 
     THE TIER III COLUMN ROSE 11 POINTS ON 2026-11-06 AND NO AoS
     CARD CHANGED.  The MODEL did.  It gave Tier III two FUNGIBLE
@@ -592,7 +602,7 @@ THE CAMPAIGN AXIS - read the tiers as STEPS, not as levels
                       solo    ->I     ->II    ->III   III/solo
     BAT              53.2%   -3.1   -11.4    +4.7      81.6%
     NAP              48.8%   -4.6    -8.1    +3.9      82.0%
-    AoS              52.0%  -17.3    -6.3   +12.3      78.3%
+    AoS              52.0%  -11.2    -7.2   +13.0      89.6%
 
   BAT IS THE SHAPE THE DESIGN WANTS and is the reference for the
   other two: Tier III beats Tier II and stays BELOW the solo
@@ -600,38 +610,52 @@ THE CAMPAIGN AXIS - read the tiers as STEPS, not as levels
   at 107-122% of solo until its Devious Opportunities were priced
   against the cards they replace; it now reads 82-87%.
 
-  AoS IS THE ONE STILL OUT OF SHAPE, AND IT IS TIER I.  Read as
-  levels it looks like a Tier III problem.  Read as steps its
-  Tier II is the SHALLOWEST of the three and its Tier III the
-  largest recovery in the set, so "Tier II is the trough" is true
-  of the level and false of the cause.  The hole is dug at Tier
-  I, by ONE card drawn at setup, and Tier III cannot climb out of
-  it: recovering 12.3 points still only reaches 78.3% of solo.
+  AoS NOW HAS THE SHAPE, AND OVERSHOOTS IT.  Its Tier I step was
+  -17.3 until 2026-11-06, when the card that dug the hole was
+  capped; it is -11.2 now, and still the deepest of the three.
+  Tier III clears Tier II and stays below solo, which is the rule
+  BAT sets, but at 89.6% of its own solo column against BAT's
+  81.6% it is the SHALLOWEST campaign penalty of the three, and
+  at Easy it is 95.5% - nearly flat.  That is the next thing to
+  look at on this axis, and it is a consequence of the Tier I
+  repair rather than of anything Tier III does: capping one of
+  six setup cards lifted all three tier columns by the same 5-6
+  points, because all three draw it.  AoS Standard at Tier III is
+  46.6%, which puts the campaign column INSIDE the 47-57% band
+  for the first time, 0.4 under its floor.
 
   THE SIX NOBULOUS INTERFERENCE CARDS, priced one at a time as
   the only Interference in the deck.  Standard, 6000 games a
   cell, against a 51.8% solo column:
 
-    I Don't Have Time for This   begin ALL Programs Overheated
-                                              1.2%    -50.5
     Memory Leak                  over-allocating costs 1 die
-                                             34.5%    -17.3
+                                             33.3%    -18.4
+    I Don't Have Time for This   all Overheated, ONE recycle each
+                                             34.9%    -16.9
     Works on My Machine          Crits only on element 2
-                                             37.6%    -14.1
+                                             36.6%    -15.2
     Legacy Hardware              banish 1 non-Red die at setup
-                                             40.5%    -11.3
+                                             40.1%    -11.7
     Undocumented Dependencies    element 1 gets 1..Target
-                                             41.7%    -10.1
+                                             40.5%    -11.3
     Nobulous Was Here            2 Programs start Overheated
-                                             51.1%     -0.7
+                                             51.3%     -0.5
 
-  "I DON'T HAVE TIME FOR THIS" IS A 1.2% CARD.  That is not a
-  difficulty setting, it is a loss, and it is 1 of 6 drawn at
-  setup - so a sixth of all AoS campaign games are decided before
-  a die is thrown.  Splitting its two clauses says which one:
+  THE TABLE ABOVE IS NOW REPRODUCIBLE FROM THE SHIPPED MODEL:
+  INTF_PICK in aos.py forces the draw, and it MAKES the draw and
+  discards it, so every cell runs the same random stream as the
+  games the grid averages.  The version of this table printed
+  before 2026-11-06 came from a scratch harness that skipped the
+  draw, which moved each cell by about a point.
+
+  "I DON'T HAVE TIME FOR THIS" WAS A 1.2% CARD UNTIL 2026-11-06.
+  That is not a difficulty setting, it is a loss, and it is 1 of
+  6 drawn at setup - so a sixth of all AoS campaign games were
+  decided before a die was thrown.  Splitting its two clauses
+  said which one:
 
     as printed                                 1.2%
-    with the recycle clause OFF               53.3%
+    with the recycle clause OFF               52.1%
 
   Clause one - begin all Programs Overheated - is worth roughly
   nothing on its own, and is ABOVE the solo column.  Clause two -
@@ -645,26 +669,54 @@ THE CAMPAIGN AXIS - read the tiers as STEPS, not as levels
   clause that reads as mercy is the trap.  Both clauses read, on
   the card, as "harsher but fair".
 
-  HOW MANY TIMES MAY ONE PROGRAM COME BACK?  Tier I / Tier III:
+  HOW MANY TIMES MAY ONE PROGRAM COME BACK?  Tier I / Tier III,
+  6000 games a cell, re-run 2026-11-06 on the shipped INTF_PICK:
 
-    as printed (unlimited)       1.2%    0.2%
-    3                           18.9%   12.2%
-    2                           24.3%   19.0%
-    1                           34.8%   29.0%
-    0 = clause deleted          53.3%   49.9%
+    as printed (unlimited)       1.2%    0.3%
+    3 per Program               19.3%   19.4%
+    2 per Program               24.3%   27.6%
+    1 per Program  <- SHIPPED   34.9%   41.7%
+    0 = clause deleted          52.1%   64.6%
+
+  AND THE SAME CAP COUNTED PER GAME rather than per Program,
+  which is the other way the sentence could have been written:
+
+    3 per game                  41.6%   53.8%
+    2 per game                  46.3%   58.5%
+    1 per game                  49.8%   61.6%
 
   A limit of 1 puts the card among the other five.  Deleting the
-  clause puts it above the solo column, so this wants capping
-  rather than cutting, and the candidate is one word: "THE FIRST
-  TIME an already-Overheated Program fails, cycle it to the
-  bottom of its deck instead of setting it aside."
-  RAISED, NOT APPLIED.  No card changed, and the knob that
-  measured this is not in aos.py.
+  clause puts it above the solo column, so this wanted capping
+  rather than cutting.
+
+  APPLIED 2026-11-06.  The card now reads "Begin all Programs
+  Overheated.  THE FIRST TIME EACH already-Overheated Program
+  fails, cycle it to the bottom of its deck instead of setting it
+  aside", and the cap is RECYCLE_LIMIT / RECYCLE_SCOPE in aos.py,
+  where -1 restores the uncapped card every figure before this
+  date was measured on.  check_app_sync.py holds the two copies
+  together, and also started comparing the whole Interference and
+  Corrupted Limitation decks against the generator - NOTHING was
+  checking either one, which is how a change that has to be made
+  in two places drifts.
+
+  THE WORDING HAD TO CHOOSE A SCOPE, and the two are not close.
+  "The first time EACH ... Program fails" gives every Program one
+  reprieve and reads 34.9%; once for the whole GAME reads 49.8%,
+  which would make the harshest-sounding card in the deck the
+  second mildest in it.  Per Program is the one that lands among
+  the other five, and it keeps the card second only to Memory
+  Leak, which is the right place for a card that starts
+  everything on fire.
 
   AND A SECOND READING OF THE SAME TABLE: the six Interference
-  cards span 0.7 to 50.5 points.  A 70-fold spread inside one
-  six-card deck is the same complaint the Backdoor rewards draw
-  below, and the same one the Debugger drew on 2026-11-05.
+  cards spanned 0.7 to 50.5 points before the cap and span 0.5 to
+  18.4 after it.  Five of the six now sit between -11.3 and
+  -18.4, which is a deck; the 70-fold spread is a 37-fold one,
+  and the card left outside it is NOBULOUS WAS HERE at -0.5, too
+  MILD rather than too harsh.  Raised, not fixed.  It is the same
+  complaint the Backdoor rewards draw below, and the same one the
+  Debugger drew on 2026-11-05.
 
   THE BACKDOOR REWARDS HAVE IT TOO.  Priced one at a time as the
   only Routine claimed, Standard, 6000 games a cell, against a
@@ -716,7 +768,7 @@ CALIBRATION - published 20 Strong titles, community-recorded
     AoS  Standard in band on its OWN column (52.0%) since the
          2026-11-05 re-pitch onto the strongest allocation line
          the printed rules allow (ALLOC_MODE = sacrifice_short);
-         Standard at Tier III below the band (40.7%).
+         Standard at Tier III below the band (46.6%).
     NRJ  the finale that SHIPS is in band (50.5%), computed from
          finale.py over 6000 finales x 5 seeds; finale.txt is its
          full report.  The superseded nine-attempt scenario is
@@ -732,12 +784,15 @@ CALIBRATION - published 20 Strong titles, community-recorded
   caught table.py's copy of this footer contradicting its own grid
   on three of the four games and made that one compute from the
   run; the same disease was still sitting here.  Both are
-  generated now.  AoS at Tier III is the one verdict worth
-  arguing with rather than fixing: 40.7% is 6.3 points below the
-  band, up from 29.7% once each Backdoor Routine was modelled as
-  the card it is, and it is the campaign axis.  It is no longer
-  the headline it was: see THE CAMPAIGN AXIS above, where the
-  same column says the real outlier is AoS's TIER I.
+  generated now.  AoS at Tier III has stopped being the verdict
+  worth arguing with: 46.6% is 0.4 of a point under the band's
+  floor, having been 29.7% before each Backdoor Routine was
+  modelled as the card it is and 40.7% before the Tier I card was
+  capped.  Both of those were defects rather than dials, and the
+  column they moved is the campaign axis.  What is now worth
+  arguing with is the OTHER end of it - see THE CAMPAIGN AXIS
+  above, where the same column reaches 89.6% of its own solo cell
+  against BAT's 81.6%.
 
   THE RETUNE IS WHY, AND IT INVALIDATES EVERY DIFFICULTY DIAL.
   These models used to play one fixed policy that was 6 to 34
