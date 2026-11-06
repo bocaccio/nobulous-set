@@ -2052,7 +2052,8 @@ Not your job to fix, but worth knowing if Jon raises them:
   directions, and had been hiding each other.** Neither was a card problem.
   Fixing them moved the published AoS row from 51.7% to 57.4% on 2026-11-05
   without the game changing at all; replacing the Debugger's ability later
-  the same day brought it back down. See the AoS grid for where it landed.
+  the same day brought it back down to 52.0% — within 0.3 of where the row
+  started the day, because the game never changed.
 
   `Debug` only ever fired on the POST-reroll total, because the model spent
   the extra STR roll whenever an element came up short. That is wrong play:

@@ -406,20 +406,21 @@ Specimens are the Value-5 cards).
 
 Measured 2026-11-05, 20,000 games a cell, `ALLOC_MODE = sacrifice_short`.
 
-> **Stale.** This grid predates the Debugger's ability change on 2026-11-05
-> and has not been regenerated yet; Standard should land near 51.6%. The
-> per-Technician table further down is current. Run `python table.py`.
+Regenerated after the Debugger's ability was replaced the same day. The two
+model fixes pushed Standard from 51.7% to 57.4% and replacing that card
+brought it back to 52.0%, so the row ends the day within 0.3 of where it
+started - the game did not change, only what the model and one card did.
 
 | difficulty | no NRJ | Tier I | Tier II | Tier III |
 |---|---|---|---|---|
-| Easy 3/3/2 | 60.1% | 41.7% | 35.3% | 37.3% |
-| Standard 2/3/3 | **51.7%** | 35.2% | 29.2% | 30.4% |
-| Hard 1/3/4 | 43.8% | 28.0% | 22.0% | 23.9% |
-| Nobulous 0/3/5 | 36.0% | 22.7% | 17.0% | 18.1% |
+| Easy 3/3/2 | 59.6% | 42.0% | 35.6% | 37.2% |
+| Standard 2/3/3 | **52.0%** | 34.7% | 28.4% | 29.7% |
+| Hard 1/3/4 | 43.3% | 27.0% | 21.7% | 22.8% |
+| Nobulous 0/3/5 | 35.2% | 22.1% | 15.7% | 16.9% |
 
 The ladder names moved one rung down on 2026-11-05, when the pitch moved from
 honest allocation to the strongest line the printed rules allow. The outcome
-barely moved with it - Standard went 52.9% to 51.7% and Nobulous did not
+barely moved with it - Standard went 52.9% to 52.0% and Nobulous did not
 budge - because a harder ladder and a stronger policy very nearly cancel. The
 point of the change was not the level but what the level describes: the
 figures now measure the line a player who triages actually takes. A player who
@@ -434,15 +435,15 @@ indexed by whole Program decks (Routine 43.3%, Specialized 9.3%, Unstable
 difficulty", so match the ladder before trusting any row.
 
 **The loose end is now the CAMPAIGN axis, not the solo one.** Tier II is the
-trough as intended (Standard 51.7% -> 29.2%) but Tier III claws back only
-1.2 points where the design wants most of it, so Standard sits 16.6 points
+trough as intended (Standard 52.0% -> 28.4%) but Tier III claws back only
+1.3 points where the design wants most of it, so Standard sits 17.3 points
 below the band on every tier column. This is not a consequence of the
 re-pitch: the honest model read 52.9% solo against 32.0% at Tier III, the same
 21-point spread. It is the reverse of the gap this section used to describe -
 "71.2% played on its own, so the solo game is the loose end" - which was
 written against a model that had no required colours. AoS is also the only one
 of the three that loses ground at Tier III: NAP GAINS there (48.8% -> 52.3%)
-and BAT gives back 9.8 points against AoS's 21.3.
+and BAT gives back 9.8 points against AoS's 22.3.
 
 ### NRJ - the finale
 

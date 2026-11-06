@@ -14,12 +14,6 @@ NAP  Nobulous Apprenticeship Program
 ==================================================================
   difficulty = Credit goal / Setbacks in the deck; FINF at Reduce 1
 
-  *** THE FOUR COLUMNS BELOW ARE STALE. They were taken with the
-  Debugger's old reroll ability and have not yet been regenerated
-  with the swap that replaced it on 2026-11-05. Standard should
-  land near 51.6% - see THE SIX TECHNICIANS below, which IS
-  current. Run `python table.py` and replace this block. ***
-
                             no NRJ    Tier I   Tier II  Tier III
   Easy (5 Cr, 4 Sb)          55.5%     51.9%     41.7%     56.9%
   Standard (6 Cr, 4 Sb) *     48.8%     44.2%     36.1%     52.3%
@@ -71,10 +65,10 @@ AoS  Automaton of Shale
   difficulty = the Routine/Specialized/Unstable mix
 
                             no NRJ    Tier I   Tier II  Tier III
-  Easy  3/3/2                64.5%     47.0%     40.7%     42.2%
-  Standard  2/3/3            57.4%     40.3%     34.0%     35.5%
-  Hard  1/3/4                49.7%     33.2%     27.3%     28.5%
-  Nobulous  0/3/5            42.5%     27.9%     20.9%     22.4%
+  Easy  3/3/2                59.6%     42.0%     35.6%     37.2%
+  Standard  2/3/3            52.0%     34.7%     28.4%     29.7%
+  Hard  1/3/4                43.3%     27.0%     21.7%     22.8%
+  Nobulous  0/3/5            35.2%     22.1%     15.7%     16.9%
 
     Mean of the six Technicians, ALLOC_MODE = sacrifice_short.
     RE-PITCHED 2026-11-05 onto the strongest allocation line the
@@ -107,7 +101,11 @@ AoS  Automaton of Shale
     with a pre-roll die swap, which brings the row back down.
     Read THE SIX TECHNICIANS below before quoting this one: a
     mean is only worth reading when the roster under it is
-    tight, and for most of today it was not.
+    tight, and for most of today it was not.  It now reads
+    52.0% at Standard against the 51.7% of this morning, so two
+    model fixes and a replaced ability very nearly returned it
+    to where it started - which is the point: the game did not
+    change, only what the model and one card were doing.
     Tier I   1 of 6 Nobulous Interference cards drawn at setup
     Tier II  6 Corrupted Limitations in the Limitation deck
     Tier III 6 Backdoor Routines, at most 2 claimed per game
@@ -567,7 +565,7 @@ CALIBRATION - published 20 Strong titles, community-recorded
     NAP  Standard in band (48.8% solo, 52.3% at Tier III) since
          every Target rose by 1 and the model started playing the
          printed End-of-Day burn; Hard below the band.
-    AoS  Standard in band on its OWN column (51.7%) since the
+    AoS  Standard in band on its OWN column (52.0%) since the
          2026-11-05 re-pitch onto the strongest allocation line
          the printed rules allow (ALLOC_MODE = sacrifice_short);
          Standard at Tier III below the band (30.4%).
