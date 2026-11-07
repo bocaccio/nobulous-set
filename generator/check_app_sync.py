@@ -297,18 +297,24 @@ check("the lab refuses to roll an element with no dice",
 # the one that can silently go wrong, because it is the only one that has to
 # CHOOSE the colour, and it needs the dots to do it.
 _jsrc_a = text("playtest/dist/app.js")
-check("the Corrupted Limitation card prints the exclusion",
-      "does <b>not</b> require" in text("generator/build_nrj.py"))
-check("the card covers the all-colours case",
-      "If the Program requires every color, select any."
+# THE EXCLUSION CAME OFF ON 2026-11-06 and all four owners had to drop it
+# together, so these four checks now assert its ABSENCE. It made the Tier II
+# card gentler than the native Limitation it is drawn instead of, and the
+# whole tier was worth +0.1 points over Tier I because of it.
+check("the Corrupted Limitation card no longer excludes required colours",
+      "does <b>not</b> require" not in text("generator/build_nrj.py")
+      and "A withheld color cannot answer a required-color dot."
       in text("generator/build_nrj.py"))
-check("rules/nrj.html states the exclusion",
-      "a color the Program does not require" in text("rules/nrj.html"))
-check("the model applies it (CORRUPT_AVOID_REQUIRED %r)"
+check("and the card drops the all-colours escape clause with it",
+      "If the Program requires every color, select any."
+      not in text("generator/build_nrj.py"))
+check("rules/nrj.html drops the exclusion too",
+      "a color the Program does not require" not in text("rules/nrj.html"))
+check("the model draws any colour (CORRUPT_AVOID_REQUIRED %r)"
       % sa.get("CORRUPT_AVOID_REQUIRED"),
-      sa.get("CORRUPT_AVOID_REQUIRED") is True)
-check("the lab screens the corrupt colour against the dots",
-      "function currentReqs()" in _jsrc_a and "need.has(c)" in _jsrc_a)
+      sa.get("CORRUPT_AVOID_REQUIRED") is False)
+check("the lab no longer screens the corrupt colour against the dots",
+      "need.has(c)" not in _jsrc_a)
 # Each reveal re-rolls: the cards say "a randomly selected color" and
 # "randomly select one element", which is per card, not per game.
 check("the lab re-rolls the corruption picks on every reveal",
@@ -445,6 +451,186 @@ check("rules/nap.html's setup step restates the same four counts",
           sn["LEVELS"][k][1]
           for k in ("Easy", "Standard", "Hard", "Nobulous"))
       in text("rules/nap.html"))
+
+# ---------------------------------------------------------------------------
+# THE NUMBERS THE RULEBOOKS PRINT, against the thing that owns each one.
+#
+# Added 2026-11-06. Until then the rules were the one source here with no
+# number check at all: the block above asks whether a rulebook still CONTAINS
+# a phrase, which catches a deletion and not a wrong figure. A read of all
+# four books against their sources that day turned up a rulebook
+# contradicting ITSELF on required-colour dots, and two printed claim costs
+# that no model was charging - so a figure in a rulebook is exactly as likely
+# to drift as a figure anywhere else in this repo.
+#
+# Each check pulls the number OUT of the rulebook with a pattern and holds it
+# against the generator or the model. Rewording near the number is fine; the
+# number moving is not.
+# ---------------------------------------------------------------------------
+def _plain(rel):
+    """A rulebook with its markup taken off.
+
+    These checks are about what the book PRINTS, so they read it the way a
+    player does: tags gone, entities resolved, whitespace flattened. Matching
+    the raw HTML instead makes a check fail the moment a number is wrapped in
+    <b>, which is a formatting change and not an error.
+    """
+    t = text(rel)
+    t = re.sub(r"<[^>]+>", "", t)
+    for a, b in (("&#8209;", "-"), ("&mdash;", " - "), ("&ndash;", "-"),
+                 ("&rsquo;", "'"), ("&lsquo;", "'"), ("&ldquo;", '"'),
+                 ("&rdquo;", '"'), ("&middot;", "-"), ("&nbsp;", " "),
+                 ("&amp;", "&")):
+        t = t.replace(a, b)
+    return re.sub(r"\s+", " ", t)
+
+
+_RULES = dict((g, _plain("rules/%s.html" % g))
+              for g in ("bat", "nap", "aos", "nrj"))
+
+
+def _num(game, pattern, label):
+    """The integer a rulebook prints at `pattern`, or None if it is gone."""
+    m = re.search(pattern, _RULES[game])
+    if not m:
+        _rulenum_missing.append("%s: %s" % (game, label))
+        return None
+    return int(m.group(1))
+
+
+def rulenum(game, pattern, want, label):
+    got = _num(game, pattern, label)
+    check("rules/%s.html: %s" % (game, label),
+          got == want, "rulebook %r, source %r" % (got, want))
+
+
+_rulenum_missing = []
+
+# -- BAT ---------------------------------------------------------------------
+_bat = py_tables("simulation/bat.py")
+_gbat = py_tables("generator/build_bat.py")
+rulenum("bat", r"(\d+) Experiment cards", len(_gbat["EXPERIMENTS"]),
+        "the Experiment deck size")
+rulenum("bat", r"(\d+) regular Upgrade cards", len(_gbat["UPGRADES"]),
+        "the Upgrade deck size")
+rulenum("bat", r"(\d+) Specimen cards", len(_gbat["SPECIMENS"]),
+        "the Specimen count")
+rulenum("bat", r"(\d+) Tyrant Attack cards", len(_gbat["ATTACKS"]),
+        "the Tyrant Attack count")
+rulenum("bat", r"survived (\d+) rounds", _bat["ROUND_LIMIT"],
+        "the round limit")
+rulenum("bat", r"hold at most (\d+) Upgrades", 3,
+        "the Upgrade limit a Rat may hold")
+rulenum("bat", r"awakens the moment it reaches (\d+) Splices", 5,
+        "the Splice count that awakens the Tyrant")
+
+# The commit-colour dot is the card; the model reads its own copy of the
+# order. Nothing compared them until 2026-11-06.
+_dots = {"G": "green", "B": "blue", "Y": "yellow"}
+check("the Tyrant Attack dots agree in build_bat.py and bat.py",
+      [_dots[d] for d in _gbat["ATTACK_DOTS"]] == _bat["ATTACK_COLORS"],
+      "%r vs %r" % (_gbat["ATTACK_DOTS"], _bat["ATTACK_COLORS"]))
+_want = {"green": 3, "yellow": 3, "blue": 1}
+_got = dict((c, _bat["ATTACK_COLORS"].count(c))
+            for c in set(_bat["ATTACK_COLORS"]))
+check("rules/bat.html: 3 Green, 3 Yellow and 1 Blue Attack dots",
+      _got == _want and "3 Green, 3 Yellow and 1 Blue" in _RULES["bat"],
+      "%r" % (_got,))
+
+# "Take 2 Purple, 2 Blue, 1 Green and 1 Yellow out of the Rats' personal dice"
+check("rules/bat.html: the Tyrant's six dice match bat.TYRANT_NEED",
+      "2 Purple, 2 Blue, 1 Green and 1 Yellow" in _RULES["bat"]
+      and [list(x) for x in _bat["TYRANT_NEED"]]
+      == [["purple", 2], ["blue", 2], ["green", 1], ["yellow", 1]],
+      "%r" % (_bat["TYRANT_NEED"],))
+
+# -- NAP ---------------------------------------------------------------------
+_nap, _gnap = sn, gn
+rulenum("nap", r"with the (\d+) Tasks", len(_gnap["TASKS"]), "the Task count")
+rulenum("nap", r"Separate the (\d+) Final Exams", len(_gnap["EXAMS"]),
+        "the Final Exam count")
+rulenum("nap", r"maximum of (\d+) Assignments", _nap["ROW_MAX"],
+        "the row limit")
+rulenum("nap", r"draw (\d+) Final Exams", 3, "how many exams are sat")
+
+# -- AoS ---------------------------------------------------------------------
+_aos = sa
+rulenum("aos", r"(\d+) Limitation cards", len(_aos["LIMITATIONS"]),
+        "the Limitation deck size")
+rulenum("aos", r"(\d+) Element allocation mats", 5, "the element mats")
+rulenum("aos", r"never above (\d+)", 6, "the Health cap")
+rulenum("aos", r"Optimal Implementation: recover (\d+) exhausted dice",
+        _aos["OPTIMAL_BONUS"], "what Optimal Implementation recovers")
+rulenum("aos", r"exhaust (\d+) misses on failed elements",
+        _aos["MISSES_TO_NEGATE"], "the misses that negate a Catastrophe")
+rulenum("aos", r"at most Target \+ (\d+) dice", 1, "the allocation cap")
+
+# THE REQUIRED-COLOUR DOT COUNTS, per deck, which is where rules/aos.html was
+# caught contradicting itself: the dot-count paragraph names the three
+# exceptions and the Advanced Programming section then said "each carries 2",
+# while two of the eight carry three.
+_byDeck = dict((d, [sum(1 for x in r if x) for r in rows])
+               for d, rows in _aos["PROGRAM_REQS"].items())
+check("rules/aos.html: Routine and Unstable carry one dot each",
+      set(_byDeck["Routine"]) == {1} and set(_byDeck["Unstable"]) == {1},
+      "%r %r" % (_byDeck["Routine"], _byDeck["Unstable"]))
+check("rules/aos.html: Carry a Moving Load is the four-colour exception",
+      sorted(_byDeck["Specialized"]) == [2, 2, 2, 2, 2, 2, 2, 4]
+      and "requires all four colors" in _RULES["aos"],
+      "%r" % (_byDeck["Specialized"],))
+check("rules/aos.html: the two Advanced three-dot exceptions are named "
+      "wherever it gives the Advanced count",
+      sorted(_byDeck["Advanced"]) == [2, 2, 2, 2, 2, 2, 3, 3]
+      and _RULES["aos"].count("Rapid Approach and Unobserved Entry") >= 2,
+      "%r, named %d time(s)"
+      % (_byDeck["Advanced"],
+         _RULES["aos"].count("Rapid Approach and Unobserved Entry")))
+
+# -- NRJ and the finale ------------------------------------------------------
+_fin = py_tables("simulation/finale.py")
+rulenum("nrj", r"Play (\d+) sessions", _fin["SESSIONS"], "the session count")
+rulenum("nrj", r"claim at most (\d+) per game", _aos["BACKDOOR_CLAIMS"],
+        "the Backdoor claim cap")
+rulenum("nrj", r"reduces one Exhibit's Target by (\d+)",
+        _fin["CARD_VALUE"], "what a retained card is worth")
+check("rules/nrj.html: the Imposter's 5 HP / 2 STR / 3 REC",
+      "5 HP / 2 STR / 3 REC" in _RULES["nrj"]
+      and (_fin["HEALTH"], _fin["STRAT"], _fin["REC_BASE"]) == (5, 2, 3),
+      "%r" % ((_fin["HEALTH"], _fin["STRAT"], _fin["REC_BASE"]),))
+check("rules/nrj.html: 5 Knowledge, 5 Physical and 5 Cover-Up Exhibits",
+      "5 Knowledge, 5 Physical and 5 Cover-Up" in _RULES["nrj"]
+      and _fin["DEAL"] == 5, _fin["DEAL"])
+
+# THE TWO PRINTED CLAIM COSTS. Both rulebooks print them and NEITHER MODEL
+# CHARGED THEM until 2026-11-06, so both Tier III columns were measured with
+# free cards. These two checks are the reason that cannot happen quietly
+# again: the rulebook says the price and the model has to be charging it.
+check("rules/bat.html prints the Research Note claim cost, and bat.py "
+      "charges it",
+      "Claiming one costs the next Upgrade" in _RULES["bat"]
+      and _bat["NOTE_COSTS_UPGRADE"] is True,
+      "NOTE_COSTS_UPGRADE=%r" % (_bat.get("NOTE_COSTS_UPGRADE"),))
+check("rules/aos.html prints the Backdoor Routine claim cost, and aos.py "
+      "charges it",
+      "costs the next Program Reward" in _RULES["aos"]
+      and _aos["BACKDOOR_COSTS_REWARD"] is True,
+      "BACKDOOR_COSTS_REWARD=%r" % (_aos.get("BACKDOOR_COSTS_REWARD"),))
+check("rules/nrj.html names both claim costs in one sentence",
+      "costs the next Upgrade a completed Experiment earns" in _RULES["nrj"]
+      and "a Backdoor Routine the next Program" in _RULES["nrj"])
+
+# A CORRUPTED LIMITATION IS A CARD IN THE LIMITATION DECK and withholds dice
+# on top of its printed corruption - both halves, which the model had wrong
+# in both directions on 2026-11-06 before this check existed.
+check("rules/nrj.html: Corrupted Limitations go INTO the Limitation deck",
+      "Corrupted Limitations into the Limitation deck" in _RULES["nrj"]
+      and _aos["CORRUPT_MODE"] == "cards", _aos.get("CORRUPT_MODE"))
+check("rules/nrj.html: and withhold dice on top of their corruption",
+      "on top of their printed corruption" in _RULES["nrj"]
+      and _aos["CORRUPT_WITHHOLD"] == 2, _aos.get("CORRUPT_WITHHOLD"))
+
+check("every rulebook number this block looks for is still there",
+      not _rulenum_missing, "; ".join(_rulenum_missing[:4]))
 
 # END OF DAY IS PRINTED, SO ALL THREE SOURCES MUST PLAY IT. rules/nap.html:
 # "Reveal and discard the top card of the Assignment deck." The lab burned a

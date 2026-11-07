@@ -419,13 +419,14 @@
     return (s&&PROGRAM_REQS[s.deck]&&PROGRAM_REQS[s.deck][s.pid])||[];
   }
   function corruptColor(){
-    // "a randomly selected color that this Program does not require", and
-    // "if the Program requires every color, select any" - which is not a
-    // hypothetical: Carry a Moving Load requires all four.
+    // "Withhold 2 available dice of a randomly selected color." The
+    // required-colour exclusion came off these cards on 2026-11-06: it made
+    // the Tier II card gentler than the native Limitation it replaces, so
+    // the whole tier was worth +0.1 points. A withheld colour still cannot
+    // answer a required dot, and a Program you cannot supply is the costed
+    // outcome rules/aos.html already prints.
     if(!state.corruptColor){
-      const need=new Set(currentReqs().filter(Boolean));
-      const open=["purple","blue","green","yellow"].filter(c=>!need.has(c));
-      state.corruptColor=shuffle(open.length?open:["purple","blue","green","yellow"])[0];
+      state.corruptColor=shuffle(["purple","blue","green","yellow"])[0];
     }
     return state.corruptColor;
   }

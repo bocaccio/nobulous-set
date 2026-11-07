@@ -250,12 +250,26 @@ BACKDOOR = [
 ]
 intf = [C(n, "NRJ &middot; Nobulous Interference", '<div class="sub">Draw 1 at setup</div>' + T(e),
            'Tier I &mdash; Agenda.', acc=AOS_H) for n, e in INTF]
+# THE REQUIRED-COLOUR EXCLUSION CAME OFF THESE CARDS ON 2026-11-06, and the
+# tier only started working when it did. A Corrupted Limitation is drawn
+# INSTEAD of a native one, and while it dodged the colours the Program
+# needed it was the GENTLER of the two - a native Shortage has never
+# consulted the requirements. So the whole of Tier II bought +0.1 points
+# over Tier I: the relief of dodging a native Limitation paid for the
+# corruption, and six cards cancelled themselves out.
+#
+# The clause was also protecting against a case the base game already
+# prints a price for - rules/aos.html, "If you cannot supply a required
+# color: Do not execute the Program. Lose 1 Health... treat the Program as
+# failed". Taking it off removes an exception rather than adding a rule,
+# and Tier II goes back to being the trough at 33.8% against Tier I's
+# 39.7%, which is where it was calibrated (33.6%).
 corr = [C(n, "NRJ &middot; Corrupted Limitation",
-            T("Withhold 2 available dice of a <b>randomly selected</b> color "
-              "that this Program does <b>not</b> require.") +
+            T("Withhold 2 available dice of a <b>randomly selected</b> "
+              "color.") +
             '<div class="sub" style="margin-top:2.5mm">Corruption</div>' + T(e),
             'Reveal before committing required-color dice. Withheld dice cannot be used in this Program. '
-            'If the Program requires every color, select any. Tier II &mdash; Contamination.',
+            'A withheld color cannot answer a required-color dot. Tier II &mdash; Contamination.',
             acc=AOS_LIM) for n, e in CORRUPT]
 bkd = [C(n, "NRJ &middot; Backdoor Routine",
             '<div class="sub">Maximum 2 Backdoor Routines claimed per game</div>' + T(c) +

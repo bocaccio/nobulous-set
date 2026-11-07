@@ -25,9 +25,11 @@ Modeled as printed:
     at most ONE of a Rat's Upgrades and carries over nothing - if it cannot
     meet any held Upgrade's Value the Rat keeps it, and either way nothing
     reaches Health unless the Rat holds no Upgrades at all.
-    rules/bat.html currently words this the other way round ("the rest carries
-    on to the next Upgrade under the same test, then to Health"), which
-    contradicts the intended rule and should be corrected there.
+    rules/bat.html HAS SAID THIS CORRECTLY since well before 2026-11-06 -
+    "At most one Upgrade is lost and nothing carries over. Only a Rat with
+    no untapped Upgrade takes the damage to its Health" - and this note
+    claimed otherwise for as long as it took someone to read the two side by
+    side. The rulebook was corrected and the comment was not.
   * a Rat may tap ONE Upgrade per attack instead of committing Red - it is
     never obliged to - and by default a tapped Upgrade cannot soak the
     Tyrant's reply; it untaps at the start of the next round
@@ -298,6 +300,62 @@ NOTES_POLICY = "greedy"
 # NOTES_INSTEAD is how many Upgrades the policy will trade away. 0 is off, so
 # the calibrated win rates do not move.
 NOTES_INSTEAD = 0
+
+# AND THE TRADE IS NOT A PROPOSAL - BOTH RULEBOOKS PRINT IT.
+#   rules/bat.html:  "Claiming one costs the next Upgrade a completed
+#                     Experiment earns, so the Rats fight thinner for it."
+#   rules/nrj.html:  "a Research Note costs the next Upgrade a completed
+#                     Experiment earns, a Backdoor Routine the next Program
+#                     Reward."
+# Until 2026-11-06 nothing charged it, so every published BAT Tier III figure
+# was measured with free Research Notes - the same defect AoS's Backdoor
+# Routines had, found the same day by reading the rulebooks against the
+# model. nrj.html even quotes the price it was expecting: "a Research Note
+# costs BAT about 6 points of win rate and a second about 9 more".
+#
+# A claim now runs up a debt and the next completed Experiment pays it with
+# the Upgrade it would have earned. NOTE_COSTS_UPGRADE = False restores the
+# free claims every earlier figure was measured through.
+NOTE_COSTS_UPGRADE = True
+# HOW MANY TO CLAIM, which is a decision this model did not have while
+# claiming was free. claim_notes fires about 4.3 times a game and each claim
+# now costs an Upgrade, so taking every one offered is not a line any player
+# would play. 2 is the number the finale can retain (rules/bat.html, "A Note
+# you claimed is retained, up to 2"), and a third buys only its one-shot use.
+NOTE_CLAIM_CAP = 2
+# AND WHEN TO CLAIM, which matters more than it looks. The conditions fire
+# early - claiming the moment one does lands both claims with 19 of the 20
+# Experiments still in the deck, so the debt is paid with the two EARLIEST
+# Upgrades, which are the two that compound longest. That is not a line any
+# player takes; it is the model claiming reflexively, and it overstates the
+# price of a Note by several points.
+#
+# A player claims when the Upgrade is cheapest to give up, which is late:
+# the Rats are closer to their 3-Upgrade cap, fewer Experiments remain for
+# the debt to be collected from, and the Note's own one-shot use still has
+# the battle to be spent in. NOTE_CLAIM_FROM is how far into the Experiment
+# deck claiming starts, counted in cards still undrawn. 20 claims from the
+# first Experiment; 0 never claims at all.
+#
+# MEASURED 2026-11-06 at Standard, Tier III against a Tier II of 38.4%:
+#
+#   claim from 20 cards left   26.2%   -12.2     reflexive
+#   claim from 16 cards left   40.4%    +2.0     <- shipped
+#   claim from 12 cards left   40.2%    +1.8
+#   claim from  8 cards left   37.5%    -0.9
+#   claim from  4 cards left   38.0%    -0.4
+#
+# FOURTEEN POINTS BETWEEN THE FIRST TWO ROWS, and the card is identical in
+# both: all that changes is whether the player waits four Experiments before
+# claiming. A first cut of this cost shipped the top row by accident and made
+# the Research Notes look like a trap, which is the same mistake this project
+# has made once before and writes down every time - a figure measured against
+# a weaker policy than the one a player would find.
+#
+# And at that timing the claim CAP lands where the finale's retention does:
+# 0 / 1 / 2 / 3 / 6 claims read +0.0 / +0.9 / +2.0 / +1.6 / +1.1, so 2 is
+# both the best line and the most the campaign can carry.
+NOTE_CLAIM_FROM = 16
 
 # WHAT A CLAIM BUYS. Until 2026-11-06 every claim went into ONE counter,
 # self.notes, and any charge could be spent on either of the two rewards this
@@ -845,6 +903,8 @@ class Game(object):
         self.protocol = None
         self.notes = 0         # pooled charges, NOTE_REWARDS off
         self.note = {}         # the named Notes held, and their one use
+        self.claimed_notes = 0   # claims made this game, against the cap
+        self.owed_upgrade = 0    # Upgrades a claim has given up
         if module_active("protocol", tier):
             # The draw happens either way, so a forced protocol runs on the
             # same random stream a real game that drew that card would -
@@ -946,10 +1006,23 @@ class Game(object):
         return [d for d in rat.dice if d.zone == "available"]
 
     def grant_note(self, key):
-        """Claim one Research Note - the named card, or a pooled charge."""
+        """Claim one Research Note - the named card, or a pooled charge.
+
+        "Claiming one costs the next Upgrade a completed Experiment earns"
+        (rules/bat.html), so a claim runs up a debt that the next completed
+        Experiment pays. Declines once the claim cap is reached: an Upgrade
+        is worth more than a card that can neither be retained nor used.
+        """
+        if NOTE_REWARDS and NOTE_PICK is not None:
+            return       # pricing: the hand is fixed at setup, claims add none
+        if NOTE_COSTS_UPGRADE:
+            if self.claimed_notes >= NOTE_CLAIM_CAP:
+                return
+            if len(self.deck) > NOTE_CLAIM_FROM:
+                return                  # too early to pay for it
+            self.claimed_notes += 1
+            self.owed_upgrade += 1
         if NOTE_REWARDS:
-            if NOTE_PICK is not None:
-                return   # pricing: the hand is fixed at setup, claims add none
             self.note[key] = 1
         else:
             self.notes += 1
@@ -1452,6 +1525,11 @@ class Game(object):
             # 3-Upgrade limit.
             cap = 4 if self.protocol == "questionable_procurement" else 3
             took = len(rat.upgrades) < cap
+            if took and self.owed_upgrade:
+                # The printed price of a Research Note, paid here: the Rat
+                # forgoes the Upgrade this Experiment earned it.
+                self.owed_upgrade -= 1
+                took = False
             if took and self.worked < NOTES_INSTEAD:
                 # The fork: bank a Research Note instead of the Upgrade. The
                 # card the Rat does not take is discarded below, as it is at
@@ -1810,10 +1888,10 @@ class Game(object):
         The track is Buff HP, then the five Splices in random order, then the
         Health dial - so damage chews through them in the order they were laid
         down, and the leftmost surviving card is whichever that happens to be.
-        Note that rules/bat.html currently words the damage step as "Buff HP
-        first, then its Defense Splices, then its remaining Splices, then its
-        Health", which reads as sorting Defense to the front; the random
-        layout is the intended order.
+        rules/bat.html agrees and has for some time - "runs the five shuffled
+        Splices, then Health. That is the order damage has to chew through" -
+        and the phrase this note used to quote, "then its Defense Splices",
+        is no longer anywhere in the rulebook.
         """
         return [s for s in self.splices if s.alive]
 
@@ -2112,9 +2190,10 @@ class Game(object):
         Upgrade and carries through to Health, and Crushing Blow sends 1
         damage straight past the armor.
 
-        NOTE rules/bat.html words the baseline the other way ("the rest
-        carries on to the next Upgrade... then to Health"), which contradicts
-        the intended rule and is worth correcting there.
+        rules/bat.html prints exactly this: "Choose one of its untapped
+        Upgrades to take the blow: it stops the attack dead, and it is spent
+        - discard it, whatever the blow was worth. At most one Upgrade is
+        lost and nothing carries over."
         """
         if hits <= 0:
             return

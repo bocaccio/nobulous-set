@@ -491,9 +491,15 @@ CORRUPT_WITHHOLD = 2
 # constraint sacrifice_allocate was missing when it measured +10 to +30.
 CORRUPTED = ("Uneven Architecture", "Memory Collision", "Circular Reference",
              "Hard-Coded Constant", "Deprecated Function", "Stack Overflow")
-# "cards"    draw one of the six per Program, as the deck does
-# "generic"  the pre-2026-11-06 stand-in, which every Tier II and Tier III
-#            figure published before that date was measured through
+# "cards"    the six are shuffled INTO the Limitation deck, so a Program
+#            draws one card from twelve and it is either a native
+#            Limitation or a Corrupted one. A Corrupted one withholds 2
+#            dice of a non-required colour AND applies its printed
+#            corruption, which is what rules/nrj.html prints.
+# "generic"  the pre-2026-11-06 stand-in: a native Limitation every
+#            Program plus a corrupted overlay at CORRUPT_CHANCE, with no
+#            per-card text. Every Tier II and Tier III figure published
+#            before that date was measured through it.
 CORRUPT_MODE = "cards"
 # A Corrupted Limitation draws its withheld colour from the ones this
 # Program does NOT require. False is the printed rule - "withhold 2 dice of
@@ -506,7 +512,7 @@ CORRUPT_MODE = "cards"
 # and III about 8 points and, more to the point, restores their shape - the
 # drop from the pre-required-colour figures becomes near-uniform across the
 # three tiers instead of twice as deep at II and III.
-CORRUPT_AVOID_REQUIRED = True
+CORRUPT_AVOID_REQUIRED = False
 
 # Backdoor Routines: at most 2 claimed per game.
 BACKDOOR_CLAIMS = 2
@@ -939,11 +945,14 @@ class Game(object):
         self.negates_left = NEGATES_PER_CYCLE or -1
         # The Limitations still in the game. A Program Reward may banish
         # one, and the deck is reshuffled out of what is LEFT.
+        #
+        # LEFT EMPTY ON PURPOSE: the first Program fills it, by which time
+        # the tier is known and the 6 Corrupted Limitations can be shuffled
+        # in with the natives. Building it here would deal six native cards
+        # before a Corrupted one could appear, because `corrupt` is set
+        # further down this method.
         self.lim_pool = list(LIMITATIONS)
-        self.lim_queue = list(LIMITATIONS)
-        self.rng.shuffle(self.lim_queue)
-        self.corrupt_queue = list(CORRUPTED)
-        self.rng.shuffle(self.corrupt_queue)
+        self.lim_queue = []
         self.corrupt_card = None     # the one drawn for the Program in hand
         self.corrupt_color = None    # Deprecated Function, this Program
 
@@ -1426,11 +1435,33 @@ class Game(object):
         # A Corrupted Limitation withholds 2 dice of a randomly selected
         # color before allocation; they come back once the Program resolves.
         withheld = []
+        # THE CORRUPTED LIMITATIONS ARE IN THIS DECK, not beside it.
+        # rules/nrj.html, Tier II: "Shuffle the 6 Corrupted Limitations INTO
+        # the Limitation deck", and "Reveal exactly 1 Limitation per Program"
+        # (rules/aos.html) - so a Program draws ONE card from twelve, and it
+        # is either a native Limitation or a Corrupted one, never both.
+        #
+        # This model drew a native Limitation every Program and laid a
+        # corruption on top of it, which is a different and harsher card:
+        # CORRUPT_CHANCE = 0.50 was standing in for the 6-in-12 draw. The
+        # 2026-11-06 pass that gave the six cards their printed text kept
+        # that shape and dropped the withhold, which was wrong twice over -
+        # a corruption on EVERY Program, and none of them taking the dice
+        # the card says it takes. Both corrected here.
+        self.corrupt_card = None
+        self.corrupt_color = None
         if not self.lim_queue:
             self.lim_queue = list(self.lim_pool)
+            if self.corrupt and CORRUPT_MODE == "cards":
+                self.lim_queue += ["*" + c for c in CORRUPTED]
             self.rng.shuffle(self.lim_queue)
         lim = self.lim_queue.pop()
-        if self.bkd.get("escalate") and self.withhold_would_bite(lim):
+        if lim.startswith("*"):
+            self.corrupt_card, lim = lim[1:], None
+        if lim is None:
+            pass                       # a Corrupted Limitation: no native
+            #                            shortage, only the two below
+        elif self.bkd.get("escalate") and self.withhold_would_bite(lim):
             # Privilege Escalation: "Later, ignore one Limitation." Cashed the
             # first time the revealed Limitation would really take a die off
             # the table. CONSERVATIVE: this ignores the base Limitation only.
@@ -1440,23 +1471,29 @@ class Game(object):
             self.bkd["escalate"] = 0
         else:
             withheld += self.withhold_for(lim)
-        self.corrupt_card = None
-        self.corrupt_color = None
-        if self.corrupt and CORRUPT_MODE == "cards":
-            # One card a Program, out of a six-card deck reshuffled when it
-            # empties - the same shape as the base Limitation deck above.
-            if not self.corrupt_queue:
-                self.corrupt_queue = list(CORRUPTED)
-                self.rng.shuffle(self.corrupt_queue)
-            self.corrupt_card = self.corrupt_queue.pop()
-            if self.corrupt_card == "Deprecated Function":
-                self.corrupt_color = self.rng.choice(COLORS)
-        elif self.corrupt and self.rng.random() < CORRUPT_CHANCE:
+        if self.corrupt_card:
+            # A CORRUPTED LIMITATION WITHHOLDS DICE TOO, and it does so "ON
+            # TOP OF their printed corruption - a color the Program does not
+            # require" (rules/nrj.html). Both halves, every time it is drawn.
             choices = COLORS
             if CORRUPT_AVOID_REQUIRED and REQUIRED_COLORS:
                 need = set(c for c in PROGRAM_REQS[deck][pid] if c)
-                # If a Program requires every colour there is nothing safe
-                # to take, so the corruption falls back to any of them.
+                # "If the Program requires every color, select any."
+                choices = [c for c in COLORS if c not in need] or COLORS
+            color = self.rng.choice(list(choices))
+            for _ in range(CORRUPT_WITHHOLD):
+                if color in self.available:
+                    self.available.remove(color)
+                    withheld.append(color)
+            if self.corrupt_card == "Deprecated Function":
+                self.corrupt_color = self.rng.choice(COLORS)
+        elif self.corrupt and CORRUPT_MODE == "generic" \
+                and self.rng.random() < CORRUPT_CHANCE:
+            # The pre-2026-11-06 stand-in: a base Limitation every Program
+            # with a corrupted overlay half the time, and no per-card text.
+            choices = COLORS
+            if CORRUPT_AVOID_REQUIRED and REQUIRED_COLORS:
+                need = set(c for c in PROGRAM_REQS[deck][pid] if c)
                 choices = [c for c in COLORS if c not in need] or COLORS
             color = self.rng.choice(list(choices))
             for _ in range(CORRUPT_WITHHOLD):

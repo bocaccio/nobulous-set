@@ -110,17 +110,39 @@ BAT  Build-a-Tyrant
   difficulty = Specimens added / Tyrant Health; random Rat sides
 
                             no NRJ    Tier I   Tier II  Tier III
-  Easy                       62.7%     58.4%     45.5%     54.2%
-  Standard                   53.2%     50.1%     38.5%     48.0%
-  Hard                       40.1%     38.6%     28.0%     37.2%
-  Nobulous                   28.1%     26.3%     18.7%     27.3%
+  Easy                       62.7%     58.4%     45.5%     46.2%
+  Standard                   53.2%     50.1%     38.5%     39.8%
+  Hard                       40.1%     38.6%     28.0%     29.2%
+  Nobulous                   28.1%     26.3%     18.7%     20.8%
 
-    UNCHANGED BY THE FIX PASS of 2026-11-06, which is the point.
-    Redundant Organs' printed save went in - the only thing in
-    BAT that moved - and it fires in 12.6% of Tier II games and
-    is worth 0.0, because a Rat holding a Value-5 Upgrade is
-    almost never reached in Health at all.  Implemented,
-    reachable, firing, and not a lever: all four are findings.
+    20,000 games a cell.  The solo, Tier I and Tier II columns
+    did not move on 2026-11-06.  Redundant Organs' printed save
+    went in and fires in 12.6% of Tier II games, and is worth
+    0.0 - a Rat holding a Value-5 Upgrade is almost never
+    reached in Health at all.  Implemented, reachable, firing,
+    and not a lever: all four are findings.
+    TIER III FELL 8 POINTS, AND NO BAT CARD CHANGED.  Both
+    rulebooks print the Research Note claim cost - bat.html,
+    "Claiming one costs the next Upgrade a completed Experiment
+    earns", and nrj.html names it beside the Backdoor one - and
+    NOTHING CHARGED IT.  NOTES_INSTEAD sat at 0 with the comment
+    "0 is off, so the calibrated win rates do not move", so
+    every BAT Tier III figure published before that date was
+    measured with free Notes.  Found by reading the four
+    rulebooks against the models, the same day and the same way
+    as AoS's Backdoor cost.  bat.NOTE_COSTS_UPGRADE = False
+    restores the old column.
+    AND THE PRICE DEPENDS ALMOST ENTIRELY ON WHEN YOU CLAIM.
+    The conditions fire early, so claiming the moment one does
+    lands both claims with 19 of the 20 Experiments still in the
+    deck and pays with the two Upgrades that compound longest:
+    that reads 26.2% at Standard, -12.2 against Tier II.  Waiting
+    four Experiments reads 40.4%, +2.0.  FOURTEEN POINTS ON THE
+    POLICY with the card identical - a first cut of this shipped
+    the reflexive version and made the Notes look like a trap.
+    NOTE_CLAIM_FROM = 16 is the line a player finds, and the cap
+    lands where the finale's retention does: 0 / 1 / 2 / 3 / 6
+    claims read +0.0 / +0.9 / +2.0 / +1.6 / +1.1.
 
     THE TIER III COLUMN ROSE 4.5 POINTS ON 2026-11-06 AND THE
     ONLY CARD THAT CHANGED WAS ONE REWARD'S TIMING.  Until then
@@ -146,17 +168,44 @@ AoS  Automaton of Shale
   difficulty = the Routine/Specialized/Unstable mix
 
                             no NRJ    Tier I   Tier II  Tier III
-  Easy  3/3/2                59.0%     47.8%     40.8%     45.2%
-  Standard  2/3/3            50.5%     39.1%     32.5%     36.1%
-  Hard  1/3/4                42.3%     31.1%     25.7%     27.7%
-  Nobulous  0/3/5            34.5%     24.7%     18.6%     21.2%
+  Easy  3/3/2                59.1%     48.4%     43.4%     47.1%
+  Standard  2/3/3            50.7%     39.8%     34.4%     38.7%
+  Hard  1/3/4                42.5%     31.6%     27.2%     30.7%
+  Nobulous  0/3/5            34.9%     24.4%     20.8%     23.1%
 
-    RE-MEASURED at the end of 2026-11-06 at 12,000 games a cell
-    rather than 20,000, by the fix pass at the bottom of this
-    file.  Regenerate this block with run_all.py when there is
-    time for a full pass.  The solo and Tier I columns are the
-    same measurement as before within sampling - neither change
-    that day touches those tiers, which is the check.
+    20,000 games a cell.  The solo and Tier I columns are the
+    same measurement they always were - nothing that changed on
+    2026-11-06 touches those two tiers, which is the check.
+    TIER II IS THE TROUGH AGAIN, and for a while that day it was
+    not.  Two things were wrong with it and they pulled opposite
+    ways.  The six Corrupted Limitations had no per-card identity
+    at all - CORRUPT_CHANCE stood in for drawing one - and when
+    they were given their printed text they were modelled as an
+    overlay on a native Limitation rather than as cards IN the
+    Limitation deck, which is what rules/nrj.html says they are.
+    Corrected, a Program draws one card from twelve.
+    THEN THE TIER STOPPED BITING: 39.8% at Tier I, 39.8% at Tier
+    II.  Six cards buying a tenth of a point.  The cause was the
+    required-colour exclusion printed on them - a Corrupted
+    Limitation is drawn INSTEAD of a native one, and while it
+    dodged the colours the Program needed it was the GENTLER of
+    the two, since a native Shortage has never consulted the
+    requirements.  The exclusion came off the cards; see
+    rules/RULES_CHANGELOG.txt, 2026-11-06.  Tier II reads 34.4%
+    against the 33.6% this column was calibrated at, so the tier
+    went back to where it was meant to sit rather than being
+    re-pitched.  Two blunter fixes were measured and refused:
+    withholding 3 dice reaches only 36.3%, and doing both
+    overshoots to 24.9%.
+    TIER III FELL 8-10 POINTS, AND NO AoS CARD CHANGED for it.
+    All six Backdoor Routines print "Claiming gives up the next
+    Program Reward you would claim" and nothing charged it, so
+    the column was measured with two free cards.  Charged, Tier
+    III is +4.3 over Tier II rather than +13.0.  The Routines
+    are a campaign mechanic - the finale retains 2 AoS cards,
+    each worth 2 off an Exhibit Target - and this module does
+    not score the campaign.  aos.BACKDOOR_COSTS_REWARD = False
+    restores the free claims.
     TIER III FELL 10-12 POINTS, AND NOT ONE AoS CARD CHANGED.
     Every one of the six Backdoor Routines prints "Claiming gives
     up the next Program Reward you would claim" and nothing

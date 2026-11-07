@@ -764,9 +764,31 @@ class Game(object):
     # ------------------------------------------------------------------
     # dice
     # ------------------------------------------------------------------
-    def recover(self, n):
-        for _ in range(min(n, len(self.exhausted))):
+    def recover(self, n, distinct=0):
+        """Recover n exhausted dice.
+
+        `distinct` is how many of them may not repeat a colour, counted from
+        the END of the run. rules/nap.html gives the Final Exam's Preparation
+        one free die "plus 1 further exhausted die per Credit above your
+        Credit goal", and then: "Excess-Credit recovery may not pick the same
+        color twice." Unmodelled until 2026-11-06 - recover() popped off the
+        end of the pile and happily took three of one colour.
+        """
+        free = max(0, n - distinct)
+        for _ in range(min(free, len(self.exhausted))):
             self.available.append(self.exhausted.pop())
+        seen = set()
+        for _ in range(max(0, n - free)):
+            pick = None
+            for c in reversed(self.exhausted):
+                if c not in seen:
+                    pick = c
+                    break
+            if pick is None:
+                break
+            seen.add(pick)
+            self.exhausted.remove(pick)
+            self.available.append(pick)
 
     NEIGHBOURS = {"purple": ("yellow", "blue"), "blue": ("purple", "green"),
                   "green": ("blue", "yellow"), "yellow": ("green", "purple")}
@@ -1560,8 +1582,11 @@ class Game(object):
                 self.exhausted.remove(c)
                 missing -= 1
             i += 1
-        # Preparation: 1 die, plus 1 per Credit above 6, plus queued recovery.
-        self.recover(1 + max(0, self.credit_total - CREDITS_TO_LEAVE))
+        # Preparation: 1 die, plus 1 per Credit above the goal, plus the
+        # queued recovery. "Excess-Credit recovery may not pick the same
+        # color twice" - so only the first die is a free choice.
+        extra = max(0, self.credit_total - CREDITS_TO_LEAVE)
+        self.recover(1 + extra, distinct=extra)
         if self.queued:
             self.recover_color(DOT_COLOR[self.queued])
 
