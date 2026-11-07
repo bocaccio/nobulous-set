@@ -130,6 +130,15 @@ IMPOSTER_TASKS = [
  ("Containment Drill", "Theory", 'G', 4, 5, "If unresolved, exhaust 1 available die before flipping it to Demand."),
 ]
 # name, recovery-color dot, successes, effect
+#
+# ONE BASE SETBACK LEAVES FOR EACH FOLLOWING SETBACK THAT ARRIVES, which is
+# what the footer below says as of 2026-11-07 and what all four owners now
+# play.  It used to read "These 4 replace the 3 base Setbacks", and every
+# owner had the 3 hard-coded: the whole base set was swept out for exactly 3
+# Following cards.  That was only equivalent while the difficulty count was 3
+# everywhere.  Once Hard and Nobulous carried 4 and 5 Setbacks, TURNING TIER I
+# ON MADE THEM EASIER - the overlay was handing back a Setback, or two, in
+# exchange for making three of them nastier.  See rules/RULES_CHANGELOG.txt.
 FOLLOWING = [
  ("Nobulous Needs This Now", 'Y', 7, "While unresolved, the first die you commit to another Assignment each Time Slot must match that Assignment's recovery-color dot."),
  ("Unscheduled Demonstration", 'G', 7, "While unresolved, you must commit at least one die here before committing dice to another Assignment in this Time Slot."),
@@ -203,7 +212,8 @@ for n, subj, dot, rt, dt, e in IMPOSTER_TASKS:
 fol = [C(n, "NRJ &middot; Following Setback",
             successes_row(d, t, NAP_SETBACK) + T(e),
             'Mandatory. Follows into the next Time Slot if unresolved, including Evening to the next '
-            'Morning. These 4 replace the 3 base Setbacks. Tier I &mdash; Agenda.', warn=True, acc=NAP_SETBACK)
+            'Morning. 3 of these 4 replace 3 of your difficulty&rsquo;s Setbacks. '
+            'Tier I &mdash; Agenda.', warn=True, acc=NAP_SETBACK)
           for n, d, t, e in FOLLOWING]
 dev = [C(n, "NRJ &middot; Devious Opportunity",
             successes_row(d, t, '#9a7410') + T(e),

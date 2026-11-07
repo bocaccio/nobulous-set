@@ -1,3 +1,39 @@
+2026-11-07  TIER I NO LONGER HANDS A SETBACK BACK
+The Following Setbacks read "These 4 replace the 3 base Setbacks" and the
+tier table read "Set the 6 base Setbacks aside and shuffle in 3 of the 4
+Following Setbacks... never use both kinds together".  Both had the 3
+hard-coded.  They now swap ONE FOR ONE: three Following Setbacks come in,
+three of your difficulty's Setbacks go out, and the deck keeps the count
+the difficulty asks for.  Easy and Standard play 3 Following and no base,
+Hard 3 and 1, Nobulous 3 and 2.
+
+TURNING THE TIER ON WAS MAKING THE TWO HARD RUNGS EASIER.  The old rule
+matched only while every difficulty played 3 Setbacks.  The re-peg of
+2026-11-06 gave Hard 4 and Nobulous 5, and from that day a Nobulous player
+who switched Tier I on was handed two Setbacks back in exchange for three
+nastier ones - a trade that pays.  Measured at 12,000 games a cell, mean of
+the six Apprentices:
+
+                        no NRJ    Tier I   Tier II  Tier III
+  Hard      as printed   37.8%     39.7%     32.4%     37.3%
+            one for one  37.8%     35.0%     28.0%     32.8%
+  Nobulous  as printed   29.2%     34.5%     29.3%     35.0%
+            one for one  29.2%     26.9%     22.8%     28.2%
+
+The printed reading did not merely flatten Tier I, it inverted the whole
+Nobulous column: Tier III read 35.0% against a solo 29.2%, so the hardest
+rung with every module switched on was EASIER than the game by itself.
+Easy and Standard are identical under both readings - 56.5 / 53.2 / 42.3 /
+46.7 and 49.1 / 46.2 / 36.2 / 40.5 - because the count there is 3 either
+way, which is the check that nothing else moved.
+
+NO PUBLISHED FIGURE CHANGES.  simulation/nap.py has swapped one for one
+since the counts stopped being 3 everywhere, so the model was the only one
+of the four owners that was right and every NAP grid in RESULTS.txt was
+measured this way.  The card, the rulebook and the lab moved to the model
+rather than the reverse.  nap.FOLLOWING_REPLACE_ALL = True reproduces the
+printed reading.
+
 2026-11-06  CORRUPTED LIMITATIONS NO LONGER DODGE THE REQUIRED COLORS
 The card read "Withhold 2 available dice of a randomly selected color that
 this Program does NOT require", with an escape clause for the Program that

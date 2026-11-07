@@ -46,21 +46,40 @@ NAP  Nobulous Apprenticeship Program
     once: at the old counts with the colour rule off, the grid
     read 54.8 / 52.8 / 40.6 / 45.2 at Easy and 48.4 / 44.7 / 34.9
     / 40.3 at Standard.
-    AND ONE THREE-WAY DISAGREEMENT THE RE-PEG UNCOVERED, now down
-    to the two hard rungs.  rules/nrj.html says a tier sets the 6
-    base Setbacks ASIDE and shuffles in exactly 3 Following ones,
-    "never both kinds together", and the lab plays that; this
-    model mixes them, 3 Following plus whatever the difficulty's
-    count leaves over.  Since the re-peg the two readings AGREE at
-    Easy and Standard, where the count is 3.  At Hard and Nobulous
-    the PRINTED reading INVERTS THE TIER - Tier I reads 40.1% and
-    34.7% against solo columns of 38.6% and 30.3%, so turning the
-    overlay ON makes the two hard rungs EASIER - while the model's
-    reading keeps it a penalty at 35.8% and 27.4%.  The rules text
-    is the thing that is wrong here, not the model, and the cheapest
-    fix is a rules sentence: set aside only as many base Setbacks
-    as you shuffle in Following ones.  RAISED, NOT APPLIED -
-    nap.FOLLOWING_REPLACE_ALL measures the printed reading.
+    AND ONE THREE-WAY DISAGREEMENT THE RE-PEG UNCOVERED, FIXED
+    2026-11-07 and left here because the shape is worth keeping.
+    rules/nrj.html said a tier sets the 6 base Setbacks ASIDE and
+    shuffles in exactly 3 Following ones, "never both kinds
+    together"; the card said "These 4 replace the 3 base Setbacks";
+    the lab played both.  All three had the 3 HARD-CODED, which
+    matched only while every difficulty played 3 Setbacks.  This
+    model has mixed them - 3 Following plus whatever the
+    difficulty's count leaves over - and was the only owner that
+    was right, so the other three moved to it and NO PUBLISHED NAP
+    FIGURE CHANGED.  The swap is one for one in all four now.
+      THE PRINTED READING DID NOT JUST FLATTEN TIER I, IT INVERTED
+    THE WHOLE NOBULOUS COLUMN.  12,000 games a cell, mean of the
+    six Apprentices:
+                        no NRJ    Tier I   Tier II  Tier III
+      Hard   as printed  37.8%     39.7%     32.4%     37.3%
+             one for one 37.8%     35.0%     28.0%     32.8%
+      Nobul. as printed  29.2%     34.5%     29.3%     35.0%
+             one for one 29.2%     26.9%     22.8%     28.2%
+    At Nobulous every module switched on read 35.0% against a solo
+    of 29.2% - the hardest rung was EASIER than the game by itself,
+    and Tier II matched solo exactly.  A tier that hands back more
+    than it takes is the one shape a tier must not have, and this
+    one handed back a whole Setback at Hard and two at Nobulous.
+      EASY AND STANDARD ARE IDENTICAL UNDER BOTH READINGS - 56.5 /
+    53.2 / 42.3 / 46.7 and 49.1 / 46.2 / 36.2 / 40.5 - because the
+    count there is 3 either way.  That is the check that the fix
+    touches the two rungs it was aimed at and nothing else.
+      THE GRID ABOVE IS UNCHANGED BY IT, and that is the point: it
+    was always measured this way.  nap.FOLLOWING_REPLACE_ALL = True
+    reproduces the printed reading.  check_app_sync.py now holds all
+    four owners to the one-for-one swap; nothing compared them
+    before, which is how a rule that inverted two rungs of the
+    ladder shipped on a card.
     THE NOTE BELOW IS FROM EARLIER THE SAME DAY and describes the
     Tier III column as it stood then.
     THE TIER III COLUMN FELL 10 POINTS ON 2026-11-06, and the

@@ -452,6 +452,54 @@ check("rules/nap.html's setup step restates the same four counts",
           for k in ("Easy", "Standard", "Hard", "Nobulous"))
       in text("rules/nap.html"))
 
+# THE TIER I SETBACK SWAP, and the count it must not change.
+#
+# Four owners carry it - the Following Setback footer in build_nrj.py, the
+# Tier I row in rules/nrj.html, nap.FOLLOWING_REPLACE_ALL, and the Tier I
+# branch of buildNAPDeck in the lab - and three of them had the number 3
+# hard-coded until 2026-11-07, sweeping the base Setbacks out entirely for
+# exactly 3 Following cards. That matched the model only while every
+# difficulty played 3 Setbacks. After the re-peg gave Hard 4 and Nobulous 5,
+# TURNING TIER I ON HANDED A SETBACK BACK and the tier measured EASIER than
+# no module at all on both rungs - Tier I 40.1% against a solo 38.6% at Hard.
+# The checks below are about the swap being one for one, which is the
+# property that was violated; the counts themselves are checked above.
+check("nap.py swaps Setbacks one for one at Tier I, not all for 3",
+      sn["FOLLOWING_REPLACE_ALL"] is False,
+      "FOLLOWING_REPLACE_ALL = %r sets EVERY base Setback aside, which makes "
+      "Hard and Nobulous EASIER at Tier I" % (sn["FOLLOWING_REPLACE_ALL"],))
+# The lab has no table to read here, so this reads the one expression that
+# carries the rule: the leftover base Setbacks concatenated onto the three
+# Following ones. Without the concat the Tier I deck holds 3 Setbacks at
+# every difficulty, which is the inversion.
+_tier1 = re.search(r"const sb=\(tier===\"1\".*?: setbacks;",
+                   text("playtest/dist/suite.js"), re.S)
+check("the lab keeps the difficulty's leftover base Setbacks at Tier I",
+      bool(_tier1) and "setbacks.slice(3)" in _tier1.group(0),
+      "buildNAPDeck's Tier I branch drops them" if _tier1
+      else "the Tier I branch of buildNAPDeck was not found")
+# And no owner may still PRINT the old sweep. "Never use both kinds together"
+# was the printed rule and is exactly what the fix repeals, so the phrase
+# surviving in the book is the inversion coming back in words; the card
+# footer carried its own copy.
+#
+# EACH PHRASE IS LOOKED FOR WHERE IT WOULD BE PRINTED, not anywhere in the
+# file. A first cut of this searched build_nrj.py whole and failed on the
+# comment above FOLLOWING that QUOTES the old footer to explain the fix -
+# a check that punishes you for recording what changed is a worse check than
+# none.
+_fol = re.search(r"\nfol = \[C\(.*?for n, d, t, e in FOLLOWING\]",
+                 text("generator/build_nrj.py"), re.S)
+_sweep = []
+if "Never use both kinds together" in text("rules/nrj.html"):
+    _sweep.append("rules/nrj.html still prints it")
+if not _fol:
+    _sweep.append("the Following Setback card block was not found")
+elif "replace the 3 base Setbacks" in _fol.group(0):
+    _sweep.append("the Following Setback footer still prints it")
+check("no owner still states the all-for-3 sweep it replaced",
+      not _sweep, "; ".join(_sweep))
+
 # ---------------------------------------------------------------------------
 # THE NUMBERS THE RULEBOOKS PRINT, against the thing that owns each one.
 #

@@ -201,14 +201,22 @@ FOLLOWING = [(7, 'Y', "dot_first"), (7, 'G', "work_first"),
 # Switch the four printed effects off and restore the flat upkeep every
 # figure published before 2026-11-06 was measured through.
 FOLLOWING_EFFECTS = True
-# True is what rules/nrj.html prints and what the lab plays: the 6 base
-# Setbacks are set aside entirely and exactly 3 Following ones take their
-# place, "never both kinds together". False is what this model has done
-# since the counts stopped being 3 everywhere - 3 Following PLUS whatever
-# the difficulty's count leaves over - on the argument that otherwise
-# turning a tier ON makes Hard and Nobulous EASIER. The two agree at Easy
-# and Standard since the 2026-11-06 re-peg. RAISED, not decided, so this
-# ships as the model has had it.
+# False is the rule, in all four owners, as of 2026-11-07: one base Setback
+# leaves for each Following Setback that arrives, so the deck keeps the count
+# the difficulty asks for and 3 of those Setbacks are nastier.
+#
+# True is what rules/nrj.html printed and what the lab played until then -
+# the 6 base Setbacks set aside entirely and exactly 3 Following ones in
+# their place, "never both kinds together". That reading INVERTED THE TIER on
+# the two hard rungs, because it hands a Setback back: at Hard and Nobulous,
+# which carry 4 and 5, Tier I measured EASIER than no module at all. This
+# model has mixed them since the counts stopped being 3 everywhere and was
+# the only owner that was right; the other three moved to it rather than the
+# reverse, so NO PUBLISHED NAP FIGURE CHANGES. The two readings agree at Easy
+# and Standard either way, where the count is 3.
+#
+# True is kept to reproduce the printed reading; see simulation/RESULTS.txt
+# and rules/RULES_CHANGELOG.txt, 2026-11-07.
 FOLLOWING_REPLACE_ALL = False
 
 # (subject, Request Target, Demand Target). Mandatory, and they grant no
@@ -723,19 +731,14 @@ class Game(object):
         # deck keeps the same number of Setbacks, three of them nastier. It
         # used to drop every base Setback for exactly 3 Following ones, which
         # was only equivalent while SETBACKS_IN_DECK was always 3; once Hard
-        # and Nobulous carried 4 and 6, turning a tier ON made them EASIER.
+        # and Nobulous carried 4 and 5, turning a tier ON made them EASIER.
         following = 3 if tier in ("I", "II", "III") else 0
-        # HOW MANY BASE SETBACKS SURVIVE A TIER, and the three sources do not
-        # agree. rules/nrj.html: "Set the 6 base Setbacks ASIDE and shuffle
-        # in 3 of the 4 Following Setbacks chosen at random, exactly where
-        # the 3 base Setbacks would have gone. NEVER USE BOTH KINDS
-        # TOGETHER." The lab plays that. This model mixes them, on the
-        # argument recorded below - which is a real argument and still
-        # contradicts the printed rule.
-        #
-        # With the 2026-11-06 re-peg the two readings AGREE at Easy and
-        # Standard, where SETBACKS_IN_DECK is 3, and differ only at Hard (1
-        # base card) and Nobulous (2). RAISED, not decided: see RESULTS.txt.
+        # HOW MANY BASE SETBACKS SURVIVE A TIER. All four owners agree on this
+        # as of 2026-11-07 - the card footer, rules/nrj.html, this line and
+        # playtest/dist/suite.js - and until then three of them swept the base
+        # Setbacks out entirely for exactly 3 Following cards. This model was
+        # the only one that was right, so the fix moved the other three and no
+        # published NAP figure changes; see FOLLOWING_REPLACE_ALL above.
         if FOLLOWING_REPLACE_ALL and following:
             base = 0
         else:

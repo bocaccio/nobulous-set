@@ -758,9 +758,21 @@
     // Tier III: the Devious Opportunities replace the base Opportunities.
     const opps=(tier==="3"?NAP_DEVIOUS:NAP_OPPS).map((_,i)=>
       tier==="3"?{type:"o",i,nrj:true}:{type:"o",i});
-    // Tier I: 3 of the 4 Following Setbacks stand in for the 3 base Setbacks.
+    // Tier I: 3 of the 4 Following Setbacks replace 3 of your difficulty's
+    // Setbacks - ONE BASE CARD OUT FOR EACH FOLLOWING CARD IN, so the deck
+    // keeps the count the difficulty asks for and 3 of them are nastier.
+    // `setbacks` is already shuffled and already cut to that count, so the
+    // leftovers are a random slice of it: none at Easy and Standard, 1 at
+    // Hard, 2 at Nobulous.
+    //
+    // This used to drop EVERY base Setback for exactly 3 Following ones,
+    // which only matched while the count was 3 everywhere. Once Hard and
+    // Nobulous carried 4 and 5, turning Tier I ON HANDED A SETBACK BACK and
+    // measured easier than no module at all. Fixed 2026-11-07; see
+    // rules/RULES_CHANGELOG.txt.
     const sb=(tier==="1"||tier==="2"||tier==="3")
       ? shuffle([0,1,2,3]).slice(0,3).map(i=>({type:"s",i,nrj:true}))
+          .concat(setbacks.slice(3))
       : setbacks;
     return tasks.concat(opps,sb);
   }
