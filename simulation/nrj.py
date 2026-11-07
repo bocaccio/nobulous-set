@@ -205,8 +205,13 @@ POOL_MODES = ["standalone", "campaign"]
 
 # Scenario effects that move the dice economy or the Suspicion count, and so
 # change the outcome rather than just the flavor. Transcribed from the
-# SCENARIOS table. The remaining effects - color and count restrictions on
-# which dice may contribute, and the look-ahead effects - are not modeled.
+# SCENARIOS table.
+#
+# The colour and count restrictions ARE modeled, below, under SCENARIO_DICE -
+# this comment said they were not until 2026-11-06, and the block that
+# implements them sits 20 lines further down. Only the look-ahead effect on
+# Across the Chamber is unmodeled. The docstring at the top of this file has
+# had the right number (23 of 24) all along.
 RECOVER_ON_SUCCESS = {
     "The Chamber Mechanism": 2,        # "Success: recover 2 exhausted dice."
     "The Sedative Ledger": 3,          # "Success: recover 3 exhausted dice."
@@ -220,9 +225,16 @@ ONE_NAP_CARD_ONLY = "The Long Argument"
 
 # ---------------------------------------------------------------------------
 # The clauses that constrain the dice themselves. Six restrict which dice may
-# contribute and one changes what they are worth; none was modelled, and they
-# are the Scenario text most likely to squeeze a pool that sits at REC from
-# attempt 4 onward. SCENARIO_DICE gates the lot so the effect is measurable.
+# contribute and one changes what they are worth. They are the Scenario text
+# most likely to squeeze a pool that sits at REC from attempt 4 onward, and
+# SCENARIO_DICE gates the lot so the effect stays measurable.
+#
+# ALL SEVEN ARE MODELLED HERE AND NONE OF THEM IS IN THE SHIPPING FINALE.
+# finale.py replaced this module and carried over only the five Reward
+# clauses, so six working restriction implementations - An Old Injury, The
+# Ceremonial Seal, Order of Precedence, An Open Window, The Long Session and
+# The Darkened Corridor - were left behind in a superseded file. They still
+# mean exactly what they print under the new structure. Raised 2026-11-06.
 #
 # A requirement that cannot be met has no printed resolution. Treated here as
 # an attempt that fails - the Scenario is still avoidable beforehand, which

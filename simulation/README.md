@@ -44,6 +44,7 @@ figures. Read the fidelity notes before quoting anything here.
 | `sweep.py` | every game, every difficulty, every hero, every NRJ tier |
 | `dicetension.py` | whether running out of dice is actually the pressure, per game |
 | `audit.py` | per card: how often it reaches the table, and whether its text does anything |
+| `coverage.py` | per card: is its printed effect implemented AT ALL - every claim asserted against the live modules |
 | `imposter.py` | the SUPERSEDED finale's dice economy, and the diagnosis that led to rebuilding it |
 | `proto/fix.py` | candidate repairs for the finale, and which of them do nothing |
 | `supply.py` | whether the campaign's 18 cards can actually be banked, and whether standalone matches |
@@ -652,10 +653,23 @@ fixes - the Tyrant Attack deck, the Protocol die-borrowing clauses, and
 tier effects that REPLACE base cards instead of adding to them. Tier II is
 now the trough in every BAT column, matching AoS and NAP.
 
-What remains unmodelled is **per-card text**, and the list is much shorter
-than it was. Verify it against `audit.py` rather than trusting this block;
-several claims here have been wrong, including a run of five that all said
-BAT content was omitted after it had been implemented.
+What remains unmodelled is **per-card text**. **Do not trust this block or
+any other prose about coverage — run `coverage.py`.** It holds the same list
+as a set of predicates over the live modules and exits non-zero when one of
+them stops being true, which is the only form of this claim that has ever
+stayed correct. Four coverage comments in the models were stale on
+2026-11-06, `audit.py` carried two of them in its own report, and several
+claims in this very block have been wrong before, including a run of five
+that all said BAT content was omitted after it had been implemented.
+
+As of the 2026-11-06 audit: **68 of 255 printed card faces have no modelled
+effect, across 13 of the 30 decks.** The five that matter are listed in
+HANDOFF.md section 10 and in RESULTS.txt - the ten unmodelled Imposter
+abilities (so every finale figure, the 50.6% pitch included, is measured
+with no hero card), the four Backdoor Routines that never reach the table,
+the one Tier III card that cannot pay out, NAP's fungible Devious coupons,
+and Redundant Organs being charged its drawback for a benefit that was
+never written.
 
 - **BAT** - 19 of the 20 Experiment effects are implemented. The exception
   is Diagnostic Trial, which buys a look at the next Experiment; the policy

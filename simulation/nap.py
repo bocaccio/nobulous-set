@@ -17,16 +17,32 @@ Reduce 1. The "+2" / "-1" setting strings below are shorthand for Increase
 or Reduce N, meaning N of those three cards.
 
 WHAT IS NOT MODELED
-  * Apprentice abilities. All six are 2 HP / 2 STR / 2 REC and "differ only
-    in abilities", so the six are identical here by construction. Each now
-    prints one ability instead of two; neither version is modeled.
+  This block was wrong in three places on 2026-11-06 - it denied Apprentice
+  abilities, Request effects and Opportunity effects, all of which are
+  modeled below. coverage.py now derives the list from the live module, so
+  read it there and treat this as prose.
+  * The 12 FINAL EXAM restrictions. Every one of the 12 cards prints one
+    ("commit dice of at least 3 different colors", "Red cannot be
+    committed", and so on) and EXAMS carries (subject, dot, Target) only.
+    This is the deck where NAP is actually lethal, and it also makes one
+    Tier III card unpayable - see exam_ignore below.
+  * The 4 IMPOSTER TASK effects and the 4 FOLLOWING SETBACK effects.
+    IMPOSTER_TASKS and FOLLOWING carry Targets and a flat upkeep, so the
+    four Following cards are interchangeable in the model.
+  * Two of the 26 Request effects - Decode Nobulous' Lecture Notes and
+    Update Nobulous' Lab Notes. The other 24 carry a CRIT_COLOR or a
+    REQUEST_REWARD entry.
+  * The six Setbacks' individual text. The one printed rule they share -
+    the row locks until the Setback is resolved - IS modeled.
+  * Prodigy's ability, alone of the six: ABILITIES maps it to None. Prodigy
+    is also the default in run() and in audit.py.
   * Separate rows per Time Slot. One row is modeled, so a FINF card naming
     another slot is applied when that slot comes round, and a Reduce card
     reaches only the row in front of you.
   * Per-card Demand penalties. The rules say an Assignment left unresolved on
     its Demand side "inflicts its printed Demand penalty" every slot it
     survives; the penalties are card text. Modeled as a flat 1 Health.
-  * Request effects, Opportunity effects, Setback text, subject-icon wilds.
+  * Subject-icon wilds.
 """
 import random
 
@@ -123,7 +139,11 @@ IMPOSTER_TASKS = [("Anatomy", 'P', 5, 6), ("Engineering", 'B', 4, 5),
 #   exam_recover   recover 3 dice before one exam
 #   exam_reroll    reroll the misses on one exam
 #   exam_target    one exam's Target drops by 3
-#   exam_ignore    ignore one exam's printed restriction (unmodeled here)
+#   exam_ignore    ignore one exam's printed restriction. UNPAYABLE: no exam
+#                  restriction is modeled, so this card - Definitely
+#                  Curriculum-Approved - cannot pay out at all. MEASURED
+#                  2026-11-06: earned in a quarter of Tier III games and its
+#                  printed reward fires in 0% of them.
 # TARGETS RAISED 2026-11-06 from 3/3/3/3/4/3 to 4/4/5/5/4/5 - what the six
 # base OPPORTUNITIES these replace cost. Tier III was handing out six cards
 # that were both stronger and cheaper than the ones they displaced, and it

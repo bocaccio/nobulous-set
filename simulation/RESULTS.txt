@@ -1311,6 +1311,9 @@ finished in 564.8s
 ==================================================================
 THE FULL AUDIT, 2026-11-04
 ==================================================================
+  SUPERSEDED IN PART BY THE CARD-AND-EFFECT AUDIT OF 2026-11-06
+  at the bottom of this file, which covers the NRJ decks this
+  one did not reach.
   Everything below was re-run from scratch on 2026-11-04, after
   the deck retune, to find out what the recent changes had left
   stale.  What the models say is in the tables at the top of this
@@ -1331,6 +1334,16 @@ THE FULL AUDIT, 2026-11-04
   finds no card unreachable and none inert - the one gap is
   BAT's Controlled Failure, which needs a deliberate zero-dice
   turn the policy never takes, and that is recorded in bat.py.
+
+    THAT LAST SENTENCE WAS WRONG, AND THE WAY IT WAS WRONG IS
+    WHY THE 2026-11-06 AUDIT EXISTS.  audit.py covered the three
+    BASE games and not one of the nine NRJ overlay decks, so
+    "no card unreachable and none inert" was a statement about
+    the decks it looked at, read as a statement about the set.
+    Four of the six Backdoor Routines are never held; one
+    Devious Opportunity never pays its printed reward; ten
+    Imposter abilities are not in the simulation at all.  None
+    of that was visible to the tool that gave the all-clear.
 
   WHAT WAS WRONG WAS DOCUMENTATION, AND ONE LABEL.
 
@@ -1449,3 +1462,187 @@ THE FULL AUDIT, 2026-11-04
   spelling everywhere, the rulebook's, and a check holds the
   eight sources that print it.
 
+THE CARD AND EFFECT AUDIT, 2026-11-06
+==================================================================
+  Every card in the set, and every printed effect on it, checked
+  against the model that publishes the numbers above.  255 faces
+  in 30 decks - 240 cards, counted in faces because a duplex card
+  prints two abilities and both have to be modelled.
+
+  TWO TOOLS, AND THEY ANSWER DIFFERENT QUESTIONS.
+
+    python coverage.py     is the printed text implemented?
+    python audit.py        does it reach the table and fire?
+
+  Run coverage.py first: a firing rate means nothing for a card
+  whose effect was never written.  coverage.py carries no prose
+  claims - every row holds a PREDICATE over the live modules and
+  the script exits non-zero if the code and the claim disagree.
+  That is not decoration.  Every coverage claim in this
+  repository has gone stale at least once and FOUR were stale on
+  the morning of this audit:
+
+    bat.py        "the 20 Experiment effects are not implemented"
+                  - 19 are, in a table 30 lines below the claim
+    aos.py        "base Limitations are not modeled" - all six
+                  are, distinctly, and audit.py had been
+                  measuring them being drawn for weeks
+    nrj.py        "none was modelled" of the Scenario dice
+                  clauses, 20 lines above the block that
+                  implements all seven
+    nap.py        denied Apprentice abilities, Request effects
+                  and Opportunity effects.  All three modelled
+
+  audit.py itself carried two of the same lies, which is the
+  sharpest version of the problem: the tool built to stop
+  coverage claims going stale had stale coverage claims written
+  into its own report.  All six are corrected and all six are
+  now derived rather than typed.
+
+  THE HEADLINE: 68 OF 255 PRINTED EFFECTS ARE NOT MODELLED,
+  across 13 of the 30 decks.  Most of that is deliberate and
+  documented.  Five things are not.
+
+  1  THE FINALE IS THE LEAST-COVERED PART OF THE SET, and it is
+     the centrepiece.  The five Imposters print TEN abilities,
+     two per card, and not one of the five names appears
+     anywhere in simulation/.  finale.py has no Imposter card at
+     all, so every finale figure - the 50.6% pitch included - is
+     measured with no hero ability whatever.
+     On the same deck, the shipping finale models 5 of the 24
+     Council Tests: each Exhibit's Target and the five Reward
+     clauses.  Most of the other 19 name Suspicion or a
+     nine-attempt structure the rework removed and cannot be
+     restored - but SIX DO NOT.  The dice restrictions on An Old
+     Injury, The Ceremonial Seal, Order of Precedence, An Open
+     Window, The Long Session and The Darkened Corridor still
+     mean exactly what they print, and nrj.py ALREADY IMPLEMENTS
+     ALL SIX (NEED_COLORS, NEED_DISTINCT, NEED_COUNT,
+     FORBID_COLOR).  The superseded model reads 23 of 24 on this
+     deck and the shipping one reads 5.  Six of that gap is
+     working code left behind in a file nobody quotes.
+
+  2  FOUR OF THE SIX BACKDOOR ROUTINES NEVER REACH THE TABLE.
+     BACKDOOR_CLAIMS is 2 and the policy takes the first two of
+     BACKDOOR_ORDER, which are Resource Fork and Garbage
+     Collection - and those are precisely the only two worth
+     anything.  Priced one at a time against a Tier III floor of
+     33.6% (claiming none), with the AoS cells averaged over the
+     six Technicians as table.py publishes them:
+
+       Resource Fork           41.0%    +7.4
+       Garbage Collection      40.4%    +6.8
+       Root Access             34.6%    +1.0
+       Packet Sniffer          33.6%    +0.0
+       Privilege Escalation    33.6%    -0.0
+       Diagnostic Port         33.4%    -0.2
+
+     Packet Sniffer is not implemented - its reward is a look at
+     the next Limitation and the model has no Program-selection
+     choice to inform, which aos.py declares.  The other three
+     ARE implemented and DO fire; they are simply worth nothing.
+     The shipped module reads 46.6%, so AoS Tier III is two
+     cards and four pieces of decoration.
+
+  3  ONE TIER III CARD CANNOT PAY OUT AT ALL.  Definitely
+     Curriculum-Approved prints "ignore one exam's printed
+     restriction".  No exam restriction is modelled - all twelve
+     Final Exams print one and nap.EXAMS carries (subject, dot,
+     Target) only - so the reward has nothing to act on.
+     Measured over 6000 Tier III games, six Apprentices: earned
+     in 153 games and its printed reward fired in 0 of them.
+
+  4  THE THIRD FUNGIBLE-TOKEN DEFECT, AND IT RUNS BACKWARDS.
+     AoS's Backdoor Routines and BAT's Research Notes each had
+     six cards sharing one counter, and both were fixed by
+     giving each claim its own named card.  NAP's Devious
+     Opportunities have the opposite fault: devious_coupons IS a
+     list of named payouts, but ignore_setback() and
+     move_setback() pop whichever coupon is on the END.  So a
+     coupon earned by any of the six can be spent on an ability
+     NONE OF THEM PRINTS - ignoring a Setback.  The pool
+     OVER-delivers rather than withholding.
+
+       card                             earned  printed  offcard  unused
+       Borrow the Master's Notes          pays immediately
+       Raid the Supply Cabinet              314       9%      33%     59%
+       Extra Credit?                      pays immediately
+       Helpful Test Subject                 138      14%      28%     58%
+       Nobulous Owes You One                299      62%      22%     16%
+       Definitely Curriculum-Approved       153       0%      24%     76%
+
+     27% of every coupon earned leaves the hand as the off-card
+     setback-ignore.  Measured at -0.7 points, because the
+     policy spends on a Setback a coupon worth more at an exam -
+     so this one is not inflating Tier III, it is mis-spending
+     it.  DEVIOUS_IGNORE_SETBACK = False is the printed cards.
+
+  5  REDUNDANT ORGANS IS CHARGED ITS COST AND PAID NOTHING.  The
+     card prints a benefit and a drawback.  The drawback is
+     modelled - no_streak, "cannot be selected as active on
+     consecutive turns".  The benefit - "the first time the
+     holder would be knocked out, discard this card instead; the
+     holder remains at 1 Health" - is not, and the knockout in
+     resolve_attack has no check for it.  MOD_EFFECTS[4] is the
+     only all-zero row in the three effect tables.  It is the
+     mirror image of Unexpected Resilience: there a reward was
+     implemented and never fired, here a cost is charged for a
+     reward that was never written.
+
+  BAT TIER I PRICED FOR THE FIRST TIME.  FORCE_PROTOCOL existed
+  and had never been used, and it had the INTF_PICK bug: it
+  short-circuited the rng.choice, so a forced protocol ran on a
+  shifted random stream.  Corrected the same way, after which
+  the six cells average to the drawn-at-random cell (50.2 against
+  50.1), which is the check that the fix worked.
+
+    floor - BAT solo, no Protocol               53.2%
+    Accelerated Trials                          53.3%    +0.1
+    Questionable Methodology                    52.8%    -0.4
+    Cross-Contamination                         50.1%    -3.1
+    Independent Funding                         49.6%    -3.6
+    Questionable Procurement                    49.5%    -3.7
+    Shared Equipment Budget                     45.7%    -7.5
+
+  Tier I is a PENALTY and two of the six are not one.  The band
+  is the same complaint AoS Tier I draws, where the six span 17.9
+  points against a 52.2% solo column - Memory Leak -18.3, I
+  Don't Have Time for This -16.2, Works on My Machine -13.5,
+  Legacy Hardware -12.0, Undocumented Dependencies -10.9, and
+  Nobulous Was Here -0.4.  Five within 7.4 points and a sixth
+  that does nothing, in both games.  Raised, not fixed.
+
+  WHAT CANNOT BE PRICED, AND THE REASON IS DIFFERENT EVERY TIME.
+  Four of the nine tier decks carry a pick knob - FORCE_PROTOCOL,
+  NOTE_PICK, INTF_PICK, BACKDOOR_PICK - and those four are the
+  tables above.  The other five:
+
+    BAT Modifications (6)   shuffled into the Upgrade deck, so a
+                            hand of one is not a reachable state
+    NAP Imposter Tasks (4)  printed effects unmodelled; only the
+    NAP Following (4)       raised Targets differ, and FOLLOWING
+                            collapses 4 cards to 2 profiles
+    NAP Devious (6)         all six REPLACE the base Opportunity
+                            deck together, so none can be held out
+    AoS Corrupted (6)       no per-card identity exists at all
+
+  THE LAST OF THOSE IS A FINDING IN ITS OWN RIGHT.  The six
+  Corrupted Limitations are the only deck in the set the model
+  never draws.  Tier II applies one generic corruption -
+  CORRUPT_CHANCE = 0.50 to face one at all, then withhold 2 dice
+  of a randomly selected colour the Program does not require -
+  and each of the six prints a distinct ALLOCATION corruption
+  instead.  Six cards, one effect, six names, and no index for
+  audit.py to count.  AoS Tier II is the -7.2 column.
+
+  WHAT IS HEALTHY, since an audit that only lists faults is not
+  a measurement.  BAT's Experiments are 19 of 20.  Its Upgrades,
+  Specimens, Tyrant Attacks and all eight Lab Rat sides are
+  complete.  AoS's 32 Programs, 6 base Limitations and 6
+  Technicians are complete.  NAP's Assignments are 24 of 26 and
+  its Opportunities 6 of 6.  All six Protocols, all six
+  Interference cards and all six Research Notes fire.  Every
+  deck that has an index is drawn at the rate it should be - the
+  Protocols at 15-18% each and the Interference cards at 16-19%,
+  both one-in-six.  No printed card text changed in this audit
+  and no published figure moved.

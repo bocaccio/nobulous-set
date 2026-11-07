@@ -216,11 +216,20 @@ RECYCLE_SCOPE = "program"
 # same random stream as the games the published grid averages.
 INTF_PICK = None
 
-# Base Limitations are not modeled, so Tier II is modeled as the chance of
-# drawing a Corrupted one: 6 corrupted cards added to a 6-card deck, so half
-# the Programs face one. A Corrupted Limitation withholds 2 dice of a randomly
-# selected color, on top of a printed allocation corruption that is not
-# modeled.
+# ALL SIX BASE LIMITATIONS ARE MODELED, distinctly, in withhold_for - this
+# comment said they were not until 2026-11-06, and audit.py has been
+# measuring all six being drawn for longer than that.
+#
+# What is NOT modeled is the Corrupted Limitations' own text. Tier II is
+# modeled as the CHANCE of facing a corruption at all - 6 corrupted cards
+# added to a 6-card deck, so half the Programs face one - and the corruption
+# itself as "withhold 2 dice of a randomly selected colour the Program does
+# not require". Each of the six prints a distinct ALLOCATION corruption
+# instead (the first element must take more dice than the last, no two
+# adjacent elements may match, and so on) and not one of them is modeled.
+# There is no per-card index here at all, so audit.py cannot measure the
+# deck and coverage.py reports it as the only deck in the set with no card
+# identity whatever. Six cards, one generic effect, six names.
 # The 6 Limitations, in deck order. 0-3 are colour shortages, 4 is the
 # Diversity Protocol and 5 is the Red Quarantine.
 LIMITATIONS = ["yellow", "green", "blue", "purple", "diversity", "red"]

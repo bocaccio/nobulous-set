@@ -74,7 +74,12 @@ in generator/build_bat.py:
     bypassing an Upgrade, which was killing its target 87% of the time
 Crushing Blow is left as printed: it is meant to be the worst card.
 
-The 20 Experiment effects are not implemented.
+Nineteen of the 20 Experiment effects ARE implemented - see
+EXPERIMENT_EFFECT below, and UNMODELLED_EXP for the one that is not. This
+line said "the 20 Experiment effects are not implemented" until 2026-11-06,
+by which time the table under it had been filled in for weeks. coverage.py
+now derives that count from the live module on every run, which is the only
+way a claim like this stays true.
 """
 import random
 
@@ -806,7 +811,13 @@ class Game(object):
         self.notes = 0         # pooled charges, NOTE_REWARDS off
         self.note = {}         # the named Notes held, and their one use
         if module_active("protocol", tier):
-            self.protocol = FORCE_PROTOCOL or self.rng.choice(PROTOCOLS)
+            # The draw happens either way, so a forced protocol runs on the
+            # same random stream a real game that drew that card would -
+            # without it the six priced cells are not comparable with each
+            # other. Same correction as INTF_PICK in aos.py; before it,
+            # every FORCE_PROTOCOL figure was measured on a shifted stream.
+            drawn = self.rng.choice(PROTOCOLS)
+            self.protocol = FORCE_PROTOCOL or drawn
             if TIER1_EXTRA_SPECIMEN:
                 self.specimens += 1
             self.tier1_banish = TIER1_BANISH

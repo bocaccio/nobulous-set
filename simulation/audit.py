@@ -20,9 +20,17 @@ Cross-Species Compatibility ("all four Rats hold 2+ Upgrades", never true in
 1500 games) and Independent Funding (+0.1 before it was redesigned) were
 caught. Both numbers are per GAME, not per draw.
 
-Where a deck's printed text is not modelled at all - BAT's 20 Experiment
-effects, for instance, where only the Target is used - the report says so
-rather than showing a column of zeroes that look like bugs.
+Where a deck's printed text is not modelled at all the report says so rather
+than showing a column of zeroes that look like bugs. WHICH DECKS THOSE ARE IS
+NOT DECIDED HERE: coverage.py owns that question, derives it from the live
+modules on every run, and fails if a claim has gone stale. Run it first - a
+firing column means nothing for a card whose effect was never implemented.
+
+This file's own notes were stale twice on 2026-11-06, which is the hazard it
+was written to warn about: it said BAT's 20 Experiment effects were not
+modelled when 19 are, and that no Final Exam prints an effect when all 12
+print a dice restriction. Both are now read from coverage.py instead of
+being retyped here.
 """
 import collections
 import random
@@ -37,11 +45,20 @@ ATTACK_NAMES = ["Overwhelming Mass", "Adaptive Strike", "Predatory Instinct",
                 "Spliced Reflexes", "Terrifying Roar", "Crushing Blow",
                 "Unstable Growth"]
 
-UNMODELLED = {
+# Coverage is coverage.py's job, not a second copy of it here. These are the
+# decks this file cannot measure firing for AT ALL, and why - a different
+# claim, and one about the instrumentation rather than the models.
+NO_FIRING_COLUMN = {
     ("BAT", "Experiments"):
-        "only the printed Target is used; the 20 effect texts are not modelled",
+        "19 of the 20 effects are modelled (coverage.py) but they fire "
+        "inside one dispatch with no per-card record to read back",
     ("NAP", "Final Exams"):
-        "subject, dot and Target are used; no exam prints an effect",
+        "all 12 print a dice restriction and none is modelled, so there is "
+        "nothing to fire - see coverage.py",
+    ("AoS", "Corrupted Limitations"):
+        "the model never draws one: there is no per-card index to count",
+    ("NRJ", "Imposters"):
+        "the shipping finale has no Imposter card at all",
 }
 
 
@@ -135,13 +152,14 @@ def audit_bat(games):
 
     print()
     print("  BAT - Research Notes (6 cards, Tier III)")
-    for key in ("resilience", "integration", "losses", "compatibility",
-                "red_means_go"):
+    # All six, from bat.NOTE_ORDER, so a seventh card cannot be added
+    # without appearing here. This loop used to name five by hand and
+    # describe the sixth as unmodelled; it is modelled, and it is claimed
+    # in 0% of games because no policy here commits zero dice on purpose.
+    for key in bat.NOTE_ORDER:
         flag = "   <-- never claimed" if not note_claim[key] else ""
         print("    %-22s claimed %5.0f%%%s"
               % (key, pct(note_claim[key], games), flag))
-    print("    %-22s not modelled (needs a deliberate zero-dice turn)"
-          % "controlled_failure")
 
     print()
     print("  BAT - Lab Rat sides (8 sides)")
@@ -153,8 +171,7 @@ def audit_bat(games):
 
     print()
     print("  BAT - Experiments (20 cards)")
-    print("    only the printed Target is used; the 20 effect texts are not")
-    print("    modelled, so there is nothing to measure firing against")
+    print("    %s" % NO_FIRING_COLUMN[("BAT", "Experiments")])
 
 
 def audit_nap(games):
@@ -210,13 +227,17 @@ def audit_nap(games):
 
     print()
     print("  NAP - Final Exams (%d cards)" % len(nap.EXAMS))
-    print("    subject, recovery dot and Target are used; no exam prints an")
-    print("    effect, so there is no firing to measure")
+    print("    %s" % NO_FIRING_COLUMN[("NAP", "Final Exams")])
 
     print()
     print("  NAP - Apprentices (6)")
+    # Read from nap.ABILITIES rather than asserted. Prodigy maps to None -
+    # its printed ability is the only one not modelled - and Prodigy is the
+    # default in nap.run AND the apprentice this file audits NAP with.
     for a in nap.APPRENTICES:
-        print("    %-22s ability modelled" % a)
+        ability = nap.ABILITIES.get(a)
+        print("    %-22s %s"
+              % (a, ability if ability else "ability NOT modelled"))
 
 
 def audit_aos(games):
@@ -277,6 +298,176 @@ def audit_aos(games):
         print("    %-22s drawn %5.0f%%%s"
               % (lim, pct(n, games), "   <-- never drawn" if not n else ""))
 
+DEV_NAMES = {
+    "free_task": "Borrow the Master's Notes",
+    "exam_recover": "Raid the Supply Cabinet",
+    "credit": "Extra Credit?",
+    "exam_reroll": "Helpful Test Subject",
+    "exam_target": "Nobulous Owes You One",
+    "exam_ignore": "Definitely Curriculum-Approved",
+}
+BACKDOOR_NAMES = {
+    "diag": "Diagnostic Port", "escalate": "Privilege Escalation",
+    "fork": "Resource Fork", "sniff": "Packet Sniffer",
+    "garbage": "Garbage Collection", "root": "Root Access",
+}
+
+
+def audit_devious(games):
+    """NAP Tier III: is each Devious coupon spent on what its card prints?
+
+    devious_coupons is a LIST OF PAYOUTS, but ignore_setback() and
+    move_setback() pop whichever one is on the end. So a coupon earned by
+    any of the six can be spent on an ability none of them prints. This
+    instruments the list itself - a subclass that records how each coupon
+    left the hand - so the off-card spend is a measured number rather than
+    a reading of the code.
+    """
+    earned = collections.Counter()
+    printed = collections.Counter()    # removed by name, at an exam
+    offcard = collections.Counter()    # popped off the end
+    unused = collections.Counter()
+
+    class Recording(list):
+        def append(self, item):
+            earned[item] += 1
+            list.append(self, item)
+
+        def remove(self, item):
+            printed[item] += 1
+            list.remove(self, item)
+
+        def pop(self, index=-1):
+            item = list.pop(self, index)
+            offcard[item] += 1
+            return item
+
+    real = nap.Game.__init__
+
+    def init(self, apprentice="Prodigy", finf="-1", rng=None, tier="none"):
+        real(self, apprentice, finf, rng, tier)
+        self.devious_coupons = Recording()
+
+    nap.Game.__init__ = init
+    try:
+        rng = random.Random(20)
+        each = max(100, games // len(nap.APPRENTICES))
+        for app in nap.APPRENTICES:
+            for _ in range(each):
+                g = nap.Game(app, "-1", rng, "III")
+                g.play()
+                for key in g.devious_coupons:
+                    unused[key] += 1
+    finally:
+        nap.Game.__init__ = real
+
+    print()
+    print("  NRJ/NAP - Devious Opportunities (6 cards, Tier III)")
+    print("    A coupon is earned by finishing the card, then leaves the")
+    print("    hand three ways: spent on what the card PRINTS, popped for")
+    print("    the OFF-CARD setback-ignore, or never spent.")
+    print("    %-30s %7s %7s %7s %7s"
+          % ("", "earned", "printed", "offcard", "unused"))
+    for _, key in nap.DEVIOUS:
+        e = earned[key]
+        if not e:
+            # "Extra Credit?" and "Borrow the Master's Notes" pay out the
+            # moment they are finished, so they never become a coupon.
+            print("    %-30s   pays immediately, never held"
+                  % DEV_NAMES[key][:30])
+            continue
+        flag = ""
+        if not printed[key]:
+            flag = "   <-- its printed reward NEVER pays"
+        print("    %-30s %6d  %6.0f%% %6.0f%% %6.0f%%%s"
+              % (DEV_NAMES[key][:30], e, pct(printed[key], e),
+                 pct(offcard[key], e), pct(unused[key], e), flag))
+    tot, off = sum(earned.values()), sum(offcard.values())
+    if tot:
+        print("    %d coupons earned, %d (%.0f%%) spent on the off-card"
+              % (tot, off, pct(off, tot)))
+        print("    setback-ignore - which is printed on none of the six.")
+
+
+def audit_backdoor(games):
+    """AoS Tier III: which Backdoor Routines does a game ever hold?"""
+    held = collections.Counter()
+    spent = collections.Counter()
+    rng = random.Random(20)
+    each = max(100, games // len(aos.TECHS))
+    for tech in aos.TECHS:
+        for _ in range(each):
+            g = aos.Game("Specialized", rng, "III",
+                         composition=aos.LEVELS["Standard"], tech=tech)
+            start = dict(g.bkd)
+            g.play()
+            for key in start:
+                held[key] += 1
+                if not g.bkd.get(key):
+                    spent[key] += 1
+    total = each * len(aos.TECHS)
+
+    print()
+    print("  NRJ/AoS - Backdoor Routines (6 cards, Tier III)")
+    print("    BACKDOOR_CLAIMS is %d and the policy takes the FIRST of"
+          % aos.BACKDOOR_CLAIMS)
+    print("    BACKDOOR_ORDER, so 'held' is which cards it ever picks up.")
+    for key in aos.BACKDOOR_ORDER:
+        h = held[key]
+        flag = "   <-- never held" if not h else ""
+        print("    %-28s held %5.0f%%   spent %5.0f%%%s"
+              % (BACKDOOR_NAMES[key], pct(h, total),
+                 pct(spent[key], h) if h else 0, flag))
+    dead = [k for k in aos.BACKDOOR_ORDER if not held[k]]
+    if dead:
+        print("    PROBLEM: %d of 6 never reach the table at this policy."
+              % len(dead))
+
+
+def audit_interference(games):
+    """AoS Tier I: every game draws one of six, so each should be ~1 in 6."""
+    drawn = collections.Counter()
+    rng = random.Random(20)
+    each = max(100, games // len(aos.TECHS))
+    for tech in aos.TECHS:
+        for _ in range(each):
+            g = aos.Game("Specialized", rng, "I",
+                         composition=aos.LEVELS["Standard"], tech=tech)
+            g.play()
+            if g.intf:
+                drawn[g.intf] += 1
+    total = each * len(aos.TECHS)
+    print()
+    print("  NRJ/AoS - Nobulous Interference (6 cards, Tier I)")
+    for key in aos.INTERFERENCE:
+        flag = "   <-- never drawn" if not drawn[key] else ""
+        print("    %-28s drawn %5.0f%%%s"
+              % (key, pct(drawn[key], total), flag))
+    print()
+    print("  NRJ/AoS - Corrupted Limitations (6 cards, Tier II)")
+    print("    %s" % NO_FIRING_COLUMN[("AoS", "Corrupted Limitations")])
+    print()
+    print("  NRJ - Imposters (5 cards, 10 sides)")
+    print("    %s" % NO_FIRING_COLUMN[("NRJ", "Imposters")])
+
+
+def audit_protocols(games):
+    """BAT Tier I: one of six at setup. What each is WORTH is in RESULTS.txt;
+    this only checks that all six reach the table."""
+    drawn = collections.Counter()
+    for i in range(games):
+        g = bat.Game("Standard", random.Random(i), card_effects=True,
+                     sides="random", tier="I")
+        g.play()
+        if g.protocol:
+            drawn[g.protocol] += 1
+    print()
+    print("  NRJ/BAT - Experimental Protocols (6 cards, Tier I)")
+    for key in bat.PROTOCOLS:
+        flag = "   <-- never drawn" if not drawn[key] else ""
+        print("    %-28s drawn %5.0f%%%s"
+              % (key, pct(drawn[key], games), flag))
+
 
 def main(games=GAMES):
     global GAMES
@@ -287,6 +478,16 @@ def main(games=GAMES):
     audit_bat(games)
     audit_nap(games)
     audit_aos(games)
+    # The NRJ tier decks. Added 2026-11-06: until then this file audited the
+    # three base games and none of the nine overlay decks - which is where
+    # all three of the fungible-token defects lived.
+    audit_protocols(games)
+    audit_devious(games)
+    audit_interference(games)
+    audit_backdoor(games)
+    print()
+    print("Printed-effect coverage is coverage.py, not this file. Run it too:")
+    print("  python coverage.py")
 
 
 if __name__ == "__main__":

@@ -49,7 +49,18 @@ python deploy.py --prune --release
 # Check the playtest lab still matches the generators (exit code = failures)
 cd generator && python check_app_sync.py
 python check_cards.py
+
+# Check the MODELS still match the cards (exit code = stale claims)
+cd simulation && python coverage.py   # is every printed effect implemented?
+python audit.py                       # does every card reach the table and fire?
 ```
+
+Run `coverage.py` before trusting any statement in this repository about
+what is or is not modelled, including the ones in `simulation/README.md` and
+in the model docstrings. It asserts every claim against the live modules and
+fails when one goes stale; four such comments were wrong on 2026-11-06 and
+`audit.py` had two of them written into its own output. A firing rate from
+`audit.py` means nothing for a card `coverage.py` says was never implemented.
 
 Nothing copies `generator/out/` into the shipping trees except `deploy.py`, so
 run it after any rebuild; `--prune` removes output a renamed or dropped deck
