@@ -33,11 +33,13 @@ print a dice restriction. Both are now read from coverage.py instead of
 being retyped here.
 """
 import collections
+import inspect
 import random
 import sys
 
 import aos
 import bat
+import finale
 import nap
 
 # bat.py names the Attack cards as index constants, not a list.
@@ -52,13 +54,6 @@ NO_FIRING_COLUMN = {
     ("BAT", "Experiments"):
         "19 of the 20 effects are modelled (coverage.py) but they fire "
         "inside one dispatch with no per-card record to read back",
-    ("NAP", "Final Exams"):
-        "all 12 print a dice restriction and none is modelled, so there is "
-        "nothing to fire - see coverage.py",
-    ("AoS", "Corrupted Limitations"):
-        "the model never draws one: there is no per-card index to count",
-    ("NRJ", "Imposters"):
-        "the shipping finale has no Imposter card at all",
 }
 
 
@@ -227,7 +222,11 @@ def audit_nap(games):
 
     print()
     print("  NAP - Final Exams (%d cards)" % len(nap.EXAMS))
-    print("    %s" % NO_FIRING_COLUMN[("NAP", "Final Exams")])
+    print("    11 of the 12 printed restrictions are modelled since")
+    print("    2026-11-06; exam_commit honours them when the exam is sat.")
+    for subject, dot, base, rule in nap.EXAMS:
+        bits = ", ".join("%s=%s" % (k, v) for k, v in sorted(rule.items()))
+        print("    %-12s %s  %s" % (subject, dot, bits))
 
     print()
     print("  NAP - Apprentices (6)")
@@ -238,6 +237,11 @@ def audit_nap(games):
         ability = nap.ABILITIES.get(a)
         print("    %-22s %s"
               % (a, ability if ability else "ability NOT modelled"))
+    print("    All six are modelled since 2026-11-06. Prodigy needed the")
+    print("    colour rule enforced on SUCCESSES before it had anything to")
+    print("    relax - nap.COLOR_RULE_ON_SUCCESS - and until then the")
+    print("    default Apprentice here and in nap.run was the one with no")
+    print("    ability at all.")
 
 
 def audit_aos(games):
@@ -399,9 +403,11 @@ def audit_backdoor(games):
         for _ in range(each):
             g = aos.Game("Specialized", rng, "III",
                          composition=aos.LEVELS["Standard"], tech=tech)
-            start = dict(g.bkd)
             g.play()
-            for key in start:
+            # Read AFTER the game: since 2026-11-06 a Routine is claimed off
+            # a Program that met its printed condition, so bkd is empty at
+            # setup. `claimed` is the claim log and bkd what is left unspent.
+            for key in g.claimed:
                 held[key] += 1
                 if not g.bkd.get(key):
                     spent[key] += 1
@@ -409,9 +415,12 @@ def audit_backdoor(games):
 
     print()
     print("  NRJ/AoS - Backdoor Routines (6 cards, Tier III)")
-    print("    BACKDOOR_CLAIMS is %d and the policy takes the FIRST of"
-          % aos.BACKDOOR_CLAIMS)
-    print("    BACKDOOR_ORDER, so 'held' is which cards it ever picks up.")
+    print("    BACKDOOR_CLAIM is %r and BACKDOOR_WHEN %r, cap %d."
+          % (aos.BACKDOOR_CLAIM, aos.BACKDOOR_WHEN, aos.BACKDOOR_CLAIMS))
+    print("    'held' is how often a game CLAIMED the card. Until")
+    print("    2026-11-06 both claims were granted at setup off the front")
+    print("    of BACKDOOR_ORDER, so Resource Fork and Garbage Collection")
+    print("    read 100% here and the other four read 0%.")
     for key in aos.BACKDOOR_ORDER:
         h = held[key]
         flag = "   <-- never held" if not h else ""
@@ -419,9 +428,22 @@ def audit_backdoor(games):
               % (BACKDOOR_NAMES[key], pct(h, total),
                  pct(spent[key], h) if h else 0, flag))
     dead = [k for k in aos.BACKDOOR_ORDER if not held[k]]
-    if dead:
-        print("    PROBLEM: %d of 6 never reach the table at this policy."
-              % len(dead))
+    if dead and aos.BACKDOOR_WHEN == "always":
+        # Under "always" the policy claims whatever a condition offers, so a
+        # card that is never held is a card the model cannot reach - a bug.
+        print("    PROBLEM: %d of 6 cannot be claimed at all." % len(dead))
+    elif dead:
+        # Under "value" it is a DECLINE, which is a different thing and not
+        # a model fault: claiming costs the next Program Reward and these
+        # four are worth less than one. Set BACKDOOR_WHEN = "always" and all
+        # six are claimed, which is the check that they are reachable.
+        print("    %d of 6 are never claimed at BACKDOOR_WHEN = %r: %s."
+              % (len(dead), aos.BACKDOOR_WHEN,
+                 ", ".join(BACKDOOR_NAMES[k] for k in dead)))
+        print("    That is the policy DECLINING them, not the model failing")
+        print("    to reach them - claiming gives up the next Program")
+        print("    Reward and these are worth less than one. The spread is")
+        print("    a design question and is raised in RESULTS.txt.")
 
 
 def audit_interference(games):
@@ -443,12 +465,42 @@ def audit_interference(games):
         flag = "   <-- never drawn" if not drawn[key] else ""
         print("    %-28s drawn %5.0f%%%s"
               % (key, pct(drawn[key], total), flag))
+    # Corrupted Limitations, measured since 2026-11-06. Until then this was
+    # the one deck in the set the model never drew, so there was nothing
+    # here to count and this section was a sentence of prose.
+    corrupt = collections.Counter()
+    rng = random.Random(20)
+    for tech in aos.TECHS:
+        for _ in range(each):
+            g = aos.Game("Specialized", rng, "II",
+                         composition=aos.LEVELS["Standard"], tech=tech)
+            real = g.corrupt_plan
+
+            def seen(plan, targets, locked, _g=g, _real=real):
+                corrupt[_g.corrupt_card] += 1
+                return _real(plan, targets, locked)
+            g.corrupt_plan = seen
+            g.play()
+    drawn_total = sum(corrupt.values()) or 1
     print()
     print("  NRJ/AoS - Corrupted Limitations (6 cards, Tier II)")
-    print("    %s" % NO_FIRING_COLUMN[("AoS", "Corrupted Limitations")])
+    print("    %d drawn over %d games; each should be about 1 in 6."
+          % (drawn_total, total))
+    for key in aos.CORRUPTED:
+        flag = "   <-- never drawn" if not corrupt[key] else ""
+        print("    %-28s %5.1f%% of draws%s"
+              % (key, pct(corrupt[key], drawn_total), flag))
+
     print()
     print("  NRJ - Imposters (5 cards, 10 sides)")
-    print("    %s" % NO_FIRING_COLUMN[("NRJ", "Imposters")])
+    print("    Ported into finale.py from proto/imposters.py on 2026-11-06.")
+    print("    HERO = None is still the pitch, so a side is measured as a")
+    print("    DELTA against it - see finale.py section 7 for the roster.")
+    for h in finale.HEROES:
+        who, side, when = finale.HERO_TEXT[h]
+        fires = ('hero == "%s"' % h) in inspect.getsource(finale)
+        print("    %-22s %-18s %-14s %s"
+              % (who, side, when, "modelled" if fires else "NOT MODELLED"))
 
 
 def audit_protocols(games):

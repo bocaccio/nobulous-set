@@ -86,6 +86,72 @@ def fires(module, template, keys):
     return sum(1 for k in keys if (template % k) in src)
 
 
+def reads(module, text):
+    """1 if the live source contains this exact text, else 0.
+
+    The one-shot form of `fires`, for an effect that has one site rather than
+    a table of them.
+    """
+    return 1 if text in inspect.getsource(module) else 0
+
+
+def paid(deck):
+    """Programs in `deck` whose printed Reward has a branch that acts on it.
+
+    A name in PROGRAM_REWARDS is not an implementation: "banish" sat in all
+    three decks for weeks with no branch in Game.reward, and this claim
+    passed anyway because its predicate was len() of the table.
+    """
+    src = inspect.getsource(aos.Game.reward)
+    return sum(1 for k in aos.PROGRAM_REWARDS[deck]
+               if ('kind == "%s"' % k) in src)
+
+
+def exhibit_faces():
+    """How many of the 24 Council Tests print an effect to model.
+
+    FIVE. The shipping Exhibit face prints Target, Damage and a Reward band,
+    and only the five in build_nrj.EXHIBIT_REWARD print a rule in that band.
+    The other nineteen print an italic COURTESY whose design rule is that it
+    may not name a thing the game has - COURTESY_FORBIDDEN is the word list
+    and check_app_sync.py enforces it - so there is nothing on them to model.
+    The Scenario clauses still in build_nrj.SCEN are the record of the
+    SUPERSEDED card and are no longer rendered.
+
+    THE 2026-11-06 AUDIT GOT THIS WRONG FIRST TIME, and this function is the
+    correction. It read the 19 dropped Scenario clauses as 19 unmodelled
+    printed effects and called the deck "the regression in the set", when the
+    shipping cards do not print them at all. Returns the modelled count only
+    when the two generator tables really do partition the 24, so the claim
+    fails if a courtesy is ever promoted to a rule.
+    """
+    rew = _gen_dict("EXHIBIT_REWARD")
+    crt = _gen_dict("EXHIBIT_COURTESY")
+    names = set(n for n, _d, _k, _t in finale.DECK)
+    if set(rew) & set(crt) or (set(rew) | set(crt)) != names:
+        return -1                      # fails the claim, loudly
+    return len(names)
+
+
+def _gen_dict(name):
+    """The keys of a dict literal in generator/build_nrj.py."""
+    import ast
+    src = os.path.join(os.path.dirname(os.path.dirname(
+        os.path.abspath(__file__))), "generator", "build_nrj.py")
+    with io.open(src, encoding="utf-8") as fh:
+        tree = ast.parse(fh.read())
+    for node in tree.body:
+        if (isinstance(node, ast.Assign) and len(node.targets) == 1
+                and getattr(node.targets[0], "id", "") == name):
+            return [k.value for k in node.value.keys]
+    raise RuntimeError("%s not found in generator/build_nrj.py" % name)
+
+
+# The restriction keys exam_commit and the scoring step actually honour.
+# "crit" is deliberately absent: see the note on nap.EXAMS.
+EXAM_KEYS = ("no_red", "colors", "need", "among", "dice", "crit_val")
+
+
 class Claim(object):
     """One deck's coverage, with a predicate that keeps it honest.
 
@@ -154,41 +220,64 @@ CLAIMS = [
     # and that single gap reaches forward into NRJ Tier III - see the
     # Devious Opportunities claim below.
     # -----------------------------------------------------------------------
-    Claim("NAP", "Assignments", 24,
-          lambda: len(set(nap.CRIT_COLOR) | set(nap.REQUEST_REWARD)),
-          gaps=["Decode Nobulous' Lecture Notes",
-                "Update Nobulous' Lab Notes"],
-          note="the other 24 carry a CRIT_COLOR or a REQUEST_REWARD entry"),
+    Claim("NAP", "Assignments", 26,
+          lambda: len(set(nap.CRIT_COLOR) | set(nap.REQUEST_REWARD)
+                      | set(nap.TASK_EFFECT)),
+          note="each carries a CRIT_COLOR, a REQUEST_REWARD or a "
+               "TASK_EFFECT entry. The last two went in on 2026-11-06 and "
+               "both pay in DECK ORDER rather than in dice, which is why "
+               "they sat out: Decode Nobulous' Lecture Notes reorders the "
+               "next three and Update Nobulous' Lab Notes sends one to the "
+               "top or the bottom, worth +1.2 points between them. Their "
+               "Demand sides - 3 colours, and store at most 1 die - are "
+               "the only two Demand clauses in the deck that restrict "
+               "rather than penalise, and are on the card as TASK_EFFECT"),
     Claim("NAP", "Opportunities", 6,
           lambda: len(nap.COUPON),
           note="one coupon each under OPP_COUPONS, or one reward each under "
                "nap.OPPORTUNITY_REWARD"),
-    Claim("NAP", "Setbacks", 0,
-          lambda: 0,
-          gaps=["Power Failure", "Contaminated Workbench", "Jammed Centrifuge",
-                "Broken Neural Imager", "Escaped Specimen",
-                "Automaton Malfunction"],
-          note="SETBACKS is (target, dot) only. The ONE printed rule they "
-               "share - the row locks until the Setback is resolved - IS "
-               "modelled, so the deck works; the six cards print no "
-               "individual effect to model"),
-    Claim("NAP", "Final Exams", 0,
-          lambda: 0,
-          gaps=["Cranial Integrity Inspection", "Fine Motor Assessment",
-                "Physiological Stress Test", "Council Etiquette Simulation",
-                "Identity Recall Demonstration", "Final Imposter Examination",
-                "Neural Response Screening", "Adaptive Reasoning Trial",
-                "Council Recognition Drill", "Procedural Knowledge Review",
-                "Unexpected Policy Debate", "Nobulous' Comprehensive Review"],
-          note="ALL TWELVE print a dice restriction and nap.EXAMS carries "
-               "(subject, dot, target) only, so none is modelled. This is "
-               "the deck where NAP is actually lethal"),
-    Claim("NAP", "Apprentices", 5,
+    Claim("NAP", "Setbacks", 6,
+          lambda: len(nap.SETBACKS),
+          note="SIX CARDS PRINTING ONE SHARED RULE and a flavour line - "
+               "build_nap.SB_TEXT, the same text on all six - and BOTH of "
+               "its clauses are modelled: the row locks until the Setback "
+               "is resolved, and an undiced Setback exhausts 1 die at the "
+               "start of the Time Slot. nap.SETBACKS carries (target, dot) "
+               "because that is all the cards print per card. Counted as a "
+               "gap until 2026-11-06, which was the same over-count the "
+               "audit made on the Exhibit courtesies: a card with no "
+               "printed effect is not an unmodelled effect"),
+    Claim("NAP", "Final Exams", 11,
+          lambda: sum(1 for e in nap.EXAMS
+                      if any(k in e[3] for k in EXAM_KEYS)),
+          gaps=["Neural Response Screening"],
+          note="ELEVEN OF TWELVE SINCE 2026-11-06, when nap.EXAMS grew a "
+               "restriction column and exam_commit began honouring it - "
+               "which also made Definitely Curriculum-Approved payable for "
+               "the first time. The twelfth prints \"at least 1 Crit must "
+               "contribute to COMPLETE THIS ASSIGNMENT\", which is "
+               "Assignment language: a Final Exam has no completion step, "
+               "it charges 1 Health per success short. MEASURED: read as "
+               "a gate it deals its whole Target in 23% of the sittings it "
+               "gets and costs 3.8 points on its own, which no other "
+               "single exam comes near; read as a commit rule it says "
+               "nothing, because there is no way to commit FOR a Crit. "
+               "EXAM_CRIT_GATE models the gate reading and ships off. The "
+               "clause wants rewording, not a model"),
+    Claim("NAP", "Apprentices", 6,
           lambda: sum(1 for v in nap.ABILITIES.values() if v),
-          gaps=["Prodigy"],
-          note="Prodigy prints \"when using two dice of the same color as "
-               "wild, only one must roll a success\" and maps to None - and "
-               "Prodigy is the default in nap.run and in audit.py"),
+          note="SIX OF SIX SINCE 2026-11-06, and Prodigy is the clearest "
+               "case in this file of a card that cannot be modelled by "
+               "itself. It prints \"when using two dice of the same color "
+               "as wild, only one of those dice must roll a success\" - a "
+               "relaxation of a rule the model did not have, because the "
+               "colour requirement was enforced on the COMMIT and never on "
+               "the successes. So ABILITIES mapped it to None, and the "
+               "DEFAULT Apprentice in nap.run and in audit.py was the one "
+               "with nothing to do. COLOR_RULE_ON_SUCCESS put the rule in "
+               "first; it costs about 5 points of win rate across the "
+               "whole ladder, because the model had been more generous "
+               "than the cards"),
     Claim("NAP", "Time Slots and FINF", 6,
           lambda: len(nap.FINF_SETTINGS),
           note="3 Time Slots plus 3 FINF cards; the FINF dial is modelled as "
@@ -198,12 +287,19 @@ CLAIMS = [
     # AoS. Programs and base Limitations are fully covered. The gap is the
     # Technicians' second sides and, in NRJ, the Corrupted Limitations.
     # -----------------------------------------------------------------------
+    # THESE THREE PASSED ON A COUNT OF NAMES until 2026-11-06, and one of
+    # the names did nothing: "banish" - "Banish 1 Limitation from the game",
+    # printed on one Program of each deck - had no branch in Game.reward, so
+    # three of the 24 Programs paid out silently nothing. len() of the table
+    # could never have caught it. The predicate now counts the Programs
+    # whose reward name has a branch that acts on it, which is the same
+    # source-counting rule `fires` exists for.
     Claim("AoS", "Routine Programs", 8,
-          lambda: len(aos.PROGRAM_REWARDS["Routine"])),
+          lambda: paid("Routine")),
     Claim("AoS", "Specialized Programs", 8,
-          lambda: len(aos.PROGRAM_REWARDS["Specialized"])),
+          lambda: paid("Specialized")),
     Claim("AoS", "Unstable Programs", 8,
-          lambda: len(aos.PROGRAM_REWARDS["Unstable"])),
+          lambda: paid("Unstable")),
     Claim("AoS", "Advanced Programs", 8,
           lambda: len(aos.ELEMENT_COUNTS["Advanced"]),
           note="they print no reward, which is why they are absent from "
@@ -230,42 +326,57 @@ CLAIMS = [
                "-3.1, Independent Funding -3.6, Questionable Procurement "
                "-3.7, Shared Equipment Budget -7.5. Tier I is a PENALTY and "
                "two of the six are not one"),
-    Claim("NRJ", "BAT Modifications", 5,
-          lambda: sum(1 for t in bat.MOD_EFFECTS if t != bat.NO_EFFECT),
-          gaps=["Redundant Organs"],
-          note="DRAWBACK-ONLY. Its \"while held\" cost (no_streak: cannot be "
-               "active on consecutive turns) IS modelled; its benefit - "
-               "\"the first time the holder would be knocked out, discard "
-               "this card instead\" - is not, and the knockout in "
-               "resolve_attack has no check for it. The card is charged its "
-               "cost and paid nothing"),
+    Claim("NRJ", "BAT Modifications", 6,
+          lambda: (sum(1 for t in bat.MOD_EFFECTS if t != bat.NO_EFFECT)
+                   + reads(bat, '("m", REDUNDANT_ORGANS)')),
+          note="SIX OF SIX SINCE 2026-11-06. Redundant Organs was "
+               "drawback-only until then - its no_streak cost was charged "
+               "and its printed save was never written, which is why "
+               "MOD_EFFECTS[4] is the one all-zero row. The save is now in "
+               "resolve_attack and fires in 12.6% of Tier II games; it is "
+               "worth about 0.0 points, because a Rat holding a Value-5 "
+               "Upgrade is almost never reached in Health at all. "
+               "MOD_EFFECTS[4] STAYS ZERO AND IS RIGHT TO: damage_tyrant "
+               "walks surviving Splices only and a blow under a card's "
+               "Value bounces, so a Spliced Redundant Organs cannot be "
+               "alive when the Tyrant would fall"),
     Claim("NRJ", "BAT Research Notes", 6,
           lambda: fires(bat, 'use_note("%s")', bat.NOTE_ORDER),
           note="six named cards since 2026-11-06; NOTE_REWARDS = False "
                "restores the pooled token every earlier figure was measured "
                "through"),
-    Claim("NRJ", "NAP Imposter Tasks", 0,
-          lambda: 0,
-          gaps=["Neural Extraction Practicum", "Load-Bearing Prosthetics",
-                "Emergency Specimen Handling", "Containment Drill"],
-          note="nap.IMPOSTER_TASKS is (subject, dot, request, demand); the "
-               "four printed effects are not modelled. The cards still bite "
-               "through their raised Targets, which is Tier II's point"),
-    Claim("NRJ", "NAP Following Setbacks", 0,
-          lambda: 0,
-          gaps=["Nobulous Needs This Now", "Unscheduled Demonstration",
-                "Minor Laboratory Fire", "Where Did I Put That?"],
-          note="nap.FOLLOWING is [(7,1),(7,1),(8,1),(8,1)] - four cards "
-               "collapsed to two Targets and one flat upkeep, so the four "
-               "printed effects are interchangeable in the model"),
-    Claim("NRJ", "NAP Devious Opportunities", 5,
-          lambda: sum(1 for _, p in nap.DEVIOUS if p != "exam_ignore"),
-          gaps=["Definitely Curriculum-Approved"],
-          note="its reward is \"ignore one exam's printed restriction\" and "
-               "no exam restriction is modelled, so the card cannot pay out "
-               "- declared at nap.py's exam_ignore. The other five are "
-               "modelled, but see FUNGIBLE below: the coupons they leave "
-               "behind are spent interchangeably"),
+    Claim("NRJ", "NAP Imposter Tasks", 4,
+          lambda: fires(nap, 'effect == "%s"',
+                        [e for _s, _d, _r, _dm, e in nap.IMPOSTER_TASKS]),
+          note="FOUR OF FOUR SINCE 2026-11-06. nap.IMPOSTER_TASKS was "
+               "(subject, dot, request, demand) and the four cards were "
+               "interchangeable; each now carries its printed effect - a "
+               "die locked until the end of the Day, two successes needed "
+               "from one colour, a 2-die minimum commit, and a die burned "
+               "on the flip to Demand"),
+    Claim("NRJ", "NAP Following Setbacks", 4,
+          lambda: fires(nap, 'effect == "%s"',
+                        [e for _t, _d, e in nap.FOLLOWING]),
+          note="FOUR OF FOUR SINCE 2026-11-06, and the old model was wrong "
+               "three ways at once. nap.FOLLOWING was [(7,1),(7,1),(8,1),"
+               "(8,1)] - a Target and a FLAT 1-die upkeep - but only one of "
+               "the four prints an upkeep, so the other three were charged "
+               "a die a slot for text they do not carry; the four printed "
+               "effects were interchangeable; and the dot was drawn at "
+               "random from PBGY when all four print one. A Following "
+               "Setback does not print the base card's row lock either - "
+               "only Unscheduled Demonstration prints a weaker version of "
+               "it. FOLLOWING_EFFECTS = False restores the flat upkeep"),
+    Claim("NRJ", "NAP Devious Opportunities", 6,
+          lambda: sum(1 for _, p in nap.DEVIOUS
+                      if reads(nap, '"%s" in self.devious_coupons' % p)
+                      or reads(nap, 'payout == "%s"' % p)),
+          note="SIX OF SIX SINCE 2026-11-06. Definitely Curriculum-Approved "
+               "ignores one exam's printed restriction and there was no "
+               "restriction to ignore: earned in 153 of 6000 Tier III games "
+               "and paid in 0 of them. With eleven of the twelve now "
+               "modelled it is spent in 390 of the 690 games that earn it. "
+               "See FUNGIBLE below for the other half of this deck's fix"),
     Claim("NRJ", "AoS Interference", 6,
           lambda: fires(aos, 'self.intf == "%s"', aos.INTERFERENCE),
           note="PRICED 2026-11-06 against a 52.2% solo column: Memory Leak "
@@ -273,66 +384,62 @@ CLAIMS = [
                "Machine -13.5, Legacy Hardware -12.0, Undocumented "
                "Dependencies -10.9, Nobulous Was Here -0.4. Five sit within "
                "7 points and the sixth is not a penalty at all"),
-    Claim("NRJ", "AoS Corrupted Limitations", 0,
-          lambda: 0,
-          gaps=["Uneven Architecture", "Memory Collision",
-                "Circular Reference", "Hard-Coded Constant",
-                "Deprecated Function",
-                "Stack Overflow"],
-          note="THE ONE DECK WITH NO PER-CARD IDENTITY AT ALL. Each prints a "
-               "distinct allocation corruption; the model draws none of "
-               "them, applying one generic \"withhold 2 dice of a random "
-               "non-required colour\" at CORRUPT_CHANCE. There is no index "
-               "to audit, so audit.py cannot measure this deck"),
+    Claim("NRJ", "AoS Corrupted Limitations", 6,
+          lambda: fires(aos, 'name == "%s"', aos.CORRUPTED)
+                  + reads(aos, "self.corrupt_color"),
+          note="SIX OF SIX SINCE 2026-11-06, and until then this was the "
+               "ONE DECK IN THE SET THE MODEL NEVER DREW: CORRUPT_CHANCE "
+               "stood in for drawing a card at all and CORRUPT_WITHHOLD for "
+               "whatever the drawn card would have said, so there was no "
+               "index for audit.py to count and the whole Tier II column "
+               "was measured through a stand-in. Five of the six constrain "
+               "the ALLOCATION, which corrupt_plan applies to the plan after "
+               "allocation and before the roll; Deprecated Function is a "
+               "scoring corruption and element_values applies it. "
+               "CORRUPT_MODE = \"generic\" restores the stand-in"),
     Claim("NRJ", "AoS Backdoor Routines", 5,
           lambda: fires(aos, 'self.bkd.get("%s")', aos.BACKDOOR_ORDER),
           gaps=["Packet Sniffer"],
           note="\"look at the next Limitation before selecting a Program\" "
-               "and the model has no Program-selection choice to inform, so "
-               "aos.py leaves it unmodelled rather than guessing. The other "
-               "five are named cards since 2026-11-05; BACKDOOR_REWARDS = "
-               "False restores the pooled token. PRICED: only Resource Fork "
-               "(+7.4) and Garbage Collection (+6.8) move the column; Root "
-               "Access reads +1.0 and Privilege Escalation and Diagnostic "
-               "Port read 0.0 although both DO fire"),
+               "and play() takes Programs off a shuffled queue, so there is "
+               "no selection for it to inform - and the dice a Limitation "
+               "withholds already leave the pool before this model "
+               "allocates. Unmodelled rather than guessed at, and the only "
+               "one of the six in that position. THE OTHER FIVE NOW REACH "
+               "THE TABLE: until 2026-11-06 BACKDOOR_CLAIM granted the "
+               "front of BACKDOOR_ORDER at setup, so Resource Fork and "
+               "Garbage Collection were held in 100% of games and the other "
+               "four in 0% - three of them implemented, firing and never "
+               "held. Claiming is now EARNED off the card's own printed "
+               "condition and costs the next Program Reward, as all six "
+               "print"),
     # The shipping finale is finale.py. nrj.py models the SUPERSEDED
     # nine-attempt Suspicion finale and reads 23 of 24 on this same deck -
     # which is the point of the note below, not a second claim.
-    Claim("NRJ", "Imposter Scenarios", 5,
-          lambda: len(finale.REWARDS),
-          gaps=["The Physician's Greeting", "An Old Injury",
-                "Failed Apparatus", "Order of Precedence",
-                "A Disputed Citation", "The Long Argument",
-                "An Unwelcome Embrace", "The Ceremonial Seal",
-                "A Sudden Fall", "The Long Session", "Tainted Wine",
-                "Across the Chamber", "The Darkened Corridor",
-                "The Night Watchman's Account", "An Open Window",
-                "Someone Was Seen", "Rope Burns", "The Missing Hours",
-                "A Second Search"],
-          note="THE REGRESSION IN THE SET. The shipping finale uses each "
-               "Exhibit's Target and the five Reward clauses; the other 19 "
-               "printed effects do nothing. Most of them name Suspicion or "
-               "a nine-attempt structure the rework removed and cannot be "
-               "restored - but SIX do not: the dice restrictions on An Old "
-               "Injury, The Ceremonial Seal, Order of Precedence, An Open "
-               "Window, The Long Session and The Darkened Corridor still "
-               "mean exactly what they print, and nrj.py ALREADY IMPLEMENTS "
-               "ALL SIX (NEED_COLORS, NEED_DISTINCT, NEED_COUNT, "
-               "FORBID_COLOR). The superseded model reads 23 of 24 on this "
-               "deck and the shipping one reads 5; six of that gap is "
-               "working code that was left behind"),
-    Claim("NRJ", "Imposters", 0,
-          lambda: 0,
-          gaps=["Cross-Referenced (Archivist A)", "Precedent (Archivist B)",
-                "Open Audition (Understudy A)", "Second Chair (Understudy B)",
-                "Early Admittance (Usher A)", "Double Doors (Usher B)",
-                "Sleight of Hand (Porter A)", "Heavy Lifting (Porter B)",
-                "Requisition (Steward A)", "Standing Order (Steward B)"],
-          note="TEN PRINTED ABILITIES, 5 cards x 2 sides, and not one of the "
-               "five names appears anywhere in simulation/. The shipping "
-               "finale simulator has no Imposter card: every finale figure, "
-               "the 50.6% pitch included, is measured with no hero ability "
-               "at all"),
+    Claim("NRJ", "Imposter Scenarios", 24,
+          exhibit_faces,
+          note="FIVE REWARDS MODELLED AND NINETEEN CARDS WITH NO PRINTED "
+               "EFFECT, which is the whole deck. The audit of 2026-11-06 "
+               "first read this as 5 of 24 and called it the regression in "
+               "the set; it was reading the dropped Scenario clauses in "
+               "build_nrj.SCEN, which the shipping Exhibit face does not "
+               "render. An Exhibit prints Target, Damage and a Reward band, "
+               "and nineteen of those bands carry an italic courtesy that "
+               "may not name a thing the game has. exhibit_faces() asserts "
+               "the partition rather than trusting this paragraph"),
+    Claim("NRJ", "Imposters", 10,
+          lambda: sum(1 for h in finale.HEROES
+                      if reads(finale, 'hero == "%s"' % h)),
+          note="TEN OF TEN SINCE 2026-11-06, ported in from "
+               "proto/imposters.py, which had all ten implemented and "
+               "calibrated while the shipping module had no hero code at "
+               "all. The audit's first pass said no Imposter name appeared "
+               "anywhere in simulation/; proto/ is under simulation/, so "
+               "the gap was a port and not a write. HERO = None is still "
+               "the pitch and still reproduces every published figure, "
+               "because a side is quoted as a delta against a heroless "
+               "baseline - but the centrepiece of the set is no longer the "
+               "one deck the shipping simulator could not play"),
 ]
 
 # ---------------------------------------------------------------------------
@@ -370,8 +477,9 @@ FIDELITY = [
 ]
 
 # ---------------------------------------------------------------------------
-# Rewards spent out of a shared pool rather than per card. Two of these were
-# found and fixed on 2026-11-05 and 2026-11-06; the third is still live.
+# Rewards spent out of a shared pool rather than per card. All three were
+# found and fixed between 2026-11-05 and 2026-11-06; each predicate below is
+# what keeps the fix from being undone quietly.
 # ---------------------------------------------------------------------------
 FUNGIBLE = [
     ("AoS", "Backdoor Routines", "FIXED 2026-11-05",
@@ -382,14 +490,18 @@ FUNGIBLE = [
      lambda: bat.NOTE_REWARDS,
      "the same, and worse: of the two rewards the pool implemented, one "
      "never fired, so the published Tier III column measured one card"),
-    ("NAP", "Devious Opportunities", "LIVE",
-     lambda: not nap.DEVIOUS_IGNORE_SETBACK,
-     "devious_coupons is a LIST OF PAYOUTS but ignore_setback() and "
-     "move_setback() pop whichever coupon is on the end, so a coupon earned "
-     "by any of the six can be spent on an ability NONE of them prints - "
-     "ignoring a Setback. This one runs the opposite way to the other two: "
-     "the pool OVER-delivers, granting an off-card power rather than "
-     "withholding printed ones"),
+    ("NAP", "Devious Opportunities", "FIXED 2026-11-06",
+     lambda: not (nap.DEVIOUS_IGNORE_SETBACK or nap.DEVIOUS_MOVE_SETBACK
+                  or nap.DEVIOUS_CASH_EARLY),
+     "devious_coupons IS a list of payouts, but ignore_setback() and "
+     "move_setback() called .pop(), which takes whichever coupon is on the "
+     "end - so a coupon earned by any of the six bought \"ignore a "
+     "Setback\", an ability none of them prints, and 27% of every coupon "
+     "earned left the hand that way. This one ran the opposite way to the "
+     "other two: the pool OVER-delivered. The three off-card levers now "
+     "take a TUPLE OF NAMES rather than a boolean, so a lever has to name "
+     "the card paying for it and the fungible form cannot be written again "
+     "by accident; all three ship empty"),
 ]
 
 
@@ -461,13 +573,16 @@ def main(verbose=False):
     print()
     print("  TOTAL: %d of %d printed card effects are not modelled, in %d "
           "decks." % (gap_cards, total_cards, len(missing)))
-    print("  The three that reach furthest, in order:")
-    print("    1  the 5 Imposters - 10 abilities, the whole finale deck, and")
-    print("       every finale figure is measured without them")
-    print("    2  the 12 Final Exams - all print a restriction, none is")
-    print("       modelled, and it makes one NRJ Tier III card unpayable")
-    print("    3  the 6 Corrupted Limitations - no per-card identity exists,")
-    print("       so AoS Tier II is one generic effect wearing six names")
+    # DERIVED, not typed. The previous version of this footer was three
+    # hardcoded sentences about the three largest gaps, and two of the three
+    # were fixed within a day of being written - which is the exact failure
+    # this whole file exists to stop, reproduced in its own summary.
+    if missing:
+        print("  The %d widest, by cards:" % min(3, len(missing)))
+        for claim in sorted(missing, key=lambda c: -len(c.gaps))[:3]:
+            print("    %-4s %-26s %d of %d"
+                  % (claim.game, claim.deck, len(claim.gaps),
+                     len(cards[(claim.game, claim.deck)])))
 
     if stale:
         print()

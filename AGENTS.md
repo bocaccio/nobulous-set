@@ -62,6 +62,19 @@ fails when one goes stale; four such comments were wrong on 2026-11-06 and
 `audit.py` had two of them written into its own output. A firing rate from
 `audit.py` means nothing for a card `coverage.py` says was never implemented.
 
+Write a coverage claim as a predicate that a NAME cannot satisfy. Three
+claims have passed while the card did nothing, each because the predicate
+counted entries in a table instead of call sites in the source: Packet
+Sniffer, "banish" on three Programs, and Redundant Organs. `coverage.fires`
+and `coverage.reads` are the right shape; `len()` of a card table is not.
+
+Every model change of 2026-11-06 carries a dial that restores the behaviour
+the figures published before it were measured through - `REDUNDANT_SAVES`,
+`EXAM_RESTRICTIONS`, `COLOR_RULE_ON_SUCCESS`, `FOLLOWING_EFFECTS`,
+`IMPOSTER_EFFECTS`, `DEVIOUS_IGNORE_SETBACK`, `CORRUPT_MODE`,
+`BACKDOOR_CLAIM`, `BACKDOOR_COSTS_REWARD`, `BACKDOOR_WHEN`, `HERO`. Use
+them to reproduce an old number rather than assuming a grid drifted.
+
 Nothing copies `generator/out/` into the shipping trees except `deploy.py`, so
 run it after any rebuild; `--prune` removes output a renamed or dropped deck
 left behind. Rendering is byte reproducible — re-rendering a family with

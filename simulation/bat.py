@@ -113,8 +113,19 @@ SPECIMEN_CATS = ["Power", "Power", "Mobility", "Mobility",
 
 # Printed Targets of the 20 Experiments.
 # The printed effect on each Experiment, by deck index. Thirteen of the
-# twenty are mechanical and modelled; the rest are listed in UNMODELLED_EXP
-# so the omission is visible in the code rather than implied.
+# nineteen of the twenty are mechanical and modelled; the one that is not is
+# listed in UNMODELLED_EXP so the omission is visible in the code.
+#
+# DIAGNOSTIC TRIAL IS INFORMATION, and re-checked on 2026-11-06 it is still
+# not modellable here. "If you commit a Blue die to this Experiment, you may
+# look at the next Experiment and RETURN IT TO THE TOP of the deck" - so it
+# cannot reorder anything, and the only thing knowing the next Target could
+# change is how much to hold back now. This policy already commits the
+# MINIMUM expected to reach the Target, adding Red and then a borrow only
+# when short, so there is nothing to hold back and nothing for the
+# information to buy. It is the same class as AoS's Packet Sniffer: a
+# printed reward that pays in knowledge, in a model with no decision that
+# knowledge would change.
 EXPERIMENT_EFFECT = {
     0: "flip_side",        # Baseline Calibration
     1: "need_yellow",      # Fine Motor Trial: else +1 Target
@@ -502,6 +513,22 @@ MODS = [
     (5, "no_streak"),
     (4, "burn_die"),
 ]
+# REDUNDANT ORGANS PRINTS A BENEFIT AS WELL AS A DRAWBACK, and until
+# 2026-11-06 only the drawback was here: "The first time the holder would be
+# knocked out, discard this card instead; the holder remains at 1 Health."
+# Applied in resolve_attack. It is the mirror image of Unexpected
+# Resilience - there a reward was implemented and never fired, here a cost
+# was charged for a reward nothing had written - and it is why MOD_EFFECTS[4]
+# was the only all-zero row in the three effect tables.
+#
+# ON THE TYRANT SIDE THE ZERO IS CORRECT and stays. damage_tyrant walks
+# track(), which returns only SURVIVING Splices, and a blow that does not
+# meet a card's Value bounces off entirely - so Health can only be reached
+# once every Splice on the track is destroyed, and a Spliced Redundant
+# Organs cannot be alive at the moment the Tyrant would fall. The card is
+# unreachable there rather than unwritten.
+REDUNDANT_ORGANS = 4
+REDUNDANT_SAVES = True
 # Lower the Modification bodies so the drawback is the point of the card.
 MOD_VALUE_DELTA = 0
 
@@ -653,11 +680,19 @@ class Rat(object):
         if MODS[idx][1] == "less_hp":
             self.hp = max(1, self.hp - 1)
 
-    def drop_mod(self, value):
-        for i in list(self.mod_ids):
-            if MODS[i][0] == value:
-                self.mod_ids.remove(i)
-                return
+    def drop_mod(self, card):
+        """Discard the Modification an Upgrade card IS, if it is one.
+
+        Keyed on the CARD and not on its Value. Adrenal Gland and Redundant
+        Organs both print Value 5, so a Value lookup could discard the wrong
+        one - and resolve_attack did not check that the Upgrade it lost was a
+        Modification at all, so losing any Value-5 Upgrade used to discard a
+        Value-5 Mod along with it.
+        """
+        if not card or card[0] != "m":
+            return
+        if card[1] in self.mod_ids:
+            self.mod_ids.remove(card[1])
 
     def effective_rec(self):
         return max(1, self.rec - (1 if self.has("less_rec") else 0))
@@ -1463,7 +1498,7 @@ class Game(object):
                         if worst.card is not None:
                             self.discard.append(worst.card)
                         if worst.name in MOD_NAMES:
-                            rat.drop_mod(worst.value)
+                            rat.drop_mod(worst.card)
                         rat.upgrades.append(Upgrade(splice_value(pick),
                                                     splice_effect(pick),
                                                     splice_name(pick),
@@ -2101,13 +2136,27 @@ class Game(object):
             if lost is not None:
                 rat.upgrades.remove(lost)
                 if rat.mods:
-                    rat.drop_mod(lost.value)
+                    rat.drop_mod(lost.card)
             hits = 0                      # no carryover, ever
 
         hits += direct
         if hits > 0:
             rat.hp -= hits
             if rat.hp <= 0:
+                # REDUNDANT ORGANS: "The first time the holder would be
+                # knocked out, discard this card instead; the holder remains
+                # at 1 Health." Discarding the card is what makes it the
+                # first time, so there is no counter to keep, and the Rat
+                # keeps its other Upgrades - it was not knocked out.
+                organs = [u for u in rat.upgrades
+                          if u.card == ("m", REDUNDANT_ORGANS)]
+                if REDUNDANT_SAVES and organs:
+                    saver = organs[0]
+                    rat.upgrades.remove(saver)
+                    rat.drop_mod(saver.card)
+                    self.discard.append(saver.card)
+                    rat.hp = 1
+                    return
                 rat.hp = 0
                 rat.down = True
                 rat.upgrades = []         # knocked out: discard its Upgrades

@@ -71,6 +71,32 @@ at that setting, with no dice exhausted at setup.
   weaker policy than the one a player would find; the grid search is the
   guard against doing it twice.
 
+THE FIVE IMPOSTERS ARE MODELLED HERE SINCE 2026-11-06, ported in from
+proto/imposters.py. Before that this module had no hero code and the ten
+printed abilities lived only in that prototype, which made the centrepiece of
+the set the one deck the shipping simulator could not play. HERO = None is
+still the pitch, and still reproduces every figure above, because a side is
+quoted as a delta against a heroless baseline. The ten, at Easy against
+HERO = None:
+
+  Imposter     side                 when            delta
+  Archivist    Cross-Referenced     passive          +0.1
+  Archivist    Precedent            once/Scenario    +2.0
+  Understudy   Open Audition        once/Scenario    +3.7
+  Understudy   Second Chair         twice/Scenario   +2.7
+  Usher        Early Admittance     once/Scenario    +3.6
+  Usher        Double Doors         once/Scenario    +3.4
+  Porter       Sleight of Hand      once/session     +1.4
+  Porter       Heavy Lifting        once/Scenario    +0.7
+  Steward      Requisition          once/Scenario    +2.8
+  Steward      Standing Order       once/Scenario    +2.7
+
+Two to four points each, and the band still holds with one chosen. The ladder
+is NOT re-pegged for it: Easy is already zero dice exhausted, so pegging it
+back to 50 would cost "Easy means nothing starts exhausted", which is worth
+more than three points. proto/imposters.py carries the two tests each side
+had to pass - LEVEL and UNIFORM - and the sides that failed them.
+
 THE LADDER IS CUT WITH DICE, not with a dial - see START_TIRED. Easy none,
 Standard 3/2/2/2, Hard 3/3/3/2, Nobulous 3/3/4/4 yellow/green/blue/purple,
 reading 50.6 / 39.2 / 30.6 / 19.4. The rungs still reward play, which is why
@@ -166,6 +192,52 @@ RESEARCH = True            # the campaign's retained Tier III cards
 # limits itself to 2 claims.
 RETAIN = (3, 2, 2)
 CARD_VALUE = 2             # what one retained card takes off an Exhibit
+# Each game lays LAID_OUT Tier III cards out, so what you did not claim comes
+# to the finale as CANDIDATES. They answer no Exhibit and are worth nothing on
+# their own; the Understudy is the one Imposter that spends them.
+LAID_OUT = 6
+
+# THE IMPOSTER YOU CHOSE. Five two-sided cards, ten abilities, one lever each,
+# and every side prints the finale's own 5 HP / 2 STR / 3 REC - the house rule
+# across the set is that heroes differ only in ability text
+# (simulation/cards.py). None of them touches STR, REC or the width of the
+# attention window: a point of STR is worth 85 points here, REC 4 inverts the
+# commit decision and a three-colour window reads 90%, so those three are not
+# ability space.
+#
+# PORTED IN FROM proto/imposters.py ON 2026-11-06. Until then this module had
+# no hero code at all and the ten sides lived only in that prototype, so every
+# figure above - the 50.6% pitch included - was measured with NO IMPOSTER
+# CHOSEN. That was defensible as a pitch (a side is a delta against a heroless
+# baseline) and indefensible as coverage: the centrepiece of the set was the
+# one deck the shipping simulator could not play. HERO = None still reproduces
+# every published figure, which is the check.
+#
+# The gates are part of the abilities, not policy decoration. A side the model
+# spends unconditionally measures as its WORST case: the Archivist's off-domain
+# card read -3.4 ungated, because the model then spends the pool off-domain on
+# small Exhibits and strands the big ones. Where a real player would hold an
+# ability back, the gate is the model's stand-in for that judgement.
+HERO = None
+HEROES = ("archivist_a", "archivist_b", "understudy_a", "understudy_b",
+          "usher_a", "usher_b", "porter_a", "porter_b",
+          "steward_a", "steward_b")
+# What each one prints, for the report. proto/imposters.py carries the two
+# tests a side had to pass - LEVEL (worth about as much as every other side)
+# and UNIFORM (worth about the same at Easy as at a handicapped rung) - and
+# the sides that failed them.
+HERO_TEXT = {
+    "archivist_a": ("The Archivist", "Cross-Referenced", "passive"),
+    "archivist_b": ("The Archivist", "Precedent", "once/Scenario"),
+    "understudy_a": ("The Understudy", "Open Audition", "once/Scenario"),
+    "understudy_b": ("The Understudy", "Second Chair", "twice/Scenario"),
+    "usher_a": ("The Usher", "Early Admittance", "once/Scenario"),
+    "usher_b": ("The Usher", "Double Doors", "once/Scenario"),
+    "porter_a": ("The Porter", "Sleight of Hand", "once/session"),
+    "porter_b": ("The Porter", "Heavy Lifting", "once/Scenario"),
+    "steward_a": ("The Steward", "Requisition", "once/Scenario"),
+    "steward_b": ("The Steward", "Standing Order", "once/Scenario"),
+}
 # THE IMPOSTER STARTS TIRED, and how tired is the difficulty. These dice
 # begin exhausted; they return through ordinary recovery, so the handicap
 # costs tempo rather than dice and bites hardest early, when the Dossier is
@@ -334,11 +406,15 @@ class Game(object):
         self.pool = research(rng)
         self.active = []
         self.available, self.exhausted = fresh(), []
+        self.candidates = sum(LAID_OUT - n for n in RETAIN) if RESEARCH else 0
         self.start_tired()
         self.hp = HEALTH
         self.dial = 0
         self.at = 0
         self.discount = 0          # The Narrow Stair, owed to the next deploy
+        self.hero = HERO
+        self.once = collections.Counter()    # uses this finale
+        self.sess = collections.Counter()    # uses this session
 
     def start_tired(self):
         """The dice rules/nrj.html names for the chosen difficulty."""
@@ -443,6 +519,15 @@ class Game(object):
             while e.target > 1:
                 want = ANSWERS[e.domain]
                 cands = [c for c in self.pool if c.game == want]
+                # THE ARCHIVIST, Cross-Referenced: "A retained card may answer
+                # an Exhibit at Target 5 of ANY domain, not only its own."
+                # Gated to the Target 5s on the card, and the gate is
+                # load-bearing - ungated it reads -3.4. No use limit: a
+                # Dossier holds about four 5s, so a limit never bound and the
+                # card reads shorter without one.
+                if (not cands and self.hero == "archivist_a"
+                        and e.target >= BIG):
+                    cands = list(self.pool)
                 if not cands:
                     break
                 if policy == "big" and e.target < BIG:
@@ -507,6 +592,7 @@ def want_dice(g, pool, policy):
 
 
 def session(g, pace, recov, rew, commit, res):
+    g.sess.clear()
     taken = []
     for _ in range(how_many(g, pace)):
         e = g.deck.pop()
@@ -519,11 +605,34 @@ def session(g, pace, recov, rew, commit, res):
     g.spend_research(taken, res)
 
     ok = window(g.colour())
+    # Every gate below asks the same question - can the dice this window
+    # allows cover what is on the table? - because that is the session a
+    # player holds a once-a-Scenario ability for.
+    def short():
+        return (sum(EV_REROLL[c] for c in g.available if c in ok)
+                < sum(e.left for e in g.active))
+
+    # THE USHER, Double Doors: "For one session, the attention covers a THIRD
+    # color - one step beyond its usual two."
+    if g.hero == "usher_b" and not g.once["dd"] and g.active and short():
+        g.once["dd"] = 1
+        ok = ok | {g.next_colour(WINDOW)}
+    # THE USHER, Early Admittance: "Apply 1 die of the color ONE STEP BEYOND
+    # the attention's two colors." One die, not a window.
+    outside = 0
+    if g.hero == "usher_a" and not g.once["adm"] and g.active and short():
+        g.once["adm"] = 1
+        outside = 1
+    phases = STRAT
+    # THE STEWARD, Standing Order: "Take a third Strategy phase this session."
+    if g.hero == "steward_b" and not g.once["str"] and g.active and short():
+        g.once["str"] = 1
+        phases += 1
     spent = collections.Counter()       # committed from the pool this session
     applied = collections.Counter()     # ...of which these landed on a card
     unapplied = []
 
-    for _ in range(STRAT):
+    for _ in range(phases):
         if not g.active or all(e.left <= 0 for e in g.active):
             break
         usable = [c for c in g.available if c in ok]
@@ -531,12 +640,70 @@ def session(g, pace, recov, rew, commit, res):
         for c in take:
             g.available.remove(c)
             spent[c] += 1
+        # THE ARCHIVIST, Precedent: "Apply 1 die of ANY color, ignoring the
+        # attention entirely."
+        if g.hero == "archivist_b" and not g.once["prec"]:
+            pick = [c for c in g.available if c not in ok]
+            if pick:
+                g.once["prec"] = 1
+                c = max(pick, key=lambda c: EV_REROLL[c])
+                g.available.remove(c)
+                spent[c] += 1
+                take = take + [c]
+        if outside:
+            # Not a free choice of colour: the one the attention reaches
+            # next, which is the one the player can see coming.
+            soon = g.next_colour(WINDOW)
+            extra = [c for c in g.available if c == soon][:outside]
+            for c in extra:
+                g.available.remove(c)
+                spent[c] += 1
+            take = take + extra
+            outside = 0
+        # THE STEWARD, Requisition: "Commit 1 EXHAUSTED die of a color the
+        # attention allows. It remains exhausted afterward." `spent` carries
+        # it without `applied`, so the bookkeeping below puts it back.
+        if g.hero == "steward_a" and not g.once["req"] and short():
+            pick = [c for c in g.exhausted if c in ok]
+            if pick:
+                g.once["req"] = 1
+                c = max(pick, key=lambda c: EV_REROLL[c])
+                g.exhausted.remove(c)
+                spent[c] += 1
+                take = take + [c]
         rolling = unapplied + take
         if not rolling:
             break
         unapplied = []
         hits = []
         for c in rolling:
+            v = roll(c, g.rng)
+            if v:
+                hits.append((c, v))
+            else:
+                unapplied.append(c)
+        # THE UNDERSTUDY, Open Audition: "Discard 4 Candidates to reroll EVERY
+        # committed die that applied nothing this Strategy phase." Held for a
+        # phase with something to reroll.
+        if (g.hero == "understudy_a" and not g.once["aud"]
+                and len(unapplied) >= 2 and g.candidates >= 4):
+            g.candidates -= 4
+            g.once["aud"] = 1
+            again, unapplied = unapplied, []
+            for c in again:
+                v = roll(c, g.rng)
+                if v:
+                    hits.append((c, v))
+                else:
+                    unapplied.append(c)
+        # THE UNDERSTUDY, Second Chair: "Discard 2 Candidates to reroll one
+        # committed die that applied nothing." Twice a Scenario.
+        if (g.hero == "understudy_b" and g.once["chair"] < 2
+                and unapplied and g.candidates >= 2):
+            g.candidates -= 2
+            g.once["chair"] += 1
+            c = max(unapplied, key=lambda c: EV_REROLL[c])
+            unapplied.remove(c)
             v = roll(c, g.rng)
             if v:
                 hits.append((c, v))
@@ -576,6 +743,26 @@ def session(g, pace, recov, rew, commit, res):
     # very dice that just buried the card.
     for e in buried:
         g.pay_reward(e)
+    # THE PORTER, Heavy Lifting: "Exhaust 1 available die, then recover 2
+    # exhausted dice." The SIGN of the conversion is what makes it an ability
+    # rather than a difficulty dial - paying 1 to get 2 reads +1.2, while
+    # paying 1 to apply 1 out-of-colour die reads -10.1 even gated, because it
+    # nets a die DOWN. See proto/imposters.py.
+    if (g.hero == "porter_b" and not g.once["lift"]
+            and len(g.exhausted) >= 2 and g.available):
+        g.once["lift"] = 1
+        drop = min(g.available, key=lambda c: EV_REROLL[c])
+        g.available.remove(drop)
+        g.exhausted.append(drop)
+        g.recover(recov, 2)
+    # THE PORTER, Sleight of Hand: "Take 1 die lying on a standing Exhibit and
+    # exhaust it. That Exhibit keeps its successes." In time for this
+    # session's recovery, which is the whole point of it.
+    if g.hero == "porter_a":
+        for e in g.active:
+            if e.locked:
+                g.exhausted.append(e.locked.pop())
+                break
     if not CARRY:
         for e in g.active:                  # the control: progress resets
             g.exhausted += e.locked
@@ -601,8 +788,8 @@ def play(rng, pace="clock", recov="horizon", rew="dice", commit="adaptive",
 
 KW = ("pace", "recov", "rew", "commit", "res")
 DIALS = ("SESSIONS", "DEAL", "HEALTH", "STRAT", "REC_BASE", "BIG", "CARRY",
-         "RESEARCH", "RETAIN", "CARD_VALUE", "START_TIRED",
-         "TARGET_OFFSET", "WINDOW", "PAY_REWARDS")
+         "RESEARCH", "RETAIN", "CARD_VALUE", "LAID_OUT", "HERO",
+         "START_TIRED", "TARGET_OFFSET", "WINDOW", "PAY_REWARDS")
 
 
 def run(games=GAMES, seed=11, **over):
@@ -780,7 +967,25 @@ if __name__ == "__main__":
     print("   rather than the values doubled.")
 
     print()
-    print("7. THE DIFFICULTY LADDER - dice exhausted at setup")
+    print("7. THE FIVE IMPOSTERS - who you are pretending to be")
+    print("   Ported in from proto/imposters.py on 2026-11-06; before that")
+    print("   this module had no hero code, so every figure above was")
+    print("   measured with no Imposter chosen. HERO = None still is the")
+    print("   pitch - a side is quoted as a DELTA against it - but the ten")
+    print("   printed abilities are now in the shipping simulator.")
+    nohero = sum(run(seed=sd) for sd in seeds) / len(seeds)
+    print("   %-12s %-18s %-14s %7s %7s"
+          % ("Imposter", "side", "when", "win", "delta"))
+    print("   %-12s %-18s %-14s %6.1f%%" % ("-", "no Imposter", "", nohero))
+    for h in HEROES:
+        who, side, when = HERO_TEXT[h]
+        w = sum(run(seed=sd, HERO=h) for sd in seeds) / len(seeds)
+        print("   %-12s %-18s %-14s %6.1f%%%s  %+.1f"
+              % (who.replace("The ", ""), side, when, w, band(w), w - nohero))
+        sys.stdout.flush()
+
+    print()
+    print("8. THE DIFFICULTY LADDER - dice exhausted at setup")
     print("   The rules name the dice, so there is no choice to model. The")
     print("   counts are spread across the colours on purpose: taking whole")
     print("   ones collides with the wheel, which opens Yellow+Green, and")

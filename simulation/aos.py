@@ -9,6 +9,7 @@ misses its Target fails; two failed Elements in one Program is a Catastrophic
 Failure and costs 1 HP. Reach the end of Advanced Programming with HP left
 to win.
 """
+import collections
 import random
 
 from dice import COLORS, EV, FACES, policy_value, roll
@@ -117,11 +118,22 @@ REQUIRED_COLORS = True
 REQ_TRIED = [0]
 REQ_SHORT = [0]
 
+# ONE OF THESE SIX NAMES DID NOTHING UNTIL 2026-11-06. "banish" is printed
+# "Banish 1 Limitation from the game" on one Program of each deck, and
+# reward() had no branch for it, so three of the 24 Programs paid out
+# silently nothing. It is the Unexpected Resilience fault again - a printed
+# reward with no implementation and no error - and coverage.py waved the
+# three Program decks through at 8 of 8 because its predicate counted the
+# NAMES in this table rather than the branches that act on them. That is the
+# exact lesson `fires` was written for, applied everywhere except here.
 PROGRAM_REWARDS = {
     "Routine": ["hp", "recover", "rec", "unheat", "str", "banish", "recover", "unheat"],
     "Specialized": ["hp", "str", "recover", "rec", "unheat", "banish", "recover", "unheat"],
     "Unstable": ["hp", "rec", "unheat", "str", "recover", "banish", "recover", "unheat"],
 }
+# Every reward name must have a branch in Game.reward. check_rewards()
+# asserts it, and coverage.py calls that rather than counting names.
+REWARD_KINDS = ("hp", "rec", "str", "recover", "unheat", "banish")
 
 DECKS = ["Routine", "Specialized", "Unstable"]
 
@@ -445,6 +457,44 @@ TARGET_DELTA = 0   # flat rise on every printed element Target
 
 CORRUPT_CHANCE = 0.5
 CORRUPT_WITHHOLD = 2
+
+# THE SIX CORRUPTED LIMITATIONS, as the allocation constraints they print.
+# Until 2026-11-06 this was the only deck in the SET the model never drew:
+# CORRUPT_CHANCE stood in for drawing a card at all and CORRUPT_WITHHOLD = 2
+# for whatever the drawn card would have said, so six cards shared one
+# generic effect, there was no index for audit.py to count, and the whole
+# Tier II column was measured through a stand-in.
+#
+# All six constrain the ALLOCATION, which this model builds explicitly as
+# `plan` - the dice on each element - so they are applied to the plan, after
+# allocation and before the roll. A player arranges to satisfy them, so each
+# is applied as the cheapest legal rearrangement: a die that has to come off
+# an element goes back to the pool UNCOMMITTED rather than being spent,
+# because none of these cards spends a die. Stack Overflow is the one
+# exception and says so.
+#
+#   Uneven Architecture   the first element must receive more dice than the
+#                         last
+#   Memory Collision      no two adjacent elements may receive the same
+#                         number of dice
+#   Circular Reference    the first and final elements must receive
+#                         different numbers of dice
+#   Hard-Coded Constant   one element, selected at random, must receive
+#                         exactly its Target in dice
+#   Deprecated Function   one colour, selected at random, scores its Crits
+#                         as basic successes for this Program
+#   Stack Overflow        an element holding 5 or more dice exhausts one of
+#                         them before rolling
+#
+# A REQUIRED-COLOUR DIE IS NEVER MOVED. It is locked on its element by the
+# rules, so it is the floor every rearrangement below respects - the same
+# constraint sacrifice_allocate was missing when it measured +10 to +30.
+CORRUPTED = ("Uneven Architecture", "Memory Collision", "Circular Reference",
+             "Hard-Coded Constant", "Deprecated Function", "Stack Overflow")
+# "cards"    draw one of the six per Program, as the deck does
+# "generic"  the pre-2026-11-06 stand-in, which every Tier II and Tier III
+#            figure published before that date was measured through
+CORRUPT_MODE = "cards"
 # A Corrupted Limitation draws its withheld colour from the ones this
 # Program does NOT require. False is the printed rule - "withhold 2 dice of
 # a randomly selected color" - under which the withheld colour may be one a
@@ -495,17 +545,83 @@ BACKDOOR_CLAIMS = 2
 # best two" is solved rather than chosen: Tier III reads 77.0% of the solo
 # column on fork+garbage and 65.5% on root+diag. Raised, not fixed.
 #
-# Packet Sniffer's 0.0 is BY CONSTRUCTION, not by measurement. The reward is
-# information - "look at the next Limitation before selecting a Program" - and
-# this model has no Program-selection choice for it to inform, so it is left
-# unmodeled rather than guessed at.
+# Packet Sniffer's 0.0 is BY CONSTRUCTION, not by measurement, and the reason
+# survived a second look on 2026-11-06. The reward is information - "Later,
+# look at the next Limitation before selecting a Program" - and it is worth
+# nothing here for two separate reasons, either of which alone would do it.
+# play() takes Programs off a shuffled queue because the rules deal them in
+# order, so there is no selection for the information to inform. And the dice
+# a Limitation withholds already leave the pool before this model allocates
+# anything, so the one thing an early look could change - how you fund the
+# elements - it can already see. Left unmodeled rather than guessed at, and
+# it is the only one of the six in that position.
 BACKDOOR_REWARDS = True
 
-# The order a player claims in, best first, which is the order measured above.
-# The policy takes the first BACKDOOR_CLAIMS of these. Set BACKDOOR_PICK to
-# name the claims instead, which is how the table above was measured.
+# The order a player prefers, best first, which is the order measured above.
+# Set BACKDOOR_PICK to name the claims instead, which is how the table above
+# was measured.
 BACKDOOR_ORDER = ("fork", "garbage", "root", "diag", "escalate", "sniff")
 BACKDOOR_PICK = None
+
+# HOW A ROUTINE IS CLAIMED, and this is the correction of 2026-11-06.
+#
+#   "earned"  a Routine becomes yours the first time ITS OWN printed
+#             condition is met by a completed Program, up to BACKDOOR_CLAIMS
+#             a game, and it is usable from then on. Where one Program meets
+#             several conditions the best of them is taken, by
+#             BACKDOOR_ORDER - a player chooses, but only among the cards
+#             the table actually offered.
+#   "setup"   grant the first BACKDOOR_CLAIMS of BACKDOOR_ORDER at setup.
+#
+# "setup" IS WHAT THIS MODEL DID UNTIL 2026-11-06, and because BACKDOOR_ORDER
+# is sorted best first it handed out Resource Fork and Garbage Collection in
+# every single game - the only two of the six worth anything - so FOUR OF THE
+# SIX CARDS NEVER REACHED THE TABLE AT ALL. Three of those four were
+# implemented and firing; they were simply never held. The excuse recorded
+# here was that five of the six claim conditions fire in 76-100% of games, so
+# claiming was not the binding decision. That was an argument about WHETHER
+# you claim. It said nothing about WHICH, which is the only question the six
+# cards are asking.
+BACKDOOR_CLAIM = "earned"
+
+# AND CLAIMING IS NOT FREE, which was the other half of it. Every one of the
+# six prints "Claiming gives up the next Program Reward you would claim", and
+# until 2026-11-06 nothing charged it: the model granted both Routines at
+# setup and kept every Program Reward. The Program Rewards are the only way
+# Health is ever regained here, and two of them are a permanent +1 REC and
+# +1 STR, so this is the real price of the Tier III column.
+BACKDOOR_COSTS_REWARD = True
+
+# AND SO THERE IS NOW A DECISION ABOUT WHETHER TO CLAIM, which this model did
+# not have while claiming was free. MEASURED 2026-11-06 at Standard, and the
+# result is the finding:
+#
+#   never   keep every Program Reward             Tier III == Tier II
+#   always  claim the best card offered, to the   Tier III == Tier II
+#           cap of 2
+#
+# Claiming everything costs exactly what it pays. The two recovery Routines
+# are worth +6 to +7 each and the other four about nothing, so a cap of 2
+# claims spends two Program Rewards and buys, on average, rather less than
+# two useful cards.
+#
+#   "value"  claim only the Routines worth more than a Program Reward.
+#            Priced one at a time, that is Resource Fork and Garbage
+#            Collection and nothing else. This IS hindsight and says so: it
+#            is the line a player finds after a few plays, and this
+#            project's rule is to pitch against the policy a player would
+#            find rather than against a weaker one.
+#   "always" every condition met, best card first, to the cap.
+#   "never"  decline everything.
+BACKDOOR_WHEN = "value"
+BACKDOOR_WORTH = ("fork", "garbage")
+
+# Condition name (as BACKDOOR_NAMES prints it) -> the key the reward code
+# uses. One table, so a card cannot be claimed under one name and spent
+# under another.
+BACKDOOR_KEY = {"Diagnostic Port": "diag", "Privilege Escalation": "escalate",
+                "Resource Fork": "fork", "Packet Sniffer": "sniff",
+                "Garbage Collection": "garbage", "Root Access": "root"}
 
 # When to cash a recovery Routine: the pool is this far short of the dice the
 # Program in front of you wants. Swept 0 to 6 at Standard and flat across all
@@ -532,9 +648,9 @@ BACKDOOR_REFILL_AT = 3
 #   Garbage Collection    completed while at least 4 dice were exhausted
 #   Root Access           Optimal Implementation on at least two elements
 #
-# This is OBSERVATION ONLY. Nothing recorded here changes how a Program
-# resolves, so the win rates are untouched and the calibration holds; the
-# model still grants the 2 Root Access uses at setup as it always did.
+# THESE ARE NO LONGER OBSERVATION ONLY. Under BACKDOOR_CLAIM = "earned" they
+# are what decides which Routines you hold, which is what the cards were
+# always for; `met` still records every condition a game met, claimed or not.
 BACKDOOR_NAMES = ("Diagnostic Port", "Privilege Escalation", "Resource Fork",
                   "Packet Sniffer", "Garbage Collection", "Root Access")
 
@@ -551,9 +667,25 @@ BACKDOOR_NAMES = ("Diagnostic Port", "Privilege Escalation", "Resource Fork",
 BACKDOOR_POLICY = "greedy"
 
 # CLAIMING BY WORKING IT, the proposed replacement for the printed claim
-# conditions. Measured 2026-10-29: five of the six conditions fire in 76-100%
-# of games, so claiming costs nothing and the whole AoS carryover rests on the
-# spend decision. NAP does not have that problem, because a Devious
+# conditions. The 2026-10-29 reading of the conditions was "five of the six
+# fire in 76-100% of games, so claiming costs nothing"; RE-MEASURED
+# 2026-11-06, after the required-colour dots and the Target+1 cap went in,
+# it is nothing like that:
+#
+#   Root Access           68.2%     Privilege Escalation  41.9%
+#   Packet Sniffer        65.7%     Resource Fork         18.8%
+#   Garbage Collection    61.5%     Diagnostic Port        0.1%
+#
+# DIAGNOSTIC PORT CANNOT PRACTICALLY BE CLAIMED, and the reason is
+# structural rather than unlucky. Its condition is "no element
+# over-allocated", and allocate() fills every element to Target + 1 because
+# the free die is worth having - so the condition is false by construction
+# on almost every Program. A player could hold an element at exactly its
+# Target to claim it, which costs the successes that die would have bought.
+# RAISED, NOT FIXED: this is the card asking for a condition the game's own
+# best allocation never meets.
+#
+# NAP does not have that problem, because a Devious
 # Opportunity has to be WORKED like an Assignment before it is yours.
 #
 # The same idiom here: a Backdoor Routine prints a claim Target, and during a
@@ -786,8 +918,15 @@ class Game(object):
         self.completed = 0
         # -1 is unlimited; see NEGATES_PER_CYCLE.
         self.negates_left = NEGATES_PER_CYCLE or -1
+        # The Limitations still in the game. A Program Reward may banish
+        # one, and the deck is reshuffled out of what is LEFT.
+        self.lim_pool = list(LIMITATIONS)
         self.lim_queue = list(LIMITATIONS)
         self.rng.shuffle(self.lim_queue)
+        self.corrupt_queue = list(CORRUPTED)
+        self.rng.shuffle(self.corrupt_queue)
+        self.corrupt_card = None     # the one drawn for the Program in hand
+        self.corrupt_color = None    # Deprecated Function, this Program
 
         # --- NRJ overlay ---
         self.intf = None
@@ -795,7 +934,9 @@ class Game(object):
         self.corrupt = False
         self.backdoors = 0     # pooled charges, BACKDOOR_REWARDS off
         self.bkd = {}          # the named Routines held, and their one use
-        self.met = set()       # claim conditions met, observation only
+        self.met = set()       # every claim condition this game met
+        self.claimed = []      # the Routines actually claimed, in order
+        self.owed = 0          # Program Rewards a claim has given up
         self.worked = 0        # ...and how many were claimed
         if tier in ("I", "II", "III"):
             # The draw happens either way, so a forced pick runs on the same
@@ -814,17 +955,13 @@ class Game(object):
         if tier in ("II", "III"):
             self.corrupt = True
         if tier == "III":
-            if BACKDOOR_REWARDS:
-                # 2 claims, so 2 NAMED cards, each good for one use of what it
-                # prints. Granted at setup for the same reason the pooled
-                # charges were: five of the six claim conditions fire in
-                # 76-100% of games, so claiming is not the binding decision -
-                # see CLAIMING BY WORKING IT above, and `met` below, which
-                # records which conditions a game actually met.
+            if not BACKDOOR_REWARDS:
+                self.backdoors = BACKDOOR_CLAIMS
+            elif BACKDOOR_CLAIM == "setup" or BACKDOOR_PICK:
+                # The pre-2026-11-06 model, and the only way to price one
+                # card on its own: name it and hold it from the start.
                 picks = BACKDOOR_PICK or BACKDOOR_ORDER
                 self.bkd = {k: 1 for k in picks[:BACKDOOR_CLAIMS]}
-            else:
-                self.backdoors = BACKDOOR_CLAIMS
 
     def targets_for(self, deck, pid, face):
         return PROGRAM_TARGETS[deck][face][pid]
@@ -952,6 +1089,71 @@ class Game(object):
             while pool and len(plan[i]) < cap:
                 plan[i].append(pool.pop(0))
         return plan
+
+    def corrupt_plan(self, plan, targets, locked):
+        """Make an allocation legal under the drawn Corrupted Limitation.
+
+        Edits `plan` in place. A die taken off an element goes back into the
+        pool uncommitted - none of these six cards spends a die - except
+        under Stack Overflow, which prints that it does. The dice locked on
+        an element by a required-colour dot are the floor and never move.
+        """
+        name = self.corrupt_card
+        n = len(plan)
+        floor = [len(x) for x in (locked or [[]] * n)]
+        used = collections.Counter()
+        for e in plan:
+            used.update(e)
+        spare = pick_order(
+            list((collections.Counter(self.available) - used).elements()),
+            self.rng)
+
+        def drop(i):
+            """One die off element i, back to the pool. False if illegal."""
+            if len(plan[i]) <= floor[i]:
+                return False
+            plan[i].pop()
+            return True
+
+        def add(i):
+            if not spare:
+                return False
+            plan[i].append(spare.pop(0))
+            return True
+
+        if name == "Uneven Architecture" and n >= 2:
+            # Dropping from the last element is cheaper than funding the
+            # first past its cap, and the last element is the one the
+            # allocator has already decided it cares least about.
+            while len(plan[0]) <= len(plan[n - 1]):
+                if not drop(n - 1) and not add(0):
+                    break
+        elif name == "Memory Collision":
+            for i in range(1, n):
+                while len(plan[i]) == len(plan[i - 1]):
+                    if not drop(i) and not add(i):
+                        break
+        elif name == "Circular Reference" and n >= 2:
+            while len(plan[0]) == len(plan[n - 1]):
+                if not drop(n - 1) and not add(0) and not drop(0):
+                    break
+        elif name == "Hard-Coded Constant":
+            i = self.rng.randrange(n)
+            while len(plan[i]) > targets[i] and drop(i):
+                pass
+            while len(plan[i]) < targets[i] and add(i):
+                pass
+        elif name == "Stack Overflow":
+            # "exhaust one die committed to that element before rolling" -
+            # the one card of the six that really does cost a die.
+            for i in range(n):
+                if len(plan[i]) >= 5 and len(plan[i]) > floor[i]:
+                    c = plan[i].pop()
+                    if c in self.available:
+                        self.available.remove(c)
+                        self.exhausted.append(c)
+        # Deprecated Function is a scoring corruption, not an allocation one;
+        # element_values applies it.
 
     def want_abandon(self, deck, targets):
         """Would this player declare the Program abandoned?
@@ -1150,6 +1352,11 @@ class Game(object):
     def element_values(self, index, dice):
         """Roll one element, honoring Works on My Machine if it is in play."""
         values = [roll(c, self.rng) for c in dice]
+        if self.corrupt_color:
+            # Deprecated Function: "Crits rolled by that color count as
+            # basic successes for this Program."
+            values = [1 if (c == self.corrupt_color and v == 2) else v
+                      for c, v in zip(dice, values)]
         if self.intf == "crit_shift":
             # A Crit on the second element counts as 3 successes; Crits on
             # every other element count as basic successes.
@@ -1173,7 +1380,7 @@ class Game(object):
         # color before allocation; they come back once the Program resolves.
         withheld = []
         if not self.lim_queue:
-            self.lim_queue = list(LIMITATIONS)
+            self.lim_queue = list(self.lim_pool)
             self.rng.shuffle(self.lim_queue)
         lim = self.lim_queue.pop()
         if self.bkd.get("escalate") and self.withhold_would_bite(lim):
@@ -1186,7 +1393,18 @@ class Game(object):
             self.bkd["escalate"] = 0
         else:
             withheld += self.withhold_for(lim)
-        if self.corrupt and self.rng.random() < CORRUPT_CHANCE:
+        self.corrupt_card = None
+        self.corrupt_color = None
+        if self.corrupt and CORRUPT_MODE == "cards":
+            # One card a Program, out of a six-card deck reshuffled when it
+            # empties - the same shape as the base Limitation deck above.
+            if not self.corrupt_queue:
+                self.corrupt_queue = list(CORRUPTED)
+                self.rng.shuffle(self.corrupt_queue)
+            self.corrupt_card = self.corrupt_queue.pop()
+            if self.corrupt_card == "Deprecated Function":
+                self.corrupt_color = self.rng.choice(COLORS)
+        elif self.corrupt and self.rng.random() < CORRUPT_CHANCE:
             choices = COLORS
             if CORRUPT_AVOID_REQUIRED and REQUIRED_COLORS:
                 need = set(c for c in PROGRAM_REQS[deck][pid] if c)
@@ -1248,6 +1466,8 @@ class Game(object):
             plan = self.sacrifice_allocate(targets, locked)
         else:
             plan = self.allocate(targets, locked)
+        if self.corrupt_card:
+            self.corrupt_plan(plan, targets, locked)
         # The required dice were taken out of `available` so no allocator
         # could spend them twice. Put them back now the plan is fixed: the
         # resolution loop below removes every die in the plan from
@@ -1525,22 +1745,26 @@ class Game(object):
                         self._opt_long = True   # once per cycle / per game
                     recovery += 1 if self.tech == "opt_one" else OPTIMAL_BONUS
 
-        # Which Backdoor Routines this Program could have been claimed off.
-        # Measured before Root Access negates anything, so "without failing
-        # an element" means the element really held.
-        if seen:
+        # Which Backdoor Routines THIS Program was claimable off. Every one
+        # of the six prints "Claim after COMPLETING a Program with ...", so a
+        # Program that failed an element offers none of them. Measured before
+        # Root Access negates anything, so a completion is a real one.
+        here = set()
+        if seen and not failed:
             if all(n <= t2 for n, t2, _tot, _c, _m in seen):
-                self.met.add("Diagnostic Port")
-            if face == "back" and not failed:
-                self.met.add("Privilege Escalation")
+                here.add("Diagnostic Port")
+            if face == "back":
+                here.add("Privilege Escalation")
             if sum(n for n, _t, _tot, _c, _m in seen) <= sum(targets) + 1:
-                self.met.add("Resource Fork")
+                here.add("Resource Fork")
             if sum(1 for _n, _t, _tot, c, _m in seen if c) >= 2:
-                self.met.add("Packet Sniffer")
+                here.add("Packet Sniffer")
             if len(self.exhausted) >= 4:
-                self.met.add("Garbage Collection")
+                here.add("Garbage Collection")
             if sum(1 for _n, t2, tot, _c, _m in seen if tot == t2) >= 2:
-                self.met.add("Root Access")
+                here.add("Root Access")
+            self.met |= here
+            self.claim_backdoor(here)
 
         # Root Access: treat one failed element as successful. Under the pooled
         # model this is every charge, spent in any cycle to save a Program from
@@ -1598,10 +1822,46 @@ class Game(object):
             if (self.worked < CLAIM_INSTEAD
                     and self.worked < BACKDOOR_CLAIMS):
                 self.worked += 1
+            elif self.owed:
+                # "Claiming gives up the next Program Reward you would
+                # claim." The debt a claim ran up, paid here.
+                self.owed -= 1
             else:
                 self.reward(PROGRAM_REWARDS[deck][pid], slot)
         self.completed += 1
         return failed
+
+    def claim_backdoor(self, here):
+        """Claim a Routine off a Program that just met its printed condition.
+
+        The best card the table offered, by BACKDOOR_ORDER - a player chooses,
+        but only among the conditions this Program actually met. Until
+        2026-11-06 nothing chose at all: both Routines were granted at setup
+        from the front of BACKDOOR_ORDER, so Resource Fork and Garbage
+        Collection were held in every game and the other four were never held
+        in any.
+        """
+        # Tier III is the Backdoor Routine tier. Claiming used to happen at
+        # setup, which was gated on the tier there; claiming off a completed
+        # Program is not, so the gate has to be here.
+        if self.tier != "III":
+            return
+        if not (BACKDOOR_REWARDS and BACKDOOR_CLAIM == "earned"):
+            return
+        if BACKDOOR_WHEN == "never":
+            return
+        if BACKDOOR_PICK or len(self.bkd) >= BACKDOOR_CLAIMS:
+            return
+        offered = [BACKDOOR_KEY[n] for n in here]
+        if BACKDOOR_WHEN == "value":
+            offered = [k for k in offered if k in BACKDOOR_WORTH]
+        for key in BACKDOOR_ORDER:
+            if key in offered and key not in self.bkd:
+                self.bkd[key] = 1
+                self.claimed.append(key)
+                if BACKDOOR_COSTS_REWARD:
+                    self.owed += 1
+                return
 
     def spend_backdoor(self):
         """Root Access is about to save 1 Health. Is it worth a Routine?"""
@@ -1655,6 +1915,26 @@ class Game(object):
                 if p["status"] == "overheated":
                     p["status"] = "stable"
                     break
+        elif kind == "banish":
+            # "Banish 1 Limitation from the game." The Limitation deck is
+            # six cards reshuffled whenever it empties, so losing one makes
+            # every later Program draw from five - which is why this is
+            # worth taking even though it pays nothing today. The card to
+            # banish is the one that costs this pool most: the Diversity
+            # Protocol, which takes two different colours and so cannot be
+            # paid in a colour you have spare, then the shortage of whatever
+            # colour you hold most of.
+            if len(self.lim_pool) > 1:
+                def pain(c):
+                    if c == "diversity":
+                        return 3
+                    if c == "red":
+                        return 0        # one die, and the weakest loss
+                    return 1 + min(2, self.available.count(c)) / 10.0
+                worst = max(self.lim_pool, key=pain)
+                self.lim_pool.remove(worst)
+                while worst in self.lim_queue:
+                    self.lim_queue.remove(worst)
 
     def play(self):
         guard = 0

@@ -21,11 +21,13 @@ WHAT IS NOT MODELED
   abilities, Request effects and Opportunity effects, all of which are
   modeled below. coverage.py now derives the list from the live module, so
   read it there and treat this as prose.
-  * The 12 FINAL EXAM restrictions. Every one of the 12 cards prints one
-    ("commit dice of at least 3 different colors", "Red cannot be
-    committed", and so on) and EXAMS carries (subject, dot, Target) only.
-    This is the deck where NAP is actually lethal, and it also makes one
-    Tier III card unpayable - see exam_ignore below.
+  * ONE of the 12 FINAL EXAM restrictions. The other eleven went in on
+    2026-11-06 - EXAMS now carries each card's printed restriction and
+    exam_commit honours it - and that also made Definitely
+    Curriculum-Approved payable for the first time. The one left is Neural
+    Response Screening's "at least 1 Crit must contribute to complete this
+    Assignment", which is Assignment language a Final Exam has no
+    completion step for; see the note on EXAMS.
   * The 4 IMPOSTER TASK effects and the 4 FOLLOWING SETBACK effects.
     IMPOSTER_TASKS and FOLLOWING carry Targets and a flat upkeep, so the
     four Following cards are interchangeable in the model.
@@ -44,6 +46,7 @@ WHAT IS NOT MODELED
     survives; the penalties are card text. Modeled as a flat 1 Health.
   * Subject-icon wilds.
 """
+import collections
 import random
 
 from dice import COLORS, EV, policy_value, roll
@@ -93,13 +96,62 @@ DEMAND_PENALTY = [1, -1, 2, -1, 1, 1, -1, 1, -1, 1, 2, -1, 1, -1,
 SETBACKS = [(6, "Y"), (6, "G"), (7, "G"), (7, "B"), (8, "B"), (8, "P")]
 OPPORTUNITIES = [(4, "Y"), (4, "Y"), (5, "Y"), (5, "Y"), (4, "G"), (5, "G")]
 
-# (subject, recovery dot, base Target) for the 12 Final Exams, 3 per subject.
+# (subject, recovery dot, base Target, printed restriction) for the 12 Final
+# Exams, 3 per subject, in generator/build_nap.py's EXAMS order.
+#
+# THE RESTRICTION COLUMN WAS ADDED 2026-11-06. Until then every row was
+# (subject, dot, Target) and all twelve printed restrictions were unmodelled
+# - which also left Definitely Curriculum-Approved, whose entire reward is to
+# ignore one of them, unable to pay out at all: it was earned in 153 of 6000
+# Tier III games and its printed reward fired in 0 of them.
+#
+# A RESTRICTION IS A CONSTRAINT ON WHAT YOU COMMIT, which is what
+# rules/nap.html asks for - "Roll against the modified Target, honoring the
+# exam's printed restriction. Lose 1 Health for each success below the
+# modified Target." There is no pass/fail: a Yellow you had to throw for a
+# colour requirement and which missed is simply a success you did not get,
+# and the Health rule already prices that. So these are modelled in
+# exam_commit, not as a second failure condition the cards do not print.
+#
+#   no_red    Red cannot be committed
+#   colors    at least this many DISTINCT colours must be committed
+#   need      each of these colours must be committed at least once
+#   among     (n, colours) - at least n dice from this set
+#   dice      at least this many dice must be committed
+#   crit_val  {colour: successes} - a Crit of that colour scores this
+#             instead of the usual 2
+#
+# ONE CLAUSE IS NOT MODELLED AND CANNOT BE, and it is a card-text problem
+# rather than a model gap. Neural Response Screening prints "At least 1 Crit
+# must contribute to COMPLETE THIS ASSIGNMENT" - Assignment language, where
+# completion is binary. A Final Exam has no completion: you lose 1 Health per
+# success short and pass by surviving. MEASURED 2026-11-06: read as a gate
+# ("no Crit, no successes") it deals its whole Target in 23% of the sittings
+# it gets - the dot colours are weak and every colour crits on exactly one
+# face - and costs 3.8 points of win rate on its own, which no other single
+# exam comes near. Read as a commit rule it says nothing at all, for the same
+# reason: there is no way to commit FOR a Crit. RAISED, not papered over: the
+# clause wants rewording into the exam's own idiom. EXAM_CRIT_GATE models the
+# gate reading for whoever decides it.
 EXAMS = [
-    ("Anatomy", "B", 6), ("Anatomy", "Y", 7), ("Anatomy", "P", 7),
-    ("Theory", "G", 6), ("Theory", "P", 7), ("Theory", "Y", 8),
-    ("Engineering", "G", 6), ("Engineering", "B", 7), ("Engineering", "B", 7),
-    ("Procedure", "Y", 7), ("Procedure", "P", 8), ("Procedure", "G", 8),
+    ("Anatomy", "B", 6, {"colors": 3}),
+    ("Anatomy", "Y", 7, {"need": ("yellow", "blue")}),
+    ("Anatomy", "P", 7, {"among": (2, ("blue", "purple"))}),
+    ("Theory", "G", 6, {"no_red": True, "colors": 3}),
+    ("Theory", "P", 7, {"need": ("blue", "purple")}),
+    ("Theory", "Y", 8, {"colors": 4, "crit_val": {"red": 1}}),
+    ("Engineering", "G", 6, {"crit": True}),
+    ("Engineering", "B", 7, {"dice": 4, "crit_val": {"yellow": 3}}),
+    ("Engineering", "B", 7, {"no_red": True, "need": ("purple",)}),
+    ("Procedure", "Y", 7, {"no_red": True, "colors": 3}),
+    ("Procedure", "P", 8, {"dice": 4, "colors": 3}),
+    ("Procedure", "G", 8, {"dice": 5, "colors": 3}),
 ]
+# See the "crit" note above: False is the shipped reading.
+EXAM_CRIT_GATE = False
+# Switch the whole restriction column off to reproduce the pre-2026-11-06
+# model, which is also the control the restrictions are priced against.
+EXAM_RESTRICTIONS = True
 
 SUBJECT_LIST = ["Anatomy", "Engineering", "Procedure", "Theory"]
 DOT_COLOR = {"P": "purple", "B": "blue", "G": "green", "Y": "yellow"}
@@ -120,17 +172,60 @@ FINF_SETTINGS = ["+3", "+2", "+1", "-1", "-2", "-3"]
 # Card data from the FOLLOWING / IMPOSTER_TASKS / DEVIOUS tables in build_nrj.py.
 # ---------------------------------------------------------------------------
 
-# (Target, extra cost per slot unresolved). All four are harsher than the base
-# Setbacks they displace and carry into the next Time Slot.
-FOLLOWING = [(7, 1), (7, 1), (8, 1), (8, 1)]
+# (Target, printed dot, printed effect) for the 4 Following Setbacks, in
+# build_nrj.py's FOLLOWING order. All four are Mandatory and carry into the
+# next Time Slot.
+#
+# MODELLED SINCE 2026-11-06. Until then this was [(7,1),(7,1),(8,1),(8,1)] -
+# a Target and a flat 1-die upkeep every slot - and that was wrong in three
+# ways at once. ONLY ONE of the four prints an upkeep (Minor Laboratory
+# Fire), so the other three were being charged a die a slot for text they do
+# not carry; the four printed effects were interchangeable in the model, so
+# Tier I was two Targets wearing four names; and the dot was drawn at random
+# from PBGY when all four print one.
+#
+# A Following Setback does NOT print the base Setback's text. build_nrj.py
+# gives it its own effect line and a footer - "Mandatory. Follows into the
+# next Time Slot if unresolved" - and nothing else, so the base card's row
+# lock and conditional upkeep are not on it. Unscheduled Demonstration
+# prints a weaker version of the lock and is the only one of the four that
+# has any.
+#
+#   dot_first    the first die committed to ANOTHER Assignment each Time
+#                Slot must match that Assignment's own dot
+#   work_first   one die must go here before any other Assignment this slot
+#   upkeep       1 available die at the end of every slot it survives
+#   no_special   one die committed here is not returned by Special Recovery
+FOLLOWING = [(7, 'Y', "dot_first"), (7, 'G', "work_first"),
+             (8, 'B', "upkeep"), (8, 'P', "no_special")]
+# Switch the four printed effects off and restore the flat upkeep every
+# figure published before 2026-11-06 was measured through.
+FOLLOWING_EFFECTS = True
 
 # (subject, Request Target, Demand Target). Mandatory, and they grant no
 # Credits - "You still have to clear them; clearing them advances nothing."
 # subject, printed dot, Request Target, Demand Target. The dot is printed
 # on the card as of 2026-10-30; before that this model inherited the dot of
 # the Credit Task each Imposter Task replaced, which was never on any card.
-IMPOSTER_TASKS = [("Anatomy", 'P', 5, 6), ("Engineering", 'B', 4, 5),
-            ("Procedure", 'Y', 4, 5), ("Theory", 'G', 4, 5)]
+#
+# THE FOURTH COLUMN IS THE PRINTED EFFECT, modelled since 2026-11-06; before
+# that the four cards were a subject, a dot and two raised Targets, and so
+# were interchangeable.
+#
+#   lock_day     "One die committed here remains locked until the end of the
+#                Day even if completed" - it does not even exhaust, so it is
+#                out of the pool until the Day turns over
+#   same_color   "At least 2 applied successes must come from the same
+#                color" - a roll where no colour supplies two successes
+#                applies nothing
+#   commit2      "Before rolling, commit at least 2 dice initially"
+#   demand_burn  "If unresolved, exhaust 1 available die before flipping it
+#                to Demand"
+IMPOSTER_TASKS = [("Anatomy", 'P', 5, 6, "lock_day"),
+                  ("Engineering", 'B', 4, 5, "same_color"),
+                  ("Procedure", 'Y', 4, 5, "commit2"),
+                  ("Theory", 'G', 4, 5, "demand_burn")]
+IMPOSTER_EFFECTS = True
 
 # (Target, payout). Two resolve on completion; the other four are kept and
 # spent during the Final Exam, which is where NAP actually kills you.
@@ -139,11 +234,12 @@ IMPOSTER_TASKS = [("Anatomy", 'P', 5, 6), ("Engineering", 'B', 4, 5),
 #   exam_recover   recover 3 dice before one exam
 #   exam_reroll    reroll the misses on one exam
 #   exam_target    one exam's Target drops by 3
-#   exam_ignore    ignore one exam's printed restriction. UNPAYABLE: no exam
-#                  restriction is modeled, so this card - Definitely
-#                  Curriculum-Approved - cannot pay out at all. MEASURED
-#                  2026-11-06: earned in a quarter of Tier III games and its
-#                  printed reward fires in 0% of them.
+#   exam_ignore    ignore one exam's printed restriction. PAYABLE SINCE
+#                  2026-11-06: eleven of the twelve restrictions are now
+#                  modelled in exam_commit, so this card - Definitely
+#                  Curriculum-Approved - has something to ignore. Before
+#                  that it was earned in 153 of 6000 Tier III games and its
+#                  printed reward fired in 0 of them.
 # TARGETS RAISED 2026-11-06 from 3/3/3/3/4/3 to 4/4/5/5/4/5 - what the six
 # base OPPORTUNITIES these replace cost. Tier III was handing out six cards
 # that were both stronger and cheaper than the ones they displaced, and it
@@ -193,6 +289,58 @@ COMMIT_MARGIN = -1
 # the mirror image, where a wall must fall in one blow and taking the
 # strongest dice is worth +25.8.
 DICE_ORDER = "weakest"
+
+
+def exam_commit(available, target, rule, rng):
+    """The dice a Final Exam's printed restriction makes you commit.
+
+    Strongest first up to the Target as before, then whatever the restriction
+    still demands out of what is left - and Red taken out of consideration
+    entirely where the card forbids it. Anything the pool cannot supply is
+    simply not supplied: the exam is still sat, and the successes that do not
+    arrive are what rules/nap.html charges in Health.
+
+    The cost of a restriction is therefore real but indirect. "Red cannot be
+    committed" takes away the best die in the box; "commit at least 5 dice
+    from at least 3 colours" makes you throw dice a bare Target would not
+    have needed, and a Yellow thrown only to satisfy a colour count misses
+    half the time.
+    """
+    pool = [c for c in available
+            if not (rule.get("no_red") and c == "red")]
+    order = pick_order(pool, rng)
+    used, got, i = [], 0.0, 0
+    while i < len(order) and got < target:
+        used.append(order[i])
+        got += EV[order[i]]
+        i += 1
+    spare = order[i:]
+
+    def grab(pred):
+        for j, c in enumerate(spare):
+            if pred(c):
+                return spare.pop(j)
+        return None
+
+    for want in rule.get("need", ()):
+        if want not in used:
+            c = grab(lambda x, w=want: x == w)
+            if c:
+                used.append(c)
+    count, cols = rule.get("among", (0, ()))
+    while sum(1 for c in used if c in cols) < count:
+        c = grab(lambda x: x in cols)
+        if c is None:
+            break
+        used.append(c)
+    while len(set(used)) < rule.get("colors", 0):
+        c = grab(lambda x: x not in used)
+        if c is None:
+            break
+        used.append(c)
+    while len(used) < rule.get("dice", 0) and spare:
+        used.append(spare.pop(0))
+    return used
 
 
 def pick_order(seq, rng=None):
@@ -250,14 +398,34 @@ OPP_RETURN_ON_WIN = True  # with the above: do the dice come back on a finish to
                           # or only when the attempt falls short?
 OPP_REWARD_PLUS = 0       # pay more: +N dice recovered, bonuses last the Day
 # A Devious exam coupon may be discarded during the apprenticeship to recover
-# 2 exhausted dice, so holding one is never a dead card.
-DEVIOUS_CASH_EARLY = False
-# Spend a Devious coupon to ignore one Setback's restrictions: it stops
-# billing upkeep, stops demanding to be worked first, and - for a base
-# Setback - stops locking the row. The card stays in the row unresolved.
-DEVIOUS_IGNORE_SETBACK = True
-# Spend a coupon to move a Setback to another Time Slot. The model has one
-# row, so this counts only the distance bought: that many slots dormant.
+# 2 exhausted dice, so holding one is never a dead card. No card prints it,
+# so this is a tuple of names too - see DEVIOUS_IGNORE_SETBACK below.
+DEVIOUS_CASH_EARLY = ()
+# WHICH COUPONS MAY PAY FOR AN OFF-CARD POWER, by name. Empty is the printed
+# cards, and the printed cards are what ships.
+#
+# THIS WAS THE THIRD FUNGIBLE-TOKEN DEFECT IN THE SET, and it ran the other
+# way. AoS's Backdoor Routines and BAT's Research Notes each had six cards
+# sharing one counter and under-delivered; here devious_coupons IS a list of
+# named payouts, but until 2026-11-06 ignore_setback() and move_setback()
+# called .pop(), which takes whichever coupon is on the END. So a coupon
+# earned by any of the six bought "ignore a Setback" - an ability NONE OF THE
+# SIX PRINTS - and 27% of every coupon earned left the hand that way. The
+# pool OVER-delivered. Measured at -0.7 points even so, because the policy
+# was spending on a Setback a coupon worth more at an exam.
+#
+# These are tuples rather than booleans on purpose: a lever that consumes a
+# coupon now has to NAME the card paying for it, so the fungible form cannot
+# be written again by accident. To reproduce the old model, set
+# DEVIOUS_IGNORE_SETBACK = EXAM_COUPONS.
+#
+# Ignoring a Setback stops it billing upkeep, stops it demanding to be worked
+# first and - for a base Setback - stops it locking the row. Moving one sends
+# it to another Time Slot; the model has one row, so DEVIOUS_MOVE_SLOTS
+# counts only the distance bought.
+EXAM_COUPONS = ("exam_recover", "exam_reroll", "exam_target", "exam_ignore")
+DEVIOUS_IGNORE_SETBACK = ()
+DEVIOUS_MOVE_SETBACK = ()
 DEVIOUS_MOVE_SLOTS = 0
 
 OPP_COUPONS = True        # a finished Opportunity is KEPT and spent later on an
@@ -288,18 +456,34 @@ REQUEST_REWARD = {
     13: ("rec", "always"), 14: ("recover_committed", "one_attempt"),
     15: ("bonus", "three_colors"), 16: ("recover_committed", "no_stored"),
     17: ("recover_committed", "primary"), 18: ("recover_committed", "four_dice"),
+    19: ("peek3", "always"), 20: ("peek1", "always"),
     21: ("recover_any", "always"), 22: ("recover_committed", "few_dice"),
     23: ("str", "always"), 24: ("recover_any", "one_attempt"),
     25: ("recover_committed", "crit"),
 }
+# 19 and 20 went in on 2026-11-06 and were the last two Tasks with no
+# modelled text. Both pay in DECK ORDER rather than in dice, which is why
+# they sat out: the model draws with deck.pop(), so the next card is the end
+# of the list, and ordering it is a real decision once there is a preference
+# to order by. Decode Nobulous' Lecture Notes looks at the next three and
+# returns them in any order; Update Nobulous' Lab Notes looks at one and
+# sends it to the top or the bottom.
+#
+# THE DEMAND SIDES of the same two cards are the other half, and they are
+# the only two Demand clauses in the deck that are not a penalty - they are
+# restrictions on how the card may be worked, so they go on the card as
+# TASK_EFFECT rather than in this table.
+#   three_colors  Decode, on Demand: at least 3 different die colours
+#   store_one     Update, on Demand: no more than 1 die may be stored here
+TASK_EFFECT = {19: "three_colors", 20: "store_one"}
 # Crits of one color count as 3 successes on these Tasks.
 CRIT_COLOR = {2: "blue", 7: "purple", 11: "purple"}
 
 # Opportunity payouts, in deck order, matching generator/build_nap.py.
 OPPORTUNITY_REWARD = ["hp", "recover2", "str_next", "rec_next", "recover3", "crit_next"]
 
-# One ability per Apprentice. Prodigy's wild rule needs per-die color matching
-# the model does not do, so it plays as no ability.
+# One ability per Apprentice. All six are modelled; Prodigy's needed the
+# colour rule to be enforced on successes first - see COLOR_RULE_ON_SUCCESS.
 # Candidate Slacker abilities. "small_row" is the PRINTED one as of the
 # 2026-10-31 rewording; ABILITIES still maps Slacker to "discard" and
 # __init__ redirects it through SLACKER_ABILITY, so this constant is the
@@ -320,9 +504,29 @@ SLACKER_ABILITY = "small_row"
 #   exempt          B: a Setback holding a die stops restricting you
 TECHNICIAN_ABILITY = "repair_reward"
 
-ABILITIES = {"Prodigy": None, "Slacker": "discard", "Technician": "setback_window",
+ABILITIES = {"Prodigy": "wild_one", "Slacker": "discard",
+             "Technician": "setback_window",
              "Savant": "wide_recovery", "Opportunist": "dot_recovery",
              "Lab Rat": "soak"}
+
+# THE COLOUR RULE, ON SUCCESSES - and this is what Prodigy was waiting for.
+# rules/nap.html: to complete or store an Assignment the successes must
+# include "a successful die matching its color dot, Red as wild, or two
+# SUCCESSFUL dice of the same other color". Until 2026-11-06 this model
+# enforced the rule on the COMMIT instead - commit_for leads with a matching
+# die, or Red, or a pair - and never asked whether those dice succeeded,
+# which is strictly more generous than the cards.
+#
+# It is also why Prodigy had no ability for the whole life of this file.
+# "When using two dice of the same color as wild, only one of those dice
+# must roll a success" relaxes a requirement the model did not have, so
+# ABILITIES mapped Prodigy to None and the default Apprentice - in run(),
+# in audit.py and in every hand-run cell - was the one with nothing to do.
+# A card cannot be modelled by itself: this one needed the rule it modifies.
+#
+# False restores the commit-only rule every figure published before
+# 2026-11-06 was measured through.
+COLOR_RULE_ON_SUCCESS = True
 
 CREDITS_TO_LEAVE = 6      # Easy 5, Standard 6, Hard 7, Nobulous 8
 # Difficulty is the pair (Credit goal, Setbacks in the deck).
@@ -368,7 +572,7 @@ class Card(object):
     __slots__ = ("kind", "subject", "target", "demand", "dot", "skulls",
                  "on_demand", "rotated", "free", "stored", "stored_dice",
                  "penalty", "upkeep", "devious", "slot", "index", "ignored",
-                 "away")
+                 "away", "effect")
 
     def __init__(self, kind, target, demand, dot, skulls=0, subject=None,
                  penalty=1):
@@ -387,6 +591,13 @@ class Card(object):
         self.stored_dice = []       # locked to the card until it resolves
         self.penalty = penalty      # printed Demand penalty; -1 = 1 Health
         self.upkeep = 0             # Following Setback: dice per slot
+        # The card's own printed effect, for the decks that print one per
+        # card: a Following Setback or an Imposter Task. None means the card
+        # prints no effect of its own - which for a Setback is what makes it
+        # a BASE Setback, carrying build_nap.SB_TEXT's row lock instead. The
+        # row-lock test used to read `not c.upkeep`, which worked only while
+        # every Following Setback had an upkeep and no base one did.
+        self.effect = None
         self.ignored = False        # a Devious coupon was spent on it
         self.away = 0               # Time Slots spent in another row
         self.devious = None         # Devious Opportunity: (recover, credit)
@@ -439,25 +650,33 @@ class Game(object):
         self.crit_bonus = 0         # a Crit counts as 3 this slot
         self.coupons = []           # finished Opportunities held for later
         self.devious_coupons = []   # Tier III: kept for the Final Exam
+        # Per-slot and per-Day state the Tier I and II decks need.
+        self.wild_used = False      # the wild coupon paid for this commit
+        self.fed = set()            # cards given a die this Time Slot
+        self.dot_first_used = False  # Nobulous Needs This Now, this slot
+        self.locked_day = []        # Neural Extraction Practicum: off the
+        #                             table until the Day turns over
 
         # Assignment deck: 26 Tasks + 6 Opportunities + 3 of the 6 Setbacks.
         deck = []
         for i, (t, d, dot, sk) in enumerate(TASKS):
             t, d = t + TARGET_DELTA, d + TARGET_DELTA
             card = Card("task", t, d, dot, sk, SUBJECTS[i], DEMAND_PENALTY[i])
+            card.effect = TASK_EFFECT.get(i)
             card.index = i
             deck.append(card)
 
         # Tier II: each Imposter Task replaces a Credit Task of its subject.
         if tier in ("II", "III"):
-            for subject, dot, rt, dt in IMPOSTER_TASKS:
+            for i, (subject, dot, rt, dt, eff) in enumerate(IMPOSTER_TASKS):
                 same = [c for c in deck
                         if c.kind == "task" and c.subject == subject]
                 victim = self.rng.choice(same)
                 deck.remove(victim)
                 imp = Card("impostor", rt, dt, dot, 0, None,
                            victim.penalty)
-                imp.index = None
+                imp.index = i
+                imp.effect = eff if IMPOSTER_EFFECTS else None
                 deck.append(imp)
 
         # Tier III: Devious Opportunities replace the base Opportunities.
@@ -482,9 +701,10 @@ class Game(object):
         following = 3 if tier in ("I", "II", "III") else 0
         base = max(0, SETBACKS_IN_DECK - following)
         for i in self.rng.sample(range(4), following):
-            t, upkeep = FOLLOWING[i]
-            card = Card("setback", t, t, self.rng.choice("PBGY"))
-            card.upkeep = upkeep
+            t, dot, eff = FOLLOWING[i]
+            card = Card("setback", t, t, dot)
+            card.effect = eff if FOLLOWING_EFFECTS else "upkeep"
+            card.upkeep = 1 if card.effect == "upkeep" else 0
             card.index = i          # Following Setback i, so it is identifiable
             deck.append(card)
         for i in self.rng.sample(range(6), min(6, base)):
@@ -513,6 +733,17 @@ class Game(object):
 
     def recover_color(self, color):
         """Special Recovery: recover ALL exhausted dice of one color."""
+        # WHERE DID I PUT THAT?: "While unresolved, one die committed here
+        # cannot be recovered by Special Recovery." Its stored dice are
+        # locked to the card and so are not in `exhausted` to begin with;
+        # what the card really costs is one die of this colour held back when
+        # the Special Recovery lands, which is where it bites.
+        held = None
+        if any(c.kind == "setback" and c.effect == "no_special"
+               and not c.ignored and c.stored_dice for c in self.row):
+            if color in self.exhausted:
+                self.exhausted.remove(color)
+                held = color
         keep = []
         for c in self.exhausted:
             if c == color:
@@ -520,6 +751,8 @@ class Game(object):
             else:
                 keep.append(c)
         self.exhausted = keep
+        if held is not None:
+            self.exhausted.append(held)
         if self.ability == "wide_recovery":      # Savant
             # all but one of the color, plus one of a neighbouring color
             if color in self.available:
@@ -539,6 +772,10 @@ class Game(object):
         want = DOT_COLOR[card.dot]
         pool = pick_order(self.available, self.rng)
         take = []
+        # "One die counts as any color": when the coupon below pays for the
+        # commit it satisfies the colour rule on its own, so the check after
+        # the roll must not ask again.
+        self.wild_used = False
         if want in pool:
             take.append(want)
             pool.remove(want)
@@ -557,6 +794,7 @@ class Game(object):
                 # "One die counts as any color" - take the best single die.
                 if not (pool and self.spend_coupon("wild")):
                     return []
+                self.wild_used = True
                 take.append(pool.pop(0))
         # Aim one expected success past the requirement. Committing to exactly
         # the remaining need finishes only about half the time, and a roll that
@@ -679,9 +917,18 @@ class Game(object):
                 return False
             # "No other Assignment may be worked until this Setback is
             # resolved" - a Setback on the row blocks everything else.
+            # A BASE Setback locks the row - it is the only Setback that
+            # prints "No other Assignment may be worked until this Setback is
+            # resolved" - and a base Setback is one with no printed effect of
+            # its own. Unscheduled Demonstration prints the weaker version,
+            # "one die here before committing dice to another Assignment in
+            # this Time Slot", and joins the lock until it has been fed.
             setbacks = [c for c in self.row
-                        if c.kind == "setback" and not c.upkeep
-                        and not c.ignored and not c.away
+                        if c.kind == "setback" and not c.ignored
+                        and not c.away
+                        and (c.effect is None
+                             or (c.effect == "work_first"
+                                 and id(c) not in self.fed))
                         and not (self.ability == "exempt" and c.stored_dice)]
             if (setbacks and self.ability == "setback_window"
                     and not self.setback_window
@@ -698,15 +945,16 @@ class Game(object):
                 # otherwise chase Credits, nearest-to-done next.
                 workable = [c for c in self.row
                             if c.kind in ("task", "impostor")
-                            or (c.kind == "setback" and c.upkeep
+                            or (c.kind == "setback" and c.effect
                                 and not c.ignored and not c.away)
                             or (c.kind == "opportunity"
                                 and (c.devious or PLAY_THE_CARDS))]
                 if not workable:
                     return False
-                # A Following Setback is worked first - its printed text asks
-                # for a die before anything else - then Imposter Tasks.
-                card = min(workable, key=lambda c: (not (c.kind == "setback" and c.upkeep),
+                # A Following Setback is Mandatory and worked first, then
+                # Imposter Tasks, which are Mandatory too.
+                card = min(workable, key=lambda c: (not (c.kind == "setback"
+                                                         and c.effect),
                                                     c.kind != "impostor",
                                                     c.subject is None,
                                                     c.remaining()))
@@ -717,6 +965,42 @@ class Game(object):
             take = self.commit_for(card)
             if not take:
                 return False
+            # NOBULOUS NEEDS THIS NOW: "the first die you commit to another
+            # Assignment each Time Slot must match that Assignment's
+            # recovery-color dot." commit_for already leads with the dot when
+            # it holds one, so this bites exactly when it does not - and then
+            # the commit is illegal and the Assignment cannot be worked.
+            if (not self.dot_first_used
+                    and any(c.kind == "setback" and c.effect == "dot_first"
+                            and not c.ignored and not c.away
+                            for c in self.row)
+                    and not (card.kind == "setback"
+                             and card.effect == "dot_first")):
+                self.dot_first_used = True
+                if take[0] != DOT_COLOR[card.dot]:
+                    if DOT_COLOR[card.dot] not in self.available:
+                        return False
+                    swap = DOT_COLOR[card.dot]
+                    self.available.remove(swap)
+                    self.available.append(take[0])
+                    take = [swap] + take[1:]
+            # EMERGENCY SPECIMEN HANDLING: "Before rolling, commit at least 2
+            # dice initially."
+            if card.effect == "commit2" and len(take) < 2:
+                spare = [c for c in self.available if c not in take]
+                if not spare:
+                    return False
+                take = take + [pick_order(spare, self.rng)[0]]
+            # CONTRADICTIONS EVERYWHERE, Decode Nobulous' Lecture Notes on
+            # its Demand side: "Requires at least 3 different die colors."
+            if card.effect == "three_colors" and card.on_demand:
+                while len(set(take)) < 3:
+                    spare = [c for c in pick_order(self.available, self.rng)
+                             if c not in take]
+                    if not spare:
+                        return False
+                    take = take + [spare[0]]
+            self.fed.add(id(card))
             for c in take:
                 self.available.remove(c)
             results = [roll(c, self.rng) for c in take]
@@ -762,6 +1046,35 @@ class Game(object):
                     results[i] = roll(take[i], self.rng)
             got = sum(results)
             crit = any(v >= 2 for v in results)
+            # THE COLOUR RULE, on the successes rather than on the commit -
+            # see COLOR_RULE_ON_SUCCESS. A roll whose successes do not carry
+            # the card's colour applies nothing; the dice still lock to it as
+            # stored progress, exactly as a roll that falls short does.
+            if COLOR_RULE_ON_SUCCESS and got and not self.wild_used:
+                want = DOT_COLOR[card.dot]
+                hit = collections.Counter()
+                for c, v in zip(take, results):
+                    if v:
+                        hit[c] += 1
+                if not (hit[want] or hit["red"]):
+                    # PRODIGY: "When using two dice of the same color as
+                    # wild, only one of those dice must roll a success."
+                    need = 1 if self.ability == "wild_one" else 2
+                    if not any(take.count(c) >= 2 and hit[c] >= need
+                               for c in COLORS if c != want):
+                        got = 0
+                        crit = False
+            # LOAD-BEARING PROSTHETICS: "At least 2 applied successes must
+            # come from the same color." A roll where no single colour
+            # supplies two successes applies nothing at all - the dice still
+            # lock to the card as they always do when a roll falls short.
+            if card.effect == "same_color" and got:
+                by = collections.Counter()
+                for c, v in zip(take, results):
+                    by[c] += v
+                if max(by.values()) < 2:
+                    got = 0
+                    crit = False
             if (self.ability == "repair_bonus" and card.kind == "setback"
                     and not self.repaired_this_slot and results):
                 got += 1                     # one die counts double
@@ -791,10 +1104,17 @@ class Game(object):
                     got += 2
             if got >= card.remaining():
                 # Resolved: its committed and stored dice all exhaust.
+                spent = take + card.stored_dice
+                # NEURAL EXTRACTION PRACTICUM: "One die committed here
+                # remains locked until the end of the Day even if completed."
+                # Locked is not exhausted - it is off the table entirely, so
+                # no recovery reaches it until the Day turns over.
+                if card.effect == "lock_day" and spent:
+                    self.locked_day.append(spent.pop())
                 if OPP_DICE_RETURN and OPP_RETURN_ON_WIN and card.kind == "opportunity":
-                    self.available += take + card.stored_dice
+                    self.available += spent
                 else:
-                    self.exhausted += take + card.stored_dice
+                    self.exhausted += spent
                 self.row.remove(card)
                 self.done_this_slot += 1
                 if self.ability == "repair_reward" and card.kind == "setback":
@@ -824,6 +1144,14 @@ class Game(object):
                 # Store the successes as progress; the dice lock to the card.
                 card.stored += got
                 card.stored_dice += take
+                # NOBULOUS WANTS DETAILS, Update Nobulous' Lab Notes on its
+                # Demand side: "You may store no more than 1 die here." The
+                # rest exhaust instead of locking, so the progress they
+                # bought is kept and the dice are not.
+                if (card.effect == "store_one" and card.on_demand
+                        and len(card.stored_dice) > 1):
+                    self.exhausted += card.stored_dice[1:]
+                    del card.stored_dice[1:]
                 if (self.finf_uses > 0 and card.on_demand
                         and (FINF_REDUCE_ANY_CARD
                              or (self.slot in self.finf_cards
@@ -888,6 +1216,21 @@ class Game(object):
             self.rec += 1
         elif kind == "str":
             self.str_ += 1
+        elif kind in ("peek3", "peek1"):
+            # deck.pop() draws from the END, so the end of the list is the
+            # top of the deck. A Setback is the card worth moving; after
+            # that, a Task with a subject is a Credit and the rest is not.
+            def welcome(c):
+                if c.kind == "setback":
+                    return -1
+                return 1 if c.subject else 0
+            if kind == "peek3":
+                top = self.deck[-3:]
+                if len(top) > 1:
+                    del self.deck[-len(top):]
+                    self.deck += sorted(top, key=welcome)
+            elif self.deck and welcome(self.deck[-1]) < 0:
+                self.deck.insert(0, self.deck.pop())
 
     def spend_coupon(self, kind):
         """Cash in a held Opportunity. One use, then it is discarded."""
@@ -999,36 +1342,54 @@ class Game(object):
                 break
             self.spend_die(DOT_COLOR.get(card.dot))
 
+    def spend_devious(self, names):
+        """Discard one Devious coupon BY NAME, in the order given, or refuse.
+
+        The hand is six named cards and not a counter. The three levers below
+        used to call devious_coupons.pop(), which takes whichever coupon is on
+        the END of the list, so a coupon earned by any of the six paid for an
+        ability none of them prints - see DEVIOUS_IGNORE_SETBACK. Now a lever
+        has to name the cards entitled to pay for it, and the shipped answer
+        for all three is: none of them.
+        """
+        for want in names:
+            if want in self.devious_coupons:
+                self.devious_coupons.remove(want)
+                return want
+        return None
+
     def move_setback(self):
         """Spend a coupon to send a Setback to a different Time Slot."""
-        if not (DEVIOUS_MOVE_SLOTS and self.devious_coupons):
+        if not (DEVIOUS_MOVE_SLOTS and DEVIOUS_MOVE_SETBACK):
             return
         live = [c for c in self.row
                 if c.kind == "setback" and not c.away and not c.ignored]
         if not live:
             return
+        if not self.spend_devious(DEVIOUS_MOVE_SETBACK):
+            return
         worst = max(live, key=lambda c: (c.upkeep, c.remaining()))
         worst.away = DEVIOUS_MOVE_SLOTS
-        self.devious_coupons.pop()
 
     def ignore_setback(self):
         """Spend a coupon on the Setback that is costing the most."""
-        if not (DEVIOUS_IGNORE_SETBACK and self.devious_coupons):
+        if not DEVIOUS_IGNORE_SETBACK:
             return
         live = [c for c in self.row if c.kind == "setback" and not c.ignored]
         if not live:
             return
+        if not self.spend_devious(DEVIOUS_IGNORE_SETBACK):
+            return
         worst = max(live, key=lambda c: (c.upkeep, c.remaining()))
         worst.ignored = True
-        self.devious_coupons.pop()
 
     def cash_devious(self):
         """Discard a Final Exam coupon for 2 dice rather than never spend it."""
-        if not (DEVIOUS_CASH_EARLY and self.devious_coupons):
+        if not DEVIOUS_CASH_EARLY:
             return
         if len(self.available) <= 1 and len(self.exhausted) >= 2:
-            self.devious_coupons.pop()
-            self.recover(2)
+            if self.spend_devious(DEVIOUS_CASH_EARLY):
+                self.recover(2)
 
     def end_of_slot(self):
         self.move_setback()
@@ -1047,6 +1408,10 @@ class Game(object):
                 self.demand_penalty(card)
                 survivors.append(card)
             else:
+                # CONTAINMENT DRILL: "If unresolved, exhaust 1 available die
+                # before flipping it to Demand."
+                if card.effect == "demand_burn":
+                    self.spend_die(DOT_COLOR.get(card.dot))
                 card.on_demand = True
                 survivors.append(card)
         self.repaired_this_slot = False
@@ -1054,8 +1419,15 @@ class Game(object):
 
     def time_slot(self):
         self.slot = (self.slot + 1) % 3     # Morning, Afternoon, Evening
+        self.fed = set()
+        self.dot_first_used = False
         if self.slot == 0:
             self.day += 1
+            # "remains locked until the end of the Day" - the Day has turned
+            # over, so the dice come back exhausted and recovery can reach
+            # them again.
+            self.exhausted += self.locked_day
+            self.locked_day = []
         # Opportunities paid into the coming slot.
         self.str_ += self.next_slot["str"]
         self.rec += self.next_slot["rec"]
@@ -1078,7 +1450,14 @@ class Game(object):
             if card.away:
                 card.away -= 1      # it is sitting in another Time Slot
                 continue
-            cost = card.upkeep or (0 if card.stored_dice else 1)
+            # A BASE Setback prints "if this Setback has no stored dice,
+            # exhaust 1 available die". A Following Setback does not print
+            # that clause at all; only Minor Laboratory Fire prints an
+            # upkeep of its own, and it is unconditional.
+            if card.effect:
+                cost = card.upkeep
+            else:
+                cost = 0 if card.stored_dice else 1
             for _ in range(cost):
                 self.spend_die(DOT_COLOR.get(card.dot))
         while self.finf_due[self.slot] > 0:
@@ -1154,8 +1533,18 @@ class Game(object):
             subject_exams = [e for e in EXAMS if e[0] == s]
             pool += subject_exams[:n]
         self.rng.shuffle(pool)
-        for subject, dot, base in pool[:3]:
+        for subject, dot, base, printed in pool[:3]:
             target = max(1, base - self.credits[subject])
+            rule = printed if EXAM_RESTRICTIONS else {}
+            # "Ignore one Final Exam's printed restriction." Spent on the
+            # exams whose restriction costs the most - the ones that forbid
+            # Red, because Red is the best die in the box, and the ones that
+            # demand dice or colours a bare Target would not have needed.
+            if rule and "exam_ignore" in self.devious_coupons and (
+                    rule.get("no_red") or rule.get("dice", 0) >= 4
+                    or rule.get("colors", 0) >= 4):
+                self.devious_coupons.remove("exam_ignore")
+                rule = {}
             # "Reduce one exam's Target by 3" - spend it on the worst exam.
             if "exam_target" in self.devious_coupons and target >= 3:
                 self.devious_coupons.remove("exam_target")
@@ -1169,13 +1558,7 @@ class Game(object):
                         self.exhausted.remove(c)
                         self.available.append(c)
                         seen.add(c)
-            take = pick_order(self.available, self.rng)
-            got, used = 0.0, []
-            for c in take:
-                if got >= target:
-                    break
-                used.append(c)
-                got += EV[c]
+            used = exam_commit(self.available, target, rule, self.rng)
             for c in used:
                 self.available.remove(c)
             values = [roll(c, self.rng) for c in used]
@@ -1187,7 +1570,16 @@ class Game(object):
                 self.devious_coupons.remove("exam_reroll")
                 values = [roll(c, self.rng) if v == 0 else v
                           for c, v in zip(used, values)]
+            # "A Red Crit counts as 1 success"; "One Yellow Crit counts as
+            # 3 successes." A Crit is 2 everywhere else in the set.
+            for col_, worth in (rule.get("crit_val") or {}).items():
+                values = [worth if (c == col_ and v == 2) else v
+                          for c, v in zip(used, values)]
             total = sum(values)
+            # "At least 1 Crit must contribute to complete this Assignment",
+            # read as a gate. OFF by default - see the note on EXAMS.
+            if EXAM_CRIT_GATE and rule.get("crit") and 2 not in values:
+                total = 0
             self.exhausted += used
             if total < target:
                 loss = target - total

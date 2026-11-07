@@ -628,8 +628,10 @@ IMP_DOTS = (("Neural Extraction Practicum", "P"),
 gen_imp = {r[0]: r[2] for r in gr["IMPOSTER_TASKS"]}
 js_imp = {r[0]: r[2] for r in js_literal("playtest/dist/suite.js",
                                          "NAP_IMPOSTER_TASKS")}
-sim_imp = dict((s, d) for s, d, _r, _t in
-               py_tables("simulation/nap.py")["IMPOSTER_TASKS"])
+# Indexed rather than unpacked: nap.IMPOSTER_TASKS grew a fifth column on
+# 2026-11-06 when the four printed effects were modelled.
+sim_imp = dict((r[0], r[1])
+               for r in py_tables("simulation/nap.py")["IMPOSTER_TASKS"])
 sim_subj = {n: s for (n, s, _d, _r, _t, _e) in gr["IMPOSTER_TASKS"]}
 bad = [n for n, d in IMP_DOTS
        if gen_imp.get(n) != d or js_imp.get(n) != d

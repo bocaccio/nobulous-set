@@ -806,6 +806,170 @@ Each of these only appears a few turns in.
 
 ## 10. Known open items
 
+- **THE AUDIT OF 2026-11-06 WAS FIXED THE SAME DAY. Read this before the
+  audit entry below it, which this supersedes in part.** `coverage.py` now
+  reads **3 of 255 printed effects unmodelled, in 3 decks**, against 68 in 13
+  when the audit was written. The three that remain are argued at the bottom
+  of this entry.
+
+  ```bash
+  cd simulation
+  python coverage.py     # is the printed text implemented at all?
+  python audit.py        # does it reach the table, and does it fire?
+  ```
+
+  **THE AUDIT ITSELF WAS WRONG IN THREE PLACES**, and those corrections
+  matter more than the count:
+
+  1. **The 19 "unmodelled" Council Tests print nothing to model.** The audit
+     read the dropped Scenario clauses in `build_nrj.SCEN` as 19 unmodelled
+     effects and called the deck "the regression in the set". The shipping
+     Exhibit face prints Target, Damage and a Reward band; only the five in
+     `EXHIBIT_REWARD` print a rule in that band, and the other nineteen carry
+     an italic courtesy that may not name a thing the game has. The deck
+     reads 24 of 24, and `coverage.exhibit_faces()` asserts the partition
+     rather than trusting a paragraph.
+  2. **The "six left-behind dice restrictions" do not exist** on the shipping
+     cards either, for the same reason. Nothing was abandoned by the rework;
+     six clauses were deliberately dropped.
+  3. **"Not one of the five Imposter names appears anywhere in
+     `simulation/`"** was true of the shipping modules and misleading:
+     `proto/imposters.py` is under `simulation/` and implements all ten
+     sides, calibrated. The gap was real — the shipping simulator had no hero
+     code — but it was a **port**, not a write.
+
+  The same over-count ran through the NAP Setbacks: six cards printing one
+  shared rule, both clauses of which are modelled, counted as six gaps. **A
+  card with no printed effect is not an unmodelled effect.**
+
+  ### What was fixed
+
+  | | what | moved |
+  |---|---|---|
+  | 1 | **The five Imposters** ported from `proto/imposters.py` — all ten sides with their gates | `HERO = None` still reads **50.1 50.4 50.1 50.6 51.0**, the published pitch to the decimal, and the ladder is unmoved at 50.5 / 39.2 / 30.6 / 19.4 |
+  | 2 | **The six Backdoor Routines** — claiming is EARNED off each card's printed condition, and costs the next Program Reward as all six print | AoS Tier II and III move several points; see below |
+  | 3 | **Eleven of the twelve Final Exam restrictions**, which made Definitely Curriculum-Approved payable | earned in 690 games and spent in 390, against 153 and **0** before |
+  | 4 | **The Devious coupons are named cards again** — the three off-card levers take a tuple of coupon names, not a boolean | `audit.py` reads 0% off-card against 27% |
+  | 5 | **Redundant Organs** is paid for what it prints | fires in 12.6% of Tier II games, worth **0.0** points |
+
+  On 5: `MOD_EFFECTS[4]` stays all-zero and is right to. `damage_tyrant`
+  walks surviving Splices only and a blow under a card's Value bounces, so
+  Health is reached only once every Splice is destroyed — a Spliced Redundant
+  Organs cannot be alive when the Tyrant would fall. Unreachable there, not
+  unwritten. `drop_mod()` is also keyed on the card now instead of its Value:
+  Adrenal Gland and Redundant Organs both print Value 5, and `resolve_attack`
+  did not check that the Upgrade it lost was a Modification at all.
+
+  ### Three more of the same family, found while fixing those five
+
+  Each is a printed effect with no implementation and no error — the
+  Unexpected Resilience shape.
+
+  6. **"Banish 1 Limitation from the game" did nothing.** One of the six
+     Program Reward names, printed on one Program of each deck, with no
+     branch in `Game.reward` — so three of the 24 Programs paid out silently
+     nothing. `coverage.py` waved all three Program decks through at 8 of 8
+     because its predicate was `len()` of the reward table. **A name in a
+     table is not an implementation**, which is the exact lesson `fires` was
+     written for, applied everywhere in that file except there.
+  7. **The six Corrupted Limitations**, the deck the audit called the only
+     one the model never drew. Five constrain the allocation, which this
+     model builds explicitly, so they apply to the plan after allocation and
+     before the roll; Deprecated Function is a scoring corruption. **And the
+     stand-in was too soft:** AoS Tier II at Standard falls from 33.2% to
+     27.4% when the six real cards replace `CORRUPT_CHANCE`. Every Tier II
+     and Tier III figure published before today was measured through it.
+  8. **Prodigy had no ability for the whole life of `nap.py`** — the clearest
+     case in the set of a card that cannot be modelled by itself. It relaxes
+     a rule the model did not have: `rules/nap.html` wants "a successful die
+     matching its color dot, Red as wild, or two **successful** dice of the
+     same other color", and `nap.py` enforced that on the commit and never
+     asked whether those dice succeeded. So `ABILITIES` mapped Prodigy to
+     `None` — and Prodigy is the default in `nap.run` and the Apprentice
+     `audit.py` audits NAP with, so **the default Apprentice was the one with
+     nothing to do.** With `COLOR_RULE_ON_SUCCESS` in, its ability is worth
+     **+4.4 points**, the largest of the six.
+
+  The four Imposter Tasks and four Following Setbacks now carry their printed
+  effects too. `nap.FOLLOWING` was wrong three ways at once: a flat 1-die
+  upkeep on all four when only Minor Laboratory Fire prints one, four
+  interchangeable effects, and a dot drawn at random from PBGY when all four
+  print one.
+
+  ### What moved
+
+  - **BAT** — the published grid is unchanged.
+  - **NAP** — everything except the colour rule is **net neutral**. With
+    `COLOR_RULE_ON_SUCCESS` off the grid reads 54.8 / 52.8 / 40.6 / 45.2 at
+    Easy and 48.4 / 44.7 / 34.9 / 40.3 at Standard, against a published 54.9
+    / 51.5 / 41.3 / 45.8 and 48.9 / 44.3 / 35.5 / 39.5 — every cell within
+    about a point, with eleven exam restrictions, eight tier-deck effects,
+    two Task effects and the coupon fix all in. That is the strongest
+    evidence the implementations are faithful rather than lopsided.
+  - **The colour rule costs about 5 points everywhere**, and it is the
+    printed rule, so the published column was never a measurement of NAP as
+    printed.
+  - **AoS** — the Corrupted Limitations and the Backdoor claim cost both
+    bite, and the Tier columns move several points.
+  - **NRJ** — the finale pitch is unmoved to the decimal.
+
+  ### The re-peg NAP needs — RAISED, NOT APPLIED
+
+  `SETBACKS_IN_DECK` is the second half of NAP's difficulty dial, and taking
+  one Setback off each rung restores the published solo column almost
+  exactly. Already measured:
+
+  | level | Cr / Sb now | reads | Cr / Sb | reads | published |
+  |---|---|---|---|---|---|
+  | Easy | 5 / 4 | 51.6% | 5 / 3 | 56.2% | 55.5% |
+  | Standard | 6 / 4 | 43.8% | 6 / 3 | **48.8%** | 48.8% |
+  | Hard | 7 / 5 | 34.4% | 7 / 4 | 38.1% | 37.5% |
+  | Nobulous | 8 / 6 | 26.0% | 8 / 5 | 29.4% | 29.7% |
+
+  The Setback count is printed in `rules/nap.html`, so it is a rules change
+  and not a model one. It needs a decision before anything is edited.
+
+  ### Also raised, not fixed
+
+  - **One Backdoor claim condition is effectively unreachable.** Re-measured,
+    the six fire in 68.2 / 65.7 / 61.5 / 41.9 / 18.8 / **0.1%** of games —
+    the old note in `aos.py` said "five of the six fire in 76-100%", which
+    the required-colour dots and the Target+1 cap had long since made false.
+    Diagnostic Port wants "no element over-allocated" and `allocate()` fills
+    every element to Target + 1 because the free die is worth having, so the
+    condition is false by construction.
+  - **Claiming a Backdoor Routine costs exactly what it pays.** At Standard,
+    Tier III against Tier II: never +0.0, always +0.0, and claiming only the
+    two Routines worth more than a Program Reward +3.2. Four of the six are
+    worth less than the Reward they cost, so the best line declines them.
+  - **Neural Response Screening's Crit clause is in the wrong idiom.** It
+    prints "at least 1 Crit must contribute to **complete this Assignment**";
+    a Final Exam has no completion step, it charges 1 Health per success
+    short. Measured: read as a gate it deals its whole Target in **23%** of
+    the sittings it gets and costs **3.8 points** on its own, which no other
+    single exam comes near - and read as a commit rule it says nothing,
+    because there is no way to commit *for* a Crit. `EXAM_CRIT_GATE` models
+    the gate reading and ships off. The clause wants rewording.
+
+  ### The three that remain, and none of them is an oversight
+
+  All three are printed rewards that pay in **information**, in models with
+  no decision that information would change.
+
+  - **Diagnostic Trial** (BAT) — "look at the next Experiment and **return it
+    to the top**", so it cannot reorder anything, and the Experiment policy
+    already commits the minimum expected to reach the Target. Nothing to hold
+    back.
+  - **Packet Sniffer** (AoS) — "look at the next Limitation before selecting
+    a Program", and `play()` takes Programs off a shuffled queue because the
+    rules deal them in order. No selection; and the dice a Limitation
+    withholds already leave the pool before this model allocates.
+  - **Neural Response Screening** (NAP) — the other kind of gap; see above.
+
+  Modelling any of the three would mean inventing a decision the game does
+  not offer, which is worse than a declared gap. Each reason is recorded at
+  the code, and `coverage.py` fails if the claim around it goes stale.
+
 - **THE CARD AND EFFECT AUDIT, 2026-11-06 — read this first; the five items
   under it are new and the rest of this section predates them.** Every card
   in the set and every printed effect on it, checked against the model that
