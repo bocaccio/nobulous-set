@@ -201,6 +201,15 @@ FOLLOWING = [(7, 'Y', "dot_first"), (7, 'G', "work_first"),
 # Switch the four printed effects off and restore the flat upkeep every
 # figure published before 2026-11-06 was measured through.
 FOLLOWING_EFFECTS = True
+# True is what rules/nrj.html prints and what the lab plays: the 6 base
+# Setbacks are set aside entirely and exactly 3 Following ones take their
+# place, "never both kinds together". False is what this model has done
+# since the counts stopped being 3 everywhere - 3 Following PLUS whatever
+# the difficulty's count leaves over - on the argument that otherwise
+# turning a tier ON makes Hard and Nobulous EASIER. The two agree at Easy
+# and Standard since the 2026-11-06 re-peg. RAISED, not decided, so this
+# ships as the model has had it.
+FOLLOWING_REPLACE_ALL = False
 
 # (subject, Request Target, Demand Target). Mandatory, and they grant no
 # Credits - "You still have to clear them; clearing them advances nothing."
@@ -386,7 +395,7 @@ FINF_REDUCE_ANY_CARD = False
 # one so demanding more refunds itself, and above about 8 the Credits earned
 # flatline because the deck runs out. The deck is the other half, which is
 # what BAT (Specimens added) and AoS (deck mix) already use.
-#   Easy 4, Standard 4, Hard 5, Nobulous 6
+#   Easy 3, Standard 3, Hard 4, Nobulous 5 - see LEVELS below
 SETBACKS_IN_DECK = 3
 OPPORTUNITIES_IN_DECK = 6
 
@@ -530,7 +539,23 @@ COLOR_RULE_ON_SUCCESS = True
 
 CREDITS_TO_LEAVE = 6      # Easy 5, Standard 6, Hard 7, Nobulous 8
 # Difficulty is the pair (Credit goal, Setbacks in the deck).
-LEVELS = {"Easy": (5, 4), "Standard": (6, 4), "Hard": (7, 5), "Nobulous": (8, 6)}
+#
+# RE-PEGGED 2026-11-06, one Setback off every rung: 4/4/5/6 became 3/3/4/5.
+# The Credit goals did not move. This is the ladder catching up with a MODEL
+# FIX, not a difficulty decision: the colour rule is now enforced on the
+# SUCCESSES rather than on the commit, which is what rules/nap.html prints,
+# and the old model was more generous than the cards by about 5 points of win
+# rate at every rung. One Setback is worth about the same 5, so the solo
+# column lands back where it was published - 56.2 / 48.8 / 38.1 / 29.4
+# against the old 55.5 / 48.8 / 37.5 / 29.7 - and NAP is pitched against the
+# printed game for the first time.
+#
+# THE COUNT IS PRINTED, so three sources carry it and all three had to move:
+# this table, the difficulty table in rules/nap.html, and NAP_SETBACK_COUNT
+# in playtest/dist/suite.js. check_app_sync.py now compares them, which
+# nothing did before - the same gap that let the End-of-Day burn sit unplayed
+# in this file for weeks while the other two sources played it.
+LEVELS = {"Easy": (5, 3), "Standard": (6, 3), "Hard": (7, 4), "Nobulous": (8, 5)}
 # End of Day burns one card off the Assignment deck, text ignored.
 # rules/nap.html prints it under "End of Day" - "Reveal and discard the top
 # card of the Assignment deck. Ignore all of its text, effects and Skulls" -
@@ -543,7 +568,8 @@ LEVELS = {"Easy": (5, 4), "Standard": (6, 4), "Hard": (7, 5), "Nobulous": (8, 6)
 # True is now the rule. MEASURED 2026-11-05, 20,000 games a cell, six
 # Apprentices averaged: turning it on is worth +0.1 / +0.6 / +1.3 / +2.4 solo
 # across the four levels and up to +2.7 at Tier III. It helps, and it helps
-# MORE the harder the level, which tracks the Setbacks in the deck (4/4/5/6) -
+# MORE the harder the level, which tracks the Setbacks in the deck (4/4/5/6
+# as the table stood that day; see the 2026-11-06 re-peg at LEVELS) -
 # a burned card is likeliest to have been one of those. Standard moves
 # 48.2 -> 48.8 and stays inside the 47-57% band, so this is a correctness fix
 # and not a re-pitch of the ladder.
@@ -699,7 +725,21 @@ class Game(object):
         # was only equivalent while SETBACKS_IN_DECK was always 3; once Hard
         # and Nobulous carried 4 and 6, turning a tier ON made them EASIER.
         following = 3 if tier in ("I", "II", "III") else 0
-        base = max(0, SETBACKS_IN_DECK - following)
+        # HOW MANY BASE SETBACKS SURVIVE A TIER, and the three sources do not
+        # agree. rules/nrj.html: "Set the 6 base Setbacks ASIDE and shuffle
+        # in 3 of the 4 Following Setbacks chosen at random, exactly where
+        # the 3 base Setbacks would have gone. NEVER USE BOTH KINDS
+        # TOGETHER." The lab plays that. This model mixes them, on the
+        # argument recorded below - which is a real argument and still
+        # contradicts the printed rule.
+        #
+        # With the 2026-11-06 re-peg the two readings AGREE at Easy and
+        # Standard, where SETBACKS_IN_DECK is 3, and differ only at Hard (1
+        # base card) and Nobulous (2). RAISED, not decided: see RESULTS.txt.
+        if FOLLOWING_REPLACE_ALL and following:
+            base = 0
+        else:
+            base = max(0, SETBACKS_IN_DECK - following)
         for i in self.rng.sample(range(4), following):
             t, dot, eff = FOLLOWING[i]
             card = Card("setback", t, t, dot)

@@ -1,3 +1,35 @@
+2026-11-06  NAP'S SETBACK COUNTS DROP BY ONE AT EVERY LEVEL
+The difficulty table goes from 4 / 4 / 5 / 6 Setbacks to 3 / 3 / 4 / 5.  The
+Credit goals do not move: Easy 5, Standard 6, Hard 7, Nobulous 8 as before.
+
+THIS IS THE LADDER CATCHING UP WITH A MODEL FIX, not a difficulty decision,
+and the honest version is that the old table was pegged against a game
+simulation/nap.py was not playing.  rules/nap.html requires "a successful
+die matching its color dot, Red as wild, or two SUCCESSFUL dice of the same
+other color" to complete or store an Assignment.  The model enforced that
+rule on the dice you COMMITTED and never asked whether they succeeded, which
+is strictly more generous than the cards, and it was worth about 5 points of
+win rate at every rung.  Fixed on 2026-11-06, the ladder read 51.6 / 43.8 /
+34.4 / 26.0 against a published 55.5 / 48.8 / 37.5 / 29.7.
+
+One Setback is worth about the same 5 points, so taking one off each rung
+puts the ladder back where it was published while the game underneath it is
+now the printed one.  Nothing else about NAP changed: no Target, no card
+text, no Credit goal, and the Setbacks themselves are the same six cards.
+
+A PLAYER WHO OWNS THE PRINTED SET LOSES NOTHING.  The six Setback cards are
+unchanged and the deck is built by choosing from them, so the only thing to
+update is which number you read off the difficulty table.  No card was
+reprinted for this - the count has never been on a card.
+
+THREE SOURCES CARRY THE COUNT and all three moved together: nap.LEVELS, the
+difficulty table and the setup step in rules/nap.html, and
+NAP_SETBACK_COUNT in playtest/dist/suite.js, plus the lab's difficulty
+labels, which name the count in prose.  NOTHING COMPARED THEM.
+check_app_sync.py now does, both the numbers and the prose restatement -
+which is the same gap that let the End-of-Day burn sit unplayed in the model
+for weeks while the rules and the lab both played it.
+
 2026-11-03  A RULES REVIEW, AND FOUR LEVERS THAT DID NOT SHIP
 An outside read of all four rulebooks raised sixteen points.  Every one was
 real.  Eleven were stale text with an authoritative answer already in the

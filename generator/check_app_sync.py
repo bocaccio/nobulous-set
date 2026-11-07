@@ -409,6 +409,43 @@ for lvl in ("Easy", "Standard", "Hard", "Nobulous"):
 check("the lab's NAP difficulty labels name the goal it plays",
       len(_nap_opts) == 4 and not _nap_wrong, "; ".join(_nap_wrong[:4]))
 
+# THE SETBACK COUNT IS PRINTED, so three sources carry it: nap.LEVELS, the
+# difficulty table in rules/nap.html, and NAP_SETBACK_COUNT in suite.js - and
+# NOTHING COMPARED THEM until the 2026-11-06 re-peg had to change all three by
+# hand. The label check above reads the dropdown text, which is prose; this
+# reads the number each source actually plays. It is the same gap that let the
+# End-of-Day burn sit unplayed in simulation/nap.py for weeks while the other
+# two sources played it, and the note below records that one.
+_nap_sb = []
+_sb_js = re.search(r"NAP_SETBACK_COUNT\s*=\s*\{([^}]*)\}",
+                   text("playtest/dist/suite.js"))
+_js_sb = {}
+if _sb_js:
+    _js_sb = dict((int(k), int(v)) for k, v in
+                  re.findall(r"(\d+)\s*:\s*(\d+)", _sb_js.group(1)))
+_rules_rows = re.findall(
+    r"<tr><td>(?:<b>)?(Easy|Standard|Hard|Nobulous)(?:</b>)?</td>"
+    r"<td>(?:<b>)?(\d+) Credits(?:</b>)?</td>"
+    r"<td>(?:<b>)?(\d+)(?:</b>)?</td></tr>", text("rules/nap.html"))
+_rules_sb = dict((int(g), int(s)) for _l, g, s in _rules_rows)
+for lvl in ("Easy", "Standard", "Hard", "Nobulous"):
+    goal, sb = sn["LEVELS"][lvl]
+    if _rules_sb.get(goal) != sb:
+        _nap_sb.append("%s: nap.py %d, rules/nap.html %r"
+                       % (lvl, sb, _rules_sb.get(goal)))
+    if _js_sb.get(goal) != sb:
+        _nap_sb.append("%s: nap.py %d, suite.js %r"
+                       % (lvl, sb, _js_sb.get(goal)))
+check("the Setbacks per level agree in nap.py, the rules and the lab",
+      len(_rules_sb) == 4 and len(_js_sb) == 4 and not _nap_sb,
+      "; ".join(_nap_sb[:4]))
+# And the setup step restates the four counts in prose, so it drifts too.
+check("rules/nap.html's setup step restates the same four counts",
+      "%d, %d, %d or %d of the 6" % tuple(
+          sn["LEVELS"][k][1]
+          for k in ("Easy", "Standard", "Hard", "Nobulous"))
+      in text("rules/nap.html"))
+
 # END OF DAY IS PRINTED, SO ALL THREE SOURCES MUST PLAY IT. rules/nap.html:
 # "Reveal and discard the top card of the Assignment deck." The lab burned a
 # card from the day it shipped and simulation/nap.py never did, so every

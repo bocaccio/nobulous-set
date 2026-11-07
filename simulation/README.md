@@ -204,7 +204,9 @@ current ladder. For that, see `table.py`.
 Measured 2026-10-27, 7,200 games a cell, BEFORE the policy retune later the
 same day - so these cells are about 30 points low and are kept only for the
 shape of the dial, which is what the section is about. The retuned Credit
-goal curve, at 4 Setbacks, runs 76.3% at 6 Credits, 65.8% at 8, 55.6% at 10,
+goal curve, at 4 Setbacks (the count Standard carried until the 2026-11-06
+re-peg took every rung down one, to 3/3/4/5), runs 76.3% at 6 Credits,
+65.8% at 8, 55.6% at 10,
 then 52.4 / 50.1 / 48.0% at 12 / 14 / 16: raising the goal looks like the
 obvious lever for re-pitching NAP, and on its own it bottoms out near 48%.
 

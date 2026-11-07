@@ -806,6 +806,54 @@ Each of these only appears a few turns in.
 
 ## 10. Known open items
 
+- **NAP'S SETBACK COUNTS CAME DOWN ONE AT EVERY RUNG on 2026-11-06: 4/4/5/6
+  became 3/3/4/5.** The Credit goals did not move and no card was reprinted —
+  the count has never been on a card. See `rules/RULES_CHANGELOG.txt` for the
+  player-facing entry.
+
+  This is the ladder catching up with a model fix, not a difficulty decision.
+  The colour rule now applies to the **successes** rather than to the commit,
+  which is what `rules/nap.html` prints, and the old model was about 5 points
+  more generous than the cards at every rung. One Setback is worth about the
+  same 5, so the published ladder is back where it was with the printed game
+  underneath it — 20,000 games a cell:
+
+  | level | no NRJ | Tier I | Tier II | Tier III |
+  |---|---|---|---|---|
+  | Easy (5 Cr, 3 Sb) | 56.3% <sub>was 55.5</sub> | 52.6% <sub>51.9</sub> | 42.9% <sub>41.7</sub> | 46.9% <sub>46.5</sub> |
+  | **Standard (6 Cr, 3 Sb)** | **48.6%** <sub>48.8</sub> | 46.5% <sub>44.2</sub> | 36.4% <sub>36.1</sub> | 40.9% <sub>40.0</sub> |
+  | Hard (7 Cr, 4 Sb) | 38.4% <sub>37.5</sub> | 35.1% <sub>33.1</sub> | 28.5% <sub>28.1</sub> | 33.2% <sub>31.8</sub> |
+  | Nobulous (8 Cr, 5 Sb) | 29.4% <sub>29.7</sub> | 27.2% <sub>25.5</sub> | 22.6% <sub>22.1</sub> | 28.4% <sub>25.8</sub> |
+
+  **Four sources carried the count and nothing compared them.** `nap.LEVELS`;
+  the difficulty table *and* the setup step in `rules/nap.html`; the
+  `NAP_SETBACK_COUNT` table in `playtest/dist/suite.js`; and the lab's own
+  difficulty dropdown labels, which name it in prose. `check_app_sync.py` now
+  compares all of them, numbers and prose — the same gap that let the
+  End-of-Day burn sit unplayed in the model for weeks while the rules and the
+  lab both played it. Verified in the browser: the lab deals 3/3/4/5.
+
+  ### The three-way disagreement the re-peg uncovered — RAISED, NOT APPLIED
+
+  `rules/nrj.html` says a tier sets the 6 base Setbacks **aside** and shuffles
+  in exactly 3 Following ones, *"never both kinds together"*, and the lab
+  plays that. `simulation/nap.py` mixes them: 3 Following plus whatever the
+  difficulty's count leaves over. Since the re-peg the two readings **agree at
+  Easy and Standard**, where the count is 3, and differ only at the two hard
+  rungs — where the printed reading **inverts the tier**:
+
+  | | solo | Tier I, printed reading | Tier I, as modelled |
+  |---|---|---|---|
+  | Hard | 38.6% | **40.1%** — easier than solo | 35.8% |
+  | Nobulous | 30.3% | **34.7%** — easier than solo | 27.2% |
+
+  So the **rules text is the thing that is wrong**, not the model: turning the
+  overlay on must not make a rung easier. The cheapest fix is one rules
+  sentence — set aside only as many base Setbacks as you shuffle in Following
+  ones — which is a rules change and needs a decision.
+  `nap.FOLLOWING_REPLACE_ALL` measures the printed reading; it ships `False`,
+  which is what the model has always done.
+
 - **THE AUDIT OF 2026-11-06 WAS FIXED THE SAME DAY. Read this before the
   audit entry below it, which this supersedes in part.** `coverage.py` now
   reads **3 of 255 printed effects unmodelled, in 3 decks**, against 68 in 13

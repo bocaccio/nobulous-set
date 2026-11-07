@@ -15,37 +15,52 @@ NAP  Nobulous Apprenticeship Program
   difficulty = Credit goal / Setbacks in the deck; FINF at Reduce 1
 
                             no NRJ    Tier I   Tier II  Tier III
-  Easy (5 Cr, 4 Sb)          51.6%     49.5%     37.0%     41.5%
-  Standard (6 Cr, 4 Sb) *     43.8%     41.8%     31.7%     36.3%
-  Hard (7 Cr, 5 Sb)          34.4%     31.0%     24.8%     29.9%
-  Nobulous (8 Cr, 6 Sb)      26.0%     23.6%     19.8%     24.9%
+  Easy (5 Cr, 3 Sb)          56.3%     52.6%     42.9%     46.9%
+  Standard (6 Cr, 3 Sb) *     48.6%     46.5%     36.4%     40.9%
+  Hard (7 Cr, 4 Sb)          38.4%     35.1%     28.5%     33.2%
+  Nobulous (8 Cr, 5 Sb)      29.4%     27.2%     22.6%     28.4%
   
     * Standard difficulty. Mean of the six Apprentices.
-    RE-MEASURED at the end of 2026-11-06 at 12,000 games a cell
-    rather than 20,000, by the fix pass at the bottom of this
-    file.  Regenerate this block with run_all.py when there is
-    time for a full pass.
-    THE WHOLE COLUMN FELL ABOUT 5 POINTS, and ONE change did all
-    of it: the colour rule is now enforced on the SUCCESSES
-    rather than on the commit, which is what rules/nap.html
-    prints - "a successful die matching its color dot, Red as
-    wild, or two SUCCESSFUL dice of the same other color".  This
-    model asked only which dice were COMMITTED, so every figure
-    published before today described a game more generous than
-    the cards.  nap.COLOR_RULE_ON_SUCCESS = False reproduces
-    them.
-    Everything else that went in that day is NET NEUTRAL, which
+    Re-measured 2026-11-06 at the full 20,000 games a cell.
+    TWO THINGS MOVED ON 2026-11-06 AND THEY VERY NEARLY CANCEL,
+    which is why this block reads within a point and a half of
+    what it held that morning - 55.5 / 48.8 / 37.5 / 29.7 solo,
+    against 56.3 / 48.6 / 38.4 / 29.4 now.
+      THE COLOUR RULE went onto the SUCCESSES rather than the
+    commit, which is what rules/nap.html prints: "a successful
+    die matching its color dot, Red as wild, or two SUCCESSFUL
+    dice of the same other color".  This model asked only which
+    dice were COMMITTED and never whether they succeeded, so
+    every figure published before today described a game more
+    generous than the cards, by about 5 points at every rung.
+    nap.COLOR_RULE_ON_SUCCESS = False reproduces them.
+      THE SETBACK COUNTS CAME DOWN ONE AT EVERY RUNG, 4/4/5/6 to
+    3/3/4/5, which is worth about the same 5 points back.  So the
+    ladder sits where it was published and the game underneath it
+    is now the printed one.  The Credit goals did not move and no
+    card was reprinted - the count has never been on a card.  See
+    rules/RULES_CHANGELOG.txt, 2026-11-06.
+      EVERYTHING ELSE THAT WENT IN THAT DAY IS NET NEUTRAL, which
     is the check on eleven exam restrictions, eight tier-deck
-    effects, two Task effects and the coupon fix all landing
-    together: with the colour rule off the grid reads 54.8 / 52.8
-    / 40.6 / 45.2 at Easy and 48.4 / 44.7 / 34.9 / 40.3 at
-    Standard, every cell within about a point of what this block
-    held before today.
-    THE RE-PEG THIS NEEDS IS MEASURED AND NOT APPLIED - see the
-    fix pass at the bottom of this file.  One Setback off each
-    rung restores the old solo column almost exactly, and the
-    Setback count is printed in rules/nap.html, so it is a rules
-    decision rather than a model one.
+    effects, two Task effects and the coupon fix all landing at
+    once: at the old counts with the colour rule off, the grid
+    read 54.8 / 52.8 / 40.6 / 45.2 at Easy and 48.4 / 44.7 / 34.9
+    / 40.3 at Standard.
+    AND ONE THREE-WAY DISAGREEMENT THE RE-PEG UNCOVERED, now down
+    to the two hard rungs.  rules/nrj.html says a tier sets the 6
+    base Setbacks ASIDE and shuffles in exactly 3 Following ones,
+    "never both kinds together", and the lab plays that; this
+    model mixes them, 3 Following plus whatever the difficulty's
+    count leaves over.  Since the re-peg the two readings AGREE at
+    Easy and Standard, where the count is 3.  At Hard and Nobulous
+    the PRINTED reading INVERTS THE TIER - Tier I reads 40.1% and
+    34.7% against solo columns of 38.6% and 30.3%, so turning the
+    overlay ON makes the two hard rungs EASIER - while the model's
+    reading keeps it a penalty at 35.8% and 27.4%.  The rules text
+    is the thing that is wrong here, not the model, and the cheapest
+    fix is a rules sentence: set aside only as many base Setbacks
+    as you shuffle in Following ones.  RAISED, NOT APPLIED -
+    nap.FOLLOWING_REPLACE_ALL measures the printed reading.
     THE NOTE BELOW IS FROM EARLIER THE SAME DAY and describes the
     Tier III column as it stood then.
     THE TIER III COLUMN FELL 10 POINTS ON 2026-11-06, and the
