@@ -875,10 +875,21 @@ Each of these only appears a few turns in.
   7. **The six Corrupted Limitations**, the deck the audit called the only
      one the model never drew. Five constrain the allocation, which this
      model builds explicitly, so they apply to the plan after allocation and
-     before the roll; Deprecated Function is a scoring corruption. **And the
-     stand-in was too soft:** AoS Tier II at Standard falls from 33.2% to
-     27.4% when the six real cards replace `CORRUPT_CHANCE`. Every Tier II
-     and Tier III figure published before today was measured through it.
+     before the roll; Deprecated Function is a scoring corruption.
+     **The stand-in turned out to be close, and finding that out took a
+     second look at the implementation.** Applied as written first — the
+     constraint checked against a plan built *without* it, surplus dice
+     simply deleted — the six read 27.4% at Standard against the stand-in's
+     33.6%, which would have made them savage. That 3.5 points was a **model
+     artefact**: a player allocating under "the first element must receive
+     more dice than the last" arranges the same dice differently rather than
+     throwing three away, so `corrupt_plan` now *moves* a shed die to any
+     element that will legally take it and only leaves it uncommitted when
+     none will. Rearranged, the printed cards read **31.7%** against 33.6% —
+     1.9 points harsher, a well-calibrated replacement rather than a
+     re-pitch. An allocation constraint applied *after* allocation is not
+     the same card as one applied during it, and the difference ran the
+     wrong way by twice the real effect.
   8. **Prodigy had no ability for the whole life of `nap.py`** — the clearest
      case in the set of a card that cannot be modelled by itself. It relaxes
      a rule the model did not have: `rules/nap.html` wants "a successful die
@@ -938,10 +949,18 @@ Each of these only appears a few turns in.
     Diagnostic Port wants "no element over-allocated" and `allocate()` fills
     every element to Target + 1 because the free die is worth having, so the
     condition is false by construction.
-  - **Claiming a Backdoor Routine costs exactly what it pays.** At Standard,
-    Tier III against Tier II: never +0.0, always +0.0, and claiming only the
-    two Routines worth more than a Program Reward +3.2. Four of the six are
-    worth less than the Reward they cost, so the best line declines them.
+  - **AoS Tier III is not a recovery tier any more.** It read 46.6% at
+    Standard against a Tier II of 33.6% — a +13.0 rebound, the shape the tier
+    structure intends — because the model was granting two Routines free.
+    Charged what the cards print, Tier III against Tier II reads never +0.0,
+    always −0.5, and **+3.7** claiming only what beats a Program Reward
+    (+3.6 on the 12,000-game grid). The whole Tier III column falls 10–12
+    points and Tier II 1–1.9. Four of the six Routines are worth less than
+    the Reward they cost, so the best line declines them. The six Routines
+    are a *campaign* mechanic — the finale retains 2 AoS cards and each
+    takes 2 off an Exhibit's Target — and
+    a standalone AoS game now gets almost nothing from Tier III. Whether that
+    is the intent is a design call, not a model one.
   - **Neural Response Screening's Crit clause is in the wrong idiom.** It
     prints "at least 1 Crit must contribute to **complete this Assignment**";
     a Final Exam has no completion step, it charges 1 Health per success

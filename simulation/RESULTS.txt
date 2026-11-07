@@ -15,12 +15,39 @@ NAP  Nobulous Apprenticeship Program
   difficulty = Credit goal / Setbacks in the deck; FINF at Reduce 1
 
                             no NRJ    Tier I   Tier II  Tier III
-  Easy (5 Cr, 4 Sb)          55.5%     51.9%     41.7%     46.5%
-  Standard (6 Cr, 4 Sb) *     48.8%     44.2%     36.1%     40.0%
-  Hard (7 Cr, 5 Sb)          37.5%     33.1%     28.1%     31.8%
-  Nobulous (8 Cr, 6 Sb)      29.7%     25.5%     22.1%     25.8%
+  Easy (5 Cr, 4 Sb)          51.6%     49.5%     37.0%     41.5%
+  Standard (6 Cr, 4 Sb) *     43.8%     41.8%     31.7%     36.3%
+  Hard (7 Cr, 5 Sb)          34.4%     31.0%     24.8%     29.9%
+  Nobulous (8 Cr, 6 Sb)      26.0%     23.6%     19.8%     24.9%
   
     * Standard difficulty. Mean of the six Apprentices.
+    RE-MEASURED at the end of 2026-11-06 at 12,000 games a cell
+    rather than 20,000, by the fix pass at the bottom of this
+    file.  Regenerate this block with run_all.py when there is
+    time for a full pass.
+    THE WHOLE COLUMN FELL ABOUT 5 POINTS, and ONE change did all
+    of it: the colour rule is now enforced on the SUCCESSES
+    rather than on the commit, which is what rules/nap.html
+    prints - "a successful die matching its color dot, Red as
+    wild, or two SUCCESSFUL dice of the same other color".  This
+    model asked only which dice were COMMITTED, so every figure
+    published before today described a game more generous than
+    the cards.  nap.COLOR_RULE_ON_SUCCESS = False reproduces
+    them.
+    Everything else that went in that day is NET NEUTRAL, which
+    is the check on eleven exam restrictions, eight tier-deck
+    effects, two Task effects and the coupon fix all landing
+    together: with the colour rule off the grid reads 54.8 / 52.8
+    / 40.6 / 45.2 at Easy and 48.4 / 44.7 / 34.9 / 40.3 at
+    Standard, every cell within about a point of what this block
+    held before today.
+    THE RE-PEG THIS NEEDS IS MEASURED AND NOT APPLIED - see the
+    fix pass at the bottom of this file.  One Setback off each
+    rung restores the old solo column almost exactly, and the
+    Setback count is printed in rules/nap.html, so it is a rules
+    decision rather than a model one.
+    THE NOTE BELOW IS FROM EARLIER THE SAME DAY and describes the
+    Tier III column as it stood then.
     THE TIER III COLUMN FELL 10 POINTS ON 2026-11-06, and the
     reason is a cost, not a power.  The 6 Devious Opportunities
     REPLACE the 6 base Opportunities, but they were cheaper than
@@ -69,9 +96,16 @@ BAT  Build-a-Tyrant
 
                             no NRJ    Tier I   Tier II  Tier III
   Easy                       62.7%     58.4%     45.5%     54.2%
-  Standard                   53.2%     50.1%     38.7%     47.9%
-  Hard                       40.1%     38.6%     27.9%     37.2%
-  Nobulous                   28.1%     26.3%     18.6%     27.3%
+  Standard                   53.2%     50.1%     38.5%     48.0%
+  Hard                       40.1%     38.6%     28.0%     37.2%
+  Nobulous                   28.1%     26.3%     18.7%     27.3%
+
+    UNCHANGED BY THE FIX PASS of 2026-11-06, which is the point.
+    Redundant Organs' printed save went in - the only thing in
+    BAT that moved - and it fires in 12.6% of Tier II games and
+    is worth 0.0, because a Rat holding a Value-5 Upgrade is
+    almost never reached in Health at all.  Implemented,
+    reachable, firing, and not a lever: all four are findings.
 
     THE TIER III COLUMN ROSE 4.5 POINTS ON 2026-11-06 AND THE
     ONLY CARD THAT CHANGED WAS ONE REWARD'S TIMING.  Until then
@@ -97,11 +131,37 @@ AoS  Automaton of Shale
   difficulty = the Routine/Specialized/Unstable mix
 
                             no NRJ    Tier I   Tier II  Tier III
-  Easy  3/3/2                59.6%     48.8%     41.9%     56.9%
-  Standard  2/3/3            52.0%     40.8%     33.6%     46.6%
-  Hard  1/3/4                43.3%     32.6%     25.5%     38.9%
-  Nobulous  0/3/5            35.2%     25.2%     18.0%     30.7%
+  Easy  3/3/2                59.0%     47.8%     40.8%     45.2%
+  Standard  2/3/3            50.5%     39.1%     32.5%     36.1%
+  Hard  1/3/4                42.3%     31.1%     25.7%     27.7%
+  Nobulous  0/3/5            34.5%     24.7%     18.6%     21.2%
 
+    RE-MEASURED at the end of 2026-11-06 at 12,000 games a cell
+    rather than 20,000, by the fix pass at the bottom of this
+    file.  Regenerate this block with run_all.py when there is
+    time for a full pass.  The solo and Tier I columns are the
+    same measurement as before within sampling - neither change
+    that day touches those tiers, which is the check.
+    TIER III FELL 10-12 POINTS, AND NOT ONE AoS CARD CHANGED.
+    Every one of the six Backdoor Routines prints "Claiming gives
+    up the next Program Reward you would claim" and nothing
+    charged it, so the model was handing Tier III two free cards
+    out of a deck whose Program Rewards are the only way Health
+    is ever regained - two of them a permanent +1 REC and +1 STR
+    that also retire the Program.  Charged, Tier III is +3.6 over
+    Tier II rather than +13.0, so AoS TIER III IS NO LONGER A
+    RECOVERY TIER.  The six Routines are a campaign mechanic: the
+    finale retains 2 AoS cards and each takes 2 off an Exhibit's
+    Target, a value this module does not score.  Whether a
+    standalone AoS game should get almost nothing from Tier III
+    is a design call and is RAISED, not decided here.
+    aos.BACKDOOR_COSTS_REWARD = False restores the free claims,
+    and BACKDOOR_CLAIM = "setup" the pre-2026-11-06 grant.
+    TIER II FELL 1-1.9 POINTS, which is the six printed Corrupted
+    Limitations replacing the CORRUPT_CHANCE stand-in - a
+    well-calibrated replacement rather than a re-pitch.
+    CORRUPT_MODE = "generic" restores the stand-in.
+    THE NOTE BELOW IS FROM EARLIER THE SAME DAY.
     ALL THREE TIER COLUMNS ROSE 5-6 POINTS ON 2026-11-06 WHEN ONE
     TIER I CARD WAS CAPPED, and they had to: "I Don't Have Time
     for This" is 1 of 6 drawn at setup and every tier includes
@@ -1722,15 +1782,39 @@ FIXING WHAT THE AUDIT FOUND, 2026-11-06
      cards out of a deck whose Program Rewards are the only way
      Health is ever regained, two of them a permanent +1 REC and
      +1 STR.
-       Which makes WHETHER TO CLAIM a decision the model did not
-     have, and the measurement is the finding: claiming everything
-     costs exactly what it pays.  At Standard, Tier III against
-     Tier II - never +0.0, always +0.0, and claiming only the two
-     Routines worth more than a Program Reward +3.2.  The spread
-     was raised by the audit and is now priced through the cost:
-     four of the six are worth less than the Reward they cost, so
-     the best line declines them.  BACKDOOR_WHEN = "always" is
-     the check that all six are reachable.
+       WHICH MAKES WHETHER TO CLAIM A DECISION the model did not
+     have, and the measurement is the finding.  At Standard, Tier
+     III against Tier II, 6000 games a cell:
+
+       never   decline everything                31.7%   +0.0
+       always  claim whatever is offered         31.2%   -0.5
+       value   claim only what beats a Reward    35.4%   +3.7
+
+     and +3.6 on the 12,000-game grid at the top of this file.
+
+     CLAIMING EVERYTHING COSTS SLIGHTLY MORE THAN IT PAYS.  The
+     two recovery Routines are worth +6 to +7 each and the other
+     four about nothing, so two claims spend two Program Rewards
+     and buy rather less than two useful cards.  The spread the
+     audit raised is now priced through the cost: four of the six
+     are worth less than the Reward they cost, so the best line
+     declines them.  BACKDOOR_WHEN = "always" is the check that
+     all six are reachable.
+       The claim also gives up THIS Program's Reward, which is
+     face up, so the policy declines when that Reward is the
+     permanent +1 REC or +1 STR - both of which also retire the
+     Program and shorten every later cycle.  No Routine is worth
+     either.  Letting the policy read the card it is giving up is
+     worth +0.5 over claiming blind.
+       AND SO AoS TIER III IS NOT A RECOVERY TIER ANY MORE.  It
+     read 46.6% at Standard against a Tier II of 33.6% - a +13.0
+     rebound, and the shape the tier structure intends - because
+     the model was granting two cards free.  Charged what the
+     cards print, it reads +3.7.  RAISED: the six Routines are a
+     campaign mechanic, since the finale retains 2 AoS cards and
+     each takes 2 off an Exhibit's Target, and a standalone AoS
+     game gets almost nothing from Tier III.  Whether that is the
+     intent is a design call and not a model one.
        AND ONE CLAIM CONDITION IS EFFECTIVELY UNREACHABLE.
      Re-measured, the six conditions fire in 68.2 / 65.7 / 61.5 /
      41.9 / 18.8 / 0.1% of games - the old note here said "five of
@@ -1818,11 +1902,24 @@ FIXING WHAT THE AUDIT FOUND, 2026-11-06
      to the pool UNCOMMITTED, because none of these cards spends
      a die - Stack Overflow is the one that does and says so.
      audit.py now draws each at 16.6-16.7%.
-       AND THE STAND-IN WAS TOO SOFT.  CORRUPT_CHANCE = 0.50 with
-     2 dice withheld reads easier than the printed cards: AoS
-     Tier II at Standard falls from 33.2% to 27.4% when the six
-     real cards replace it.  Every Tier II and Tier III figure
-     published before today was measured through that stand-in.
+       THE STAND-IN WAS CLOSE, AND GETTING THERE TOOK A SECOND
+     LOOK AT THE IMPLEMENTATION.  Applied as written first -
+     constraint checked against a plan built WITHOUT it, surplus
+     dice simply deleted - the six cards read 27.4% at Standard
+     against the stand-in's 33.6%, which would have made them
+     savage.  That 3.5 points was a MODEL ARTEFACT: a player
+     allocating under "the first element must receive more dice
+     than the last" arranges the same dice differently rather
+     than throwing three of them away, so corrupt_plan now MOVES
+     a shed die to any element that will legally take it and only
+     leaves it uncommitted when none will.  Rearranged, the six
+     printed cards read 31.7% against the stand-in's 33.6% - 1.9
+     points harsher, which is a well-calibrated replacement
+     rather than a re-pitch.
+       THE LESSON IS WORTH MORE THAN THE NUMBER.  An allocation
+     constraint applied AFTER allocation is not the same card as
+     one applied during it, and the difference ran the wrong way
+     by twice the real effect.
 
   8  PRODIGY HAD NO ABILITY FOR THE WHOLE LIFE OF nap.py, and it
      is the clearest case in the set of a card that cannot be

@@ -599,8 +599,17 @@ statlines really are identical the whole spread is ability text:
 | game | best | worst | spread |
 |---|---|---|---|
 | AoS Technicians | Debugger 54.6% | Compiler 47.1% | 7.5 |
-| NAP Apprentices | Technician 80.8% | Prodigy 73.5% | 7.3 |
+| NAP Apprentices | Technician 49.3% | Savant 41.1% | 8.2 |
 | BAT Lab Rat sides | tool_keeper 53.2% | adaptation 49.6% | 3.6 |
+
+The NAP row was `Technician 80.8% / Prodigy 73.5%` until 2026-11-06, which
+was a reading from a much earlier calibration and had Prodigy worst for the
+plainest of reasons: **Prodigy had no ability.** It prints a relaxation of
+the colour rule and `nap.py` enforced that rule on the COMMIT rather than on
+the successes, so there was nothing to relax and `ABILITIES` mapped it to
+`None` - while Prodigy was the default in `nap.run` and the Apprentice
+`audit.py` audits NAP with. With `COLOR_RULE_ON_SUCCESS` in, the ability is
+worth **+4.4 points**, the largest of the six, and Prodigy is mid-field.
 
 At Standard with no tier module; the full tables are in `RESULTS.txt`, and all
 twenty cards are listed in `cards.py`. BAT's axis is not a pick of one card:

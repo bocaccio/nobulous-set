@@ -545,6 +545,12 @@ BACKDOOR_CLAIMS = 2
 # best two" is solved rather than chosen: Tier III reads 77.0% of the solo
 # column on fork+garbage and 65.5% on root+diag. Raised, not fixed.
 #
+# THE FIGURES ABOVE WERE MEASURED WITH CLAIMING FREE, which it is not - see
+# BACKDOOR_COSTS_REWARD. Each is the card's value against a floor, not its
+# value net of the Program Reward it costs, and four of the six do not cover
+# that cost at all. They are kept as the cards' gross worth, which is what
+# the spread question is about.
+#
 # Packet Sniffer's 0.0 is BY CONSTRUCTION, not by measurement, and the reason
 # survived a second look on 2026-11-06. The reward is information - "Later,
 # look at the next Limitation before selecting a Program" - and it is worth
@@ -593,17 +599,26 @@ BACKDOOR_CLAIM = "earned"
 BACKDOOR_COSTS_REWARD = True
 
 # AND SO THERE IS NOW A DECISION ABOUT WHETHER TO CLAIM, which this model did
-# not have while claiming was free. MEASURED 2026-11-06 at Standard, and the
-# result is the finding:
+# not have while claiming was free. MEASURED 2026-11-06 at Standard, against
+# a Tier II of 31.7%:
 #
-#   never   keep every Program Reward             Tier III == Tier II
-#   always  claim the best card offered, to the   Tier III == Tier II
+#   never   decline everything                   31.7%   +0.0
+#   always  claim whatever is offered, to the    31.2%   -0.5
 #           cap of 2
+#   value   claim only what beats the Reward     35.4%   +3.7
 #
-# Claiming everything costs exactly what it pays. The two recovery Routines
-# are worth +6 to +7 each and the other four about nothing, so a cap of 2
-# claims spends two Program Rewards and buys, on average, rather less than
-# two useful cards.
+# CLAIMING EVERYTHING COSTS SLIGHTLY MORE THAN IT PAYS. The two recovery
+# Routines are worth +6 to +7 each and the other four about nothing, so a cap
+# of 2 claims spends two Program Rewards and buys rather less than two useful
+# cards.
+#
+# WHICH MAKES AoS TIER III NOT A RECOVERY TIER ANY MORE. It read 46.6%
+# against a Tier II of 33.6% - a +13.0 rebound, and the shape the tier
+# structure intends - because the model granted two cards free. Charged what
+# the cards print it reads +3.7. The six Routines are a CAMPAIGN mechanic:
+# the finale retains 2 AoS cards and each takes 2 off an Exhibit's Target, a
+# value this module does not score. Whether a standalone AoS game should get
+# almost nothing from Tier III is a design call. RAISED, not fixed.
 #
 #   "value"  claim only the Routines worth more than a Program Reward.
 #            Priced one at a time, that is Resource Fork and Garbage
@@ -615,6 +630,10 @@ BACKDOOR_COSTS_REWARD = True
 #   "never"  decline everything.
 BACKDOOR_WHEN = "value"
 BACKDOOR_WORTH = ("fork", "garbage")
+# Program Rewards no Routine is worth giving up. Both are permanent AND
+# retire the Program, so each is worth more than one use of anything in the
+# Backdoor deck. Under "value" the policy keeps these and claims nothing.
+BACKDOOR_TOO_DEAR = ("rec", "str")
 
 # Condition name (as BACKDOOR_NAMES prints it) -> the key the reward code
 # uses. One table, so a card cannot be claimed under one name and spent
@@ -1108,41 +1127,69 @@ class Game(object):
             list((collections.Counter(self.available) - used).elements()),
             self.rng)
 
-        def drop(i):
-            """One die off element i, back to the pool. False if illegal."""
+        def cap(j):
+            return targets[j] + 1
+
+        def shed(i, allow):
+            """One die off element i, MOVED somewhere legal if anywhere will
+            take it and left uncommitted if not.
+
+            A rearrangement before a loss, because none of these six cards
+            spends a die and a player allocating under the constraint in the
+            first place would not either. Applying the constraint to a plan
+            built WITHOUT it and simply deleting the surplus measured several
+            points harsher at Tier II, and that difference is a model
+            artefact rather than anything the card prints.
+            """
             if len(plan[i]) <= floor[i]:
                 return False
-            plan[i].pop()
+            die = plan[i].pop()
+            for j in range(n):
+                if j != i and allow(j) and len(plan[j]) < cap(j):
+                    plan[j].append(die)
+                    return True
+            spare.append(die)          # uncommitted, back in the pool
             return True
 
         def add(i):
-            if not spare:
+            if not spare or len(plan[i]) >= cap(i):
                 return False
             plan[i].append(spare.pop(0))
             return True
 
         if name == "Uneven Architecture" and n >= 2:
-            # Dropping from the last element is cheaper than funding the
-            # first past its cap, and the last element is the one the
-            # allocator has already decided it cares least about.
-            while len(plan[0]) <= len(plan[n - 1]):
-                if not drop(n - 1) and not add(0):
+            # Fund the first element if the pool can; otherwise take from the
+            # last, which is the element the allocator cares least about.
+            for _ in range(24):
+                if len(plan[0]) > len(plan[n - 1]):
+                    break
+                if not add(0) and not shed(n - 1, lambda j: True):
                     break
         elif name == "Memory Collision":
+            # Left to right, and a shed die may only move RIGHT: moving it
+            # left could break a pair this loop has already separated.
             for i in range(1, n):
-                while len(plan[i]) == len(plan[i - 1]):
-                    if not drop(i) and not add(i):
+                for _ in range(8):
+                    if len(plan[i]) != len(plan[i - 1]):
+                        break
+                    if not add(i) and not shed(i, lambda j, i=i: j > i):
                         break
         elif name == "Circular Reference" and n >= 2:
-            while len(plan[0]) == len(plan[n - 1]):
-                if not drop(n - 1) and not add(0) and not drop(0):
+            for _ in range(24):
+                if len(plan[0]) != len(plan[n - 1]):
+                    break
+                if not add(0) and not shed(n - 1, lambda j: True):
                     break
         elif name == "Hard-Coded Constant":
             i = self.rng.randrange(n)
-            while len(plan[i]) > targets[i] and drop(i):
-                pass
-            while len(plan[i]) < targets[i] and add(i):
-                pass
+            for _ in range(24):
+                if len(plan[i]) == targets[i]:
+                    break
+                if len(plan[i]) > targets[i]:
+                    if not shed(i, lambda j: True):
+                        break
+                elif not add(i):
+                    break
         elif name == "Stack Overflow":
             # "exhaust one die committed to that element before rolling" -
             # the one card of the six that really does cost a die.
@@ -1764,7 +1811,7 @@ class Game(object):
             if sum(1 for _n, t2, tot, _c, _m in seen if tot == t2) >= 2:
                 here.add("Root Access")
             self.met |= here
-            self.claim_backdoor(here)
+            self.claim_backdoor(here, PROGRAM_REWARDS.get(deck), pid)
 
         # Root Access: treat one failed element as successful. Under the pooled
         # model this is every charge, spent in any cycle to save a Program from
@@ -1831,7 +1878,7 @@ class Game(object):
         self.completed += 1
         return failed
 
-    def claim_backdoor(self, here):
+    def claim_backdoor(self, here, rewards=None, pid=None):
         """Claim a Routine off a Program that just met its printed condition.
 
         The best card the table offered, by BACKDOOR_ORDER - a player chooses,
@@ -1855,6 +1902,14 @@ class Game(object):
         offered = [BACKDOOR_KEY[n] for n in here]
         if BACKDOOR_WHEN == "value":
             offered = [k for k in offered if k in BACKDOOR_WORTH]
+            # The Reward this claim gives up is THIS Program's, and it is
+            # face up - so a player can see what the card costs. Two of the
+            # six Program Rewards are permanent and also retire the Program,
+            # which shortens every later cycle: no Routine is worth either
+            # of those, and declining is free.
+            if rewards and pid is not None:
+                if rewards[pid % len(rewards)] in BACKDOOR_TOO_DEAR:
+                    return
         for key in BACKDOOR_ORDER:
             if key in offered and key not in self.bkd:
                 self.bkd[key] = 1

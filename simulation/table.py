@@ -10,6 +10,16 @@ pressure peak and Tier III hands tools back.
 Reference: the 20 Strong Community Game Stats sheet puts the published games
 at 47-57%, and 53% across 955 recorded games. That is the band a finished
 game in this system lands in, and it is the yardstick for the tables below.
+
+DO NOT TRUST A SENTENCE IN THIS FILE ABOUT WHAT IS OR IS NOT MODELLED - run
+coverage.py. The prose below this line is commentary written at the time of a
+measurement and it has gone stale three separate times: it claimed BAT's
+Experiment effects were omitted after they were implemented, it claimed the
+Research Notes were a fungible token after they were split into six named
+cards, and it claimed finale.py had no hero code after the ten Imposter
+sides went in. coverage.py holds those same claims as PREDICATES over the
+live modules and exits non-zero when one stops being true, which is the only
+form of the claim that has ever stayed correct.
 """
 import sys
 import time
@@ -161,10 +171,13 @@ def main(games=DEFAULT):
     print("  exhausted: 0/0/0/0, 3/2/2/2, 3/3/3/2, 3/3/4/4 across Easy to")
     print("  Nobulous, aiming at 50/40/30/20 rather than at the 47-57%")
     print("  band. The figure below is the EASY rung, which is the pitch.")
-    print("  finale.py also carries no HERO code, so the ten Imposter")
-    print("  sides are measured as deltas against it in")
-    print("  simulation/proto/imposters.py - see that file, do not retype")
-    print("  its numbers here.")
+    print("  The ten Imposter sides went INTO finale.py on 2026-11-06,")
+    print("  ported from simulation/proto/imposters.py, which had them")
+    print("  implemented and calibrated while the shipping module had no")
+    print("  hero code at all. HERO = None is still the pitch - a side is")
+    print("  a DELTA against it - and it still reproduces the figure")
+    print("  below to the decimal. finale.py section 7 prints the roster;")
+    print("  do not retype its numbers here.")
     print()
     # THE SHIPPING FINALE IS finale.py. This section used to print nrj.py's
     # numbers and nothing else, so the headline NRJ figure on the results
@@ -377,17 +390,19 @@ def main(games=DEFAULT):
   Controlled Failure, needs a deliberate zero-dice turn the policy never
   takes.
 
-  It barely moved the column, because the limit is the REWARD side. bat.py
-  pools every claim into one counter, `self.notes`, and spends it on two of
-  the six printed rewards: recovering a Rat's dice in the battle, and
-  ignoring the +1 Target a revealed Specimen adds. The other four printed
-  rewards do nothing at all - choosing which Upgrade is Spliced after a
-  failure, tapping another Rat's Upgrade in the battle, discarding a
-  revealed Experiment, and placing Red directly on a Rat. Six separate
-  once-per-game cards are modelled as one fungible token spent on two of
-  them. Giving each claimed Note its own printed reward is the next lever
-  on this column, and it is a structural change to the module, not a
-  number.
+  IT BARELY MOVED THE COLUMN, BECAUSE THE LIMIT WAS THE REWARD SIDE - and
+  that was fixed on 2026-11-06. bat.py pooled every claim into one counter,
+  `self.notes`, and spent it on two of the six printed rewards; of those
+  two, one never fired, so the published Tier III column was measuring a
+  single card. Each Note is now its own named card with its own printed
+  reward, which took the column up 4.5 points. NOTE_REWARDS = False
+  restores the pooled token and reproduces the old figure exactly.
+
+  THIS PARAGRAPH SAID THE OPPOSITE UNTIL THEN, which is the running fault
+  in this file: it is prose about coverage, and prose about coverage goes
+  stale. simulation/coverage.py holds the same claims as predicates over
+  the live modules and fails when one stops being true. Run it rather than
+  reading this.
 
   INDEPENDENT FUNDING NEEDED A NEW TRIGGER, not a new number. The old card
   paid the LENDER a die, and the lender's dice are not the binding resource,
@@ -423,9 +438,17 @@ def main(games=DEFAULT):
               Target is out of reach, Field Retrofit swaps when the card on
               offer beats the Rat's worst. Over the 16 cells the whole deck
               is worth +1.4 points, so it roughly balances, which is what a
-              well-made deck should do. NRJ now omits 1 of its 24
-              Scenario effects, down from 18: see the Imposter section
-              below, and imposter.py.
+              well-made deck should do. Diagnostic Trial is still the
+              exception, and the reason is now exact rather than vague:
+              the card says "return it to the TOP", so it reorders
+              nothing, and the Experiment policy already commits the
+              MINIMUM expected to reach the Target, so there is nothing
+              to hold back on the strength of knowing what is next.
+              On 2026-11-06 everything else in this line was closed -
+              the 19 "omitted" Council Test effects turned out not to be
+              printed on the shipping Exhibit face at all, and the ten
+              Imposter sides went into finale.py. coverage.py reads 3 of
+              255 unmodelled; run it rather than reading this.
     desync    the model carried its own table of Experiment Targets and added
               TARGET_DELTA = 1 on top. That +1 was adopted and PRINTED onto
               the cards at commit b57eedd, so seven of the twenty Experiments
