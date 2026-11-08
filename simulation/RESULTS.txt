@@ -1963,14 +1963,32 @@ FIXING WHAT THE AUDIT FOUND, 2026-11-06
      exam would often find no Green die committed and be the same
      defect again.  A Crit contributes to 78% of sittings, so it
      is engaged nearly every time the card is drawn.
-       SO NAP'S COLUMN MOVES, AND THESE ARE THE FIRST FIGURES
+       SO NAP'S COLUMN MOVED, AND THESE ARE THE FIRST FIGURES
      MEASURED WITH ALL TWELVE RESTRICTIONS.  4000 games an
      Apprentice a cell, six Apprentices: solo 53.2 / 47.6 / 36.6 /
      28.2 against 56.5 / 48.9 / 37.9 / 29.2 before, so 1 to 3
      points, most of it at Easy, and -2.1 averaged over the whole
      16-cell grid.  EXAM_CRIT_VALUE = 2 reproduces the before
      column; it is not a reading of the card but the absence of
-     one.  Standard stays in the 47-57 band at 47.6 and no
+     one.
+       THE CARD'S BASE TARGET THEN CAME DOWN FROM 6 TO 5 AND PUT
+     THE LADDER BACK.  A restriction is priced against the Target
+     on its own card, and this Target was set while the clause did
+     nothing.  At 5 the grid reads 56.4 / 53.7 / 42.8 / 47.2 at
+     Easy, 49.5 / 47.0 / 37.3 / 41.7 at Standard, 38.6 / 35.8 /
+     28.5 / 33.1 at Hard and 29.8 / 27.0 / 22.9 / 28.2 at
+     Nobulous - within 0.7 of the pre-clause column in all sixteen
+     cells.  The band is the reason it mattered: the clause left
+     THREE OF SIX APPRENTICES under 47% at Standard and the Target
+     puts all six back in, at 49.9 / 48.6 / 53.4 / 47.1 / 51.0 /
+     48.3.
+       THE LADDER WAS THE WRONG LEVER.  Both dials in nap.LEVELS
+     are worth 4 to 6 points a step - one Setback off Standard
+     reads 52.1%, one Credit off 53.0% - so either would have
+     overshot a 1-to-3-point problem, and both are printed in
+     rules/nap.html.  Neural Response Screening is now the only
+     Target-5 exam of the twelve, which is what the only card that
+     reprices every Crit should look like.  Standard stays in the 47-57 band at 47.6 and no
      rung leaves its band.  The "before" column was never the game
      as printed: it was the game with one exam carrying no
      restriction at all.  Whether the ladder wants re-pegging for

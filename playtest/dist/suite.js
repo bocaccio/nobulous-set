@@ -37,7 +37,7 @@
     ["Council Etiquette Simulation","Theory","G",6,"Red cannot be committed; use at least 3 colors.",{noRed:true,minColors:3}],
     ["Identity Recall Demonstration","Theory","P",7,"At least 1 Blue and 1 Purple die must contribute.",{contribute:{blue:1,purple:1}}],
     ["Final Imposter Examination","Theory","Y",8,"Use at least 4 different colors. A Red Crit counts as 1 success.",{minColors:4,scoring:"redCrit1"}],
-    ["Neural Response Screening","Engineering","G",6,"Each Crit counts as 1 success instead of 2.",{scoring:"critAll1"}],
+    ["Neural Response Screening","Engineering","G",5,"Each Crit counts as 1 success instead of 2.",{scoring:"critAll1"}],
     ["Adaptive Reasoning Trial","Engineering","B",7,"Commit at least 4 dice. One Yellow Crit counts as 3 successes.",{minDice:4,scoring:"yellowCrit3"}],
     ["Council Recognition Drill","Engineering","B",7,"Red cannot be committed. At least 1 Purple die must contribute.",{noRed:true,contribute:{purple:1}}],
     ["Procedural Knowledge Review","Procedure","Y",7,"Red cannot be committed; use at least 3 different colors.",{noRed:true,minColors:3}],

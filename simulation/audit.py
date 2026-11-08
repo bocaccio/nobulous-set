@@ -80,11 +80,36 @@ def report(game, deck, total, seen, fired, note=None):
               % (i, pct(seen.get(i, 0), GAMES), pct(fired.get(i, 0), GAMES),
                  flag))
     if dead_seen or dead_fire:
-        print("    PROBLEM: %d never appear, %d never fire"
-              % (len(dead_seen), len(dead_fire)))
+        problem("%d never appear, %d never fire",
+                len(dead_seen), len(dead_fire))
 
 
 GAMES = 1500
+
+# THE ONE CLAIM CONDITION THIS MODEL CANNOT REACH, named here so that any
+# OTHER card falling under CONDITION_FLOOR is a PROBLEM rather than another
+# line of prose. Controlled Failure claims on deliberately committing zero
+# dice to an Experiment - throwing it away to bank the Note - which is a
+# real line for a player and one no policy in bat.py takes. Priced
+# 2026-11-08 at Standard: granted free it is worth -0.5 points, so the
+# card is dead twice over and implementing the policy would not pay.
+NOTE_DECLARED = {
+    "controlled": "committing zero dice, which no policy here takes",
+}
+
+# EVERY PROBLEM LINE GOES THROUGH problem(), so the exit code cannot drift
+# from what the report says. AGENTS.md groups this file with coverage.py
+# under "exit code = stale claims" and it had no exit code at all until
+# 2026-11-08: four PROBLEM sites printed into a run that exited 0, so
+# nothing in CI could fail on them.
+PROBLEMS = []
+
+
+def problem(line, *args):
+    """Print a PROBLEM line and remember that it fired."""
+    text = line % args if args else line
+    PROBLEMS.append(text)
+    print("    PROBLEM: %s" % text)
 
 
 def audit_bat(games):
@@ -93,11 +118,32 @@ def audit_bat(games):
     exp_seen = collections.Counter()
     att_seen = collections.Counter()
     mod_held = collections.Counter()
-    note_claim = collections.Counter()
+    note_met = collections.Counter()      # the printed condition fired
+    note_held = collections.Counter()     # and grant_note gave you the card
+    note_spent = collections.Counter()    # and its one use was spent
     side_seen = collections.Counter()
 
     real_draw = bat.Game.draw_attack
     real_turn = bat.Game.splice_turn
+    real_grant = bat.Game.grant_note
+    real_use = bat.Game.use_note
+
+    # grant_note DECLINES - on the claim cap, and on the timing that makes a
+    # claim payable - so a condition firing is not a card in hand, and the
+    # old column could not tell the two apart. Recorded per game, not per
+    # call, because each Note is once per game.
+    def grant(self, key):
+        real_grant(self, key)
+        if self.hold_note(key):
+            self._held = getattr(self, "_held", set())
+            self._held.add(key)
+
+    def use(self, key):
+        got = real_use(self, key)
+        if got:
+            self._spent = getattr(self, "_spent", set())
+            self._spent.add(key)
+        return got
 
     def draw(self):
         c = real_draw(self)
@@ -114,6 +160,8 @@ def audit_bat(games):
         return r
 
     bat.Game.draw_attack = draw
+    bat.Game.grant_note = grant
+    bat.Game.use_note = use
     try:
         for i in range(games):
             g = bat.Game("Standard", random.Random(i), card_effects=True,
@@ -126,9 +174,15 @@ def audit_bat(games):
                 for m in r.mod_ids:
                     mod_held[m] += 1
             for n in g.claimed:
-                note_claim[n] += 1
+                note_met[n] += 1
+            for n in getattr(g, "_held", ()):
+                note_held[n] += 1
+            for n in getattr(g, "_spent", ()):
+                note_spent[n] += 1
     finally:
         bat.Game.draw_attack = real_draw
+        bat.Game.grant_note = real_grant
+        bat.Game.use_note = real_use
 
     print()
     print("  BAT - Tyrant Attacks (%d cards)" % bat.ATTACK_COUNT)
@@ -149,12 +203,40 @@ def audit_bat(games):
     print("  BAT - Research Notes (6 cards, Tier III)")
     # All six, from bat.NOTE_ORDER, so a seventh card cannot be added
     # without appearing here. This loop used to name five by hand and
-    # describe the sixth as unmodelled; it is modelled, and it is claimed
-    # in 0% of games because no policy here commits zero dice on purpose.
+    # describe the sixth as unmodelled.
+    print("    'met' is how often the printed CONDITION fired, 'held' how")
+    print("    often grant_note then gave you the card - it declines past")
+    print("    the claim cap and before the claim can be paid for - and")
+    print("    'spent' how often the card's one use was taken. The column")
+    print("    here read g.claimed and was LABELLED claimed until")
+    print("    2026-11-08, so it was the met figure under the held name.")
     for key in bat.NOTE_ORDER:
-        flag = "   <-- never claimed" if not note_claim[key] else ""
-        print("    %-22s claimed %5.0f%%%s"
-              % (key, pct(note_claim[key], games), flag))
+        m, h = pct(note_met[key], games), pct(note_held[key], games)
+        flag = ""
+        if m < CONDITION_FLOOR:
+            flag = "   <-- UNREACHABLE, met %.1f%%" % m
+            if key in NOTE_DECLARED:
+                flag = "   <-- DECLARED: %s" % NOTE_DECLARED[key]
+        elif not note_held[key]:
+            flag = "   <-- met but never held"
+        elif not note_spent[key]:
+            # HELD AND NEVER SPENT is a card that does nothing, and it is
+            # not a PROBLEM here because one card is in that state ON
+            # PURPOSE: Unexpected Resilience took its printed timing on
+            # 2026-11-06 - "when a Rat has no available dice" - and that
+            # almost never arises. bat.RESILIENCE_TRIGGER = "short" is the
+            # unrestricted card, priced at 57.9% against 47.9%. A SECOND
+            # card arriving here would want reading, not a dial.
+            flag = "   <-- held but never spent"
+        print("    %-22s met %4.0f%%   held %4.0f%%   spent %4.0f%%%s"
+              % (key, m, h, pct(note_spent[key], note_held[key] or 1), flag))
+    _cold = [k for k in bat.NOTE_ORDER
+             if pct(note_met[k], games) < CONDITION_FLOOR
+             and k not in NOTE_DECLARED]
+    if _cold:
+        problem("%d of 6 Research Notes print a condition the game meets in "
+                "under %.0f%% of games: %s.", len(_cold), CONDITION_FLOOR,
+                ", ".join(_cold))
 
     print()
     print("  BAT - Lab Rat sides (8 sides)")
@@ -218,7 +300,7 @@ def audit_nap(games):
                 dead += 1
             print("    %-3d drawn %5.0f%% of games%s" % (i, pct(n, games), flag))
         if dead:
-            print("    PROBLEM: %d of %d never drawn" % (dead, total))
+            problem("%d of %d never drawn", dead, total)
 
     print()
     print("  NAP - Final Exams (%d cards)" % len(nap.EXAMS))
@@ -458,17 +540,16 @@ def audit_backdoor(games):
         # THE DISTINCTION THIS COLUMN EXISTS FOR. A card the policy declines
         # is a design question; a card whose CONDITION the game never meets
         # is a broken card, and the two look identical in the held column.
-        print("    PROBLEM: %d of 6 print a condition the game meets in"
-              % len(cold))
-        print("    under %.0f%% of games: %s."
-              % (CONDITION_FLOOR, ", ".join(BACKDOOR_NAMES[k] for k in cold)))
+        problem("%d of 6 print a condition the game meets in under %.0f%% "
+                "of games: %s.", len(cold), CONDITION_FLOOR,
+                ", ".join(BACKDOOR_NAMES[k] for k in cold))
         print("    That is not the policy declining them - it is the card")
         print("    asking for something the game's own best play never does.")
     dead = [k for k in aos.BACKDOOR_ORDER if not held[k]]
     if dead and aos.BACKDOOR_WHEN == "always":
         # Under "always" the policy claims whatever a condition offers, so a
         # card that is never held is a card the model cannot reach - a bug.
-        print("    PROBLEM: %d of 6 cannot be claimed at all." % len(dead))
+        problem("%d of 6 cannot be claimed at all.", len(dead))
     elif dead:
         # Under "value" it is a DECLINE, which is a different thing and not
         # a model fault: claiming costs the next Program Reward and these
@@ -585,3 +666,10 @@ def main(games=GAMES):
 
 if __name__ == "__main__":
     main(int(sys.argv[1]) if len(sys.argv) > 1 else GAMES)
+    # The exit code AGENTS.md says this file has. 0 PROBLEM lines at 1500 and
+    # at 6000 games on 2026-11-08, so this is not a dial being turned on over
+    # a known failure - it is a report that had no way to fail.
+    if PROBLEMS:
+        print()
+        print("%d PROBLEM(s) above." % len(PROBLEMS))
+    sys.exit(1 if PROBLEMS else 0)

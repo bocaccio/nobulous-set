@@ -1,3 +1,51 @@
+2026-11-08  NEURAL RESPONSE SCREENING DROPS TO A TARGET OF 5
+Base Target 6 becomes 5 on the one Final Exam whose clause reprices Crits.
+Nothing else moves: not the subject, not the Green dot, not the clause, and
+not a single number in nap.LEVELS or the difficulty table in rules/nap.html.
+
+A RESTRICTION IS PRICED AGAINST THE TARGET ON ITS OWN CARD.  The clause
+that replaced this exam's Assignment language earlier today is the first
+thing it has ever printed that costs the player anything, and the Target it
+printed was set when the clause did nothing.  Measured, the clause cost 1 to
+3 points across the ladder and left THREE OF SIX APPRENTICES BELOW THE 47%
+BAND FLOOR at Standard, where all six had been inside it.
+
+THE LADDER WAS THE WRONG LEVER AND THE MEASUREMENTS SAY WHY.  nap.LEVELS
+carries the two difficulty dials, and both are worth 4 to 6 points a step:
+
+  level     Cr / Sb      solo    one Sb off   one Cr off
+  Easy        5 / 3      53.0%        57.5%        58.8%
+  Standard    6 / 3      47.4%        52.1%        53.0%
+  Hard        7 / 4      36.4%        42.0%        43.1%
+  Nobulous    8 / 5      28.4%        32.3%        32.9%
+
+Every one of those overshoots a 1-to-3-point problem, and both are printed
+in rules/nap.html, so either would have been a difficulty re-pitch to fix
+one card.  The Target is worth about 2 points and is on the card itself.
+
+WHAT TARGET 5 READS, 4000 games an Apprentice a cell, six Apprentices:
+
+                       no NRJ   Tier I  Tier II Tier III
+  Easy                  56.4%    53.7%    42.8%    47.2%
+  Standard              49.5%    47.0%    37.3%    41.7%
+  Hard                  38.6%    35.8%    28.5%    33.1%
+  Nobulous              29.8%    27.0%    22.9%    28.2%
+
+That is within 0.7 of the column measured before the clause went in, in ALL
+SIXTEEN CELLS, and at Standard all six Apprentices are back inside the band:
+49.9 / 48.6 / 53.4 / 47.1 / 51.0 / 48.3, mean 49.7%.  So the card gained a
+restriction a player can act on and the published ladder did not move.
+
+IT IS NOW THE ONLY TARGET-5 EXAM OF THE TWELVE.  The others run 6 to 8, and
+this is the only one that reprices every Crit - a penalty that applies to
+every colour and bites in 78% of sittings.  A lower number on that card is
+what the restriction costs, printed where a player can see it.
+
+check_app_sync.py now compares the model's (subject, dot, Target) against
+the card's for all twelve exams, which nothing did before: the restriction
+TEXT check added earlier today holds the card against the LAB, and nap.py
+carried its own copy of the Targets that nothing read.
+
 2026-11-08  NEURAL RESPONSE SCREENING SPEAKS THE EXAM'S LANGUAGE
 The Final Exam read "At least 1 Crit must contribute to complete this
 Assignment".  It now reads "Each Crit counts as 1 success instead of 2".

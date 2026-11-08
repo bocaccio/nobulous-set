@@ -58,11 +58,22 @@ from dice import COLORS, EV, policy_value, roll
 # DEMAND targets did not move. NAP read well above the 47-57% community band
 # at every rung of its printed Credit ladder - Standard was 66.7% at Tier III
 # and 76.0% with no NRJ - and the Credit goal could not fix both axes at any
-# value. One more success on every check does: Standard lands at 51.1% and
-# 49.5%, all six Apprentices land in band on both axes, and the two axes
-# converge (the printed 9.3-point gap becomes -1.6) because raising the Exam
-# Targets is what the no-NRJ game actually leans on. The per-Apprentice
-# spread also narrows, 10.8 to 8.4 at Tier III.
+# value. One more success on every check did: MEASURED THAT DAY, Standard
+# landed at 51.1% and 49.5%, all six Apprentices were in band on both axes,
+# the two axes converged (the printed 9.3-point gap became -1.6) because
+# raising the Exam Targets is what the no-NRJ game actually leans on, and the
+# per-Apprentice spread narrowed 10.8 to 8.4 at Tier III.
+#
+# THAT PARAGRAPH IS HISTORY, AND HALF OF ITS BAND CLAIM IS NO LONGER TRUE.
+# Re-read 2026-11-08 at 12,000 games an Apprentice: Standard is 49.7% solo
+# with ALL SIX Apprentices in band (49.9 / 48.6 / 53.4 / 47.1 / 51.0 / 48.3)
+# and 41.6% at Tier III with NONE of them in it (39.4 at the bottom). Three things landed in between - the colour rule enforced on
+# SUCCESSES (about -5 points everywhere), the Setback re-peg, and the twelfth
+# exam restriction - and the Tier III axis went out of band with the first of
+# them, not with the last. The sentence sat unchallenged because nothing
+# checks a calibration claim: coverage.py holds predicates over printed
+# EFFECTS, and a win rate in a comment has no predicate at all. Date any
+# figure written here, and distrust the date first.
 #
 # TARGET_DELTA below is still a dial on top of these numbers, and still 0.
 TASKS = [
@@ -153,6 +164,18 @@ EXAM_CRIT_VALUE = 1
 # can also answer it, by committing another die. EXAM_CRIT_GATE restores the
 # printed gate reading, and the "crit" key on the card below is what it
 # attaches to - inert on its own.
+#
+# AND THE CARD'S BASE TARGET CAME DOWN TO 5 THE SAME DAY, which is the other
+# half of the same decision. A restriction has to be priced against the
+# Target on the card that prints it, and this one was not: the clause cost
+# 1 to 3 points across the ladder and left three of six Apprentices below the
+# 47% band floor at Standard. The two levers in LEVELS - the Credit goal and
+# the Setback count - are worth 4 to 6 points each, so either would have
+# overshot a 1-to-3-point problem; the Target is worth about 2 and is on the
+# card doing the damage. At 5 the grid sits within 0.7 of the pre-clause
+# column in all sixteen cells and all six Apprentices are back in band at
+# Standard. It is the only Target-5 exam of the twelve, which is what a card
+# that reprices every Crit should look like.
 EXAMS = [
     ("Anatomy", "B", 6, {"colors": 3}),
     ("Anatomy", "Y", 7, {"need": ("yellow", "blue")}),
@@ -160,7 +183,7 @@ EXAMS = [
     ("Theory", "G", 6, {"no_red": True, "colors": 3}),
     ("Theory", "P", 7, {"need": ("blue", "purple")}),
     ("Theory", "Y", 8, {"colors": 4, "crit_val": {"red": 1}}),
-    ("Engineering", "G", 6,
+    ("Engineering", "G", 5,
      {"crit_val": {"any": EXAM_CRIT_VALUE}, "crit": True}),
     ("Engineering", "B", 7, {"dice": 4, "crit_val": {"yellow": 3}}),
     ("Engineering", "B", 7, {"no_red": True, "need": ("purple",)}),

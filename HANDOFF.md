@@ -872,6 +872,25 @@ Each of these only appears a few turns in.
   python audit.py        # does it reach the table, and does it fire?
   ```
 
+  **Both exit non-zero now.** `audit.py` had four `PROBLEM` sites and no exit
+  code until 2026-11-08, so a run could print one and still pass: every
+  PROBLEM now goes through one `problem()` helper and the file exits 1 if any
+  fired. It is 0 today at 400, 600 and 1500 games. Its BAT Research Notes
+  section also grew the `met` / `held` / `spent` columns the AoS Backdoor
+  Routines got the same day — the old column read `g.claimed`, which is the
+  set of **conditions that fired**, while `grant_note` declines past the
+  claim cap and before a claim can be paid for, so "claimed 93%" was a *met*
+  figure under the *held* name. What that exposed: the conditions fire in
+  77–95% of games but you hold about 1.2 Notes, so the **cap decides which
+  card you get** (`losses` 68% held because it fires late, `compatibility` 9%
+  because it fires early); `resilience` is held in a quarter of games and
+  **spent in none**, which is its printed timing working as priced
+  (`RESILIENCE_TRIGGER = "short"` is the unrestricted card at 57.9% against
+  47.9%); and Controlled Failure's condition is met in **0%**, named in
+  `NOTE_DECLARED` so that any *other* card under the 5% floor is a PROBLEM
+  rather than another line of prose. Priced free it is worth −0.5, so
+  implementing the zero-commit policy it needs would not pay.
+
   **THE AUDIT ITSELF WAS WRONG IN THREE PLACES**, and those corrections
   matter more than the count:
 
@@ -1037,12 +1056,22 @@ Each of these only appears a few turns in.
     three covering every colour, deliberately: a single-colour clause on a
     Green-dot exam would often find no Green die committed and be the same
     dead clause again. A Crit contributes to **78%** of sittings, so it is
-    engaged nearly every time the card is drawn. NAP's column moves 1–3
-    points and these are **the first NAP figures measured with all twelve
-    restrictions** — the old column was the game with one exam unrestricted.
-    Standard solo reads 47.6% and stays in the 47–57% band; whether the
-    ladder wants re-pegging is raised, not taken. `EXAM_CRIT_GATE` restores
-    the printed gate.
+    engaged nearly every time the card is drawn. These are **the first NAP
+    figures measured with all twelve restrictions** — the old column was the
+    game with one exam unrestricted.
+  - **And the card's base Target came down from 6 to 5, the same day**, which
+    is the other half of that decision. The clause cost 1–3 points and left
+    **three of six Apprentices below the 47% band floor** at Standard where
+    all six had been inside it. A restriction has to be priced against the
+    Target on the card that prints it, and both levers in `nap.LEVELS` are
+    worth 4–6 points a step — one Setback off Standard reads 52.1%, one
+    Credit off 53.0% — so either would have overshot and both are printed in
+    `rules/nap.html`. At Target 5 the grid is **within 0.7 of the pre-clause
+    column in all sixteen cells** (56.4 / 53.7 / 42.8 / 47.2 at Easy, 49.5 /
+    47.0 / 37.3 / 41.7 at Standard) and all six Apprentices are back in band
+    at Standard. It is the only Target-5 exam of the twelve.
+    `EXAM_CRIT_VALUE = 2` reproduces the pre-clause column and
+    `EXAM_CRIT_GATE` the printed gate.
 
   ### The two that remain, and neither is an oversight
 

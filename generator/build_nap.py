@@ -88,7 +88,7 @@ EXAMS = [
   "State your name. Say it like you have always had it."),
  ("Final Imposter Examination", THE,'Y',8,"Use at least 4 different colors. A Red Crit counts as 1 success.",
   "Every answer is correct. That is what makes the Council suspicious."),
- ("Neural Response Screening", ENG,'G',6,"Each Crit counts as 1 success instead of 2.",
+ ("Neural Response Screening", ENG,'G',5,"Each Crit counts as 1 success instead of 2.",
   "Electrodes on, lights off. Try not to think anything incriminating."),
  ("Adaptive Reasoning Trial", ENG,'B',7,"Commit at least 4 dice. One Yellow Crit counts as 3 successes.",
   "The rules change halfway through. So does the examiner."),

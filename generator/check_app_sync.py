@@ -222,6 +222,15 @@ rows("build_nap EXAMS vs NAP_EXAMS", gn["EXAMS"], je,
      {"name": (G(0), G(0)), "subject": (G(1), G(1)),
       "color": (G(2), G(2)), "target": (G(3), G(3)),
       "restriction": (G(4), G(4))})
+# AND THE MODEL'S COPY OF THE SAME THREE NUMBERS, which nothing compared
+# either: the check above holds the card against the LAB, and nap.py carries
+# its own (subject, dot, Target) for all twelve. A Target that moves on the
+# card now has to move in both other owners. Neural Response Screening's
+# Target came down to 5 on 2026-11-08 and this is what makes that one edit
+# three.
+rows("build_nap EXAMS vs nap.py EXAMS", gn["EXAMS"], sn["EXAMS"],
+     {"subject": (G(1), G(0)), "color": (G(2), G(1)),
+      "target": (G(3), G(2))})
 _exam_text = dict((r[0], r[4]) for r in gn["EXAMS"])
 _nrs = "Each Crit counts as 1 success instead of 2."
 _suite = text("playtest/dist/suite.js")
