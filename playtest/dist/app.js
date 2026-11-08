@@ -164,7 +164,7 @@
     ["Stack Overflow","If any element receives 5+ dice, exhaust one die committed to that element before rolling."],
   ];
   const AOS_BACKDOOR = [
-    ["Diagnostic Port","Claim after completing a Program with no element over-allocated. Claiming gives up the next Program Reward you would claim.","Later, reroll one entire Strategy roll."],
+    ["Diagnostic Port","Claim after completing a Program with at least two elements holding no more than their Target in dice. Claiming gives up the next Program Reward you would claim.","Later, reroll one entire Strategy roll."],
     ["Privilege Escalation","Claim after completing an Overheated Program without failing an element. Claiming gives up the next Program Reward you would claim.","Later, ignore one Limitation."],
     ["Resource Fork","Claim after completing a Program while committing no more than Target + 1 dice in total beyond its summed Targets. Claiming gives up the next Program Reward you would claim.","Later, recover 2 exhausted dice."],
     ["Packet Sniffer","Claim after completing a Program with Crits on at least two different elements. Claiming gives up the next Program Reward you would claim.","Later, look at the next Limitation before selecting a Program."],

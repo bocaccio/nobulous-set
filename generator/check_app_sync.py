@@ -667,6 +667,22 @@ check("rules/nrj.html names both claim costs in one sentence",
       "costs the next Upgrade a completed Experiment earns" in _RULES["nrj"]
       and "a Backdoor Routine the next Program" in _RULES["nrj"])
 
+# AND THE CONDITION THE COST BUYS HAS TO BE ONE THE GAME CAN MEET.
+# Diagnostic Port printed "no element over-allocated" while rules/aos.html
+# caps an element at Target + 1 and the best allocation fills every element
+# to that cap, so the condition was met in 0.2% of games and was a strict
+# subset of Resource Fork besides. The card asks for 2 such elements as of
+# 2026-11-08; DIAG_RESTRAINT = None is the old reading. The rate itself is
+# measured by simulation/audit.py, which now prints how often each of the
+# six CONDITIONS is met and flags any under 5%.
+check("the Diagnostic Port card and aos.py ask for the same restraint",
+      _aos["DIAG_RESTRAINT"] == 2
+      and "at least two elements holding no more than their Target in dice"
+          in dict((n, t) for n, t, _r
+                  in py_tables("generator/build_nrj.py")["BACKDOOR"]
+                  )["Diagnostic Port"],
+      "DIAG_RESTRAINT=%r" % (_aos.get("DIAG_RESTRAINT"),))
+
 # A CORRUPTED LIMITATION IS A CARD IN THE LIMITATION DECK and withholds dice
 # on top of its printed corruption - both halves, which the model had wrong
 # in both directions on 2026-11-06 before this check existed.

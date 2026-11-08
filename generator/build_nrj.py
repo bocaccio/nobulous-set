@@ -250,8 +250,20 @@ CORRUPT = [
  ("Deprecated Function", "Randomly select one color. Crits rolled by that color count as basic successes for this Program."),
  ("Stack Overflow", "If any element receives 5+ dice, exhaust one die committed to that element before rolling."),
 ]
+# DIAGNOSTIC PORT ASKED FOR SOMETHING THE GAME NEVER DOES, until 2026-11-07.
+# It read "no element over-allocated", and rules/aos.html caps an element at
+# Target + 1 while the best allocation fills every element to that cap,
+# because the free die is worth having. Measured over 18,000 games the
+# condition was met in 0.2% of them, against 19.6 to 71.8% for the other
+# five - and it was also a STRICT SUBSET of Resource Fork, since every
+# element at or under its Target forces the total under the summed Targets,
+# so the card could not be claimed even in those games without Resource Fork
+# being on offer too. Asking for TWO such elements rather than all of them
+# keeps what the card is about - allocation restraint, the one condition
+# meant to bite - and reads 19.9 / 17.4 / 15.7 / 13.9% up the ladder.
+# See simulation/RESULTS.txt and rules/RULES_CHANGELOG.txt.
 BACKDOOR = [
- ("Diagnostic Port", "Claim after completing a Program with no element over-allocated. Claiming gives up the next Program Reward you would claim.", "Later, reroll one entire Strategy roll."),
+ ("Diagnostic Port", "Claim after completing a Program with at least two elements holding no more than their Target in dice. Claiming gives up the next Program Reward you would claim.", "Later, reroll one entire Strategy roll."),
  ("Privilege Escalation", "Claim after completing an Overheated Program without failing an element. Claiming gives up the next Program Reward you would claim.", "Later, ignore one Limitation."),
  ("Resource Fork", "Claim after completing a Program while committing no more than Target + 1 dice in total beyond its summed Targets. Claiming gives up the next Program Reward you would claim.", "Later, recover 2 exhausted dice."),
  ("Packet Sniffer", "Claim after completing a Program with Crits on at least two different elements. Claiming gives up the next Program Reward you would claim.", "Later, look at the next Limitation before selecting a Program."),

@@ -1,3 +1,62 @@
+2026-11-08  DIAGNOSTIC PORT ASKS FOR SOMETHING THE GAME CAN GIVE
+The card read "Claim after completing a Program with no element
+over-allocated".  It now reads "Claim after completing a Program with at
+least two elements holding no more than their Target in dice".  Nothing
+else about the card changes: the cost, the reward and the two-claim cap are
+untouched.
+
+THE OLD CONDITION WAS FALSE BY CONSTRUCTION.  rules/aos.html caps an
+element at Target + 1 dice, and the best allocation fills every element to
+that cap because the free die is worth having.  So "no element
+over-allocated" asked you to decline the free die on every element of the
+Program.  Measured over 18,000 games across the six Technicians it was met
+in 0.2% of them, against 19.6 to 71.8% for the other five Routines.
+
+IT WAS ALSO A STRICT SUBSET OF RESOURCE FORK.  Every element at or under
+its Target forces the total under the summed Targets, which is what
+Resource Fork asks for - so even in those 0.2% of games this card was never
+the one you claimed FOR.  A condition that cannot be the reason you claim
+is not a condition.
+
+TWO ELEMENTS INSTEAD OF ALL OF THEM keeps what the card is about.
+Allocation restraint was always meant to be the condition that bites, and
+it still is - measured the same way:
+
+                        printed    two elements
+  Easy                     0.3%           19.5%
+  Standard                 0.2%           17.3%
+  Hard                     0.3%           15.9%
+  Nobulous                 0.1%           14.0%
+
+That is beside Resource Fork's 19.6%, and it gets harder as the deck gets
+harder, which is the right direction.  It is no longer a subset of
+anything: Resource Fork co-fired on 77.7% of the Programs that met it,
+which leaves about a fifth where only this card was earned.
+
+NO WIN RATE MOVES, AND THE GRID IS BIT-IDENTICAL - not within sampling,
+the same sixteen numbers.  Measured 2,500 games a Technician a cell, six
+Technicians, both readings in one run:
+
+                     no NRJ   Tier I  Tier II Tier III
+  Easy                59.1%    48.2%    43.3%    47.2%
+  Standard            50.6%    39.8%    34.4%    38.9%
+  Hard                42.0%    31.7%    27.2%    30.6%
+  Nobulous            35.0%    24.1%    20.6%    22.6%
+
+THAT IS A FINDING, NOT A RELIEF.  The claim policy takes only the two
+recovery Routines, which are worth four times the other four, so this card
+was not claimed when its condition was free and is not claimed now that it
+is reachable.  The spread is the open design question already recorded in
+simulation/RESULTS.txt, and this fix deliberately does not touch it.  What
+the fix buys is a card a human player can play for and a condition that is
+not logically dead.
+
+simulation/aos.py carries DIAG_RESTRAINT; None restores the printed
+condition.  simulation/audit.py now prints how often each of the six
+CONDITIONS is met beside how often the card is held, and flags any
+condition under 5% - the column that would have caught this years earlier
+than the read that did.
+
 2026-11-07  TIER I NO LONGER HANDS A SETBACK BACK
 The Following Setbacks read "These 4 replace the 3 base Setbacks" and the
 tier table read "Set the 6 base Setbacks aside and shuffle in 3 of the 4

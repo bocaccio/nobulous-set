@@ -315,6 +315,15 @@ BACKDOOR_NAMES = {
     "fork": "Resource Fork", "sniff": "Packet Sniffer",
     "garbage": "Garbage Collection", "root": "Root Access",
 }
+REVERSE = dict((v, k) for k, v in BACKDOOR_NAMES.items())
+# A claim condition met in fewer than this many games is not a condition a
+# player can play for. Diagnostic Port read 0.2% until 2026-11-07, because
+# it asked for no element over-allocated while the best allocation fills
+# every element to the Target + 1 cap; the five that worked read 19.6 to
+# 71.8%. The floor is set below the lowest of those five with room to spare,
+# so it flags a card that has become unreachable rather than one that is
+# merely hard.
+CONDITION_FLOOR = 5.0
 
 
 def audit_devious(games):
@@ -397,6 +406,7 @@ def audit_backdoor(games):
     """AoS Tier III: which Backdoor Routines does a game ever hold?"""
     held = collections.Counter()
     spent = collections.Counter()
+    met = collections.Counter()
     rng = random.Random(20)
     each = max(100, games // len(aos.TECHS))
     for tech in aos.TECHS:
@@ -411,22 +421,44 @@ def audit_backdoor(games):
                 held[key] += 1
                 if not g.bkd.get(key):
                     spent[key] += 1
+            # And how often the CONDITION was met, claimed or not. `met` is
+            # the set of printed conditions this game satisfied.
+            for name in g.met:
+                met[REVERSE[name]] += 1
     total = each * len(aos.TECHS)
 
     print()
     print("  NRJ/AoS - Backdoor Routines (6 cards, Tier III)")
     print("    BACKDOOR_CLAIM is %r and BACKDOOR_WHEN %r, cap %d."
           % (aos.BACKDOOR_CLAIM, aos.BACKDOOR_WHEN, aos.BACKDOOR_CLAIMS))
-    print("    'held' is how often a game CLAIMED the card. Until")
-    print("    2026-11-06 both claims were granted at setup off the front")
-    print("    of BACKDOOR_ORDER, so Resource Fork and Garbage Collection")
-    print("    read 100% here and the other four read 0%.")
+    print("    'met' is how often the printed CONDITION was satisfied and")
+    print("    'held' how often a game went on to CLAIM the card. The two")
+    print("    differ because claiming costs the next Program Reward, so")
+    print("    the policy declines most of what it is offered.")
+    print("    Until 2026-11-06 both claims were granted at setup off the")
+    print("    front of BACKDOOR_ORDER, so Resource Fork and Garbage")
+    print("    Collection read 100% held and the other four read 0%.")
     for key in aos.BACKDOOR_ORDER:
         h = held[key]
+        m = pct(met[key], total)
         flag = "   <-- never held" if not h else ""
-        print("    %-28s held %5.0f%%   spent %5.0f%%%s"
-              % (BACKDOOR_NAMES[key], pct(h, total),
+        if m < CONDITION_FLOOR:
+            flag = "   <-- UNREACHABLE, met %.1f%%" % m
+        print("    %-28s met %4.0f%%   held %5.0f%%   spent %5.0f%%%s"
+              % (BACKDOOR_NAMES[key], m, pct(h, total),
                  pct(spent[key], h) if h else 0, flag))
+    cold = [k for k in aos.BACKDOOR_ORDER
+            if pct(met[k], total) < CONDITION_FLOOR]
+    if cold:
+        # THE DISTINCTION THIS COLUMN EXISTS FOR. A card the policy declines
+        # is a design question; a card whose CONDITION the game never meets
+        # is a broken card, and the two look identical in the held column.
+        print("    PROBLEM: %d of 6 print a condition the game meets in"
+              % len(cold))
+        print("    under %.0f%% of games: %s."
+              % (CONDITION_FLOOR, ", ".join(BACKDOOR_NAMES[k] for k in cold)))
+        print("    That is not the policy declining them - it is the card")
+        print("    asking for something the game's own best play never does.")
     dead = [k for k in aos.BACKDOOR_ORDER if not held[k]]
     if dead and aos.BACKDOOR_WHEN == "always":
         # Under "always" the policy claims whatever a condition offers, so a
@@ -435,8 +467,12 @@ def audit_backdoor(games):
     elif dead:
         # Under "value" it is a DECLINE, which is a different thing and not
         # a model fault: claiming costs the next Program Reward and these
-        # four are worth less than one. Set BACKDOOR_WHEN = "always" and all
-        # six are claimed, which is the check that they are reachable.
+        # four are worth less than one. The `met` column above is what makes
+        # that a measurement rather than a hope - this used to say "set
+        # BACKDOOR_WHEN = 'always' and all six are claimed, which is the
+        # check that they are reachable", and that sentence was FALSE for
+        # Diagnostic Port, whose condition was met in 0.2% of games. The
+        # audit had no column that would have shown it.
         print("    %d of 6 are never claimed at BACKDOOR_WHEN = %r: %s."
               % (len(dead), aos.BACKDOOR_WHEN,
                  ", ".join(BACKDOOR_NAMES[k] for k in dead)))

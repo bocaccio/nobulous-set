@@ -663,8 +663,8 @@ BACKDOOR_REFILL_AT = 3
 # when it misses its Target, and OPTIMAL IMPLEMENTATION is landing exactly
 # on it.
 #
-#   Diagnostic Port       no element over-allocated - every element held at
-#                         most its Target in dice
+#   Diagnostic Port       at least 2 elements held to their Target in dice
+#                         or fewer - see DIAG_RESTRAINT
 #   Privilege Escalation  an Overheated Program completed with no element
 #                         failed
 #   Resource Fork         total dice committed no more than the summed
@@ -678,6 +678,11 @@ BACKDOOR_REFILL_AT = 3
 # always for; `met` still records every condition a game met, claimed or not.
 BACKDOOR_NAMES = ("Diagnostic Port", "Privilege Escalation", "Resource Fork",
                   "Packet Sniffer", "Garbage Collection", "Root Access")
+
+# HOW MANY ELEMENTS DIAGNOSTIC PORT ASKS YOU TO HOLD BACK ON. 2 is the card
+# as of 2026-11-07. None is "every element", which is what it printed until
+# then and what made it unclaimable: see the block below.
+DIAG_RESTRAINT = 2
 
 # WHEN TO SPEND ONE, under the POOLED model only - BACKDOOR_REWARDS off. The
 # NRJ campaign retains a claimed Routine either way, but a Routine still HELD
@@ -701,14 +706,29 @@ BACKDOOR_POLICY = "greedy"
 #   Packet Sniffer        65.7%     Resource Fork         18.8%
 #   Garbage Collection    61.5%     Diagnostic Port        0.1%
 #
-# DIAGNOSTIC PORT CANNOT PRACTICALLY BE CLAIMED, and the reason is
-# structural rather than unlucky. Its condition is "no element
+# DIAGNOSTIC PORT COULD NOT PRACTICALLY BE CLAIMED, and the reason was
+# structural rather than unlucky. Its condition was "no element
 # over-allocated", and allocate() fills every element to Target + 1 because
-# the free die is worth having - so the condition is false by construction
-# on almost every Program. A player could hold an element at exactly its
-# Target to claim it, which costs the successes that die would have bought.
-# RAISED, NOT FIXED: this is the card asking for a condition the game's own
-# best allocation never meets.
+# the free die is worth having - so the condition was false by construction
+# on almost every Program. It was ALSO A STRICT SUBSET OF RESOURCE FORK:
+# every element at or under its Target forces the total under the summed
+# Targets, so there was no game in which this card was the one on offer.
+#
+# FIXED 2026-11-07, on the card. It now asks for TWO elements held to their
+# Target in dice or fewer, which is the same virtue - allocation restraint,
+# and this was always the condition meant to bite - at a bar the game can
+# clear. Re-measured over 18,000 games a level, six Technicians, Tier III:
+# 19.9 / 17.4 / 15.7 / 13.9% up the ladder, so it sits beside Resource Fork
+# at 19.6% and gets harder as the deck does. It is no longer a subset of
+# anything: Resource Fork co-fired on 77.7% of the Programs that met it,
+# which leaves a fifth of them where only this card was earned.
+#
+# NO WIN RATE MOVES, and that is a finding rather than a relief.
+# BACKDOOR_WHEN = "value" claims only BACKDOOR_WORTH, and the two recovery
+# Routines are worth four times the other four, so this card was not being
+# claimed when it was free and is not claimed now that it is reachable. The
+# spread is the open design question recorded above, and this fix does not
+# touch it. DIAG_RESTRAINT = None restores the printed condition.
 #
 # NAP does not have that problem, because a Devious
 # Opportunity has to be WORKED like an Assignment before it is yours.
@@ -1835,7 +1855,9 @@ class Game(object):
         # Root Access negates anything, so a completion is a real one.
         here = set()
         if seen and not failed:
-            if all(n <= t2 for n, t2, _tot, _c, _m in seen):
+            held = sum(1 for n, t2, _tot, _c, _m in seen if n <= t2)
+            if held >= (len(seen) if DIAG_RESTRAINT is None
+                        else DIAG_RESTRAINT):
                 here.add("Diagnostic Port")
             if face == "back":
                 here.add("Privilege Escalation")

@@ -1898,16 +1898,41 @@ FIXING WHAT THE AUDIT FOUND, 2026-11-06
      each takes 2 off an Exhibit's Target, and a standalone AoS
      game gets almost nothing from Tier III.  Whether that is the
      intent is a design call and not a model one.
-       AND ONE CLAIM CONDITION IS EFFECTIVELY UNREACHABLE.
-     Re-measured, the six conditions fire in 68.2 / 65.7 / 61.5 /
-     41.9 / 18.8 / 0.1% of games - the old note here said "five of
-     the six fire in 76-100%", which the required-colour dots and
-     the Target+1 cap had long since made false.  Diagnostic Port
-     wants "no element over-allocated" and allocate() fills every
-     element to Target + 1 because the free die is worth having,
-     so the condition is false by construction.  RAISED, NOT
-     FIXED: that is the card asking for something the game's own
-     best allocation never does.
+       AND ONE CLAIM CONDITION WAS EFFECTIVELY UNREACHABLE,
+     FIXED ON THE CARD 2026-11-08.  Re-measured, the six
+     conditions fired in 68.2 / 65.7 / 61.5 / 41.9 / 18.8 / 0.1%
+     of games - the old note here said "five of the six fire in
+     76-100%", which the required-colour dots and the Target+1 cap
+     had long since made false.  Diagnostic Port wanted "no
+     element over-allocated" and allocate() fills every element to
+     Target + 1 because the free die is worth having, so the
+     condition was false by construction.
+       IT WAS ALSO A STRICT SUBSET OF RESOURCE FORK - every
+     element at or under its Target forces the total under the
+     summed Targets - so there was no game in which this was the
+     card you claimed FOR, which is the part that makes it broken
+     rather than merely hard.
+       THE CARD NOW ASKS FOR TWO SUCH ELEMENTS, not all of them.
+     Same virtue, a bar the game can clear: 19.5 / 17.3 / 15.9 /
+     14.0% up the ladder against 0.3 / 0.2 / 0.3 / 0.1% printed,
+     so it sits beside Resource Fork's 19.6% and tightens as the
+     deck does.  Resource Fork co-fires on 77.7% of the Programs
+     that meet it, leaving about a fifth earned by this card
+     alone.
+       AND THE WHOLE AoS GRID IS BIT-IDENTICAL ACROSS THE CHANGE -
+     the same sixteen numbers, not the same within sampling -
+     because BACKDOOR_WHEN = "value" claims only the two recovery
+     Routines.  This card was not claimed when its condition was
+     free and is not claimed now that it is reachable, which is
+     the SPREAD question above and not this one.  aos.py carries
+     DIAG_RESTRAINT = None to restore the printed condition.
+       audit.py NOW PRINTS THE `met` COLUMN.  It reported `held`
+     only, and told you a card not held was the policy declining
+     it - "set BACKDOOR_WHEN = 'always' and all six are claimed,
+     which is the check that they are reachable".  That sentence
+     was FALSE for this card and the audit had no column that
+     would have shown it.  Any condition under 5% is a PROBLEM
+     there now.
 
   3  ELEVEN OF THE TWELVE FINAL EXAM RESTRICTIONS, which also
      made Definitely Curriculum-Approved payable.  nap.EXAMS
