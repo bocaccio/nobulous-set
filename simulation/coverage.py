@@ -147,9 +147,16 @@ def _gen_dict(name):
     raise RuntimeError("%s not found in generator/build_nrj.py" % name)
 
 
-# The restriction keys exam_commit and the scoring step actually honour.
-# "crit" is deliberately absent: see the note on nap.EXAMS.
-EXAM_KEYS = ("no_red", "colors", "need", "among", "dice", "crit_val")
+# The restriction keys exam_commit and the scoring step actually honour -
+# DERIVED from the live source, not listed, so a key that stops being read
+# stops counting. A hand-kept list of keys is the same mistake as counting
+# names: it says a clause is modelled because somebody wrote it down.
+# "crit" is deliberately absent from the candidates - it scores nothing on
+# its own and is only the handle EXAM_CRIT_GATE attaches to; see the note on
+# nap.EXAMS.
+EXAM_KEYS = tuple(k for k in ("no_red", "colors", "need", "among", "dice",
+                              "crit_val")
+                  if reads(nap, 'rule.get("%s"' % k))
 
 
 class Claim(object):
@@ -247,23 +254,26 @@ CLAIMS = [
                "gap until 2026-11-06, which was the same over-count the "
                "audit made on the Exhibit courtesies: a card with no "
                "printed effect is not an unmodelled effect"),
-    Claim("NAP", "Final Exams", 11,
+    Claim("NAP", "Final Exams", 12,
           lambda: sum(1 for e in nap.EXAMS
                       if any(k in e[3] for k in EXAM_KEYS)),
-          gaps=["Neural Response Screening"],
-          note="ELEVEN OF TWELVE SINCE 2026-11-06, when nap.EXAMS grew a "
-               "restriction column and exam_commit began honouring it - "
-               "which also made Definitely Curriculum-Approved payable for "
-               "the first time. The twelfth prints \"at least 1 Crit must "
-               "contribute to COMPLETE THIS ASSIGNMENT\", which is "
-               "Assignment language: a Final Exam has no completion step, "
-               "it charges 1 Health per success short. MEASURED: read as "
-               "a gate it deals its whole Target in 23% of the sittings it "
-               "gets and costs 3.8 points on its own, which no other "
-               "single exam comes near; read as a commit rule it says "
-               "nothing, because there is no way to commit FOR a Crit. "
-               "EXAM_CRIT_GATE models the gate reading and ships off. The "
-               "clause wants rewording, not a model"),
+          note="TWELVE OF TWELVE SINCE 2026-11-08. Eleven went in on "
+               "2026-11-06, when nap.EXAMS grew a restriction column and "
+               "exam_commit began honouring it - which also made Definitely "
+               "Curriculum-Approved payable for the first time. The twelfth "
+               "was not a model gap but a CARD-TEXT one, and the card was "
+               "reworded: Neural Response Screening printed \"at least 1 "
+               "Crit must contribute to COMPLETE THIS ASSIGNMENT\", which "
+               "is Assignment language, and a Final Exam has no completion "
+               "step - it charges 1 Health per success short. No reading of "
+               "it said anything a player could act on: as a gate it dealt "
+               "the card's whole Target in 23% of the sittings it got, "
+               "-3.9 points across the solo column, which no other single "
+               "exam comes near; as a commit rule it said nothing, because "
+               "there is no way to commit FOR a Crit. It now prints \"each "
+               "Crit counts as 1 success instead of 2\", which is the "
+               "idiom the other two Crit cards already use, and "
+               "EXAM_CRIT_GATE restores the printed gate"),
     Claim("NAP", "Apprentices", 6,
           lambda: sum(1 for v in nap.ABILITIES.values() if v),
           note="SIX OF SIX SINCE 2026-11-06, and Prodigy is the clearest "
@@ -374,8 +384,9 @@ CLAIMS = [
           note="SIX OF SIX SINCE 2026-11-06. Definitely Curriculum-Approved "
                "ignores one exam's printed restriction and there was no "
                "restriction to ignore: earned in 153 of 6000 Tier III games "
-               "and paid in 0 of them. With eleven of the twelve now "
-               "modelled it is spent in 390 of the 690 games that earn it. "
+               "and paid in 0 of them. With all twelve now modelled it is "
+               "spent in 469 of the 733 games that earn it, measured the "
+               "same way on 2026-11-08 - 390 of 690 when eleven were. "
                "See FUNGIBLE below for the other half of this deck's fix"),
     Claim("NRJ", "AoS Interference", 6,
           lambda: fires(aos, 'self.intf == "%s"', aos.INTERFERENCE),

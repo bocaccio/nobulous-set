@@ -833,32 +833,38 @@ Each of these only appears a few turns in.
   End-of-Day burn sit unplayed in the model for weeks while the rules and the
   lab both played it. Verified in the browser: the lab deals 3/3/4/5.
 
-  ### The three-way disagreement the re-peg uncovered — RAISED, NOT APPLIED
+  ### The three-way disagreement the re-peg uncovered — FIXED 2026-11-07
 
-  `rules/nrj.html` says a tier sets the 6 base Setbacks **aside** and shuffles
-  in exactly 3 Following ones, *"never both kinds together"*, and the lab
-  plays that. `simulation/nap.py` mixes them: 3 Following plus whatever the
-  difficulty's count leaves over. Since the re-peg the two readings **agree at
-  Easy and Standard**, where the count is 3, and differ only at the two hard
-  rungs — where the printed reading **inverts the tier**:
+  `rules/nrj.html` said a tier sets the 6 base Setbacks **aside** and shuffles
+  in exactly 3 Following ones, *"never both kinds together"*; the Following
+  Setback card said *"These 4 replace the 3 base Setbacks"*; the lab played
+  both. All three had the **3 hard-coded**, which matched only while every
+  difficulty carried 3 Setbacks. `simulation/nap.py` mixed them instead — 3
+  Following plus whatever the difficulty's count leaves over — and was the
+  only owner that was right. The two readings **agree at Easy and Standard**,
+  where the count is 3, and from the re-peg the printed one **inverted the
+  tier** at the two hard rungs:
 
   | | solo | Tier I, printed reading | Tier I, as modelled |
   |---|---|---|---|
   | Hard | 38.6% | **40.1%** — easier than solo | 35.8% |
   | Nobulous | 30.3% | **34.7%** — easier than solo | 27.2% |
 
-  So the **rules text is the thing that is wrong**, not the model: turning the
-  overlay on must not make a rung easier. The cheapest fix is one rules
-  sentence — set aside only as many base Setbacks as you shuffle in Following
-  ones — which is a rules change and needs a decision.
-  `nap.FOLLOWING_REPLACE_ALL` measures the printed reading; it ships `False`,
-  which is what the model has always done.
+  Turning an overlay on must not make a rung easier, so the **card, the
+  rulebook and the lab moved to the model**: one base Setback leaves for each
+  Following Setback that arrives, the count the difficulty asks for is
+  preserved, and **no published NAP figure changed**.
+  `nap.FOLLOWING_REPLACE_ALL = True` reproduces the printed reading, and
+  `check_app_sync.py` now holds the four owners together — nothing compared
+  them before, which is the whole reason the 3 could sit in three places.
 
 - **THE AUDIT OF 2026-11-06 WAS FIXED THE SAME DAY. Read this before the
   audit entry below it, which this supersedes in part.** `coverage.py` now
-  reads **3 of 255 printed effects unmodelled, in 3 decks**, against 68 in 13
-  when the audit was written. The three that remain are argued at the bottom
-  of this entry.
+  reads **2 of 255 printed effects unmodelled, in 2 decks**, against 68 in 13
+  when the audit was written — the third was Neural Response Screening, which
+  turned out to be a card-text problem and was reworded on 2026-11-08 rather
+  than modelled. The two that remain are argued at the bottom of this
+  entry.
 
   ```bash
   cd simulation
@@ -988,15 +994,25 @@ Each of these only appears a few turns in.
   The Setback count is printed in `rules/nap.html`, so it is a rules change
   and not a model one. It needs a decision before anything is edited.
 
-  ### Also raised, not fixed
+  ### Also raised — two of the three are fixed, one is still a design call
 
-  - **One Backdoor claim condition is effectively unreachable.** Re-measured,
-    the six fire in 68.2 / 65.7 / 61.5 / 41.9 / 18.8 / **0.1%** of games —
-    the old note in `aos.py` said "five of the six fire in 76-100%", which
-    the required-colour dots and the Target+1 cap had long since made false.
-    Diagnostic Port wants "no element over-allocated" and `allocate()` fills
-    every element to Target + 1 because the free die is worth having, so the
-    condition is false by construction.
+  - **One Backdoor claim condition was effectively unreachable — FIXED ON
+    THE CARD 2026-11-08.** Re-measured, the six fired in 68.2 / 65.7 / 61.5 /
+    41.9 / 18.8 / **0.1%** of games — the old note in `aos.py` said "five of
+    the six fire in 76-100%", which the required-colour dots and the Target+1
+    cap had long since made false. Diagnostic Port wanted "no element
+    over-allocated" and `allocate()` fills every element to Target + 1
+    because the free die is worth having, so the condition was false by
+    construction — and it was a **strict subset of Resource Fork**, so there
+    was no game in which it was the card you claimed *for*. It now asks for
+    **at least two** elements holding no more than their Target: 19.5 / 17.3
+    / 15.9 / 14.0% up the ladder, beside Resource Fork's 19.6%, which
+    co-fires on 77.7% of the Programs that meet it. The whole AoS grid came
+    back **bit-identical**, because `BACKDOOR_WHEN = "value"` claims only the
+    two recovery Routines — that is the reward-spread question below, not
+    this one. `aos.DIAG_RESTRAINT = None` restores the printed condition, and
+    `audit.py` now prints how often each condition is **met** beside how
+    often the card is held, flagging any under 5%.
   - **AoS Tier III is not a recovery tier any more.** It read 46.6% at
     Standard against a Tier II of 33.6% — a +13.0 rebound, the shape the tier
     structure intends — because the model was granting two Routines free.
@@ -1009,19 +1025,29 @@ Each of these only appears a few turns in.
     takes 2 off an Exhibit's Target — and
     a standalone AoS game now gets almost nothing from Tier III. Whether that
     is the intent is a design call, not a model one.
-  - **Neural Response Screening's Crit clause is in the wrong idiom.** It
-    prints "at least 1 Crit must contribute to **complete this Assignment**";
-    a Final Exam has no completion step, it charges 1 Health per success
-    short. Measured: read as a gate it deals its whole Target in **23%** of
-    the sittings it gets and costs **3.8 points** on its own, which no other
-    single exam comes near - and read as a commit rule it says nothing,
-    because there is no way to commit *for* a Crit. `EXAM_CRIT_GATE` models
-    the gate reading and ships off. The clause wants rewording.
+  - **Neural Response Screening's Crit clause was in the wrong idiom —
+    REWORDED 2026-11-08.** It printed "at least 1 Crit must contribute to
+    **complete this Assignment**"; a Final Exam has no completion step, it
+    charges 1 Health per success short. Read as a gate it dealt the card's
+    whole Target in **23%** of the sittings it got, **−4.6 points** on one
+    card of twelve, which no other exam's restriction comes near; read as a
+    commit rule it said nothing, because there is no way to commit *for* a
+    Crit. It now prints **"Each Crit counts as 1 success instead of 2"** —
+    the idiom the other two Crit cards already use, and the only one of the
+    three covering every colour, deliberately: a single-colour clause on a
+    Green-dot exam would often find no Green die committed and be the same
+    dead clause again. A Crit contributes to **78%** of sittings, so it is
+    engaged nearly every time the card is drawn. NAP's column moves 1–3
+    points and these are **the first NAP figures measured with all twelve
+    restrictions** — the old column was the game with one exam unrestricted.
+    Standard solo reads 47.6% and stays in the 47–57% band; whether the
+    ladder wants re-pegging is raised, not taken. `EXAM_CRIT_GATE` restores
+    the printed gate.
 
-  ### The three that remain, and none of them is an oversight
+  ### The two that remain, and neither is an oversight
 
-  All three are printed rewards that pay in **information**, in models with
-  no decision that information would change.
+  Both are printed rewards that pay in **information**, in models with no
+  decision that information would change.
 
   - **Diagnostic Trial** (BAT) — "look at the next Experiment and **return it
     to the top**", so it cannot reorder anything, and the Experiment policy
@@ -1031,11 +1057,13 @@ Each of these only appears a few turns in.
     a Program", and `play()` takes Programs off a shuffled queue because the
     rules deal them in order. No selection; and the dice a Limitation
     withholds already leave the pool before this model allocates.
-  - **Neural Response Screening** (NAP) — the other kind of gap; see above.
 
-  Modelling any of the three would mean inventing a decision the game does
-  not offer, which is worse than a declared gap. Each reason is recorded at
-  the code, and `coverage.py` fails if the claim around it goes stale.
+  Modelling either would mean inventing a decision the game does not offer,
+  which is worse than a declared gap. Both reasons are recorded at the code,
+  and `coverage.py` fails if the claim around them goes stale. The third
+  entry here until 2026-11-08 was Neural Response Screening, and it was a
+  different kind of gap: not a reward paying in information but a clause in
+  the wrong game's idiom, which is why it was answered on the card.
 
 - **THE CARD AND EFFECT AUDIT, 2026-11-06 — read this first; the five items
   under it are new and the rest of this section predates them.** Every card

@@ -1946,16 +1946,37 @@ FIXING WHAT THE AUDIT FOUND, 2026-11-06
      already, and no second failure condition was invented.
      The card that could not pay now pays: earned in 690 games
      and spent in 390 of them, against 153 and 0 before.
-       THE TWELFTH IS A CARD-TEXT PROBLEM AND IS RAISED, NOT
-     PAPERED OVER.  Neural Response Screening prints "at least 1
-     Crit must contribute to COMPLETE THIS ASSIGNMENT", which is
-     Assignment language; a Final Exam has no completion step.
-     MEASURED: read as a gate it deals its whole Target in 23% of
-     the sittings it gets and costs 3.8 points of win rate on its
-     own, which no other single exam comes near - and read as a
-     commit rule it says nothing, because there is no way to
-     commit FOR a Crit.  EXAM_CRIT_GATE models the gate reading
-     and ships off.  The clause wants rewording.
+       THE TWELFTH WAS A CARD-TEXT PROBLEM AND THE CARD WAS
+     REWORDED, 2026-11-08.  Neural Response Screening printed "at
+     least 1 Crit must contribute to COMPLETE THIS ASSIGNMENT",
+     which is Assignment language; a Final Exam has no completion
+     step, it charges 1 Health per success short.  MEASURED: read
+     as a gate it dealt its whole Target in 23% of the sittings it
+     got, -3.9 points across the solo column on one card of
+     twelve, which no
+     other single exam comes near - and read as a commit rule it
+     said nothing, because there is no way to commit FOR a Crit.
+       IT NOW READS "Each Crit counts as 1 success instead of 2",
+     the idiom the other two Crit cards already use and the only
+     one of the three that covers every colour - which is
+     deliberate, because a single-colour clause on a Green-dot
+     exam would often find no Green die committed and be the same
+     defect again.  A Crit contributes to 78% of sittings, so it
+     is engaged nearly every time the card is drawn.
+       SO NAP'S COLUMN MOVES, AND THESE ARE THE FIRST FIGURES
+     MEASURED WITH ALL TWELVE RESTRICTIONS.  4000 games an
+     Apprentice a cell, six Apprentices: solo 53.2 / 47.6 / 36.6 /
+     28.2 against 56.5 / 48.9 / 37.9 / 29.2 before, so 1 to 3
+     points, most of it at Easy, and -2.1 averaged over the whole
+     16-cell grid.  EXAM_CRIT_VALUE = 2 reproduces the before
+     column; it is not a reading of the card but the absence of
+     one.  Standard stays in the 47-57 band at 47.6 and no
+     rung leaves its band.  The "before" column was never the game
+     as printed: it was the game with one exam carrying no
+     restriction at all.  Whether the ladder wants re-pegging for
+     those points is a difficulty decision and is RAISED, not
+     taken - nap.LEVELS and rules/nap.html are untouched.
+     EXAM_CRIT_GATE = True restores the printed gate.
 
   4  THE DEVIOUS COUPONS ARE NAMED CARDS AGAIN.  ignore_setback()
      and move_setback() called .pop(), which takes whichever

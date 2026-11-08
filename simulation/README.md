@@ -673,14 +673,17 @@ stayed correct. Four coverage comments in the models were stale on
 claims in this very block have been wrong before, including a run of five
 that all said BAT content was omitted after it had been implemented.
 
-As of the end of 2026-11-06: **3 of 255 printed card faces have no modelled
-effect, in 3 of the 30 decks** - down from 68 in 13 when that morning's
-audit was written. All three are printed rewards that pay in INFORMATION, in
-models with no decision for the information to change: BAT's Diagnostic
-Trial, AoS's Packet Sniffer and - for a different reason - NAP's Neural
-Response Screening, whose Crit clause is Assignment language on a card that
-has no completion step. Modelling any of the three would mean inventing a
-decision the game does not offer. HANDOFF.md section 10 and the bottom of
+As of 2026-11-08: **2 of 255 printed card faces have no modelled effect, in
+2 of the 30 decks** - down from 68 in 13 when the audit of 2026-11-06 was
+written. Both are printed rewards that pay in INFORMATION, in models with no
+decision for the information to change: BAT's Diagnostic Trial and AoS's
+Packet Sniffer. Modelling either would mean inventing a decision the game
+does not offer. The third was NAP's Neural Response Screening, and it was a
+different kind of gap - its Crit clause was Assignment language on a card
+with no completion step, so there was nothing to model until the card said
+something an exam can mean. It was reworded on 2026-11-08 and went in with
+the rewording, which also makes NAP's column the first measured with all
+twelve exam restrictions. HANDOFF.md section 10 and the bottom of
 RESULTS.txt carry the argument, what was fixed, and the four things that
 were raised rather than fixed - including the re-peg NAP now needs, since
 enforcing the colour rule on SUCCESSES rather than on the commit costs about

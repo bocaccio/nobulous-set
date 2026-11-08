@@ -21,13 +21,13 @@ WHAT IS NOT MODELED
   abilities, Request effects and Opportunity effects, all of which are
   modeled below. coverage.py now derives the list from the live module, so
   read it there and treat this as prose.
-  * ONE of the 12 FINAL EXAM restrictions. The other eleven went in on
-    2026-11-06 - EXAMS now carries each card's printed restriction and
-    exam_commit honours it - and that also made Definitely
-    Curriculum-Approved payable for the first time. The one left is Neural
-    Response Screening's "at least 1 Crit must contribute to complete this
-    Assignment", which is Assignment language a Final Exam has no
-    completion step for; see the note on EXAMS.
+  * Nothing in the FINAL EXAM column: all 12 restrictions are modelled.
+    Eleven went in on 2026-11-06 - EXAMS carries each card's printed
+    restriction and exam_commit honours it - and that also made Definitely
+    Curriculum-Approved payable for the first time. The twelfth, Neural
+    Response Screening, was reworded on 2026-11-08 out of Assignment
+    language into the exam's own idiom and went in with the rewording; see
+    the note on EXAMS.
   * The 4 IMPOSTER TASK effects and the 4 FOLLOWING SETBACK effects.
     IMPOSTER_TASKS and FOLLOWING carry Targets and a flat upkeep, so the
     four Following cards are interchangeable in the model.
@@ -96,6 +96,14 @@ DEMAND_PENALTY = [1, -1, 2, -1, 1, 1, -1, 1, -1, 1, 2, -1, 1, -1,
 SETBACKS = [(6, "Y"), (6, "G"), (7, "G"), (7, "B"), (8, "B"), (8, "P")]
 OPPORTUNITIES = [(4, "Y"), (4, "Y"), (5, "Y"), (5, "Y"), (4, "G"), (5, "G")]
 
+# What a Crit scores on Neural Response Screening, the one exam that reprices
+# every colour's Crit: 1 as of 2026-11-08, when the card was reworded into the
+# exam's own idiom. 2 is NO repricing, which is the clause modelled as nothing
+# - what every NAP figure published before that day was measured through, so
+# this is the dial that reproduces them. EXAM_CRIT_GATE below is a third
+# reading, the printed wording the rewording replaced.
+EXAM_CRIT_VALUE = 1
+
 # (subject, recovery dot, base Target, printed restriction) for the 12 Final
 # Exams, 3 per subject, in generator/build_nap.py's EXAMS order.
 #
@@ -119,20 +127,32 @@ OPPORTUNITIES = [(4, "Y"), (4, "Y"), (5, "Y"), (5, "Y"), (4, "G"), (5, "G")]
 #   among     (n, colours) - at least n dice from this set
 #   dice      at least this many dice must be committed
 #   crit_val  {colour: successes} - a Crit of that colour scores this
-#             instead of the usual 2
+#             instead of the usual 2, and the colour "any" is every colour
 #
-# ONE CLAUSE IS NOT MODELLED AND CANNOT BE, and it is a card-text problem
-# rather than a model gap. Neural Response Screening prints "At least 1 Crit
-# must contribute to COMPLETE THIS ASSIGNMENT" - Assignment language, where
+# THE TWELFTH CLAUSE WAS A CARD-TEXT PROBLEM AND THE CARD WAS REWORDED,
+# 2026-11-08. Neural Response Screening printed "At least 1 Crit must
+# contribute to COMPLETE THIS ASSIGNMENT" - Assignment language, where
 # completion is binary. A Final Exam has no completion: you lose 1 Health per
-# success short and pass by surviving. MEASURED 2026-11-06: read as a gate
-# ("no Crit, no successes") it deals its whole Target in 23% of the sittings
-# it gets - the dot colours are weak and every colour crits on exactly one
-# face - and costs 3.8 points of win rate on its own, which no other single
-# exam comes near. Read as a commit rule it says nothing at all, for the same
-# reason: there is no way to commit FOR a Crit. RAISED, not papered over: the
-# clause wants rewording into the exam's own idiom. EXAM_CRIT_GATE models the
-# gate reading for whoever decides it.
+# success short and pass by surviving. So no reading of that clause said
+# anything a player could act on. MEASURED: as a gate ("no Crit, no
+# successes") it dealt the card's whole Target in 23% of the sittings it got,
+# -3.9 points of win rate across the solo column on one card of twelve, which
+# no other single exam comes near - the dot colours are weak and every colour
+# crits on exactly one face. As a commit rule it said nothing at all, for the
+# same reason: there is no way to commit FOR a Crit.
+#
+# IT NOW PRINTS "Each Crit counts as 1 success instead of 2", which is the
+# idiom its own subject's other two Crit cards already use - "A Red Crit
+# counts as 1 success", "One Yellow Crit counts as 3 successes" - and the
+# only one of the three that applies to every colour. That last part matters:
+# a single-colour repricing on a weak colour would be the same defect again,
+# because the commit policy takes the strongest dice first and may never
+# commit a Green at all. A Crit contributes to 78% of sittings, so this
+# clause bites nearly every time the card is drawn where the gate bit 23% of
+# the time, and it costs less: -1.7 points across the solo column. A player
+# can also answer it, by committing another die. EXAM_CRIT_GATE restores the
+# printed gate reading, and the "crit" key on the card below is what it
+# attaches to - inert on its own.
 EXAMS = [
     ("Anatomy", "B", 6, {"colors": 3}),
     ("Anatomy", "Y", 7, {"need": ("yellow", "blue")}),
@@ -140,14 +160,17 @@ EXAMS = [
     ("Theory", "G", 6, {"no_red": True, "colors": 3}),
     ("Theory", "P", 7, {"need": ("blue", "purple")}),
     ("Theory", "Y", 8, {"colors": 4, "crit_val": {"red": 1}}),
-    ("Engineering", "G", 6, {"crit": True}),
+    ("Engineering", "G", 6,
+     {"crit_val": {"any": EXAM_CRIT_VALUE}, "crit": True}),
     ("Engineering", "B", 7, {"dice": 4, "crit_val": {"yellow": 3}}),
     ("Engineering", "B", 7, {"no_red": True, "need": ("purple",)}),
     ("Procedure", "Y", 7, {"no_red": True, "colors": 3}),
     ("Procedure", "P", 8, {"dice": 4, "colors": 3}),
     ("Procedure", "G", 8, {"dice": 5, "colors": 3}),
 ]
-# See the "crit" note above: False is the shipped reading.
+# Restores Neural Response Screening's pre-2026-11-08 clause, read as a gate:
+# the card marked "crit" scores nothing without one, and its own scoring
+# clause does not apply. False is the card as it prints now.
 EXAM_CRIT_GATE = False
 # Switch the whole restriction column off to reproduce the pre-2026-11-06
 # model, which is also the control the restrictions are priced against.
@@ -252,11 +275,11 @@ IMPOSTER_EFFECTS = True
 #   exam_reroll    reroll the misses on one exam
 #   exam_target    one exam's Target drops by 3
 #   exam_ignore    ignore one exam's printed restriction. PAYABLE SINCE
-#                  2026-11-06: eleven of the twelve restrictions are now
-#                  modelled in exam_commit, so this card - Definitely
-#                  Curriculum-Approved - has something to ignore. Before
-#                  that it was earned in 153 of 6000 Tier III games and its
-#                  printed reward fired in 0 of them.
+#                  2026-11-06: eleven of the twelve restrictions went into
+#                  exam_commit then and the twelfth on 2026-11-08, so this
+#                  card - Definitely Curriculum-Approved - has something to
+#                  ignore. Before that it was earned in 153 of 6000 Tier III
+#                  games and its printed reward fired in 0 of them.
 # TARGETS RAISED 2026-11-06 from 3/3/3/3/4/3 to 4/4/5/5/4/5 - what the six
 # base OPPORTUNITIES these replace cost. Tier III was handing out six cards
 # that were both stronger and cheaper than the ones they displaced, and it
@@ -308,6 +331,25 @@ COMMIT_MARGIN = -1
 DICE_ORDER = "weakest"
 
 
+def crit_worth(rule):
+    """What one Crit scores on an exam printing this restriction.
+
+    2 everywhere in the set except where a card reprices every colour's Crit,
+    which is Neural Response Screening alone. A single-colour repricing is
+    applied per die at scoring time instead, since it does not move what the
+    other dice are worth. Under EXAM_CRIT_GATE the card is read as it printed
+    before 2026-11-08, which carried no scoring clause at all.
+    """
+    if EXAM_CRIT_GATE and rule.get("crit"):
+        return 2
+    if (rule.get("crit_val") or {}).get("any") is None:
+        return 2
+    # EXAM_CRIT_VALUE and not the table entry, so the dial still answers when
+    # it is set after import - which is how every other dial here is used.
+    # The table is written from the same name, so the two cannot drift.
+    return EXAM_CRIT_VALUE
+
+
 def exam_commit(available, target, rule, rng):
     """The dice a Final Exam's printed restriction makes you commit.
 
@@ -326,10 +368,14 @@ def exam_commit(available, target, rule, rng):
     pool = [c for c in available
             if not (rule.get("no_red") and c == "red")]
     order = pick_order(pool, rng)
+    # Every colour crits on exactly one face, so a card that reprices Crits
+    # for EVERY colour takes the same sixth off every die's expected
+    # successes, and a player who can count commits accordingly.
+    drop = (2 - crit_worth(rule)) / 6.0
     used, got, i = [], 0.0, 0
     while i < len(order) and got < target:
         used.append(order[i])
-        got += EV[order[i]]
+        got += EV[order[i]] - drop
         i += 1
     spare = order[i:]
 
@@ -1606,11 +1652,12 @@ class Game(object):
             rule = printed if EXAM_RESTRICTIONS else {}
             # "Ignore one Final Exam's printed restriction." Spent on the
             # exams whose restriction costs the most - the ones that forbid
-            # Red, because Red is the best die in the box, and the ones that
-            # demand dice or colours a bare Target would not have needed.
+            # Red, because Red is the best die in the box, the ones that
+            # demand dice or colours a bare Target would not have needed, and
+            # the one that reprices every Crit, which costs about as much.
             if rule and "exam_ignore" in self.devious_coupons and (
                     rule.get("no_red") or rule.get("dice", 0) >= 4
-                    or rule.get("colors", 0) >= 4):
+                    or rule.get("colors", 0) >= 4 or crit_worth(rule) < 2):
                 self.devious_coupons.remove("exam_ignore")
                 rule = {}
             # "Reduce one exam's Target by 3" - spend it on the worst exam.
@@ -1639,14 +1686,22 @@ class Game(object):
                 values = [roll(c, self.rng) if v == 0 else v
                           for c, v in zip(used, values)]
             # "A Red Crit counts as 1 success"; "One Yellow Crit counts as
-            # 3 successes." A Crit is 2 everywhere else in the set.
-            for col_, worth in (rule.get("crit_val") or {}).items():
-                values = [worth if (c == col_ and v == 2) else v
-                          for c, v in zip(used, values)]
+            # 3 successes"; "Each Crit counts as 1 success instead of 2",
+            # which is the colour key "any". A Crit is 2 everywhere else.
+            had_crit = 2 in values
+            gate = EXAM_CRIT_GATE and rule.get("crit")
+            if not gate:
+                for col_, worth in (rule.get("crit_val") or {}).items():
+                    if col_ == "any":
+                        worth = crit_worth(rule)
+                    values = [worth if (v == 2 and col_ in ("any", c)) else v
+                              for c, v in zip(used, values)]
             total = sum(values)
-            # "At least 1 Crit must contribute to complete this Assignment",
-            # read as a gate. OFF by default - see the note on EXAMS.
-            if EXAM_CRIT_GATE and rule.get("crit") and 2 not in values:
+            # The pre-2026-11-08 wording, "At least 1 Crit must contribute to
+            # complete this Assignment", read as a gate. OFF by default; the
+            # Crit is counted before any repricing, so the two readings cannot
+            # interfere - see the note on EXAMS.
+            if gate and not had_crit:
                 total = 0
             self.exhausted += used
             if total < target:

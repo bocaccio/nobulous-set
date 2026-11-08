@@ -23,10 +23,13 @@
   //   noRed        Red may not be committed
   //   minColors    distinct colors among committed dice
   //   minDice      committed dice
-  //   needCrit     at least one Crit among the successes
   //   contribute   {color: count} of SUCCESSFUL dice required
   //   contributeAny [[colors], count] of successful dice across those colors
-  //   scoring      a printed change to how successes are counted
+  //   scoring      a printed change to how successes are counted:
+  //                redCrit1, yellowCrit3, critAll1. A roll-outcome clause
+  //                can only be scored, never required - requiring one
+  //                dead-ends the exam on a roll STR cannot retry, which is
+  //                what needing a Crit did until 2026-11-08.
   const NAP_EXAMS = [
     ["Cranial Integrity Inspection","Anatomy","B",6,"Commit dice of at least 3 different colors.",{minColors:3}],
     ["Fine Motor Assessment","Anatomy","Y",7,"At least 1 Yellow and 1 Blue die must contribute.",{contribute:{yellow:1,blue:1}}],
@@ -34,7 +37,7 @@
     ["Council Etiquette Simulation","Theory","G",6,"Red cannot be committed; use at least 3 colors.",{noRed:true,minColors:3}],
     ["Identity Recall Demonstration","Theory","P",7,"At least 1 Blue and 1 Purple die must contribute.",{contribute:{blue:1,purple:1}}],
     ["Final Imposter Examination","Theory","Y",8,"Use at least 4 different colors. A Red Crit counts as 1 success.",{minColors:4,scoring:"redCrit1"}],
-    ["Neural Response Screening","Engineering","G",6,"At least 1 Crit must contribute to complete this Assignment.",{needCrit:true}],
+    ["Neural Response Screening","Engineering","G",6,"Each Crit counts as 1 success instead of 2.",{scoring:"critAll1"}],
     ["Adaptive Reasoning Trial","Engineering","B",7,"Commit at least 4 dice. One Yellow Crit counts as 3 successes.",{minDice:4,scoring:"yellowCrit3"}],
     ["Council Recognition Drill","Engineering","B",7,"Red cannot be committed. At least 1 Purple die must contribute.",{noRed:true,contribute:{purple:1}}],
     ["Procedural Knowledge Review","Procedure","Y",7,"Red cannot be committed; use at least 3 different colors.",{noRed:true,minColors:3}],
@@ -381,7 +384,6 @@
     if(rule.noRed&&committed.some(d=>d.color==="red"))fails.push("Red cannot be committed.");
     if(rule.minColors&&colors.size<rule.minColors)fails.push(`Needs ${rule.minColors} different colors; you have ${colors.size}.`);
     if(rule.minDice&&committed.length<rule.minDice)fails.push(`Needs at least ${rule.minDice} dice; you committed ${committed.length}.`);
-    if(rule.needCrit&&!successful.some(d=>d.face==="✷"))fails.push("At least 1 Crit must contribute.");
     if(rule.contribute&&!n.exam.wild)Object.entries(rule.contribute).forEach(([color,count])=>{
       if(successful.filter(d=>d.color===color).length<count)fails.push(`Needs ${count} successful ${color} ${count===1?"die":"dice"}.`);
     });
@@ -395,10 +397,18 @@
   function examSuccesses(){
     const n=state.nap,rule=NAP_EXAMS[n.exam.drawn[n.exam.index]][5];
     const successful=examCommitted().filter(d=>d.face);
-    let got=successful.reduce((sum,d)=>sum+(d.face==="✷"?2:1),0);
-    if(rule.scoring==="redCrit1")got-=successful.filter(d=>d.color==="red"&&d.face==="✷").length;
-    if(rule.scoring==="yellowCrit3"&&successful.some(d=>d.color==="yellow"&&d.face==="✷"))got+=1;
-    if(n.activeSlotBonus.crit&&successful.some(d=>d.face==="✷"))got+=1;
+    // A scoring clause is part of the exam's PRINTED RESTRICTION, so
+    // "Definitely Curriculum-Approved" cancels it like any other - the model
+    // has always done that (it empties the rule dict) and this did not.
+    const ignore=n.exam.ignoreRule;
+    // Neural Response Screening: "Each Crit counts as 1 success instead of 2."
+    const critWorth=(!ignore&&rule.scoring==="critAll1")?1:2;
+    let got=successful.reduce((sum,d)=>sum+(d.face==="✷"?critWorth:1),0);
+    if(!ignore&&rule.scoring==="redCrit1")got-=successful.filter(d=>d.color==="red"&&d.face==="✷").length;
+    if(!ignore&&rule.scoring==="yellowCrit3"&&successful.some(d=>d.color==="yellow"&&d.face==="✷"))got+=1;
+    // "Count one Crit as 3 successes", so what it adds depends on what a Crit
+    // is worth on this card: +1 normally and +2 where Crits count 1.
+    if(n.activeSlotBonus.crit&&successful.some(d=>d.face==="✷"))got+=3-critWorth;
     return got+(n.exam.bonus||0);
   }
   function resolveExam(){

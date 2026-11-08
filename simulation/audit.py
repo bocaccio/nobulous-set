@@ -222,8 +222,13 @@ def audit_nap(games):
 
     print()
     print("  NAP - Final Exams (%d cards)" % len(nap.EXAMS))
-    print("    11 of the 12 printed restrictions are modelled since")
-    print("    2026-11-06; exam_commit honours them when the exam is sat.")
+    # Counted off the live table rather than stated. It read "11 of the 12"
+    # for two days after the twelfth went in, which is the whole reason
+    # AGENTS.md says to run coverage.py before trusting a sentence like it.
+    _done = sum(1 for e in nap.EXAMS if set(e[3]) - set(["crit"]))
+    print("    %d of the %d printed restrictions are modelled; exam_commit"
+          % (_done, len(nap.EXAMS)))
+    print("    and the scoring step honour them when the exam is sat.")
     for subject, dot, base, rule in nap.EXAMS:
         bits = ", ".join("%s=%s" % (k, v) for k, v in sorted(rule.items()))
         print("    %-12s %s  %s" % (subject, dot, bits))

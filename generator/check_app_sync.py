@@ -214,9 +214,47 @@ rows("build_nap TASKS vs nap.py TASKS", gn["TASKS"], sn["TASKS"],
      {"request": (G(4), G(0)), "demand": (G(6), G(1)),
       "color": (G(2), G(2)), "credits": (G(3), G(3))})
 je = js_literal("playtest/dist/suite.js", "NAP_EXAMS")
+# "restriction" is the printed clause itself, and nothing compared it until
+# 2026-11-08: the four rows below are what a Final Exam IS, and the clause
+# was the one field the card, the lab and the model could disagree about in
+# silence. Neural Response Screening did, for weeks, in all three at once.
 rows("build_nap EXAMS vs NAP_EXAMS", gn["EXAMS"], je,
      {"name": (G(0), G(0)), "subject": (G(1), G(1)),
-      "color": (G(2), G(2)), "target": (G(3), G(3))})
+      "color": (G(2), G(2)), "target": (G(3), G(3)),
+      "restriction": (G(4), G(4))})
+_exam_text = dict((r[0], r[4]) for r in gn["EXAMS"])
+_nrs = "Each Crit counts as 1 success instead of 2."
+_suite = text("playtest/dist/suite.js")
+check("Neural Response Screening prints one clause in all three owners",
+      _exam_text.get("Neural Response Screening") == _nrs
+      and sn["EXAMS"][6][3].get("crit_val") == {"any": 1}
+      and je[6][5] == {"scoring": "critAll1"},
+      "card=%r model=%r lab=%r" % (_exam_text.get("Neural Response Screening"),
+                                   sn["EXAMS"][6][3], je[6][5]))
+# A key in a rule dict is a table entry, and AGENTS.md's warning applies: the
+# lab has to be caught READING it. "critAll1" sat in NAP_EXAMS for one commit
+# with nothing scoring it, which is the shape of every claim in this repo
+# that has ever passed while the card did nothing.
+check("the lab scores every Crit at 1 where that card says so",
+      'rule.scoring==="critAll1"' in _suite
+      and "?critWorth:1" in _suite,
+      "no critAll1 scoring site in playtest/dist/suite.js")
+# The lab blocked Resolve until the restriction was met, so a clause the dice
+# decide - and that STR cannot be spent to retry once it is gone - could
+# dead-end an exam with no way forward. Only roll-outcome clauses can do
+# that, and this was the only one that was unanswerable.
+check("the lab no longer blocks Resolve on a Crit nobody can commit for",
+      "rule.needCrit" not in _suite
+      and not any("needCrit" in r[5] for r in je),
+      "suite.js still fails an exam for want of a Crit")
+check("no Final Exam still prints Assignment language",
+      not any("complete this Assignment" in r[4] for r in gn["EXAMS"])
+      and not any("complete this Assignment" in r[4] for r in je),
+      "an exam still asks to COMPLETE itself, which exams do not do")
+check("EXAM_CRIT_GATE still restores the printed gate and ships off",
+      sn["EXAM_CRIT_GATE"] is False
+      and 'if EXAM_CRIT_GATE and rule.get("crit")' in text("simulation/nap.py"),
+      "EXAM_CRIT_GATE=%r" % (sn.get("EXAM_CRIT_GATE"),))
 js = js_literal("playtest/dist/suite.js", "NAP_SETBACKS")
 rows("build_nap SETBACKS vs NAP_SETBACKS", gn["SETBACKS"], js,
      {"name": (G(0), G(0)), "color": (G(1), G(2)), "target": (G(2), G(1))})

@@ -1,3 +1,79 @@
+2026-11-08  NEURAL RESPONSE SCREENING SPEAKS THE EXAM'S LANGUAGE
+The Final Exam read "At least 1 Crit must contribute to complete this
+Assignment".  It now reads "Each Crit counts as 1 success instead of 2".
+Nothing else about the card changes: the subject, the Green dot and the base
+Target of 6 are untouched.
+
+AN EXAM HAS NOTHING TO COMPLETE.  rules/nap.html resolves one by reducing
+its Target by your Credits in the subject, rolling against that Target while
+honoring the card's printed restriction, and then LOSING 1 HEALTH FOR EACH
+SUCCESS BELOW IT.  There is no completing an exam and no failing one; you
+pass by surviving it.  So the clause was Assignment language on a card with
+no Assignment step, and neither reading of it said anything a player could
+act on.  Read as a commit rule it is unsatisfiable, because nobody commits FOR a
+Crit - a Crit is a face you roll.  Read as a gate it dealt the card's whole
+Target in 23% of the sittings it got, which is -3.9 points of win rate
+across the solo column on one card of twelve, more than any other exam's
+restriction costs.
+
+THE EXAM IDIOM FOR CRITS ALREADY EXISTS, on two cards:
+"A Red Crit counts as 1 success" (Final Imposter Examination) and "One
+Yellow Crit counts as 3 successes" (Adaptive Reasoning Trial, the other
+Engineering exam).  This card now joins them as the only one of the three
+that applies to EVERY colour, and the flavour was already written for it:
+electrodes on, try not to think anything incriminating.  A spike is exactly
+what the screening flags, and a flagged response earns you nothing extra.
+
+EVERY COLOUR, NOT ONE, AND THAT IS THE POINT.  A single-colour repricing on
+this card would have been the same defect in a new coat: the commit policy
+takes the strongest dice first, so a Green clause on a Green-dot exam would
+often have found no Green die committed at all.  Measured over 9,914
+sittings of this card in 36,000 games, a Crit contributes to 78% of them, so
+the clause bites nearly every time the card is drawn, where the gate reading
+bit 23% of the time and the unmodelled reading bit never.  The exam costs
+0.51 Health a sitting now, against 0.27 before and 1.14 under the gate.
+
+WHAT IT COSTS, 4000 games an Apprentice a cell, six Apprentices averaged:
+
+                       no NRJ   Tier I  Tier II Tier III
+  Easy     before       56.5%    53.0%    42.6%    46.8%
+           now          53.2%    50.5%    39.3%    45.3%
+  Standard before       48.9%    46.6%    36.8%    41.2%
+           now          47.6%    43.6%    34.5%    40.0%
+  Hard     before       37.9%    35.4%    28.4%    33.0%
+           now          36.6%    33.3%    26.0%    31.2%
+  Nobulous before       29.2%    26.8%    22.6%    28.4%
+           now          28.2%    26.1%    19.8%    26.3%
+
+EXAM_CRIT_VALUE = 2 IS THE DIAL THAT REPRODUCES THE "BEFORE" ROW, which is
+the clause modelled as nothing - not a reading of the card but the absence
+of one, and what every NAP figure published before today was measured
+through.  EXAM_CRIT_GATE = True is the third reading, the printed wording:
+50.4 / 45.1 / 34.6 / 26.5 solo, 3.9 points below the before row and 2.2
+below the card as it now prints.
+
+THESE ARE THE FIRST NAP FIGURES MEASURED WITH ALL TWELVE EXAM RESTRICTIONS.
+"Before" is not the game as printed - it is the game with one exam carrying
+no restriction at all, because the clause on this one had no implementable
+reading.  Standard solo moves 48.9 to 47.6 and stays inside the 47-57%
+band; no rung leaves its band.  Whether the ladder wants re-pegging for the
+1 to 3 points is a DIFFICULTY decision and is raised, not taken: nap.LEVELS
+and the difficulty table in rules/nap.html are untouched.
+
+THE LAB COULD DEAD-END ON THE OLD WORDING.  playtest/dist/suite.js enforced
+the gate by disabling "Resolve exam" until a Crit appeared - but a Crit is a
+roll, and once STR is spent there is no reroll left to chase one with.  A
+player who rolled no Crit on their last roll had no legal move.  A clause
+the dice decide can only be priced in Health, never required, which is the
+same conclusion the card text came to.
+
+simulation/nap.py carries EXAM_CRIT_GATE; True restores the printed gate
+reading, and the Crit is counted before any repricing so the two cannot
+interfere.  Three owners carry the clause - the card, the lab and the model
+- and check_app_sync.py now compares the printed restriction TEXT across all
+twelve exams, which nothing did before: it checked the name, the subject,
+the colour and the Target and left the clause itself uncompared.
+
 2026-11-08  DIAGNOSTIC PORT ASKS FOR SOMETHING THE GAME CAN GIVE
 The card read "Claim after completing a Program with no element
 over-allocated".  It now reads "Claim after completing a Program with at
