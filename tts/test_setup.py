@@ -103,6 +103,15 @@ class Obj(object):
     def putObject(self, other):
         if other is None:
             raise RuntimeError("putObject(nil) into %r" % self.name)
+        if self.bag and self.world.lossy:
+            # TTS DROPS OBJECTS FED TO A BAG FASTER THAN IT ANIMATES THEM.
+            # One pass of pack-up over twenty cards left exactly one on
+            # the table every time, and the stub could not see it because
+            # a Python list never refuses an append. Refusing one in N
+            # reproduces the bug, so the fix for it stays tested.
+            self.world.puts += 1
+            if self.world.puts % self.world.lossy == 0:
+                return other
         self.world.table.pop(other.guid, None)
         if other.kids and not self.bag:
             self.kids.extend(other.kids)     # deck into deck merges, as TTS does
@@ -119,6 +128,8 @@ class World(object):
         self.table = {}        # guid -> object currently out on the table
         self.said = []
         self.shuffled = set()
+        self.lossy = 0          # refuse one bag put in N, like TTS does
+        self.puts = 0
         self.rng = random.Random(7)
 
     def add(self, o):
@@ -334,11 +345,18 @@ def panel_assertions():
          ["Easy", "Standard", "Hard", "Nobulous", "Easy"])
     want("tier cycle", tiers, [0, 1, 2, 3, 0])
 
-    # Pack up has to leave the table bare, loose cards included.
-    w, g = start("Nobulous", 3, Panel())
-    g.setupNAP()
-    want("pack up emptied the table", (len(w.table) > 0, g.packUp(False),
-                                       len(w.table))[2], 0)
+    # Pack up has to leave the table bare, loose cards included - and it
+    # has to do it when the bag refuses some of what it is handed, which
+    # is what left one card out after every setup in the real game.
+    for lossy in (0, 3, 5):
+        w, g = start("Nobulous", 3, Panel())
+        g.setupNAP()
+        dealt = len(w.table)
+        w.lossy = lossy
+        g.packUp(False)
+        g.run()
+        want("pack up emptied the table, dropping 1 in %d" % lossy,
+             (dealt > 0, len(w.table))[1], 0)
 
 
 def main():

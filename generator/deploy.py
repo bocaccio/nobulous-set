@@ -58,8 +58,12 @@ TTS_MAX = 4096
 # input and these are ours.
 Image.MAX_IMAGE_PIXELS = None
 
-# Lives in images/ and is NOT generated - the TTS control panel was drawn by
-# hand. So it is kept rather than copied, and never pruned.
+# Lives in images/ and is not built by a build_*.py, so it is kept rather
+# than copied and never pruned. It DOES have a source now: make_panel.py
+# draws it. It was a hand-drawn PNG printing THE NOBULOUS SET and three
+# game names, every one of which refreshPanel then covered with buttons.
+# Its ASPECT is load-bearing - the tile is "Stretch": true, so the image's
+# proportions are the panel's local space.
 EXTRA_IMAGES = ("ControlPanel.png",)
 # Anything living in playtest/dist/assets with no source in rules/ would be
 # named here and kept rather than pruned. It held AoS_Full_Rules.pdf until

@@ -37,6 +37,20 @@ USED = set()
 
 # The four boxes, left to right. IMP's two decks live in the NRJ box: the
 # Imposter Scenario is NRJ's finale, not a fifth game.
+# HOW BIG A CARD IS, and everything downstream of that.
+#
+# A die has to fit in a Buff HP box. That card prints a 3x5 grid of boxes
+# each about 15% of the card's width; a TTS card is roughly 2.4 units wide
+# and a TTS die about 0.9 across, so a box at scale 1 is 0.37 units and
+# will not take one. 0.9 / (0.15 * 2.4) is 2.5, and 2.6 leaves a margin.
+#
+# TUNE IT HERE AND NOWHERE ELSE. The Lua lays the table out in multiples
+# of CARD_W and CARD_L, which are derived below and generated into it, so
+# the rows respace themselves rather than needing 30 literals edited.
+CARD_SCALE = 2.6
+CARD_W = 2.4 * CARD_SCALE          # a portrait card, across
+CARD_L = 3.35 * CARD_SCALE         # a landscape card, across
+
 BOX_ORDER = ['BAT', 'NAP', 'AoS', 'NRJ']
 BOX_TITLE = {'BAT': 'BAT  Build-a-Tyrant',
              'NAP': 'NAP  Apprenticeship Program',
@@ -102,6 +116,9 @@ def lua_header(box_guids):
         '-- Box GUIDs come from the save being built; the two card-index',
         '-- tables are read out of generator/build_nap.py and build_nrj.py.',
         '-- Edit build_mod.py, never this block.',
+        'CARD_SCALE = %.2f' % CARD_SCALE,
+        'CARD_W = %.3f' % CARD_W,
+        'CARD_L = %.3f' % CARD_L,
         'BOX = { %s }' % j("%s = '%s'" % (g, box_guids[g]) for g in BOX_ORDER),
         'HOME = { %s }' % j("['%s'] = '%s'" % (k, v) for k, v in sorted(home.items())),
         'NAP_CREDIT = { %s }' % j('%s = {%s}' % (k, j(str(i) for i in v))
@@ -115,7 +132,7 @@ def lua_header(box_guids):
 def box(game, contained, x):
     r, g, b = GAME_COLOR[game]
     return {"GUID": guid(), "Name": "Bag",
-            "Transform": xf(x, 2.0, 20.0, (0, 0, 0), 1.6),
+            "Transform": xf(x, 2.0, 18.0, (0, 0, 0), 1.6),
             "Nickname": BOX_TITLE[game],
             "Description": "%d decks. A setup button takes out what it needs."
                            % len(contained),
@@ -170,7 +187,7 @@ def build_deck(d, deck_id, pos):
         ids.append(deck_id * 100 + i)
     r, g, b = GAME_COLOR[d['game']]
     obj = {"GUID": guid(), "Name": "Deck" if d['count'] > 1 else "CardCustom",
-           "Transform": xf(pos[0], pos[1], pos[2], (0, 180, 180)),
+           "Transform": xf(pos[0], pos[1], pos[2], (0, 180, 180), CARD_SCALE),
            "Nickname": d['label'],
            "Description": "%s  |  %d cards" % (d['game'], d['count']),
            "ColorDiffuse": {"r": 1.0, "g": 1.0, "b": 1.0},
@@ -186,7 +203,7 @@ def build_deck(d, deck_id, pos):
 
 def panel():
     return {"GUID": guid(), "Name": "Custom_Tile",
-            "Transform": xf(0, 0.96, 14, (0, 180, 0), 3.4),
+            "Transform": xf(0, 0.96, 12, (0, 180, 0), 2.6),
             "Nickname": "Control Panel",
             "Description": "Setup and counters for The Nobulous Set",
             "ColorDiffuse": {"r": 0.93, "g": 0.91, "b": 0.85},
@@ -204,17 +221,26 @@ def dice_objects():
     src = json.load(open(os.path.join(os.path.dirname(
         os.path.abspath(__file__)), 'dice_objects.json')))
     out = []
-    lay = {'Purple': (-16, -14), 'Blue': (-14, -14), 'Green': (-12, -14),
-           'Yellow': (-10, -14), 'Pink': (-8, -14),
-           'Health': (-16, -17), 'Strategy': (-14, -17), 'Recovery': (-12, -17),
-           'Chip': (-10, -17)}
+    # ONE BLOCK PER COLOUR. The colours used to sit 2 apart with their
+    # four dice stepping 1.1 each, so every colour's second die stood on
+    # the next colour's first and the pool read as one heap. Each colour
+    # now gets a 2x2 block of its own with a clear gap between blocks.
+    BLOCK = {'Purple': -21.0, 'Blue': -16.0, 'Green': -11.0,
+             'Yellow': -6.0, 'Pink': -1.0}
+    OFFS = ((0.0, 0.0), (1.4, 0.0), (0.0, -1.4), (1.4, -1.4))
+    lay = {'Health': (-21.0, -19.5), 'Strategy': (-18.0, -19.5),
+           'Recovery': (-15.0, -19.5), 'Chip': (-12.0, -19.5)}
     seen = {}
     for o in src:
         nick = o.get('Nickname') or 'Die'
         seen[nick] = seen.get(nick, 0) + 1
-        bx, bz = lay.get(nick, (-6, -17))
+        if nick in BLOCK:
+            ox, oz = OFFS[(seen[nick] - 1) % len(OFFS)]
+            bx, bz = BLOCK[nick] + ox, -15.5 + oz
+        else:
+            bx, bz = lay.get(nick, (-6.0, -19.5))
         d = {"GUID": guid(), "Name": o['Name'],
-             "Transform": xf(bx + (seen[nick] - 1) * 1.1, 1.4, bz, (0, 0, 0)),
+             "Transform": xf(bx, 1.4, bz, (0, 0, 0)),
              "Nickname": 'Red' if nick == 'Pink' else nick,
              "Description": o.get('Description') or '',
              "ColorDiffuse": o.get('ColorDiffuse') or {"r": 1, "g": 1, "b": 1},
@@ -409,7 +435,7 @@ def main():
             build_deck(d, i + 1, (0, 2.0, 0)))
     box_guids = {}
     for n, game in enumerate(BOX_ORDER):
-        bx = box(game, grouped[game], -18.0 + n * 12.0)
+        bx = box(game, grouped[game], -16.5 + n * 11.0)
         box_guids[game] = bx['GUID']
         objects.append(bx)
     objects.append(panel())
@@ -418,7 +444,10 @@ def main():
     save = {
         "SaveName": "The Nobulous Set",
         "GameMode": "The Nobulous Set - BAT / NAP / AoS / NRJ",
-        "Gravity": 0.5, "PlayArea": 0.8, "Date": "", "Table": "Table_Custom",
+        "Gravity": 0.5, "PlayArea": 0.8, "Date": "",
+        # Table_Custom made TTS ask to import a custom table image on every
+        # load, and the save carries no URL for one.
+        "Table": "Table_Rectangle",
         "Sky": "Sky_Museum", "Note": "Fan expansion for 20 Strong. Prototype.",
         "Rules": "See the Notebook.",
         "TabStates": {str(i): t for i, t in enumerate(notebook())},

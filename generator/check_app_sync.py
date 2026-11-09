@@ -1829,6 +1829,47 @@ check("tts/test_setup.py asserts the buttons do not overlap each other",
       "def overlaps" in text("tts/test_setup.py")
       and "nothing overlaps" in text("tts/test_setup.py"))
 
+# ---------------------------------------------------------------------
+# THE TABLE, THE CARD SIZE AND PACK-UP, all reported from the table on
+# 2026-11-09.
+# The SETTING, not the word: the comment above it names Table_Custom as
+# the thing it replaced, and matching bare "Table_Custom" failed on that.
+check("the mod builds on a stock table",
+      '"Table": "Table_Rectangle"' in _mod
+      and '"Table": "Table_Custom"' not in _mod)
+# One constant owns how big a card is, and the Lua spaces the rows in
+# multiples of it. Thirty position literals is how a layout stops being
+# changeable at all.
+check("one constant owns how big a card is",
+      "CARD_SCALE = " in _mod and "(0, 180, 180), CARD_SCALE)" in _mod
+      and "'CARD_W = %.3f' % CARD_W" in _mod)
+check("tts/lua.lua spaces the table in card widths, not literals",
+      all(k in _lua for k in ("ROW_CHAR", "ROW_MAIN", "ROW_SIDE",
+                              "function col(i)", "CARD_L", "CARD_W")))
+# The Rats are one row, and a gap between them reads as four things.
+check("the Lab Rats are dealt touching",
+      "ROW_CHAR, FACEUP, CARD_L)" in _lua)
+# TTS drops objects fed to a bag faster than it animates them, which left
+# exactly one card on the table after every setup. tts/test_setup.py
+# refuses one bag put in N and proves a single pass fails.
+check("pack up sweeps more than once",
+      "for _ = 1, 4 do step(sweep) end" in _lua
+      and "Still on the table: " in _lua)
+check("tts/test_setup.py models a bag that drops what it is handed",
+      "self.lossy" in text("tts/test_setup.py")
+      and "dropping 1 in" in text("tts/test_setup.py"))
+# The dice are a pool, not a heap: one block per colour, blocks apart.
+check("the dice are grouped by colour",
+      "BLOCK = {" in _mod and "OFFS = (" in _mod
+      and "(seen[nick] - 1) * 1.1" not in _mod)
+# The panel art is generated now, so the shape the layout depends on has
+# a source rather than being a hand-drawn PNG nobody can regenerate.
+_panel = text("generator/make_panel.py")
+check("the control-panel mat has a source",
+      "W, H = 1473, 520" in _panel and "ControlPanel.png" in _panel)
+check("the panel mat matches the aspect the layout is built for",
+      abs((1473.0 / 520.0) - _half_x) < 0.001)
+
 
 def _lua_rows(name, levels):
     """The named Lua table, level -> tuple of its numbers."""
