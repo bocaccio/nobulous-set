@@ -10,15 +10,17 @@ art already said it, and then the art was hidden anyway.
 
 So it is a plain mat now: a dark rounded panel with a thin rule, no text.
 The ASPECT IS LOAD-BEARING. The tile is "Stretch": true, so the image's
-proportions ARE the tile's local space: 2.833 by 1 here, which is what
-refreshPanel lays its four rows out inside and what check_app_sync.py
-recomputes from this file. Change the shape and the buttons move.
+proportions ARE the tile's local space: 3.846 by 1 here, which is what
+refreshPanel lays its five rows out inside and what check_app_sync.py
+recomputes from this file. Change the shape and the buttons move - this
+went from 1473 wide to 2000 precisely to give the rows more elbow room,
+and every x in refreshPanel moved with it.
 """
 import os
 
 from PIL import Image, ImageDraw
 
-W, H = 1473, 520
+W, H = 2000, 520
 RADIUS = 46
 BACK = (26, 23, 20)
 EDGE = (92, 80, 62)

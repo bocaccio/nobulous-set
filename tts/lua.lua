@@ -66,10 +66,23 @@ ROW_TIER = -12.8                   -- what a tier adds
 TIER_X = 24.0
 
 -- The NAP Time Slot column, down the left. It has to clear the dice at
--- -26.5 on one side and the character row, which reaches -14.07, on the
--- other; a landscape card is 8.71 across, so there is exactly one place
--- for it.
+-- -26.5 on one side and the Assignment deck, which reaches -14.07, on
+-- the other; a landscape card is 8.71 across, so there is exactly one
+-- place for it.
 SLOT_X = -19.5
+
+-- NAP's right-hand column: the Apprentices to choose from, then the FINF
+-- card, then the Final Exams, top to bottom. 7.0 apart, which clears a
+-- landscape card's 6.24 depth, and the last of them sits at -14.4 with
+-- its bottom edge at -17.5 - the deepest anything goes on this felt.
+NAP_X = 20.0
+NAP_GAP = 7.0
+
+-- Where the character you keep ends up. NAP's belongs at the head of its
+-- own column; the other two are dealt across the table and keep the
+-- middle.
+CHAR_HOME = { NAP = {NAP_X, ROW_CHAR}, AoS = {0, ROW_CHAR},
+              IMP = {0, ROW_CHAR} }
 
 function col(i) return (i - 2.5) * (CARD_W + 1.0) end
 
@@ -345,7 +358,8 @@ function keepChar(i)
   for k, o in ipairs(t) do
     if k ~= i then putHome(o) end
   end
-  t[i].setPosition({0, 3, ROW_CHAR})
+  local home = CHAR_HOME[STATE.game] or {0, ROW_CHAR}
+  t[i].setPosition({home[1], 3, home[2]})
   say('Kept the ' .. i .. ' of ' .. #t ..
       '. Flip it for the character on the other side.')
 end
@@ -391,14 +405,21 @@ function packUp(quiet)
   -- is simply picked up by the next step rather than being left.
   local function post()
     local t = loose()
-    for i = 1, math.min(4, #t) do
+    -- EIGHT AT A TIME, not four. Each pass looks again, so a refused
+    -- put is simply retried by the next one; the only thing a small
+    -- batch bought was more passes to get through the same cards.
+    for i = 1, math.min(8, #t) do
       local o = t[i]
       o.setLock(false)
       local b = homeBox(o.getName())
       if b then b.putObject(o) end
     end
   end
-  for _ = 1, 10 do step(post) end
+  -- TWENTY PASSES, NOT TEN. With the bag refusing roughly one put in
+  -- three - which is what TTS does under load - ten passes still left a
+  -- card out often enough for the harness to notice. A pass that finds
+  -- nothing costs a few frames and nothing else.
+  for _ = 1, 20 do step(post) end
   step(function()
     local left = {}
     for _, o in ipairs(getAllObjects()) do
@@ -509,9 +530,13 @@ function setupNAP()
   local asg
 
   step(function()
-    spread(deckOut('Apprentices', {0, 3, ROW_CHAR}, FACEUP), 3,
-           ROW_CHAR, FACEUP, CARD_L + 1.0)
-    asg = deckOut('Tasks', {col(2), 3, ROW_MAIN})
+    -- The three to choose from run DOWN the right-hand column, so the
+    -- one you keep is already at the top of it.
+    column(deckOut('Apprentices', {NAP_X, 3, ROW_CHAR}, FACEUP), 3,
+           NAP_X, ROW_CHAR, FACEUP, NAP_GAP)
+    -- The Assignment deck takes the top left, where the leftmost
+    -- Apprentice used to sit.
+    asg = deckOut('Tasks', {-(CARD_L + 1.0), 3, ROW_CHAR})
   end)
 
   if STATE.tier >= 2 then
@@ -540,7 +565,8 @@ function setupNAP()
   step(function() if asg then asg.shuffle() end end)
 
   step(function()
-    deckOut('Final Exams', {col(4), 3, ROW_MAIN})
+    -- Below the FINF card, at the foot of the right-hand column.
+    deckOut('Final Exams', {NAP_X, 3, ROW_CHAR - 4 * NAP_GAP})
     -- Morning is the active Time Slot for Day 1; the other two sit beside
     -- it. One row, one landscape card plus a margin apart - these used to
     -- be dealt 7 apart, which is less than a card now, so they overlapped.
@@ -548,7 +574,8 @@ function setupNAP()
     -- because they are a clock and not a hand: Morning at the top.
     column(deckOut('Time Slots', {SLOT_X, 3, 11.0}, FACEUP), 3,
            SLOT_X, 11.0, FACEUP, 7.0)
-    drawOne('FINF', {SLOT_X, 3, -10.0}, FACEUP)
+    -- Below the Apprentices, above the Final Exams.
+    drawOne('FINF', {NAP_X, 3, ROW_CHAR - 3 * NAP_GAP}, FACEUP)
   end)
 
   step(function()
@@ -729,59 +756,67 @@ function refreshPanel()
   -- FIVE ROWS AT A 0.36 PITCH, which is what a half-height of 0.15 allows
   -- inside a tile that is 1.0 deep from its middle. The tile art already
   -- prints THE NOBULOUS SET, so no row repeats it.
-  btn('Set up BAT', 'btnBAT', -2.12, -0.72, 660, {0.17, 0.37, 0.29})
-  btn('Set up NAP', 'btnNAP', -0.71, -0.72, 660, {0.42, 0.25, 0.55})
-  btn('Set up AoS', 'btnAoS', 0.71, -0.72, 660, {0.54, 0.24, 0.18})
-  btn('Imposter', 'btnIMP', 2.12, -0.72, 660, {0.29, 0.23, 0.42})
+  btn('Set up BAT', 'btnBAT', -2.86, -0.72, 660, {0.17, 0.37, 0.29})
+  btn('Set up NAP', 'btnNAP', -0.96, -0.72, 660, {0.42, 0.25, 0.55})
+  btn('Set up AoS', 'btnAoS', 0.96, -0.72, 660, {0.54, 0.24, 0.18})
+  btn('Imposter', 'btnIMP', 2.86, -0.72, 660, {0.29, 0.23, 0.42})
 
-  lbl('Difficulty  ' .. STATE.difficulty, -1.90, -0.36, 900)
-  btn('cycle', 'btnDiff', -0.55, -0.36, 330, nil, 82)
+  lbl('Difficulty  ' .. STATE.difficulty, -2.56, -0.36, 900)
+  btn('cycle', 'btnDiff', -0.74, -0.36, 330, nil, 82)
   -- The tier NAME lives in the setup message; the panel has room for its
   -- numeral and nothing more.
   lbl('NRJ Tier  ' .. (STATE.tier == 0 and 'off' or
-      ({'I', 'II', 'III'})[STATE.tier]), 0.50, -0.36, 620)
-  btn('cycle', 'btnTier', 1.70, -0.36, 330, nil, 82)
+      ({'I', 'II', 'III'})[STATE.tier]), 0.68, -0.36, 620)
+  btn('cycle', 'btnTier', 2.29, -0.36, 330, nil, 82)
 
   local g = STATE.game
   if g == 'BAT' then
-    lbl('Splices  ' .. STATE.splices .. ' / 5', -2.10, 0.00, 640)
-    btn('-', 'splMinus', -1.05, 0.00, 240)
-    btn('+', 'splPlus', -0.50, 0.00, 240)
-    if STATE.splices >= 5 then lbl('TYRANT AWAKE', 1.20, 0.00, 560) end
+    lbl('Splices  ' .. STATE.splices .. ' / 5', -2.84, 0.00, 640)
+    btn('-', 'splMinus', -1.42, 0.00, 240)
+    btn('+', 'splPlus', -0.68, 0.00, 240)
+    if STATE.splices >= 5 then lbl('TYRANT AWAKE', 1.62, 0.00, 560) end
   elseif g == 'NAP' then
     local goal = NAP_DIFF[STATE.difficulty][1]
-    lbl('Credits  ' .. STATE.credits .. ' / ' .. goal, -2.10, 0.00, 640)
-    btn('-', 'crMinus', -1.05, 0.00, 240)
-    btn('+', 'crPlus', -0.50, 0.00, 240)
-    if STATE.credits >= goal then lbl('FINAL EXAM', 1.20, 0.00, 560) end
+    lbl('Credits  ' .. STATE.credits .. ' / ' .. goal, -2.84, 0.00, 640)
+    btn('-', 'crMinus', -1.42, 0.00, 240)
+    btn('+', 'crPlus', -0.68, 0.00, 240)
+    if STATE.credits >= goal then lbl('FINAL EXAM', 1.62, 0.00, 560) end
   elseif g == 'AoS' then
-    lbl('Backdoors  ' .. STATE.backdoors .. ' / 2', -2.05, 0.00, 700)
-    btn('-', 'bdMinus', -0.95, 0.00, 240)
-    btn('+', 'bdPlus', -0.40, 0.00, 240)
+    lbl('Backdoors  ' .. STATE.backdoors .. ' / 2', -2.77, 0.00, 700)
+    btn('-', 'bdMinus', -1.28, 0.00, 240)
+    btn('+', 'bdPlus', -0.54, 0.00, 240)
   elseif g == 'IMP' then
-    lbl('Session  ' .. math.min(9, STATE.session + 1) .. ' / 9', -2.10, 0.00, 640)
-    btn('-', 'atMinus', -1.05, 0.00, 240)
-    btn('+', 'atPlus', -0.50, 0.00, 240)
+    lbl('Session  ' .. math.min(9, STATE.session + 1) .. ' / 9', -2.84, 0.00, 640)
+    btn('-', 'atMinus', -1.42, 0.00, 240)
+    btn('+', 'atPlus', -0.68, 0.00, 240)
     -- Derived, not counted: the attention advances one step at the end of
     -- every session, so a hand counter for it could only ever disagree.
     lbl('Attention  ' .. attentionNow() .. ' / ' .. attentionNext(),
-        1.35, 0.00, 900, 72)
+        1.82, 0.00, 900, 72)
   end
 
   -- CHOOSING YOUR CHARACTER, for the three games that have one to
   -- choose. Every card is two characters, so this keeps a card and
   -- leaves the flip to you.
+  -- ALWAYS DRAWN, even with no game set up. It only appeared once a
+  -- setup had run, so looking at the panel to find out whether you could
+  -- choose your character told you that you could not.
   local n = CHAR_N[g]
   if n then
-    lbl('Keep', -2.45, 0.36, 300, 82)
+    lbl('Keep', -3.31, 0.36, 380, 82)
     for i = 1, n do
-      btn(tostring(i), 'keep' .. i, -1.70 + (i - 1) * 0.42, 0.36, 170, nil, 82)
+      btn(tostring(i), 'keep' .. i, -2.30 + (i - 1) * 0.52, 0.36, 210, nil, 82)
     end
-    lbl('then flip for the other side', 1.25, 0.36, 1050, 70)
+    lbl('then flip for the other side', 1.69, 0.36, 1050, 70)
+  else
+    lbl('Keep', -3.31, 0.36, 380, 82)
+    lbl(g == 'BAT' and 'BAT plays all four Lab Rats'
+        or 'set up NAP, AoS or Imposter to choose a character',
+        0.20, 0.36, 2300, 70)
   end
 
-  btn('Pack up', 'btnPack', -2.35, 0.72, 420, {0.42, 0.18, 0.15})
-  btn('Reset counters', 'btnReset', -1.20, 0.72, 640, nil, 82)
+  btn('Pack up', 'btnPack', -3.17, 0.72, 420, {0.42, 0.18, 0.15})
+  btn('Reset counters', 'btnReset', -1.62, 0.72, 640, nil, 82)
 end
 
 function nop() end

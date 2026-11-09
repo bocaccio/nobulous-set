@@ -1920,9 +1920,14 @@ check("the mat and the bags are settled onto the rail, not placed on it",
 # a source rather than being a hand-drawn PNG nobody can regenerate.
 _panel = text("generator/make_panel.py")
 check("the control-panel mat has a source",
-      "W, H = 1473, 520" in _panel and "ControlPanel.png" in _panel)
-check("the panel mat matches the aspect the layout is built for",
-      abs((1473.0 / 520.0) - _half_x) < 0.001)
+      re.search(r"W, H = \d+, \d+", _panel) and "ControlPanel.png" in _panel)
+# The size the script draws and the size of the file it drew have to be
+# the same, and the layout is measured against the file. Both were
+# written as 1473 here and went stale the moment the mat was widened.
+_mw, _mh = re.search(r"W, H = (\d+), (\d+)", _panel).groups()
+check("the panel mat on disk is the one make_panel.py draws",
+      (int(_mw), int(_mh)) == (_pw, _ph),
+      "script %sx%s, file %dx%d" % (_mw, _mh, _pw, _ph))
 
 
 def _lua_rows(name, levels):
