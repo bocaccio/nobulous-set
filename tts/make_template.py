@@ -23,7 +23,7 @@ import json
 import os
 import sys
 
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -38,6 +38,9 @@ X0, X1 = -28.0, 28.0
 Z0, Z1 = 19.0, -18.6          # top, bottom
 W = int((X1 - X0) * PX)
 H = int((Z0 - Z1) * PX)
+
+FONT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                    "fonts", "DejaVuSans-Bold.ttf")
 
 INK = (235, 232, 224, 235)    # card outlines
 SNAP = (235, 232, 224, 150)   # the spaces you drop a card into
@@ -58,6 +61,18 @@ def card(d, x, z, hw, hd, ink=INK, width=LINE):
     b = px(x + hw, z - hd)
     d.rounded_rectangle([a[0], a[1], b[0], b[1]], RADIUS, outline=ink,
                         width=width)
+
+
+def label(d, text, x, z, size=34, ink=(235, 232, 224, 170)):
+    """Centred text, for the boxes whose contents are not obvious."""
+    try:
+        f = ImageFont.truetype(FONT, size)
+    except Exception:
+        f = ImageFont.load_default()
+    cx, cy = px(x, z)
+    box = d.textbbox((0, 0), text, font=f)
+    d.text((cx - (box[2] - box[0]) / 2.0, cy - (box[3] - box[1]) / 2.0),
+           text, font=f, fill=ink)
 
 
 def circle(d, x, z, r, ink=INK, width=LINE):
@@ -102,6 +117,14 @@ def draw_game(d, which, slots_out=None):
     for sx, sz in snaps:
         # A snap point holds one landscape card.
         card(d, sx, sz, max(cw, cl), min(cw, cl), SNAP, 4)
+    if which == "NAP":
+        # The two piles down the right are the only places on this table
+        # whose contents a player cannot guess from what is in them.
+        slots = sorted([f[2] for f in fp if f[0].startswith("Time Slot")],
+                       reverse=True)
+        if len(slots) >= 3:
+            label(d, "COMPLETED CREDITS", 23.5, slots[1])
+            label(d, "DEVIOUS OPPORTUNITIES", 23.5, slots[2], 28)
     # The Chip goes beside a Time Slot, so give it a circle there.
     if which == "NAP" and slots_out is not None:
         for name, x, z, hw, hd in fp:
@@ -119,6 +142,7 @@ def frame(d):
     a, b = px(x0, zt), px(x1, zb)
     d.rounded_rectangle([a[0], a[1], b[0], b[1]], RADIUS * 2,
                         outline=(235, 232, 224, 110), width=4)
+    label(d, "EXHAUSTED DICE", (x0 + x1) / 2.0, (zt + zb) / 2.0)
 
 
 def main():
@@ -141,6 +165,11 @@ def main():
     p = os.path.join(OUT, "table_all.png")
     combined.save(p)
     wrote.append(p)
+    # NAP's is not just a drawing aid: the mod lays it on the table, so
+    # it goes to images/ with the card sheets and is served from there.
+    ship = os.path.join(os.path.dirname(HERE), "images", "NAP_Table.png")
+    Image.open(os.path.join(OUT, "table_NAP.png")).save(ship)
+    wrote.append(ship)
     print("%d x %d at %g px per unit, world x %g..%g, z %g..%g"
           % (W, H, PX, X0, X1, Z1, Z0))
     for p in wrote:

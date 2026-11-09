@@ -51,6 +51,12 @@ ATTENTION = { 'Yellow', 'Green', 'Blue', 'Purple', 'Red' }
 CHIP_FACE = { Yellow = 0, Green = 72, Blue = 144, Purple = 216, Red = 288 }
 CHIP_FACE_Z = 180
 
+-- The dial's NUMBER side, which is the other way up. Same five steps
+-- round, same caveat: these are the angles to change if the dial reads
+-- wrong, and nothing else depends on them.
+CHIP_NUM = { 0, 72, 144, 216, 288 }
+CHIP_NUM_Z = 0
+
 PANEL = nil
 chr39 = string.char(39)
 FACEUP = {0, 180, 0}
@@ -119,6 +125,16 @@ ASSIGN_SLOTS = 4
 -- Named here so that "every deck a setup can reach" stays a real check
 -- rather than one that quietly stopped covering a deck.
 IN_THE_BAG = { 'Final Exams' }
+
+-- Dealt by NAP alone: the printed layout under the cards.
+NAP_TABLE = 'NAP Table'
+
+-- An Apprentice starts at 2 HP / 2 STR / 2 REC (rules/nap.html), and
+-- the three markers go in a column beside the card that says so. The
+-- Chip starts in the circle beside Morning, reading 1.
+NAP_START = 2
+MARKER_X = NAP_X - CARD_L / 2 - 2.2
+CHIP_X = ASSIGN_X - CARD_L / 2 - 1.9
 ASSIGN_PITCH = 8.5
 
 -- The Assignment deck sits over the FIRST Assignment column, with the
@@ -177,6 +193,39 @@ function homeBox(nick)
   local game = HOME[nick] or HOME[(nick:gsub(' %d+$', ''))]
   if not game then return nil end
   return boxOf(game)
+end
+
+-- THE MARKERS ARE NOT IN A BAG. The Chip and the Health, Strategy and
+-- Recovery dice sit loose on the table, so a setup finds them by name
+-- where they are rather than taking them out of anything, and Pack up
+-- puts them back at DICE_HOME instead of bagging them.
+function marker(name)
+  for _, o in ipairs(getAllObjects()) do
+    if o.getName() == name then return o end
+  end
+  return nil
+end
+
+function setMarker(name, x, z, value)
+  local o = marker(name)
+  if not o then return nil end
+  o.setLock(false)
+  o.setPositionSmooth({x, 1.6, z}, false, true)
+  if value then
+    local ok = pcall(function() o.setRotationValue(value) end)
+    if not ok then say(name .. ' has no numbered faces to set.') end
+  end
+  return o
+end
+
+function markersHome()
+  for name, p in pairs(DICE_HOME) do
+    local o = marker(name)
+    if o then
+      o.setLock(false)
+      o.setPositionSmooth({p[1], 1.6, p[2]}, false, true)
+    end
+  end
 end
 
 function putHome(obj)
@@ -548,6 +597,7 @@ function packUp(quiet)
   -- three - which is what TTS does under load - ten passes still left a
   -- card out often enough for the harness to notice. A pass that finds
   -- nothing costs a few frames and nothing else.
+  step(markersHome)
   for _ = 1, 20 do step(post) end
   step(function()
     local left = {}
@@ -664,6 +714,13 @@ function setupNAP()
   local asg
 
   step(function()
+    -- THE TABLE OVERLAY FIRST, so everything else lands on top of it.
+    -- Locked a moment later: a 56-unit tile that can be dragged is a
+    -- tile that will be dragged.
+    local mat = deckOut('NAP Table', {0, 0.98, 0.2}, FACEUP)
+    if mat then Wait.time(function() if mat then mat.setLock(true) end end, 0.6) end
+  end)
+  step(function()
     -- ONE STACK. Keep 1 / 2 / 3 takes the one you want out of it and
     -- sends the rest back, so there is no reason to spread three cards
     -- across the table first.
@@ -710,6 +767,19 @@ function setupNAP()
     drawOne('FINF', {NAP_X, 3, ROW_CHAR - NAP_GAP}, FACEUP)
   end)
 
+  step(function()
+    -- The Chip to the circle beside Morning, reading 1; the three
+    -- markers in a column beside the Apprentice, at the 2s the rules
+    -- start you on.
+    local chip = setMarker('Chip', CHIP_X, ROW_CHAR - NAP_GAP)
+    if chip then
+      local r = chip.getRotation()
+      chip.setRotationSmooth({r.x, CHIP_NUM[1], CHIP_NUM_Z})
+    end
+    setMarker('Health', MARKER_X, ROW_CHAR + 1.6, NAP_START)
+    setMarker('Strategy', MARKER_X, ROW_CHAR, NAP_START)
+    setMarker('Recovery', MARKER_X, ROW_CHAR - 1.6, NAP_START)
+  end)
   step(function()
     STATE.credits = 0
     refreshPanel()

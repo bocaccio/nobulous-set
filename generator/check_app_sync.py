@@ -1726,8 +1726,14 @@ _want |= set(l for pair in re.findall(r"and '([^']+)' or '([^']+)'", _lua)
              for l in pair)
 check("tts/lua.lua still asks for its decks by label",
       len(_want) >= 20, "found only %d deckOut labels" % len(_want))
+# A bag can hold something that is not a deck - the NAP table overlay
+# is a tile - so a name the Lua deals is good if decks.py has it OR
+# build_mod.py builds an object with that nickname.
+_objs = set(re.findall(chr(39) + chr(39) + chr(39) + r'"Nickname": "([^"]+)"' + chr(39) + chr(39) + chr(39), _mod))
+_objs = set(re.findall(r'"Nickname": "([^"]+)"', _mod))
 check("every deck label in tts/lua.lua exists in tts/decks.py",
-      _want <= _labels, "no such deck: %r" % (sorted(_want - _labels),))
+      _want <= (_labels | _objs),
+      "no such deck or object: %r" % (sorted(_want - _labels - _objs),))
 # ...and the other direction, which is the one with teeth now that the
 # cards live in boxes: a deck no setup ever names is dead cardboard that
 # a player can only reach by opening a box and guessing.

@@ -72,6 +72,7 @@ class Obj(object):
         self.kids = list(kids or [])
         self.bag = bag
         self.pos = (0.0, 0.0, 0.0)
+        self.value = None
 
     def getName(self):
         return self.name
@@ -83,6 +84,9 @@ class Obj(object):
         # TTS answers -1 for a single card, which is why the Lua has its
         # own count() rather than trusting this.
         return len(self.kids) if self.kids else -1
+
+    def getRotation(self):
+        return self.world.lua.table_from({"x": 0.0, "y": 0.0, "z": 0.0})
 
     def getPosition(self):
         return self.world.lua.table_from(
@@ -107,12 +111,19 @@ class Obj(object):
         # to a harness that reported 0 failed.
         self.pos = tuple(p.values()) if hasattr(p, "values") else tuple(p)
 
-    setPositionSmooth = setPosition
+    def setPositionSmooth(self, p, *a):
+        # TTS takes (position, collide, fast); the stub took one
+        # argument, so every call through it threw and the step that
+        # placed the markers died without placing anything.
+        self.setPosition(p)
 
     def setRotation(self, *a):
         pass
 
     setRotationSmooth = setRotation
+
+    def setRotationValue(self, v):
+        self.value = v
 
     def takeObject(self, spec):
         keys = set(spec.keys())
