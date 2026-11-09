@@ -880,15 +880,24 @@ def counter_assertions():
     want("a Task on the bank pile is not counted as a Credit",
          by["Credit Record"].text, "CREDITS  3 / %d" % goal)
 
-    # The mat reports the rectangle it actually covers, so the numbers
-    # read off at the table mean something.
-    mat = list(g.matSize())
-    want("the mat reports its own size in table units",
-         [round(float(v), 2) for v in mat[1:]], [56.0, 37.6, 0.2])
+    # THE MAT COVERS THE FELT, which is the whole point of it: the
+    # printed boxes and the cards are both placed in table units, and
+    # they can only agree if the picture is stretched over exactly the
+    # rectangle it was drawn for. Measured against FELT rather than
+    # against two numbers typed in here, because FELT is what the
+    # template is drawn to as well.
+    felt = g.FELT
+    mat = [round(float(v), 2) for v in list(g.matSize())[1:]]
+    want("the mat covers the felt exactly",
+         mat, [round(float(felt.x1) - float(felt.x0), 2),
+               round(float(felt.z1) - float(felt.z0), 2),
+               round((float(felt.z1) + float(felt.z0)) / 2.0, 2)])
+    before = [round(float(v), 2) for v in list(g.matSize())[1:3]]
     g.matWider()
     g.matDeeper()
     want("the Mat buttons move it half a unit at a time",
-         [round(float(v), 2) for v in list(g.matSize())[1:3]], [56.5, 38.1])
+         [round(float(v), 2) for v in list(g.matSize())[1:3]],
+         [round(before[0] + 0.5, 2), round(before[1] + 0.5, 2)])
 
 
 def dial_assertions():

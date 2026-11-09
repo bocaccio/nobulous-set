@@ -1940,8 +1940,15 @@ check("the dice are a 2x2 block per colour in a row under the cards",
 # The lower right corner is left empty for exhausted dice, and the
 # template draws it, so the two have to agree about where it is.
 _tmpl = text("tts/make_template.py")
+# A PROPERTY, NOT A SPELLING. This matched the exact import line and
+# failed the moment that line grew a second name - which is the trap
+# this file keeps relearning: it was testing how the import was
+# written, not that the template has no copy of its own.
 check("the exhausted corner is declared where the template reads it",
-      "EXHAUSTED = (" in _mod and "from build_mod import EXHAUSTED" in _tmpl)
+      "EXHAUSTED = (" in _mod
+      and re.search("from build_mod import " + chr(92) + "(?[^)]*EXHAUSTED",
+                    _tmpl)
+      and "EXHAUSTED = " not in _tmpl)
 # DRAWN FROM THE SETUPS, not from a second copy of the layout: the
 # template presses each setup button through test_setup.py and outlines
 # what the script actually dealt. A template typed out separately would
@@ -2208,6 +2215,60 @@ check("the rulebooks are served from rules/, not images/",
 check("the rulebook's button is redrawn on whatever reload returns",
       "o = o.reload()" in _lua and "drawRulesButton(o)" in _lua
       and "drawRulesButton(getObjectFromGUID(RULES_GUID))" in _lua)
+
+# THE MAT IS STRETCHED OVER THE FELT, so a picture drawn to any other
+# rectangle puts every printed box somewhere the cards are not. That is
+# not a figure of speech: the mat was widened to the table without the
+# drawing being redrawn, and the boxes and the cards ended up working
+# from two different tables. Three things have to hold, and all three
+# are measurable here.
+_tile = [o for o in _sv["ObjectStates"] for k in (o.get("ContainedObjects") or [])
+         if False] or None
+_matobj = [k for o in _sv["ObjectStates"]
+           for k in (o.get("ContainedObjects") or [])
+           if k.get("Nickname") == "NAP Table"]
+_fx = re.search(r"FELT_X0, FELT_X1 = (-?[\d.]+), (-?[\d.]+)", _mod)
+_fz = re.search(r"FELT_Z0, FELT_Z1 = (-?[\d.]+), (-?[\d.]+)", _mod)
+check("build_mod.py records the felt it was measured to", bool(_fx and _fz))
+if _fx and _fz and _matobj:
+    _fw = float(_fx.group(2)) - float(_fx.group(1))
+    _fd = float(_fz.group(2)) - float(_fz.group(1))
+    _img = [f for f in os.listdir(os.path.join(ROOT, "images"))
+            if f.startswith("NAP_Table")]
+    check("one overlay image ships", len(_img) == 1, "%r" % (_img,))
+    if _img:
+        with open(os.path.join(ROOT, "images", _img[0]), "rb") as _fh:
+            _d = _fh.read()
+        _i, _wh = 2, None
+        while _i < len(_d) - 9 and _wh is None:
+            if _d[_i] != 0xFF:
+                _i += 1
+                continue
+            _m = _d[_i + 1]
+            if 0xC0 <= _m <= 0xCF and _m not in (0xC4, 0xC8, 0xCC):
+                _wh = ((_d[_i + 7] << 8) | _d[_i + 8],
+                       (_d[_i + 5] << 8) | _d[_i + 6])
+            else:
+                _i += 2 + ((_d[_i + 2] << 8) | _d[_i + 3])
+        check("the overlay is drawn to the felt's own shape",
+              _wh and abs(_wh[0] / float(_wh[1]) - _fw / _fd) < 0.002,
+              "image %r vs felt %.4f" % (_wh, _fw / _fd))
+    _t = _matobj[0]["Transform"]
+    check("the mat is scaled to cover the felt exactly",
+          abs(2 * _t["scaleZ"] - _fd) < 0.01
+          and abs(_t["scaleX"] - _t["scaleZ"]) < 0.01,
+          "scale %.3f/%.3f for a felt %.2f deep"
+          % (_t["scaleX"], _t["scaleZ"], _fd))
+check("the template is drawn to the felt build_mod.py records",
+      "from build_mod import (EXHAUSTED, FELT_X0, FELT_X1" in _tmpl
+      and "X0, X1 = FELT_X0, FELT_X1" in _tmpl)
+# Pillow's text engine is blocked here, so the labels come from glyph
+# outlines. Without it the overlay cannot be redrawn at all - and it
+# has to be redrawn every time the felt is re-measured.
+check("the template can draw text without Pillow's text engine",
+      "import glyphs" in _tmpl and "glyphs.draw_text(" in _tmpl
+      and "ImageFont" not in _tmpl
+      and os.path.exists(os.path.join(ROOT, "tts", "glyphs.py")))
 
 # ONE OWNER FOR HOW BIG A DIE IS, and the spacing derived beside it.
 # The row is laid out in multiples of a die, so a scale changed without

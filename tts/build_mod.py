@@ -56,8 +56,29 @@ USED = set()
 # At 2.6 the Lab Rats came out about 1.36x the portrait cards and
 # overlapped at a gap of exactly one card. Scaled by SHORT/LONG they are
 # the same card, turned.
+# THE FELT, MEASURED AT THE TABLE AND NOT OFF A SCREENSHOT.
+#
+# Jon sized the overlay until it covered the table and stopped: scaleX
+# 18.9679, scaleZ 18.0500, centre z -0.1645. At the mat's own aspect
+# that is 56.5 across and 36.1 deep, z running -18.21 to 17.89. The
+# guess it replaces was "about 56 by 37, z -18 to +19" - a table a
+# unit and a half deeper than the real one, which is why the bottom
+# row of dice hung over the edge and why the printed boxes and the
+# cards were working from two different ideas of how big the table is.
+#
+# EVERY OTHER NUMBER IN THIS FILE THAT TOUCHES THE TABLE COMES FROM
+# HERE, and so does the template and the harness.
+FELT_X0, FELT_X1 = -28.25, 28.25
+FELT_Z0, FELT_Z1 = -18.21, 17.89
+
 CARD_SHORT, CARD_LONG = 2.4, 3.35
-CARD_SCALE = 2.6
+# 2.6 UNTIL THE FELT WAS MEASURED. Four rows of portrait cards plus a
+# dice block have to fit in 36.1 units of depth, and at 2.6 they came
+# to 38.4: the rows were sized against a table that was never there.
+# This is the largest that leaves the dice their 3.7 - see dice_objects
+# - and it is about 6% off a card, which is the price of the dice being
+# the size Jon wanted them.
+CARD_SCALE = 2.45
 LAND_SCALE = CARD_SCALE * CARD_SHORT / CARD_LONG
 CARD_W = CARD_SHORT * CARD_SCALE   # a portrait card, across
 CARD_L = CARD_LONG * CARD_SCALE    # a landscape card, across - which is
@@ -69,15 +90,32 @@ CARD_L = CARD_LONG * CARD_SCALE    # a landscape card, across - which is
 # between the lowest card edge at -16.26 and the front of the felt.
 # Module level so tts/make_template.py can draw the space.
 # (x from, x to, z top, z bottom)
-EXHAUSTED = (10.0, 27.0, -15.2, -18.5)
 
 # Filled in by dice_objects(), read by lua_header().
 HOME_MARKERS = {}
 
+# FOUR ROWS, ANCHORED TO THE BACK EDGE. The top row is landscape in
+# every game, so it sits half a card's SHORT side below the felt's back
+# edge and the rest follow at a card and a hair. Computed rather than
+# written down: four literals that happened to fit a table nobody had
+# measured is what this replaces.
+ROW_PITCH = CARD_LONG * CARD_SCALE + 0.1
+ROW_CHAR = FELT_Z1 - CARD_SHORT * CARD_SCALE / 2.0
+ROW_MAIN = ROW_CHAR - ROW_PITCH
+ROW_SIDE = ROW_CHAR - 2 * ROW_PITCH
+ROW_TIER = ROW_CHAR - 3 * ROW_PITCH
+
+# THE EXHAUSTED CORNER, in the same band the dice live in: from the
+# bottom of the lowest card row to the back edge of the felt, and
+# right of everything the dice row uses. It ran to -18.5 when the felt
+# was thought to end at -18.6; the felt ends at -18.21.
+EXHAUSTED = (10.0, 27.5, ROW_TIER - CARD_LONG * CARD_SCALE / 2.0,
+             FELT_Z0 + 0.1)
+
 # How big a die is. TTS scales an object by 0.1 a press, so this is the
 # two presses that still leave room for two rows of them under the
 # cards; see dice_objects(). The Chip is not a die and keeps its size.
-DIE_SCALE = 1.2
+DIE_SCALE = 1.8
 
 # THE DIAL'S FIVE COLOURS, and where each one has to be turned to.
 #
@@ -199,6 +237,13 @@ def lua_header(box_guids, rules_guid):
         '-- tables are read out of generator/build_nap.py and build_nrj.py.',
         '-- Edit build_mod.py, never this block.',
         'CARD_SCALE = %.2f' % CARD_SCALE,
+        'FELT = { x0 = %.2f, x1 = %.2f, z0 = %.2f, z1 = %.2f }' % (
+            FELT_X0, FELT_X1, FELT_Z0, FELT_Z1),
+        'ROW_PITCH = %.3f' % ROW_PITCH,
+        'ROW_CHAR = %.3f' % ROW_CHAR,
+        'ROW_MAIN = %.3f' % ROW_MAIN,
+        'ROW_SIDE = %.3f' % ROW_SIDE,
+        'ROW_TIER = %.3f' % ROW_TIER,
         'CARD_W = %.3f' % CARD_W,
         'CARD_L = %.3f' % CARD_L,
         'BOX = { %s }' % j("%s = '%s'" % (g, box_guids[g]) for g in BOX_ORDER),
@@ -419,12 +464,14 @@ def panel():
 # so scale IS the half-depth: 18.8 covers z -18.6 to 19.0, and
 # 18.8 * 2800/1880 is 28.0, which is the felt's half-width. The template
 # is drawn to exactly that frame, so the two cannot disagree.
-NAP_TABLE_SCALE = 18.8
-# Where the mat's middle sits, which is not 0: the felt runs from z 19.0
-# to -18.6 as measured off a screenshot, so its centre is 0.2. Both of
-# these are nudged at the table with the panel's Mat controls and the
-# numbers brought back here.
-NAP_TABLE_Z = 0.20
+# THE MAT COVERS THE FELT EXACTLY, and both come from FELT above: half
+# the depth is the scale, because a stretched tile's local space is 1
+# deep by its image's aspect wide. The template is drawn at that same
+# aspect, so the scale stays uniform and nothing in the picture is
+# stretched - which it was, by 5%, when the mat was widened to the
+# table without the drawing being redrawn to match.
+NAP_TABLE_SCALE = (FELT_Z1 - FELT_Z0) / 2.0
+NAP_TABLE_Z = (FELT_Z1 + FELT_Z0) / 2.0
 
 
 # THE TWO READOUTS ABOVE NAP'S PILES.
@@ -542,25 +589,26 @@ def dice_objects():
     #
     # The lowest card row reaches z -16.26, so the blocks sit at -16.9
     # and -17.9. Every number in here is spoken for.
-    # A FIFTH BIGGER, AND THE ROW RE-SPACED TO MATCH. The felt between
-    # the bottom card row (-16.26) and the back edge (-18.6) is 2.34
-    # units, and two rows of dice now need 2.23 of it: a die is about
-    # 0.9 across at scale 1, so 1.08 at this scale, and the rows are
-    # 1.15 apart. That is where the limit is - at 1.8 the two rows
-    # would want 3.4 units and there is nowhere for them to go.
-    #
-    # The pair is centred in the band, which is why DICE_Z moved up.
-    DICE_Z = -16.855
-    DROP = 1.15
+    # THE BAND UNDER THE CARDS, AND THE WHOLE OF IT. A die is about a
+    # unit across at scale 1, so 1.8 here, and a 2x2 block of them is
+    # DROP + 1.8 deep. The band runs from the bottom of the lowest card
+    # row to the back edge of the felt, and the pair of rows is centred
+    # in it - so moving a card row moves the dice, rather than leaving
+    # them where a previous felt put them.
+    strip_top = ROW_TIER - CARD_L / 2.0
+    DROP = 1.9
+    DICE_Z = (strip_top + FELT_Z0) / 2.0 + DROP / 2.0
     ORDER = ('Pink', 'Purple', 'Blue', 'Green', 'Yellow')
-    BLOCK0, BLOCK_PITCH = -26.0, 3.9
+    BLOCK0, BLOCK_PITCH = -27.0, 4.3
     BLOCK = dict((n, BLOCK0 + i * BLOCK_PITCH) for i, n in enumerate(ORDER))
-    OFFS = ((0.0, 0.0), (1.35, 0.0), (0.0, -DROP), (1.35, -DROP))
+    OFFS = ((0.0, 0.0), (1.9, 0.0), (0.0, -DROP), (1.9, -DROP))
     # The Chip and the three utility dice follow the colours along the
     # same row, and all of it stops well left of the exhausted corner.
-    lay = {'Chip': (-6.0, DICE_Z - DROP / 2),
-           'Health': (-2.5, DICE_Z), 'Strategy': (-1.0, DICE_Z),
-           'Recovery': (-2.5, DICE_Z - DROP)}
+    # The Chip and the three stat dice follow the blocks along the same
+    # band, in one row now that a die is 1.8 across.
+    lay = {'Chip': (-4.8, DICE_Z - DROP / 2),
+           'Health': (-2.0, DICE_Z), 'Strategy': (0.0, DICE_Z),
+           'Recovery': (2.0, DICE_Z)}
     HOME_MARKERS.update(lay)
     seen = {}
     for o in src:

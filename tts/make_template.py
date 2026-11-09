@@ -14,9 +14,21 @@ separately would be wrong the first time a row moved, and it would be
 wrong silently, which is the whole problem this repo keeps having with
 numbers written down twice.
 
-The felt is about 56 by 37.6 units. At 50 px per unit that is a
-2800 x 1880 image, with world x -28 on the left edge and world z +19 at
-the top - TTS's +z runs away from the player, which is up on the page.
+THE FELT IS WHAT BUILD_MOD SAYS IT IS - 56.5 by 36.1, x +/-28.25 and
+z -18.21 to 17.89 - because that is what Jon sized the mat to at the
+table. At 50 px per unit the image is 2825 x 1805, drawn with world x
+-28.25 on the left edge and world z 17.89 at the top; TTS's +z runs
+away from the player, which is up on the page.
+
+Getting that rectangle right is not cosmetic. The mat is stretched over
+it, so a picture drawn for a different one puts every printed box
+somewhere the cards are not - which is exactly what happened when the
+mat was widened to the table and the drawing was not redrawn to match.
+
+TEXT IS DRAWN FROM GLYPH OUTLINES (tts/glyphs.py), not by Pillow:
+Windows Smart App Control blocks Pillow's unsigned text DLL on this
+machine, and without this module the overlay could not be redrawn at
+all.
 """
 import hashlib
 import io
@@ -24,21 +36,23 @@ import json
 import os
 import sys
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+import glyphs                                            # noqa: E402
 import test_setup as T                                   # noqa: E402
-from build_mod import EXHAUSTED                          # noqa: E402
+from build_mod import (EXHAUSTED, FELT_X0, FELT_X1,      # noqa: E402
+                       FELT_Z0, FELT_Z1)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "templates")
 
 PX = 50.0                     # pixels per table unit
-X0, X1 = -28.0, 28.0
-Z0, Z1 = 19.0, -18.6          # top, bottom
-W = int((X1 - X0) * PX)
-H = int((Z0 - Z1) * PX)
+X0, X1 = FELT_X0, FELT_X1
+Z0, Z1 = FELT_Z1, FELT_Z0     # top, bottom
+W = int(round((X1 - X0) * PX))
+H = int(round((Z0 - Z1) * PX))
 
 FONT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                     "fonts", "DejaVuSans-Bold.ttf")
@@ -134,23 +148,21 @@ def label(d, text, x, z, size=LABEL_PT, ink=None, fit=None):
     ink = ink if ink is not None else PEN["text"]
     lines = text.split("\n")
     for pt in range(size, 9, -2):
-        try:
-            f = ImageFont.truetype(FONT, pt)
-        except Exception:
-            f = ImageFont.load_default()
-            break
-        widest = max(d.textbbox((0, 0), ln, font=f)[2]
-                     - d.textbbox((0, 0), ln, font=f)[0] for ln in lines)
+        widest = max(glyphs.text_size(ln, pt, FONT)[0] for ln in lines)
         if fit is None or widest <= fit * PX:
             break
     cx, cy = px(x, z)
     step = pt * 1.25
+    cap = max(glyphs.text_size(ln, pt, FONT)[1] for ln in lines)
     top = cy - step * (len(lines) - 1) / 2.0
     for i, ln in enumerate(lines):
-        box = d.textbbox((0, 0), ln, font=f)
-        d.text((cx - (box[2] - box[0]) / 2.0,
-                top + i * step - (box[3] - box[1]) / 2.0),
-               ln, font=f, fill=ink)
+        w = glyphs.text_size(ln, pt, FONT)[0]
+        # draw_text takes a LEFT BASELINE, so half the cap height puts
+        # the line's middle on the row rather than its feet.
+        # d._image is the Image the caller handed ImageDraw; glyphs
+        # composites onto it directly, which an ImageDraw cannot do.
+        glyphs.draw_text(d._image, (cx - w / 2.0, top + i * step + cap / 2.0),
+                         ln, pt, ink, FONT)
     DREW.append((lines[0], pt))
 
 
