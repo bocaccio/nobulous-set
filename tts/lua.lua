@@ -77,8 +77,10 @@ ROW_MAIN = 5.7                     -- the decks you draw from
 ROW_SIDE = -3.1                    -- mats, slots and the Research Pool
 ROW_TIER = -11.9                   -- what a tier adds
 
--- A single card a tier deals sits out at the right, clear of the six-card
--- spreads that share this row.
+-- A single card a tier deals sits out at the right, on the SIDE row
+-- rather than the tier row: the tier row is the lowest cards on the
+-- table, and keeping it clear at the right-hand end is what gives the
+-- exhausted dice the whole bottom band.
 TIER_X = 24.0
 
 -- The NAP Time Slot column, down the left. It has to clear the dice at
@@ -616,7 +618,7 @@ function setupBAT()
 
   if STATE.tier >= 1 then
     step(function()
-      drawOne('Experimental Protocols', {TIER_X, 3, ROW_TIER}, FACEUP)
+      drawOne('Experimental Protocols', {TIER_X, 3, ROW_SIDE}, FACEUP)
     end)
   end
   if STATE.tier >= 3 then
@@ -761,7 +763,7 @@ function setupAoS()
   end)
   if STATE.tier >= 1 then
     step(function()
-      drawOne('Nobulous Interference', {TIER_X, 3, ROW_TIER}, FACEUP)
+      drawOne('Nobulous Interference', {TIER_X, 3, ROW_SIDE}, FACEUP)
     end)
   end
   if STATE.tier >= 3 then

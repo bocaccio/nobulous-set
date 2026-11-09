@@ -42,7 +42,7 @@ H = int((Z0 - Z1) * PX)
 INK = (235, 232, 224, 235)    # card outlines
 SNAP = (235, 232, 224, 150)   # the spaces you drop a card into
 DICE = (235, 232, 224, 120)
-BACK = (24, 20, 17, 255)
+BACK = (0, 0, 0, 0)           # transparent: this is an overlay
 LINE = 5
 RADIUS = 14
 
@@ -112,9 +112,9 @@ def draw_game(d, which, slots_out=None):
 
 
 def frame(d):
-    """The felt edge, the dice row, and the exhausted corner."""
-    for x, z in dice_places():
-        card(d, x, z, 0.46, 0.46, DICE, 4)
+    """The exhausted-dice corner. The dice themselves are not outlined:
+    they are loose things that move, and drawing a box round each one
+    only clutters a background that has to sit under them."""
     x0, x1, zt, zb = EXHAUSTED
     a, b = px(x0, zt), px(x1, zb)
     d.rounded_rectangle([a[0], a[1], b[0], b[1]], RADIUS * 2,
