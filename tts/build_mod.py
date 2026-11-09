@@ -223,8 +223,10 @@ def panel():
             # z 20 puts its front edge at 18, just clear of the top dealt
             # row at 17.96. The height is above the rail rather than on
             # it: the mat is locked, so floating a little is safe and
-            # being a little low is not - it vanishes.
-            "Transform": xf(0, 2.20, 20.0, (0, 180, 0), 2.0),
+            # being a little low is not - it vanishes. 2.20 still buried
+            # it, so the rail top is above 2.3; 3.0 clears it with room
+            # to spare and a locked tile does not care that it hovers.
+            "Transform": xf(0, 3.00, 20.0, (0, 180, 0), 2.0),
             "Nickname": "Control Panel",
             "Description": "Setup and counters for The Nobulous Set",
             "ColorDiffuse": {"r": 0.93, "g": 0.91, "b": 0.85},
@@ -256,7 +258,7 @@ def dice_objects():
     OFFS = ((0.0, 0.0), (1.6, 0.0), (0.0, -1.6), (1.6, -1.6))
     # The Chip sits beside the Red die, which is the one it belongs to:
     # Red is communal and the Chip marks who holds it.
-    lay = {'Chip': (XCOL + 1.6, ROWS['Pink']),
+    lay = {'Chip': (XCOL + 3.2, ROWS['Pink']),
            'Health': (XCOL, -8.5), 'Strategy': (XCOL + 1.6, -8.5),
            'Recovery': (XCOL + 3.2, -8.5)}
     seen = {}
