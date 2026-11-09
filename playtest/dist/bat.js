@@ -265,12 +265,12 @@
     ["Hypermetabolism","Senses \u00b7 Value 4","Tap: recover +2 dice. While held, exhaust 1 available die at the end of each Experiment the holder attempts, Purple first; if it holds no Purple, exhaust its weakest.",4],
   ];
   const BAT_NOTES = [
-    ["Unexpected Resilience","Claim after a Rat completes an Experiment without committing Red.","Once per game, recover all of that Rat's dice."],
-    ["Successful Integration","Claim when a Rat holds a Specimen.","Once per game, ignore the +1 Target from revealing a Specimen."],
-    ["Acceptable Losses","Claim after failing 3 Experiments within the same four-Rat rotation.","Once per game after another failure, choose which revealed Upgrade is Spliced."],
-    ["Cross-Species Compatibility","Claim after a Rat completes an Experiment using a borrowed die.","Once during the Tyrant battle, the active Rat may tap an Upgrade held by another surviving Rat."],
-    ["Controlled Failure","Claim after deliberately committing zero dice to an Experiment.","Once later, after revealing an Experiment, discard it and reveal the next one instead."],
-    ["Red Means Go","Claim after Red provides the success that completes an Experiment and at least one die belonging to another Rat also contributed.","Once per game after using Red, place it directly on any non-active Rat rather than setting it aside."],
+    ["Unexpected Resilience","Claim after a Rat completes an Experiment without committing Red. Claiming gives up the next Upgrade a completed Experiment earns.","Once per game, when a Rat has no available dice, recover all of them."],
+    ["Successful Integration","Claim when a Rat holds a Specimen. Claiming gives up the next Upgrade a completed Experiment earns.","Once per game, ignore the +1 Target from revealing a Specimen."],
+    ["Acceptable Losses","Claim after failing 3 Experiments within the same four-Rat rotation. Claiming gives up the next Upgrade a completed Experiment earns.","Once per game after another failure, choose which revealed Upgrade is Spliced."],
+    ["Cross-Species Compatibility","Claim after a Rat completes an Experiment using a borrowed die. Claiming gives up the next Upgrade a completed Experiment earns.","Once during the Tyrant battle, the active Rat may tap an Upgrade held by another surviving Rat."],
+    ["Controlled Failure","Claim after deliberately committing zero dice to an Experiment. Claiming gives up the next Upgrade a completed Experiment earns.","Once later, after revealing an Experiment, discard it and reveal the next one instead."],
+    ["Red Means Go","Claim after Red provides the success that completes an Experiment and at least one die belonging to another Rat also contributed. Claiming gives up the next Upgrade a completed Experiment earns.","Once per game after using Red, place it directly on any non-active Rat rather than setting it aside."],
   ];
   const batTier = () => window.NOBULOUS_TIER ? window.NOBULOUS_TIER.forGame("bat") : "0";
   const cardValue = card => card.type === "s" ? 5 : card.type === "u" ? upgrades[card.i][1] : card.type === "m" ? BAT_MODS[card.i][3] : 0;
@@ -739,7 +739,7 @@
     const specimen=card.type==="s",cols=specimen?8:10,rows=specimen?1:2;
     const col=card.i%cols,row=Math.floor(card.i/cols);
     el.classList.remove("placeholder-card");el.innerHTML="";
-    el.style.backgroundImage=`url('assets/${specimen?"BAT_Specimens_TTS.png":"BAT_Upgrades_TTS.png"}?v=fonts-1')`;
+    el.style.backgroundImage=`url('assets/${specimen?"BAT_Specimens_TTS.png":"BAT_Upgrades_TTS.png"}?v=aoslabel1')`;
     el.style.backgroundSize=`${cols*100}% ${rows*100}%`;
     el.style.backgroundPosition=`${cols===1?0:col/(cols-1)*100}% ${rows===1?0:row/(rows-1)*100}%`;
   }
@@ -802,7 +802,7 @@
         return `<div class="bat-borrow-row"><button data-bat-borrow="${i}" ${blocked?"disabled":""}>Lend selected die to ${active().name}</button>${blocked?`<span class="bat-borrow-note">${blocked}</span>`:""}</div>`;
       })()}`;
       const sprite=box.querySelector(".bat-rat-card"),col=i;
-      sprite.style.backgroundImage=`url('assets/${rat.side==="front"?"BAT_Rats_TTS.png":"BAT_Rats_TTS_back.png"}?v=fonts-1')`;
+      sprite.style.backgroundImage=`url('assets/${rat.side==="front"?"BAT_Rats_TTS.png":"BAT_Rats_TTS_back.png"}?v=aoslabel1')`;
       sprite.style.backgroundSize="400% 100%";sprite.style.backgroundPosition=`${col/3*100}% 0`;
       
       host.appendChild(box);
@@ -939,17 +939,16 @@
   // shows what that card has left, then moves right and is set to the next
   // card's Value.
   const healthDie = n =>
-    `<span class="bat-buff-die" title="Health die \u00b7 ${n} left on this card">${n}</span>`;
-  // The Buff HP card is a 15-space track with the Health die sitting on the
-  // current value - 3 across and 5 down, counting DOWN from 15 at the
-  // top-left, exactly as generator/build_bat.py prints it. The four gold
-  // spaces are the difficulty starts.
+    `<span class="bat-health-die" title="Health die \u00b7 ${n} left on this card">${n}</span>`;
+  // One cell of the Tyrant track. Every cell is a Splice: Buff HP stopped
+  // being modelled here when Health became the difficulty dial, and the
+  // 15-space grid it used to print went with it.
   function trackCell(slot,card,hp,max,front,editable) {
     const dead=hp<=0;
     return `<div class="bat-track-cell ${dead?"destroyed":""} ${front===slot?"front":""}">`
       +`<div class="suite-card portrait bat-track-art" data-track-art="${slot}"></div>`
       +(front===slot&&hp>0?`<div class="bat-track-die">${healthDie(hp)}</div>`:"")
-      +`<div class="bat-track-name">${escape(card?cardName(card):"Buff HP")}</div>`
+      +`<div class="bat-track-name">${escape(cardName(card))}</div>`
       +`<div class="bat-hp-selector bat-splice-toggle"><strong>Value ${max}</strong>`
       +`<button data-track-hp="${slot}" ${editable?"":"disabled"} title="${dead?"Put this Splice back on the track":"Mark this Splice destroyed"}">`
       +`${dead?"Restore":"Destroy"}</button></div>`
@@ -988,10 +987,13 @@
     return pick;
   }
 
-  // Damage runs Buff HP, then each Splice in order, then Health. Buff HP
-  // chips; a Splice does NOT - the blow must meet its printed Value in this
-  // one attack or it bounces off and the whole attack is wasted. Overflow
-  // from a broken Splice carries on and may break the next one too.
+  // Damage runs each Splice in order, then Health. A Splice does NOT chip:
+  // the blow must meet its printed Value in this one attack or it bounces
+  // off and the whole attack is wasted. Overflow from a broken Splice
+  // carries on and may break the next one too, and Health is the only
+  // thing in the battle that chips. The Rats' armor is the OTHER rule and
+  // not a mirror of this one - no Value to meet, spent the moment it
+  // blocks, nothing carries over. HANDOFF section 9a0000000 has the table.
   function applyTyrantDamage(n){
     const b=state.battle;if(!b)return 0;
     let left=n;
@@ -1023,7 +1025,7 @@
     const dmg=rolledDamage();
     const step=b.needRec?3:anyRolled?2:1;
     // Step 1 stays live (not dimmed) while rerolls remain after the first roll.
-    const cls=n=>`bat-step ${step===n?"now":(n===1&&step===2&&!spent)?"":step>n?"done":""}`;
+    const cls=n=>`step ${step===n?"now":(n===1&&step===2&&!spent)?"":step>n?"done":""}`;
     // Step 1 doubles as the reroll: select misses among the rolled dice.
     const max=strFor(rat),used=b.ratRolls||0,spent=used>=max;
     const rollLabel=b.needRec
@@ -1042,7 +1044,7 @@
     const cap=RAT_REC[state.activeRat]+2;
     const picked=personalDice().filter(d=>d.selected&&d.zone==="exhausted").length;
     host.innerHTML=
-      `<div class="${cls(1)}"><span class="bat-step-num">1</span><div class="bat-step-stack">`
+      `<div class="${cls(1)}"><span class="step-num">1</span><div class="step-stack">`
       +`<button data-pool-roll class="${step===1||(step===2&&rerollPick)?"primary":""} ${step===1&&rollOK?"bat-rec-due":""}" ${rollOK?"":"disabled"}>${rollLabel}</button>`
       +(()=>{const need=commitColor(b);if(!need||anyRolled||b.needRec)return "";
         const chk=colorCheck(b,selected().filter(d=>d.zone==="available"));
@@ -1051,8 +1053,8 @@
       +(()=>{const src=strSources(rat);return src.length
         ?`<span class="bat-str-bonus">+${src.length} STR this turn · ${src.map(escape).join(", ")}</span>`:"";})()
       +`</div></div>`
-      +`<div class="${cls(2)}"><span class="bat-step-num">2</span>${second}</div>`
-      +`<div class="${cls(3)}"><span class="bat-step-num">3</span>`
+      +`<div class="${cls(2)}"><span class="step-num">2</span>${second}</div>`
+      +`<div class="${cls(3)}"><span class="step-num">3</span>`
       +`<button data-pool-recover class="${step===3?"primary bat-rec-due":""}" ${step===3?"":"disabled"}>Recover ${picked}/${cap} Selected (REC ${RAT_REC[state.activeRat]} + 2)</button></div>`;
   }
 
@@ -1089,7 +1091,7 @@
       return;
     }
     const step=!b.revealed?1:!b.rolled?2:3;
-    const cls=n=>`bat-step ${step===n?"now":step>n?"done":""}`;
+    const cls=n=>`step ${step===n?"now":step>n?"done":""}`;
     const tgt=state.rats[b.attackRat!=null?b.attackRat:state.activeRat]||active();
     let third;
     if(step<3) third=`<button disabled>Apply Damage</button>`;
@@ -1102,15 +1104,15 @@
       third=`<button data-apply-hits="1" class="primary bat-rec-due">No Damage — End the Tyrant's Turn</button>`;
     }
     host.innerHTML=
-      `<div class="${cls(1)}"><span class="bat-step-num">1</span>`
+      `<div class="${cls(1)}"><span class="step-num">1</span>`
       +`<button data-tyrant-attack class="${step===1?"primary bat-rec-due":""}" ${step===1?"":"disabled"}>Reveal Next Attack Card</button></div>`
-      +`<div class="${cls(2)}"><span class="bat-step-num">2</span>`
+      +`<div class="${cls(2)}"><span class="step-num">2</span>`
       +`<button data-tyrant-draw="${draws}" class="${step===2?"primary bat-rec-due":""}" ${step===2?"":"disabled"}>Draw ${draws} Dice and Roll</button>`
-      +`<div class="bat-step-dice">`
+      +`<div class="step-dice">`
       +`<div class="rat-dice-zone"><h4>Bag</h4><div class="bat-tyrant-dice-row">${bag.map(tyrantDie).join("")||'<span class="rat-zone-empty">Empty</span>'}</div></div>`
       +`<div class="rat-dice-zone"><h4>Rolled</h4><div class="bat-tyrant-dice-row">${drawn.map(tyrantDie).join("")||'<span class="rat-zone-empty">—</span>'}</div></div>`
       +`</div></div>`
-      +`<div class="${cls(3)}"><span class="bat-step-num">3</span>${third}</div>`;
+      +`<div class="${cls(3)}"><span class="step-num">3</span>${third}</div>`;
   }
 
   function renderBattle() {
@@ -1163,13 +1165,13 @@
       const i=art.dataset.attackArt;
       if(i===""){art.classList.add("placeholder-card");art.innerHTML="<span>Tyrant Attack</span>";return;}
       art.classList.remove("placeholder-card");art.innerHTML="";
-      art.style.backgroundImage="url('assets/BAT_TyrantAttacks_TTS.png?v=fonts-1')";
+      art.style.backgroundImage="url('assets/BAT_TyrantAttacks_TTS.png?v=aoslabel1')";
       art.style.backgroundSize=`${ATTACK_NAMES.length*100}% 100%`;
       art.style.backgroundPosition=`${Number(i)/(ATTACK_NAMES.length-1)*100}% 0%`;
     });
     host.querySelectorAll("[data-track-art]").forEach(art=>{
       const slot=art.dataset.trackArt;
-      // The Buff HP card is drawn as its own track now, so only Splices
+      // Every cell on the track is a Splice.
       setSprite(art,state.spliceCards[b.order[Number(slot)]]);
     });
   }

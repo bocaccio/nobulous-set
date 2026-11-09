@@ -2,7 +2,7 @@
   "use strict";
 
   const ASSET = "assets/";
-  const ASSET_VERSION = "cards-fixed-1";
+  const ASSET_VERSION = "hdrfit";
   const MAX_ELEMENTS = 5; // the allocation board always shows five Element slots
   const DECKS = {
     Routine: { front: "AoS_Routine_TTS.png", back: "AoS_Routine_TTS_back.png", count: 8 },
@@ -27,12 +27,25 @@
   // pick. All three carry the same reward multiset, so mixing them changes
   // only the Targets and element counts.
   // Specialized held at 3; each step up trades one Routine Program for one
-  // Unstable. Measured 45.8 / 34.0 / 24.5 / 17.5.
+  // Unstable, so 0/3/5 is simply the ladder's last rung and the printed
+  // construction sentence did not have to change.
+  // Retuned 2026-11-03 one rung harder, and AGAIN 2026-11-05 when the pitch
+  // moved from honest allocation to the strongest line the rules allow - see
+  // ALLOC_MODE in simulation/aos.py. Measured 60.6 / 52.0 / 43.6 / 35.6 solo
+  // for a player who triages, 52.5 / 44.0 / 35.6 / 28.1 for one who funds
+  // every element.
+  // The figures that used to sit here - "Measured 45.8 / 34.0 / 24.5 / 17.5"
+  // - named mixes two rungs back and predated required colours, the
+  // allocation floor and the corruption exclusion. Neither retune touched
+  // them, which is the same disease as the difficulty labels in index.html.
+  // Must match aos.LEVELS in simulation/aos.py and the table in
+  // rules/aos.html; check_app_sync.py holds all three together, and the
+  // labels in index.html are a fourth copy it also checks.
   const AOS_LEVELS = {
-    Easy:     [5, 3, 0],
-    Standard: [4, 3, 1],
-    Hard:     [3, 3, 2],
-    Nobulous: [2, 3, 3],
+    Easy:     [3, 3, 2],
+    Standard: [2, 3, 3],
+    Hard:     [1, 3, 4],
+    Nobulous: [0, 3, 5],
   };
   const AOS_DECK_NAMES = ["Routine", "Specialized", "Unstable"];
   // A Program knows which deck it came from, so every per-deck lookup goes
@@ -64,7 +77,7 @@
     },
     Advanced: {
       front: [[2,3,3,3,2],[3,3,3,3],[2,3,3,3,3],[3,3,3,2],[3,2,3,2,3],[3,3,3,3],[2,3,3,3,2],[3,3,3,3,3]],
-      back: [[2,3,4,3,2],[3,4,3,3],[2,3,3,4,3],[4,3,3,2],[3,2,4,2,3],[3,3,4,3],[2,4,3,3,2],[3,3,4,3,3]]
+      back: [[2,3,4,3,2],[3,4,3,3],[2,3,3,4,3],[4,3,3,2],[3,2,4,2,3],[3,3,4,3],[2,4,3,3,2],[3,4,3,3,3]]
     }
   };
   const PROGRAM_REWARDS = {
@@ -79,56 +92,69 @@
   const PROGRAM_FLAVOR = {
     Routine: [
       { name:"Maintain Balance", front:"The shale frame holds steady while Nobulous adds one unnecessary clipboard.", back:"The frame still balances, provided nobody breathes near it." },
-      { name:"Lift a Heavy Object", front:"The automaton raises the test mass with reassuring precision.", back:"The test mass rises. The floor follows." },
-      { name:"Climb an Incline", front:"Measured steps carry the chassis cleanly up the graded ramp.", back:"Each step lands harder than the last; the ramp files a complaint." },
+      { name:"Lift a Heavy Object", front:"The test mass rises smoothly, with Nobulous still standing on it.", back:"The test mass rises. The floor follows." },
+      { name:"Climb an Incline", front:"It reaches the top. Nobulous raises the ramp.", back:"Each step lands harder than the last; the ramp files a complaint." },
       { name:"Move at Speed", front:"The timing gates agree: it is fast, controlled, and technically indoors.", back:"It clears the final gate before the first one stops shaking." },
-      { name:"Navigate a Passage", front:"The frame folds through the mock corridor without touching a wall.", back:"The corridor is now wider, though not by design." },
-      { name:"Cross Uneven Ground", front:"Independent joints keep the load level over broken ground.", back:"The joints correct so violently that the ground becomes the stable part." },
-      { name:"Manipulate an Object", front:"Stone fingers turn the instrument exactly one calibrated notch.", back:"The instrument turns three notches and ceases to be calibrated." },
-      { name:"Detect an Obstacle", front:"Its sensors mark every obstruction before contact.", back:"It detects each obstruction immediately after impact." }
+      { name:"Navigate a Passage", front:"No contact with either wall. The plasterers are sent home.", back:"The corridor is now wider, though not by design." },
+      { name:"Cross Uneven Ground", front:"The chassis crosses the rubble without spilling Nobulous's tea.", back:"The joints correct so violently that the ground becomes the stable part." },
+      { name:"Manipulate an Object", front:"Stone fingers adjust a screw the apprentices have been rounding off all morning.", back:"The instrument turns three notches and ceases to be calibrated." },
+      { name:"Detect an Obstacle", front:"It stops for the glass wall, to the disappointment of the spectators.", back:"It detects each obstruction immediately after impact." }
     ],
     Specialized: [
-      { name:"Traverse Difficult Terrain", front:"The chassis reads the terrain and places each step where the ground will hold.", back:"It reads the terrain correctly, then challenges every conclusion." },
+      { name:"Traverse Difficult Terrain", front:"Nobulous follows in its footsteps until the gaps become inconvenient.", back:"It reads the terrain correctly, then challenges every conclusion." },
       { name:"Move Without Detection", front:"Noise dampers reduce a stone machine to a passing draft.", back:"The dampers hold; the footprints still resemble impact craters." },
-      { name:"Track a Moving Subject", front:"Sensors maintain a calm lock through every change of direction.", back:"The lock tightens until every movement looks like an escape attempt." },
-      { name:"Climb a Vertical Surface", front:"Anchors bite, release, and rise in a clean mechanical rhythm.", back:"The anchors bite deeper; sections of wall begin climbing too." },
-      { name:"Clear an Obstacle", front:"It measures the barrier and clears it with centimeters to spare.", back:"It clears the barrier. The barrier does not clear it." },
-      { name:"Operate in Low Light", front:"Passive sensors map the dark without announcing their presence.", back:"The map is perfect; the glowing heat signature is less subtle." },
-      { name:"Maintain a Pursuit", front:"It matches the subject's pace without closing too quickly.", back:"Pursuit logic discards 'too quickly' as an unnecessary constraint." },
-      { name:"Carry a Moving Load", front:"Compensators cradle the shifting load through every turn.", back:"The load remains secure while everything beneath it shifts." }
+      { name:"Track a Moving Subject", front:"The assistant ducks behind a screen. The head keeps turning.", back:"The lock tightens until every movement looks like an escape attempt." },
+      { name:"Climb a Vertical Surface", front:"A bell rings at the ceiling. Now for the descent.", back:"The anchors bite deeper; sections of wall begin climbing too." },
+      { name:"Clear an Obstacle", front:"The apprentice is allowed to put the ladder away.", back:"It clears the barrier. The barrier does not clear it." },
+      { name:"Operate in Low Light", front:"It finds the switch without needing the light.", back:"The map is perfect; the glowing heat signature is less subtle." },
+      { name:"Maintain a Pursuit", front:"The subject slows to a walk. So does the automaton, with considerably less wheezing.", back:"Pursuit logic discards 'too quickly' as an unnecessary constraint." },
+      { name:"Carry a Moving Load", front:"The crate objects throughout the journey but arrives upright.", back:"The load remains secure while everything beneath it shifts." }
     ],
     Unstable: [
-      { name:"Navigate Without Guidance", front:"The automaton builds a route from landmarks and quiet inference.", back:"It builds several routes and attempts all of them at once." },
+      { name:"Navigate Without Guidance", front:"It takes the short route that Nobulous insists he was about to suggest.", back:"It builds several routes and attempts all of them at once." },
       { name:"Evade Observation", front:"Timing and cover reduce a stone chassis to a rumor.", back:"It avoids every observer except the ones staring at the new hole." },
-      { name:"Overcome a Barrier", front:"The frame tests the obstruction, then applies exactly enough force.", back:"It applies exactly enough force to redefine the obstruction." },
-      { name:"Intercept a Moving Subject", front:"Prediction places the automaton precisely in the subject's path.", back:"Prediction becomes certainty; the path has no remaining alternatives." },
-      { name:"Maintain Control of a Load", front:"Micro-corrections keep unstable cargo centered and intact.", back:"Corrections accelerate until the cargo is the calmest thing in motion." },
+      { name:"Overcome a Barrier", front:"The door opens. Nobulous checks that it can still close.", back:"It applies exactly enough force to redefine the obstruction." },
+      { name:"Intercept a Moving Subject", front:"It waits at the corner while the assistant discovers how predictable he is.", back:"Prediction becomes certainty; the path has no remaining alternatives." },
+      { name:"Maintain Control of a Load", front:"The crate stays level through every lunge from inside.", back:"Corrections accelerate until the cargo is the calmest thing in motion." },
       { name:"Adapt to Changing Terrain", front:"The gait rewrites itself as the ground changes.", back:"The gait keeps rewriting after the ground stops." },
-      { name:"Execute a Complex Route", front:"Every turn arrives on time, in sequence, and without hesitation.", back:"The sequence remains flawless; the surrounding architecture does not." },
-      { name:"Operate Autonomously", front:"It completes the objective without instruction or improvisation.", back:"It completes a different objective with alarming confidence." }
+      { name:"Execute a Complex Route", front:"It takes a turn missing from the diagram. Nobulous pencils it in.", back:"The sequence remains flawless; the surrounding architecture does not." },
+      { name:"Operate Autonomously", front:"Nobulous leaves it to work and returns to find his instructions followed exactly.", back:"It completes a different objective with alarming confidence." }
     ],
     Advanced: [
       { name:"Rapid Approach", front:"It reaches the target before the warning can become an alarm.", back:"It reaches the target before the warning—and most of the doorway." },
       { name:"Unobserved Entry", front:"Locks open, cameras loop, and the corridor never learns it was occupied.", back:"Locks open, cameras loop, and the corridor becomes difficult to explain." },
-      { name:"Subject Acquisition", front:"It identifies, isolates, and secures the designated subject without disturbing the room.", back:"It secures the subject, several bystanders, and the room's structural supports." },
+      { name:"Subject Acquisition", front:"Only the designated subject is inconvenienced. Nobulous checks the designation twice.", back:"It secures the subject, several bystanders, and the room's structural supports." },
       { name:"Difficult Extraction", front:"It carries the subject through the least impossible route.", back:"The route becomes less impossible as walls become optional." },
-      { name:"Autonomous Infiltration", front:"It enters, adapts, and advances without a single transmitted instruction.", back:"Silence is maintained because it has stopped accepting instructions." },
-      { name:"Controlled Restraint", front:"Force sensors hold the subject firmly below the injury threshold.", back:"The threshold remains documented, if no longer especially relevant." },
+      { name:"Autonomous Infiltration", front:"The observer at the controls has nothing to do but look essential.", back:"Silence is maintained because it has stopped accepting instructions." },
+      { name:"Controlled Restraint", front:"“Can you breathe?” “Unfortunately,” says the subject.", back:"The threshold remains documented, if no longer especially relevant." },
       { name:"Adaptive Pursuit", front:"It learns each evasion and closes the next escape before it begins.", back:"It learns too quickly; every movement becomes evidence of escape." },
       { name:"Council Extraction Protocol", front:"The automaton escorts the Councilor out beneath a veil of perfect procedure.", back:"The Councilor is extracted. The Council chamber is now an open-plan space." }
     ]
   };
   // --- NRJ module cards ----------------------------------------------
   const AOS_INTERFERENCE = [
-    ["I Don't Have Time for This","Begin all Programs Overheated. When an already-Overheated Program fails, cycle it to the bottom of its deck instead of setting it aside."],
+    ["I Don't Have Time for This","Begin all Programs Overheated. The first time each already-Overheated Program fails, cycle it to the bottom of its deck instead of setting it aside."],
     ["Legacy Hardware","At setup, choose and banish 1 non-Red die."],
     ["Nobulous Was Here","Randomly flip 2 Programs to their Overheated sides before play."],
     ["Undocumented Dependencies","The first element of every Program must receive at least 1 die and no more than its Target."],
     ["Works on My Machine","A Crit rolled on the second element counts as 3 successes. Crits on every other element count as basic successes."],
     ["Memory Leak","Whenever you over-allocate an element, exhaust 1 additional available die after resolving the Program."],
   ];
-  // Corrupted Limitations sit in the Limitation deck. Each withholds 2 dice of
-  // a randomly chosen color on top of the printed corruption.
+  // Required-colour dots per element, GENERATED from
+  // generator/aos.py's REQ_MAP - the same source the simulation's
+  // PROGRAM_REQS comes from. Counts are not uniform per deck: Carry a
+  // Moving Load needs all four colours, Rapid Approach and Unobserved
+  // Entry three. check_app_sync.py holds all three copies together.
+  const PROGRAM_REQS = {
+    Routine: [["green",null,null], ["purple",null,null], [null,null,"yellow"], [null,"blue",null], ["green",null,null], [null,null,"purple",null], ["yellow",null,null], [null,null,"blue",null]],
+    Specialized: [["purple",null,"yellow"], ["green",null,"blue",null], [null,"yellow","purple"], ["blue",null,null,"green"], ["purple","yellow",null], [null,"green",null,"blue"], ["yellow",null,"purple",null], ["yellow","purple","blue","green"]],
+    Unstable: [["purple",null,null,null], [null,null,"yellow",null], [null,"blue",null,null], [null,null,"green",null], ["yellow",null,null,null], [null,null,null,"purple"], [null,"green",null,null], [null,null,"blue",null]],
+    Advanced: [["purple",null,"green","yellow",null], ["yellow","green",null,"blue"], ["yellow",null,null,"purple",null], [null,"blue",null,"green"], ["green",null,null,"yellow",null], [null,"purple",null,"blue"], ["blue",null,null,"green",null], ["yellow",null,"purple",null,null]],
+  };
+  // Corrupted Limitations sit in the Limitation deck. Each withholds 2 dice
+  // of a randomly chosen color THE PROGRAM DOES NOT REQUIRE, on top of the
+  // printed corruption - a withheld color cannot answer a required dot, so
+  // without the exclusion the Program could not be run at all.
   const AOS_CORRUPT = [
     ["Uneven Architecture","The first element must receive more dice than the last."],
     ["Memory Collision","No two adjacent elements may receive the same number of dice."],
@@ -138,12 +164,12 @@
     ["Stack Overflow","If any element receives 5+ dice, exhaust one die committed to that element before rolling."],
   ];
   const AOS_BACKDOOR = [
-    ["Diagnostic Port","Claim after completing a Program with no element over-allocated.","Later, reroll one entire Strategy roll."],
-    ["Privilege Escalation","Claim after completing an Overheated Program without failing an element.","Later, ignore one Limitation."],
-    ["Resource Fork","Claim after completing a Program while committing no more than Target + 1 dice in total beyond its summed Targets.","Later, recover 2 exhausted dice."],
-    ["Packet Sniffer","Claim after completing a Program with Crits on at least two different elements.","Later, look at the next Limitation before selecting a Program."],
-    ["Garbage Collection","Claim after completing a Program while at least 4 dice are exhausted.","Later, recover one die of each of two different colors."],
-    ["Root Access","Claim after completing a Program with Optimal Implementation on at least two elements.","During Advanced Programming, treat one failed element as successful."],
+    ["Diagnostic Port","Claim after completing a Program with at least two elements holding no more than their Target in dice. Claiming gives up the next Program Reward you would claim.","Later, reroll one entire Strategy roll."],
+    ["Privilege Escalation","Claim after completing an Overheated Program without failing an element. Claiming gives up the next Program Reward you would claim.","Later, ignore one Limitation."],
+    ["Resource Fork","Claim after completing a Program while committing no more than Target + 1 dice in total beyond its summed Targets. Claiming gives up the next Program Reward you would claim.","Later, recover 2 exhausted dice."],
+    ["Packet Sniffer","Claim after completing a Program with Crits on at least two different elements. Claiming gives up the next Program Reward you would claim.","Later, look at the next Limitation before selecting a Program."],
+    ["Garbage Collection","Claim after completing a Program while at least 4 dice are exhausted. Claiming gives up the next Program Reward you would claim.","Later, recover one die of each of two different colors."],
+    ["Root Access","Claim after completing a Program with Optimal Implementation on at least two elements. Claiming gives up the next Program Reward you would claim.","During Advanced Programming, treat one failed element as successful."],
   ];
   const aosTier = () => window.NOBULOUS_TIER ? window.NOBULOUS_TIER.forGame("aos") : "0";
   const LIMITATION_FLAVOR = [
@@ -151,13 +177,13 @@
     { name:"Green Shortage", text:"Mobility actuators have been reassigned to a 'more urgent' prototype." },
     { name:"Blue Shortage", text:"Sensor stock is low; confidence remains inexplicably high." },
     { name:"Purple Shortage", text:"Load-bearing modules are delayed. The load is not." },
-    { name:"Diversity Protocol", text:"Nobulous demands cross-functional resilience with fewer functions." },
+    { name:"Diversity Protocol", text:"Nobulous removes two components to demonstrate how little you needed them." },
     { name:"Red Quarantine", text:"The emergency die is perfectly safe inside the locked cabinet." }
   ];
   const TECHS = [
     { name: "Architect", side: "front", index: 0, ability: "Reconfigure — Once per Program, before rolling an element, move up to 2 allocated dice between unresolved elements." },
-    { name: "Debugger", side: "back", index: 0, ability: "Debug — Once per Program, after failing by exactly 1 success, reroll 1 allocated die. If it still fails, exhaust that die." },
-    { name: "Optimizer", side: "front", index: 1, ability: "Optimize — Once per Program, Target +1 successes may count as Optimal Implementation." },
+    { name: "Debugger", side: "back", index: 0, ability: "Debug — Once per Program, before rolling an element, swap 1 of its dice for a die from your available pool." },
+    { name: "Optimizer", side: "front", index: 1, ability: "Optimize — Once per cycle and once in Advanced Programming, Target +1 successes may count as Optimal Implementation." },
     { name: "Engineer", side: "back", index: 1, ability: "Redundancy — For up to 2 elements per Program, the allocation cap is Target +2 instead of Target +1." },
     { name: "Operator", side: "front", index: 2, ability: "Workaround — When a non-Red Limitation would withhold 2 dice, you may withhold 1 of those dice as another non-Red color instead." },
     { name: "Compiler", side: "back", index: 2, ability: "Compile — When spending an additional STR roll, reroll any number of dice on that element while keeping the others." }
@@ -279,7 +305,7 @@
     tier: aosTier(), interference: aosDrawInterference(), backdoors: aosFreshBackdoors(), corruptColor: null, corruptElement: null,
     currentFace: "front", currentCompleted: false, lastResultFailed: false, limitation: null, limitationRevealed: false, limitationResolved: false, limitationQueue: aosLimitationQueue(), banishedLimitations: [],
     advancedQueue: [], nextAdvancedOverheated: false, advancedDone: 0, dice: freshDice(), elements: [], elementCount: 3,
-    rerollsUsed: 0, recoveryCredits: 0, recoverySource: "", architectUsed: false, architectMode: false, debuggerUsed: false, optimizerUsed: false, rewardApplied: false,
+    rerollsUsed: 0, recoveryCredits: 0, recoverySource: "", architectUsed: false, architectMode: false, debuggerUsed: false, debugMode: false, optimizerUsed: false, rewardApplied: false,
     targetsVersion: 1, metrics: freshMetrics(), notes: "", log: [], finished: false
   });
   let state = freshState();
@@ -378,7 +404,8 @@
   const SHORTAGE_COLORS = ["yellow", "green", "blue", "purple"];
   // Checks the withheld dice against the active Limitation. Returns an error message, or "" when resolved.
   // Limitations 0-5 are native; 6-11 are the Tier II Corrupted Limitations,
-  // which withhold 2 dice of a randomly chosen color on top of their text.
+  // which withhold 2 dice of a randomly chosen color on top of their text -
+  // excluding the colors this Program requires.
   const isCorrupt = lim => lim >= 6;
   function limitationName(lim){
     return isCorrupt(lim) ? AOS_CORRUPT[lim-6][0] : LIMITATION_FLAVOR[lim].name;
@@ -386,8 +413,21 @@
   function limitationText(lim){
     return isCorrupt(lim) ? AOS_CORRUPT[lim-6][1] : LIMITATION_FLAVOR[lim].text;
   }
+  function currentReqs(){
+    if(!state.current)return [];
+    const s=programSource(state.current);
+    return (s&&PROGRAM_REQS[s.deck]&&PROGRAM_REQS[s.deck][s.pid])||[];
+  }
   function corruptColor(){
-    if(!state.corruptColor)state.corruptColor=shuffle(["purple","blue","green","yellow"])[0];
+    // "Withhold 2 available dice of a randomly selected color." The
+    // required-colour exclusion came off these cards on 2026-11-06: it made
+    // the Tier II card gentler than the native Limitation it replaces, so
+    // the whole tier was worth +0.1 points. A withheld colour still cannot
+    // answer a required dot, and a Program you cannot supply is the costed
+    // outcome rules/aos.html already prints.
+    if(!state.corruptColor){
+      state.corruptColor=shuffle(["purple","blue","green","yellow"])[0];
+    }
     return state.corruptColor;
   }
   function limitationProblem() {
@@ -453,7 +493,7 @@
     if (recoveryPending()) { toast("Recover your dice before revealing the next Program."); return; }
     if (state.mode === "program" && state.queue.length === 0) {
       const active = state.programs.filter(p => p.status !== "aside" && p.status !== "removed").map(p => p.id);
-      if (state.cycle < 3 && active.length) { state.cycle += 1; state.queue = shuffle(active); state.discard=state.discard.filter(name=>name.startsWith("Limitation:")); log(`Cycle ${state.cycle} began with ${active.length} Programs.`); }
+      if (state.cycle < 3 && active.length) { state.cycle += 1; state.queue = shuffle(active); state.optimizerUsed = false; state.discard=state.discard.filter(name=>name.startsWith("Limitation:")); log(`Cycle ${state.cycle} began with ${active.length} Programs.`); }
       else { beginAdvanced(); return; }
     }
     if (state.mode === "advanced" && state.advancedQueue.length === 0) { finishGame(true); return; }
@@ -462,16 +502,26 @@
     state.current = { id, mode: state.mode };
     state.currentFace = state.mode === "advanced" ? (state.nextAdvancedOverheated ? "back" : "front") : (program.status === "overheated" ? "back" : "front");
     state.currentCompleted = false; state.lastResultFailed = false; state.limitationRevealed = true; state.limitationResolved = false; state.rerollsUsed = 0; state.recoveryCredits = 0;
-    state.architectUsed = false; state.architectMode = false; state.debuggerUsed = false; state.optimizerUsed = false; state.rewardApplied = false;
+    // state.optimizerUsed is deliberately NOT reset here. Optimize is once
+    // per CYCLE and once more during Advanced Programming, so it is cleared
+    // at the cycle boundary above and in beginAdvanced(), not per Program.
+    // Reconfigure and Debug are both once per Program, so they reset here.
+    state.architectUsed = false; state.architectMode = false; state.rewardApplied = false;
+    state.debuggerUsed = false; state.debugMode = false;
     if (!state.limitationQueue.length) {state.limitationQueue = shuffle([0,1,2,3,4,5].filter(x => !state.banishedLimitations.includes(x)));state.discard=state.discard.filter(name=>!name.startsWith("Limitation:"));}
     state.limitation = state.limitationQueue.pop();
+    // A Corrupted Limitation's random picks belong to THIS reveal, not to
+    // the game: "a randomly selected color", "randomly select one element".
+    // corruptColor() also screens out the colours this Program requires, so
+    // it has to be chosen now that state.current is set, not once at setup.
+    state.corruptColor = null; state.corruptElement = null;
     state.dice.filter(d => d.zone === "withheld" || d.zone === "allocated").forEach(d => { d.zone = "available"; d.element = null; d.face = null; });
     state.elementCount = currentElementCount();
     state.elements = currentTargets().map((target, i) => ({ ...elementTemplate(i), target }));
     selectedDice.clear(); log(`${state.mode === "advanced" ? "Advanced" : (state.programs.find(x=>x.id===id)||{}).src || state.deck} Program ${id + 1} and Limitation ${state.limitation + 1} revealed (${state.elementCount} elements).`); render();
   }
   function beginAdvanced() {
-    state.mode = "advanced"; state.advancedQueue = shuffle([0,1,2,3,4,5,6,7]).slice(0,3); state.nextAdvancedOverheated = false; state.current = null;state.discard=state.discard.filter(name=>name.startsWith("Limitation:"));
+    state.mode = "advanced"; state.advancedQueue = shuffle([0,1,2,3,4,5,6,7]).slice(0,3); state.nextAdvancedOverheated = false; state.current = null;state.optimizerUsed = false;state.discard=state.discard.filter(name=>name.startsWith("Limitation:"));
     log("Advanced Programming began."); toast("Advanced Programming"); drawProgram();
   }
   function markRequiredMiss() {
@@ -510,8 +560,17 @@
   function rollElement(i, reroll = false) {
     const el = state.elements[i]; const dice = state.dice.filter(d => d.zone === "allocated" && d.element === i);
     if (state.architectMode) { toast("Finish or cancel Reconfigure first."); return; }
+    if (state.debugMode) { toast("Finish or cancel Debug first."); return; }
     if (recoveryPending()) { toast("Recover your dice first."); return; }
-    if (!dice.length || el.resolved) { toast("Allocate at least one die first."); return; }
+    if (el.resolved) return;
+    if (!dice.length && !shortPool()) { toast("Allocate at least one die first."); return; }
+    if (!dice.length) {
+      // Left bare because the pool ran out. It fails without being rolled -
+      // there is nothing to roll - and resolving it exhausts nothing.
+      el.successes = 0; el.rolled = true;
+      log(`Element ${i + 1} left bare: no dice were available, so it fails.`, "bad");
+      render(); return;
+    }
     if (!reroll && (el.rolled || i !== nextElementToRoll())) { toast("Roll the Elements in order, left to right."); return; }
     if (reroll) {
       const limit = Math.max(0, state.str - 1);
@@ -557,7 +616,12 @@
     } else {
       state.advancedDone += 1; state.nextAdvancedOverheated = failed >= 2;
     }
-    state.discard.push(`${programSource(state.current).deck}: ${PROGRAM_FLAVOR[state.current.mode === "advanced" ? "Advanced" : state.deck][state.current.id].name}`);
+    // state.deck is the DIFFICULTY ("Standard"), not a deck name, so
+    // PROGRAM_FLAVOR[state.deck] was always undefined and finishing
+    // any ordinary Program threw. programSource() is the accessor
+    // every other per-deck lookup already uses - see the render path.
+    const finished = programSource(state.current);
+    state.discard.push(`${finished.deck}: ${PROGRAM_FLAVOR[finished.deck][state.current.id].name}`);
     if(state.limitation !== null)state.discard.push(`Limitation: ${limitationName(state.limitation)}`);
     state.currentCompleted = true; state.lastResultFailed = failed > 0;
     log(`Program completed with ${failed} failed element${failed === 1 ? "" : "s"}.`);
@@ -580,6 +644,7 @@
   function adjustStat(stat, delta) { state[stat] = Math.max(stat === "hp" ? 0 : 1, Math.min(6, state[stat] + delta)); render(); }
   function assignSelected(i) {
     if (state.architectMode) { moveArchitectDice(i); return; }
+    if (state.debugMode) { swapDebugDie(i); return; }
     if (!state.limitationResolved) { toast("Resolve the Limitation before committing dice."); return; }
     if (rollingStarted()) { toast("Dice are locked once the first Element rolls."); return; }
     const dice = selectedAvailable(); if (!dice.length) { toast("Select available dice first."); return; }
@@ -608,16 +673,29 @@
     dice.forEach(d => { d.element = destination; selectedDice.delete(d.id); });
     state.architectUsed = true; state.architectMode = false; log(`Architect moved ${dice.length} allocated die${dice.length === 1 ? "" : "s"} to Element ${destination + 1}.`); render();
   }
-  function debugElement(i) {
+  // DEBUG. "Once per Program, before rolling an element, swap 1 of its dice
+  // for a die from your available pool." A mode, like Reconfigure, because
+  // selecting an allocated die on an element that has not rolled otherwise
+  // means "take it back". The element's own button is the confirm, so the
+  // player learns one gesture for both Technicians.
+  function toggleDebugMode() {
+    if (TECHS[state.tech].name !== "Debugger" || !state.current || state.currentCompleted || state.debuggerUsed) return;
+    state.debugMode = !state.debugMode; selectedDice.clear();
+    toast(state.debugMode ? "Select 1 die on an element that has not rolled and 1 from your available pool, then tap Swap selected here." : "Debug canceled.");
+    render();
+  }
+  function swapDebugDie(i) {
+    if (!state.debugMode || state.debuggerUsed) return;
     const el = state.elements[i];
-    if (TECHS[state.tech].name !== "Debugger" || state.debuggerUsed || !el?.rolled || el.resolved || el.successes !== el.target - 1) return;
-    const dice = state.dice.filter(d => d.zone === "allocated" && d.element === i && selectedDice.has(d.id));
-    if (dice.length !== 1) { toast("Select exactly 1 die from this element to Debug."); return; }
-    const die = dice[0]; const before = value(die.face);
-    die.face = FACES[die.color][Math.floor(Math.random() * 6)]; selectedDice.delete(die.id);
-    el.successes += value(die.face) - before; state.debuggerUsed = true;
-    if (el.successes < el.target) { die.zone = "exhausted"; die.element = null; state.metrics.diceExhausted += 1; log(`Debugger rerolled 1 die; Element ${i + 1} still failed, so that die was exhausted.`); }
-    else log(`Debugger rerolled 1 die; Element ${i + 1} reached its Target.`);
+    if (!el || el.resolved || el.rolled) { toast("Debug swaps a die on an element that has not rolled."); return; }
+    const here = state.dice.filter(d => d.zone === "allocated" && d.element === i && selectedDice.has(d.id));
+    const pool = state.dice.filter(d => d.zone === "available" && selectedDice.has(d.id));
+    if (here.length !== 1 || pool.length !== 1) { toast("Select 1 die on this Element and 1 from your available pool."); return; }
+    const out = here[0], into = pool[0];
+    out.zone = "available"; out.element = null; out.face = null;
+    into.zone = "allocated"; into.element = i; into.face = null;
+    selectedDice.clear(); state.debuggerUsed = true; state.debugMode = false;
+    log(`Debugger swapped a ${out.color} die on Element ${i + 1} for a ${into.color} die.`);
     render();
   }
   function moveSelected(zone) {
@@ -633,6 +711,18 @@
       if (!selectedDice.has(id) && selectedDice.size >= recoveryOwed()) { toast(`You may recover ${recoveryOwed()} ${recoveryOwed() === 1 ? "die" : "dice"}.`); return; }
       selectedDice.has(id) ? selectedDice.delete(id) : selectedDice.add(id); render(); return;
     }
+    if (state.debugMode) {
+      // Keep at most one of each, so the confirm is never ambiguous.
+      const drop = z => [...selectedDice].forEach(x => { const o = dieById(x); if (o && o.zone === z && o.id !== id) selectedDice.delete(x); });
+      if (d.zone === "allocated") {
+        const el = state.elements[d.element];
+        if (!el || el.resolved || el.rolled) { toast("Debug swaps a die on an element that has not rolled."); return; }
+        drop("allocated");
+      } else if (d.zone === "available") {
+        drop("available");
+      } else { toast("Debug swaps an allocated die for one from your available pool."); return; }
+      selectedDice.has(id) ? selectedDice.delete(id) : selectedDice.add(id); render(); return;
+    }
     if (state.architectMode) {
       const el = d.zone === "allocated" ? state.elements[d.element] : null;
       if (!el || el.resolved || el.rolled) { toast("Reconfigure selects allocated dice from unresolved elements."); return; }
@@ -646,7 +736,7 @@
         if (el.pendingExhaust === 0) finalizeElement(el); else render(); return;
       }
       if (!el?.rolled) { if (rollingStarted()) { toast("Dice are locked once the first Element rolls."); return; } d.zone = "available"; d.element = null; selectedDice.delete(id); render(); }
-      else if ((TECHS[state.tech].name === "Compiler" || (TECHS[state.tech].name === "Debugger" && !state.debuggerUsed && el.successes === el.target - 1)) && !el.resolved) { selectedDice.has(id) ? selectedDice.delete(id) : selectedDice.add(id); render(); }
+      else if (TECHS[state.tech].name === "Compiler" && !el.resolved) { selectedDice.has(id) ? selectedDice.delete(id) : selectedDice.add(id); render(); }
       return;
     }
     if (d.zone === "banished") return;
@@ -683,19 +773,24 @@
     sprite($("techCard"), tech.side === "front" ? "AoS_Technicians_TTS.png" : "AoS_Technicians_TTS_back.png", tech.index, 3);
     const hints = {
       Architect: "Use Reconfigure, select up to 2 allocated dice from unresolved elements, then tap Move selected here on their destination.",
-      Debugger: "After missing a Target by exactly 1, tap one die in that element and choose Debug selected.",
-      Optimizer: "After rolling Target +1, choose Count as optimal on that element. Usable once per Program.",
+      Debugger: "Use Debug, select 1 die on an element that has not rolled and 1 from your available pool, then tap Swap selected here. Once per Program.",
+      Optimizer: "After rolling Target +1, choose Count as optimal on that element. Usable once per cycle, and once more during Advanced Programming.",
       Engineer: "Choose Safe T+2 before rolling on up to 2 elements per Program.",
       Operator: "Apply Workaround manually by selecting the substitute non-Red die and using Withhold.",
       Compiler: "After a roll, tap the dice you want to reroll, then choose Extra roll. With none selected, all dice reroll."
     };
     $("techHint").textContent = hints[tech.name];
     const architect = tech.name === "Architect";
+    const isDebugger = tech.name === "Debugger";
     $("techAction").classList.toggle("hidden", !state.started);
-    $("techActionBtn").classList.toggle("hidden", !architect);
+    $("techActionBtn").classList.toggle("hidden", !(architect || isDebugger));
     if (architect) {
       $("techActionBtn").textContent = state.architectMode ? "Cancel Reconfigure" : (state.architectUsed ? "Reconfigure used" : "Use Reconfigure");
       $("techActionBtn").disabled = !state.current || state.currentCompleted || (state.architectUsed && !state.architectMode);
+    }
+    if (isDebugger) {
+      $("techActionBtn").textContent = state.debugMode ? "Cancel Debug" : (state.debuggerUsed ? "Debug used" : "Use Debug");
+      $("techActionBtn").disabled = !state.current || state.currentCompleted || (state.debuggerUsed && !state.debugMode);
     }
   }
   function zoomCard(source) {
@@ -710,24 +805,50 @@
   // Elements are rolled strictly left to right: only the leftmost unresolved Element may roll.
   function nextElementToRoll() { return state.elements.findIndex(e => !e.resolved); }
 
+  // THE SHORT POOL. rules/aos.html, "Finish the allocation": "Every element
+  // must receive at least one die. If you hold fewer available dice than the
+  // Program has elements, place what you have and the elements left bare
+  // fail." Until 2026-11-05 the roll gate demanded a die on every unresolved
+  // element with no exception, so running short jammed the Program: no legal
+  // move and no message saying why. The one state the rulebook spells out was
+  // the one state the lab could not play.
+  // Bare is allowed only when the available pool is SPENT and the dice held
+  // were spread one per element as far as they went. Stacking dice on one
+  // element while another sits bare is what the floor forbids - that is not
+  // short, it is giving an element up, and allowing it would hand over the
+  // sacrifice line for nothing. Withheld dice are not available, per the
+  // Limitation step, so only the available zone is counted.
+  function elementDice(n) { return state.dice.filter(d => d.zone === "allocated" && d.element === n); }
+  function shortPool() {
+    const open = state.elements.map((e, n) => n).filter(n => !state.elements[n].resolved);
+    if (!open.some(n => !elementDice(n).length)) return false;   // nothing bare
+    if (zoneDice("available").length) return false;              // dice left to place
+    return !open.some(n => elementDice(n).length > 1);           // spread, not stacked
+  }
+  function rollGateOpen() {
+    return state.elements.every((e, n) => e.resolved || elementDice(n).length) || shortPool();
+  }
+
   function renderElements() {
     const wrap = $("elements");
     const nextRoll = nextElementToRoll(), pend = recoveryPending();
-    const readyToRoll = state.elements.every((e, n) => e.resolved || state.dice.some(d => d.zone === "allocated" && d.element === n));
+    const readyToRoll = rollGateOpen();
     wrap.innerHTML = state.elements.map((el, i) => {
       const dice = state.dice.filter(d => d.zone === "allocated" && d.element === i).sort(byColor);
       const status = (el.resolved ? (el.failed ? "failed" : "resolved") : "")
         + (i === markedElement() ? " marked" : "");
       const score = el.rolled ? `${el.successes} success${el.successes === 1 ? "" : "es"}${el.pendingExhaust ? ` · choose ${el.pendingExhaust} to exhaust` : ""}` : "Not rolled";
       const optimizerEligible = el.rolled && !el.resolved && el.successes === el.target + 1 && !state.optimizerUsed;
-      const optimizer = TECHS[state.tech].name === "Optimizer" ? `<button data-optimize="${i}" ${optimizerEligible ? "" : "disabled"}>${el.optimizerUsed ? "✓ Optimal" : "Count as optimal"}</button>` : "";
-      const debuggerButton = TECHS[state.tech].name === "Debugger" ? `<button data-debug="${i}" ${el.rolled && !el.resolved && el.successes === el.target - 1 && !state.debuggerUsed ? "" : "disabled"}>Debug selected</button>` : "";
+      // The use is spent for the whole cycle, not just this Program, so say
+      // so on the button - otherwise it reads as a bug in the next Program.
+      const optimizeLabel = el.optimizerUsed ? "✓ Optimal" : (state.optimizerUsed ? (state.mode === "advanced" ? "Optimize used" : "Optimize used this cycle") : "Count as optimal");
+      const optimizer = TECHS[state.tech].name === "Optimizer" ? `<button data-optimize="${i}" ${optimizerEligible ? "" : "disabled"}>${optimizeLabel}</button>` : "";
       const engineer = TECHS[state.tech].name === "Engineer" ? `<button data-safe="${i}" ${el.rolled ? "disabled" : ""}>${el.thresholdBonus === 2 ? "✓ " : ""}Safe T+2</button>` : "";
-      const assignLabel = state.architectMode ? "Move selected here" : "Commit selected";
+      const assignLabel = state.architectMode ? "Move selected here" : (state.debugMode ? "Swap selected here" : "Commit selected");
       const locked = rollingStarted();
-      const canCommit = state.architectMode ? !el.rolled && !el.resolved : state.limitationResolved && !locked && !el.resolved;
+      const canCommit = state.architectMode || state.debugMode ? !el.rolled && !el.resolved : state.limitationResolved && !locked && !el.resolved;
       const left = extraRollsLeft();
-      return `<article class="element ${status}${readyToRoll && i === nextRoll ? " next" : ""}"><div class="element-head"><h3>Element ${i + 1}</h3><div class="target" aria-label="Printed Target"><span class="target-label">Printed Target</span><strong>${el.target}</strong></div></div><div class="element-drop" data-assign="${i}">${dice.map(dieButton).join("") || "<span class='hint'>No dice assigned</span>"}</div><div class="element-actions"><button data-assign="${i}" ${canCommit ? "" : "disabled"}${state.limitationResolved || state.architectMode ? "" : ' title="Resolve the Limitation first"'}>${assignLabel}</button><button data-unassign="${i}" ${!dice.length || el.rolled || locked ? "disabled" : ""}>Return dice</button><button data-roll="${i}" ${!readyToRoll || el.rolled || i !== nextRoll || pend ? "disabled" : ""}${readyToRoll ? (i > nextRoll && !el.resolved ? ' title="Roll the Elements in order, left to right"' : "") : ' title="Allocate dice to every Element first"'}>Roll</button><button data-reroll="${i}" ${!el.rolled || el.resolved || left <= 0 || pend ? "disabled" : ""}>${left > 0 ? `Extra roll (${left} left)` : "No extra rolls"}</button><button data-resolve="${i}" ${!el.rolled || el.resolved || pend ? "disabled" : ""}>Resolve</button>${engineer}${optimizer}${debuggerButton}</div><div class="element-score">${score}</div></article>`;
+      return `<article class="element ${status}${readyToRoll && i === nextRoll ? " next" : ""}"><div class="element-head"><h3>Element ${i + 1}</h3><div class="target" aria-label="Printed Target"><span class="target-label">Printed Target</span><strong>${el.target}</strong></div></div><div class="element-drop" data-assign="${i}">${dice.map(dieButton).join("") || "<span class='hint'>No dice assigned</span>"}</div><div class="element-actions"><button data-assign="${i}" ${canCommit ? "" : "disabled"}${state.limitationResolved || state.architectMode || state.debugMode ? "" : ' title="Resolve the Limitation first"'}>${assignLabel}</button><button data-unassign="${i}" ${!dice.length || el.rolled || locked ? "disabled" : ""}>Return dice</button><button data-roll="${i}" ${!readyToRoll || el.rolled || i !== nextRoll || pend ? "disabled" : ""}${readyToRoll ? (i > nextRoll && !el.resolved ? ' title="Roll the Elements in order, left to right"' : "") : ' title="Allocate dice to every Element first"'}>Roll</button><button data-reroll="${i}" ${!el.rolled || el.resolved || left <= 0 || pend ? "disabled" : ""}>${left > 0 ? `Extra roll (${left} left)` : "No extra rolls"}</button><button data-resolve="${i}" ${!el.rolled || el.resolved || pend ? "disabled" : ""}>Resolve</button>${engineer}${optimizer}</div><div class="element-score">${score}</div></article>`;
     }).join("") + Array.from({ length: Math.max(0, MAX_ELEMENTS - state.elements.length) }, (_, k) =>
       // Unused slots keep the board at five Elements; they take no dice and every control stays disabled.
       `<article class="element unused" aria-disabled="true"><div class="element-head"><h3>Element ${state.elements.length + k + 1}</h3><div class="target" aria-label="Printed Target"><span class="target-label">Printed Target</span><strong>—</strong></div></div><div class="element-drop"><span class='hint'>Not used on this Program</span></div><div class="element-actions"><button disabled>Commit selected</button><button disabled>Return dice</button><button disabled>Roll</button><button disabled>Extra roll</button><button disabled>Resolve</button></div><div class="element-score">&nbsp;</div></article>`
@@ -776,7 +897,25 @@
     $("withholdSelectedBtn").disabled = gateOpen && !!state.limitationResolved;
     renderCard(); renderTech(); renderElements(); renderPools(); renderMetrics();
     if (document.activeElement !== $("notes")) $("notes").value = state.notes || "";
+    renderSteps();
     save();
+  }
+
+  // One Program, as five steps. Every step but the third points at the
+  // control that already exists for it; assigning dice happens on the
+  // Element cards themselves, so that one is a label. See steps.js - the
+  // strip reads the controls rather than re-deciding what is legal.
+  function renderSteps() {
+    if (!window.LabSteps) return;
+    const running = !!state.current && !state.currentCompleted;
+    window.LabSteps.render("aosSteps", [
+      { label: "Draw a Program", ctrl: "#drawBtn" },
+      { label: "Resolve the Limitation", ctrl: "#limitationResolveBtn" },
+      { label: "Assign dice to the Elements",
+        ready: running && !!state.limitationResolved },
+      { label: "Complete the Program", ctrl: "#finishProgramBtn" },
+      { label: "Recover", ctrl: "#recoverSelectedBtn" }
+    ]);
   }
 
   function summary() {
@@ -811,7 +950,7 @@
 
     $("flipBtn").addEventListener("click", () => { state.currentFace = state.currentFace === "front" ? "back" : "front"; syncPrintedTargets(); render(); });
     $("finishProgramBtn").addEventListener("click", () => completeProgram(false)); $("requiredMissBtn").addEventListener("click", markRequiredMiss);
-    $("techActionBtn").addEventListener("click", toggleArchitectMode); $("applyRewardBtn").addEventListener("click", () => applyReward());
+    $("techActionBtn").addEventListener("click", () => { if (TECHS[state.tech].name === "Debugger") toggleDebugMode(); else toggleArchitectMode(); }); $("applyRewardBtn").addEventListener("click", () => applyReward());
     $("resetBtn").addEventListener("click", reset); $("copySummaryBtn").addEventListener("click", copySummary);
     $("closeCardBtn").addEventListener("click", () => $("cardDialog").close());
     [$("programCard"), $("limitationCard"), $("techCard")].forEach(el => el.addEventListener("click", () => zoomCard(el)));
@@ -840,7 +979,6 @@
       const resolve=e.target.closest("[data-resolve]"); if(resolve){beginResolve(Number(resolve.dataset.resolve));return;}
       const safe=e.target.closest("[data-safe]"); if(safe){const el=state.elements[Number(safe.dataset.safe)];if(el.thresholdBonus===2){el.thresholdBonus=1;}else if(state.elements.filter(x=>x.thresholdBonus===2).length<2){el.thresholdBonus=2;}else{toast("Engineer can use Redundancy on up to 2 elements.");}render();return;}
       const optimize=e.target.closest("[data-optimize]"); if(optimize){const el=state.elements[Number(optimize.dataset.optimize)];if(!state.optimizerUsed&&el.rolled&&!el.resolved&&el.successes===el.target+1){el.optimizerUsed=true;state.optimizerUsed=true;log(`Optimizer counted Element ${el.id+1} at Target +1 as optimal.`);render();}return;}
-      const debug=e.target.closest("[data-debug]"); if(debug){debugElement(Number(debug.dataset.debug));return;}
       const stat=e.target.closest("[data-stat]"); if(stat){adjustStat(stat.dataset.stat,Number(stat.dataset.delta));return;}
       const signal=e.target.closest("[data-signal]"); if(signal){state.metrics[signal.dataset.signal]+=1;log(`Signal recorded: ${signal.dataset.signal}.`);render();}
     });

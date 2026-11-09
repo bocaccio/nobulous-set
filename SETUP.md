@@ -40,8 +40,17 @@ are gitignored, since they are build output.
 ## Updating a card later
 
 1. Edit the relevant `generator/build_*.py`.
-2. Re-run it. It rewrites the sheet in `images/` and the PnP pages together.
-3. `git commit` and `git push`.
+2. Re-run it. It writes into `generator/out/` and nowhere else.
+3. `cd generator && python deploy.py --prune`. This is the only thing that
+   copies `out/` into `images/`, `playtest/dist/assets/` and
+   `print-and-play/`. Skipping it is how the shipped art drifted behind the
+   generator twice.
+4. `git commit` and `git push`.
+
+Run `build_nap.py` before `build_nrj.py` into a fresh output directory: the
+NRJ Imposter Tasks and Devious Opportunities print NAP's Assignment back, and
+`make_back` has to have built it. A rebuild into the existing `out/` finds it
+already there, which is why the order rarely comes up.
 
 Players on `@main` pick up the new art the next time jsDelivr's cache expires;
 the mod JSON does not need rebuilding unless a deck's card count, grid or back

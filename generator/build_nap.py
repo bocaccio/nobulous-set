@@ -1,5 +1,5 @@
 import sys; sys.path.insert(0, '/home/claude/cards')
-from gen import render_deck, render_duplex, make_back, hdr_fit, DOT_NAP as DOT, LANDSCAPE, PORTRAIT, skulls, subj_icon
+from gen import render_deck, render_duplex, make_back, hdr_fit, title_cls, DOT_NAP as DOT, LANDSCAPE, PORTRAIT, skulls, subj_icon
 
 # Every NAP card built through C() is landscape.
 CARD_SIZE = LANDSCAPE
@@ -61,6 +61,20 @@ SB_TEXT = ("No other Assignment may be worked until this Setback is resolved. "
            "At the start of this Time Slot, if this Setback has no stored dice, exhaust 1 available die.")
 
 # name, subject, dot, base successes, requirement, flavor
+#
+# A Final Exam's requirement has to be written in the EXAM's idiom, which is
+# successes against a Target and 1 Health for each one short - there is no
+# completing an exam and no failing one, you pass by surviving it. Neural
+# Response Screening printed "At least 1 Crit must contribute to complete
+# this Assignment" until 2026-11-08, which is Assignment language, and the
+# clause therefore said nothing a player could act on: read as a commit rule
+# it is unsatisfiable, because no one commits FOR a Crit, and read as a gate
+# it dealt the card's whole Target in 23% of the sittings it got, worth -3.9
+# points of win rate on its own. It now reprices Crits instead, which is the
+# idiom the other two Crit cards already use - "A Red Crit counts as 1
+# success" and "One Yellow Crit counts as 3 successes" - and the only one of
+# the three that applies to every colour. See rules/RULES_CHANGELOG.txt,
+# 2026-11-08, and the note on simulation/nap.py's EXAMS.
 EXAMS = [
  ("Cranial Integrity Inspection", ANA,'B',6,"Commit dice of at least 3 different colors.",
   "The Council taps your skull. It is supposed to sound like that."),
@@ -72,9 +86,9 @@ EXAMS = [
   "Bow to the eldest member. Do not ask which one is the eldest."),
  ("Identity Recall Demonstration", THE,'P',7,"At least 1 Blue and 1 Purple die must contribute.",
   "State your name. Say it like you have always had it."),
- ("Final Impostor Examination", THE,'Y',8,"Use at least 4 different colors. A Red Crit counts as 1 success.",
+ ("Final Imposter Examination", THE,'Y',8,"Use at least 4 different colors. A Red Crit counts as 1 success.",
   "Every answer is correct. That is what makes the Council suspicious."),
- ("Neural Response Screening", ENG,'G',6,"At least 1 Crit must contribute to complete this Assignment.",
+ ("Neural Response Screening", ENG,'G',5,"Each Crit counts as 1 success instead of 2.",
   "Electrodes on, lights off. Try not to think anything incriminating."),
  ("Adaptive Reasoning Trial", ENG,'B',7,"Commit at least 4 dice. One Yellow Crit counts as 3 successes.",
   "The rules change halfway through. So does the examiner."),
@@ -109,11 +123,10 @@ APPS = [
 def C(title, sub, body, ftr='', warn=False, acc=None, bg=None, flavor=''):
     f = ('<div class="ftr%s">%s</div>' % (' warn' if warn else '', ftr)) if ftr else ''
     # Flavor text sits at the bottom of the card, just above the footer.
-    fl = ('<div style="font-size:7.4pt;font-style:italic;text-align:center;line-height:1.25;'
-          'color:#6f675a;margin:1.2mm 0 1mm">%s</div>' % flavor) if flavor else ''
+    fl = ('<div class="flavor c">%s</div>' % flavor) if flavor else ''
     st = ' style="--a:%s"' % acc if acc else ''
     bs = ' style="background:%s"' % bg if bg else ''
-    cls = ' xlong' if len(title) > 30 else (' long' if len(title) > 19 else '')
+    cls = title_cls(title, CARD_SIZE)
     fit = hdr_fit(title, cls, CARD_SIZE)
     return ('<div class="card"%s><div class="hdr"%s><div class="t%s">%s</div><div class="s">%s</div></div>'
             '<div class="body"%s>%s<div class="spacer"></div>%s%s</div></div>'

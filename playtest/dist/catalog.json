@@ -8,6 +8,12 @@
     "cols": 10,
     "rows": 2,
     "landscape": false,
+    "cell": [
+     750,
+     1050
+    ],
+    "gutter": 24,
+    "hdr": "",
     "cards": [
      {
       "name": "Baseline Calibration",
@@ -100,6 +106,12 @@
     "cols": 10,
     "rows": 2,
     "landscape": false,
+    "cell": [
+     750,
+     1050
+    ],
+    "gutter": 24,
+    "hdr": "",
     "cards": [
      {
       "name": "Serrated Claws",
@@ -176,6 +188,12 @@
     "cols": 8,
     "rows": 1,
     "landscape": false,
+    "cell": [
+     750,
+     1050
+    ],
+    "gutter": 24,
+    "hdr": "",
     "cards": [
      {
       "name": "Titanium-Toothed Mole",
@@ -220,6 +238,12 @@
     "cols": 7,
     "rows": 1,
     "landscape": false,
+    "cell": [
+     750,
+     1050
+    ],
+    "gutter": 24,
+    "hdr": "dot",
     "cards": [
      {
       "name": "Overwhelming Mass",
@@ -260,6 +284,12 @@
     "cols": 4,
     "rows": 1,
     "landscape": true,
+    "cell": [
+     1050,
+     750
+    ],
+    "gutter": 24,
+    "hdr": "",
     "cards": [
      {
       "name": "Rummage",
@@ -292,6 +322,12 @@
     "cols": 1,
     "rows": 1,
     "landscape": false,
+    "cell": [
+     750,
+     1050
+    ],
+    "gutter": 24,
+    "hdr": "",
     "cards": [
      {
       "name": "Buff HP track",
@@ -305,14 +341,20 @@
   ]
  },
  "nap": {
-  "title": "Nobulous' Apprentice Program",
+  "title": "Nobulous Apprenticeship Program",
   "decks": [
    {
     "title": "Assignments",
     "sheet": "NAP_Tasks_TTS.png",
-    "cols": 10,
+    "cols": 9,
     "rows": 3,
     "landscape": true,
+    "cell": [
+     1050,
+     750
+    ],
+    "gutter": 24,
+    "hdr": "",
     "cards": [
      {
       "name": "Organize the Specimen Cabinet",
@@ -429,6 +471,12 @@
     "cols": 6,
     "rows": 1,
     "landscape": true,
+    "cell": [
+     1050,
+     750
+    ],
+    "gutter": 24,
+    "hdr": "",
     "cards": [
      {
       "name": "Take an Unauthorized Break",
@@ -465,6 +513,12 @@
     "cols": 6,
     "rows": 1,
     "landscape": true,
+    "cell": [
+     1050,
+     750
+    ],
+    "gutter": 24,
+    "hdr": "",
     "cards": [
      {
       "name": "Power Failure",
@@ -498,9 +552,15 @@
    {
     "title": "Final Exams",
     "sheet": "NAP_FinalExams_TTS.png",
-    "cols": 10,
+    "cols": 9,
     "rows": 2,
     "landscape": true,
+    "cell": [
+     1050,
+     750
+    ],
+    "gutter": 24,
+    "hdr": "",
     "cards": [
      {
       "name": "Cranial Integrity Inspection",
@@ -523,7 +583,7 @@
       "kind": "Final Exam card · Theory"
      },
      {
-      "name": "Final Impostor Examination",
+      "name": "Final Imposter Examination",
       "kind": "Final Exam card · Theory"
      },
      {
@@ -561,6 +621,12 @@
     "cols": 3,
     "rows": 1,
     "landscape": true,
+    "cell": [
+     1050,
+     750
+    ],
+    "gutter": 24,
+    "hdr": "",
     "cards": [
      {
       "name": "Prodigy",
@@ -588,6 +654,12 @@
     "cols": 6,
     "rows": 1,
     "landscape": true,
+    "cell": [
+     1050,
+     750
+    ],
+    "gutter": 24,
+    "hdr": "",
     "cards": [
      {
       "name": "Morning",
@@ -637,6 +709,12 @@
     "cols": 8,
     "rows": 1,
     "landscape": false,
+    "cell": [
+     750,
+     1050
+    ],
+    "gutter": 24,
+    "hdr": "aos",
     "cards": [
      {
       "name": "Maintain Balance",
@@ -681,6 +759,12 @@
     "cols": 8,
     "rows": 1,
     "landscape": false,
+    "cell": [
+     750,
+     1050
+    ],
+    "gutter": 24,
+    "hdr": "aos",
     "cards": [
      {
       "name": "Traverse Difficult Terrain",
@@ -725,6 +809,12 @@
     "cols": 8,
     "rows": 1,
     "landscape": false,
+    "cell": [
+     750,
+     1050
+    ],
+    "gutter": 24,
+    "hdr": "aos",
     "cards": [
      {
       "name": "Navigate Without Guidance",
@@ -769,6 +859,12 @@
     "cols": 8,
     "rows": 1,
     "landscape": false,
+    "cell": [
+     750,
+     1050
+    ],
+    "gutter": 24,
+    "hdr": "aos",
     "cards": [
      {
       "name": "Rapid Approach",
@@ -813,6 +909,12 @@
     "cols": 6,
     "rows": 1,
     "landscape": false,
+    "cell": [
+     750,
+     1050
+    ],
+    "gutter": 24,
+    "hdr": "aos",
     "cards": [
      {
       "name": "Yellow Shortage",
@@ -849,6 +951,12 @@
     "cols": 3,
     "rows": 1,
     "landscape": true,
+    "cell": [
+     1050,
+     750
+    ],
+    "gutter": 24,
+    "hdr": "aos",
     "cards": [
      {
       "name": "Architect",
@@ -876,6 +984,12 @@
     "cols": 5,
     "rows": 1,
     "landscape": false,
+    "cell": [
+     750,
+     1050
+    ],
+    "gutter": 24,
+    "hdr": "aos",
     "cards": [
      {
       "name": "Element mat 1",
@@ -913,6 +1027,12 @@
     "cols": 6,
     "rows": 1,
     "landscape": false,
+    "cell": [
+     750,
+     1050
+    ],
+    "gutter": 24,
+    "hdr": "",
     "cards": [
      {
       "name": "Cross-Contamination",
@@ -949,6 +1069,12 @@
     "cols": 6,
     "rows": 1,
     "landscape": false,
+    "cell": [
+     750,
+     1050
+    ],
+    "gutter": 24,
+    "hdr": "",
     "cards": [
      {
       "name": "Extra Limbs",
@@ -985,6 +1111,12 @@
     "cols": 6,
     "rows": 1,
     "landscape": false,
+    "cell": [
+     750,
+     1050
+    ],
+    "gutter": 24,
+    "hdr": "",
     "cards": [
      {
       "name": "Unexpected Resilience",
@@ -1016,27 +1148,33 @@
     "backLabel": "Card back"
    },
    {
-    "title": "NAP Impostor Tasks",
-    "sheet": "NRJ_NAP_ImpostorTasks_TTS.png",
+    "title": "NAP Imposter Tasks",
+    "sheet": "NRJ_NAP_ImposterTasks_TTS.png",
     "cols": 4,
     "rows": 1,
     "landscape": true,
+    "cell": [
+     1050,
+     750
+    ],
+    "gutter": 24,
+    "hdr": "",
     "cards": [
      {
       "name": "Neural Extraction Practicum",
-      "kind": "Impostor Task · NAP"
+      "kind": "Imposter Task · NAP"
      },
      {
       "name": "Load-Bearing Prosthetics",
-      "kind": "Impostor Task · NAP"
+      "kind": "Imposter Task · NAP"
      },
      {
       "name": "Emergency Specimen Handling",
-      "kind": "Impostor Task · NAP"
+      "kind": "Imposter Task · NAP"
      },
      {
       "name": "Containment Drill",
-      "kind": "Impostor Task · NAP"
+      "kind": "Imposter Task · NAP"
      }
     ],
     "back": "CardBack_NAP_Assignment.png",
@@ -1049,6 +1187,12 @@
     "cols": 4,
     "rows": 1,
     "landscape": true,
+    "cell": [
+     1050,
+     750
+    ],
+    "gutter": 24,
+    "hdr": "",
     "cards": [
      {
       "name": "Nobulous Needs This Now",
@@ -1077,6 +1221,12 @@
     "cols": 6,
     "rows": 1,
     "landscape": true,
+    "cell": [
+     1050,
+     750
+    ],
+    "gutter": 24,
+    "hdr": "",
     "cards": [
      {
       "name": "Borrow the Master's Notes",
@@ -1113,6 +1263,12 @@
     "cols": 6,
     "rows": 1,
     "landscape": false,
+    "cell": [
+     750,
+     1050
+    ],
+    "gutter": 24,
+    "hdr": "",
     "cards": [
      {
       "name": "I Don't Have Time for This",
@@ -1149,6 +1305,12 @@
     "cols": 6,
     "rows": 1,
     "landscape": false,
+    "cell": [
+     750,
+     1050
+    ],
+    "gutter": 24,
+    "hdr": "",
     "cards": [
      {
       "name": "Uneven Architecture",
@@ -1185,6 +1347,12 @@
     "cols": 6,
     "rows": 1,
     "landscape": false,
+    "cell": [
+     750,
+     1050
+    ],
+    "gutter": 24,
+    "hdr": "",
     "cards": [
      {
       "name": "Diagnostic Port",
@@ -1216,11 +1384,17 @@
     "backLabel": "Card back"
    },
    {
-    "title": "Impostor Scenarios",
+    "title": "Imposter Scenarios",
     "sheet": "NRJ_ImposterScenarios_TTS.png",
     "cols": 10,
     "rows": 3,
     "landscape": false,
+    "cell": [
+     750,
+     1050
+    ],
+    "gutter": 24,
+    "hdr": "",
     "cards": [
      {
       "name": "The Physician's Greeting",
@@ -1322,6 +1496,49 @@
     "back": "CardBack_NRJ_CouncilTest.png",
     "backIsSheet": false,
     "backLabel": "Card back"
+   },
+   {
+    "title": "Imposters",
+    "sheet": "NRJ_Imposters_TTS.png",
+    "cols": 5,
+    "rows": 1,
+    "landscape": true,
+    "cell": [
+     1050,
+     750
+    ],
+    "gutter": 24,
+    "hdr": "",
+    "cards": [
+     {
+      "name": "The Archivist",
+      "kind": "Imposter card · side A",
+      "backName": "The Archivist"
+     },
+     {
+      "name": "The Understudy",
+      "kind": "Imposter card · side A",
+      "backName": "The Understudy"
+     },
+     {
+      "name": "The Usher",
+      "kind": "Imposter card · side A",
+      "backName": "The Usher"
+     },
+     {
+      "name": "The Porter",
+      "kind": "Imposter card · side A",
+      "backName": "The Porter"
+     },
+     {
+      "name": "The Steward",
+      "kind": "Imposter card · side A",
+      "backName": "The Steward"
+     }
+    ],
+    "back": "NRJ_Imposters_TTS_back.png",
+    "backIsSheet": true,
+    "backLabel": "Imposter card · side B"
    }
   ]
  }

@@ -1,4 +1,4 @@
-from gen import render_deck, render_duplex, make_back, elements, hdr_fit, LANDSCAPE, PORTRAIT
+from gen import render_deck, render_duplex, make_back, elements, hdr_fit, title_cls, LANDSCAPE, PORTRAIT
 
 # The shape of the cards being built, for header measurement.
 CARD_SIZE = PORTRAIT
@@ -28,12 +28,13 @@ DECK_ACCENT = {'Routine': '#315c49', 'Specialized': '#4c4a75', 'Unstable': '#7a3
                'Advanced': '#8a5a20', 'Limitation': '#2f5966', 'Technician': '#3f5260',
                'Mat': '#555555'}
 
-BIG = ('.txt{font-size:9.4pt;line-height:1.3}.sub{font-size:7.2pt}.ftr{font-size:6.8pt}'
-       '.hdr .t{font-size:11.6pt}.hdr .s{font-size:6.8pt}'
+# Body text, subheads, the footer and flavour used to be set here and are
+# now in gen.py's base stylesheet, printed by every family. What is left is
+# genuinely AoS-only: the top header rung (gen.HDR_STYLES['aos'] records it,
+# and it is what makes HDR_H_MM what it is) and the element circles.
+BIG = ('.hdr .t{font-size:11.6pt}.hdr .s{font-size:6.8pt}'
        '.el .n{width:8.6mm;height:8.6mm;line-height:8.4mm;font-size:12.5pt}'
-       '.el .d{width:3.8mm;height:3.8mm}.el .sp{height:3.8mm}.bar{margin-top:4.2mm}'
-       '.flavor{font-size:7.1pt;line-height:1.28;font-style:italic;color:#6f675a;'
-       'margin:2.4mm 0 1.4mm}')
+       '.el .d{width:3.8mm;height:3.8mm}.el .sp{height:3.8mm}.bar{margin-top:4.2mm}')
 
 
 def C(title, sub, body, ftr='', warn=False, acc=None, flavor=''):
@@ -41,8 +42,9 @@ def C(title, sub, body, ftr='', warn=False, acc=None, flavor=''):
     # Flavor text sits at the bottom of the card, just above the footer.
     fl = '<div class="flavor">%s</div>' % flavor if flavor else ''
     st = ' style="--a:%s"' % acc if acc else ''
-    cls = ' xlong' if len(title) > 30 else (' long' if len(title) > 19 else '')
-    fit = hdr_fit(title, cls, CARD_SIZE)
+    # BIG below sets this family's header sizes, so measure against those.
+    cls = title_cls(title, CARD_SIZE, 'aos')
+    fit = hdr_fit(title, cls, CARD_SIZE, 'aos')
     return ('<div class="card"%s><div class="hdr"%s><div class="t%s">%s</div><div class="s">%s</div></div>'
             '<div class="body">%s<div class="spacer"></div>%s%s</div></div>'
             % (st, ' style="%s"' % fit if fit else '', cls, title, sub, body, fl, f))
@@ -86,8 +88,8 @@ print('Limitations', render_deck('AoS_Limitations', cards, 'AoS', PORTRAIT, BIG,
 
 TECHS = [
     ("Architect", "Reconfigure", "Once per Program, before rolling an element, move up to 2 allocated dice between unresolved elements."),
-    ("Debugger", "Debug", "Once per Program, after failing by exactly 1 success, reroll 1 allocated die. If it still fails, exhaust that die."),
-    ("Optimizer", "Optimize", "Once per Program, Target +1 successes may count as Optimal Implementation."),
+    ("Debugger", "Debug", "Once per Program, before rolling an element, swap 1 of its dice for a die from your available pool."),
+    ("Optimizer", "Optimize", "Once per cycle and once in Advanced Programming, Target +1 successes may count as Optimal Implementation."),
     ("Engineer", "Redundancy", "For up to 2 elements per Program, the allocation cap is Target +2 instead of Target +1."),
     ("Operator", "Workaround", "When a non-Red Limitation would withhold 2 dice, you may withhold 1 of those dice as another non-Red color instead."),
     ("Compiler", "Compile", "When spending an additional STR roll, reroll any number of dice on that element while keeping the others."),
@@ -109,13 +111,19 @@ print('Technicians', render_duplex('AoS_Technicians', tech_a, tech_b, 'AoS', LAN
 cards = []
 for i in range(1, 6):
     cards.append('<div class="card" style="--a:%s">'
-                 '<div class="hdr"><div class="t">Element %d</div>'
+                 # Hand-rolled header, so the set's depth has to be applied
+                 # explicitly or the mats are the one odd card out. It goes
+                 # in as a format argument, not by concatenation: `%` binds
+                 # tighter than `+`, so a `+` here would apply the format to
+                 # the last fragment alone.
+                 '<div class="hdr" style="%s"><div class="t">Element %d</div>'
                  '<div class="s">Dice Allocation</div></div>'
                  '<div class="body" style="padding:3mm;background:#e8e4d8">'
                  '<div style="flex:1;border:1.2pt dashed #8d8676;border-radius:2mm;'
                  'background:#f7f4ea;box-shadow:inset 0 0 0 1.6mm #e8e4d8"></div>'
                  '<div style="font-size:7.4pt;line-height:1.26;text-align:center;margin-top:2.4mm;'
                  'color:#4a4239">Place all dice assigned to this element here before running '
-                 'the Program.</div></div></div>' % (DECK_ACCENT['Mat'], i))
+                 'the Program.</div></div></div>'
+                 % (DECK_ACCENT['Mat'], hdr_fit('Element 1', '', PORTRAIT, 'aos'), i))
 print('Element mats', render_deck('AoS_ElementMats', cards, 'AoS', PORTRAIT, BIG, back='CardBack_AoS_ElementMat'))
 

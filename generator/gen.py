@@ -12,7 +12,22 @@ os.makedirs(OUT, exist_ok=True)
 
 PORTRAIT = (63.5, 88.9)
 LANDSCAPE = (88.9, 63.5)
-DPI = 200
+# 300 for print production. Everything that lays out a card measures in
+# millimetres and converts through DPI, and title_lines' text width and its
+# limit both scale with it, so the wrapping and the physical card size are
+# unchanged - only the resolution. Raised from 200 on 2026-10-30; the
+# largest sheet, a 10x3 grid, goes from 5000x2100 to 7500x3150 px, still
+# inside what Tabletop Simulator will load.
+DPI = 300
+# The cream margin between a card's printed face and the edge of its cell on
+# the sheet. ONE number with three readers: the CSS below insets the card by
+# it, build_catalog.py publishes it per deck so the playtest lab can size a
+# preview without guessing, and check_app_sync.py holds the three together.
+# Until 2026-11-02 the lab carried its own copy as a 200 DPI pixel literal,
+# left behind when the art moved to 300 on 2026-10-30. Nothing caught it
+# because 15/500 and 23.6/750 are near enough the same ratio that the
+# preview stayed almost right - it just ate the card's whole margin.
+CARD_INSET_MM = 2.0
 
 ACCENT = {'BAT': '#2c5f4a', 'NAP': '#6b3f8c', 'AoS': '#8a3d2e',
           'NRJ': '#1f4e6b', 'IMP': '#4a3b6b'}
@@ -51,7 +66,7 @@ def css(w, h):
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: "DejaVu Sans", sans-serif; width: %fmm; height: %fmm;
        background: #f6f3ea; color: #201c17; position: relative; }
-.card { position:absolute; inset:2.0mm; border:0.5pt solid #b8b0a0; border-radius:1.6mm;
+.card { position:absolute; inset:%fmm; border:0.5pt solid #b8b0a0; border-radius:1.6mm;
         background:#fbf9f3; overflow:hidden; display:flex; flex-direction:column; }
 /* NRJ module marker: a solid edge band along the foot of every NRJ card face */
 .card.nrj > .body { margin-bottom:3.4mm; }
@@ -68,13 +83,25 @@ body { font-family: "DejaVu Sans", sans-serif; width: %fmm; height: %fmm;
 .big { font-size:30pt; font-weight:bold; text-align:center; line-height:1; color:var(--a); }
 .biglbl { font-size:6.2pt; letter-spacing:.14em; text-transform:uppercase; text-align:center;
           color:#8a8272; margin-top:.7mm; }
-.txt { font-size:8.4pt; line-height:1.3; margin-top:2mm; }
+/* Body text, subheads, the below-the-line footer and flavour text have ONE
+   owner: here. These are the sizes build_aos.py used to set for itself in
+   its BIG stylesheet while the other three families printed a smaller set;
+   asked for set-wide on 2026-11-03. Do not override a size below in a build
+   script - the whole point is that a row of cards from different families
+   reads as one game. `.txt.sm` deliberately stays at 7.4pt: see HANDOFF. */
+.txt { font-size:9.4pt; line-height:1.3; margin-top:2mm; }
 .txt.c { text-align:center; }
 .txt.sm { font-size:7.4pt; }
-.sub { font-size:6.6pt; letter-spacing:.09em; text-transform:uppercase; color:var(--a);
+.sub { font-size:7.2pt; letter-spacing:.09em; text-transform:uppercase; color:var(--a);
        font-weight:bold; margin-bottom:.9mm; }
 .spacer { flex:1; }
-.ftr { font-size:6.2pt; line-height:1.22; letter-spacing:.03em; color:#7d7566;
+/* Flavour is the one thing on a card that is not a rule, so it is the one
+   thing set in italics and in grey rather than near-black. `.c` because
+   three families centre it and AoS sets it flush left. */
+.flavor { font-size:7.1pt; line-height:1.28; font-style:italic; color:#6f675a;
+          margin:2.4mm 0 1.4mm; }
+.flavor.c { text-align:center; }
+.ftr { font-size:6.8pt; line-height:1.22; letter-spacing:.03em; color:#7d7566;
        border-top:.4pt solid #ddd6c6; padding-top:1.1mm; margin-top:1.5mm; }
 .ftr.warn { color:#a5502a; }
 .row { display:flex; align-items:center; gap:1.6mm; }
@@ -115,7 +142,7 @@ body { font-family: "DejaVu Sans", sans-serif; width: %fmm; height: %fmm;
 .band { font-size:7pt; font-weight:bold; letter-spacing:.16em; text-transform:uppercase;
         color:#fff; text-align:center; padding:1.1mm; flex:0 0 auto; }
 .band.d180 { transform:rotate(180deg); }
-""" % (w, h, w, h)
+""" % (w, h, w, h, CARD_INSET_MM)
 
 
 # ---------------------------------------------------------------------------
@@ -180,6 +207,14 @@ def paginate(ims, mirror=False, lay=None):
     lay = lay or pnp_layout(ims[0].size)
     pw, ph, cols, rows, ox, oy = lay
     w, h = ims[0].size
+    # The grid strides by one card size, so a card of any other size would
+    # be pasted over its neighbour instead of into its own cell. Mixing
+    # sizes is how the NAP pages broke; it fails here now rather than
+    # printing.
+    odd = next((im.size for im in ims if im.size != (w, h)), None)
+    if odd:
+        raise SystemExit('paginate: card sizes differ on one page - %dx%d and %dx%d'
+                         % (w, h, odd[0], odd[1]))
     per = cols * rows
     pages = []
     for i in range(0, len(ims), per):
@@ -199,7 +234,12 @@ def write_pnp(path, pages):
         return
     from reportlab.pdfgen import canvas as _cv
     from reportlab.lib.utils import ImageReader
-    c = _cv.Canvas(path)
+    # invariant=1 fixes the CreationDate and the document ID that reportlab
+    # otherwise stamps per run. Without it two packs of identical input
+    # produce different bytes, which is the PnP non-reproducibility
+    # HANDOFF recorded: the card sheets were always deterministic, only the
+    # PDF wrapper was not.
+    c = _cv.Canvas(path, invariant=1)
     for pg in pages:
         wpt, hpt = pg.width / DPI * 72.0, pg.height / DPI * 72.0
         c.setPageSize((wpt, hpt))
@@ -244,6 +284,9 @@ def _manifest(name, sheet_cols, sheet_rows, count, card_px, back, back_is_sheet)
     with open(os.path.join(OUT, '%s_cards.json' % name), 'w', encoding='utf-8') as fh:
         json.dump({'name': name, 'sheet': '%s_TTS.png' % name,
                    'cols': sheet_cols, 'rows': sheet_rows, 'count': count,
+                   # The cell size BEFORE fit_tts. Dividing the sheet gives
+                   # the shrunk one, and pack.py has to know the difference.
+                   'card': [w, h],
                    'landscape': w > h, 'back': back, 'backIsSheet': back_is_sheet}, fh, indent=1)
 
 
@@ -252,6 +295,90 @@ def _manifest(name, sheet_cols, sheet_rows, count, card_px, back, back_is_sheet)
 # title here and reserving the height keeps every header honest.
 HDR_PAD = (1.9, 2.0, 2.4)          # top, bottom, side (mm)
 SUB_SIZE, SUB_GAP, PT_MM = 6.4, 0.7, 25.4 / 72.0
+# `.card` draws a 0.5pt border and `* { box-sizing: border-box }` takes it
+# out of the content width, so the title has this much less room than the
+# padding alone suggests.
+CARD_BORDER_MM = 0.5 * PT_MM
+# WeasyPrint lays the title out with Pango; title_lines measures it with
+# PIL, and PIL runs a little short. On 2026-11-02 "Undocumented
+# Dependencies" measured 99.86% of the available width, so hdr_fit
+# reserved no second line - and Pango wrapped it anyway. The body then
+# rode up and cut the subtitle in half.
+#
+# This margin was first picked, not measured: the set happened to have an
+# empty band between 96.1% and 99.86%, so anything inside it caught that
+# one title and touched nothing else. Sizing titles by measurement (see
+# title_cls) fills that band, so the margin had to be measured properly.
+#
+# It now is. Every multi-word title in the set was laid out by WeasyPrint
+# itself in a box of a known width in mm, narrowing until it wrapped - the
+# narrowest box a title survives IS Pango's width for it. Pango needs at
+# most 1.014x PIL's estimate (`Rapid Approach`, `Maintain Balance` and
+# `Climb an Incline`, all at 11.6pt), so anything at or below 1/1.014 =
+# 0.9862 is safe. 0.98 keeps about 0.6% in hand. One-word titles are
+# excluded: they cannot wrap at any width, which is why an earlier sweep
+# that included them appeared to show an 18% spread.
+#
+# Do not read widths out of WeasyPrint's box tree to redo this - those
+# came out ~12% under what the shipped art plainly shows. Ask whether it
+# WRAPPED.
+#
+# Err low rather than high: reserving a line that turns out not to be
+# needed costs a slightly deeper header, while not reserving one costs a
+# clipped card.
+TITLE_SAFETY = 0.98
+# The worst Pango-over-PIL ratio measured across the set, for
+# check_app_sync.py to hold TITLE_SAFETY against.
+TITLE_PANGO_RATIO = 1.014
+# How a header is really printed: the title sizes largest-first with the
+# class that selects each one in the CSS above, the subtitle size, and any
+# extra side padding the markup adds. Two decks do not print the header the
+# stylesheet above describes, and a title measured against the wrong one is
+# a title that wraps:
+#
+#   - build_aos.py renders with its BIG stylesheet, which sets `.hdr .t` to
+#     11.6pt and `.hdr .s` to 6.8pt. The `.long` and `.xlong` rules still
+#     win on specificity, so only AoS's TOP rung moves.
+#   - BAT's dotted cards pad the header's right edge out to 10mm to clear
+#     the colour dot, leaving the title 7.6mm less room than HDR_PAD says.
+#
+# Every caller that lays out a header names its style, and
+# build_catalog.py publishes the choice per deck so check_app_sync.py can
+# check the real rule. Spelled out in full rather than derived from one
+# base, because both of those readers parse this as a literal.
+#
+# Add a style here rather than overriding header sizes or padding in a
+# build script and leaving this file to guess.
+HDR_STYLES = {
+    '':    (((11.0, ''), (9.2, ' long'), (8.2, ' xlong')), 6.4, 0.0),
+    'aos': (((11.6, ''), (9.2, ' long'), (8.2, ' xlong')), 6.8, 0.0),
+    'dot': (((11.0, ''), (9.2, ' long'), (8.2, ' xlong')), 6.4, 7.6),
+}
+TITLE_LADDER = HDR_STYLES[''][0]
+
+
+def hdr_depth_mm(title_pt, sub_pt=SUB_SIZE, lines=1):
+    """The depth a header of this many title lines needs, in mm."""
+    return (HDR_PAD[0] + lines * title_pt * 1.04 * PT_MM
+            + SUB_GAP + sub_pt * 1.25 * PT_MM + HDR_PAD[1])
+
+
+# EVERY header in the set is this deep, so a row of face-up cards lines up:
+# title, subtitle and the top of the body sit at one height whatever the
+# card and whatever size its title is set at. A title set below its style's
+# top rung leaves a little more clear band under its subtitle rather than
+# making the card a different shape, and the number is the same for
+# portrait and landscape since none of the terms depends on the card's
+# width.
+#
+# It has to be the DEEPEST style's one-line header, not the default's,
+# because min-height is a floor and not a ceiling: WeasyPrint grows a
+# header whose content does not fit. The first version of this used the
+# default style's 11.46mm, so AoS's 11.6pt titles pushed their own headers
+# to 11.86mm and that family shipped on 2026-11-02 three pixels deeper than
+# the rest of the set - the exact unevenness the constant exists to remove.
+HDR_H_MM = max(hdr_depth_mm(ladder[0][0], sub_pt)
+               for ladder, sub_pt, _pad in HDR_STYLES.values())
 
 
 def title_lines(title, size_pt, width_mm):
@@ -266,22 +393,116 @@ def title_lines(title, size_pt, width_mm):
     lines, line = 1, ''
     for word in title.split():
         trial = (line + ' ' + word).strip()
-        if font.getlength(trial) <= limit or not line:
+        if font.getlength(trial) <= limit * TITLE_SAFETY or not line:
             line = trial
         else:
             lines, line = lines + 1, word
     return lines
 
 
-def hdr_fit(title, cls='', size=PORTRAIT):
-    """'min-height:..mm' when the title wraps onto more than one line, else ''."""
-    size_pt = 8.2 if 'xlong' in cls else 9.2 if 'long' in cls else 11.0
-    plain = re.sub('<[^>]+>', ' ', title).replace('&#8209;', '-').replace('&middot;', '.')
-    lines = title_lines(plain, size_pt, size[0] - 2 * 2.0 - 2 * HDR_PAD[2])
+def _plain(title):
+    return (re.sub('<[^>]+>', ' ', title)
+            .replace('&#8209;', '-').replace('&middot;', '.'))
+
+
+def title_width_mm(size=PORTRAIT, style=''):
+    """The room a title actually has, inside the inset, border and padding."""
+    return (size[0] - 2 * CARD_INSET_MM - 2 * CARD_BORDER_MM
+            - 2 * HDR_PAD[2] - HDR_STYLES[style][2])
+
+
+def title_pt(cls='', style=''):
+    """The point size the CSS will print a title of this class at."""
+    ladder = HDR_STYLES[style][0]
+    # Largest-last, because 'long' is a substring of 'xlong'.
+    for pt, c in reversed(ladder):
+        if c and c.strip() in cls:
+            return pt
+    return ladder[0][0]
+
+
+def title_cls(title, size=PORTRAIT, style=''):
+    """The size class for a title: the LARGEST rung on its style's ladder
+    that still keeps the title to one line.
+
+    This used to be five copies of one character-count expression, and a
+    count is the wrong instrument in both directions. It cannot know that
+    "Undocumented Dependencies" sets wider than "Emergency Specimen
+    Handling" despite being three characters shorter, so three titles were
+    printed at a size they did not fit. And it cannot know that a landscape
+    card is 88.9mm wide where a portrait one is 63.5, so it shrank 82
+    titles that had room to spare - most of a whole landscape deck, set two
+    sizes down for no reason a reader could see.
+
+    Measuring answers both. Nothing here is a judgement about how a card
+    should look: the ladder is still the three sizes the CSS offers, and a
+    title only leaves the top rung when it genuinely does not fit on it.
+    """
+    plain = _plain(title)
+    ladder = HDR_STYLES[style][0]
+    for pt, cls in ladder[:-1]:
+        if title_lines(plain, pt, title_width_mm(size, style)) < 2:
+            return cls
+    return ladder[-1][1]
+
+
+def hdr_fit(title, cls='', size=PORTRAIT, style=''):
+    """The header's depth, as a style attribute. One number for the set.
+
+    A title that still wraps at the smallest size gets a deeper header
+    rather than a clipped subtitle. title_cls makes that unreachable for
+    every card in the set today, and check_app_sync.py keeps it that way.
+    """
+    size_pt = title_pt(cls, style)
+    lines = title_lines(_plain(title), size_pt, title_width_mm(size, style))
     if lines < 2:
-        return ''
-    return 'min-height:%.2fmm' % (HDR_PAD[0] + HDR_PAD[1] + lines * size_pt * 1.04 * PT_MM
-                                  + SUB_GAP + SUB_SIZE * 1.25 * PT_MM)
+        return 'min-height:%.2fmm' % HDR_H_MM
+    return 'min-height:%.2fmm' % hdr_depth_mm(size_pt, HDR_STYLES[style][1], lines)
+
+
+# Tabletop Simulator will not load a custom deck image above 10000 px on a
+# side. At 300 DPI a card is 750x1050, so a 10-wide grid of portrait cards
+# is 7500 across - fine - but NAP's 26 Tasks and 12 Final Exams are
+# LANDSCAPE, ten 1050px cards to a row, and came out 10500.
+#
+# That used to be handled by downscaling the finished sheet, on the grounds
+# that "the PnP pages are built from the full-resolution card images, not
+# from this". That was true of each deck's own <deck>_PnP.pdf and FALSE of
+# the shipped per-game one: pack.py cuts its cards back out of the TTS
+# sheet. So those two decks printed at 1000x714 where the rest of NAP
+# printed at 750x1050, and because paginate strides by the first card's
+# size, every full-size card after them sat 36px right and 50px low of its
+# cell and overlapped its neighbour. NAP pages 3-7 were unusable.
+#
+# So the grid is narrowed instead and nothing is resampled: 26 Tasks go
+# 9x3 rather than 10x3. fit_tts stays as a backstop for a deck that cannot
+# be made to fit any grid, and pack.py scales such a deck's cards back up
+# rather than letting the page grid break again.
+TTS_MAX = 10000
+
+
+def tts_grid(n, card_px):
+    """(cols, rows) for an n-card sheet: the widest grid up to 10 that TTS
+    will still load. Fewer columns means more rows, so a deck can only run
+    out of room if it will not fit in any grid - then this gives the 10-wide
+    one and fit_tts shrinks it."""
+    w, h = card_px
+    for cols in range(min(10, n), 0, -1):
+        rows = math.ceil(n / cols)
+        if cols * w <= TTS_MAX and rows * h <= TTS_MAX:
+            return cols, rows
+    cols = min(10, n)
+    return cols, math.ceil(n / cols)
+
+
+def fit_tts(sheet, cols, rows):
+    """Shrink a deck sheet to TTS's ceiling, keeping the cells integral."""
+    if max(sheet.width, sheet.height) <= TTS_MAX:
+        return sheet
+    k = TTS_MAX / float(max(sheet.width, sheet.height))
+    cw = int(sheet.width / cols * k)
+    ch = int(sheet.height / rows * k)
+    return sheet.resize((cw * cols, ch * rows), Image.LANCZOS)
 
 
 def render_deck(name, cards, accent_key, size=PORTRAIT, extra='', back=None):
@@ -299,12 +520,11 @@ def render_deck(name, cards, accent_key, size=PORTRAIT, extra='', back=None):
     if not ims:
         return 0
     w, h = ims[0].size
-    cols = min(10, len(ims))
-    rows = math.ceil(len(ims) / cols)
+    cols, rows = tts_grid(len(ims), (w, h))
     sheet = Image.new('RGB', (cols * w, rows * h), '#f6f3ea')
     for i, im in enumerate(ims):
         sheet.paste(im, ((i % cols) * w, (i // cols) * h))
-    sheet.save(os.path.join(OUT, '%s_TTS.png' % name))
+    fit_tts(sheet, cols, rows).save(os.path.join(OUT, '%s_TTS.png' % name))
     lay = pnp_layout((w, h))
     pages = paginate(ims, lay=lay)
     if back:
@@ -358,13 +578,13 @@ def render_duplex(name, fronts, backs, accent_key, size=PORTRAIT, extra=''):
         os.remove(p)
     w, h = ims['f'][0].size
     n = len(ims['f'])
-    cols = min(10, n)
-    rows = math.ceil(n / cols)
+    cols, rows = tts_grid(n, (w, h))
     for tag, suffix in (('f', ''), ('b', '_back')):
         sheet = Image.new('RGB', (cols * w, rows * h), '#f6f3ea')
         for i, im in enumerate(ims[tag]):
             sheet.paste(im, ((i % cols) * w, (i // cols) * h))
-        sheet.save(os.path.join(OUT, '%s_TTS%s.png' % (name, suffix)))
+        fit_tts(sheet, cols, rows).save(
+            os.path.join(OUT, '%s_TTS%s.png' % (name, suffix)))
     # Front page then its mirrored back page, so a long-edge duplex flip puts
     # each back behind its own face.  The mirror is about the center of the
     # full 3-wide grid, not about the cards that happen to be present, because

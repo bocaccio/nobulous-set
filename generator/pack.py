@@ -11,6 +11,12 @@ prints double-sided on a long-edge flip.
 Landscape cards are the same size as the rest, only turned, so they are rotated
 a quarter turn and share the same pages. Every page carries a label in its
 bottom margin: "Page 3 - Front", "Page 3 - Back".
+
+EVERY CARD ON A PAGE MUST BE THE SAME PIXEL SIZE. The page grid strides by
+one card, so a card of any other size lands on top of its neighbour. The
+cards are cut out of the TTS sheets, which fit_tts may have shrunk below
+the size they were rendered at, so each one is scaled back to the size the
+manifest records before it goes anywhere near a page.
 """
 import json
 import os
@@ -50,22 +56,32 @@ GAMES = {
         ('NRJ_BAT_Protocols', 'Experimental Protocols'),
         ('NRJ_BAT_Modifications', 'Unauthorized Modifications'),
         ('NRJ_BAT_ResearchNotes', 'Research Notes'),
-        ('NRJ_NAP_ImpostorTasks', 'Impostor Tasks'),
+        ('NRJ_NAP_ImposterTasks', 'Imposter Tasks'),
         ('NRJ_NAP_FollowingSetbacks', 'Following Setbacks'),
         ('NRJ_NAP_DeviousOpportunities', 'Devious Opportunities'),
         ('NRJ_AoS_Interference', 'Nobulous Interference'),
         ('NRJ_AoS_CorruptedLimitations', 'Corrupted Limitations'),
         ('NRJ_AoS_BackdoorRoutines', 'Backdoor Routines'),
-        ('NRJ_ImposterScenarios', 'Council Test Scenarios'),
+        ('NRJ_ImposterScenarios', 'Exhibits'),
+        ('NRJ_Imposters', 'Imposters (A / B)'),
     ],
 }
 
 
-def cut(sheet, cols, rows, index):
-    """One card out of a TTS sheet."""
+def cut(sheet, cols, rows, index, card=None):
+    """One card out of a TTS sheet, at the size it was rendered.
+
+    `card` is the manifest's full-resolution cell size. It differs from the
+    sheet's own cell only for a deck fit_tts had to shrink, and then the
+    full-resolution images are long gone, so scaling back up is the best
+    that is left - it keeps the page grid honest, which matters more.
+    """
     w, h = sheet.width // cols, sheet.height // rows
     col, row = index % cols, index // cols
-    return sheet.crop((col * w, row * h, (col + 1) * w, (row + 1) * h))
+    im = sheet.crop((col * w, row * h, (col + 1) * w, (row + 1) * h))
+    if card and tuple(card) != (w, h):
+        im = im.resize(tuple(card), Image.LANCZOS)
+    return im
 
 
 def deck_cards(stem):
@@ -84,13 +100,14 @@ def deck_cards(stem):
         return cache[stem]
 
     backs = back_image(m['back']) if isinstance(m['back'], str) else None
+    card = m.get('card')
     out = []
     for i in range(m['count']):
-        front = cut(sheet, m['cols'], m['rows'], i)
+        front = cut(sheet, m['cols'], m['rows'], i, card)
         if not back_names:
             back = None
         elif m['backIsSheet']:
-            back = cut(backs, m['cols'], m['rows'], i)
+            back = cut(backs, m['cols'], m['rows'], i, card)
         else:
             img = back_image(back_names[i])
             back = img if img.size == front.size else img.resize(front.size)

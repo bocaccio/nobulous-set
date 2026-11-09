@@ -8,8 +8,8 @@
   <h1>Automaton of Shale (AoS)</h1>
   <p class="tagline">Commit everything before you know anything. Precision pays; overkill costs.</p>
   <p class="blurb">You are the Technician running Nobulous&rsquo; automaton through its paces. Each Program is a
-  row of elements that must all be funded before a single die is rolled &mdash; and Nobulous reveals what
-  you may <em>not</em> use only after you have already committed the components the Program demands.</p>
+  row of elements that must all be funded before a single die is rolled &mdash; and Nobulous names the dice
+  you may <em>not</em> use first, so every allocation is made knowing exactly what you no longer have.</p>
 </div>
 
 <div class="body">
@@ -36,10 +36,10 @@
     from each of the three decks, shuffle the <b>8</b> together, and return the rest to the box:
     <table>
       <tr><th>Level</th><th>Routine</th><th>Specialized</th><th>Unstable</th></tr>
-      <tr><td>Easy</td><td>5</td><td>3</td><td>&mdash;</td></tr>
-      <tr><td><b>Standard</b></td><td><b>4</b></td><td><b>3</b></td><td><b>1</b></td></tr>
-      <tr><td>Hard</td><td>3</td><td>3</td><td>2</td></tr>
-      <tr><td>Nobulous</td><td>2</td><td>3</td><td>3</td></tr>
+      <tr><td>Easy</td><td>3</td><td>3</td><td>2</td></tr>
+      <tr><td><b>Standard</b></td><td><b>2</b></td><td><b>3</b></td><td><b>3</b></td></tr>
+      <tr><td>Hard</td><td>1</td><td>3</td><td>4</td></tr>
+      <tr><td>Nobulous</td><td>0</td><td>3</td><td>5</td></tr>
     </table>
     Specialized stays at 3 throughout; <b>each step up trades one Routine Program for one Unstable</b>.
     Routine Programs ask for three elements at low Targets, Unstable ones four at high Targets, and
@@ -51,9 +51,11 @@
 </ol>
 
 <h2>Object of the game</h2>
-<p>Cycle your 8&#8209;card Program deck three times, then face three Advanced Programs. Finish Advanced Programming with at
-least 1 Health to win. <b>If your Health reaches 0 at any point you lose.</b> Health can be raised by Program
-Rewards but never above 6.</p>
+<p>Cycle your 8&#8209;card Program deck three times, then face three Advanced Programs. <b>Surviving Advanced
+Programming is the win condition</b>: get through all three with at least 1 Health and you have won, whether or
+not you completed them. <b>If your Health reaches 0 at any point you lose.</b> Health can be raised by Program
+Rewards but never above 6 &mdash; and a Reward needs a Program finished with <em>no</em> failed elements, so the
+only way to heal is to do the work.</p>
 
 <h3>Cycling the deck</h3>
 <p>A <b>cycle</b> is one pass through every Program still in the deck: shuffle it, then run each Program once,
@@ -70,8 +72,9 @@ Reward removes them, so later cycles are shorter. After the third cycle &mdash; 
       Withheld dice cannot be used in this Program at all &mdash; not even for a required color.</li>
   <li><b>Commit required&#8209;color dice.</b> Every colored dot beside an element requires one available die
       of that color to be placed on that element <em>now</em>. These dice are locked there.</li>
-  <li><b>Finish the allocation.</b> Distribute the rest of your available dice across the elements. An element
-      may be left with no dice at all &mdash; it then simply fails.</li>
+  <li><b>Finish the allocation.</b> Distribute the rest of your available dice across the elements.
+      <b>Every element must receive at least one die.</b> If you hold fewer available dice than the Program
+      has elements, place what you have and the elements left bare fail.</li>
   <li><b>Execute.</b> Roll each element and resolve it. A hit is 1 success, a Crit is 2.</li>
   <li><b>Recover dice equal to your REC</b> at the end of every Program, before the next one is revealed.</li>
 </ol>
@@ -88,7 +91,9 @@ Reward removes them, so later cycles are shorter. After the third cycle &mdash; 
   letting a Shortage do it for you &mdash; has a real cost.
 </div>
 
-<p>Specialized and Advanced Programs carry two required&#8209;color dots; Routine and Unstable carry one.
+<p>Routine and Unstable Programs carry one required&#8209;color dot. Specialized and Advanced carry two,
+with three exceptions that ask for more: <em>Carry a Moving Load</em> requires all four colors, and
+<em>Rapid Approach</em> and <em>Unobserved Entry</em> require three. Read the card rather than the deck.
 The same required colors appear on both faces of a Program card.</p>
 
 <h3>Limitations</h3>
@@ -96,9 +101,12 @@ The same required colors appear on both faces of a Program card.</p>
 required&#8209;color dice are committed. Each withholds dice from your pool, as printed. Withheld dice return
 when the Program ends; discard the Limitation then.</p>
 
-<h3>Allocation cap</h3>
+<h3>Allocation floor and cap</h3>
 <p>An element may hold at most <b>Target + 1</b> dice, unless a card raises that cap &mdash; the Engineer
-does, for up to 2 elements per Program.</p>
+does, for up to 2 elements per Program &mdash; and <b>never fewer than one</b>.</p>
+<p>The floor is there because an element you abandon is one you have decided to lose, and that decision
+should cost something. A failed element exhausts every die allocated to it, so the floor is exactly the
+price of the decision: one die, your worst, gone. Nothing else about failing changes.</p>
 
 <h2>Rolling and the exhaustion gradient</h2>
 <p>Each element gets one Strategy roll. Additional rolls up to your STR form a <b>shared pool</b> spent anywhere
@@ -126,6 +134,10 @@ then recover 2 &mdash; which may include dice you just exhausted.</p>
   Catastrophic Failure and costs 1 Health total.
   <p>When a Catastrophic Failure occurs, you may <b>exhaust 2 misses on failed elements</b> to negate the
   Health loss. Count only misses still showing after any rerolls, and only on elements that actually failed.</p>
+  <p>Those dice were exhausting anyway &mdash; a failed element exhausts everything allocated to it &mdash;
+  so the negation costs you nothing beyond <em>having the misses there to spend</em>. That is the point of
+  it: an element you have already given up on is worth loading rather than leaving bare, and the saving
+  throw is a common out rather than a rare one.</p>
 </div>
 
 <h2>Program Rewards</h2>
@@ -146,25 +158,52 @@ permanent, and remove that Program from the deck when claimed. Advanced Programs
 <h2>Advanced Programming</h2>
 <ul>
   <li>Select 3 Advanced Programs. They are longer &mdash; 4 or 5 elements &mdash; and each carries 2
-      required&#8209;color dots resolved by the normal pre&#8209;allocation rule.</li>
+      required&#8209;color dots &mdash; except Rapid Approach and Unobserved Entry,
+      which carry three &mdash; resolved by the normal pre&#8209;allocation rule.</li>
   <li>Recover between Advanced Programs.</li>
-  <li><b>Tucking:</b> set&#8209;aside Programs may be tucked under the left or right edge of an Advanced Program;
-      the exposed edge Target adds an element. If the marked overheated element is first or last, that edge must
-      be used; if it is internal, you choose.</li>
   <li>Advanced Program 1 begins Stable.</li>
   <li>The next Advanced Program begins <b>Overheated</b> if this one ended in Catastrophic Failure, and
       <b>Stable</b> otherwise. Catastrophic Failure does not stop Advanced Programming unless Health
       reaches 0.</li>
 </ul>
-<p>Complete all three with Health remaining to win AoS.</p>
+<p>Work through all three with Health remaining to win AoS. &ldquo;Work through&rdquo; is the whole
+requirement: an Advanced Program you fail still counts as faced, and failing one costs you the game only
+through the Health it takes.</p>
+
+<div class="box">
+  <span class="lbl">Giving up an element is a decision, not a free move</span>
+  Writing off an element you cannot fund is proper play, not an exploit. One failed element costs no Health,
+  and its dice are often worth more concentrated on the elements you <em>can</em> finish &mdash; landing one
+  exactly on its Target pays <em>Optimal Implementation</em>. Knowing when to do it is most of the skill in
+  AoS.
+  <p>What it is not is free. Every element must hold a die, and a failed element exhausts every die on it, so
+  each element you give up costs you one. And a Program with any failed element pays <b>no Program
+  Reward</b>.</p>
+  <p>That last clause is what closes the door on failing your way through the game. The arithmetic looks
+  inviting &mdash; failures retire Programs, a retired Program leaves the deck, an empty deck sends you to
+  Advanced Programming, and Advanced Programming is won by surviving. But Health is <em>only</em> ever
+  regained by a Program Reward. Give up an element every Program and you give up every Reward, which is the
+  only healing there is, while still paying a die each time and still needing two failures to retire each
+  Program. The deck outlasts you.</p>
+</div>
 
 <h2>Carrying AoS forward</h2>
-<p><em>Only relevant if you are playing the Nobulous Research Journal (NRJ) campaign.</em></p>
-<p>The <b>3 Advanced Programs you actually faced</b> are retained, preserving whether each was Stable or
-Overheated when faced. Three unused Advanced Programs become candidates. AoS contributes 6 cards to the
-Research Pool.</p>
-<p>Stable retained cards are stronger for reducing Targets in the finale but cannot be discarded to avoid a
-Scenario; Overheated ones are weaker but can.</p>
+<p><em>Only relevant if you are playing the Nobulous Research Journal (NRJ) campaign, which is Tier III
+only.</em></p>
+<p>AoS contributes its <b>6 Backdoor Routines</b>, and nothing leaves the Program decks. A Routine you
+claimed is <b>retained</b> &mdash; at most 2, which is the claim limit a game &mdash; and the rest are
+<b>candidates</b>.</p>
+<p>A retained Routine answers <b>Cover&#8209;Up</b> Exhibits in the finale, reducing a Target by
+<b>2</b>; it does not matter whether you went on to spend it. Claiming one costs the next Program Reward you
+would have taken, which is a real price &mdash; and two of those Rewards are the permanent +1 REC and
++1 STR.</p>
+<div class="box">
+  <span class="lbl">Root Access is worth holding</span>
+  Its use is to treat a failed element as successful, which saves a Catastrophic Failure. But the printed
+  rule already lets you <b>exhaust 2 misses on failed elements</b> to negate that Health loss for nothing, so
+  spending a Routine before trying the misses throws the card away on a problem you had already solved. Try
+  the misses first; the Routine is there for the failure they cannot cover.
+</div>
 
 <div class="foot">AoS &middot; The Nobulous Set &middot; fan expansion for 20 Strong &middot; prototype rules,
 not affiliated with Chip Theory Games</div>

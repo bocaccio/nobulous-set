@@ -6,9 +6,17 @@ The card names come from the build scripts themselves, so the catalog cannot
 drift from the printed cards. The build scripts render on import, so `gen` is
 stubbed out first: nothing is drawn, only the data lists are read.
 
-Grid size is read from the finished sheet in out/: portrait cards are 500x700
-and landscape cards 700x500, so the sheet's own pixel size gives cols and rows.
+Grid size is read from the manifest the renderer wrote, never assumed: at
+300 DPI a portrait cell is 750x1050 and a landscape one 1050x750, gen.py
+narrows the grid for a deck too wide for Tabletop Simulator, and fit_tts may
+still shrink a sheet to something else again.
+
+Each deck also publishes `cell` and `gutter` - the cell's real pixel size and
+gen.py's CARD_INSET_MM expressed at that size. The lab needs both to place a
+sprite and had been hard-coding them, which is how it ended up cropping a
+300 DPI card by a 200 DPI margin.
 """
+import io
 import json
 import os
 import sys
@@ -27,8 +35,28 @@ stub.elements = lambda *a, **k: ''
 stub.skulls = lambda *a, **k: ''
 stub.subj_icon = lambda *a, **k: ''
 stub.hdr_fit = lambda *a, **k: ''
-stub.LANDSCAPE = (88.9, 63.5)
-stub.PORTRAIT = (63.5, 88.9)
+stub.title_cls = lambda *a, **k: ''
+# gen.py is the authority on card geometry and is not imported here (it
+# renders on import), so its constants are read out of the source. A second
+# hand-kept copy is exactly the drift this file exists to prevent.
+def gen_consts():
+    import ast
+    with io.open(os.path.join(HERE, 'gen.py'), encoding='utf-8') as fh:
+        tree = ast.parse(fh.read())
+    want = ('PORTRAIT', 'LANDSCAPE', 'DPI', 'CARD_INSET_MM')
+    out = {}
+    for node in tree.body:
+        if isinstance(node, ast.Assign) and isinstance(node.targets[0], ast.Name)                 and node.targets[0].id in want:
+            out[node.targets[0].id] = ast.literal_eval(node.value)
+    missing = [k for k in want if k not in out]
+    if missing:
+        raise SystemExit('gen.py no longer defines %s' % ', '.join(missing))
+    return out
+
+
+GEN = gen_consts()
+stub.LANDSCAPE = GEN['LANDSCAPE']
+stub.PORTRAIT = GEN['PORTRAIT']
 
 
 class _Dots(dict):
@@ -50,22 +78,55 @@ def names(rows):
     return [r[0] if isinstance(r, (list, tuple)) else r for r in rows]
 
 
-def grid(sheet):
-    """(cols, rows, landscape) for a sprite sheet, from its pixel size."""
+def grid(sheet, n):
+    """(cols, rows, landscape, cell_w, cell_h) for a sprite sheet of n cards.
+
+    The layout is READ FROM THE MANIFEST render_deck wrote beside the sheet,
+    not inferred by dividing the sheet by a card size and not recomputed
+    from a rule kept in step by hand. Both of those have failed here.
+    Inferring was hard-coded to 500x700, which is 200 DPI; gen.py went to
+    300 DPI on 2026-10-30 and nothing re-ran this script, so all 29 decks
+    came out with the wrong cols, rows and orientation (Lab Rats 4x1
+    landscape read as 8x1 portrait). And no fixed pixel size can work while
+    fit_tts may shrink a sheet to a smaller cell. A copy of gen.py's own
+    rule then went stale the moment that rule changed. The renderer's
+    record is the only thing that cannot drift.
+
+    The CELL is still divided out of the real sheet, because that is what
+    the lab has to crop, shrunk or not.
+    """
     from PIL import Image
+    stem = sheet.replace('_TTS_back.png', '').replace('_TTS.png', '')
+    mf = os.path.join(OUT, '%s_cards.json' % stem)
+    if not os.path.exists(mf):
+        raise SystemExit('build_catalog: no manifest for %s - run the build '
+                         'scripts first' % sheet)
+    with io.open(mf, encoding='utf-8') as fh:
+        m = json.load(fh)
+    if m['count'] != n:
+        raise SystemExit('build_catalog: %s has %d cards, the manifest says %d'
+                         % (sheet, n, m['count']))
+    cols, rows = m['cols'], m['rows']
     with Image.open(os.path.join(OUT, sheet)) as im:
         w, h = im.size
-    cw, ch = (500, 700) if h > w or h % 700 == 0 and w % 500 == 0 else (700, 500)
-    if w % cw or h % ch:
-        cw, ch = ch, cw
-    return w // cw, h // ch, cw > ch
+    cw, ch = w // cols, h // rows
+    return cols, rows, cw > ch, cw, ch
 
 
-def deck(title, sheet, card_names, kind, back=None, back_kind=None, back_names=None):
+def deck(title, sheet, card_names, kind, back=None, back_kind=None,
+         back_names=None, hdr=''):
     per_card = isinstance(back, (list, tuple))
-    cols, rows, landscape = grid(sheet)
+    cols, rows, landscape, cw, ch = grid(sheet, len(card_names))
+    # The inset is a physical 2mm, so at this cell's own scale it is that
+    # fraction of the card's width - which survives fit_tts shrinking a sheet.
+    mm_w = (GEN['LANDSCAPE'] if landscape else GEN['PORTRAIT'])[0]
     entry = {
         'title': title, 'sheet': sheet, 'cols': cols, 'rows': rows, 'landscape': landscape,
+        'cell': [cw, ch], 'gutter': int(round(cw * GEN['CARD_INSET_MM'] / mm_w)),
+        # Which gen.HDR_STYLES entry this deck's build script prints with.
+        # check_app_sync.py needs it to measure a title the way the card
+        # really sets it; the lab ignores it.
+        'hdr': hdr,
         'cards': [{'name': n, 'kind': kind(n, i) if callable(kind) else kind}
                   for i, n in enumerate(card_names)],
     }
@@ -89,7 +150,7 @@ def deck(title, sheet, card_names, kind, back=None, back_kind=None, back_names=N
 
 
 CATALOG = {'bat': {'title': 'Build-a-Tyrant', 'decks': []},
-           'nap': {'title': "Nobulous' Apprentice Program", 'decks': []},
+           'nap': {'title': "Nobulous Apprenticeship Program", 'decks': []},
            'aos': {'title': 'Automaton of Shale', 'decks': []},
            'nrj': {'title': 'Nobulous Research Journal', 'decks': []}}
 
@@ -103,8 +164,9 @@ CATALOG['bat']['decks'] += [
     deck('Specimens', 'BAT_Specimens_TTS.png', names(build_bat.SPECIMENS),
          lambda n, i: 'Specimen card · %s' % build_bat.SPECIMENS[i][1].split(' ')[0],
          'CardBack_BAT_Upgrade.png'),
+    # The only deck with a colour dot in the header, which narrows the title.
     deck('Tyrant Attacks', 'BAT_TyrantAttacks_TTS.png', names(build_bat.ATTACKS),
-         'Tyrant Attack card', 'CardBack_BAT_TyrantAttack.png'),
+         'Tyrant Attack card', 'CardBack_BAT_TyrantAttack.png', hdr='dot'),
     # Two-sided decks print the odd-indexed entries on the back sheet.
     deck('Lab Rats', 'BAT_Rats_TTS.png', names(build_bat.RATS[0::2]), 'Lab Rat card · side A',
          'BAT_Rats_TTS_back.png', 'Lab Rat card · side B', names(build_bat.RATS[1::2])),
@@ -154,10 +216,16 @@ CATALOG['aos']['decks'] += [
     deck('Technicians', 'AoS_Technicians_TTS.png', names(build_aos.TECHS[0::2]),
          'Technician card · front', 'AoS_Technicians_TTS_back.png',
          'Technician card · back', names(build_aos.TECHS[1::2])),
+    # The mats carry no data list to count, and they render at BIG rather
+    # than a card size, so the count comes from the loop in build_aos.py.
     deck('Element mats', 'AoS_ElementMats_TTS.png',
-         ['Element mat %d' % i for i in range(1, 1 + grid('AoS_ElementMats_TTS.png')[0] * grid('AoS_ElementMats_TTS.png')[1])],  # noqa: E501
+         ['Element mat %d' % i for i in range(1, 6)],
          'Element allocation mat', 'CardBack_AoS_ElementMat.png'),
 ]
+# Every AoS deck renders through build_aos.BIG, which sets its own header
+# sizes - one statement for the family rather than a keyword on seven calls.
+for _d in CATALOG['aos']['decks']:
+    _d['hdr'] = 'aos'
 
 # ---- NRJ -------------------------------------------------------------------
 CATALOG['nrj']['decks'] += [
@@ -167,8 +235,8 @@ CATALOG['nrj']['decks'] += [
          'NRJ Modification · BAT', 'CardBack_NRJ_Protocol.png'),
     deck('BAT Research Notes', 'NRJ_BAT_ResearchNotes_TTS.png', names(build_nrj.NOTES),
          'Research Note · BAT', 'CardBack_NRJ_ResearchNote.png'),
-    deck('NAP Impostor Tasks', 'NRJ_NAP_ImpostorTasks_TTS.png', names(build_nrj.IMPOSTOR),
-         'Impostor Task · NAP', 'CardBack_NAP_Assignment.png'),
+    deck('NAP Imposter Tasks', 'NRJ_NAP_ImposterTasks_TTS.png', names(build_nrj.IMPOSTER_TASKS),
+         'Imposter Task · NAP', 'CardBack_NAP_Assignment.png'),
     deck('NAP Following Setbacks', 'NRJ_NAP_FollowingSetbacks_TTS.png', names(build_nrj.FOLLOWING),
          'Following Setback · NAP', 'CardBack_NAP_Assignment.png'),
     deck('NAP Devious Opportunities', 'NRJ_NAP_DeviousOpportunities_TTS.png', names(build_nrj.DEVIOUS),
@@ -179,8 +247,11 @@ CATALOG['nrj']['decks'] += [
          'Corrupted Limitation · AoS', 'CardBack_AoS_Limitation.png'),
     deck('AoS Backdoor Routines', 'NRJ_AoS_BackdoorRoutines_TTS.png', names(build_nrj.BACKDOOR),
          'Backdoor Routine · AoS', 'CardBack_NRJ_BackdoorRoutine.png'),
-    deck('Impostor Scenarios', 'NRJ_ImposterScenarios_TTS.png', names(build_nrj.SCEN),
+    deck('Imposter Scenarios', 'NRJ_ImposterScenarios_TTS.png', names(build_nrj.SCEN),
          lambda n, i: 'Council Test · %s' % build_nrj.SCEN[i][1], 'CardBack_NRJ_CouncilTest.png'),
+    deck('Imposters', 'NRJ_Imposters_TTS.png', names(build_nrj.IMPOSTERS[0::2]),
+         'Imposter card · side A', 'NRJ_Imposters_TTS_back.png',
+         'Imposter card · side B', names(build_nrj.IMPOSTERS[1::2])),
 ]
 
 total = 0

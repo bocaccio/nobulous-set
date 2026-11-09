@@ -35,7 +35,8 @@ figures. Read the fidelity notes before quoting anything here.
 | `bat.py` | Build-a-Tyrant: Splice Phase and Tyrant Battle |
 | `nap.py` | Apprenticeship: the Assignment row, Demand penalties, the Final Exam |
 | `aos.py` | Automaton of Shale: Element allocation, Programs, cycles, Advanced |
-| `nrj.py` | Imposter Scenario: Council attempts, Suspicion, the Research Pool |
+| `finale.py` | **the Imposter finale that ships**: the Dossier, the attention dial, the pace against the clock |
+| `nrj.py` | SUPERSEDED - the nine-attempt Suspicion finale it replaced, kept because other files cite it |
 | `table.py` | the cross-tab: difficulty x NRJ tier x hero card |
 | `run_all.py` | thin wrapper over `table.py` |
 | `healthsweep.py` | tunes the Tyrant's Health against a target ladder |
@@ -43,7 +44,8 @@ figures. Read the fidelity notes before quoting anything here.
 | `sweep.py` | every game, every difficulty, every hero, every NRJ tier |
 | `dicetension.py` | whether running out of dice is actually the pressure, per game |
 | `audit.py` | per card: how often it reaches the table, and whether its text does anything |
-| `imposter.py` | the finale's dice economy: pool, Targets, the failure trade, the dials |
+| `coverage.py` | per card: is its printed effect implemented AT ALL - every claim asserted against the live modules |
+| `imposter.py` | the SUPERSEDED finale's dice economy, and the diagnosis that led to rebuilding it |
 | `proto/fix.py` | candidate repairs for the finale, and which of them do nothing |
 | `supply.py` | whether the campaign's 18 cards can actually be banked, and whether standalone matches |
 | `protocols.py` | per-Protocol tuning sweep for BAT's NRJ Tier I |
@@ -130,13 +132,29 @@ The 20 Strong Community Game Stats sheet records the published titles at
 **47-57%, and 53% across 955 games** (Solar Sentinels 49%, Too Many Bones 55%,
 Hoplomachus 53%, Tanglewoods Red/White/Gold 47/53/57%). A finished game in this
 system sits near 50%, and that is the yardstick for everything below. The BAT
-ladder published in `rules/bat.html` (~70/63/56/49/42) straddles that band.
+ladder published in `rules/bat.html` is Specimens and Tyrant Health - 5/9, 6/10,
+7/12, 8/14 - and not win rates: no rulebook prints a win rate any more, and the
+five-rung `~70/63/56/49/42` this sentence used to quote was a ladder from a
+rulebook that no longer publishes one, with five rungs where BAT has four.
 
-Against that band the three games now read Easy 62.7 / 56.8 / 79.6% and
-Standard 53.2 / 49.8 / 71.2% (BAT / NAP / AoS) on the no-NRJ axis, with the
-finale at 61.5%. BAT and NAP are in the band at Standard. AoS is in it at
-Standard on the campaign axis (54.2% at Tier III) but still reads high played
-on its own.
+Against that band the three games read, re-measured 2026-11-05 at 20,000 games
+a cell, Easy 62.7 / 55.5 / 60.1% and Standard **53.2 / 48.8 / 51.7%**
+(BAT / NAP / AoS) on the no-NRJ axis, with the finale at **50.5%**
+(`finale.py`; the nine-attempt version it replaced reads 61.6% in `nrj.py`,
+which still models it and is not what ships). All three games and the finale
+are in the band at Standard on their own column - AoS since the 2026-11-05
+re-pitch onto the strongest allocation line the printed rules allow, and NAP
+since the model started playing the printed End-of-Day burn.
+
+Do not retype these. `table.py` computes the calibration verdicts from the
+grids it just ran, and `RESULTS.txt` is its transcript; this paragraph is a
+summary that has gone stale twice, once in the figures and once in the
+conclusion drawn from them.
+
+The figures this paragraph used to carry - AoS 71.2% at Standard, the finale at
+53.1% - were from before required colours and before the Rewards were restored.
+An audit on 2026-11-04 found them here, in `table.py`'s calibration footer and
+in `RESULTS.txt`.
 
 Two changes on 2026-10-28 moved NAP and AoS there, and neither was a
 difficulty dial. **NAP had every printed Target raised by 1** - the 26 Task
@@ -186,7 +204,9 @@ current ladder. For that, see `table.py`.
 Measured 2026-10-27, 7,200 games a cell, BEFORE the policy retune later the
 same day - so these cells are about 30 points low and are kept only for the
 shape of the dial, which is what the section is about. The retuned Credit
-goal curve, at 4 Setbacks, runs 76.3% at 6 Credits, 65.8% at 8, 55.6% at 10,
+goal curve, at 4 Setbacks (the count Standard carried until the 2026-11-06
+re-peg took every rung down one, to 3/3/4/5), runs 76.3% at 6 Credits,
+65.8% at 8, 55.6% at 10,
 then 52.4 / 50.1 / 48.0% at 12 / 14 / 16: raising the goal looks like the
 obvious lever for re-pitching NAP, and on its own it bottoms out near 48%.
 
@@ -203,7 +223,7 @@ sits in the middle of it.
 
 Tier I is close to a wash - the Following Setbacks it swaps in are harsher
 per card but displace base Setbacks of similar weight. Tier II is the trough,
-as designed: 4 Impostor Tasks that are Mandatory and grant no Credits remove
+as designed: 4 Imposter Tasks that are Mandatory and grant no Credits remove
 four Credit chances and force four clears. Tier III recovers 6-9 points, more
 than the other two games get back.
 
@@ -387,29 +407,127 @@ Specimens are the Value-5 cards).
 
 ### AoS - Program deck x NRJ tier
 
+Measured 2026-11-06, 20,000 games a cell, `ALLOC_MODE = sacrifice_short`.
+
 | difficulty | no NRJ | Tier I | Tier II | Tier III |
 |---|---|---|---|---|
-| Easy 5/3/0 | 79.6% | 68.4% | 61.1% | 65.0% |
-| Standard 4/3/1 | 71.2% | 59.1% | 50.7% | 54.2% |
-| Hard 3/3/2 | 62.8% | 49.3% | 40.8% | 44.9% |
-| Nobulous 2/3/3 | 52.6% | 40.2% | 32.0% | 35.2% |
+| Easy 3/3/2 | 59.6% | 48.8% | 41.9% | 56.9% |
+| Standard 2/3/3 | **52.0%** | **40.8%** | 33.6% | **46.6%** |
+| Hard 1/3/4 | 43.3% | 32.6% | 25.5% | 38.9% |
+| Nobulous 0/3/5 | 35.2% | 25.2% | 18.0% | 30.7% |
 
-Measured after the misses-negate rule of 2026-10-28. Before it the same cells
-read 47.0 / 35.2 / 24.9 / 38.7% at Easy and 35.0 / 25.3 / 16.9 / 27.9% at
-Standard, which is where every earlier copy of this table sits.
+**All three tier columns rose 5-6 points on 2026-11-06 when one Tier I card
+was capped**, and they had to: "I Don't Have Time for This" is 1 of 6 drawn
+at setup and every tier includes that draw, so a card going 1.2% to 34.9% is
+worth (34.9 - 1.2) / 6 = 5.6 points to each of them. Tier I 34.7 -> 40.8,
+Tier II 28.4 -> 33.6, Tier III 40.7 -> 46.6. The three moving together by the
+predicted amount, with the solo column not moving at all, is the check that
+the cap is contained to the card.
 
-The axis changed. This table used to be indexed by whole Program decks
-(Routine 43.3%, Specialized 9.3%, Unstable 2.2%); difficulty is now the MIX
-of Routine / Specialized / Unstable in the deck, which is why these rows do
-not line up with any earlier copy of this table.
+**The Tier III column moved 11 points on 2026-11-06 and no AoS card
+changed.** The model gave Tier III two *fungible* charges and spent every one
+of them as Root Access, in any cycle; the card prints "During Advanced
+Programming", and the other five Backdoor rewards did nothing at all. Each
+claim now does what its card prints, so Standard goes 29.7% to 40.7%. The
+figure published before that date was not a measurement of this module - it
+was a measurement of part of one card. `BACKDOOR_REWARDS = False` in `aos.py`
+restores the pooled model every earlier figure was measured on.
 
-It is still the cleanest tier response of the three and matches the design
-intent exactly: Tier II is the trough (Easy 79.6% -> 61.1%) and Tier III claws
-most of it back (65.0%). What the negate rule did NOT fix is the gap between
-the two axes: AoS now lands in band at Standard on the campaign axis (54.2%)
-while reading 71.2% played on its own, so the solo game is the loose end.
-NAP's +1 pass closed its own version of that gap - 49.8% against 51.4% - by
-raising the Final Exam Targets, and AoS has no equivalent card to lean on.
+The solo, Tier I and Tier II columns are untouched by it, which is the check
+that the change is contained: only Tier III grants a Routine.
+
+The ladder names moved one rung down on 2026-11-05, when the pitch moved from
+honest allocation to the strongest line the printed rules allow. The outcome
+barely moved with it - Standard went 52.9% to 52.0% and Nobulous did not
+budge - because a harder ladder and a stronger policy very nearly cancel. The
+point of the change was not the level but what the level describes: the
+figures now measure the line a player who triages actually takes. A player who
+funds every element reads about 8 points lower, 44.0% at Standard.
+
+Every earlier copy of this table is wrong twice over, and this one was too
+until 2026-11-05: it was indexed Easy 5/3/0 ... Nobulous 2/3/3, the ladder
+from before the 2026-11-03 retune, with figures from before required colours,
+the allocation floor and the corruption exclusion. Earlier still it was
+indexed by whole Program decks (Routine 43.3%, Specialized 9.3%, Unstable
+2.2%) rather than by the mix. Three different axes have been called "AoS
+difficulty", so match the ladder before trusting any row.
+
+**THE LOOSE END IS THE CAMPAIGN AXIS, AND IT IS TIER I, NOT TIER III.**
+Read the tiers as STEPS rather than as levels and the three games say:
+
+| Standard | solo | -> Tier I | -> Tier II | -> Tier III | III/solo |
+|---|---|---|---|---|---|
+| BAT | 53.2% | -3.1 | -11.4 | **+9.2** | **90.0%** |
+| NAP | 48.8% | -4.6 | -8.1 | +3.9 | 82.0% |
+| AoS | 52.0% | **-11.2** | -7.2 | +13.0 | **89.6%** |
+
+**The reference moved on 2026-11-06, and it was the bug.** BAT's 81.6% - the
+figure this section called the shape the design wants, and the figure NAP's
+Devious Opportunities were re-priced to match - was measured through the
+pooled-token defect in BAT's own Tier III. Honest, BAT reads 90.0%, so no
+game in the set now has the 81-85% shape. By rung, III/solo reads BAT 86.4 /
+90.0 / 92.8 / 97.2, NAP 83.8 / 82.0 / 84.8 / 86.9, AoS 95.5 / 89.6 / 89.8 /
+87.2. All three obey the rule - Tier III beats Tier II, stays under solo -
+but BAT at Nobulous is 97.2%, which is flat, and NAP is now the outlier in
+the other direction. **AoS also overshoots.** Its Tier I step was -17.3 until 2026-11-06, when the
+card that dug the hole was capped; at -11.2 it is still the deepest of the
+three. Tier III clears Tier II and stays below solo, which is BAT's rule, but
+at 89.6% of its own solo column it is the *shallowest* campaign penalty of
+the three, and at Easy it is 95.5% - nearly flat. That is the next thing to
+look at on this axis. It is a consequence of the Tier I repair rather than of
+anything Tier III does: capping one of six setup cards lifts all three tier
+columns equally, because all three draw it. One upside came with it - AoS
+Standard at Tier III is 46.6%, which brings the campaign column to within
+0.4 of the 47-57% band for the first time.
+
+Priced one card at a time at Standard, 6,000 games a cell, against a 51.8%
+solo column, the six Nobulous Interference cards read:
+
+| Tier I, alone in the deck | | |
+|---|---|---|
+| Memory Leak | 33.3% | -18.4 |
+| **I Don't Have Time for This** | **34.9%** | **-16.9** |
+| Works on My Machine | 36.6% | -15.2 |
+| Legacy Hardware | 40.1% | -11.7 |
+| Undocumented Dependencies | 40.5% | -11.3 |
+| Nobulous Was Here | 51.3% | -0.5 |
+
+This table is reproducible from the shipped model: `INTF_PICK` in `aos.py`
+forces the draw, and *makes* the draw and discards it, so every cell runs the
+same random stream as the games the grid averages. The version printed before
+2026-11-06 came from a scratch harness that skipped the draw, which moved
+each cell by about a point.
+
+**"I Don't Have Time for This" was a 1.2% card until 2026-11-06** - not a
+difficulty setting, a loss, drawn 1 game in 6 - and splitting its two clauses
+said which one: begin all Programs Overheated is worth roughly nothing, and
+*"when an already-Overheated Program fails, cycle it to the bottom of its
+deck instead of setting it aside"* was the whole -50. The mechanism is the
+interaction and it is invisible on the card. Normal escalation is stable ->
+overheated -> aside; clause one starts everything at the second step, so
+clause two replaced the *third* and nothing could ever leave the deck. A
+Program you cannot beat comes back until it kills you. The clause that reads
+as mercy was the trap.
+
+Capping how many times one Program may return read, at Tier I: 3 -> 19.3%,
+2 -> 24.3%, **1 -> 34.9%**, clause deleted -> 52.1%. Deleting puts the card
+above the solo column, so it wanted capping rather than cutting.
+
+**Applied.** The card now reads *"Begin all Programs Overheated. The first
+time each already-Overheated Program fails, cycle it to the bottom of its
+deck instead of setting it aside."* The cap is `RECYCLE_LIMIT` /
+`RECYCLE_SCOPE` in `aos.py`, where `-1` restores the uncapped card every
+figure before this date was measured on.
+
+The wording had to choose a scope and the two are not close: *each* Program
+gets one reprieve and reads 34.9%, while once per *game* reads 49.8% - which
+would make the harshest-sounding card in the deck the second mildest in it.
+
+A second thing this table says: the six Interference cards spanned 0.7 to
+50.5 points before the cap and 0.5 to 18.4 after it. Five of the six now sit
+between -11.3 and -18.4, which is a deck. The card left outside is now
+**Nobulous Was Here at -0.5, too mild rather than too harsh** - raised, not
+fixed, and the same complaint the Backdoor rewards draw below.
 
 ### NRJ - the finale
 
@@ -482,15 +600,56 @@ statlines really are identical the whole spread is ability text:
 
 | game | best | worst | spread |
 |---|---|---|---|
-| AoS Technicians | optimizer 43.4% | engineer 26.0% | 17.4 |
-| NAP Apprentices | Technician 80.8% | Prodigy 73.5% | 7.3 |
+| AoS Technicians | Debugger 54.6% | Compiler 47.1% | 7.5 |
+| NAP Apprentices | Technician 49.3% | Savant 41.1% | 8.2 |
 | BAT Lab Rat sides | tool_keeper 53.2% | adaptation 49.6% | 3.6 |
 
+The NAP row was `Technician 80.8% / Prodigy 73.5%` until 2026-11-06, which
+was a reading from a much earlier calibration and had Prodigy worst for the
+plainest of reasons: **Prodigy had no ability.** It prints a relaxation of
+the colour rule and `nap.py` enforced that rule on the COMMIT rather than on
+the successes, so there was nothing to relax and `ABILITIES` mapped it to
+`None` - while Prodigy was the default in `nap.run` and the Apprentice
+`audit.py` audits NAP with. With `COLOR_RULE_ON_SUCCESS` in, the ability is
+worth **+4.4 points**, the largest of the six, and Prodigy is mid-field.
+
 At Standard with no tier module; the full tables are in `RESULTS.txt`, and all
-twenty cards are listed in `cards.py`. AoS's 17 points is a lot to rest on one
-card choice and is worth a look. BAT's axis is not a pick of one card: all four
-Rats always play, so it is 16 side-combinations, and Rat abilities do not apply
-in the Tyrant Battle at all - which is why its spread is the narrowest.
+twenty cards are listed in `cards.py`. BAT's axis is not a pick of one card:
+all four Rats always play, so it is 16 side-combinations, and Rat abilities do
+not apply in the Tyrant Battle at all - which is why its spread is the
+narrowest.
+
+**AoS's spread was 41 points this morning, and it was one card.** The
+Debugger read 88.4% against five Technicians inside 47.1-54.3. The giveaway
+was not the level but the slope: across Easy to Nobulous the other five lose
+23.0 to 26.3 points while the Debugger lost **10.2** and still won 81% on the
+rung meant to be won one time in five. Its ability was "after failing by
+exactly 1 success, reroll 1 allocated die" - and a reroll only pays when you
+are short by exactly 1, so the ability grew with the difficulty it was
+supposed to be graded by and cancelled it. Picking the Debugger was not a
+choice of how to play but a choice to switch the ladder off, which is a worse
+problem than a card being strong: the ladder is the only thing the campaign
+axis has to say.
+
+This only became visible on 2026-11-05, when two model defects that had been
+hiding each other were fixed. The model forced the Debugger to spend its extra
+STR roll before Debug could fire, which understated it at 68.0%; it also made
+the Architect dismantle its own allocation, understating that card by 15
+points. One card too strong and one too weak cancelled in the six-Technician
+mean, so the published AoS figures looked settled while both were wrong.
+
+**The fix was a different ability, not a smaller one.** Metering the reroll
+does work - once per cycle and once in Advanced Programming reads 62.7% on a
+25.5-point slope - but it buys a second cadence clause and still leaves the
+card 8.4 clear of the roster, because the trigger is the problem and the
+frequency is only a brake on it. Debug now reads **"Once per Program, before
+rolling an element, swap 1 of its dice for a die from your available pool"**:
+one clause, no cadence, and a payout that does not depend on having missed.
+It reads **54.6%** on a **24.0** slope, 0.3 above the Architect, and adding it
+to the other five widens the roster spread from 7.2 to **7.5** - a sixth card
+that distorts nothing. `link` (carry a surplus success onward) is the same
+disease from another angle and reads slope 16.5; the full candidate table is
+in `RESULTS.txt` and every variant is still in `aos.py`.
 
 ## Fidelity
 
@@ -505,10 +664,30 @@ fixes - the Tyrant Attack deck, the Protocol die-borrowing clauses, and
 tier effects that REPLACE base cards instead of adding to them. Tier II is
 now the trough in every BAT column, matching AoS and NAP.
 
-What remains unmodelled is **per-card text**, and the list is much shorter
-than it was. Verify it against `audit.py` rather than trusting this block;
-several claims here have been wrong, including a run of five that all said
-BAT content was omitted after it had been implemented.
+What remains unmodelled is **per-card text**. **Do not trust this block or
+any other prose about coverage — run `coverage.py`.** It holds the same list
+as a set of predicates over the live modules and exits non-zero when one of
+them stops being true, which is the only form of this claim that has ever
+stayed correct. Four coverage comments in the models were stale on
+2026-11-06, `audit.py` carried two of them in its own report, and several
+claims in this very block have been wrong before, including a run of five
+that all said BAT content was omitted after it had been implemented.
+
+As of 2026-11-08: **2 of 255 printed card faces have no modelled effect, in
+2 of the 30 decks** - down from 68 in 13 when the audit of 2026-11-06 was
+written. Both are printed rewards that pay in INFORMATION, in models with no
+decision for the information to change: BAT's Diagnostic Trial and AoS's
+Packet Sniffer. Modelling either would mean inventing a decision the game
+does not offer. The third was NAP's Neural Response Screening, and it was a
+different kind of gap - its Crit clause was Assignment language on a card
+with no completion step, so there was nothing to model until the card said
+something an exam can mean. It was reworded on 2026-11-08 and went in with
+the rewording, which also makes NAP's column the first measured with all
+twelve exam restrictions. HANDOFF.md section 10 and the bottom of
+RESULTS.txt carry the argument, what was fixed, and the four things that
+were raised rather than fixed - including the re-peg NAP now needs, since
+enforcing the colour rule on SUCCESSES rather than on the commit costs about
+5 points and is what the cards print.
 
 - **BAT** - 19 of the 20 Experiment effects are implemented. The exception
   is Diagnostic Trial, which buys a look at the next Experiment; the policy

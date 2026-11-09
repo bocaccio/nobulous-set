@@ -1,0 +1,131 @@
+THE IMPOSTER FINALE - the attention rotates, and you set the pace
+==========================================================================
+6000 finales a cell. 15 Exhibits, 9 sessions, 17 dice, Targets 3/4/5.
+printed Targets: Knowledge ok; Physical ok; Cover-Up ok
+* marks the 47-57% community band, whose mean is 53.0%.
+
+1. THE PITCH
+   Five seeds, because one is not a pitch: a single 6000-game cell
+   lands about a point either side of the mean.
+   as it ships                        50.5%*  [50.1 50.4 50.1 50.6 51.0]
+   without the five Reward cards      42.7%   [41.7 43.0 43.4 41.5 43.9]
+   without the Research Pool           8.6%   [8.7 8.3 8.7 8.4 8.7]
+   played blind                        0.5%   [0.6 0.3 0.5 0.5 0.6]
+
+2. THE SKILL LAYER - every input face-up, none of it remembered
+   played as the old finale was         0.6% 
+   + spend the Research Pool           10.5%   +9.9
+   + keep pace with the clock          26.5%   +16.0
+   + recover the colour coming up      36.2%   +9.7
+   + commit only what you need         51.3%*  +15.0
+
+3. IS THE PACE A LIVE DECISION? the replay question.
+   A fixed pace is what a solved scenario looks like.
+   pace: one                            0.0% 
+   pace: two                           31.9% 
+   pace: three                          1.2% 
+   pace: all                            0.0% 
+   pace: clock                         50.1%*
+   pace: ceil                          46.2% 
+   pace: throttle                      47.4%*
+
+4. THE OTHER THREE DECISIONS
+   recover   best 45.6%  now 8.4%  next 51.3%  horizon 50.1%   gap 42.8
+   commit    all 37.6%  adaptive 50.1%   gap 12.5
+   Research  none 8.7%  small 50.1%  big 42.1%  dump 37.5%   gap 41.4
+
+5. THE DIALS - one step each
+   as it ships                         50.1%*
+   8 sessions (ends on blue)           23.5% 
+   10 sessions (ENDS ON RED)           22.1% 
+   12 Exhibits, 4 per domain           76.7% 
+   13 Exhibits (5/4/4)                 69.8% 
+   14 Exhibits (5/5/4)                 64.8% 
+   16 Exhibits (6/5/5)                 20.6% 
+   18 Exhibits, 6 per domain            0.2% 
+   3 Health                            43.5% 
+   4 Health                            50.3%*
+   6 Health                            50.0%*
+   REC 2                               28.3% 
+   REC 4                               53.9%*
+   REC 5                               53.4%*
+   STR 3                               86.3% 
+   one-colour attention                 0.0% 
+   three-colour attention              84.9% 
+   Targets 2/3/4                       92.0% 
+   Damage 2 at Target 4+               49.8%*
+   damage resets each session          31.1% 
+   no Reward cards                     41.7% 
+
+6. THE RESEARCH POOL
+   A card is retained or it is not, and every retained card takes
+   2 off one Exhibit's Target. The spent/unspent split was dropped
+   on 2026-10-30: nothing on the table records which a card is,
+   and a campaign can sit for weeks between games. So the pool is
+   now just a COUNT, and seven is the count that reads 50%.
+   NAP/BAT/AoS retained        worth 1  worth 2
+   1/1/1                         15.7%    21.6%
+   2/2/1                         22.8%    34.8%
+   2/2/2                         26.6%    41.5%
+   3/2/2                         31.8%    50.5%   <- shipped
+   3/3/2                         37.4%    58.0%
+   3/3/3                         43.0%    65.6%
+   no retained cards                       8.6%
+
+   Eight cards worth 1.5 each beat six worth 2, on the same total
+   reduction: spreading across more Exhibits pays better than
+   concentrating, and more cards cover the three domains better.
+   That is why dropping to one value needed the COUNTS re-derived
+   rather than the values doubled.
+
+7. THE DIFFICULTY LADDER - dice exhausted at setup
+   The rules name the dice, so there is no choice to model. The
+   counts are spread across the colours on purpose: taking whole
+   ones collides with the wheel, which opens Yellow+Green, and
+   '4 yellow 4 green' reads 28.7% against 38.4% for the same
+   eight dice taken off the purple end. The red is never taken.
+   level      y  g  b  p        n      win     aim
+   Easy       0  0  0  0        0    50.5%*   50%  +0.5
+   Standard   3  2  2  2        9    39.2%    40%  -0.8
+   Hard       3  3  3  2       11    30.6%    30%  +0.6
+   Nobulous   3  3  4  4       14    19.4%    20%  -0.6
+
+   AND WHETHER THE RUNGS ARE STILL GAMES OF SKILL. A tier where
+   no policy beats another is not a harder puzzle, it is a worse
+   one, so every rung is measured with its own gaps. This is the
+   property that chose this dial: the RECOVERY decision, which is
+   what the attention wheel exists to create, pays MORE as the
+   ladder gets harder.
+   Easy        50.5%   pace +19.1   recover  +4.8   commit +12.3
+   Standard    39.2%   pace +19.0   recover +11.6   commit +18.4
+   Hard        30.6%   pace +16.0   recover +11.5   commit +14.0
+   Nobulous    19.4%   pace +11.3   recover +11.7   commit  +7.7
+
+   AND WHETHER COMMITTING IS STILL A DECISION. The pool lowers
+   Targets, so it could have done what REC 4 does and made
+   throwing every allowed die simply correct. It did the
+   opposite - the gap is wider than it was on the old pool.
+   REC 2  adaptive  28.2%  all   4.5%   gap +23.8
+   REC 3  adaptive  50.5%  all  38.1%   gap +12.3   <- shipped
+   REC 4  adaptive  53.9%  all  65.9%   gap -12.0
+   REC 5  adaptive  54.1%  all  67.3%   gap -13.2
+
+THE PROTOTYPE'S ERRATA - three finale10 claims that the real
+components did not support:
+  1 'the pace cannot be memorised'. The schedule rule IS the
+    winning pace and it is one formula, so the depth is in
+    execution. finale10 said as much in its honest-limit note;
+    what is new is that its own throttled variant measures WORSE
+    than the plain schedule here, 40.1% against 51.4%.
+  2 'a three-colour window'. At three colours raw strength beats
+    reading the wheel and the finale reads 79.2%. The window has
+    to be TWO for the dial's central decision to pay at all.
+  3 its pacing figures. `clock` rounds the schedule and so falls
+    quietly behind at a pressure just over 1 - see how_many().
+  4 'commit only the dice you need', its LARGEST lever at +35.1.
+    Worth +11.8 here, a third of that - and it is the lever
+    most sensitive to the recovery economy. At REC 4 with the
+    five Reward cards paying dice back it INVERTS, and
+    throwing every allowed die wins by 10.0, which is why
+    REC is 3: the Rewards ARE the fourth point of recovery, and
+    they have to be earned.

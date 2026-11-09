@@ -115,8 +115,10 @@ from dice import COLORS, EV_REROLL, roll
 # The 12 Final Exams, from nap.EXAMS: their base Targets and their subject
 # dots. NAP prints a recovery dot on every Exam and every Assignment, and
 # working to the dot is the game's constant small decision.
-EXAM_TARGETS = [t for _, _, t in nap.EXAMS]
-EXAM_DOTS = [nap.DOT_COLOR[d] for _, d, _ in nap.EXAMS]
+# Indexed rather than unpacked: nap.EXAMS grew a fourth column on
+# 2026-11-06 when the 12 printed restrictions were modelled.
+EXAM_TARGETS = [e[2] for e in nap.EXAMS]
+EXAM_DOTS = [nap.DOT_COLOR[e[1]] for e in nap.EXAMS]
 
 GAMES = 20000
 

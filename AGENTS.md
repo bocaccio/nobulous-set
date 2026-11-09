@@ -17,16 +17,21 @@ Read `HANDOFF.md` and `README.md` before making changes.
   numbers were simulation-calibrated; raise suspected design errors first.
 - Preserve unrelated user edits and create a Git checkpoint before substantial
   work.
-- For browser-interface work, run `python -m http.server 8000 -d playtest/dist`
-  from the repository root and verify the affected game flow.
+- For browser-interface work, run `python playtest/serve.py` from the
+  repository root and verify the affected game flow. Do NOT use
+  `python -m http.server`: it sends no cache headers, so the browser caches
+  `index.html`, and since that file is what names every `?v=` token a cached
+  copy pins you to an old build however often you bump them. The symptom is a
+  feature that is simply absent with no error, which reads exactly like code
+  that was never written.
 - Keep BAT, NAP, AoS and NRJ card data synchronized with the authoritative
   generator and rule sources.
 
 ## Useful commands
 
 ```bash
-# Local playtest lab
-python -m http.server 8000 -d playtest/dist
+# Local playtest lab (sends honest cache headers; see above)
+python playtest/serve.py
 
 # Rebuild rule PDFs after editing rules HTML
 cd rules && python build.py
@@ -35,7 +40,82 @@ cd rules && python build.py
 cd generator
 python build_bat.py   # or build_nap.py / build_aos.py / build_nrj.py
 python pack.py
+
+# Promote out/ into images/, playtest/dist/assets/ and print-and-play/,
+# and cut release/tts (scaled for TTS) and release/print (300 DPI)
+cd generator
+python deploy.py --prune --release
+
+# Check the playtest lab still matches the generators (exit code = failures)
+cd generator && python check_app_sync.py
+python check_cards.py
+
+# Check the MODELS still match the cards (exit code = stale claims)
+cd simulation && python coverage.py   # is every printed effect implemented?
+python audit.py                       # does every card reach the table and fire?
 ```
+
+Run `coverage.py` before trusting any statement in this repository about
+what is or is not modelled, including the ones in `simulation/README.md` and
+in the model docstrings. It asserts every claim against the live modules and
+fails when one goes stale; four such comments were wrong on 2026-11-06 and
+`audit.py` had two of them written into its own output. A firing rate from
+`audit.py` means nothing for a card `coverage.py` says was never implemented.
+
+Write a coverage claim as a predicate that a NAME cannot satisfy. Three
+claims have passed while the card did nothing, each because the predicate
+counted entries in a table instead of call sites in the source: Packet
+Sniffer, "banish" on three Programs, and Redundant Organs. `coverage.fires`
+and `coverage.reads` are the right shape; `len()` of a card table is not.
+
+Every model change of 2026-11-06 carries a dial that restores the behaviour
+the figures published before it were measured through - `REDUNDANT_SAVES`,
+`EXAM_RESTRICTIONS`, `COLOR_RULE_ON_SUCCESS`, `FOLLOWING_EFFECTS`,
+`IMPOSTER_EFFECTS`, `DEVIOUS_IGNORE_SETBACK`, `CORRUPT_MODE`,
+`BACKDOOR_CLAIM`, `BACKDOOR_COSTS_REWARD`, `BACKDOOR_WHEN`, `HERO`. Use
+them to reproduce an old number rather than assuming a grid drifted.
+
+Nothing copies `generator/out/` into the shipping trees except `deploy.py`, so
+run it after any rebuild; `--prune` removes output a renamed or dropped deck
+left behind. Rendering is byte reproducible — re-rendering a family with
+nothing changed rewrites nothing in `out/` — so a noisy diff means you really
+did change something.
 
 The card generator has environment-specific output paths; inspect `gen.py`
 before rebuilding on a new machine.
+
+## Dependencies
+
+`requirements.txt` lists them and says which script needs which. Two cannot be
+installed by pip and both fail without naming themselves:
+
+- **WeasyPrint's GTK libraries** are found through `PATH`, not through Python.
+  Without them any script that imports WeasyPrint - `build_*.py`,
+  `check_cards.py`, `rules/build.py` - dies with `OSError: cannot load library
+  'libgobject-2.0-0'`, which reads as a broken install. On this machine:
+
+  ```bash
+  PATH="/c/Users/weeks/miniforge3/Library/bin:$PATH"
+  ```
+
+- **`pdftoppm`** (poppler-utils) must be on `PATH`; `gen.py` shells out to it.
+
+Nothing a player touches needs any of this. The lab is static files, the
+sheets and PDFs are committed, and `simulation/` is pure Python.
+
+Run `build_nap.py` before `build_nrj.py` into a fresh output directory: NRJ's
+Imposter Tasks and Devious Opportunities print NAP's Assignment back and
+`make_back` has to have built it first.
+
+Card geometry has ONE owner, `gen.py` - `PORTRAIT`, `LANDSCAPE`, `DPI` and
+`CARD_INSET_MM`. `build_catalog.py` publishes each deck's real cell size and
+gutter into `catalog.json`, and the lab reads them from there. Do not
+reintroduce a pixel literal anywhere else; `check_app_sync.py` now checks all
+three agree.
+
+So does the header: `gen.HDR_STYLES` says what each family really prints
+(title sizes, subtitle size, extra side padding) and `gen.HDR_H_MM` is the one
+depth every card's colour band gets. If a build script overrides a header size
+or padding in its own stylesheet, add a style there and pass its name to
+`title_cls`/`hdr_fit` - otherwise titles are measured against a card that does
+not exist, and they wrap.

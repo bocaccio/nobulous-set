@@ -13,12 +13,24 @@ sys.path.insert(0, os.path.dirname(__file__))
 from decks import DECKS, GAME_COLOR
 
 # Where the images live. Set with --user / --repo / --ref, or edit GH_USER.
-GH_USER, GH_REPO, GH_REF = "YOUR-GITHUB-USERNAME", "nobulous-set", "main"
+# GH_USER was "YOUR-GITHUB-USERNAME" until 2026-11-05, which meant the default
+# build produced a mod whose every sheet URL 404s - it loads with no card
+# faces. The repo's own remote names the owner, so this was never a guess.
+# GH_REF stays "main" even when you build from a branch: these URLs are for
+# the published mod and resolve once the branch merges. Pass --ref to aim at
+# a branch, or --local to build file:/// URLs against SHEETS.
+GH_USER, GH_REPO, GH_REF = "bocaccio", "nobulous-set", "main"
 CDN = "https://cdn.jsdelivr.net/gh/%s/%s@%s/images"      # cached, fast, recommended
 RAW = "https://raw.githubusercontent.com/%s/%s/%s/images"  # works, uncached
 BASE_URL = ""
-OUT = os.environ.get("TTS_OUT", "/home/claude/tts/NobulousSet.json")
-SHEETS = os.environ.get("TTS_SHEETS", "/home/claude/cards/out")
+# Repo-relative so this runs wherever the repo is checked out. The defaults
+# used to be /home/claude paths from the sandbox that wrote the script, so
+# OUT died with FileNotFoundError and SHEETS made REQUIRED_IMAGES.txt report
+# every image MISSING. images/ is where deploy.py puts the TTS sheets and
+# what the CDN template above already points at. The env vars still win.
+_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+OUT = os.environ.get("TTS_OUT", os.path.join(_REPO, "tts", "NobulousSet.json"))
+SHEETS = os.environ.get("TTS_SHEETS", os.path.join(_REPO, "images"))
 
 rng = random.Random(20260823)
 USED = set()
@@ -49,16 +61,23 @@ def card(deck_id, idx, nickname, desc=''):
 
 
 def build_deck(d, deck_id, pos):
-    face = url(d['key'] + '_TTS.png')
-    back = (url(d['key'] + '_TTS_back.png') if d['back'] == 'unique'
+    # `sheet` and `first` let two decks share ONE face sheet and take
+    # different slices of it, which is how a sheet whose cards need two
+    # different backs is shipped: a TTS deck carries exactly one BackURL.
+    # TTS addresses a card as deck_id * 100 + its index in the grid, so the
+    # offset is all that is needed. See NAP_Slots / NAP_FINF in decks.py.
+    sheet = d.get('sheet', d['key'])
+    first = d.get('first', 0)
+    face = url(sheet + '_TTS.png')
+    back = (url(sheet + '_TTS_back.png') if d['back'] == 'unique'
             else url(d['back'] + '.png'))
     custom = {str(deck_id): {"FaceURL": face, "BackURL": back,
                              "NumWidth": d['w'], "NumHeight": d['h'],
                              "BackIsHidden": True, "UniqueBack": d['back'] == 'unique',
                              "Type": 0}}
     contained, ids = [], []
-    for i in range(d['count']):
-        contained.append(card(deck_id, i, '%s %d' % (d['label'], i + 1)))
+    for i in range(first, first + d['count']):
+        contained.append(card(deck_id, i, '%s %d' % (d['label'], i - first + 1)))
         ids.append(deck_id * 100 + i)
     r, g, b = GAME_COLOR[d['game']]
     obj = {"GUID": guid(), "Name": "Deck" if d['count'] > 1 else "CardCustom",
@@ -72,7 +91,7 @@ def build_deck(d, deck_id, pos):
     if d['count'] == 1:
         obj.pop("DeckIDs")
         obj.pop("ContainedObjects")
-        obj["CardID"] = deck_id * 100
+        obj["CardID"] = deck_id * 100 + first
     return obj
 
 
@@ -90,7 +109,11 @@ def panel():
 
 
 def dice_objects():
-    src = json.load(open('/home/claude/cards/dice_objects.json'))
+    # Checked in beside this script, so read it from there rather than
+    # from the machine it was first written on - that hardcoded path
+    # meant build_mod.py could not run anywhere else at all.
+    src = json.load(open(os.path.join(os.path.dirname(
+        os.path.abspath(__file__)), 'dice_objects.json')))
     out = []
     lay = {'Purple': (-16, -14), 'Blue': (-14, -14), 'Green': (-12, -14),
            'Yellow': (-10, -14), 'Pink': (-8, -14),
@@ -226,8 +249,9 @@ def main():
 
     need = set()
     for d in DECKS:
-        need.add(d['key'] + '_TTS.png')
-        need.add(d['key'] + '_TTS_back.png' if d['back'] == 'unique' else d['back'] + '.png')
+        sheet = d.get('sheet', d['key'])
+        need.add(sheet + '_TTS.png')
+        need.add(sheet + '_TTS_back.png' if d['back'] == 'unique' else d['back'] + '.png')
     need.add('ControlPanel.png')
     with open(os.path.join(os.path.dirname(OUT), 'REQUIRED_IMAGES.txt'), 'w') as f:
         f.write("Upload these to BASE_URL, keeping the filenames:\n\n")

@@ -1,3 +1,380 @@
+2026-11-08  NEURAL RESPONSE SCREENING DROPS TO A TARGET OF 5
+Base Target 6 becomes 5 on the one Final Exam whose clause reprices Crits.
+Nothing else moves: not the subject, not the Green dot, not the clause, and
+not a single number in nap.LEVELS or the difficulty table in rules/nap.html.
+
+A RESTRICTION IS PRICED AGAINST THE TARGET ON ITS OWN CARD.  The clause
+that replaced this exam's Assignment language earlier today is the first
+thing it has ever printed that costs the player anything, and the Target it
+printed was set when the clause did nothing.  Measured, the clause cost 1 to
+3 points across the ladder and left THREE OF SIX APPRENTICES BELOW THE 47%
+BAND FLOOR at Standard, where all six had been inside it.
+
+THE LADDER WAS THE WRONG LEVER AND THE MEASUREMENTS SAY WHY.  nap.LEVELS
+carries the two difficulty dials, and both are worth 4 to 6 points a step:
+
+  level     Cr / Sb      solo    one Sb off   one Cr off
+  Easy        5 / 3      53.0%        57.5%        58.8%
+  Standard    6 / 3      47.4%        52.1%        53.0%
+  Hard        7 / 4      36.4%        42.0%        43.1%
+  Nobulous    8 / 5      28.4%        32.3%        32.9%
+
+Every one of those overshoots a 1-to-3-point problem, and both are printed
+in rules/nap.html, so either would have been a difficulty re-pitch to fix
+one card.  The Target is worth about 2 points and is on the card itself.
+
+WHAT TARGET 5 READS, 4000 games an Apprentice a cell, six Apprentices:
+
+                       no NRJ   Tier I  Tier II Tier III
+  Easy                  56.4%    53.7%    42.8%    47.2%
+  Standard              49.5%    47.0%    37.3%    41.7%
+  Hard                  38.6%    35.8%    28.5%    33.1%
+  Nobulous              29.8%    27.0%    22.9%    28.2%
+
+That is within 0.7 of the column measured before the clause went in, in ALL
+SIXTEEN CELLS, and at Standard all six Apprentices are back inside the band:
+49.9 / 48.6 / 53.4 / 47.1 / 51.0 / 48.3, mean 49.7%.  So the card gained a
+restriction a player can act on and the published ladder did not move.
+
+IT IS NOW THE ONLY TARGET-5 EXAM OF THE TWELVE.  The others run 6 to 8, and
+this is the only one that reprices every Crit - a penalty that applies to
+every colour and bites in 78% of sittings.  A lower number on that card is
+what the restriction costs, printed where a player can see it.
+
+check_app_sync.py now compares the model's (subject, dot, Target) against
+the card's for all twelve exams, which nothing did before: the restriction
+TEXT check added earlier today holds the card against the LAB, and nap.py
+carried its own copy of the Targets that nothing read.
+
+2026-11-08  NEURAL RESPONSE SCREENING SPEAKS THE EXAM'S LANGUAGE
+The Final Exam read "At least 1 Crit must contribute to complete this
+Assignment".  It now reads "Each Crit counts as 1 success instead of 2".
+Nothing else about the card changes: the subject, the Green dot and the base
+Target of 6 are untouched.
+
+AN EXAM HAS NOTHING TO COMPLETE.  rules/nap.html resolves one by reducing
+its Target by your Credits in the subject, rolling against that Target while
+honoring the card's printed restriction, and then LOSING 1 HEALTH FOR EACH
+SUCCESS BELOW IT.  There is no completing an exam and no failing one; you
+pass by surviving it.  So the clause was Assignment language on a card with
+no Assignment step, and neither reading of it said anything a player could
+act on.  Read as a commit rule it is unsatisfiable, because nobody commits FOR a
+Crit - a Crit is a face you roll.  Read as a gate it dealt the card's whole
+Target in 23% of the sittings it got, which is -3.9 points of win rate
+across the solo column on one card of twelve, more than any other exam's
+restriction costs.
+
+THE EXAM IDIOM FOR CRITS ALREADY EXISTS, on two cards:
+"A Red Crit counts as 1 success" (Final Imposter Examination) and "One
+Yellow Crit counts as 3 successes" (Adaptive Reasoning Trial, the other
+Engineering exam).  This card now joins them as the only one of the three
+that applies to EVERY colour, and the flavour was already written for it:
+electrodes on, try not to think anything incriminating.  A spike is exactly
+what the screening flags, and a flagged response earns you nothing extra.
+
+EVERY COLOUR, NOT ONE, AND THAT IS THE POINT.  A single-colour repricing on
+this card would have been the same defect in a new coat: the commit policy
+takes the strongest dice first, so a Green clause on a Green-dot exam would
+often have found no Green die committed at all.  Measured over 9,914
+sittings of this card in 36,000 games, a Crit contributes to 78% of them, so
+the clause bites nearly every time the card is drawn, where the gate reading
+bit 23% of the time and the unmodelled reading bit never.  The exam costs
+0.51 Health a sitting now, against 0.27 before and 1.14 under the gate.
+
+WHAT IT COSTS, 4000 games an Apprentice a cell, six Apprentices averaged:
+
+                       no NRJ   Tier I  Tier II Tier III
+  Easy     before       56.5%    53.0%    42.6%    46.8%
+           now          53.2%    50.5%    39.3%    45.3%
+  Standard before       48.9%    46.6%    36.8%    41.2%
+           now          47.6%    43.6%    34.5%    40.0%
+  Hard     before       37.9%    35.4%    28.4%    33.0%
+           now          36.6%    33.3%    26.0%    31.2%
+  Nobulous before       29.2%    26.8%    22.6%    28.4%
+           now          28.2%    26.1%    19.8%    26.3%
+
+EXAM_CRIT_VALUE = 2 IS THE DIAL THAT REPRODUCES THE "BEFORE" ROW, which is
+the clause modelled as nothing - not a reading of the card but the absence
+of one, and what every NAP figure published before today was measured
+through.  EXAM_CRIT_GATE = True is the third reading, the printed wording:
+50.4 / 45.1 / 34.6 / 26.5 solo, 3.9 points below the before row and 2.2
+below the card as it now prints.
+
+THESE ARE THE FIRST NAP FIGURES MEASURED WITH ALL TWELVE EXAM RESTRICTIONS.
+"Before" is not the game as printed - it is the game with one exam carrying
+no restriction at all, because the clause on this one had no implementable
+reading.  Standard solo moves 48.9 to 47.6 and stays inside the 47-57%
+band; no rung leaves its band.  Whether the ladder wants re-pegging for the
+1 to 3 points is a DIFFICULTY decision and is raised, not taken: nap.LEVELS
+and the difficulty table in rules/nap.html are untouched.
+
+THE LAB COULD DEAD-END ON THE OLD WORDING.  playtest/dist/suite.js enforced
+the gate by disabling "Resolve exam" until a Crit appeared - but a Crit is a
+roll, and once STR is spent there is no reroll left to chase one with.  A
+player who rolled no Crit on their last roll had no legal move.  A clause
+the dice decide can only be priced in Health, never required, which is the
+same conclusion the card text came to.
+
+simulation/nap.py carries EXAM_CRIT_GATE; True restores the printed gate
+reading, and the Crit is counted before any repricing so the two cannot
+interfere.  Three owners carry the clause - the card, the lab and the model
+- and check_app_sync.py now compares the printed restriction TEXT across all
+twelve exams, which nothing did before: it checked the name, the subject,
+the colour and the Target and left the clause itself uncompared.
+
+2026-11-08  DIAGNOSTIC PORT ASKS FOR SOMETHING THE GAME CAN GIVE
+The card read "Claim after completing a Program with no element
+over-allocated".  It now reads "Claim after completing a Program with at
+least two elements holding no more than their Target in dice".  Nothing
+else about the card changes: the cost, the reward and the two-claim cap are
+untouched.
+
+THE OLD CONDITION WAS FALSE BY CONSTRUCTION.  rules/aos.html caps an
+element at Target + 1 dice, and the best allocation fills every element to
+that cap because the free die is worth having.  So "no element
+over-allocated" asked you to decline the free die on every element of the
+Program.  Measured over 18,000 games across the six Technicians it was met
+in 0.2% of them, against 19.6 to 71.8% for the other five Routines.
+
+IT WAS ALSO A STRICT SUBSET OF RESOURCE FORK.  Every element at or under
+its Target forces the total under the summed Targets, which is what
+Resource Fork asks for - so even in those 0.2% of games this card was never
+the one you claimed FOR.  A condition that cannot be the reason you claim
+is not a condition.
+
+TWO ELEMENTS INSTEAD OF ALL OF THEM keeps what the card is about.
+Allocation restraint was always meant to be the condition that bites, and
+it still is - measured the same way:
+
+                        printed    two elements
+  Easy                     0.3%           19.5%
+  Standard                 0.2%           17.3%
+  Hard                     0.3%           15.9%
+  Nobulous                 0.1%           14.0%
+
+That is beside Resource Fork's 19.6%, and it gets harder as the deck gets
+harder, which is the right direction.  It is no longer a subset of
+anything: Resource Fork co-fired on 77.7% of the Programs that met it,
+which leaves about a fifth where only this card was earned.
+
+NO WIN RATE MOVES, AND THE GRID IS BIT-IDENTICAL - not within sampling,
+the same sixteen numbers.  Measured 2,500 games a Technician a cell, six
+Technicians, both readings in one run:
+
+                     no NRJ   Tier I  Tier II Tier III
+  Easy                59.1%    48.2%    43.3%    47.2%
+  Standard            50.6%    39.8%    34.4%    38.9%
+  Hard                42.0%    31.7%    27.2%    30.6%
+  Nobulous            35.0%    24.1%    20.6%    22.6%
+
+THAT IS A FINDING, NOT A RELIEF.  The claim policy takes only the two
+recovery Routines, which are worth four times the other four, so this card
+was not claimed when its condition was free and is not claimed now that it
+is reachable.  The spread is the open design question already recorded in
+simulation/RESULTS.txt, and this fix deliberately does not touch it.  What
+the fix buys is a card a human player can play for and a condition that is
+not logically dead.
+
+simulation/aos.py carries DIAG_RESTRAINT; None restores the printed
+condition.  simulation/audit.py now prints how often each of the six
+CONDITIONS is met beside how often the card is held, and flags any
+condition under 5% - the column that would have caught this years earlier
+than the read that did.
+
+2026-11-07  TIER I NO LONGER HANDS A SETBACK BACK
+The Following Setbacks read "These 4 replace the 3 base Setbacks" and the
+tier table read "Set the 6 base Setbacks aside and shuffle in 3 of the 4
+Following Setbacks... never use both kinds together".  Both had the 3
+hard-coded.  They now swap ONE FOR ONE: three Following Setbacks come in,
+three of your difficulty's Setbacks go out, and the deck keeps the count
+the difficulty asks for.  Easy and Standard play 3 Following and no base,
+Hard 3 and 1, Nobulous 3 and 2.
+
+TURNING THE TIER ON WAS MAKING THE TWO HARD RUNGS EASIER.  The old rule
+matched only while every difficulty played 3 Setbacks.  The re-peg of
+2026-11-06 gave Hard 4 and Nobulous 5, and from that day a Nobulous player
+who switched Tier I on was handed two Setbacks back in exchange for three
+nastier ones - a trade that pays.  Measured at 12,000 games a cell, mean of
+the six Apprentices:
+
+                        no NRJ    Tier I   Tier II  Tier III
+  Hard      as printed   37.8%     39.7%     32.4%     37.3%
+            one for one  37.8%     35.0%     28.0%     32.8%
+  Nobulous  as printed   29.2%     34.5%     29.3%     35.0%
+            one for one  29.2%     26.9%     22.8%     28.2%
+
+The printed reading did not merely flatten Tier I, it inverted the whole
+Nobulous column: Tier III read 35.0% against a solo 29.2%, so the hardest
+rung with every module switched on was EASIER than the game by itself.
+Easy and Standard are identical under both readings - 56.5 / 53.2 / 42.3 /
+46.7 and 49.1 / 46.2 / 36.2 / 40.5 - because the count there is 3 either
+way, which is the check that nothing else moved.
+
+NO PUBLISHED FIGURE CHANGES.  simulation/nap.py has swapped one for one
+since the counts stopped being 3 everywhere, so the model was the only one
+of the four owners that was right and every NAP grid in RESULTS.txt was
+measured this way.  The card, the rulebook and the lab moved to the model
+rather than the reverse.  nap.FOLLOWING_REPLACE_ALL = True reproduces the
+printed reading.
+
+2026-11-06  CORRUPTED LIMITATIONS NO LONGER DODGE THE REQUIRED COLORS
+The card read "Withhold 2 available dice of a randomly selected color that
+this Program does NOT require", with an escape clause for the Program that
+requires all four.  Both are gone.  It now reads "Withhold 2 available dice
+of a randomly selected color", and a withheld color cannot answer a
+required-color dot - which was always true of a native Limitation.
+
+THE EXCLUSION WAS MAKING THE TIER WORTH NOTHING.  A Corrupted Limitation is
+shuffled into the Limitation deck, so it is drawn INSTEAD of a native one.
+A native Shortage has never consulted the requirements; it takes the color
+it names whether you needed it or not.  So the card meant to be the harsher
+of the two was the gentler, and the relief of dodging a native Limitation
+paid for the corruption almost exactly: measured over 9,000 games a cell,
+AoS Tier II read 39.8% against a Tier I of 39.7% at Standard.  Six cards,
+a tenth of a point.
+
+Without the exclusion Tier II reads 33.8%, against the 33.6% the column was
+calibrated at before any of this - so this is not a re-pitch, it is the tier
+going back to where it was always meant to sit.  Two blunter fixes were
+measured and not taken: withholding 3 dice instead of 2 only reaches 36.3%,
+and doing both at once overshoots to 24.9%.
+
+NOTHING IS LEFT UNDEFINED BY DROPPING IT.  The clause existed to stop a
+Corrupted Limitation taking a color the Program demands and leaving it
+unrunnable.  rules/aos.html already prices exactly that case: "If you cannot
+supply a required color - do not execute the Program.  Lose 1 Health.
+Return any withheld dice, discard the Limitation, and treat the Program as
+failed."  That is an outcome with a cost, not a hole, and it is the same
+outcome a native Limitation can already hand you.
+
+FOUR SOURCES CARRIED THE CLAUSE and all four dropped it together: the card
+in generator/build_nrj.py, this supplement, CORRUPT_AVOID_REQUIRED in
+simulation/aos.py, and corruptColor() in playtest/dist/app.js.
+check_app_sync.py had four checks asserting the exclusion was present; they
+now assert it is gone.
+
+2026-11-06  NAP'S SETBACK COUNTS DROP BY ONE AT EVERY LEVEL
+The difficulty table goes from 4 / 4 / 5 / 6 Setbacks to 3 / 3 / 4 / 5.  The
+Credit goals do not move: Easy 5, Standard 6, Hard 7, Nobulous 8 as before.
+
+THIS IS THE LADDER CATCHING UP WITH A MODEL FIX, not a difficulty decision,
+and the honest version is that the old table was pegged against a game
+simulation/nap.py was not playing.  rules/nap.html requires "a successful
+die matching its color dot, Red as wild, or two SUCCESSFUL dice of the same
+other color" to complete or store an Assignment.  The model enforced that
+rule on the dice you COMMITTED and never asked whether they succeeded, which
+is strictly more generous than the cards, and it was worth about 5 points of
+win rate at every rung.  Fixed on 2026-11-06, the ladder read 51.6 / 43.8 /
+34.4 / 26.0 against a published 55.5 / 48.8 / 37.5 / 29.7.
+
+One Setback is worth about the same 5 points, so taking one off each rung
+puts the ladder back where it was published while the game underneath it is
+now the printed one.  Nothing else about NAP changed: no Target, no card
+text, no Credit goal, and the Setbacks themselves are the same six cards.
+
+A PLAYER WHO OWNS THE PRINTED SET LOSES NOTHING.  The six Setback cards are
+unchanged and the deck is built by choosing from them, so the only thing to
+update is which number you read off the difficulty table.  No card was
+reprinted for this - the count has never been on a card.
+
+THREE SOURCES CARRY THE COUNT and all three moved together: nap.LEVELS, the
+difficulty table and the setup step in rules/nap.html, and
+NAP_SETBACK_COUNT in playtest/dist/suite.js, plus the lab's difficulty
+labels, which name the count in prose.  NOTHING COMPARED THEM.
+check_app_sync.py now does, both the numbers and the prose restatement -
+which is the same gap that let the End-of-Day burn sit unplayed in the model
+for weeks while the rules and the lab both played it.
+
+2026-11-03  A RULES REVIEW, AND FOUR LEVERS THAT DID NOT SHIP
+An outside read of all four rulebooks raised sixteen points.  Every one was
+real.  Eleven were stale text with an authoritative answer already in the
+repo, and are fixed: BAT's "set the dial to 20" against a difficulty table
+of 9-14 (the dial is not built until Awakening); the Tyrant's six dice when
+borrowing has banished the colour (start_battle recalls a banished die of
+that colour straight into the bag); whether a breaking Splice may banish
+dice you just committed (it may - splice_breaks runs before the Recover step
+exhausts anything); NAP's "shuffle 3 of the 6 Setbacks" against a table of
+4/4/5/6 (nap.LEVELS and RESULTS.txt both say the table); NAP recovering at
+both ends of a slot (it recovers ONCE, at the top - time_slot recovers
+before reveal and end_of_slot recovers nothing); NAP's objective implying
+the Credit goal is the only road to the exam; NAP's blurb promising an exam
+"built out of everything you neglected" when the pool is built from the
+subjects you DID earn Credits in; AoS's blurb putting the Limitation after
+the required-colour commitment; AoS's catastrophe mitigation reading as
+redundant, which it is, on purpose; NRJ's reward timing, which session()
+fixes as damage, exhaust, pay rewards, recover REC, advance; and NRJ's claim
+that the five Rewards are the "only reason" finishing order matters, which
+the same page contradicts twice.
+
+DELIBERATE FAILURE IN AoS IS NOT A ROUTE, AND NEEDS NO NEW RULE.  The review
+worked out that failing Programs shortens the deck, an empty deck advances
+the game, and Advanced Programming is won by surviving rather than
+completing - so dumping Programs looks efficient.  Measured, it is strictly
+worse the more of it you do, down to 0.2% at Standard against 70.8% honest,
+and 99.4% of those games are dead of Health before Advanced Programming is
+reached at all.  The brake is the Program Reward: Health is only ever
+regained by one, and a Reward needs zero failed elements, so failing on
+purpose forfeits the only healing in the game.
+
+Four levers were tried against it and NONE SHIPPED.  Capping the negate rule
+per cycle costs honest play 14-18 points and the exploit nothing.  Retiring
+the card on a Catastrophic Failure reads like a discount for dumpers but
+actually deletes the Stable->Overheated escalation, so it flattens the ladder
+AND makes dumping the best line at Standard.  A declared abandon priced in
+Health is a dead button, because failing costs the same 1 Health with a ~68%
+save attached.  Replaying the failed card at once is the best behaved of the
+four and still wrong: it IMPROVES the dumping lines, because forcing a real
+retry drags a dumper back to playing properly - it confiscates a choice
+instead of punishing a strategy, and charges the honest player ~7 points.
+All four are in simulation/aos.py, off, with their numbers beside them.
+
+So the fix is the WORDING, which is what was actually broken.  "Complete all
+three with Health remaining" never said whether the Advanced Programs have
+to be completed; it is now "work through all three", with the survival rule
+stated in Object of the game and a box saying plainly why failing on purpose
+is not a shortcut.  No number moves.
+
+THREE ORPHAN RULES REMOVED OR DEFINED.  Each was in the rulebook and nowhere
+else - no card, no model, no lab - so none of them has ever been part of a
+measurement:
+
+  - NAP's "spend 1 STR to remove the initial Assignment" is deleted.  It
+    never said which Assignment, when, or whether a mandatory Setback could
+    go that way, and it duplicated FINF Reduce, which is the designed valve
+    and is tied to its card's number.  (The loose any-card version of FINF
+    Reduce was removed from the rulebook earlier for the same reason; see
+    nap.FINF_REDUCE_ANY_CARD.)  If a STR-for-removal valve is wanted it is a
+    new mechanic and wants simulating first.
+  - AoS's Tucking is deleted.  As written set-aside Programs MAY be tucked
+    under an Advanced Program and the exposed edge adds an element, which is
+    pure added work for no return, so no player would ever choose it.  The
+    intent was clearly that failures follow you into the finale, and the
+    version that carries it is MANDATORY tucking - but that is an unmeasured
+    difficulty increase on the endgame, so the dead text goes and the live
+    option is recorded here rather than printed.
+  - NAP's full row is defined rather than deleted.  A full row means no
+    Primary is taken, and the Primary is what queues the next recovery
+    colour, so nothing said what happens.  reveal() returns before
+    `self.queued = primary.dot`, so the queued colour is UNCHANGED and the
+    next slot recovers on the same colour again.  Printed.
+
+STILL OPEN: NRJ states win rates in player-facing voice - 51% and 9% for a
+full and empty Research Pool, "about 6 points" for a Research Note, "no more
+than about four games in a hundred" for an Imposter ability - without the
+simulation policy behind them.  They read as measured fact about play.
+
+2026-10-31  NRJ: THE FIVE IMPOSTERS
+Choose one Imposter and one of its two sides at setup.  All five print the
+finale's own 5 HP / 2 STR / 3 REC and differ only in ability, as the AoS
+Technicians and NAP Apprentices do.  The ten sides are measured: 0.8 to 4.3
+points at Easy, each worth about the same at a handicapped rung, so the choice
+is one of play style rather than difficulty.  The ladder was left where it is;
+it reads 2-4 points hot with an Imposter chosen, and still inside the band.
+Also: the Understudy is the only Imposter that spends Candidates, which is the
+whole use the unclaimed Tier III cards now have.  A job for them available to
+EVERY player was measured and rejected - see simulation/proto/candidates.py.
+
+
 THE NOBULOUS SET — RULEBOOK AUDIT
 Rulebooks checked line by line against Compendium v22, the printed card decks
 (BAT v0.6, NAP v0.9c, AoS v10, NRJ v0.24) and the calibrated simulators
@@ -197,13 +574,13 @@ NAP — Nobulous Apprenticeship Program
 13. Opportunity effects reaching into the next Time Slot override restrictions
     printed on the Task cards they apply to.
 
-    OPEN QUESTION FOR YOU — Slacker's passive reads "the first time each Day you
-    VOLUNTARILY DRAW AN ADDITIONAL ASSIGNMENT".  No such action exists in the
-    compendium, on the reference sheet, or in the simulator, so I have not
-    invented one.  Either the rule was dropped (and Slacker's passive needs
-    rewording) or it should read something like "you may take BOTH revealed
-    Assignments if the row has space".  The second reading also explains the
-    end-of-day discard's stated purpose.
+    RESOLVED, 2026-10-31 — Slacker's passive was reworded rather than the
+    missing action invented.  It now reads "Your Time Slot rows hold a
+    maximum of 3 Assignments instead of 4", which references a rule that
+    exists; the lab enforces it as napRowMax and nap.py plays it as
+    small_row.  Nothing in the set says "voluntarily draw" any more.
+    The measurement below is kept because it still prices the option if
+    anyone reinstates it.
     MEASURED, so the option is costed if you reinstate it: taking the second
     revealed Assignment is a trap, not a gift.  Used greedily it costs 20+ points
     (base game 32.4% -> 11.6%); used sparingly - only into a nearly empty row,
@@ -255,7 +632,7 @@ NRJ — Nobulous Research Journal
     on the card, and that each can be claimed once.
 
 VERIFIED CORRECT, NO CHANGE
-    NAP Tier II Impostor Tasks do REPLACE a Credit Task of the same subject, and
+    NAP Tier II Imposter Tasks do REPLACE a Credit Task of the same subject, and
     Tier III Devious Opportunities do REPLACE the six base Opportunities.  The
     compendium's looser "add" wording in §6.2 does not match the simulator; the
     rulebook already had it right.
@@ -318,7 +695,7 @@ NAP — EVERY PRINTED TARGET ROSE BY 1
     Request-side non-Credit Task.  Those six Targets went 3,3,4,6,4,4
     to 4,4,5,7,5,5, so the card would have matched nothing.  Now "4 or
     less".  No other NRJ Target was raised — leaving the FOLLOWING,
-    IMPOSTOR and DEVIOUS tables at their printed values is what keeps
+    IMPOSTER_TASKS and DEVIOUS tables at their printed values is what keeps
     NAP's two axes converged.
 
 RE-RENDERED THE SAME DAY
@@ -360,3 +737,396 @@ RE-RENDERED THE SAME DAY
     Overheated/set-aside consequence is driven by the failed element
     count and is untouched.  Wording that let the misses buy that back
     would print a rule the simulator does not play.
+
+====================================================================
+2026-10-29 - THE IMPOSTER FINALE WAS REBUILT
+
+The nine-attempt Suspicion finale is gone. In its place is the design
+proto/finale10.py prototyped: the Council's attention rotates through the
+die colours, and you choose how much of the evidence to face each session
+against a hard clock. rules/nrj.html is rewritten from "The Imposter
+Scenario" to the end, the rulebook PDF is re-rendered, and the playtest
+lab's NRJ tab is rebuilt to match. NO CARD WAS REPRINTED.
+
+WHY. imposter.py had measured the old finale and found three things wrong
+that no dial could fix: "banish 2 available dice" was unpayable in 97.8%
+of the failures that offered it, the Research Pool was spent out by the
+fourth attempt of nine, and every dial was a cliff - one point of REC worth
+17 to 27 points of win rate - so there was no setting between far too easy
+and far too hard.  It read 61.5%, above the 47-57% community band.
+
+THE NEW FINALE, all of it calibrated in simulation/finale.py at 53.1%
+against a band whose mean is 53.0%:
+
+  * THE DOSSIER.  Deal 5 Knowledge, 5 Physical and 5 Cover-Up Council
+    Tests.  An Exhibit's Target is its PRINTED Target MINUS 5, so the
+    existing 24-card library supplies Targets of 3, 4 and 5 with nothing
+    reprinted - every domain already prints 8 8 8 9 9 9 10 10.  Damage is
+    1, or 2 at Target 5, read from the Target as it now stands.
+  * THE ATTENTION.  Yellow, green, blue, purple, red, advancing one step a
+    session from yellow.  You may APPLY only the attention colour and the
+    next one; others may still be committed and rolled.  The window is two
+    colours because one is unplayable (0.0%) and three inverts the
+    recovery decision and reads 90.6%.
+  * NINE SESSIONS, chosen for its PHASE on the wheel rather than its
+    length.  Red falls in the middle, at session 5, and the ninth session
+    is purple.  Eight sessions reads 24.4% and ten 17.8%, because ten ENDS
+    on red with the remainder still on the table.
+  * THE PACE.  Deploy as many Exhibits as you like; each pays you a
+    recovered die.  Everything still standing at the end of a session
+    deals its Damage.  Dice on a standing Exhibit stay on it and their
+    successes carry over; dice on one that falls come back exhausted.
+  * THE RESEARCH POOL SURVIVES with one job.  A retained card answers only
+    its own domain - NAP to Knowledge, BAT to Physical, AoS to Cover-Up -
+    and removes 1 from a just-deployed Exhibit's Target, or 2 for a BAT
+    Specimen or a Stable Advanced Program.  Candidates answer nothing.
+  * GONE: Suspicion, the avoid rule, the "lose 1 Health or banish 2 dice"
+    trade, and 5 HP / REC 3 (now 5 HP / REC 4).
+
+WHAT IT BOUGHT.  Blind play reads 0.3%, so the gap between playing it
+badly and playing it well is 52.8 points, against the old finale's much
+flatter layer.  Three levers carry it, each measured as it is added:
+spending the Research Pool +13.1, keeping pace with the clock +20.3,
+recovering for the colour that is coming +19.5.  Ignoring the Research
+Pool entirely reads 9.3%, so the campaign is load-bearing rather than a
+discount.
+
+WHAT IT DID NOT FIX.  REC is still a cliff - REC 3 reads 33.0% - and STR 3
+reads 88.5%.  A short race of pass/fail sessions amplifies any dial that
+changes income, which is the same diagnosis imposter.py made of the
+version this replaces.  The Dossier is the gentler dial at about 10 points
+an Exhibit, and three settings measured in band (12 Exhibits at REC 2, 14
+at REC 3, 15 at REC 4), so the chosen one is a choice and not a knife edge.
+
+THE PROTOTYPE'S OWN CLAIMS DID NOT ALL SURVIVE the real components; the
+four that did not are listed at the end of simulation/finale.txt.
+
+ONE CARD-DATA FIX, found the same day by cross-checking the app against
+the generators: playtest/dist/app.js printed the Overheated face of
+Council Extraction Protocol, the eighth Advanced Program, with the extra
+success on element 3.  generator/aos.py marks element 2, and the app's own
+PROGRAM_MARKS agreed with the card, so only its PROGRAM_TARGETS was wrong.
+Corrected to match the printed card.
+
+--------------------------------------------------------------------
+2026-10-29, later the same day - THE FIVE REWARD CARDS CAME BACK
+
+The rebuild above said "nothing else printed on a Council Test is used",
+which quietly threw away the eight cards printed as REWARDS. Five of them
+pay in a currency this finale still has, and they are restored:
+
+    The Chamber Mechanism   recover 2 exhausted dice
+    The Sedative Ledger     recover 3 exhausted dice
+    The Vote                recover ALL exhausted dice of one colour
+    Tracks in the Yard      recover 1 exhausted die of each of two colours
+    The Narrow Stair        the next Exhibit you deploy: Target -1
+
+"If you succeed" reads as "when this Exhibit falls", and the reward is
+taken during Resolve, after the dice on the card have come back - so a
+recovery can take the very dice that just buried it.  The other three
+Reward cards (An Unwelcome Embrace, The Night Watchman's Account, Across
+the Chamber) modify a single attempt, which this scenario no longer has as
+a unit, and are not restored.  They are the only reason it matters WHICH
+Exhibit you finish first, and four of the five are Target 3 as dealt, so
+the cheapest evidence is the evidence that pays.
+
+THEY COST A POINT OF RECOVERY: REC 4 BECAME REC 3.  The Rewards are worth
++17.1 points, and at REC 4 they tipped the economy over - burying evidence
+returned dice fast enough that throwing every allowed die beat holding any
+back by 8.4 points, the commit decision disappeared entirely, and the best
+available policy won 66.6%, outside the band.  At REC 3 the finale reads
+49.4% over five seeds and the commit decision is live again (+8.5).  The
+Rewards are the fourth point of recovery, and they have to be earned.
+
+WHAT THE RE-PITCH ALSO FOUND.  The Dossier sits one Exhibit above a cliff:
+12 / 13 / 14 / 15 / 16 / 18 Exhibits read 79.3 / 74.0 / 65.1 / 49.0 / 21.1
+/ 0.2%.  A sixteenth Exhibit is not a difficulty step, it is a different
+game.  simulation/finale.txt carries the rest.
+
+One layout note for whoever edits the supplement next: style.css makes a
+TABLE break-inside: avoid, exactly like a .box, so the five Rewards are a
+list and not a table.  As a table they pushed the book to a fourth page
+carrying one orphaned line.
+
+AoS — CARRYING AoS FORWARD, 2026-10-29
+--------------------------------------
+The Stable/Overheated note promised a use the reworked finale no longer has.
+It read "Stable retained cards are stronger for reducing Targets in the finale
+but cannot be discarded to avoid a Scenario; Overheated ones are weaker but
+can."  The Dossier finale deleted the Avoid rule — choosing your pace replaced
+it — so an Overheated card was simply worse, with nothing on the other side of
+the trade, and a Catastrophic Failure in Advanced Programming had become pure
+loss presented as a trade-off.
+
+Now printed: Stable reduces an Exhibit's Target by 2, Overheated by 1, and
+because Advanced Program 1 always begins Stable and each later one is
+Overheated only after a Catastrophic Failure, AoS carries 4, 5 or 6 points of
+help into the finale — never 3.  No number changed; the sentence now describes
+what the finale actually does.
+
+Measured while checking it (simulation, best of 24 policies, 6000 x 3 seeds):
+the Research Pool alone swings the finale from 32.5% at the campaign floor —
+Rats holding no Upgrades, Advanced Programming failed twice, 7 points — to
+56.2% for a clean campaign at 13 points.  The three games already decide a
+24-point spread before the finale begins.  NAP contributes a flat 3 points
+however the apprenticeship went, which is the one part of the carryover that
+does not vary at all.
+
+THE TIER III CARRYOVER, 2026-10-29
+----------------------------------
+THE RESEARCH POOL IS NOW THE TIER III CARDS THEMSELVES.  It used to be 18
+cards pulled out of the BAT, NAP and AoS decks - the Final Exams faced, the
+Upgrades the Rats held, the Advanced Programs faced - which meant the finale
+held 18 of the three games' cards hostage and the "standalone" Imposter mode
+still needed all three other boxes open on the table.  Tier III already lays
+out exactly 6 cards a game: 6 Research Notes, 6 Devious Opportunities, 6
+Backdoor Routines.  That is 18, the Pool's own size, and they are the only NRJ
+cards whose end state is physically recorded.  So the campaign is now TIER III
+ONLY, nothing leaves the games' own decks, and standalone needs no other box.
+
+  Research Note        -> Physical     Devious Opportunity -> Knowledge
+  Backdoor Routine     -> Cover-Up
+
+  never claimed            Candidate, answers nothing
+  claimed and spent        retained, reduces a Target by 1
+  claimed and never spent  retained, reduces by 2
+
+Retention caps at 3 a game; AoS's own limit of 2 claims binds first.
+
+WHY RESTRAINT IS THE CARRYOVER.  Every one of these cards exists to make its
+own game easier, so the campaign asks the opposite: finish all three having
+claimed what you could and spent as little of it as possible.
+
+THE CLAIM NOW COSTS SOMETHING, which is the card-text change.  Measured over
+4000 games a seed x 3 seeds, the printed claim conditions were free: AoS's
+Garbage Collection fires in 100% of games, Root Access 99.8%, Resource Fork
+99.7%, and only Diagnostic Port bites at 12.8%; BAT claims 4 or 5 of its 5
+observable Notes in 90% of games.  Claiming cost nothing, so the whole BAT and
+AoS carryover rested on the spend decision.  NAP never had that problem - a
+Devious Opportunity has to be WORKED like an Assignment, in place of a Credit
+Task, and apprentices finish with 0 to 6 completed, about 2.5 on average.
+
+So all twelve BAT and AoS Tier III cards now print a cost alongside the
+condition, in NAP's shape - give up the game's own progress to bank a card:
+
+  Research Notes     "Claiming gives up the next Upgrade a completed
+                      Experiment earns."
+  Backdoor Routines  "Claiming gives up the next Program Reward you would
+                      claim."
+
+Priced in dice it does NOT work: diverting a single die to the Routine costs
+AoS 8 points of win rate and three dice costs 21, because exhaustion is the
+whole game there.  Forking the reward costs about 6 points for the first claim
+in either game - BAT 44.1% -> 38.2% -> 29.5%, AoS 47.7% -> 41.6% -> 38.6% - so
+nobody will ever take a third, and the cap is economic rather than printed.
+
+WHAT THE WHOLE CAMPAIGN NOW COSTS.  Best of 24 finale policies, 6000 x 3
+seeds, each game sampled 4000 x 3:
+
+  play for the game    BAT 44.1  NAP 53.6  AoS 48.6   pool 10.9   finale 44.5%
+  balanced             BAT 42.5  NAP 52.9  AoS 48.6   pool 11.3   finale 46.5%
+  play for the finale  BAT 38.4  NAP 52.9  AoS 43.4   pool 13.1   finale 50.4%
+
+A lost game is replayed alone, so the price of restraint is paid in attempts -
+roughly half an extra game across the campaign - rather than in a gate.
+
+AND ROOT ACCESS WAS BEING THROWN AWAY.  Its use saves a Catastrophic Failure,
+but the printed rule already negates that Health loss for free if you exhaust
+2 misses on failed elements.  Spending the Routine first wastes it on a problem
+already solved.  Holding it until the Health would actually end the game is
+better on both axes: AoS 47.3% -> 48.7% and 0.06 -> 1.57 Routines carried, over
+8000 games x 5 seeds.  aos.html now says so in a box.
+
+A layout note, the same one the Rewards list hit: style.css makes both .box and
+table break-inside: avoid, so the BAT and NAP carryover sections had to come
+back to a single paragraph each.  Written long they pushed both books to a
+fourth page carrying 111 characters.  The NRJ supplement is legitimately 4 pages
+now, with 1660 characters on the last.
+
+STILL OUTSTANDING: the printed cards.  The twelve claim-cost clauses are in
+generator/build_nrj.py and mirrored in the lab, but print-and-play/ has not been
+regenerated, so the PnP card faces still carry the old text.
+
+THE FINALE RE-PITCHED ON THE TIER III POOL, 2026-10-30
+------------------------------------------------------
+THE MODEL WAS STILL DEALING THE OLD POOL.  simulation/finale.py's research()
+built the Research Pool the Tier III rework replaced the day before - a NAP
+card always worth 1, a BAT card worth 2 only on a 1-in-4 Specimen, an AoS card
+worth 2 on a coin flip - and its docstring still cited Specimens and
+Stable/Overheated by name.  So the 49.4% pitch, and every figure in
+simulation/finale.txt, was measured against a pool that no longer exists.
+
+AND THE RULEBOOK WAS DEALING A POOL NO CAMPAIGN COULD REACH.  Standalone mode
+drew 3 retained from each six, but AoS may only claim 2 Backdoor Routines a
+game, so 8 is the most any campaign can carry.  Nine reads 57.6%.
+
+Both are fixed.  research() now deals a 2 for a card never spent in its own
+game and a 1 for one that was, from RETAIN = (3, 3, 2); standalone mode draws
+3 Notes, 3 Opportunities and 2 Routines; the lab deals the same; and
+check_app_sync.py now compares all three, which is the drift that caused this.
+
+THE RE-PITCH: 50.6%, up 1.2 points, over 6000 finales x 5 seeds and against
+the BEST cell of the 224-cell policy grid - which is still the cell the module
+models, clock / horizon / adaptive / small.  The two corrections very nearly
+cancel: stronger cards, one fewer of them.
+
+  as it ships, 3/3/2 at a coin flip    50.6%     everything spent      37.4%
+  3/3/3, which no campaign reaches     57.6%     2/2/2                 35.7%
+  nothing spent - maximal restraint    58.2%     1/1/1                 18.5%
+                                                 no retained cards      8.6%
+
+NOTHING DOWNSTREAM NEEDED RE-TUNING, and the thing that could have broken did
+not.  A pool that lowers Targets could have done what REC 4 does and made
+throwing every allowed die simply correct.  It did the opposite - committing
+only what you need is worth MORE against a stronger pool, 12.3 points against
+7.7, because the Exhibits it answers are the ones you no longer need a full
+handful for.  The four levers now read: spend the Pool +13.0, keep pace with
+the clock +14.3, recover for the colour coming up +10.7, commit only what you
+need +11.8.
+
+REC 3 IS CONFIRMED, with a sharper reason than before.  At REC 4 the commit
+decision does not merely die, it INVERTS: throwing every allowed die beats
+holding any back by 10.0 points and the best available policy wins 65.8%, out
+of band.  The gap by REC reads +19.1 / +11.0 / -10.0 / -11.6 for REC 2 / 3 /
+4 / 5.  REC 3 is the last rung where committing is a decision.
+
+Other figures that moved, all in finale.txt: the five Reward cards are worth
++13.6 rather than +17.1; REC 2/3/4/5 read 24.3 / 51.4 / 54.6 / 55.4; a point
+of STR is worth 85.4%; the Dossier cliff is 79.4 / 72.5 / 65.6 / 51.4 / 21.1 /
+0.2% for 12 through 18 Exhibits, so 15 still sits one Exhibit above it.
+
+AND THE POOL IS A STEEP DIAL IN ITS OWN RIGHT - 18.5% at one retained card a
+game against 58.2% at three never spent.  That is the whole 50/40/30/20 ladder
+in one quantity, but it is a campaign OUTCOME rather than a difficulty setting,
+so it argues for building the ladder somewhere else.  The exhausted-start dial
+is still the recommendation and is still unimplemented.
+
+EXHIBITS, A SIMPLER CARRYOVER, AND THE DIFFICULTY LADDER, 2026-10-30
+---------------------------------------------------------------------
+THE 24 COUNCIL TESTS ARE REPRINTED AS EXHIBITS.  The finale used nothing on
+the face except the Target, which it read as the printed value MINUS 5, and
+five of the Rewards; the card was asking the player to ignore most of itself
+and do arithmetic on the rest.  Target and Damage are printed now.  The five
+live Rewards are reworded from "If you succeed" to "When this Exhibit falls",
+and the other nineteen print no clause at all.  The deck is used nowhere else
+in the set, so nothing else had to change.
+
+  Why not just use the printed 8 / 9 / 10?  Measured: 0.0%.  Only two colours
+  may be applied in a session, worth 3.2 to 7.3 successes a throw, so fifteen
+  Exhibits at printed Targets need about 135 successes against a nine-session
+  budget of roughly 60.  Minus 5 was the conversion from "one card, one big
+  attempt" to "fifteen problems on a clock"; printing the result removes it
+  from the table.
+
+Three setup steps in nrj.html collapse to one, and the deck is called Exhibits
+in pack.py, tts/decks.py, tts/lua.lua and CARD_MANIFEST.txt.  The deck KEY,
+NRJ_ImposterScenarios, is unchanged: it names deployed sheet files.
+
+RETAINED OR NOT.  The spent/unspent split is gone.  A card's value depended on
+whether it had been cashed in during its own game - a fact about a session
+that may have been weeks earlier, recorded nowhere on the table, and needing
+two piles of claimed cards to track.  A card you claimed is retained and takes
+2 off an Exhibit's Target; a card you never claimed is a Candidate.
+
+With one value the pool is just a COUNT, and seven is the count that reads
+50%: NAP 3, BAT 2, AoS 2.  The caps are the economics, not tuning - a NAP
+Opportunity is worked like an Assignment and apprentices finish about 2.5, a
+second BAT Note already costs that game 9 points, and AoS allows 2 claims.
+
+  retained   worth 1   worth 2            Eight cards worth 1.5 beat six worth
+  1/1/1        15.7%     21.7%            2 on the same total reduction, so
+  2/2/2        26.6%     41.5%            the COUNTS had to be re-derived
+  3/2/2        31.8%     50.5%  <- ships  rather than the values doubled:
+  3/3/2        37.4%     58.0%            spreading across more Exhibits, and
+  3/3/3        43.0%     65.6%            across three domains, pays better.
+  none                    8.6%
+
+THE DIFFICULTY LADDER, and it is cut with dice rather than with a dial.  The
+Imposter begins with named dice exhausted; they recover normally, so the
+handicap costs tempo rather than dice and bites hardest early.
+
+  level      yellow  green  blue  purple   n    win    aim
+  Easy          -      -      -      -     0   50.6%   +0.6
+  Standard      3      2      2      2     9   39.2%   -0.8
+  Hard          3      3      3      2    11   30.6%   +0.6
+  Nobulous      3      3      4      4    14   19.4%   -0.6
+
+The single red is never exhausted: session 5 allows only Red and Yellow and
+there is one red die.
+
+TWO THINGS HAD TO BE GOT RIGHT HERE.  First, the dice are NAMED rather than
+chosen.  An earlier version let the player pick and the model picked badly -
+all four colours come four to a pool, so "spend the commonest" broke the tie
+on purple, the best die in the set, and the Nobulous rung measured WORSE
+chosen (16.5%) than random (19.0%).  Modelling a free choice badly understates
+every rung, and naming the dice removes the question.
+
+Second, the counts are SPREAD across the colours instead of taking whole ones.
+Whole colours collide with the attention wheel, which opens on Yellow with a
+Yellow+Green window:
+
+  4 yellow, 4 green                28.7%     same eight dice; the difference
+  4 purple, 4 blue                 38.4%     is the wheel, not the handicap
+
+Taken weakest-first the curve has a 14.6-point cliff between 6 and 8 dice,
+exactly where the opening window hits zero, and a rung on a cliff is not a
+setting.  Spread, the largest step in the whole curve is 6.1 points and the
+ladder and the wheel stay independent - which matters, because the wheel's
+phase is already chosen for where sessions 5 and 9 land.
+
+AND THE RUNGS ARE STILL GAMES OF SKILL, which is the property that chose this
+dial over REC or Dossier size.  The recovery decision - the one the attention
+wheel exists to create - pays MORE as the ladder gets harder:
+
+  Easy      pace +19.1   recover  +4.8   commit +12.3
+  Standard  pace +20.4   recover +10.9   commit +19.8
+  Hard      pace +16.7   recover +14.1   commit +14.8
+  Nobulous  pace  +9.7   recover +10.6   commit  +7.7
+
+THE PITCH IS 50.5%, and it is the best of the 224-cell policy grid: clock /
+horizon / adaptive / small, the cell the module models.  REC 3 is reconfirmed
+- the commit gap reads +23.8 / +12.3 / -12.0 / -13.2 at REC 2 / 3 / 4 / 5, so
+3 is the last rung where holding dice back is correct at all.
+
+Regenerated: the 24 Exhibits, and with them the 12 BAT and AoS Tier III cards
+whose claim-cost clause had been in the generator since 2026-10-29 but never
+rendered.  Exactly three sheets changed and every other NRJ sheet came out
+byte-identical, so the card renderer is reproducible on this machine; the
+remaining PnP non-reproducibility is in pack.py's assembly.
+
+IMPOSTER TASKS GET THE DOT EVERY ASSIGNMENT NEEDS, 2026-10-31
+--------------------------------------------------------------
+The 4 Imposter Tasks printed no recovery-colour dot.  Three printed NAP rules
+read "that Assignment's color dot" - Required Effort, completing or storing
+progress, and the colour the Primary queues for the next Time Slot - so on
+these four cards all three references dangled and Red-as-wild meant nothing.
+
+Nothing agreed on what the dot was.  The card printed none; simulation/nap.py
+gave each Imposter Task the dot of the Credit Task it replaced, a different
+colour every game, so NAP's Tier II and III calibration was measured against
+dots that were never on a card; and the lab fell back to `dot||"P"`.
+check_app_sync could not catch it because there was no field to compare.
+
+  Neural Extraction Practicum   Anatomy      Purple
+  Load-Bearing Prosthetics      Engineering  Blue
+  Emergency Specimen Handling   Procedure    Yellow
+  Containment Drill             Theory       Green
+
+One of each colour, which keeps the deck's balance, and three of the four
+take their own subject's most common Credit Task dot; Procedure takes Yellow
+because Purple is spoken for and Yellow is its other colour.
+
+PRINTING IT IS FREE.  4000 games a cell x 4 seeds, all six Apprentices:
+
+  tier none   mean 54.7 -> 54.7   spread 7.8 -> 7.8
+  tier II     mean 39.5 -> 39.6   spread 7.1 -> 7.4
+  tier III    mean 56.7 -> 56.7   spread 6.6 -> 6.6
+
+So the correction costs nothing and NAP's pitch stands.  check_app_sync now
+compares the four dots across the generator, the lab and the model.
+
+ALSO CLOSED, both stale rather than open: the Red die plays in the BAT battle
+as a trade (item 3i above, and rules/bat.html has it in three places), and
+Slacker's passive was reworded in b57eedd to "Your Time Slot rows hold a
+maximum of 3 Assignments instead of 4".  Nothing in the set has said
+"voluntarily draw an additional Assignment" for some time.

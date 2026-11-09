@@ -3,7 +3,7 @@ window.BAT_EXPERIMENTS = [
     "name": "Baseline Calibration",
     "target": 3,
     "effect": "Flip the active Lab Rat to its other side. That side remains active until another effect flips it.",
-    "flavor": "Every breakthrough begins by proving the researcher probably still works."
+    "flavor": "Nobulous checks your pulse, then marks the equipment fit for use."
   },
   {
     "name": "Fine Motor Trial",
@@ -69,7 +69,7 @@ window.BAT_EXPERIMENTS = [
     "name": "Independent Performance Trial",
     "target": 4,
     "effect": "You cannot borrow a die during this Experiment.",
-    "flavor": "Collaboration introduces confounds. Nobulous has generously removed collaboration."
+    "flavor": "Your colleagues may observe from behind the glass. Nobulous has disconnected the intercom."
   },
   {
     "name": "Resource Depletion Study",
@@ -117,6 +117,6 @@ window.BAT_EXPERIMENTS = [
     "name": "Degraded Tissue Study",
     "target": 5,
     "effect": "If successful, reduce the Prototyrant's Health dial by 2.",
-    "flavor": "The tissue is weaker than projected. Nobulous has classified this as progress."
+    "flavor": "The tissue tears neatly along the dotted line Nobulous insists he did not draw."
   }
 ];

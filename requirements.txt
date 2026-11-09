@@ -1,0 +1,46 @@
+# Dependencies of The Nobulous Set.
+#
+#     pip install -r requirements.txt
+#
+# NOTHING A PLAYER TOUCHES NEEDS ANY OF THIS. The playtest lab is static
+# files served by playtest/serve.py, the print-and-play PDFs and the card
+# sheets are committed, and simulation/ is pure Python. This list is for
+# rebuilding cards or rules.
+#
+# Which script needs what:
+#   generator/gen.py           weasyprint, pillow, reportlab   (all build_*.py)
+#   generator/pack.py          pillow
+#   generator/build_catalog.py pillow
+#   generator/deploy.py        pillow
+#   generator/check_cards.py   weasyprint
+#   generator/render_bat_experiments.py
+#                              reportlab, pypdf, pillow
+#   rules/build.py             weasyprint
+#   rules/make_editable.py     beautifulsoup4
+#
+# TWO THINGS PIP CANNOT INSTALL, and both fail in ways that do not name
+# themselves:
+#
+# 1. WeasyPrint needs native GTK libraries - pango, cairo, gobject. They are
+#    found through PATH, not through Python. Without them the import dies
+#    with `OSError: cannot load library 'libgobject-2.0-0'`, which reads as
+#    a broken install rather than a missing PATH entry. On the Windows
+#    machine this repo is maintained on they live in the conda tree:
+#
+#        PATH="/c/Users/weeks/miniforge3/Library/bin:$PATH"
+#
+# 2. `pdftoppm`, from poppler-utils, must be on PATH. gen.py shells out to
+#    it to turn each rendered PDF into card PNGs. Here it comes from MiKTeX
+#    (poppler 24.04) and needs nothing.
+#
+# The DejaVu fonts the cards and rules are set in are NOT a system
+# dependency: they are committed under fonts/ and registered by gen.py and
+# rules/style.css, so a machine without them renders the same art.
+#
+# Unpinned on purpose - these are build tools for one maintainer, and the
+# art they produce is verified by re-rendering and diffing, not by a lockfile.
+weasyprint
+pillow
+reportlab
+pypdf
+beautifulsoup4

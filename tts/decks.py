@@ -26,16 +26,31 @@ DECKS = [
     # ---- NAP -------------------------------------------------------------
     dict(key='NAP_Apprentices', count=3, w=3, h=1, back='unique', land=True,
          game='NAP', label='Apprentices'),
-    dict(key='NAP_Tasks', count=26, w=10, h=3, back='CardBack_NAP_Assignment',
+    # 9 wide, not 10: 26 landscape cards at 1050px would be a 10500px
+    # sheet and TTS stops at 10000. gen.tts_grid picks the width.
+    dict(key='NAP_Tasks', count=26, w=9, h=3, back='CardBack_NAP_Assignment',
          land=True, game='NAP', label='Tasks'),
     dict(key='NAP_Opportunities', count=6, w=6, h=1, back='CardBack_NAP_Assignment',
          land=True, game='NAP', label='Opportunities'),
     dict(key='NAP_Setbacks', count=6, w=6, h=1, back='CardBack_NAP_Assignment',
          land=True, game='NAP', label='Setbacks'),
-    dict(key='NAP_FinalExams', count=12, w=10, h=2, back='CardBack_NAP_FinalExam',
+    # 9 wide for the same reason as NAP_Tasks above.
+    dict(key='NAP_FinalExams', count=12, w=9, h=2, back='CardBack_NAP_FinalExam',
          land=True, game='NAP', label='Final Exams'),
-    dict(key='NAP_SlotsFINF', count=4, w=4, h=1, back='CardBack_NAP_Assignment',
-         land=True, game='NAP', label='Time Slots + FINF'),
+    # 3 Time Slots + 3 FINF share ONE 6x1 sheet and need TWO backs, so they
+    # are two TTS decks over the same face: a TTS deck carries exactly one
+    # BackURL. The Slots are laid out face up and want the Time Slot back;
+    # the FINF cards are shuffled into the Assignment deck and want its
+    # back, and with one deck for both the Slots were getting the wrong one.
+    # `sheet` points both at NAP_SlotsFINF_TTS.png and `first` is the offset
+    # into its six cells - w and h stay the WHOLE grid, because NumWidth is
+    # how TTS slices the image.
+    dict(key='NAP_Slots', sheet='NAP_SlotsFINF', count=3, first=0, w=6, h=1,
+         back='CardBack_NAP_TimeSlot', land=True, game='NAP',
+         label='Time Slots'),
+    dict(key='NAP_FINF', sheet='NAP_SlotsFINF', count=3, first=3, w=6, h=1,
+         back='CardBack_NAP_Assignment', land=True, game='NAP',
+         label='FINF'),
     # ---- AoS -------------------------------------------------------------
     dict(key='AoS_Technicians', count=3, w=3, h=1, back='unique', land=True,
          game='AoS', label='Technicians'),
@@ -58,8 +73,8 @@ DECKS = [
          land=False, game='NRJ', label='Unauthorized Modifications'),
     dict(key='NRJ_BAT_ResearchNotes', count=6, w=6, h=1, back='CardBack_NRJ_ResearchNote',
          land=False, game='NRJ', label='Research Notes'),
-    dict(key='NRJ_NAP_ImpostorTasks', count=4, w=4, h=1, back='CardBack_NAP_Assignment',
-         land=True, game='NRJ', label='Impostor Tasks'),
+    dict(key='NRJ_NAP_ImposterTasks', count=4, w=4, h=1, back='CardBack_NAP_Assignment',
+         land=True, game='NRJ', label='Imposter Tasks'),
     dict(key='NRJ_NAP_FollowingSetbacks', count=4, w=4, h=1, back='CardBack_NAP_Assignment',
          land=True, game='NRJ', label='Following Setbacks'),
     dict(key='NRJ_NAP_DeviousOpportunities', count=6, w=6, h=1, back='CardBack_NAP_Assignment',
@@ -71,7 +86,9 @@ DECKS = [
     dict(key='NRJ_AoS_BackdoorRoutines', count=6, w=6, h=1, back='CardBack_NRJ_BackdoorRoutine',
          land=False, game='NRJ', label='Backdoor Routines'),
     dict(key='NRJ_ImposterScenarios', count=24, w=10, h=3, back='CardBack_NRJ_CouncilTest',
-         land=False, game='IMP', label='Council Test Scenarios'),
+         land=False, game='IMP', label='Exhibits'),
+    dict(key='NRJ_Imposters', count=5, w=5, h=1, back='unique', land=True,
+         game='IMP', label='Imposters (A / B)'),
 ]
 
 GAME_COLOR = {'BAT': (0.17, 0.37, 0.29), 'NAP': (0.42, 0.25, 0.55),

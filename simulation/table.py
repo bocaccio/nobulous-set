@@ -10,6 +10,16 @@ pressure peak and Tier III hands tools back.
 Reference: the 20 Strong Community Game Stats sheet puts the published games
 at 47-57%, and 53% across 955 recorded games. That is the band a finished
 game in this system lands in, and it is the yardstick for the tables below.
+
+DO NOT TRUST A SENTENCE IN THIS FILE ABOUT WHAT IS OR IS NOT MODELLED - run
+coverage.py. The prose below this line is commentary written at the time of a
+measurement and it has gone stale three separate times: it claimed BAT's
+Experiment effects were omitted after they were implemented, it claimed the
+Research Notes were a fungible token after they were split into six named
+cards, and it claimed finale.py had no hero code after the ten Imposter
+sides went in. coverage.py holds those same claims as PREDICATES over the
+live modules and exits non-zero when one stops being true, which is the only
+form of the claim that has ever stayed correct.
 """
 import sys
 import time
@@ -17,6 +27,7 @@ import time
 import aos
 import bat
 import cards
+import finale
 import nap
 import nrj
 
@@ -46,6 +57,12 @@ def pct(x):
 
 
 def grid(title, subtitle, rows, runner, games, notes=()):
+    """Print one game's table AND return its cells, keyed by difficulty.
+
+    The return value is what the calibration footer reads. It used to repeat
+    those figures from memory and an audit on 2026-11-04 found it contradicting
+    this grid on three of four games, so there is now one owner: the run.
+    """
     print()
     print("=" * 66)
     print(title)
@@ -53,11 +70,21 @@ def grid(title, subtitle, rows, runner, games, notes=()):
     print("  %s" % subtitle)
     print()
     print("  %-22s %9s %9s %9s %9s" % ("", "no NRJ", "Tier I", "Tier II", "Tier III"))
+    measured = {}
     for label, key in rows:
-        cells = [pct(runner(key, t, games)) for t in TIERS]
-        print("  %-22s %9s %9s %9s %9s" % tuple([label] + cells))
+        got = [runner(key, t, games) for t in TIERS]
+        measured[key] = got
+        print("  %-22s %9s %9s %9s %9s"
+              % tuple([label] + [pct(x) for x in got]))
     for n in notes:
         print("  %s" % n)
+    return measured
+
+
+def band(w):
+    """Where one win rate sits against the 47-57% community band."""
+    return "in band" if 47.0 <= 100 * w <= 57.0 else (
+        "above the band" if 100 * w > 57.0 else "below the band")
 
 
 def main(games=DEFAULT):
@@ -73,8 +100,8 @@ def main(games=DEFAULT):
         each = max(200, g // len(NAP_APPS))
         return sum(nap.run(a, "-1", each, tier=tier) for a in NAP_APPS) / len(NAP_APPS)
 
-    grid(
-        "NAP  Nobulous' Apprenticeship Program",
+    nap_cells = grid(
+        "NAP  Nobulous Apprenticeship Program",
         "difficulty = Credit goal / Setbacks in the deck; FINF at Reduce 1",
         [(("%s (%d Cr, %d Sb)" % (k, NAP_LEVELS[k][0], NAP_LEVELS[k][1]))
           + (" *" if k == "Standard" else ""), k)
@@ -84,13 +111,13 @@ def main(games=DEFAULT):
         notes=("",
                "  * Standard difficulty. Mean of the six Apprentices.",
                "  Tier I   3 of 4 Following Setbacks replace 3 base Setbacks",
-               "  Tier II  4 Impostor Tasks - Mandatory, and grant no Credits",
+               "  Tier II  4 Imposter Tasks - Mandatory, and grant no Credits",
                "  Tier III 6 Devious Opportunities replace the 6 base ones"),
     )
     nap.CREDITS_TO_LEAVE, nap.SETBACKS_IN_DECK = NAP_LEVELS["Standard"]
 
     # ---------------------------------------------------------------- BAT
-    grid(
+    bat_cells = grid(
         "BAT  Build-a-Tyrant",
         "difficulty = Specimens added / Tyrant Health; random Rat sides",
         [(d, d) for d in ("Easy", "Standard", "Hard", "Nobulous")],
@@ -112,14 +139,18 @@ def main(games=DEFAULT):
         return sum(aos.run(level, each, tier=tier, tech=k)
                    for k in aos.TECHS) / len(aos.TECHS)
 
-    grid(
+    aos_cells = grid(
         "AoS  Automaton of Shale",
         "difficulty = the Routine/Specialized/Unstable mix",
         [("%s  %d/%d/%d" % ((k,) + aos.LEVELS[k]), k) for k in aos.LEVEL_NAMES],
         aos_level,
         games,
         notes=("",
-               "  Mean of the six Technicians.",
+               # Name the allocation policy: the whole AoS pitch depends
+               # on it (see ALLOC_MODE in aos.py), and a footnote that did
+               # not say which line was measured is how the policy question
+               # got closed twice on the wrong variant. Read, not typed.
+               "  Mean of the six Technicians, ALLOC_MODE = %s." % aos.ALLOC_MODE,
                "  Tier I   1 of 6 Nobulous Interference cards drawn at setup",
                "  Tier II  6 Corrupted Limitations in the Limitation deck",
                "  Tier III 6 Backdoor Routines, at most 2 claimed per game"),
@@ -130,12 +161,39 @@ def main(games=DEFAULT):
     print("=" * 66)
     print("NRJ  Imposter Scenario (the campaign finale)")
     print("=" * 66)
-    print("  The tiers apply to the three games above, not to the finale, and")
-    print("  the finale has no difficulty dial. Its variable is the Research")
-    print("  Pool.")
+    # "The finale has no difficulty dial" was WRONG, and said so in the
+    # published table until 2026-11-05: finale.py's own docstring opens
+    # "THE LADDER IS CUT WITH DICE, not with a dial - see START_TIRED".
+    # The old wording described nrj.py, whose variable really was the pool.
+    print("  The NRJ tiers apply to the three games above, NOT to the")
+    print("  finale, which has a ladder of its own - cut with dice rather")
+    print("  than with a dial. START_TIRED is how many you begin with")
+    print("  exhausted: 0/0/0/0, 3/2/2/2, 3/3/3/2, 3/3/4/4 across Easy to")
+    print("  Nobulous, aiming at 50/40/30/20 rather than at the 47-57%")
+    print("  band. The figure below is the EASY rung, which is the pitch.")
+    print("  The ten Imposter sides went INTO finale.py on 2026-11-06,")
+    print("  ported from simulation/proto/imposters.py, which had them")
+    print("  implemented and calibrated while the shipping module had no")
+    print("  hero code at all. HERO = None is still the pitch - a side is")
+    print("  a DELTA against it - and it still reproduces the figure")
+    print("  below to the decimal. finale.py section 7 prints the roster;")
+    print("  do not retype its numbers here.")
     print()
+    # THE SHIPPING FINALE IS finale.py. This section used to print nrj.py's
+    # numbers and nothing else, so the headline NRJ figure on the results
+    # table came from the superseded nine-attempt Suspicion scenario, while
+    # the figure that ships was a hardcoded literal in the footer below.
+    # Both are computed now, and finale.py's own seed set is read from it.
+    finale_pitch = sum(finale.run(finale.GAMES, seed=sd)
+                       for sd in finale.SEEDS) / len(finale.SEEDS)
+    print("  as it SHIPS      %8.1f%%   finale.py, %d finales x %d seeds"
+          % (finale_pitch, finale.GAMES, len(finale.SEEDS)))
+    print()
+    print("  SUPERSEDED - the nine-attempt Suspicion scenario the Dossier")
+    print("  finale replaced on 2026-10-29. Kept because nrj.py is still")
+    print("  the only model of it; it is NOT the finale that ships:")
     for mode in nrj.POOL_MODES:
-        print("  %-14s %9s" % (mode, pct(nrj.run(mode, games))))
+        print("    %-14s %9s" % (mode, pct(nrj.run(mode, games))))
 
     # ---------------------------------------------------------------- refs
     print()
@@ -147,14 +205,39 @@ def main(games=DEFAULT):
         print("  %-24s %7d %8d%%" % (name, n, rate))
     print()
     print("  Source: 20 Strong Community Game Stats, read 2026-09-20.")
-    print("  A finished game in this system sits near 50%. Against that,")
-    print("  after the 2026-10-27 policy retune:")
-    print("    BAT  in band at Standard (53.9%), above at Easy, below from Hard.")
-    print("    NAP  in band at Standard (49.2% on its own, 51.4% at Tier III)")
-    print("         since every printed Target rose by 1; below from Hard up.")
-    print("    AoS  in band at Standard on the campaign axis (53.5%) since")
-    print("         the misses-negate rule; still high on its own, 70.8%.")
-    print("    NRJ  above the band at 61.5%.")
+    print("  A finished game in this system sits near 50%. These four")
+    print("  lines are COMPUTED from the grids above - %d games a cell -"
+          % games)
+    print("  so they cannot drift from them:")
+    print("    BAT  Standard %s (%s solo), Easy %s."
+          % (band(bat_cells["Standard"][0]), pct(bat_cells["Standard"][0]),
+             band(bat_cells["Easy"][0])))
+    print("    NAP  Standard %s (%s solo, %s at Tier III)"
+          % (band(nap_cells["Standard"][0]), pct(nap_cells["Standard"][0]),
+             pct(nap_cells["Standard"][3])))
+    print("         since every Target rose by 1; Hard %s."
+          % band(nap_cells["Hard"][0]))
+    print("    AoS  Standard %s on its OWN column (%s) since the"
+          % (band(aos_cells["Standard"][0]), pct(aos_cells["Standard"][0])))
+    print("         2026-11-05 re-pitch onto the strongest allocation")
+    print("         line the printed rules allow (ALLOC_MODE = %s);"
+          % aos.ALLOC_MODE)
+    print("         Standard at Tier III %s (%s)."
+          % (band(aos_cells["Standard"][3]), pct(aos_cells["Standard"][3])))
+    print("    NRJ  the finale that SHIPS %s (%.1f%%), computed from"
+          % (band(finale_pitch / 100.0), finale_pitch))
+    print("         finale.py over %d finales x %d seeds; finale.txt is"
+          % (finale.GAMES, len(finale.SEEDS)))
+    print("         its full report. This line used to be a hardcoded")
+    print("         50.5% printed under a grid of the WRONG finale.")
+    print()
+    print("  THIS FOOTER USED TO CONTRADICT THE GRID ABOVE IT, on three of")
+    print("  the four games, and an audit on 2026-11-04 is what caught it:")
+    print("  it claimed BAT 53.9, NAP 49.2/51.4, AoS 53.5 on the campaign")
+    print("  axis and 70.8 solo, and the finale at 53.1. The AoS pair was")
+    print("  the giveaway - 70.8% is a number from before required colours")
+    print("  existed, printed directly beneath a grid reading 52.9%. Figures")
+    print("  here are now dated, and the dates are what to distrust first.")
     print()
     print("  THE RETUNE IS WHY, AND IT INVALIDATES EVERY DIFFICULTY DIAL.")
     print("  These models used to play one fixed policy that was 6 to 34")
@@ -307,17 +390,19 @@ def main(games=DEFAULT):
   Controlled Failure, needs a deliberate zero-dice turn the policy never
   takes.
 
-  It barely moved the column, because the limit is the REWARD side. bat.py
-  pools every claim into one counter, `self.notes`, and spends it on two of
-  the six printed rewards: recovering a Rat's dice in the battle, and
-  ignoring the +1 Target a revealed Specimen adds. The other four printed
-  rewards do nothing at all - choosing which Upgrade is Spliced after a
-  failure, tapping another Rat's Upgrade in the battle, discarding a
-  revealed Experiment, and placing Red directly on a Rat. Six separate
-  once-per-game cards are modelled as one fungible token spent on two of
-  them. Giving each claimed Note its own printed reward is the next lever
-  on this column, and it is a structural change to the module, not a
-  number.
+  IT BARELY MOVED THE COLUMN, BECAUSE THE LIMIT WAS THE REWARD SIDE - and
+  that was fixed on 2026-11-06. bat.py pooled every claim into one counter,
+  `self.notes`, and spent it on two of the six printed rewards; of those
+  two, one never fired, so the published Tier III column was measuring a
+  single card. Each Note is now its own named card with its own printed
+  reward, which took the column up 4.5 points. NOTE_REWARDS = False
+  restores the pooled token and reproduces the old figure exactly.
+
+  THIS PARAGRAPH SAID THE OPPOSITE UNTIL THEN, which is the running fault
+  in this file: it is prose about coverage, and prose about coverage goes
+  stale. simulation/coverage.py holds the same claims as predicates over
+  the live modules and fails when one stops being true. Run it rather than
+  reading this.
 
   INDEPENDENT FUNDING NEEDED A NEW TRIGGER, not a new number. The old card
   paid the LENDER a die, and the lender's dice are not the binding resource,
@@ -353,9 +438,17 @@ def main(games=DEFAULT):
               Target is out of reach, Field Retrofit swaps when the card on
               offer beats the Rat's worst. Over the 16 cells the whole deck
               is worth +1.4 points, so it roughly balances, which is what a
-              well-made deck should do. NRJ now omits 1 of its 24
-              Scenario effects, down from 18: see the Imposter section
-              below, and imposter.py.
+              well-made deck should do. Diagnostic Trial is still the
+              exception, and the reason is now exact rather than vague:
+              the card says "return it to the TOP", so it reorders
+              nothing, and the Experiment policy already commits the
+              MINIMUM expected to reach the Target, so there is nothing
+              to hold back on the strength of knowing what is next.
+              On 2026-11-06 everything else in this line was closed -
+              the 19 "omitted" Council Test effects turned out not to be
+              printed on the shipping Exhibit face at all, and the ten
+              Imposter sides went into finale.py. coverage.py reads 3 of
+              255 unmodelled; run it rather than reading this.
     desync    the model carried its own table of Experiment Targets and added
               TARGET_DELTA = 1 on top. That +1 was adopted and PRINTED onto
               the cards at commit b57eedd, so seven of the twenty Experiments

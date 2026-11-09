@@ -292,12 +292,12 @@ EARLIER (rev 15)
   - NRJ cards now match their base-game analog rather than using one NRJ color:
       Experimental Protocols and Research Notes  BAT green
       Unauthorized Modifications                 BAT category colors + UNAUTHORIZED strip
-      Impostor Tasks                             NAP purple
+      Imposter Tasks                             NAP purple
       Following Setbacks                         NAP setback blue
       Devious Opportunities                      NAP opportunity gold
       Nobulous Interference, Backdoor Routines   AoS rust
       Corrupted Limitations                      AoS limitation teal
-      Imposter Scenarios                         colored by domain: Knowledge purple,
+      Exhibits                                   colored by domain: Knowledge purple,
                                                  Physical green, Cover-Up rust
     Every NRJ card names its tier in the footer.
   - The four AoS Program decks are now genuinely two-sided: Stable on the face,
@@ -310,7 +310,7 @@ EARLIER (rev 15)
   - Every NRJ card carries a solid #1f4e6b band along its foot reading NOBULOUS
     RESEARCH JOURNAL.  Face-up, the module cards can be riffled out of any base
     deck in one pass.
-  - Impostor Tasks now use the base NAP Task layout: name on the left spine,
+  - Imposter Tasks now use the base NAP Task layout: name on the left spine,
     subject icon in the corner, green REQUEST band above and red DEMAND band
     below, and GRANTS NO CREDIT on the right spine where a Task's penalty sits.
   - BAT band colors by function: Encounters, Lab Rats and Assembly keep the
@@ -323,7 +323,7 @@ PRINT AND PLAY (Letter)
   NobulousSet_BAT_PnP.pdf   BAT
   NobulousSet_NAP_PnP.pdf   NAP
   NobulousSet_AoS_PnP.pdf   AoS
-  NobulousSet_NRJ_PnP.pdf   NRJ modules + Imposter Scenarios
+  NobulousSet_NRJ_PnP.pdf   NRJ modules + Exhibits
 
 TWO-SIDED CARDS
   These decks are genuinely double-sided.  In TTS tick "Unique Backs" and load
@@ -351,11 +351,12 @@ DECK SHEETS AND BACKS
   BAT_TyrantAttacks              7x1     portrait   CardBack_BAT_TyrantAttack
   BAT_Upgrades                   10x2    portrait   CardBack_BAT_Upgrade
   NAP_Apprentices                3x1     landscape  NAP_Apprentices_TTS_back.png  (Unique Backs)
-  NAP_FinalExams                 10x2    landscape  CardBack_NAP_FinalExam
+  NAP_FinalExams                 9x2     landscape  CardBack_NAP_FinalExam
   NAP_Opportunities              6x1     landscape  CardBack_NAP_Assignment
   NAP_Setbacks                   6x1     landscape  CardBack_NAP_Assignment
-  NAP_SlotsFINF                  4x1     landscape  CardBack_NAP_Assignment
-  NAP_Tasks                      10x3    landscape  CardBack_NAP_Assignment
+  NAP_SlotsFINF                  6x1     landscape  CardBack_NAP_TimeSlot x3 + CardBack_NAP_Assignment x3
+                                                    (two TTS decks over one sheet: NAP_Slots cells 1-3, NAP_FINF cells 4-6)
+  NAP_Tasks                      9x3     landscape  CardBack_NAP_Assignment
   NRJ_AoS_BackdoorRoutines       6x1     portrait   CardBack_NRJ_BackdoorRoutine
   NRJ_AoS_CorruptedLimitations   6x1     portrait   CardBack_AoS_Limitation
   NRJ_AoS_Interference           6x1     portrait   CardBack_NRJ_Interference
@@ -363,9 +364,10 @@ DECK SHEETS AND BACKS
   NRJ_BAT_Protocols              6x1     portrait   CardBack_NRJ_Protocol
   NRJ_BAT_ResearchNotes          6x1     portrait   CardBack_NRJ_ResearchNote
   NRJ_ImposterScenarios          10x3    portrait   CardBack_NRJ_CouncilTest
+  NRJ_Imposters                  5x1     landscape  unique (side B)
   NRJ_NAP_DeviousOpportunities   6x1     landscape  CardBack_NAP_Assignment
   NRJ_NAP_FollowingSetbacks      4x1     landscape  CardBack_NAP_Assignment
-  NRJ_NAP_ImpostorTasks          4x1     landscape  CardBack_NAP_Assignment
+  NRJ_NAP_ImposterTasks          4x1     landscape  CardBack_NAP_Assignment
 
 CARD BACKS
   BAT   CardBack_BAT_Encounter        Encounter deck
@@ -383,13 +385,13 @@ CARD BACKS
         CardBack_NRJ_ResearchNote     Research Notes
         CardBack_NRJ_Interference     Nobulous Interference
         CardBack_NRJ_BackdoorRoutine  Backdoor Routines
-        CardBack_NRJ_CouncilTest      24 Imposter Scenarios
+        CardBack_NRJ_CouncilTest      24 Exhibits
 
   NRJ cards that are shuffled into a base deck take that deck's back, or they
   would be identifiable face-down:
         Unauthorized Modifications          -> CardBack_BAT_Upgrade
         Corrupted Limitations               -> CardBack_AoS_Limitation
-        Impostor Tasks, Following Setbacks,
+        Imposter Tasks, Following Setbacks,
         Devious Opportunities               -> CardBack_NAP_Assignment
   Their NRJ identity is carried on the face instead, by the foot band reading
   NOBULOUS RESEARCH JOURNAL.
@@ -443,6 +445,6 @@ Callouts that are RULES, not rationale, were kept: Success, Failure, Two kinds
 of armor (trimmed), How the apprenticeship ends, Special Recovery (trimmed),
 Skulls, Required colors, If you cannot supply a required color, Dice come back
 unless you are punished (trimmed), Catastrophic Failure, The tiers are not
-difficulty levels, Impostor Tasks, Suspicion is uncapped (trimmed).
+difficulty levels, Imposter Tasks, Suspicion is uncapped (trimmed).
 
 The removed rationale is preserved in rules/RULES_CHANGELOG.txt.
