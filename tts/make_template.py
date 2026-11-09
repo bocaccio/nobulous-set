@@ -266,8 +266,12 @@ def main():
     frame(sd)
     draw_game(sd, "NAP", [])
     PEN = dict(PALE)
-    ship = os.path.join(os.path.dirname(HERE), "images", "NAP_Table.png")
-    ship_im.convert("RGB").save(ship)
+    # JPEG, NOT PNG. The parchment is a photograph, so PNG made it 7.2
+    # MB - heavy for a table to fetch, and jsDelivr went on serving the
+    # old one regardless of a purge. A JPEG is about a fifteenth of
+    # that, and the new name is a URL the CDN has never cached.
+    ship = os.path.join(os.path.dirname(HERE), "images", "NAP_Table.jpg")
+    ship_im.convert("RGB").save(ship, quality=88, optimize=True)
     wrote.append(ship)
     print("%d x %d at %g px per unit, world x %g..%g, z %g..%g"
           % (W, H, PX, X0, X1, Z1, Z0))

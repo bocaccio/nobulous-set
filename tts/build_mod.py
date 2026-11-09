@@ -289,7 +289,7 @@ def nap_table():
             "Description": "The NAP layout. Set up NAP lays it down.",
             "ColorDiffuse": {"r": 1.0, "g": 1.0, "b": 1.0},
             "Locked": True, "Grid": False, "Snap": False,
-            "CustomImage": {"ImageURL": url("NAP_Table.png"),
+            "CustomImage": {"ImageURL": url("NAP_Table.jpg"),
                             "ImageSecondaryURL": "", "ImageScalar": 1.0,
                             "WidthScale": 0.0,
                             "CustomTile": {"Type": 3, "Thickness": 0.05,
@@ -604,7 +604,7 @@ def main():
         need.add(sheet + '_TTS.png')
         need.add(sheet + '_TTS_back.png' if d['back'] == 'unique' else d['back'] + '.png')
     need.add('ControlPanel.png')
-    need.add('NAP_Table.png')
+    need.add('NAP_Table.jpg')
     with open(os.path.join(os.path.dirname(OUT), 'REQUIRED_IMAGES.txt'), 'w') as f:
         f.write("Upload these to BASE_URL, keeping the filenames:\n\n")
         for n in sorted(need):
