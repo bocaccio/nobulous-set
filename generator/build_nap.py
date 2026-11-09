@@ -247,14 +247,20 @@ FINF_SLOTS = [(1, 'Morning', '#9f3f23'), (2, 'Afternoon', '#086c70'), (3, 'Eveni
 for number, slot, band in FINF_SLOTS:
     cards.append(C("Following in Nobulous' Footsteps",
        "FINF %d &middot; %s" % (number, slot),
-       '<div class="row" style="gap:4mm;align-items:center;margin-top:1mm">'
-       '<div style="width:14mm;height:14mm;border-radius:50%%;background:%s;color:#fff;'
-       'display:flex;align-items:center;justify-content:center;font-size:19pt;font-weight:bold">%d</div>'
+       # THE CIRCLE WAS 14MM AND THE CARD IS 63.5 DEEP. Two lines of
+       # Reduce ran over the footer rule and through "Not used during
+       # the Final Exam." - the body is top-aligned above a spacer, so
+       # anything too tall for the card lands on the footer rather than
+       # being clipped. 9mm of circle and tighter leading between the
+       # blocks buys about 7mm, against an overflow of roughly 5.
+       '<div class="row" style="gap:3.4mm;align-items:center">'
+       '<div style="width:9mm;height:9mm;border-radius:50%%;background:%s;color:#fff;'
+       'display:flex;align-items:center;justify-content:center;font-size:13pt;font-weight:bold">%d</div>'
        '<div style="font-size:8.6pt;font-weight:bold;letter-spacing:.1em;text-transform:uppercase;'
        'color:#655b4e">%s</div></div>'
-       '<div class="sub" style="margin-top:2.6mm">Increase</div>'
+       '<div class="sub" style="margin-top:1.8mm">Increase</div>'
        '<div class="txt" style="margin-top:.4mm">Add an Assignment to the specified Time Slot.</div>'
-       '<div class="sub" style="margin-top:2.2mm">Reduce</div>'
+       '<div class="sub" style="margin-top:1.6mm">Reduce</div>'
        '<div class="txt" style="margin-top:.4mm">Remove a non-Final-Exam card from the specified '
        'Time Slot.</div>' % (band, number, slot),
        'Not used during the Final Exam.', acc='#7a2f52'))
