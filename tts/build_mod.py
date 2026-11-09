@@ -445,9 +445,14 @@ def main():
         "SaveName": "The Nobulous Set",
         "GameMode": "The Nobulous Set - BAT / NAP / AoS / NRJ",
         "Gravity": 0.5, "PlayArea": 0.8, "Date": "",
-        # Table_Custom made TTS ask to import a custom table image on every
-        # load, and the save carries no URL for one.
-        "Table": "Table_Rectangle",
+        # THE RECTANGLE TABLE IS CALLED Table_RPG in the save format.
+        # Table_Custom made TTS offer to import a custom table on every
+        # load, because the save carries no URL for one; "Table_Rectangle"
+        # then looked like the obvious replacement and is not a value TTS
+        # has, so it resolved to nothing and the load died on a null
+        # reference with no mention of the table. The name came from Jon's
+        # own saves of this mod, which is where to look for the next one.
+        "Table": "Table_RPG",
         "Sky": "Sky_Museum", "Note": "Fan expansion for 20 Strong. Prototype.",
         "Rules": "See the Notebook.",
         "TabStates": {str(i): t for i, t in enumerate(notebook())},

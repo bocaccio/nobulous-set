@@ -1832,11 +1832,18 @@ check("tts/test_setup.py asserts the buttons do not overlap each other",
 # ---------------------------------------------------------------------
 # THE TABLE, THE CARD SIZE AND PACK-UP, all reported from the table on
 # 2026-11-09.
-# The SETTING, not the word: the comment above it names Table_Custom as
-# the thing it replaced, and matching bare "Table_Custom" failed on that.
-check("the mod builds on a stock table",
-      '"Table": "Table_Rectangle"' in _mod
-      and '"Table": "Table_Custom"' not in _mod)
+# A TABLE TTS ACTUALLY HAS. "Table_Rectangle" is not one of them - the
+# rectangle table is Table_RPG - and an unknown name does not fall back
+# to a default: the load dies on a null reference that says nothing about
+# tables. So this checks membership rather than checking that one wrong
+# value is absent.
+_TABLES = ("Table_RPG", "Table_Square", "Table_Hexagon", "Table_Octagon",
+           "Table_Round", "Table_Poker", "Table_Glass", "Table_None",
+           "Table_Custom", "Table_Custom_Square")
+_table = re.search(r'"Table": "([^"]+)"', _mod)
+check("the mod names a table TTS has",
+      _table and _table.group(1) in _TABLES and _table.group(1) != "Table_Custom",
+      "table is %r" % (_table and _table.group(1),))
 # One constant owns how big a card is, and the Lua spaces the rows in
 # multiples of it. Thirty position literals is how a layout stops being
 # changeable at all.
