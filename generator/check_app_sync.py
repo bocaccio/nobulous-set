@@ -2209,6 +2209,26 @@ check("the rulebook's button is redrawn on whatever reload returns",
       "o = o.reload()" in _lua and "drawRulesButton(o)" in _lua
       and "drawRulesButton(getObjectFromGUID(RULES_GUID))" in _lua)
 
+# ONE OWNER FOR HOW BIG A DIE IS, and the spacing derived beside it.
+# The row is laid out in multiples of a die, so a scale changed without
+# the pitch would pile them up - which the harness now measures, with
+# the half-width read from the save rather than remembered.
+_dscale = sorted(set(o["Transform"]["scaleX"] for o in _sv["ObjectStates"]
+                     if o["Name"] == "Custom_Dice"))
+check("every die in the save is the one size build_mod.py sets",
+      len(_dscale) == 1 and "DIE_SCALE = " in _mod
+      and "DIE_SCALE if o['Name'] == 'Custom_Dice'" in _mod,
+      "scales present: %r" % (_dscale,))
+check("the harness measures the dice it was given",
+      "w.die_half = 0.45 * max(" in _ts
+      and "f[3] + w.die_half" in _ts
+      and "no two dice sit on each other" in _ts)
+# Jon placed the rulebook himself; settling it would drop it somewhere
+# else and call that the same place.
+check("the rulebook is not settled onto anything",
+      "if RULES_OBJ then table.insert(t, RULES_OBJ) end" not in _lua
+      and "THE RULEBOOK IS NOT SETTLED" in _lua)
+
 # The three dice say what the card says. One literal prints all six
 # Apprentice sides, so there is nothing to average over.
 check("an Apprentice starts NAP at the 2s its own card prints",

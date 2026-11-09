@@ -74,6 +74,11 @@ EXHAUSTED = (10.0, 27.0, -15.2, -18.5)
 # Filled in by dice_objects(), read by lua_header().
 HOME_MARKERS = {}
 
+# How big a die is. TTS scales an object by 0.1 a press, so this is the
+# two presses that still leave room for two rows of them under the
+# cards; see dice_objects(). The Chip is not a die and keeps its size.
+DIE_SCALE = 1.2
+
 # THE DIAL'S FIVE COLOURS, and where each one has to be turned to.
 #
 # MEASURED OFF THE DIAL, TWICE. Photographed at rest, its five segment
@@ -220,6 +225,7 @@ def lua_header(box_guids, rules_guid):
         'MAT_ASPECT = %.5f' % (lambda wh: wh[0] / float(wh[1]))(
             jpeg_size(os.path.join(SHEETS, nap_table_image()))),
         'MAT_Z = %.2f' % NAP_TABLE_Z,
+        'DIE_SCALE = %.2f' % DIE_SCALE,
         # The rulebook on the rail, and the four books it can show.
         "RULES_GUID = '%s'" % rules_guid,
         'RULES = { %s }' % j("%s = '%s'" % (g, rules_url(g))
@@ -297,11 +303,16 @@ def rulebook():
     little above the rail and settled onto it like the mat and the
     boxes, because the rail's height is not in the save.
     """
+    # WHERE JON PUT IT, read off his table rather than guessed at: he
+    # moved it to the corner and said so, and these are the numbers
+    # TS_AutoSave caught. It is NOT in settle() - settling would drop
+    # it onto whatever is under it and undo the placement.
     return {"GUID": guid(), "Name": "Custom_PDF",
-            "Transform": xf(25.6, 5.40, 20.5, (0, 180, 0), 1.25),
+            "Transform": xf(30.10, 3.622, 19.092, (0, 180, 0), 1.25),
             "Nickname": "Rulebook",
             "Description": "The rules for the game you set up. Click the"
                            " button, then zoom in to read.",
+            "Tooltip": True,
             "ColorDiffuse": {"r": 1.0, "g": 1.0, "b": 1.0},
             "Locked": True, "Grid": False, "Snap": False,
             "CustomPDF": {"PDFUrl": rules_url('BAT'), "PDFPassword": "",
@@ -531,12 +542,20 @@ def dice_objects():
     #
     # The lowest card row reaches z -16.26, so the blocks sit at -16.9
     # and -17.9. Every number in here is spoken for.
-    DICE_Z = -16.9
-    DROP = 1.0
+    # A FIFTH BIGGER, AND THE ROW RE-SPACED TO MATCH. The felt between
+    # the bottom card row (-16.26) and the back edge (-18.6) is 2.34
+    # units, and two rows of dice now need 2.23 of it: a die is about
+    # 0.9 across at scale 1, so 1.08 at this scale, and the rows are
+    # 1.15 apart. That is where the limit is - at 1.8 the two rows
+    # would want 3.4 units and there is nowhere for them to go.
+    #
+    # The pair is centred in the band, which is why DICE_Z moved up.
+    DICE_Z = -16.855
+    DROP = 1.15
     ORDER = ('Pink', 'Purple', 'Blue', 'Green', 'Yellow')
     BLOCK0, BLOCK_PITCH = -26.0, 3.9
     BLOCK = dict((n, BLOCK0 + i * BLOCK_PITCH) for i, n in enumerate(ORDER))
-    OFFS = ((0.0, 0.0), (1.1, 0.0), (0.0, -DROP), (1.1, -DROP))
+    OFFS = ((0.0, 0.0), (1.35, 0.0), (0.0, -DROP), (1.35, -DROP))
     # The Chip and the three utility dice follow the colours along the
     # same row, and all of it stops well left of the exhausted corner.
     lay = {'Chip': (-6.0, DICE_Z - DROP / 2),
@@ -553,7 +572,8 @@ def dice_objects():
         else:
             bx, bz = lay.get(nick, (0.0, DICE_Z))
         d = {"GUID": guid(), "Name": o['Name'],
-             "Transform": xf(bx, 1.4, bz, (0, 0, 0)),
+             "Transform": xf(bx, 1.4, bz, (0, 0, 0),
+                             DIE_SCALE if o['Name'] == 'Custom_Dice' else 1.0),
              "Nickname": 'Red' if nick == 'Pink' else nick,
              "Description": o.get('Description') or '',
              "ColorDiffuse": o.get('ColorDiffuse') or {"r": 1, "g": 1, "b": 1},

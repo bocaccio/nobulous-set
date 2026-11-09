@@ -1195,8 +1195,9 @@ function settle()
     local o = getObjectFromGUID(g)
     if o then table.insert(t, o) end
   end
-  -- The rulebook sits on the same rail and had the same guessed height.
-  if RULES_OBJ then table.insert(t, RULES_OBJ) end
+  -- THE RULEBOOK IS NOT SETTLED. It sits where Jon put it, in the
+  -- corner off the felt, and dropping it to find a resting height
+  -- would move it off that spot.
   for _, o in ipairs(t) do o.setLock(false) end
   Wait.time(function()
     for _, o in ipairs(t) do if o then o.setLock(true) end end

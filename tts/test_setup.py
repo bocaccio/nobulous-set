@@ -280,6 +280,14 @@ def build(lua):
     # They are kept apart from w.table because they are not dealt and
     # are not packed away: pack-up sends them home and the table is
     # still bare, which is what "emptied the table" means.
+    # HOW BIG A DIE IS, from the save. A die is about 0.9 across at
+    # scale 1, and the clearance checks below had that 0.45 half-width
+    # written into them - so the moment the dice were scaled up, every
+    # check about what they touch was measuring a die that was no
+    # longer on the table.
+    w.die_half = 0.45 * max(
+        [o["Transform"]["scaleX"] for o in save["ObjectStates"]
+         if o["Name"] == "Custom_Dice"] or [1.0])
     for o in save["ObjectStates"]:
         if o["Name"] in ("Custom_Dice", "Custom_Token"):
             m = Obj(w, o["GUID"], o["Nickname"])
@@ -576,10 +584,26 @@ def layout_assertions():
                 want(t + " nothing dealt off the felt", off[:3], [])
                 on_dice = [f[0] for f in fp
                            for dx, dz in w.dice
-                           if abs(f[1] - dx) < f[3] + 0.45
-                           and abs(f[2] - dz) < f[4] + 0.45]
+                           if abs(f[1] - dx) < f[3] + w.die_half
+                           and abs(f[2] - dz) < f[4] + w.die_half]
                 want(t + " nothing dealt on top of the dice",
                      sorted(set(on_dice))[:3], [])
+                # AND THE DICE FIT WHERE THEY LIE. Nothing checked the
+                # row against itself or against the felt, so scaling
+                # the dice up could have piled them on each other or
+                # pushed the back row over the edge and still passed.
+                home = sorted((round(float(v[1]), 3), round(float(v[2]), 3))
+                              for v in g.DICE_HOME.values())
+                blocks = sorted(set(w.dice) | set(home))
+                piled = [(a, b2) for i, a in enumerate(blocks)
+                         for b2 in blocks[i + 1:]
+                         if abs(a[0] - b2[0]) < 2 * w.die_half - 0.02
+                         and abs(a[1] - b2[1]) < 2 * w.die_half - 0.02]
+                want(t + " no two dice sit on each other", piled[:2], [])
+                off = [p for p in blocks
+                       if abs(p[0]) + w.die_half > FELT_X
+                       or p[1] - w.die_half < FELT_ZMIN - 0.6]
+                want(t + " no die hangs off the felt", off[:2], [])
                 # Four Assignment spaces beside every Time Slot, and
                 # only for the game that has Time Slots.
                 slots = [o.pos[2] for o in w.table.values()
