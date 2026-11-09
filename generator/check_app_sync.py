@@ -2290,6 +2290,18 @@ check("the rulebook is not settled onto anything",
       "if RULES_OBJ then table.insert(t, RULES_OBJ) end" not in _lua
       and "THE RULEBOOK IS NOT SETTLED" in _lua)
 
+# A TWEEN AND A PHYSICS CALL IN THE SAME FRAME FIGHT, and this mod has
+# now lost that fight twice: setRotationValue cancelled the stat dice's
+# move, and the move cancelled the Chip's turn part way round. Neither
+# is visible to the harness, which has no physics - so the shape of the
+# fix is checked instead. The turn is handed to setMarker and happens
+# after the marker has landed, with an instant setRotation.
+check("the setup turns the Chip after it lands, not while it moves",
+      re.search(r"setMarker\('Chip'[^;]*CHIP_FACE\[ATTENTION\[1\]\],"
+                r"\s*CHIP_FACE_Z\}", _lua)
+      and "function setMarker(name, x, z, value, face)" in _lua
+      and "o.setRotation({r.x, face[1], face[2]})" in _lua)
+
 # The three dice say what the card says. One literal prints all six
 # Apprentice sides, so there is nothing to average over.
 check("an Apprentice starts NAP at the 2s its own card prints",

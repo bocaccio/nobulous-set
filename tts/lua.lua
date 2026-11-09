@@ -238,7 +238,7 @@ end
 -- from the table. Half a second later, a die that is still not where it
 -- was sent is put there outright: setPosition is instant, so there is
 -- no tween for anything to interrupt.
-function setMarker(name, x, z, value)
+function setMarker(name, x, z, value, face)
   local o = marker(name)
   if not o then return nil end
   o.setLock(false)
@@ -252,6 +252,16 @@ function setMarker(name, x, z, value)
       local p = o.getPosition()
       if math.abs(p.x - x) > 1.0 or math.abs(p.z - z) > 1.0 then
         o.setPosition({x, 1.6, z})
+      end
+      -- THE TURN GOES LAST, AND IT IS NOT A TWEEN. The Chip was turned
+      -- with setRotationSmooth at the top of this step and the move
+      -- started two frames later, which cancelled it part way round -
+      -- the same collision that stopped the stat dice moving, with the
+      -- roles the other way about. Nothing can interrupt a setRotation
+      -- that happens after everything else has landed.
+      if face then
+        local r = o.getRotation()
+        o.setRotation({r.x, face[1], face[2]})
       end
     end, 30)
   end, 2)
@@ -853,13 +863,9 @@ function setupNAP()
     -- use CHIP_NUM - the number side - which is a different face and a
     -- different set of angles, so the dial the setup laid down and the
     -- dial you typed over did not agree.
-    setMarker('Chip', CHIP_X, ROW_CHAR - NAP_GAP)
+    setMarker('Chip', CHIP_X, ROW_CHAR - NAP_GAP, nil,
+              {CHIP_FACE[ATTENTION[1]], CHIP_FACE_Z})
     STATE.chip = 1
-    local chip = marker('Chip')
-    if chip then
-      local r = chip.getRotation()
-      chip.setRotationSmooth({r.x, CHIP_FACE[ATTENTION[1]], CHIP_FACE_Z})
-    end
     setMarker('Health', NAP_X - STAT_PITCH, STAT_Z, NAP_START)
     setMarker('Strategy', NAP_X, STAT_Z, NAP_START)
     setMarker('Recovery', NAP_X + STAT_PITCH, STAT_Z, NAP_START)
@@ -1083,19 +1089,8 @@ function refreshPanel()
     -- actually on it, and breaks it down by subject on hover - which is
     -- the number the Final Exam asks for and the one you cannot get by
     -- looking at a stack of face-up cards.
-    -- CALIBRATION, like the dial's: read the numbers off and they go
-    -- into NAP_TABLE_SCALE and NAP_TABLE_Z.
-    local _, mw, md, mz = 0, 0, 0, 0
-    if marker(NAP_TABLE) then _, mw, md, mz = matSize() end
-    lbl(string.format('Mat %.1f x %.1f  z %.2f', mw, md, mz),
-        -3.25, 0.00, 900, 70)
-    btn('wide-', 'matNarrower', -1.72, 0.00, 300, nil, 70)
-    btn('wide+', 'matWider', -1.06, 0.00, 300, nil, 70)
-    btn('deep-', 'matShallower', -0.40, 0.00, 300, nil, 70)
-    btn('deep+', 'matDeeper', 0.26, 0.00, 300, nil, 70)
-    btn('up', 'matUp', 0.86, 0.00, 240, nil, 70)
-    btn('down', 'matDown', 1.44, 0.00, 260, nil, 70)
-    lbl('credits count on the pile', 3.10, 0.00, 900, 62)
+    lbl('Credits are counted on the pile, under the FINF card',
+        -1.30, 0.00, 2100, 72)
   elseif g == 'AoS' then
     lbl('Backdoors  ' .. STATE.backdoors .. ' / 2', -3.32, 0.00, 700)
     btn('-', 'bdMinus', -1.54, 0.00, 240)
@@ -1249,15 +1244,15 @@ function trimPlus() trimBy(3) end
 function trimMinus() trimBy(-3) end
 
 -- ------------------------------------------------------------- the mat
--- THE FELT'S SIZE WAS MEASURED OFF A SCREENSHOT and is wrong: the mat
--- comes up narrower than the table. Nothing in here can measure the
--- table - TTS offers no bounds for it - so it is sized at the table
--- instead, the way the dial was, and the numbers come back to
--- NAP_TABLE_SCALE and NAP_TABLE_Z in build_mod.py.
+-- THE FELT WAS MEASURED WITH THESE, and it came to 56.5 by 36.1 - see
+-- FELT in build_mod.py, which everything on the table is now built
+-- from. Nothing in here can measure a TTS table, so if the felt ever
+-- needs re-measuring it is measured the same way: put the six buttons
+-- back on the panel's middle row, size the mat until it covers the
+-- table, read the numbers off and redraw the template to them.
 --
--- Width and depth move independently, because the mat is short of the
--- edge across and over it along: one scale cannot fix both, and the
--- template gets redrawn to whatever rectangle this settles on.
+-- Width and depth move independently, because one scale cannot fix a
+-- mat that is short across and over along.
 MAT_STEP = 0.5
 
 function matSize()
