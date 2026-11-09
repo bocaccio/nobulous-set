@@ -1888,7 +1888,7 @@ check("the dice are a 2x2 block per colour down the left edge",
       "ROWS = {" in _mod and "XCOL = " in _mod and "OFFS = (" in _mod
       and "(seen[nick] - 1) * 1.1" not in _mod)
 check("the Chip sits with the Red die it marks, not on it",
-      "'Chip': (XCOL + 1.4, ROWS['Pink'])" in _mod)
+      "'Chip': (XCOL, ROWS['Pink'] + 2.0)" in _mod)
 # The rail's height is not in the save, and four attempts to name it
 # failed, so the mat and the boxes are dropped onto it and locked where
 # they land.
