@@ -83,11 +83,11 @@ CHIP_SEGMENT = {'Red': 36, 'Yellow': 108, 'Green': 180,
 
 # How far past the top the turn lands. Turning each colour to minus its
 # own segment put yellow on 1 but left the whole dial a half segment
-# clockwise of the mark, so it came back 36 degrees - and that was 12
-# too many, judged at the table. THIS IS THE ONE NUMBER TO NUDGE if it
-# is still off: 72 is a whole segment, and the sign is
-# clockwise-positive.
-CHIP_TRIM = -24
+# clockwise of the mark, so it came back 36 degrees - and that was 15
+# too many, judged at the table in two passes of 12 and 3. THIS IS THE
+# ONE NUMBER TO NUDGE if it is still off: 72 is a whole segment, and
+# the sign is clockwise-positive.
+CHIP_TRIM = -21
 
 ATTENTION = ('Yellow', 'Green', 'Blue', 'Purple', 'Red')
 CHIP_ANGLE = dict((c, (360 - a + CHIP_TRIM) % 360)
