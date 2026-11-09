@@ -1862,11 +1862,16 @@ check("tts/lua.lua spaces the table in card widths, not literals",
 # EVERY SPREAD IS SPACED IN CARDS, not in numbers someone liked. These
 # three checks matched implementation strings and all three went stale
 # the first time the implementation moved, so they are properties now.
-_gaps = re.findall(r"spread\([^)]*?FACEUP,\s*([^)]+)\)", _lua, re.S)
+# A spread() call spans two lines and contains parentheses of its own,
+# so a [^)]*? regex stops at the first one: the first version of this
+# inspected ONE of the eight call sites and passed. Take a window after
+# each call instead, and count them.
+_calls = [m.start() for m in re.finditer(r"spread\(", _lua)]
+_bare = [_lua[i:i + 60].split(chr(10))[0]
+         for i in _calls if "CARD_" not in _lua[i:i + 220]]
 check("every row is spaced in card widths",
-      _gaps and all("CARD_W" in g or "CARD_L" in g for g in _gaps),
-      "bare gaps: %r" % ([g for g in _gaps
-                          if "CARD_W" not in g and "CARD_L" not in g],))
+      len(_calls) >= 6 and not _bare,
+      "%d call(s), bare: %r" % (len(_calls), _bare))
 # TTS drops objects fed to a bag faster than it animates them, which left
 # exactly one card on the table after every setup. tts/test_setup.py
 # refuses one bag put in N and proves a single pass fails.
