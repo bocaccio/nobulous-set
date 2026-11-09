@@ -20,9 +20,12 @@ from decks import DECKS, GAME_COLOR
 # the published mod and resolve once the branch merges. Pass --ref to aim at
 # a branch, or --local to build file:/// URLs against SHEETS.
 GH_USER, GH_REPO, GH_REF = "bocaccio", "nobulous-set", "main"
-CDN = "https://cdn.jsdelivr.net/gh/%s/%s@%s/images"      # cached, fast, recommended
-RAW = "https://raw.githubusercontent.com/%s/%s/%s/images"  # works, uncached
+CDN = "https://cdn.jsdelivr.net/gh/%s/%s@%s"      # cached, fast, recommended
+RAW = "https://raw.githubusercontent.com/%s/%s/%s"  # works, uncached
+# The card sheets live under images/ and the rulebooks under rules/, so
+# the templates above stop at the repo and these two name the folder.
 BASE_URL = ""
+RULES_URL = ""
 # Repo-relative so this runs wherever the repo is checked out. The defaults
 # used to be /home/claude paths from the sandbox that wrote the script, so
 # OUT died with FileNotFoundError and SHEETS made REQUIRED_IMAGES.txt report
@@ -148,7 +151,7 @@ def exhibit_blocks():
     return out
 
 
-def lua_header(box_guids):
+def lua_header(box_guids, rules_guid):
     """The generated block prepended to lua.lua: GUIDs and card indices."""
     # Both names map home: a deck is found by its label, a card by its
     # own name with the number stripped off.
@@ -183,6 +186,10 @@ def lua_header(box_guids):
         'CHIP_SEGMENT = { %s }' % j('%s = %d' % (c, CHIP_SEGMENT[c])
                                     for c in ATTENTION),
         'CHIP_TRIM = %d' % CHIP_TRIM,
+        # The rulebook on the rail, and the four books it can show.
+        "RULES_GUID = '%s'" % rules_guid,
+        'RULES = { %s }' % j("%s = '%s'" % (g, rules_url(g))
+                             for g in ('BAT', 'NAP', 'AoS', 'IMP')),
         # Where the four one-of-a-kind markers live when nothing has
         # borrowed them, so a setup can move them and Pack up can put
         # them back.
@@ -232,6 +239,36 @@ def xf(x, y, z, rot=(0, 180, 0), s=1.0):
 
 def url(name):
     return "%s/%s" % (BASE_URL.rstrip('/'), name)
+
+
+# THE FOUR RULEBOOKS, by the game key the script uses. IMP is not a
+# fifth game - the Imposter Scenario is NRJ's finale - so it reads the
+# campaign supplement, which is where that scenario is written down.
+RULEBOOK = {'BAT': 'BAT_Rulebook.pdf', 'NAP': 'NAP_Rulebook.pdf',
+            'AoS': 'AoS_Rulebook.pdf', 'IMP': 'NRJ_Campaign_Supplement.pdf'}
+RULEBOOK_DIR = os.path.join(_REPO, 'rules')
+
+
+def rules_url(game):
+    return "%s/%s" % (RULES_URL.rstrip('/'), RULEBOOK[game])
+
+
+def rulebook():
+    """The rulebook that sits on the rail in the top right corner.
+
+    It opens on BAT and a setup swaps it for that game's book. Placed a
+    little above the rail and settled onto it like the mat and the
+    boxes, because the rail's height is not in the save.
+    """
+    return {"GUID": guid(), "Name": "Custom_PDF",
+            "Transform": xf(25.6, 5.40, 20.5, (0, 180, 0), 1.25),
+            "Nickname": "Rulebook",
+            "Description": "The rules for the game you set up. Click the"
+                           " button, then zoom in to read.",
+            "ColorDiffuse": {"r": 1.0, "g": 1.0, "b": 1.0},
+            "Locked": True, "Grid": False, "Snap": False,
+            "CustomPDF": {"PDFUrl": rules_url('BAT'), "PDFPassword": "",
+                          "PDFPage": 0, "PDFPageOffset": 0}}
 
 
 def card(deck_id, idx, nickname, rot, s, sideways, desc=''):
@@ -613,16 +650,20 @@ def notebook():
 
 
 def main():
-    global BASE_URL, GH_USER, GH_REPO, GH_REF
+    global BASE_URL, RULES_URL, GH_USER, GH_REPO, GH_REF
     a = sys.argv
     for flag, var in (('--user', 'GH_USER'), ('--repo', 'GH_REPO'), ('--ref', 'GH_REF')):
         if flag in a:
             globals()[var] = a[a.index(flag) + 1]
     tpl = RAW if '--raw' in a else CDN
-    BASE_URL = tpl % (GH_USER, GH_REPO, GH_REF)
+    root = tpl % (GH_USER, GH_REPO, GH_REF)
+    BASE_URL = root + '/images'
+    RULES_URL = root + '/rules'
     if '--local' in a:
         BASE_URL = 'file://' + SHEETS
+        RULES_URL = 'file://' + RULEBOOK_DIR
     print("BASE_URL =", BASE_URL)
+    print("RULES_URL =", RULES_URL)
 
     objects = []
     # Every deck starts INSIDE its game's box. The parking row this
@@ -642,6 +683,8 @@ def main():
         box_guids[game] = bx['GUID']
         objects.append(bx)
     objects.append(panel())
+    rules = rulebook()
+    objects.append(rules)
     objects += dice_objects()
 
     save = {
@@ -666,7 +709,7 @@ def main():
         "Sky": "Sky_Museum", "Note": "Fan expansion for 20 Strong. Prototype.",
         "Rules": "See the Notebook.",
         "TabStates": {str(i): t for i, t in enumerate(notebook())},
-        "LuaScript": lua_header(box_guids) + io.open(
+        "LuaScript": lua_header(box_guids, rules['GUID']) + io.open(
             os.path.join(os.path.dirname(__file__), 'lua.lua'),
             encoding='utf-8').read(),
         "LuaScriptState": "",
@@ -690,6 +733,14 @@ def main():
         f.write("Upload these to BASE_URL, keeping the filenames:\n\n")
         for n in sorted(need):
             p = os.path.join(SHEETS, n)
+            f.write("  %-38s %s\n" % (n, 'ok' if os.path.exists(p) else 'MISSING'))
+        # THE RULEBOOKS ARE FETCHED BY THE MOD TOO, from rules/ rather
+        # than images/. Left off this list they would be the one set of
+        # files nobody checked before publishing.
+        f.write("\nAnd these to RULES_URL, from rules/:\n\n")
+        for g in ('BAT', 'NAP', 'AoS', 'IMP'):
+            n = RULEBOOK[g]
+            p = os.path.join(RULEBOOK_DIR, n)
             f.write("  %-38s %s\n" % (n, 'ok' if os.path.exists(p) else 'MISSING'))
     print("image list ->", os.path.join(os.path.dirname(OUT), 'REQUIRED_IMAGES.txt'))
 

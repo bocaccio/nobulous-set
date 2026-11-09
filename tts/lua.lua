@@ -20,7 +20,10 @@ STATE = { game = nil, difficulty = 'Standard', tier = 0,
           splices = 0, credits = 0, session = 0, backdoors = 0,
           -- Which number was last typed over the Chip, so the trim
           -- control can re-turn it to the colour you are judging.
-          chip = 1 }
+          chip = 1,
+          -- Which rulebook the corner is showing, so a setup does not
+          -- respawn the object to load what is already in it.
+          rules = 'BAT' }
 
 -- THE PRINTED NUMBERS, in one place. This script enforces nothing; it only
 -- SAYS them, which is exactly how they drifted - every one below used to be
@@ -223,15 +226,36 @@ function marker(name)
   return nil
 end
 
+-- THE FACE FIRST, THE MOVE AFTER, AND A FRAME BETWEEN THEM.
+--
+-- setPositionSmooth is a tween; setRotationValue is a physics call that
+-- re-seats the object. Issued in that order in the same frame, the
+-- rotation cancelled the move: the three stat dice stayed down in the
+-- dice row showing the right numbers, while the Chip - the one call
+-- here that passes no value - moved as it should. That difference is
+-- what the symptom was.
+--
+-- And a BACKSTOP, because the above is a diagnosis made at a distance
+-- from the table. Half a second later, a die that is still not where it
+-- was sent is put there outright: setPosition is instant, so there is
+-- no tween for anything to interrupt.
 function setMarker(name, x, z, value)
   local o = marker(name)
   if not o then return nil end
   o.setLock(false)
-  o.setPositionSmooth({x, 1.6, z}, false, true)
   if value then
     local ok = pcall(function() o.setRotationValue(value) end)
     if not ok then say(name .. ' has no numbered faces to set.') end
   end
+  Wait.frames(function()
+    o.setPositionSmooth({x, 1.6, z}, false, true)
+    Wait.frames(function()
+      local p = o.getPosition()
+      if math.abs(p.x - x) > 1.0 or math.abs(p.z - z) > 1.0 then
+        o.setPosition({x, 1.6, z})
+      end
+    end, 30)
+  end, 2)
   return o
 end
 
@@ -963,6 +987,9 @@ end
 PANEL_UNIT = 500          -- width units per local unit
 
 function refreshPanel()
+  -- The rulebook's button names the game too, and this is the one call
+  -- every setup and every counter change already makes.
+  if RULES_OBJ then drawRulesButton(RULES_OBJ) end
   if not PANEL then return end
   PANEL.clearButtons()
   local y = 0.2
@@ -985,13 +1012,19 @@ function refreshPanel()
   btn('Set up AoS', 'btnAoS', 1.15, -0.72, 660, {0.54, 0.24, 0.18})
   btn('Imposter', 'btnIMP', 3.43, -0.72, 660, {0.29, 0.23, 0.42})
 
-  lbl('Difficulty  ' .. STATE.difficulty, -3.07, -0.36, 900)
-  btn('cycle', 'btnDiff', -0.89, -0.36, 330, nil, 82)
-  -- The tier NAME lives in the setup message; the panel has room for its
-  -- numeral and nothing more.
-  lbl('NRJ Tier  ' .. (STATE.tier == 0 and 'off' or
-      ({'I', 'II', 'III'})[STATE.tier]), 0.82, -0.36, 620)
-  btn('cycle', 'btnTier', 2.75, -0.36, 330, nil, 82)
+  -- THE READOUT IS THE BUTTON. A pale label beside a dark `cycle`
+  -- button made you read two things to change one, and the pale half
+  -- was the half that said what it was. Dark means clickable here, so
+  -- these are dark.
+  --
+  -- The tier NAME lives in the setup message; the panel has room for
+  -- its numeral and nothing more.
+  btn('Difficulty  ' .. STATE.difficulty, 'btnDiff', -2.60, -0.36, 1080,
+      nil, 82)
+  btn('NRJ Tier  ' .. (STATE.tier == 0 and 'off' or
+      ({'I', 'II', 'III'})[STATE.tier]), 'btnTier', 0.50, -0.36, 820,
+      nil, 82)
+  lbl('click either to change', 2.90, -0.36, 800, 66)
 
   local g = STATE.game
   if g == 'BAT' then
@@ -1031,7 +1064,11 @@ function refreshPanel()
     for i = 1, n do
       btn(tostring(i), 'keep' .. i, -2.30 + (i - 1) * 0.62, 0.36, 210, nil, 82)
     end
-    lbl('then flip for the other side', 2.03, 0.36, 1050, 70)
+    -- WHAT IT MEANS, not what to do next. "then flip for the other
+    -- side" read as a button that would do the flipping; it is a note
+    -- that the card you keep has a second character on its back.
+    lbl('each card is two characters -- flip to pick a side',
+        2.26, 0.36, 1560, 62)
   else
     lbl('Keep', -3.97, 0.36, 380, 82)
     lbl(g == 'BAT' and 'BAT plays all four Lab Rats'
@@ -1098,6 +1135,8 @@ function settle()
     local o = getObjectFromGUID(g)
     if o then table.insert(t, o) end
   end
+  -- The rulebook sits on the same rail and had the same guessed height.
+  if RULES_OBJ then table.insert(t, RULES_OBJ) end
   for _, o in ipairs(t) do o.setLock(false) end
   Wait.time(function()
     for _, o in ipairs(t) do if o then o.setLock(true) end end
@@ -1150,6 +1189,70 @@ end
 function trimPlus() trimBy(3) end
 function trimMinus() trimBy(-3) end
 
+-- ---------------------------------------------------------- the rulebook
+-- A Custom_PDF on the rail in the top right corner, carrying one button
+-- that loads the rules for the game you have set up and flies your
+-- camera to the page. TTS reads a PDF where it lies, so "open" is the
+-- camera and the usual zoom, not a window.
+--
+-- RELOAD DESTROYS THE OBJECT AND RETURNS A NEW ONE. That is the same
+-- trap a deck of one card is - the reference you were holding is dead -
+-- and it takes the script-made button with it, so the button is drawn
+-- again on whatever reload() hands back, and RULES_OBJ is what the rest
+-- of the script holds.
+RULES_OBJ = nil
+
+function rulesLabel()
+  local g = STATE.game
+  if not g then return 'Rules: BAT' end
+  return 'Rules: ' .. (g == 'IMP' and 'NRJ' or g)
+end
+
+function drawRulesButton(o)
+  if not o then return end
+  RULES_OBJ = o
+  o.clearButtons()
+  -- A NARROW STRIP ALONG THE BOTTOM EDGE, not the face. A button over
+  -- the page would swallow the clicks TTS uses to zoom into it, which
+  -- is how you actually read the thing.
+  o.createButton({click_function = 'btnRules', function_owner = self,
+    label = rulesLabel(), position = {0, 0.1, 1.18},
+    width = 1500, height = 260, font_size = 160,
+    color = {0.16, 0.15, 0.13}, font_color = {1, 1, 1},
+    tooltip = 'Load the rules for the game you set up, and look at them'})
+end
+
+-- Swap the book for the one the game needs. Does nothing when it is
+-- already showing: a reload is a respawn, and respawning the object
+-- under the cursor on every setup is worse than the swap is worth.
+function showRules(game, who)
+  local o = RULES_OBJ or getObjectFromGUID(RULES_GUID)
+  if not o or not RULES[game] then return nil end
+  if STATE.rules ~= game then
+    STATE.rules = game
+    o.setCustomObject({PDFUrl = RULES[game], PDFPassword = '',
+                       PDFPage = 0, PDFPageOffset = 0})
+    o = o.reload()
+  end
+  drawRulesButton(o)
+  if who and Player[who] then
+    local p = o.getPosition()
+    Player[who].lookAt({position = {p.x, p.y, p.z},
+                        pitch = 70, yaw = 180, distance = 9})
+  end
+  return o
+end
+
+function btnRules(obj, color, alt)
+  local g = STATE.game or 'BAT'
+  if not showRules(g, color) then
+    say('The rulebook is not on the table.')
+    return
+  end
+  say((STATE.game and '' or 'No game set up, so these are the BAT rules. ')
+      .. 'Zoom in to read, and scroll with the page arrows.')
+end
+
 -- TTS calls this when a player types a number with the cursor over an
 -- object. Returning true says the script dealt with it.
 function onObjectNumberTyped(obj, player_color, number)
@@ -1172,6 +1275,10 @@ function onLoad()
   for _, o in ipairs(getAllObjects()) do
     if o.getName() == 'Control Panel' then PANEL = o end
   end
+  -- The rulebook carries no button in the save - buttons are made by
+  -- script - so without this it is a picture of a page that does
+  -- nothing.
+  drawRulesButton(getObjectFromGUID(RULES_GUID))
   settle()
   local missing = {}
   for game, g in pairs(BOX) do

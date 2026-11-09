@@ -162,6 +162,7 @@ def js_parse(body):
 
 
 FAILS = []
+SKIPPED = []
 
 
 def check(label, ok, detail=""):
@@ -169,6 +170,19 @@ def check(label, ok, detail=""):
                             "" if ok else "  " + detail))
     if not ok:
         FAILS.append(label)
+
+
+def skip(label, why):
+    """A check that could not run here.
+
+    NOT a pass. The whole value of this file is that a line it prints
+    was tested, so a check that never ran printing PASS is the one lie
+    it must not tell - and it was telling it: the Pillow guard below
+    called check(..., True, "skipped"), and check() only prints a
+    detail when it FAILS, so a missing tool read as a clean pass.
+    """
+    print("  %-52s SKIP  %s" % (label, why))
+    SKIPPED.append("%s - %s" % (label, why))
 
 
 def rows(label, a, b, fields):
@@ -1418,11 +1432,22 @@ print("Card titles - the gap between measuring and rendering")
 # TITLE_SAFETY is the margin that covers that gap, and gen.py records the
 # measured size of the gap next to it. These checks hold the margin
 # against the measurement and every printed title against the margin.
+_FT_FONT = os.path.join(ROOT, "fonts", "DejaVuSans-Bold.ttf")
 try:
     from PIL import ImageFont
-except ImportError:
-    check("card titles are clear of the measure/render gap", True,
-          "skipped: Pillow not installed")
+    # EXERCISED, NOT MERELY IMPORTED. Pillow loads its FreeType binding
+    # lazily, so `from PIL import ImageFont` succeeds and the first
+    # truetype() call is where it dies - which is what happened on this
+    # machine on 2026-11-09, when Windows Smart App Control started
+    # blocking _imagingft.pyd for being unsigned. The suite died there
+    # with a traceback, taking the summary and the 40 checks after it
+    # with it, and read like a failure rather than a missing tool.
+    ImageFont.truetype(_FT_FONT, 20).getlength("x")
+except Exception as _ft_err:
+    skip("card titles are clear of the measure/render gap",
+         "no PIL text engine here (%s). Card art is rendered by "
+         "WeasyPrint, not by this, so a rebuild is unaffected; only "
+         "the title-width measurement is." % _ft_err.__class__.__name__)
 else:
     _gs = text("generator/gen.py")
     # gen.py renders on import, so its constants are read out of the source
@@ -2150,6 +2175,35 @@ if _chip:
                   for i, c in enumerate(_cols)),
           "save %r vs script %r" % (_rv, _lf))
 
+# THE RULEBOOK IN THE CORNER. Four PDFs fetched from rules/ rather than
+# images/, so they are the one set of files the image manifest would
+# not have covered, and a URL that 404s shows as a blank page with no
+# error anywhere.
+_pdf = [o for o in _sv["ObjectStates"] if o["Name"] == "Custom_PDF"]
+check("the rulebook is in the save exactly once", len(_pdf) == 1,
+      "found %d" % len(_pdf))
+_rg = re.search(r"RULES_GUID = '([^']+)'", _sv["LuaScript"])
+check("the script holds the rulebook's own GUID",
+      bool(_pdf) and bool(_rg) and _rg.group(1) == _pdf[0]["GUID"],
+      "script %r vs object %r" % (_rg and _rg.group(1),
+                                  _pdf and _pdf[0]["GUID"]))
+_rt = re.search(r"RULES = \{([^}]*)\}", _sv["LuaScript"])
+_rules = dict(re.findall(r"(\w+) = '([^']+)'", _rt.group(1))) if _rt else {}
+check("the script names a rulebook for all four games",
+      sorted(_rules) == ["AoS", "BAT", "IMP", "NAP"], "got %r" % (sorted(_rules),))
+_norules = [g for g, u in sorted(_rules.items())
+            if not os.path.exists(os.path.join(ROOT, "rules",
+                                               u.rsplit("/", 1)[-1]))]
+check("every rulebook the script can load is a file in rules/",
+      not _norules, "no such PDF: %r" % (_norules,))
+check("the rulebooks are served from rules/, not images/",
+      all("/rules/" in u for u in _rules.values()), "%r" % (_rules,))
+# reload() respawns the object, and a script-made button does not
+# survive that - nor does the reference the script was holding.
+check("the rulebook's button is redrawn on whatever reload returns",
+      "o = o.reload()" in _lua and "drawRulesButton(o)" in _lua
+      and "drawRulesButton(getObjectFromGUID(RULES_GUID))" in _lua)
+
 # The three dice say what the card says. One literal prints all six
 # Apprentice sides, so there is nothing to average over.
 check("an Apprentice starts NAP at the 2s its own card prints",
@@ -2173,6 +2227,11 @@ check("the overlay's box labels are all one size",
                         _tmpl))
 
 print()
+if SKIPPED:
+    print("%d check(s) COULD NOT RUN here:" % len(SKIPPED))
+    for s in SKIPPED:
+        print("   ~", s)
+    print()
 print("%d check(s) failed" % len(FAILS))
 for f in FAILS:
     print("   -", f)
