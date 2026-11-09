@@ -1884,9 +1884,11 @@ check("tts/test_setup.py models a bag that drops what it is handed",
       "self.lossy" in text("tts/test_setup.py")
       and "dropping 1 in" in text("tts/test_setup.py"))
 # The dice are a pool, not a heap: one block per colour, blocks apart.
-check("the dice are one row per colour down the left edge",
-      "ROWS = {" in _mod and "XCOL = " in _mod
+check("the dice are a 2x2 block per colour down the left edge",
+      "ROWS = {" in _mod and "XCOL = " in _mod and "OFFS = (" in _mod
       and "(seen[nick] - 1) * 1.1" not in _mod)
+check("the Chip sits with the Red die it marks",
+      "'Chip': (XCOL + 1.6, ROWS['Pink'])" in _mod)
 # The panel art is generated now, so the shape the layout depends on has
 # a source rather than being a hand-drawn PNG nobody can regenerate.
 _panel = text("generator/make_panel.py")

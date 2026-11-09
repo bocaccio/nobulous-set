@@ -216,10 +216,15 @@ def build_deck(d, deck_id, pos):
 
 def panel():
     return {"GUID": guid(), "Name": "Custom_Tile",
-            # ON THE BACK RAIL, clear of the top dealt row, which
-            # reaches z 17.96. Locked, so it stays on the rail whatever
-            # the rail's real height turns out to be.
-            "Transform": xf(0, 1.70, 21.0, (0, 180, 0), 2.6),
+            # ON the rail, not behind it. At scale 2.6 the mat was 5.2
+            # deep - deeper than the rail - so at z 21 most of it hung off
+            # the back of the table and only the buttons, which float 0.5
+            # above it, cleared the woodwork. At 2.0 it is 4 deep, and
+            # z 20 puts its front edge at 18, just clear of the top dealt
+            # row at 17.96. The height is above the rail rather than on
+            # it: the mat is locked, so floating a little is safe and
+            # being a little low is not - it vanishes.
+            "Transform": xf(0, 2.20, 20.0, (0, 180, 0), 2.0),
             "Nickname": "Control Panel",
             "Description": "Setup and counters for The Nobulous Set",
             "ColorDiffuse": {"r": 0.93, "g": 0.91, "b": 0.85},
@@ -246,16 +251,23 @@ def dice_objects():
     XCOL = -24.5
     ROWS = {'Pink': 12.0, 'Purple': 8.0, 'Blue': 4.0,
             'Green': 0.0, 'Yellow': -4.0}
-    lay = {'Health': (XCOL, -9.0), 'Strategy': (XCOL + 1.6, -9.0),
-           'Recovery': (XCOL + 3.2, -9.0), 'Chip': (XCOL + 4.8, -9.0)}
+    # A 2x2 block per colour rather than a row of four: four in a line is
+    # as wide as a card and reads as a queue, not a pool.
+    OFFS = ((0.0, 0.0), (1.6, 0.0), (0.0, -1.6), (1.6, -1.6))
+    # The Chip sits beside the Red die, which is the one it belongs to:
+    # Red is communal and the Chip marks who holds it.
+    lay = {'Chip': (XCOL + 1.6, ROWS['Pink']),
+           'Health': (XCOL, -8.5), 'Strategy': (XCOL + 1.6, -8.5),
+           'Recovery': (XCOL + 3.2, -8.5)}
     seen = {}
     for o in src:
         nick = o.get('Nickname') or 'Die'
         seen[nick] = seen.get(nick, 0) + 1
         if nick in ROWS:
-            bx, bz = XCOL + (seen[nick] - 1) * 1.6, ROWS[nick]
+            ox, oz = OFFS[(seen[nick] - 1) % len(OFFS)]
+            bx, bz = XCOL + ox, ROWS[nick] + oz
         else:
-            bx, bz = lay.get(nick, (XCOL + 6.4, -9.0))
+            bx, bz = lay.get(nick, (XCOL + 4.8, -8.5))
         d = {"GUID": guid(), "Name": o['Name'],
              "Transform": xf(bx, 1.4, bz, (0, 0, 0)),
              "Nickname": 'Red' if nick == 'Pink' else nick,
