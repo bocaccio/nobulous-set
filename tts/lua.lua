@@ -693,11 +693,30 @@ function bdMinus() bump('backdoors', -1, 'Backdoors claimed') end
 function atPlus() bump('session', 1, 'Session') end
 function atMinus() bump('session', -1, 'Session') end
 
+-- THE RAIL'S HEIGHT IS NOT IN THE SAVE. Three guesses buried the mat in
+-- the woodwork and a fourth floated it above, so stop guessing: the mat
+-- and the four boxes are built a little above the rail, unlocked here so
+-- that gravity puts them on whatever surface is actually there, and
+-- locked again where they land. They are locked in the save, so a player
+-- who never reloads still cannot push them around.
+function settle()
+  local t = {PANEL}
+  for _, g in pairs(BOX) do
+    local o = getObjectFromGUID(g)
+    if o then table.insert(t, o) end
+  end
+  for _, o in ipairs(t) do o.setLock(false) end
+  Wait.time(function()
+    for _, o in ipairs(t) do if o then o.setLock(true) end end
+  end, 2.0)
+end
+
 -- ----------------------------------------------------------------- onLoad
 function onLoad()
   for _, o in ipairs(getAllObjects()) do
     if o.getName() == 'Control Panel' then PANEL = o end
   end
+  settle()
   local missing = {}
   for game, g in pairs(BOX) do
     if not getObjectFromGUID(g) then table.insert(missing, game) end

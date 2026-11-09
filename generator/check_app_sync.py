@@ -1889,6 +1889,12 @@ check("the dice are a 2x2 block per colour down the left edge",
       and "(seen[nick] - 1) * 1.1" not in _mod)
 check("the Chip sits with the Red die it marks, not on it",
       "'Chip': (XCOL + 3.2, ROWS['Pink'])" in _mod)
+# The rail's height is not in the save, and four attempts to name it
+# failed, so the mat and the boxes are dropped onto it and locked where
+# they land.
+check("the mat and the boxes are settled onto the rail, not placed on it",
+      "function settle()" in _lua and "settle()" in _lua.split("function onLoad")[1]
+      and "o.setLock(true)" in _lua)
 # The panel art is generated now, so the shape the layout depends on has
 # a source rather than being a hand-drawn PNG nobody can regenerate.
 _panel = text("generator/make_panel.py")
