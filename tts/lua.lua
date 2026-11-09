@@ -494,63 +494,79 @@ end
 -- z +/-1.0. Every row below lives inside that. The layout used to run from
 -- z -4.3 to -0.6 in rows 0.9 apart, which put four of its five rows off
 -- the top edge of the tile, hanging in the air.
+-- WIDTH IS A HALF-EXTENT. A button's `width` and `height` are thousandths
+-- of a local unit measured from its CENTRE, so width 1000 is two local
+-- units across, not one. The first layout read them as full extents and
+-- every button came out at twice its intended size: four setup buttons of
+-- 1080 on a 1.15 pitch, which is 2.16 units of button in 1.15 units of
+-- room. They overlapped in a row, and height 250 against a 0.40 row pitch
+-- overlapped the rows as well.
+--
+-- So: half-width in local units = width / 1000, and the tile is 2.833 by
+-- 1.0 (ControlPanel.png is 1473x520, stretched). One glyph is about
+-- 0.00095 * font_size local units wide, which is what keeps a label inside
+-- its own button. check_app_sync.py holds all three, and tts/test_setup.py
+-- draws every panel state and fails on any two buttons that overlap.
+PANEL_UNIT = 500          -- width units per local unit
+
 function refreshPanel()
   if not PANEL then return end
   PANEL.clearButtons()
   local y = 0.2
-  local function btn(label, fn, x, z, w, col)
+  local function btn(label, fn, x, z, w, col, fs)
     PANEL.createButton({click_function = fn, function_owner = self, label = label,
-      position = {x, y, z}, width = w or 1080, height = 250, font_size = 105,
+      position = {x, y, z}, width = w or 660, height = 170, font_size = fs or 95,
       color = col or {0.16, 0.15, 0.13}, font_color = {1, 1, 1}})
   end
-  local function lbl(text, x, z, w)
+  local function lbl(text, x, z, w, fs)
     PANEL.createButton({click_function = 'nop', function_owner = self, label = text,
-      position = {x, y, z}, width = w or 1080, height = 230, font_size = 100,
+      position = {x, y, z}, width = w or 660, height = 160, font_size = fs or 85,
       color = {0.93, 0.91, 0.85}, font_color = {0.13, 0.11, 0.09}})
   end
 
   -- The tile art already prints THE NOBULOUS SET, so the row that used to
-  -- repeat it is gone and the four rows fit.
-  btn('Set up BAT', 'btnBAT', -1.73, -0.60, 1080, {0.17, 0.37, 0.29})
-  btn('Set up NAP', 'btnNAP', -0.58, -0.60, 1080, {0.42, 0.25, 0.55})
-  btn('Set up AoS', 'btnAoS', 0.58, -0.60, 1080, {0.54, 0.24, 0.18})
-  btn('Imposter', 'btnIMP', 1.73, -0.60, 1080, {0.29, 0.23, 0.42})
+  -- repeat it is gone and four rows fit at a 0.40 pitch.
+  btn('Set up BAT', 'btnBAT', -2.12, -0.60, 660, {0.17, 0.37, 0.29})
+  btn('Set up NAP', 'btnNAP', -0.71, -0.60, 660, {0.42, 0.25, 0.55})
+  btn('Set up AoS', 'btnAoS', 0.71, -0.60, 660, {0.54, 0.24, 0.18})
+  btn('Imposter', 'btnIMP', 2.12, -0.60, 660, {0.29, 0.23, 0.42})
 
-  lbl('Difficulty  ' .. STATE.difficulty, -1.88, -0.20, 1240)
-  btn('cycle', 'btnDiff', -1.00, -0.20, 400)
+  lbl('Difficulty  ' .. STATE.difficulty, -1.90, -0.20, 900)
+  btn('cycle', 'btnDiff', -0.55, -0.20, 330, nil, 85)
+  -- The tier NAME lives in the setup message; the panel has room for its
+  -- numeral and nothing more.
   lbl('NRJ Tier  ' .. (STATE.tier == 0 and 'off' or
-      ({'I Agenda', 'II Contamination', 'III Exploitation'})[STATE.tier]),
-      0.72, -0.20, 1800)
-  btn('cycle', 'btnTier', 2.12, -0.20, 400)
+      ({'I', 'II', 'III'})[STATE.tier]), 0.50, -0.20, 620)
+  btn('cycle', 'btnTier', 1.70, -0.20, 330, nil, 85)
 
   local g = STATE.game
   if g == 'BAT' then
-    lbl('Splices  ' .. STATE.splices .. ' / 5', -1.88, 0.20, 1200)
-    btn('-', 'splMinus', -1.00, 0.20, 320)
-    btn('+', 'splPlus', -0.60, 0.20, 320)
-    if STATE.splices >= 5 then lbl('TYRANT AWAKE', 0.90, 0.20, 1400) end
+    lbl('Splices  ' .. STATE.splices .. ' / 5', -2.10, 0.20, 640)
+    btn('-', 'splMinus', -1.05, 0.20, 240)
+    btn('+', 'splPlus', -0.50, 0.20, 240)
+    if STATE.splices >= 5 then lbl('TYRANT AWAKE', 1.20, 0.20, 560) end
   elseif g == 'NAP' then
     local goal = NAP_DIFF[STATE.difficulty][1]
-    lbl('Credits  ' .. STATE.credits .. ' / ' .. goal, -1.88, 0.20, 1200)
-    btn('-', 'crMinus', -1.00, 0.20, 320)
-    btn('+', 'crPlus', -0.60, 0.20, 320)
-    if STATE.credits >= goal then lbl('FINAL EXAM', 0.90, 0.20, 1400) end
+    lbl('Credits  ' .. STATE.credits .. ' / ' .. goal, -2.10, 0.20, 640)
+    btn('-', 'crMinus', -1.05, 0.20, 240)
+    btn('+', 'crPlus', -0.50, 0.20, 240)
+    if STATE.credits >= goal then lbl('FINAL EXAM', 1.20, 0.20, 560) end
   elseif g == 'AoS' then
-    lbl('Backdoors  ' .. STATE.backdoors .. ' / 2', -1.88, 0.20, 1200)
-    btn('-', 'bdMinus', -1.00, 0.20, 320)
-    btn('+', 'bdPlus', -0.60, 0.20, 320)
+    lbl('Backdoors  ' .. STATE.backdoors .. ' / 2', -2.05, 0.20, 700)
+    btn('-', 'bdMinus', -0.95, 0.20, 240)
+    btn('+', 'bdPlus', -0.40, 0.20, 240)
   elseif g == 'IMP' then
-    lbl('Session  ' .. math.min(9, STATE.session + 1) .. ' / 9', -1.88, 0.20, 1200)
-    btn('-', 'atMinus', -1.00, 0.20, 320)
-    btn('+', 'atPlus', -0.60, 0.20, 320)
+    lbl('Session  ' .. math.min(9, STATE.session + 1) .. ' / 9', -2.10, 0.20, 640)
+    btn('-', 'atMinus', -1.05, 0.20, 240)
+    btn('+', 'atPlus', -0.50, 0.20, 240)
     -- Derived, not counted: the attention advances one step at the end of
     -- every session, so a hand counter for it could only ever disagree.
-    lbl('Attention  ' .. attentionNow() .. '  then ' .. attentionNext(),
-        1.15, 0.20, 2000)
+    lbl('Attention  ' .. attentionNow() .. ' / ' .. attentionNext(),
+        1.35, 0.20, 900, 75)
   end
 
-  btn('Pack up', 'btnPack', -1.88, 0.60, 1200, {0.42, 0.18, 0.15})
-  btn('Reset counters', 'btnReset', -0.50, 0.60, 1400)
+  btn('Pack up', 'btnPack', -2.35, 0.60, 420, {0.42, 0.18, 0.15})
+  btn('Reset counters', 'btnReset', -1.20, 0.60, 640, nil, 85)
 end
 
 function nop() end

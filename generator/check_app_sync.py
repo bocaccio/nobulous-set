@@ -1812,11 +1812,22 @@ _pan = _pan[:_pj] if _pj >= 0 else _pan
 _rows = re.findall(r"(-?\d+\.\d+),\s*(-?\d+\.\d+),\s*(\d{3,4})", _pan)
 check("the panel layout was read out of tts/lua.lua",
       len(_rows) >= 10, "found %d button positions" % len(_rows))
+# width is a HALF-extent in thousandths of a local unit, so a button of
+# width 1000 is TWO units across. This divided by 2000 and so believed
+# every button was half its real size: it passed a panel whose rows
+# overlapped on screen. Bounds alone cannot see that anyway - the
+# overlapping buttons were all inside the tile - so the overlap itself is
+# asserted in tts/test_setup.py, which draws every panel state.
 _off = [(x, z, w) for x, z, w in _rows
         if abs(float(z)) > _half_z
-        or abs(float(x)) + int(w) / 2000.0 > _half_x]
+        or abs(float(x)) + int(w) / 1000.0 > _half_x]
 check("every control-panel button sits on the control panel",
       not _off, "off the tile: %r" % (_off,))
+check("tts/lua.lua records what a button width actually means",
+      "PANEL_UNIT = 500" in _lua and "HALF-EXTENT" in _lua)
+check("tts/test_setup.py asserts the buttons do not overlap each other",
+      "def overlaps" in text("tts/test_setup.py")
+      and "nothing overlaps" in text("tts/test_setup.py"))
 
 
 def _lua_rows(name, levels):

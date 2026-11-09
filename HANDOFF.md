@@ -219,13 +219,26 @@ AST walk and emits them into the Lua, so a reordered card table cannot
 leave a stale index behind. The Exhibit reader refuses a domain that is not
 one contiguous run rather than dealing the wrong cards quietly.
 
-**The control panel now fits on the control panel.** `ControlPanel.png` is
-1473x520 and the tile is `"Stretch": true`, so the tile's local space is
-about `z +/-1` by `x +/-2.8`. The layout ran from `z -4.3` to `z -0.6` in
-rows 0.9 apart: four of its five rows hung in the air off the top edge, and
-the buttons overlapped each other. The row that repeated the title the tile
-art already prints is gone, and `check_app_sync.py` now computes the tile's
-extent from the PNG's own aspect ratio and fails any button outside it.
+**The control panel took two goes, and the second one is the lesson.**
+`ControlPanel.png` is 1473x520 and the tile is `"Stretch": true`, so the
+tile's local space is `z +/-1` by `x +/-2.833`. The layout ran from
+`z -4.3` to `z -0.6` in rows 0.9 apart, so four of its five rows hung in
+the air off the top edge of the tile. Moving them onto it fixed that and
+left every button overlapping its neighbours, because **width and height
+are HALF-extents**: thousandths of a local unit measured from the
+button's CENTRE, so `width 1000` is two units across, not one. Four
+buttons of 1080 on a 1.15 pitch is 2.16 units of button in 1.15 units of
+room, and `height 250` against a 0.40 row pitch overlapped the rows too.
+
+The static check carried the same factor and so passed the overlapping
+panel - and bounds could not have caught it in any case, because every
+overlapping button was inside the tile. Only the buttons' positions
+RELATIVE TO EACH OTHER show it. `tts/test_setup.py` draws all 80 panel
+states and asserts that no two rectangles intersect and no label is wider
+than the button drawn around it. Both are proven to fail on the exact
+numbers that shipped, and `lua.lua` now states the unit at the top of
+`refreshPanel` so the next person does not have to measure a screenshot
+to recover it.
 
 **The deck-label check had to be rewritten, not kept.** It matched
 `findDeck('...')` call sites against `decks.py`; the setups call

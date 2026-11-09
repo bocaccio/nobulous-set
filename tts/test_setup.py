@@ -171,12 +171,22 @@ class Panel(object):
     """A control-panel tile that records the buttons drawn on it.
 
     ControlPanel.png is 1473x520 and the tile is "Stretch": true, so the
-    tile's local space is about z +/-1 by x +/-2.8. check_app_sync.py reads
-    the coordinates out of the source with a regex; this draws them.
+    tile's local space is z +/-1 by x +/-2.833.
+
+    WIDTH AND HEIGHT ARE HALF-EXTENTS, in thousandths of a local unit from
+    the button's centre - width 1000 is two units across. Reading them as
+    full extents is what put four 1080-wide buttons on a 1.15 pitch and
+    made every row overlap, and the first version of this class repeated
+    the same mistake (w / 2000.0), so it drew the overlap and called it
+    fine. A bounds check cannot catch that on its own: the buttons were
+    inside the tile. Only the buttons' positions RELATIVE TO EACH OTHER
+    show it, which is what overlaps() is for.
     """
 
     HALF_Z = 1.0
     HALF_X = 1473.0 / 520.0
+    UNIT = 1000.0            # width units per local unit, half-extent
+    GLYPH = 0.00095          # local units per glyph per point of font_size
 
     def __init__(self):
         self.buttons = []
@@ -190,15 +200,33 @@ class Panel(object):
     def createButton(self, spec):
         p = spec["position"]
         pos = list(p.values()) if hasattr(p, "values") else list(p)
-        self.buttons.append((spec["label"], pos[0], pos[2], spec["width"]))
+        self.buttons.append({"label": spec["label"], "x": pos[0], "z": pos[2],
+                             "hw": spec["width"] / self.UNIT,
+                             "hh": spec["height"] / self.UNIT,
+                             "font": spec["font_size"]})
 
     def setLock(self, *a):
         pass
 
     def off_tile(self):
-        return [b for b in self.buttons
-                if abs(b[2]) > self.HALF_Z
-                or abs(b[1]) + b[3] / 2000.0 > self.HALF_X]
+        return [b["label"] for b in self.buttons
+                if abs(b["z"]) + b["hh"] > self.HALF_Z
+                or abs(b["x"]) + b["hw"] > self.HALF_X]
+
+    def overlaps(self):
+        """Pairs whose rectangles intersect - what the player sees."""
+        out = []
+        for i, a in enumerate(self.buttons):
+            for b in self.buttons[i + 1:]:
+                if (abs(a["x"] - b["x"]) < a["hw"] + b["hw"]
+                        and abs(a["z"] - b["z"]) < a["hh"] + b["hh"]):
+                    out.append((a["label"], b["label"]))
+        return out
+
+    def overflowing(self):
+        """Labels wider than the button drawn around them."""
+        return [b["label"] for b in self.buttons
+                if len(str(b["label"])) * b["font"] * self.GLYPH > 2 * b["hw"]]
 
 
 def start(difficulty, tier, panel=None):
@@ -286,9 +314,12 @@ def panel_assertions():
                     continue
                 want(t + " drew buttons", bool(pan.buttons), True)
                 want(t + " all on the tile", pan.off_tile(), [])
+                want(t + " nothing overlaps", pan.overlaps(), [])
+                want(t + " no label overflows its button",
+                     pan.overflowing(), [])
                 want(t + " no nil in a label",
-                     [b for b in pan.buttons if b[0] is None
-                      or "nil" in str(b[0])], [])
+                     [b["label"] for b in pan.buttons
+                      if b["label"] is None or "nil" in str(b["label"])], [])
 
     # Both cycles must walk every value and wrap.
     w, g = start("Easy", 0, Panel())
