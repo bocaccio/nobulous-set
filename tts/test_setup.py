@@ -144,6 +144,7 @@ class World(object):
         self.table = {}        # guid -> object currently out on the table
         self.said = []
         self.shuffled = set()
+        self.dice = []
         self.lossy = 0          # refuse one bag put in N, like TTS does
         self.puts = 0
         self.rng = random.Random(7)
@@ -176,6 +177,12 @@ def build(lua):
                 cards = [Obj(w, gid(), d["Nickname"] + " 1")]
             decks.append(w.add(Obj(w, d["GUID"], d["Nickname"], cards)))
         w.add(Obj(w, o["GUID"], o["Nickname"], decks, bag=True))
+    # The dice are not cards and never move, but a card dealt on top of
+    # them is still a card dealt on top of them: at x -24.5 the second
+    # die of every block sat under the NAP Time Slot column.
+    w.dice = [(o["Transform"]["posX"], o["Transform"]["posZ"])
+              for o in save["ObjectStates"]
+              if o["Name"] in ("Custom_Dice", "Custom_Token")]
     if not w.table and not w.byguid:
         raise SystemExit("no bags in %s - run build_mod.py first" % SAVE)
     # THE SAVE IS WHERE THE LUA RUNS FROM, so a save built before the last
@@ -386,6 +393,12 @@ def layout_assertions():
                        if abs(f[1]) + f[3] > FELT_X
                        or f[2] - f[4] < FELT_ZMIN or f[2] + f[4] > FELT_ZMAX]
                 want(t + " nothing dealt off the felt", off[:3], [])
+                on_dice = [f[0] for f in fp
+                           for dx, dz in w.dice
+                           if abs(f[1] - dx) < f[3] + 0.45
+                           and abs(f[2] - dz) < f[4] + 0.45]
+                want(t + " nothing dealt on top of the dice",
+                     sorted(set(on_dice))[:3], [])
 
 
 def panel_assertions():
@@ -441,6 +454,16 @@ def panel_assertions():
         {"NAP": g.setupNAP, "AoS": g.setupAoS, "IMP": g.setupImposter}[which]()
         want("%s dealt %d characters" % (which, n),
              out(w, deck), n)
+        if which == "NAP":
+            # The Time Slots are a clock: Morning, Afternoon, Evening,
+            # top to bottom. takeObject hands back whichever card it
+            # likes, which dealt them Morning, Evening, Afternoon.
+            col = sorted([o for o in w.table.values()
+                          if o.name.startswith("Time Slots")],
+                         key=lambda o: -o.pos[2])
+            order = [int(o.name.split()[-1]) if o.name.split()[-1].isdigit()
+                     else 1 for o in col]
+            want("NAP Time Slots run in printed order", order, [1, 2, 3])
         # Every index, including the LAST - which is the deck object
         # collapsing to its final card, the case a nickname lookup could
         # not find and a left-to-right one can.

@@ -255,17 +255,23 @@ def dice_objects():
     # second die stood on the next colour's first and the pool read as one
     # heap. x -24.5 keeps the whole column clear of the widest dealt row,
     # which is four landscape cards at +/-18.
-    XCOL = -24.5
+    # FAR ENOUGH LEFT TO CLEAR THE NAP TIME SLOT COLUMN, whose cards
+    # reach x -23.86. At -24.5 the second die of every block sat under
+    # them - the comment in lua.lua claimed -26.5 before the number did.
+    XCOL = -26.5
     ROWS = {'Pink': 12.0, 'Purple': 8.0, 'Blue': 4.0,
             'Green': 0.0, 'Yellow': -4.0}
     # A 2x2 block per colour rather than a row of four: four in a line is
     # as wide as a card and reads as a queue, not a pool.
-    OFFS = ((0.0, 0.0), (1.6, 0.0), (0.0, -1.6), (1.6, -1.6))
+    OFFS = ((0.0, 0.0), (1.4, 0.0), (0.0, -1.4), (1.4, -1.4))
     # The Chip sits beside the Red die, which is the one it belongs to:
     # Red is communal and the Chip marks who holds it.
-    lay = {'Chip': (XCOL + 3.2, ROWS['Pink']),
-           'Health': (XCOL, -8.5), 'Strategy': (XCOL + 1.6, -8.5),
-           'Recovery': (XCOL + 3.2, -8.5)}
+    # The Chip takes the empty second slot of Red's block - Red is one
+    # die, so that slot is free - and the three utility dice stay inside
+    # the same two columns, clear of the FINF card at z -10.
+    lay = {'Chip': (XCOL + 1.4, ROWS['Pink']),
+           'Health': (XCOL, -8.5), 'Strategy': (XCOL + 1.4, -8.5),
+           'Recovery': (XCOL, -9.9)}
     seen = {}
     for o in src:
         nick = o.get('Nickname') or 'Die'
@@ -274,7 +280,7 @@ def dice_objects():
             ox, oz = OFFS[(seen[nick] - 1) % len(OFFS)]
             bx, bz = XCOL + ox, ROWS[nick] + oz
         else:
-            bx, bz = lay.get(nick, (XCOL + 4.8, -8.5))
+            bx, bz = lay.get(nick, (XCOL + 1.4, -9.9))
         d = {"GUID": guid(), "Name": o['Name'],
              "Transform": xf(bx, 1.4, bz, (0, 0, 0)),
              "Nickname": 'Red' if nick == 'Pink' else nick,

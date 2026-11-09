@@ -205,6 +205,14 @@ function moveN(src, dst, n)
   if not src then return dst end
   if n <= 0 then putHome(src); return dst end
   src.shuffle()
+  -- ASKED FOR ALL OF THEM, give the deck. Taking the last card out of a
+  -- deck is taking a card out of a card, because a deck of one is a
+  -- card. BAT at Nobulous shuffles in all 8 Specimens, so this was one
+  -- difficulty away from throwing.
+  if n >= count(src) then
+    if dst then dst.putObject(src) else dst = src end
+    return dst
+  end
   for _ = 1, n do
     local c = src.takeObject({position = OFF, smooth = false})
     if c and dst then dst.putObject(c) end
@@ -263,15 +271,28 @@ end
 -- is the Lab Rat sitting behind its neighbours in the middle of the row,
 -- and the half-hidden Time Slot. Positioned first, the card is already
 -- where it belongs when the deck collapses around it.
--- The same, down the table instead of across it.
+-- The same, down the table instead of across it, AND IN THE DECK'S OWN
+-- ORDER. Which card takeObject hands back is TTS's business, not this
+-- script's: asking for three in a row and trusting the order dealt the
+-- Time Slots as Morning, Evening, Afternoon - a clock that reads wrong.
+-- So each card is taken BY NAME to its own slot, from the last back to
+-- the second, which leaves card one in the deck at slot one.
 function column(deck, n, x, z0, rot, gap)
   if not deck then return end
   gap = gap or (CARD_W + 0.6)
+  local label = deck.getName()
   deck.setPosition({x, 3, z0})
   deck.setRotation(rot or FACEUP)
-  for i = 1, n - 1 do
-    deck.takeObject({position = {x, 3, z0 - i * gap},
-                     rotation = rot or FACEUP, smooth = false})
+  for i = n, 2, -1 do
+    local want = label .. ' ' .. i
+    for _, e in ipairs(deck.getObjects()) do
+      if e.nickname == want then
+        deck.takeObject({guid = e.guid,
+                         position = {x, 3, z0 - (i - 1) * gap},
+                         rotation = rot or FACEUP, smooth = false})
+        break
+      end
+    end
   end
 end
 
