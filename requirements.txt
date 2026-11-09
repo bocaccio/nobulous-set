@@ -17,7 +17,7 @@
 #                              reportlab, pypdf, pillow
 #   rules/build.py             weasyprint
 #   rules/make_editable.py     beautifulsoup4
-#   tts/test_setup.py          lupa
+#   tts/test_setup.py          lupa  (its Lua 5.4 binding - see the file)
 #
 # tts/build_mod.py needs NOTHING - json, os, sys, random and ast only - so
 # the mod can be rebuilt on a machine with none of the above installed.

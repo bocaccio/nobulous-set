@@ -75,8 +75,27 @@ SLOT_X = -19.5
 -- card, then the Final Exams, top to bottom. 7.0 apart, which clears a
 -- landscape card's 6.24 depth, and the last of them sits at -14.4 with
 -- its bottom edge at -17.5 - the deepest anything goes on this felt.
-NAP_X = 20.0
+NAP_X = 23.5
 NAP_GAP = 7.0
+
+-- The Assignment deck, top left, with the Time Slots running down
+-- underneath it and four Assignment spaces beside each.
+ASSIGN_X = -19.5
+
+-- FOUR SPACES PER TIME SLOT, because rules/nap.html says never exceed 4
+-- Assignments in a row. Four landscape cards plus the Time Slot itself
+-- is 43.5 units of a 56-unit felt, which is what sets the pitch: 8.5 is
+-- a shade under a card's 8.71, so a full row tucks rather than spreads,
+-- and that is what leaves room for the Apprentice stack at 23.5 without
+-- pushing it off the edge.
+ASSIGN_SLOTS = 4
+
+-- DEALT BY NOTHING, DELIBERATELY. The Final Exams are not part of the
+-- setup: you reach them, and a later script option will start the exam.
+-- Named here so that "every deck a setup can reach" stays a real check
+-- rather than one that quietly stopped covering a deck.
+IN_THE_BAG = { 'Final Exams' }
+ASSIGN_PITCH = 8.5
 
 -- Where the character you keep ends up. NAP's belongs at the head of its
 -- own column; the other two are dealt across the table and keep the
@@ -172,7 +191,12 @@ function step(fn) table.insert(QUEUE, fn) end
 function pump()
   if #QUEUE == 0 then return end
   local fn = table.remove(QUEUE, 1)
-  local ok, err = pcall(fn)
+  -- xpcall WITH A HANDLER, not pcall. Both work in TTS, but under the
+  -- test harness pcall around a step that calls back into the host
+  -- intermittently lost the object bindings and every step died on
+  -- "attempt to index a function" - whole runs at a time. xpcall does
+  -- not, and it reports the error the same way.
+  local ok, err = xpcall(fn, tostring)
   if not ok then say('Setup error: ' .. tostring(err)) end
   Wait.frames(pump, 8)
 end
@@ -321,6 +345,31 @@ function spread(deck, n, z, rot, gap)
   end
 end
 
+-- The Assignment spaces beside each Time Slot. Snap points rather than
+-- printed mats: they cost nothing, they hold a card square, and they go
+-- away with the game rather than sitting on the felt during BAT.
+--
+-- Global.setSnapPoints takes WORLD positions and replaces the lot, so
+-- this builds every row at once. Wrapped, because a snap point is a
+-- convenience and must never be the reason a setup fails.
+function snapRow(rows, z0, gap)
+  local pts = {}
+  for r = 0, rows - 1 do
+    for k = 1, ASSIGN_SLOTS do
+      table.insert(pts, {position = {ASSIGN_X + k * ASSIGN_PITCH, 1.0,
+                                     z0 - r * gap},
+                         rotation = {0, 0, 0}, rotation_snap = false})
+    end
+  end
+  local ok = pcall(function() Global.setSnapPoints(pts) end)
+  if not ok then say('Snap points are not available in this build.') end
+  return pts
+end
+
+function clearSnaps()
+  pcall(function() Global.setSnapPoints({}) end)
+end
+
 -- Which deck a game's character comes from, and how many are dealt. BAT
 -- is not here: all four Lab Rats stay in play, so there is nothing to
 -- choose between them.
@@ -350,6 +399,26 @@ function keepChar(i)
     say('No ' .. label .. ' are on the table - press that game' .. chr39 .. 's setup first.')
     return
   end
+  local home = CHAR_HOME[STATE.game] or {0, ROW_CHAR}
+  -- A SINGLE STACK: take the one asked for out of it by name and send
+  -- the stack back. Position cannot pick a card out of a pile, and the
+  -- Apprentices are dealt as a pile precisely so that choosing is what
+  -- spreads them rather than the other way round.
+  if #t == 1 and count(t[1]) > 1 then
+    local deck = t[1]
+    local want = label .. ' ' .. i
+    for _, e in ipairs(deck.getObjects()) do
+      if e.nickname == want then
+        deck.takeObject({guid = e.guid, position = {home[1], 3, home[2]},
+                         rotation = FACEUP, smooth = false})
+        putHome(deck)
+        say('Kept ' .. want .. '. Flip it for the character on the other side.')
+        return
+      end
+    end
+    say('There is no ' .. want .. ' in that stack.')
+    return
+  end
   table.sort(t, function(a, b) return a.getPosition().x < b.getPosition().x end)
   if i > #t then
     say('There are only ' .. #t .. ' to choose from.')
@@ -358,7 +427,6 @@ function keepChar(i)
   for k, o in ipairs(t) do
     if k ~= i then putHome(o) end
   end
-  local home = CHAR_HOME[STATE.game] or {0, ROW_CHAR}
   t[i].setPosition({home[1], 3, home[2]})
   say('Kept the ' .. i .. ' of ' .. #t ..
       '. Flip it for the character on the other side.')
@@ -390,6 +458,7 @@ end
 -- after the last pass, name it rather than leaving it lying there.
 function packUp(quiet)
   QUEUE = {}
+  clearSnaps()
   local function loose()
     local t = {}
     for _, o in ipairs(getAllObjects()) do
@@ -530,13 +599,11 @@ function setupNAP()
   local asg
 
   step(function()
-    -- The three to choose from run DOWN the right-hand column, so the
-    -- one you keep is already at the top of it.
-    column(deckOut('Apprentices', {NAP_X, 3, ROW_CHAR}, FACEUP), 3,
-           NAP_X, ROW_CHAR, FACEUP, NAP_GAP)
-    -- The Assignment deck takes the top left, where the leftmost
-    -- Apprentice used to sit.
-    asg = deckOut('Tasks', {-(CARD_L + 1.0), 3, ROW_CHAR})
+    -- ONE STACK. Keep 1 / 2 / 3 takes the one you want out of it and
+    -- sends the rest back, so there is no reason to spread three cards
+    -- across the table first.
+    deckOut('Apprentices', {NAP_X, 3, ROW_CHAR}, FACEUP)
+    asg = deckOut('Tasks', {ASSIGN_X, 3, ROW_CHAR})
   end)
 
   if STATE.tier >= 2 then
@@ -565,17 +632,17 @@ function setupNAP()
   step(function() if asg then asg.shuffle() end end)
 
   step(function()
-    -- Below the FINF card, at the foot of the right-hand column.
-    deckOut('Final Exams', {NAP_X, 3, ROW_CHAR - 4 * NAP_GAP})
     -- Morning is the active Time Slot for Day 1; the other two sit beside
     -- it. One row, one landscape card plus a margin apart - these used to
     -- be dealt 7 apart, which is less than a card now, so they overlapped.
-    -- The Time Slots are a COLUMN down the left, in their own order,
-    -- because they are a clock and not a hand: Morning at the top.
-    column(deckOut('Time Slots', {SLOT_X, 3, 11.0}, FACEUP), 3,
-           SLOT_X, 11.0, FACEUP, 7.0)
+    -- The Time Slots are a column UNDER THE ASSIGNMENT DECK, in their
+    -- own order, because they are a clock and not a hand: Morning at
+    -- the top.
+    column(deckOut('Time Slots', {ASSIGN_X, 3, ROW_CHAR - NAP_GAP}, FACEUP),
+           3, ASSIGN_X, ROW_CHAR - NAP_GAP, FACEUP, NAP_GAP)
+    snapRow(3, ROW_CHAR - NAP_GAP, NAP_GAP)
     -- Below the Apprentices, above the Final Exams.
-    drawOne('FINF', {NAP_X, 3, ROW_CHAR - 3 * NAP_GAP}, FACEUP)
+    drawOne('FINF', {NAP_X, 3, ROW_CHAR - NAP_GAP}, FACEUP)
   end)
 
   step(function()
@@ -585,8 +652,9 @@ function setupNAP()
         ' Credits reaches the Final Exam. The Assignment deck is built and' ..
         ' shuffled: 26 Tasks + 6 Opportunities + ' .. sb .. ' Setbacks' ..
         (STATE.tier >= 1 and (' (3 Following and ' .. base .. ' base)') or '') ..
-        '. Choose an Apprentice at 2 HP / 2 STR / 2 REC, take all 17 dice,' ..
-        ' and work the Morning Time Slot first.' ..
+        '. Choose an Apprentice at 2 HP / 2 STR / 2 REC with Keep 1, 2 or' ..
+        ' 3, take all 17 dice, and work the Morning Time Slot first.' ..
+        ' The Final Exams stay in the bag until you reach them.' ..
         (STATE.tier >= 2 and ' TIER II: the 4 Imposter Tasks are in, and one Credit Task of each subject came out.' or '') ..
         (STATE.tier >= 3 and ' TIER III: the Devious Opportunities replaced the base six.' or '') ..
         ' FINF is set to one card at random -- swap it if you want another setting.')

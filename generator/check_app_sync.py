@@ -1717,7 +1717,13 @@ sb_ = py_tables("simulation/bat.py")
 # anything. A check a RENAME can satisfy is not a check - AGENTS.md says
 # so, and this is the fourth time in this repo.
 _labels = set(re.findall(r"label='([^']+)'", _decks))
-_want = set(re.findall(r"deckOut\('([^']+)'", _lua))
+# THREE WAYS A SETUP REACHES A DECK, and this knew one: deckOut takes the
+# whole deck, drawOne deals a single card from it, and a tier can pick
+# between two with "and 'A' or 'B'". Counting only deckOut made four live
+# decks look abandoned.
+_want = set(re.findall(r"(?:deckOut|drawOne)\('([^']+)'", _lua))
+_want |= set(l for pair in re.findall(r"and '([^']+)' or '([^']+)'", _lua)
+             for l in pair)
 check("tts/lua.lua still asks for its decks by label",
       len(_want) >= 20, "found only %d deckOut labels" % len(_want))
 check("every deck label in tts/lua.lua exists in tts/decks.py",
@@ -1725,9 +1731,17 @@ check("every deck label in tts/lua.lua exists in tts/decks.py",
 # ...and the other direction, which is the one with teeth now that the
 # cards live in boxes: a deck no setup ever names is dead cardboard that
 # a player can only reach by opening a box and guessing.
-_named = set(l for l in _labels if ("'" + l + "'") in _lua)
-check("every deck in the boxes is reachable from a setup button",
-      _named == _labels, "never dealt: %r" % (sorted(_labels - _named),))
+# A deck no setup deals is cardboard a player can only reach by opening
+# a bag and guessing - unless it is MEANT to stay there, which lua.lua
+# has to say out loud in IN_THE_BAG. The Final Exams are the first: you
+# reach them rather than set them up.
+_bagged = set()
+_inbag = re.search(r"IN_THE_BAG = \{([^}]*)\}", _lua)
+if _inbag:
+    _bagged = set(re.findall(r"'([^']+)'", _inbag.group(1)))
+check("every deck is dealt by a setup, or declared as staying in the bag",
+      (_labels - _want) <= _bagged,
+      "neither dealt nor declared: %r" % (sorted(_labels - _want - _bagged),))
 
 
 def _elts(rel, name):
@@ -1911,6 +1925,18 @@ check("the TTS sheet and the PnP are built from the same card renders",
       _rd.count("HTML(string=page(") == 1
       and "sheet.paste(im" in _rd and "paginate(ims" in _rd,
       "render_deck renders %d times" % _rd.count("HTML(string=page("))
+# lupa 2.8's Lua 5.5 binding intermittently hands the script an unbound
+# function where a bound method belongs, which kills every pack-up step
+# and reads exactly like a mod bug. 5.4 is clean; the harness must name
+# it rather than take lupa's default.
+_ts = text("tts/test_setup.py")
+check("tts/test_setup.py pins the Lua version it runs on",
+      "from lupa import lua54 as lupa" in _ts
+      and "lupa.LuaRuntime(" in _ts and "import lupa" + chr(10) not in _ts)
+check("NAP lays four Assignment spaces beside each Time Slot",
+      "ASSIGN_SLOTS = 4" in _lua and "function snapRow" in _lua
+      and "Global.setSnapPoints" in _lua
+      and "never exceed 4 Assignments in a row" in _nap_rules)
 check("tts/test_setup.py refuses a save older than lua.lua",
       "older than lua.lua" in text("tts/test_setup.py"))
 check("the mat and the bags are settled onto the rail, not placed on it",

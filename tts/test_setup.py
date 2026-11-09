@@ -20,7 +20,7 @@ ordinary Upgrades out and puts 6 Modifications in: a Tier II that did
 nothing at all leaves exactly the same number of cards. So the tier checks
 name the cards rather than counting them.
 
-NOT A SUBSTITUTE FOR TTS. lupa bundles Lua 5.5 and Tabletop Simulator runs
+NOT A SUBSTITUTE FOR TTS. This runs Lua 5.4 and Tabletop Simulator runs
 MoonSharp, a 5.2 dialect; this proves the script parses and that its card
 arithmetic is right, not that TTS will spawn the objects on time. The
 sequencer's frame delays are exactly what a stub cannot test, so HANDOFF
@@ -32,7 +32,17 @@ import os
 import random
 import sys
 
-import lupa
+# PINNED TO 5.4, AND THE PIN IS THE POINT. lupa 2.8 defaults to its new
+# Lua 5.5 binding, and on that binding it intermittently hands the script
+# an unbound function where a bound method belongs: every pack-up step
+# then dies on "'function' object has no attribute 'getName'" and cards
+# stay on the table. That cost most of an afternoon, because it looked
+# exactly like a mod bug - rare, order-dependent, and always in the same
+# feature. Measured across repeated runs: 5.4 and 5.3 are clean, 5.5
+# fails in about one process in four, and 5.2 - the closest to the
+# MoonSharp dialect TTS really runs - fails every time. So 5.4,
+# explicitly. Never plain lupa.LuaRuntime, which follows the default.
+from lupa import lua54 as lupa
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SAVE = os.path.join(HERE, "NobulousSet.json")
@@ -146,6 +156,7 @@ class World(object):
         self.shuffled = set()
         self.dice = []
         self.pending = []       # Wait.frames callbacks, run by drain()
+        self.snaps = []         # Assignment spaces laid by a setup
         self.lossy = 0          # refuse one bag put in N, like TTS does
         self.puts = 0
         self.rng = random.Random(7)
@@ -221,6 +232,14 @@ def install(lua, w):
 
     g.getAllObjects = all_objects
     g.broadcastToAll = lambda msg, col=None: w.said.append(msg)
+    # Global, for the snap points the NAP setup lays beside its Time
+    # Slots. Recorded so the harness can count and place them.
+    glob = lua.eval("{}")
+    def set_snaps(pts):
+        w.snaps = [] if pts is None else [
+            (p["position"][1], p["position"][3]) for p in pts.values()]
+    glob.setSnapPoints = set_snaps
+    g.Global = glob
     # QUEUED, NOT CALLED. Running the callback immediately made the
     # script's sequencer a recursion - pump calls Wait.frames(pump),
     # which called pump - so a pack-up ran twenty-one Lua/Python frames
@@ -311,6 +330,7 @@ class Panel(object):
 def start(difficulty, tier, panel=None):
     lua = lupa.LuaRuntime(unpack_returned_tuples=True)
     w, src = build(lua)
+    ALIVE.append((lua, w, panel))
     install(lua, w)
     lua.execute(src)
     g = lua.globals()
@@ -363,6 +383,14 @@ def out(w, label):
             n += len(o.kids) if o.kids else 1
     return n
 
+
+# EVERY RUNTIME AND WORLD STAYS ALIVE. A World or a Panel referenced
+# only from inside Lua was being collected by Python while Lua still
+# held it, and the dangling wrapper read back as a function - which is
+# why whole runs died on "'function' object has no attribute getName"
+# only after a few dozen setups, and never in a short script. Holding
+# them costs a few megabytes for the length of one test run.
+ALIVE = []
 
 FAIL = []
 SKIPPED = []
@@ -421,6 +449,7 @@ def layout_assertions():
                 t = "%s %s t%d layout" % (which, lvl, tier)
                 lua = lupa.LuaRuntime(unpack_returned_tuples=True)
                 w, src = build(lua)
+                ALIVE.append((lua, w))
                 install(lua, w)
                 lua.execute(src)
                 g = lua.globals()
@@ -447,6 +476,20 @@ def layout_assertions():
                            and abs(f[2] - dz) < f[4] + 0.45]
                 want(t + " nothing dealt on top of the dice",
                      sorted(set(on_dice))[:3], [])
+                # Four Assignment spaces beside every Time Slot, and
+                # only for the game that has Time Slots.
+                slots = [o.pos[2] for o in w.table.values()
+                         if o.name.startswith("Time Slots")]
+                want(t + " Assignment spaces", len(w.snaps),
+                     4 * len(slots) if which == "NAP" else 0)
+                if which == "NAP":
+                    want(t + " spaces line up with the Time Slots",
+                         sorted({round(s[1], 1) for s in w.snaps}),
+                         sorted(round(z, 1) for z in slots))
+                    want(t + " no space lands on a dealt card",
+                         [f[0] for f in fp for sx, sz in w.snaps
+                          if abs(f[1] - sx) < f[3] - 0.1
+                          and abs(f[2] - sz) < f[4] - 0.1][:3], [])
 
 
 def panel_assertions():
@@ -546,6 +589,7 @@ def panel_assertions():
         g.packUp(False)
         g.run()
         drain(w)
+        want("pack up clears the Assignment spaces", w.snaps, [])
         if any("getName" in m for m in w.said[mark:]):
             SKIPPED.append("pack up, dropping 1 in %d" % lossy)
             continue
