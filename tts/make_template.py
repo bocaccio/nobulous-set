@@ -112,7 +112,17 @@ def card(d, x, z, hw, hd, ink=None, width=LINE):
                         width=width)
 
 
-def label(d, text, x, z, size=34, ink=None, fit=None):
+# ONE SIZE FOR ALL THREE BOX LABELS. They name the same kind of thing -
+# a box - so they are set from one constant rather than from a number
+# chosen per box, and main() checks they really do come out equal:
+# `fit` can shrink one of them below it.
+LABEL_PT = 34
+
+# What size each label was actually drawn at, so main() can check.
+DREW = []
+
+
+def label(d, text, x, z, size=LABEL_PT, ink=None, fit=None):
     """Centred text, for the boxes whose contents are not obvious.
 
     MEASURED AND SHRUNK TO FIT. Chosen by eye, 34pt ran COMPLETED
@@ -141,6 +151,7 @@ def label(d, text, x, z, size=34, ink=None, fit=None):
         d.text((cx - (box[2] - box[0]) / 2.0,
                 top + i * step - (box[3] - box[1]) / 2.0),
                ln, font=f, fill=ink)
+    DREW.append((lines[0], pt))
 
 
 def circle(d, x, z, r, ink=None, width=LINE):
@@ -213,9 +224,9 @@ def draw_game(d, which, slots_out=None):
         slots = sorted([f[2] for f in fp if f[0].startswith("Time Slot")],
                        reverse=True)
         if len(slots) >= 3:
-            label(d, "COMPLETED\nCREDITS", 23.5, slots[1], 44,
+            label(d, "COMPLETED\nCREDITS", 23.5, slots[1],
                   fit=half * 1.8)
-            label(d, "DEVIOUS\nOPPORTUNITIES", 23.5, slots[2], 44,
+            label(d, "DEVIOUS\nOPPORTUNITIES", 23.5, slots[2],
                   fit=half * 1.8)
     # The Chip goes beside a Time Slot, so give it a circle there.
     if which == "NAP" and slots_out is not None:
@@ -289,6 +300,13 @@ def main():
     ship = os.path.join(img, name)
     io.open(ship, "wb").write(raw)
     wrote.append(ship)
+    # AND THEY REALLY ARE ONE SIZE. `fit` shrinks a label that would
+    # run out of its box, so asking for LABEL_PT is not the same as
+    # getting it. This fails the build rather than shipping a picture
+    # whose three box labels disagree by two points.
+    sizes = sorted(set(pt for _, pt in DREW))
+    assert len(sizes) == 1, "box labels came out at %r: %r" % (sizes, DREW)
+    print("  %d box labels, all at %dpt" % (len(DREW), sizes[0]))
     print("%d x %d at %g px per unit, world x %g..%g, z %g..%g"
           % (W, H, PX, X0, X1, Z1, Z0))
     for p in wrote:

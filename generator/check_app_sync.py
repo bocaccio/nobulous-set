@@ -1967,7 +1967,7 @@ check("tts/decks.py gives nearly every deck a singular card name",
 # script - where CHIP_FACE no longer appears at all.
 check("typing a number over the Chip turns it to that colour",
       "function onObjectNumberTyped" in _lua and "CHIP_FACE_Z" in _lua
-      and "CHIP_ANGLE = {" in _mod
+      and "CHIP_ANGLE = dict(" in _mod
       and "'CHIP_FACE = { %s }'" in _mod
       and "'Rotation': {'x': 0, 'y': CHIP_ANGLE[c], 'z': 180}".replace(
           chr(39), chr(34)) in _mod)
@@ -2057,6 +2057,120 @@ check("no tts/ file still describes the superseded finale",
 check("the TTS notebook prints the AoS allocation floor and the Reward brake",
       "MUST RECEIVE AT LEAST ONE" in _mod
       and "ONLY HEALING IN THE GAME" in _mod)
+
+# ------------------------------------------------------------------ the save
+# THE BUILT SAVE, NOT THE SCRIPT THAT WRITES IT. Everything above reads
+# build_mod.py; these read what it produced, because the bugs they are
+# here for were in the output of code that looked right.
+_sv = json.loads(text("tts/NobulousSet.json"))
+
+
+def _decks_in(objs):
+    for o in objs:
+        if o["Name"] in ("Deck", "DeckCustom"):
+            yield o
+        for k in o.get("ContainedObjects") or []:
+            for d in _decks_in([k]):
+                yield d
+
+
+def _rsx(t):
+    return (round(t["rotX"]), round(t["rotY"]), round(t["rotZ"]),
+            round(t["scaleX"], 4))
+
+
+# A CARD INSIDE A DECK CARRIES ITS OWN ROTATION, AND TTS HONOURS IT.
+# Every one of the 30 decks was stored face down with every card inside
+# it face up - which is how TTS records a card someone flipped over
+# inside a deck - so the first card you dragged off the Assignment deck
+# arrived upside down, and only the first, because after that the card
+# was already turned. Scale and SidewaysCard were inconsistent the same
+# way.
+_mix = []
+for _d in _decks_in(_sv["ObjectStates"]):
+    _kids = _d.get("ContainedObjects") or []
+    if not _kids:
+        continue
+    _want_rsx = _rsx(_d["Transform"])
+    for _k in _kids:
+        if (_rsx(_k["Transform"]) != _want_rsx
+                or _k.get("SidewaysCard") != _d.get("SidewaysCard")):
+            _mix.append((_d.get("Nickname"), _k.get("Nickname")))
+            break
+check("a card drawn off a deck comes out the way the deck looked",
+      not _mix, "deck and contents disagree: %r" % (_mix[:4],))
+
+# A HAND ZONE TAKES A CARD DROPPED IN IT, flips it and carries it to the
+# edge of the table. The Assignment spaces nearest the back rail were
+# inside one, and a card snapped there vanished to the rail. This is a
+# solitaire game; every seat but one is scenery.
+check("no seat can take a card off the table",
+      _sv.get("Hands", {}).get("Enable") is False,
+      "Hands = %r" % (_sv.get("Hands"),))
+
+_tile = [o for o in _sv["ObjectStates"]
+         if o["Name"] == "Custom_Tile" and o.get("Nickname") == "NAP Table"]
+_tile += [k for o in _sv["ObjectStates"] for k in (o.get("ContainedObjects") or [])
+          if k["Name"] == "Custom_Tile" and k.get("Nickname") == "NAP Table"]
+check("the NAP overlay is in the save exactly once", len(_tile) == 1,
+      "found %d" % len(_tile))
+if _tile:
+    _t = _tile[0]
+    # Type 3 is the rounded tile, and it cut the background away from
+    # the four corners of the table. Type 0 is square.
+    check("the NAP overlay covers the corners of the table",
+          _t["CustomImage"]["CustomTile"]["Type"] == 0,
+          "tile type %r" % (_t["CustomImage"]["CustomTile"]["Type"],))
+    # It is 56 units wide: hover text on it is in the way of every card.
+    check("the NAP overlay has no hover text of its own",
+          _t.get("Tooltip") is False, "Tooltip = %r" % (_t.get("Tooltip"),))
+
+# ONE DIAL, ONE SET OF ANGLES, MEASURED. The save's RotationValues and
+# the CHIP_FACE the Lua header generates are two consumers of
+# CHIP_SEGMENT + CHIP_TRIM; this compares the two consumers, so a trim
+# applied to one and not the other fails here rather than at the table.
+_chip = [o for o in _sv["ObjectStates"] if o.get("Nickname") == "Chip"]
+check("the Chip is in the save exactly once", len(_chip) == 1,
+      "found %d" % len(_chip))
+check("the Chip's angles are measured off the dial, not written twice",
+      "CHIP_SEGMENT = {" in _mod and "CHIP_TRIM = " in _mod
+      and "CHIP_ANGLE = dict((c, (360 - a + CHIP_TRIM) % 360)" in _mod)
+if _chip:
+    _rv = dict((v["Value"], round(v["Rotation"]["y"]))
+               for v in _chip[0].get("RotationValues") or [])
+    _att = re.search(r"ATTENTION = \(([^)]*)\)", _mod)
+    _cols = re.findall(r"'([^']+)'", _att.group(1)) if _att else []
+    _face = re.search(r"CHIP_FACE = \{([^}]*)\}", _sv["LuaScript"])
+    _lf = dict((m[0], int(m[1])) for m in
+               re.findall(r"(\w+) = (-?\d+)", _face.group(1))) if _face else {}
+    check("typing a number over the Chip turns it to the same angle the"
+          " save would",
+          len(_rv) == 5 and len(_cols) == 5
+          and all(_rv.get(i + 1) == _lf.get(c)
+                  for i, c in enumerate(_cols)),
+          "save %r vs script %r" % (_rv, _lf))
+
+# The three dice say what the card says. One literal prints all six
+# Apprentice sides, so there is nothing to average over.
+check("an Apprentice starts NAP at the 2s its own card prints",
+      "HP 2 &nbsp;|&nbsp; STR 2 &nbsp;|&nbsp; REC 2" in text(
+          "generator/build_nap.py")
+      and "NAP_START = 2" in _lua)
+check("the stat dice are a row under the Apprentice, measured from it",
+      "STAT_Z = ROW_CHAR - NAP_GAP / 2" in _lua
+      and "setMarker('Strategy', NAP_X, STAT_Z, NAP_START)" in _lua
+      and "MARKER_X" not in _lua)
+
+# The overlay's three box labels are one size, and make_template proves
+# it at build time rather than leaving it to the eye: `fit` can shrink
+# one of them below what it was asked for.
+_tmpl = text("tts/make_template.py")
+check("the overlay's box labels are all one size",
+      "LABEL_PT = 34" in _tmpl
+      and "size=LABEL_PT" in _tmpl
+      and "assert len(sizes) == 1" in _tmpl
+      and not re.search(r"label\(d, \"[A-Z][^\"]*\", [\d.]+, \w+\[\d\], \d\d",
+                        _tmpl))
 
 print()
 print("%d check(s) failed" % len(FAILS))

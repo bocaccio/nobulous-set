@@ -133,11 +133,21 @@ IN_THE_BAG = { 'Final Exams' }
 -- Dealt by NAP alone: the printed layout under the cards.
 NAP_TABLE = 'NAP Table'
 
--- An Apprentice starts at 2 HP / 2 STR / 2 REC (rules/nap.html), and
--- the three markers go in a column beside the card that says so. The
--- Chip starts in the circle beside Morning, reading 1.
+-- An Apprentice starts at 2 HP / 2 STR / 2 REC - printed on every one
+-- of the six sides, from the single literal in generator/build_nap.py -
+-- and the three dice say so in a row UNDER the card rather than in a
+-- column beside it.
+--
+-- The Apprentice and FINF are both landscape and NAP_GAP apart, so the
+-- clear band between them is NAP_GAP minus a card's short side, and
+-- its centre is exactly NAP_GAP / 2 below the Apprentice. STAT_PITCH
+-- is wider than the 1.1 the colour blocks use, because these three are
+-- read rather than counted.
+--
+-- The Chip starts in the circle beside Morning, reading 1.
 NAP_START = 2
-MARKER_X = NAP_X - CARD_L / 2 - 2.2
+STAT_Z = ROW_CHAR - NAP_GAP / 2
+STAT_PITCH = 1.5
 CHIP_X = ASSIGN_X - CARD_L / 2 - 1.9
 ASSIGN_PITCH = 8.5
 
@@ -773,16 +783,16 @@ function setupNAP()
 
   step(function()
     -- The Chip to the circle beside Morning, reading 1; the three
-    -- markers in a column beside the Apprentice, at the 2s the rules
-    -- start you on.
+    -- dice in a row centred under the Apprentice, at the 2s its own
+    -- card prints.
     local chip = setMarker('Chip', CHIP_X, ROW_CHAR - NAP_GAP)
     if chip then
       local r = chip.getRotation()
       chip.setRotationSmooth({r.x, CHIP_NUM[1], CHIP_NUM_Z})
     end
-    setMarker('Health', MARKER_X, ROW_CHAR + 1.6, NAP_START)
-    setMarker('Strategy', MARKER_X, ROW_CHAR, NAP_START)
-    setMarker('Recovery', MARKER_X, ROW_CHAR - 1.6, NAP_START)
+    setMarker('Health', NAP_X - STAT_PITCH, STAT_Z, NAP_START)
+    setMarker('Strategy', NAP_X, STAT_Z, NAP_START)
+    setMarker('Recovery', NAP_X + STAT_PITCH, STAT_Z, NAP_START)
   end)
   step(function()
     STATE.credits = 0

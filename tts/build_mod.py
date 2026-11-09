@@ -73,18 +73,24 @@ HOME_MARKERS = {}
 
 # THE DIAL'S FIVE COLOURS, and where each one has to be turned to.
 #
-# Photographed at value 1, the segment centres sit at 36, 108, 180, 252
-# and 324 degrees clockwise from the top - Red, Yellow, Green, Blue,
-# Purple - so the top of the dial was reading the boundary BETWEEN
-# purple and red, half a segment off every colour. These angles bring
-# the named colour to the top instead.
-#
-# IF TYPING 1 LANDS ON BLUE RATHER THAN YELLOW, TTS turns the other way
-# and every angle here wants negating; nothing else would need to
-# change.
+# MEASURED OFF THE DIAL, TWICE. Photographed at rest, its five segment
+# centres sit at these angles clockwise from the top. Everything else
+# about the dial - the save's RotationValues and the Lua CHIP_FACE
+# both - is derived from them, so there is one place to correct and
+# what is written there is an observation.
+CHIP_SEGMENT = {'Red': 36, 'Yellow': 108, 'Green': 180,
+                'Blue': 252, 'Purple': 324}
+
+# How far past the top the turn lands. Turning each colour to minus its
+# own segment put yellow on 1 but left the whole dial a half segment
+# clockwise of the mark - photographed again to measure it - so it
+# comes back 36 degrees. THIS IS THE ONE NUMBER TO NUDGE if it is
+# still off: 72 is a whole segment, and the sign is clockwise-positive.
+CHIP_TRIM = -36
+
 ATTENTION = ('Yellow', 'Green', 'Blue', 'Purple', 'Red')
-CHIP_ANGLE = {'Yellow': 252, 'Green': 180, 'Blue': 108,
-              'Purple': 36, 'Red': 324}
+CHIP_ANGLE = dict((c, (360 - a + CHIP_TRIM) % 360)
+                  for c, a in CHIP_SEGMENT.items())
 
 BOX_ORDER = ['BAT', 'NAP', 'AoS', 'NRJ']
 BOX_TITLE = {'BAT': 'BAT  Build-a-Tyrant',
@@ -204,6 +210,11 @@ def guid():
             return g
 
 
+# How a deck sits in its bag: face down. The cards inside it have to
+# agree - see card() - so this is named rather than written twice.
+DECK_ROT = (0, 180, 180)
+
+
 def xf(x, y, z, rot=(0, 180, 0), s=1.0):
     return {"posX": x, "posY": y, "posZ": z, "rotX": rot[0], "rotY": rot[1], "rotZ": rot[2],
             "scaleX": s, "scaleY": s, "scaleZ": s}
@@ -213,11 +224,26 @@ def url(name):
     return "%s/%s" % (BASE_URL.rstrip('/'), name)
 
 
-def card(deck_id, idx, nickname, desc=''):
-    return {"GUID": guid(), "Name": "Card", "Transform": xf(0, 0, 0),
+def card(deck_id, idx, nickname, rot, s, sideways, desc=''):
+    # A CONTAINED CARD CARRIES ITS OWN ROTATION, AND TTS HONOURS IT. The
+    # deck was stored face down and every card inside it face up, which
+    # is how TTS records a card someone has flipped over inside a deck.
+    # So dragging one off the Assignment deck handed you a card turned
+    # 180 degrees from the deck it came out of - it arrived upside down,
+    # and only on that first drag, because from then on the card was
+    # already turned. All 30 decks had it.
+    #
+    # Scale and SidewaysCard went the same way: a card out of a
+    # landscape deck is a landscape card, at the deck's size.
+    #
+    # NO DEFAULTS. The bug was a default - xf(0, 0, 0) quietly meant
+    # face up - and a default here hid the fix just as well: dropping
+    # the caller's rot=DECK_ROT changed nothing and no check noticed,
+    # because the signature put it back. The caller says.
+    return {"GUID": guid(), "Name": "Card", "Transform": xf(0, 0, 0, rot, s),
             "Nickname": nickname, "Description": desc, "CardID": deck_id * 100 + idx,
             "Locked": False, "Grid": True, "Snap": True, "Autoraise": True, "Sticky": True,
-            "SidewaysCard": False}
+            "SidewaysCard": sideways}
 
 
 def build_deck(d, deck_id, pos):
@@ -240,14 +266,16 @@ def build_deck(d, deck_id, pos):
     # the singular where it differs, and the Lua is told the mapping so
     # that it can still find a card by name.
     one = d.get('card', d['label'])
+    scale = LAND_SCALE if d['land'] else CARD_SCALE
     contained, ids = [], []
     for i in range(first, first + d['count']):
-        contained.append(card(deck_id, i, '%s %d' % (one, i - first + 1)))
+        contained.append(card(deck_id, i, '%s %d' % (one, i - first + 1),
+                              rot=DECK_ROT, s=scale,
+                              sideways=bool(d['land'])))
         ids.append(deck_id * 100 + i)
     r, g, b = GAME_COLOR[d['game']]
     obj = {"GUID": guid(), "Name": "Deck" if d['count'] > 1 else "CardCustom",
-           "Transform": xf(pos[0], pos[1], pos[2], (0, 180, 180),
-                           LAND_SCALE if d['land'] else CARD_SCALE),
+           "Transform": xf(pos[0], pos[1], pos[2], DECK_ROT, scale),
            "Nickname": d['label'],
            "Description": "%s  |  %d cards" % (d['game'], d['count']),
            "ColorDiffuse": {"r": 1.0, "g": 1.0, "b": 1.0},
@@ -319,10 +347,16 @@ def nap_table():
             "Description": "The NAP layout. Set up NAP lays it down.",
             "ColorDiffuse": {"r": 1.0, "g": 1.0, "b": 1.0},
             "Locked": True, "Grid": False, "Snap": False,
+            # NO TOOLTIP. This is scenery, and a 56-unit tile that names
+            # itself whenever the cursor crosses it puts its own hover
+            # text in front of every card on the table.
+            "Tooltip": False,
             "CustomImage": {"ImageURL": url(nap_table_image()),
                             "ImageSecondaryURL": "", "ImageScalar": 1.0,
-                            "WidthScale": 0.0,
-                            "CustomTile": {"Type": 3, "Thickness": 0.05,
+                            # TYPE 0 IS A SQUARE TILE. Type 3 rounds the
+                            # corners, which cut the background away
+                            # from the four corners of the table.
+                            "CustomTile": {"Type": 0, "Thickness": 0.05,
                                            "Stackable": False,
                                            "Stretch": True}}}
 
@@ -612,6 +646,13 @@ def main():
         # reference with no mention of the table. The name came from Jon's
         # own saves of this mod, which is where to look for the next one.
         "Table": "Table_RPG",
+        # NO HAND ZONES, AND SO NO SEATS THAT CAN TAKE A CARD. A card
+        # dropped near the edge of the table was being flipped and
+        # carried off to the rail: that is what a hand zone does with a
+        # card, and the two Assignment spaces nearest the back were
+        # inside one. This is a solitaire game - every seat but one is
+        # scenery - so the zones go rather than the layout.
+        "Hands": {"Enable": False, "DisableUnused": False, "Hiding": 0},
         "Sky": "Sky_Museum", "Note": "Fan expansion for 20 Strong. Prototype.",
         "Rules": "See the Notebook.",
         "TabStates": {str(i): t for i, t in enumerate(notebook())},

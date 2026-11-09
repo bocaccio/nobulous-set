@@ -72,6 +72,7 @@ class Obj(object):
         self.kids = list(kids or [])
         self.bag = bag
         self.pos = (0.0, 0.0, 0.0)
+        self.rot = None
         self.value = None
 
     def getName(self):
@@ -117,8 +118,11 @@ class Obj(object):
         # placed the markers died without placing anything.
         self.setPosition(p)
 
-    def setRotation(self, *a):
-        pass
+    def setRotation(self, r, *a):
+        # RECORDED. The Chip is turned rather than set to a value, so a
+        # thrown-away rotation is a dial nobody can check: it was turned
+        # to the wrong colour through two builds.
+        self.rot = tuple(r.values()) if hasattr(r, "values") else tuple(r)
 
     setRotationSmooth = setRotation
 
@@ -173,12 +177,18 @@ class World(object):
         self.table = {}        # guid -> object currently out on the table
         self.said = []
         self.shuffled = set()
-        self.dice = []
+        self.markers = {}      # the dice and the Chip, by GUID
         self.pending = []       # Wait.frames callbacks, run by drain()
         self.snaps = []         # Assignment spaces laid by a setup
         self.lossy = 0          # refuse one bag put in N, like TTS does
         self.puts = 0
         self.rng = random.Random(7)
+
+    @property
+    def dice(self):
+        """Where the dice are NOW. A card dealt on top of one is a card
+        dealt on top of one wherever the setup has just moved it to."""
+        return [(o.pos[0], o.pos[2]) for o in self.markers.values()]
 
     def add(self, o):
         self.byguid[o.guid] = o
@@ -208,12 +218,22 @@ def build(lua):
                 cards = [Obj(w, gid(), d["Nickname"] + " 1")]
             decks.append(w.add(Obj(w, d["GUID"], d["Nickname"], cards)))
         w.add(Obj(w, o["GUID"], o["Nickname"], decks, bag=True))
-    # The dice are not cards and never move, but a card dealt on top of
-    # them is still a card dealt on top of them: at x -24.5 the second
-    # die of every block sat under the NAP Time Slot column.
-    w.dice = [(o["Transform"]["posX"], o["Transform"]["posZ"])
-              for o in save["ObjectStates"]
-              if o["Name"] in ("Custom_Dice", "Custom_Token")]
+    # THE DICE ARE OBJECTS, NOT COORDINATES. They were a list of
+    # positions, so getAllObjects never returned one, marker() answered
+    # nil in every test, and setMarker - the whole of NAP's Chip and
+    # Health / Strategy / Recovery placement - ran without placing
+    # anything while the harness reported 0 failed.
+    #
+    # They are kept apart from w.table because they are not dealt and
+    # are not packed away: pack-up sends them home and the table is
+    # still bare, which is what "emptied the table" means.
+    for o in save["ObjectStates"]:
+        if o["Name"] in ("Custom_Dice", "Custom_Token"):
+            m = Obj(w, o["GUID"], o["Nickname"])
+            m.pos = (o["Transform"]["posX"], o["Transform"]["posY"],
+                     o["Transform"]["posZ"])
+            w.markers[o["GUID"]] = m
+            w.byguid[o["GUID"]] = m
     if not w.table and not w.byguid:
         raise SystemExit("no bags in %s - run build_mod.py first" % SAVE)
     # THE SAVE IS WHERE THE LUA RUNS FROM, so a save built before the last
@@ -242,7 +262,7 @@ def install(lua, w):
         # index sidesteps it.
         t = lua.eval("{}")
         n = 0
-        for o in (list(w.table.values())
+        for o in (list(w.table.values()) + list(w.markers.values())
                   + [b for b in w.byguid.values() if b.bag]):
             if isinstance(o, Obj):
                 n += 1
@@ -523,6 +543,70 @@ def layout_assertions():
                          [f[0] for f in fp for sx, sz in w.snaps
                           if abs(f[1] - sx) < f[3] - 0.1
                           and abs(f[2] - sz) < f[4] - 0.1][:3], [])
+                    # THE THREE STAT DICE, in a row under the Apprentice
+                    # and centred on it, each showing the 2 that card
+                    # prints. Nothing checked them at all before: the
+                    # harness had no marker objects, so setMarker ran
+                    # against nil and placed nothing.
+                    #
+                    # MEASURED AGAINST THE CARDS, NOT AGAINST STAT_Z AND
+                    # STAT_PITCH. Written that way first, the three
+                    # assertions read the same two constants the script
+                    # had just used, so moving STAT_PITCH to 1.6 - or to
+                    # anything at all - still passed. A predicate a
+                    # constant can satisfy by being itself checks
+                    # nothing.
+                    by = dict((o.name, o) for o in w.markers.values())
+                    three = [by[n] for n in ("Health", "Strategy",
+                                             "Recovery")]
+                    xs = [o.pos[0] for o in three]
+                    zs = [round(o.pos[2], 3) for o in three]
+                    app = [f for f in fp if f[0].startswith("Apprentice")]
+                    finf = [f for f in fp if f[0].startswith("FINF")]
+                    want(t + " an Apprentice and a FINF to measure from",
+                         (len(app), len(finf)), (1, 1))
+                    ax, az, ahw, ahd = app[0][1:]
+                    fz, fhd = finf[0][2], finf[0][4]
+                    want(t + " stat dice on one row", len(set(zs)), 1)
+                    want(t + " stat dice left to right",
+                         xs == sorted(xs) and len(set(xs)) == 3, True)
+                    want(t + " stat dice evenly spaced",
+                         round(xs[1] - xs[0], 3), round(xs[2] - xs[1], 3))
+                    want(t + " stat dice centred on the Apprentice",
+                         round(sum(xs) / 3.0 - ax, 3), 0.0)
+                    want(t + " stat dice under the Apprentice, not beside",
+                         (zs[0] < az, xs[0] > ax - ahw, xs[2] < ax + ahw),
+                         (True, True, True))
+                    # A die is about a unit across, so half of one plus a
+                    # margin is what has to fit between the two cards.
+                    want(t + " stat dice clear of both cards",
+                         (round(az - ahd - zs[0], 3) > 0.6,
+                          round(zs[0] - (fz + fhd), 3) > 0.6),
+                         (True, True))
+                    want(t + " stat dice read 2, which is what the card"
+                         " prints", [o.value for o in three], [2, 2, 2])
+                    # And the Chip in the circle beside Morning, turned
+                    # to the FIRST of the five angles on its number side
+                    # - which is what "set to 1" means - and not to the
+                    # colour side's angles.
+                    morning = sorted(
+                        [f for f in fp if f[0].startswith("Time Slot")],
+                        key=lambda f: -f[2])[0]
+                    chip = by["Chip"]
+                    nums = [float(v) for v in g.CHIP_NUM.values()]
+                    want(t + " the Chip sits beside Morning",
+                         (round(chip.pos[2] - morning[2], 3),
+                          chip.pos[0] < morning[1] - morning[3] - 0.5),
+                         (0.0, True))
+                    want(t + " the Chip is turned to the first number",
+                         (chip.rot is not None
+                          and round(chip.rot[1], 3) == round(nums[0], 3),
+                          chip.rot is not None
+                          and round(chip.rot[2], 3) == round(
+                              float(g.CHIP_NUM_Z), 3)
+                          and round(chip.rot[2], 3) != round(
+                              float(g.CHIP_FACE_Z), 3)),
+                         (True, True))
 
 
 def panel_assertions():
@@ -628,6 +712,16 @@ def panel_assertions():
             continue
         want("pack up emptied the table, dropping 1 in %d" % lossy,
              (dealt > 0, len(w.table))[1], 0)
+        # AND THE DICE ARE BACK WHERE THEY LIVE. They are not bagged, so
+        # "the table is bare" says nothing about them: a setup that
+        # moved the Chip across the table and a pack-up that left it
+        # there both passed.
+        home = dict((k, (round(v[1], 3), round(v[2], 3)))
+                    for k, v in g.DICE_HOME.items())
+        want("pack up sends the dice home, dropping 1 in %d" % lossy,
+             sorted((o.name, round(o.pos[0], 3), round(o.pos[2], 3))
+                    for o in w.markers.values() if o.name in home),
+             sorted((n, p[0], p[1]) for n, p in home.items()))
 
 
 def main():
