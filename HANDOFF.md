@@ -888,8 +888,20 @@ Each of these only appears a few turns in.
   (`RESILIENCE_TRIGGER = "short"` is the unrestricted card at 57.9% against
   47.9%); and Controlled Failure's condition is met in **0%**, named in
   `NOTE_DECLARED` so that any *other* card under the 5% floor is a PROBLEM
-  rather than another line of prose. Priced free it is worth −0.5, so
-  implementing the zero-commit policy it needs would not pay.
+  rather than another line of prose. **Both figures in that declaration were
+  wrong and are corrected** — it priced the card at −0.5 and the sacrifice
+  as unaffordable, from one 2500-game cell. At 12,000 games a cell the card
+  is worth **+0.9** granted free, every setting of its one dial reads zero
+  (+0.0 / −0.6 / +0.9 / −0.2, and a *sighted* swap +0.3), and **one thrown
+  Experiment is free**: 0/1/2/3/4 thrown reads 38.0 / 38.8 / 36.2 / 33.4 /
+  25.4%, so +0.7 then −1.8, −4.6, −12.6. The claim is affordable and the
+  reward is small, so what declines the card is the **claim cap of 2** —
+  all six Notes are face up and a card worth +1 is the sixth pick of six
+  against Acceptable Losses at +12.7. Reaching it would change nothing,
+  which is why it stays declared. Two reward rewrites were priced and both
+  miss the band: *recover the dice committed to a failed Experiment* +1.3,
+  *a failed Experiment Splices nothing* +1.2. The band is the open
+  question, and the band is Acceptable Losses.
 
   **THE AUDIT ITSELF WAS WRONG IN THREE PLACES**, and those corrections
   matter more than the count:

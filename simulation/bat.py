@@ -410,6 +410,31 @@ RESILIENCE_DICE = -1
 # The deck is 2 Target-3, 13 Target-4 and 5 Target-5, so swapping away a 5
 # trades a known 5 for an unknown 4.15 and swapping a 4 trades down. The
 # card also BURNS a card from a finite deck, which shortens the phase.
+#
+# THIS DIAL DOES NOT MATTER, AND THAT IS THE MEASUREMENT. 4000 games a cell
+# at Standard Tier III, the card granted free by NOTE_PICK against a +-1.1
+# noise band on the difference: 6 never swaps +0.0, 5 as it ships -0.6, 4
+# swap a 4 or a 5 +0.9, 3 swap anything -0.2. Every cell is zero, and a
+# SIGHTED version - reveal the next and keep the lower Target, which is a
+# card-text proposal and not a dial - reads +0.3. At 12,000 games the
+# shipped card reads +0.9, so the -0.5 published on 2026-11-08 was noise
+# read as a sign: the card is small and positive, not negative.
+#
+# WHAT ITS CLAIM CONDITION COSTS, which nothing had priced. "Deliberately
+# committing zero dice" is a failed Experiment, and a failure Splices the
+# strongest revealed Upgrade while the phase ends at five Splices. Forcing
+# n thrown Experiments a game, 12,000 games a cell: 0 is 38.0%, 1 is 38.8%
+# (+0.7), 2 is 36.2% (-1.8), 3 is 33.4% (-4.6), 4 is 25.4% (-12.6). THE
+# FIRST ONE IS FREE and the fourth is a collapse, so the condition is a
+# line a player can afford once - audit.NOTE_DECLARED used to say the
+# opposite. What declines the card is NOTE_CLAIM_CAP, not the sacrifice.
+#
+# Two rewrites of the REWARD were priced the same day and both miss the
+# band the other Notes sit in: "a failed Experiment recovers every die
+# committed to it" reads +1.3 and "a failed Experiment Splices nothing"
+# +1.2, against +2.7 to +3.2 for the three ordinary Notes and +12.7 for
+# Acceptable Losses. Nothing was written to a card on the strength of
+# either; the band is the open question and it is Acceptable Losses.
 CONTROLLED_FLOOR = 5
 
 # Candidate fixes for BAT's tier ladder, which currently rises where NAP's and

@@ -90,9 +90,19 @@ GAMES = 1500
 # OTHER card falling under CONDITION_FLOOR is a PROBLEM rather than another
 # line of prose. Controlled Failure claims on deliberately committing zero
 # dice to an Experiment - throwing it away to bank the Note - which is a
-# real line for a player and one no policy in bat.py takes. Priced
-# 2026-11-08 at Standard: granted free it is worth -0.5 points, so the
-# card is dead twice over and implementing the policy would not pay.
+# real line for a player and one no policy in bat.py takes.
+#
+# WHY NO POLICY TAKES IT IS NOT WHAT THIS COMMENT FIRST SAID. It priced the
+# card at -0.5 and the sacrifice as unaffordable, both from one 2500-game
+# cell. Re-measured at 12,000 games a cell the same day: the card is worth
+# +0.9 granted free, and ONE thrown Experiment is free (+0.7) - see
+# bat.CONTROLLED_FLOOR for the curve. The claim is affordable and the
+# reward is small, so what declines it is the CLAIM CAP: NOTE_CLAIM_CAP is
+# 2 because a claim costs an Upgrade, all six Notes are face up
+# (rules/nrj.html, Tier III), and a card worth +1 is the sixth pick of six
+# against Acceptable Losses at +12.7 and three others at +2.7 to +3.2.
+# Reaching the card would not change that, which is why this stays a
+# declared gap and not a policy to implement.
 NOTE_DECLARED = {
     "controlled": "committing zero dice, which no policy here takes",
 }
