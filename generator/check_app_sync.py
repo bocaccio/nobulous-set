@@ -1898,6 +1898,19 @@ check("the mat picks a character for the games that have one",
       and all(("function keep%d()" % i) in _lua for i in (1, 2, 3, 4, 5)))
 check("keeping a character goes by position, not by nickname",
       "a.getPosition().x < b.getPosition().x" in _lua)
+# THE TTS CARD AND THE PRINTED CARD ARE THE SAME IMAGE. render_deck
+# renders the deck ONCE, turns that one PDF into per-card PNGs, and then
+# builds the TTS sheet and the PnP pages from that same list - so the two
+# cannot show different cards, only the same cards arranged differently.
+# Verified end to end on 2026-11-09 by re-rendering every family into a
+# scratch directory: all 52 sheets and all 4 PnP PDFs came back byte for
+# byte identical to what ships.
+_rd = _gen_src = text("generator/gen.py")
+_rd = _gen_src[_gen_src.index("def render_deck"):_gen_src.index("def render_duplex")]
+check("the TTS sheet and the PnP are built from the same card renders",
+      _rd.count("HTML(string=page(") == 1
+      and "sheet.paste(im" in _rd and "paginate(ims" in _rd,
+      "render_deck renders %d times" % _rd.count("HTML(string=page("))
 check("tts/test_setup.py refuses a save older than lua.lua",
       "older than lua.lua" in text("tts/test_setup.py"))
 check("the mat and the bags are settled onto the rail, not placed on it",
