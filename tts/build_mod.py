@@ -290,9 +290,10 @@ def notebook():
     tabs = []
     for title, body in [
         ("How to use this mod",
-         "FOUR BOXES hold every card, one per game. You never open them by\n"
-         "hand: a setup button takes out what that game needs, performs the\n"
-         "printed setup, and leaves the rest inside.\n\n"
+         "FOUR BAGS hold every card, one per game, along the back rail.\n"
+         "You never open them by hand: a setup button takes out what that\n"
+         "game needs, performs the printed setup, and leaves the rest in\n"
+         "the bag.\n\n"
          "ON THE CONTROL PANEL, in this order:\n\n"
          "  1. Difficulty -- Easy / Standard / Hard / Nobulous.\n"
          "  2. NRJ Tier -- off / I Agenda / II Contamination / III\n"
@@ -320,7 +321,11 @@ def notebook():
          "Opportunities replacing the base six, the Corrupted Limitations\n"
          "shuffled in. Read the setup message in chat: it names every number\n"
          "it just used.\n\n"
-         "Pack up -- everything, including loose cards, goes back in its box.\n\n"
+         "Keep 1 / 2 / 3 -- for NAP, AoS and the finale, keeps that\n"
+         "  character and bags the others. Every card is two characters,\n"
+         "  so flip the one you keep for the other side.\n"
+         "Pack up -- everything, including loose cards, goes back in its\n"
+         "  bag.\n\n"
          "The script deals and counts. It never enforces a rule in play."),
         ("BAT quick reference",
          "Turn: reveal Encounter, reveal 2 Upgrades (+1 Target if either is a\n"
@@ -505,7 +510,7 @@ def main():
         json.dump(save, f, indent=1)
     print("wrote", OUT, "-", len(objects), "objects,",
           sum(d['count'] for d in DECKS), "cards in",
-          len(BOX_ORDER), "boxes")
+          len(BOX_ORDER), "bags")
 
     need = set()
     for d in DECKS:

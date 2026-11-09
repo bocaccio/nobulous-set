@@ -4,10 +4,10 @@
 -- Setup only. It deals the cards and holds the counters; it never
 -- enforces a rule in play, so you can always do whatever you like.
 --
--- FOUR BOXES HOLD EVERY CARD. A setup button takes out what that game
--- needs, performs the printed setup -- the random mixes AND the tier
--- swaps -- and leaves everything else in the box. Nothing is parked on
--- the table "ready to be sorted by hand" any more.
+-- FOUR BAGS HOLD EVERY CARD, one per game, along the back rail. A setup
+-- button takes out what that game needs, performs the printed setup --
+-- the random mixes AND the tier swaps -- and leaves everything else in
+-- the bag. Nothing is parked on the table "ready to be sorted by hand".
 --
 -- BOX, HOME, NAP_CREDIT and EXHIBIT_BLOCK are GENERATED above this line
 -- by build_mod.py and are not in this file: the box GUIDs come from the
@@ -41,6 +41,7 @@ IMP_TIRED = { Easy = {0, 0, 0, 0}, Standard = {3, 2, 2, 2},
 ATTENTION = { 'Yellow', 'Green', 'Blue', 'Purple', 'Red' }
 
 PANEL = nil
+chr39 = string.char(39)
 FACEUP = {0, 180, 0}
 FACEDOWN = {0, 180, 180}
 -- WHERE EVERYTHING GOES, in multiples of a card. CARD_SCALE, CARD_W and
@@ -63,6 +64,12 @@ ROW_TIER = -12.8                   -- what a tier adds
 -- A single card a tier deals sits out at the right, clear of the six-card
 -- spreads that share this row.
 TIER_X = 24.0
+
+-- The NAP Time Slot column, down the left. It has to clear the dice at
+-- -26.5 on one side and the character row, which reaches -14.07, on the
+-- other; a landscape card is 8.71 across, so there is exactly one place
+-- for it.
+SLOT_X = -19.5
 
 function col(i) return (i - 2.5) * (CARD_W + 1.0) end
 
@@ -177,12 +184,50 @@ function count(deck)
   return q
 end
 
--- Shuffle, keep n at random, and put the rest back in the box. This is
--- "take that many at random and return the rest to the box", which every
--- one of the four games asks for somewhere in its setup.
-function keepN(deck, n)
-  if not deck then return nil end
-  if n <= 0 then putHome(deck); return nil end
+-- "Take that many at random and return the rest to the bag" - which all
+-- four setups ask for somewhere.
+--
+-- THIS USED TO CUT THE DECK DOWN AND HAND BACK THE DECK, and that is the
+-- same stale-reference bug that put a Lab Rat behind its neighbours: cut
+-- a deck to one card and the deck object is destroyed, so the reference
+-- returned was dead and every setPosition and putObject on it afterwards
+-- did nothing at all. It is why the FINF card sat on top of a Time Slot
+-- instead of beside it, and it would have done the same to the AoS
+-- Program deck at Hard, where the Routine cut is to exactly one.
+--
+-- So nothing hands back a cut deck any more. Take the KEEPERS out and
+-- send the rest home: moveN moves them straight into the deck they are
+-- joining, drawOne deals a single card to where it belongs, and cutTo
+-- is only for a deck that cannot reach one card.
+
+-- Move n random cards from src into dst, then send src home.
+function moveN(src, dst, n)
+  if not src then return dst end
+  if n <= 0 then putHome(src); return dst end
+  src.shuffle()
+  for _ = 1, n do
+    local c = src.takeObject({position = OFF, smooth = false})
+    if c and dst then dst.putObject(c) end
+  end
+  putHome(src)
+  return dst
+end
+
+-- Deal ONE card of a deck to a place, and send the rest home.
+function drawOne(label, pos, rot)
+  local d = deckOut(label, OFF)
+  if not d then return nil end
+  d.shuffle()
+  local c = d.takeObject({position = pos, rotation = rot or FACEUP,
+                          smooth = false})
+  putHome(d)
+  return c
+end
+
+-- Cut a deck down to n, for a deck that cannot reach one card. Anything
+-- that can must use moveN or drawOne instead.
+function cutTo(deck, n)
+  if not deck or n < 2 then return deck end
   deck.shuffle()
   for _ = 1, count(deck) - n do
     deck.takeObject({position = OFF, smooth = false,
@@ -218,6 +263,18 @@ end
 -- is the Lab Rat sitting behind its neighbours in the middle of the row,
 -- and the half-hidden Time Slot. Positioned first, the card is already
 -- where it belongs when the deck collapses around it.
+-- The same, down the table instead of across it.
+function column(deck, n, x, z0, rot, gap)
+  if not deck then return end
+  gap = gap or (CARD_W + 0.6)
+  deck.setPosition({x, 3, z0})
+  deck.setRotation(rot or FACEUP)
+  for i = 1, n - 1 do
+    deck.takeObject({position = {x, 3, z0 - i * gap},
+                     rotation = rot or FACEUP, smooth = false})
+  end
+end
+
 function spread(deck, n, z, rot, gap)
   if not deck then return end
   gap = gap or (CARD_W + 0.6)
@@ -228,6 +285,48 @@ function spread(deck, n, z, rot, gap)
     deck.takeObject({position = {x0 + i * gap, 3, z}, rotation = rot or FACEUP,
                      smooth = false})
   end
+end
+
+-- Which deck a game's character comes from, and how many are dealt. BAT
+-- is not here: all four Lab Rats stay in play, so there is nothing to
+-- choose between them.
+CHAR_DECK = { NAP = 'Apprentices', AoS = 'Technicians',
+              IMP = 'Imposters (A / B)' }
+CHAR_N = { NAP = 3, AoS = 3, IMP = 5 }
+
+-- Keep the nth character and send the rest home. The side is still
+-- yours to pick: every one of these cards is two characters, and
+-- flipping it is the one part of setup a script should not do for you.
+function keepChar(i)
+  local label = CHAR_DECK[STATE.game]
+  if not label then return end
+  -- BY POSITION, LEFT TO RIGHT, not by the number in the nickname. The
+  -- last card of a spread is the deck object collapsing to its final
+  -- card, and what that card ends up called is TTS's business, not this
+  -- script's. Left to right is also what the button means to someone
+  -- looking at the table.
+  local t = {}
+  for _, o in ipairs(getAllObjects()) do
+    local n = o.getName()
+    if n == label or (n and n:sub(1, #label + 1) == label .. ' ') then
+      table.insert(t, o)
+    end
+  end
+  if #t == 0 then
+    say('No ' .. label .. ' are on the table - press that game' .. chr39 .. 's setup first.')
+    return
+  end
+  table.sort(t, function(a, b) return a.getPosition().x < b.getPosition().x end)
+  if i > #t then
+    say('There are only ' .. #t .. ' to choose from.')
+    return
+  end
+  for k, o in ipairs(t) do
+    if k ~= i then putHome(o) end
+  end
+  t[i].setPosition({0, 3, ROW_CHAR})
+  say('Kept the ' .. i .. ' of ' .. #t ..
+      '. Flip it for the character on the other side.')
 end
 
 -- --------------------------------------------------------------- counters
@@ -295,7 +394,7 @@ function packUp(quiet)
       say('Still on the table: ' .. table.concat(left, ', ') ..
           ' - press Pack up again.')
     elseif not quiet then
-      say('Everything back in its box.')
+      say('Everything back in its bag.')
     end
   end)
 end
@@ -344,14 +443,12 @@ function setupBAT()
     step(function() merge(upg, deckOut('Unauthorized Modifications', pad(1))) end)
   end
 
-  step(function() sp = keepN(sp, spec) end)
-  step(function() merge(upg, sp) end)
+  step(function() moveN(sp, upg, spec) end)
   step(function() if upg then upg.shuffle() end end)
 
   if STATE.tier >= 1 then
     step(function()
-      local p = keepN(deckOut('Experimental Protocols', OFF), 1)
-      if p then p.setPosition({TIER_X, 3, ROW_TIER}); p.setRotation(FACEUP) end
+      drawOne('Experimental Protocols', {TIER_X, 3, ROW_TIER}, FACEUP)
     end)
   end
   if STATE.tier >= 3 then
@@ -415,9 +512,9 @@ function setupNAP()
     local opps = (STATE.tier >= 3) and 'Devious Opportunities' or 'Opportunities'
     merge(asg, deckOut(opps, pad(1)))
   end)
-  step(function() merge(asg, keepN(deckOut('Setbacks', pad(3)), base)) end)
+  step(function() moveN(deckOut('Setbacks', pad(3)), asg, base) end)
   if STATE.tier >= 1 then
-    step(function() merge(asg, keepN(deckOut('Following Setbacks', pad(5)), 3)) end)
+    step(function() moveN(deckOut('Following Setbacks', pad(5)), asg, 3) end)
   end
   step(function() if asg then asg.shuffle() end end)
 
@@ -426,14 +523,11 @@ function setupNAP()
     -- Morning is the active Time Slot for Day 1; the other two sit beside
     -- it. One row, one landscape card plus a margin apart - these used to
     -- be dealt 7 apart, which is less than a card now, so they overlapped.
-    local slots = deckOut('Time Slots', {0, 3, ROW_SIDE}, FACEUP)
-    if slots then spread(slots, 3, ROW_SIDE, FACEUP, CARD_L * 1.04) end
-    local fi = keepN(deckOut('FINF', pad(4)), 1)
-    if fi then
-      -- Beyond the right-hand Time Slot, not on top of it.
-      fi.setPosition({2.2 * CARD_L, 3, ROW_SIDE})
-      fi.setRotation(FACEUP)
-    end
+    -- The Time Slots are a COLUMN down the left, in their own order,
+    -- because they are a clock and not a hand: Morning at the top.
+    column(deckOut('Time Slots', {SLOT_X, 3, 11.0}, FACEUP), 3,
+           SLOT_X, 11.0, FACEUP, 7.0)
+    drawOne('FINF', {SLOT_X, 3, -10.0}, FACEUP)
   end)
 
   step(function()
@@ -466,13 +560,12 @@ function setupAoS()
   -- choice between them. Routine can be 0 at Nobulous, which is why the
   -- deck the other two are merged into is whichever one survives.
   step(function()
-    local r = keepN(deckOut('Routine Programs', pad(1)), mix[1])
-    local s = keepN(deckOut('Specialized Programs', pad(3)), mix[2])
-    local u = keepN(deckOut('Unstable Programs', pad(5)), mix[3])
-    prog = r or s or u
-    if prog ~= r then merge(prog, r) end
-    if prog ~= s then merge(prog, s) end
-    if prog ~= u then merge(prog, u) end
+    -- Specialized is 3 at every difficulty, so it is the only one of the
+    -- three that can be cut without any risk of reaching a single card
+    -- and going stale. The other two move INTO it.
+    prog = cutTo(deckOut('Specialized Programs', pad(3)), mix[2])
+    moveN(deckOut('Routine Programs', pad(1)), prog, mix[1])
+    moveN(deckOut('Unstable Programs', pad(5)), prog, mix[3])
   end)
   step(function()
     if prog then
@@ -492,11 +585,7 @@ function setupAoS()
   end)
   if STATE.tier >= 1 then
     step(function()
-      local n = keepN(deckOut('Nobulous Interference', OFF), 1)
-      if n then
-        n.setPosition({TIER_X, 3, ROW_TIER})
-        n.setRotation(FACEUP)
-      end
+      drawOne('Nobulous Interference', {TIER_X, 3, ROW_TIER}, FACEUP)
     end)
   end
   if STATE.tier >= 3 then
@@ -607,58 +696,71 @@ function refreshPanel()
   local y = 0.2
   local function btn(label, fn, x, z, w, col, fs)
     PANEL.createButton({click_function = fn, function_owner = self, label = label,
-      position = {x, y, z}, width = w or 660, height = 170, font_size = fs or 95,
+      position = {x, y, z}, width = w or 660, height = 150, font_size = fs or 92,
       color = col or {0.16, 0.15, 0.13}, font_color = {1, 1, 1}})
   end
   local function lbl(text, x, z, w, fs)
     PANEL.createButton({click_function = 'nop', function_owner = self, label = text,
-      position = {x, y, z}, width = w or 660, height = 160, font_size = fs or 85,
+      position = {x, y, z}, width = w or 660, height = 145, font_size = fs or 82,
       color = {0.93, 0.91, 0.85}, font_color = {0.13, 0.11, 0.09}})
   end
 
-  -- The tile art already prints THE NOBULOUS SET, so the row that used to
-  -- repeat it is gone and four rows fit at a 0.40 pitch.
-  btn('Set up BAT', 'btnBAT', -2.12, -0.60, 660, {0.17, 0.37, 0.29})
-  btn('Set up NAP', 'btnNAP', -0.71, -0.60, 660, {0.42, 0.25, 0.55})
-  btn('Set up AoS', 'btnAoS', 0.71, -0.60, 660, {0.54, 0.24, 0.18})
-  btn('Imposter', 'btnIMP', 2.12, -0.60, 660, {0.29, 0.23, 0.42})
+  -- FIVE ROWS AT A 0.36 PITCH, which is what a half-height of 0.15 allows
+  -- inside a tile that is 1.0 deep from its middle. The tile art already
+  -- prints THE NOBULOUS SET, so no row repeats it.
+  btn('Set up BAT', 'btnBAT', -2.12, -0.72, 660, {0.17, 0.37, 0.29})
+  btn('Set up NAP', 'btnNAP', -0.71, -0.72, 660, {0.42, 0.25, 0.55})
+  btn('Set up AoS', 'btnAoS', 0.71, -0.72, 660, {0.54, 0.24, 0.18})
+  btn('Imposter', 'btnIMP', 2.12, -0.72, 660, {0.29, 0.23, 0.42})
 
-  lbl('Difficulty  ' .. STATE.difficulty, -1.90, -0.20, 900)
-  btn('cycle', 'btnDiff', -0.55, -0.20, 330, nil, 85)
+  lbl('Difficulty  ' .. STATE.difficulty, -1.90, -0.36, 900)
+  btn('cycle', 'btnDiff', -0.55, -0.36, 330, nil, 82)
   -- The tier NAME lives in the setup message; the panel has room for its
   -- numeral and nothing more.
   lbl('NRJ Tier  ' .. (STATE.tier == 0 and 'off' or
-      ({'I', 'II', 'III'})[STATE.tier]), 0.50, -0.20, 620)
-  btn('cycle', 'btnTier', 1.70, -0.20, 330, nil, 85)
+      ({'I', 'II', 'III'})[STATE.tier]), 0.50, -0.36, 620)
+  btn('cycle', 'btnTier', 1.70, -0.36, 330, nil, 82)
 
   local g = STATE.game
   if g == 'BAT' then
-    lbl('Splices  ' .. STATE.splices .. ' / 5', -2.10, 0.20, 640)
-    btn('-', 'splMinus', -1.05, 0.20, 240)
-    btn('+', 'splPlus', -0.50, 0.20, 240)
-    if STATE.splices >= 5 then lbl('TYRANT AWAKE', 1.20, 0.20, 560) end
+    lbl('Splices  ' .. STATE.splices .. ' / 5', -2.10, 0.00, 640)
+    btn('-', 'splMinus', -1.05, 0.00, 240)
+    btn('+', 'splPlus', -0.50, 0.00, 240)
+    if STATE.splices >= 5 then lbl('TYRANT AWAKE', 1.20, 0.00, 560) end
   elseif g == 'NAP' then
     local goal = NAP_DIFF[STATE.difficulty][1]
-    lbl('Credits  ' .. STATE.credits .. ' / ' .. goal, -2.10, 0.20, 640)
-    btn('-', 'crMinus', -1.05, 0.20, 240)
-    btn('+', 'crPlus', -0.50, 0.20, 240)
-    if STATE.credits >= goal then lbl('FINAL EXAM', 1.20, 0.20, 560) end
+    lbl('Credits  ' .. STATE.credits .. ' / ' .. goal, -2.10, 0.00, 640)
+    btn('-', 'crMinus', -1.05, 0.00, 240)
+    btn('+', 'crPlus', -0.50, 0.00, 240)
+    if STATE.credits >= goal then lbl('FINAL EXAM', 1.20, 0.00, 560) end
   elseif g == 'AoS' then
-    lbl('Backdoors  ' .. STATE.backdoors .. ' / 2', -2.05, 0.20, 700)
-    btn('-', 'bdMinus', -0.95, 0.20, 240)
-    btn('+', 'bdPlus', -0.40, 0.20, 240)
+    lbl('Backdoors  ' .. STATE.backdoors .. ' / 2', -2.05, 0.00, 700)
+    btn('-', 'bdMinus', -0.95, 0.00, 240)
+    btn('+', 'bdPlus', -0.40, 0.00, 240)
   elseif g == 'IMP' then
-    lbl('Session  ' .. math.min(9, STATE.session + 1) .. ' / 9', -2.10, 0.20, 640)
-    btn('-', 'atMinus', -1.05, 0.20, 240)
-    btn('+', 'atPlus', -0.50, 0.20, 240)
+    lbl('Session  ' .. math.min(9, STATE.session + 1) .. ' / 9', -2.10, 0.00, 640)
+    btn('-', 'atMinus', -1.05, 0.00, 240)
+    btn('+', 'atPlus', -0.50, 0.00, 240)
     -- Derived, not counted: the attention advances one step at the end of
     -- every session, so a hand counter for it could only ever disagree.
     lbl('Attention  ' .. attentionNow() .. ' / ' .. attentionNext(),
-        1.35, 0.20, 900, 75)
+        1.35, 0.00, 900, 72)
   end
 
-  btn('Pack up', 'btnPack', -2.35, 0.60, 420, {0.42, 0.18, 0.15})
-  btn('Reset counters', 'btnReset', -1.20, 0.60, 640, nil, 85)
+  -- CHOOSING YOUR CHARACTER, for the three games that have one to
+  -- choose. Every card is two characters, so this keeps a card and
+  -- leaves the flip to you.
+  local n = CHAR_N[g]
+  if n then
+    lbl('Keep', -2.45, 0.36, 300, 82)
+    for i = 1, n do
+      btn(tostring(i), 'keep' .. i, -1.70 + (i - 1) * 0.42, 0.36, 170, nil, 82)
+    end
+    lbl('then flip for the other side', 1.25, 0.36, 1050, 70)
+  end
+
+  btn('Pack up', 'btnPack', -2.35, 0.72, 420, {0.42, 0.18, 0.15})
+  btn('Reset counters', 'btnReset', -1.20, 0.72, 640, nil, 82)
 end
 
 function nop() end
@@ -667,6 +769,11 @@ function btnNAP() setupNAP() end
 function btnIMP() setupImposter() end
 function btnAoS() setupAoS() end
 function btnPack() packUp(false); run() end
+function keep1() keepChar(1) end
+function keep2() keepChar(2) end
+function keep3() keepChar(3) end
+function keep4() keepChar(4) end
+function keep5() keepChar(5) end
 function btnReset() resetCounters() end
 
 function btnDiff()
@@ -723,6 +830,6 @@ function onLoad()
   end
   refreshPanel()
   if #missing > 0 then
-    say('Missing box: ' .. table.concat(missing, ', '))
+    say('Missing bag: ' .. table.concat(missing, ', '))
   end
 end

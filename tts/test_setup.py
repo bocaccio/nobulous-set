@@ -66,6 +66,10 @@ class Obj(object):
         # own count() rather than trusting this.
         return len(self.kids) if self.kids else -1
 
+    def getPosition(self):
+        return self.world.lua.table_from(
+            {"x": self.pos[0], "y": self.pos[1], "z": self.pos[2]})
+
     def getObjects(self):
         return self.world.lua.table_from(
             [self.world.lua.table_from({"nickname": k.name, "guid": k.guid})
@@ -173,7 +177,16 @@ def build(lua):
             decks.append(w.add(Obj(w, d["GUID"], d["Nickname"], cards)))
         w.add(Obj(w, o["GUID"], o["Nickname"], decks, bag=True))
     if not w.table and not w.byguid:
-        raise SystemExit("no boxes in %s - run build_mod.py first" % SAVE)
+        raise SystemExit("no bags in %s - run build_mod.py first" % SAVE)
+    # THE SAVE IS WHERE THE LUA RUNS FROM, so a save built before the last
+    # edit to lua.lua means this whole harness exercises a script that no
+    # longer exists and reports 0 failed. That happened: keepChar was
+    # rewritten and nine assertions passed against the previous version.
+    live = io.open(os.path.join(HERE, "lua.lua"), encoding="utf-8").read()
+    tail = save["LuaScript"]
+    if not (tail.endswith(live) or tail.endswith(live.replace("\r\n", "\n"))):
+        raise SystemExit("%s is older than lua.lua - run build_mod.py first"
+                         % os.path.basename(SAVE))
     return w, save["LuaScript"]
 
 
@@ -419,6 +432,25 @@ def panel_assertions():
     want("difficulty cycle", levels,
          ["Easy", "Standard", "Hard", "Nobulous", "Easy"])
     want("tier cycle", tiers, [0, 1, 2, 3, 0])
+
+    # Keeping a character leaves exactly one of them on the table.
+    for which, deck, n in (("NAP", "Apprentices", 3),
+                           ("AoS", "Technicians", 3),
+                           ("IMP", "Imposters (A / B)", 5)):
+        w, g = start("Standard", 0, Panel())
+        {"NAP": g.setupNAP, "AoS": g.setupAoS, "IMP": g.setupImposter}[which]()
+        want("%s dealt %d characters" % (which, n),
+             out(w, deck), n)
+        # Every index, including the LAST - which is the deck object
+        # collapsing to its final card, the case a nickname lookup could
+        # not find and a left-to-right one can.
+        for i in (1, 2, n):
+            w2, g2 = start("Standard", 0, Panel())
+            {"NAP": g2.setupNAP, "AoS": g2.setupAoS,
+             "IMP": g2.setupImposter}[which]()
+            g2.keepChar(i)
+            want("%s keep %d leaves one character" % (which, i),
+                 out(w2, deck), 1)
 
     # Pack up has to leave the table bare, loose cards included - and it
     # has to do it when the bag refuses some of what it is handed, which

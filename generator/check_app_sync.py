@@ -1892,7 +1892,15 @@ check("the Chip sits with the Red die it marks, not on it",
 # The rail's height is not in the save, and four attempts to name it
 # failed, so the mat and the boxes are dropped onto it and locked where
 # they land.
-check("the mat and the boxes are settled onto the rail, not placed on it",
+# The three games with a character to choose can choose it from the mat.
+check("the mat picks a character for the games that have one",
+      "CHAR_DECK = {" in _lua and "function keepChar" in _lua
+      and all(("function keep%d()" % i) in _lua for i in (1, 2, 3, 4, 5)))
+check("keeping a character goes by position, not by nickname",
+      "a.getPosition().x < b.getPosition().x" in _lua)
+check("tts/test_setup.py refuses a save older than lua.lua",
+      "older than lua.lua" in text("tts/test_setup.py"))
+check("the mat and the bags are settled onto the rail, not placed on it",
       "function settle()" in _lua and "settle()" in _lua.split("function onLoad")[1]
       and "o.setLock(true)" in _lua)
 # The panel art is generated now, so the shape the layout depends on has
