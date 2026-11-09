@@ -45,7 +45,12 @@ FONT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
 INK = (235, 232, 224, 235)    # card outlines
 SNAP = (235, 232, 224, 150)   # the spaces you drop a card into
 DICE = (235, 232, 224, 120)
-BACK = (0, 0, 0, 0)           # transparent: this is an overlay
+BACK = (0, 0, 0, 0)           # transparent, for painting over
+# TTS DOES NOT HONOUR A TILE'S ALPHA: a transparent PNG on a Custom_Tile
+# comes out black, which is what the first overlay did to the table. So
+# the copy that ships is filled with the felt's own colour instead -
+# sampled off two screenshots of this table, which agree on it.
+FELT = (68, 14, 14, 255)
 LINE = 5
 RADIUS = 14
 
@@ -90,6 +95,13 @@ def dice_places():
             if o["Name"] in ("Custom_Dice", "Custom_Token")]
 
 
+def runtime_for(w):
+    for alive in reversed(T.ALIVE):
+        if alive[1] is w:
+            return alive[0]
+    return None
+
+
 def places_for(which, difficulty="Standard", tier=3):
     """Run the setup and report what it put on the table.
 
@@ -101,22 +113,36 @@ def places_for(which, difficulty="Standard", tier=3):
     {"BAT": g.setupBAT, "NAP": g.setupNAP,
      "AoS": g.setupAoS, "IMP": g.setupImposter}[which]()
     T.drain(w)
-    lua = None
-    for alive in reversed(T.ALIVE):
-        if alive[1] is w:
-            lua = alive[0]
-            break
-    return T.footprints(w, lua), list(w.snaps), w
+    lua = runtime_for(w)
+    return T.footprints(w, lua), list(w.snaps), w, lua
 
 
 def draw_game(d, which, slots_out=None):
-    fp, snaps, w = places_for(which)
+    fp, snaps, w, lua = places_for(which)
+    # NAP OUTLINES WHERE YOU PUT THINGS, NOT WHERE THE GAME PUTS THEM.
+    # A box under the Time Slot, the Assignment deck, the Apprentice or
+    # the FINF card only draws a line round a card that is already
+    # there. The other three games have no snap points, so for them the
+    # card places are all there is to show.
+    if which != "NAP":
+        for name, x, z, hw, hd in fp:
+            card(d, x, z, hw, hd)
+    cw = cl = None
     for name, x, z, hw, hd in fp:
-        card(d, x, z, hw, hd)
-    cw, cl = fp[0][3], fp[0][4]
+        cw, cl = min(hw, hd), max(hw, hd)
+        break
+    # A SPACE IS AS WIDE AS THE PITCH, NOT AS WIDE AS A CARD. The
+    # columns are 8.5 apart and a landscape card is 8.71 across, so
+    # boxes drawn card-wide overlapped their neighbours all down the
+    # table. The card overhangs its space by a tenth instead.
+    half = cl
+    if lua is not None:
+        try:
+            half = (float(lua.globals().ASSIGN_PITCH) - 0.3) / 2.0
+        except Exception:
+            pass
     for sx, sz in snaps:
-        # A snap point holds one landscape card.
-        card(d, sx, sz, max(cw, cl), min(cw, cl), SNAP, 4)
+        card(d, sx, sz, half, cw, SNAP, 4)
     if which == "NAP":
         # The two piles down the right are the only places on this table
         # whose contents a player cannot guess from what is in them.
@@ -168,7 +194,10 @@ def main():
     # NAP's is not just a drawing aid: the mod lays it on the table, so
     # it goes to images/ with the card sheets and is served from there.
     ship = os.path.join(os.path.dirname(HERE), "images", "NAP_Table.png")
-    Image.open(os.path.join(OUT, "table_NAP.png")).save(ship)
+    over = Image.open(os.path.join(OUT, "table_NAP.png"))
+    felt = Image.new("RGBA", over.size, FELT)
+    felt.paste(over, (0, 0), over)
+    felt.convert("RGB").save(ship)
     wrote.append(ship)
     print("%d x %d at %g px per unit, world x %g..%g, z %g..%g"
           % (W, H, PX, X0, X1, Z1, Z0))

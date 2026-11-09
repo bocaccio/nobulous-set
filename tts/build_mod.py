@@ -66,7 +66,7 @@ CARD_L = CARD_LONG * CARD_SCALE    # a landscape card, across - which is
 # between the lowest card edge at -16.26 and the front of the felt.
 # Module level so tts/make_template.py can draw the space.
 # (x from, x to, z top, z bottom)
-EXHAUSTED = (10.0, 27.0, -16.3, -18.5)
+EXHAUSTED = (10.0, 27.0, -15.2, -18.5)
 
 # Filled in by dice_objects(), read by lua_header().
 HOME_MARKERS = {}
@@ -299,14 +299,19 @@ def nap_table():
 
 # A DIE WITH NO ROTATION VALUES CANNOT BE SET TO A NUMBER. These carried
 # none, so nothing - not a script, not typing a number over one - could
-# put a 2 face up. This is TTS's own d6 arrangement; if a die comes up
-# showing the wrong number, this table is the one thing to change.
-D6 = [{"Value": 1, "Rotation": {"x": 0, "y": 0, "z": 0}},
-      {"Value": 2, "Rotation": {"x": 0, "y": 0, "z": 90}},
-      {"Value": 3, "Rotation": {"x": -90, "y": 0, "z": 0}},
-      {"Value": 4, "Rotation": {"x": 90, "y": 0, "z": 0}},
-      {"Value": 5, "Rotation": {"x": 0, "y": 0, "z": -90}},
-      {"Value": 6, "Rotation": {"x": 180, "y": 0, "z": 0}}]
+# put a 2 face up.
+#
+# MEASURED, NOT ASSUMED. TTS's own d6 arrangement was the obvious guess
+# and it was wrong for these faces: typing 1 to 6 on it produced 2, 4,
+# 1, 6, 3, 5. So each rotation now carries the value it actually shows.
+# The 5 also takes a 180 turn about Y, because flipping about X alone
+# brings that face up upside down.
+D6 = [{"Value": 1, "Rotation": {"x": -90, "y": 0, "z": 0}},
+      {"Value": 2, "Rotation": {"x": 0, "y": 0, "z": 0}},
+      {"Value": 3, "Rotation": {"x": 0, "y": 0, "z": -90}},
+      {"Value": 4, "Rotation": {"x": 0, "y": 0, "z": 90}},
+      {"Value": 5, "Rotation": {"x": 180, "y": 180, "z": 0}},
+      {"Value": 6, "Rotation": {"x": 90, "y": 0, "z": 0}}]
 
 
 def dice_objects():
@@ -353,6 +358,15 @@ def dice_objects():
              "CustomImage": o['CustomImage']}
         if o['Name'] == 'Custom_Dice':
             d["RotationValues"] = [dict(v) for v in D6]
+        if nick == 'Chip':
+            # THE DIAL NEEDS ROTATION VALUES TOO. Typing a number over it
+            # did nothing at all, and the likeliest reason is that TTS
+            # only treats an object as number-settable when it has them.
+            # Five steps of 72 for the five colours, taken on the face
+            # the Chip is built showing.
+            d["RotationValues"] = [
+                {"Value": i + 1, "Rotation": {"x": 0, "y": 72 * i, "z": 180}}
+                for i in range(5)]
         out.append(d)
     return out
 

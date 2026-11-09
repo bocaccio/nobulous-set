@@ -103,10 +103,11 @@ SLOT_X = -19.5
 -- landscape card's 6.24 depth, and the last of them sits at -14.4 with
 -- its bottom edge at -17.5 - the deepest anything goes on this felt.
 NAP_X = 23.5
--- 8.8: an Assignment turned on its side is 8.71 deep, so this is the
--- tightest pitch that still lets one be rotated in its row. 7.0 did
--- not; 9.0 did, with a third of a card of air nobody wanted.
-NAP_GAP = 8.8
+-- 8.75 is the FLOOR, not a preference: an Assignment turned on its side
+-- is 8.71 deep, so anything tighter has a rotated card lapping into the
+-- next row. 7.0 did not clear it at all, 9.0 cleared it with a third of
+-- a card of air, and this clears it by four hundredths.
+NAP_GAP = 8.75
 
 -- The Assignment deck, top left, with the Time Slots running down
 -- underneath it and four Assignment spaces beside each.
@@ -1087,17 +1088,13 @@ function onObjectNumberTyped(obj, player_color, number)
   if not obj or obj.getName() ~= 'Chip' then return false end
   local col = ATTENTION[number]
   if not col or not CHIP_FACE[col] then return false end
+  -- TURN IT, WHICHEVER WAY UP IT IS. This used to refuse unless the
+  -- colour face was up, which meant that when nothing happened there
+  -- was no way to tell a refusal from an event that never arrived.
+  -- Keeping x and z turns the dial without flipping it.
   local r = obj.getRotation()
-  local z = (r.z + 360) % 360
-  local up = (CHIP_FACE_Z + 360) % 360
-  local off = math.abs(z - up)
-  if off > 180 then off = 360 - off end
-  if off > 45 then
-    say('The Chip is colour-side down.')
-    return false
-  end
   obj.setRotationSmooth({r.x, CHIP_FACE[col], r.z})
-  say('Chip set to ' .. col .. '.')
+  say('Chip turned to ' .. col .. '.')
   return true
 end
 
