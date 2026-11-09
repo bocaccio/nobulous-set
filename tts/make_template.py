@@ -57,8 +57,10 @@ TEXTURE = os.path.join(HERE, "table_texture.png")
 # would otherwise vanish into.
 PALE = {"ink": (235, 232, 224, 235), "snap": (235, 232, 224, 150),
         "text": (235, 232, 224, 170)}
-DARK = {"ink": (54, 38, 22, 230), "snap": (54, 38, 22, 165),
-        "text": (54, 38, 22, 210)}
+# White on the table texture, which is dark: the parchment wanted dark
+# ink and this one wants the opposite.
+DARK = {"ink": (255, 255, 255, 235), "snap": (255, 255, 255, 180),
+        "text": (255, 255, 255, 225)}
 PEN = dict(PALE)
 LINE = 5
 RADIUS = 14

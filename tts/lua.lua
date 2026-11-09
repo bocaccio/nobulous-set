@@ -48,7 +48,10 @@ ATTENTION = { 'Yellow', 'Green', 'Blue', 'Purple', 'Red' }
 -- know, and five segments are 72 degrees apart. CHIP_FACE_Z is which
 -- way up the coloured face is - flip the Chip and typing does nothing,
 -- because the other side has no colour to turn to.
-CHIP_FACE = { Yellow = 0, Green = 72, Blue = 144, Purple = 216, Red = 288 }
+-- CHIP_FACE is GENERATED from build_mod.py, because the dial's rotation
+-- values in the save and the angles this script turns it to have to be
+-- the same five numbers. They were not: the values went round in steps
+-- of 72 from zero and the script had its own table.
 CHIP_FACE_Z = 180
 
 -- The dial's NUMBER side, which is the other way up. Same five steps

@@ -71,6 +71,21 @@ EXHAUSTED = (10.0, 27.0, -15.2, -18.5)
 # Filled in by dice_objects(), read by lua_header().
 HOME_MARKERS = {}
 
+# THE DIAL'S FIVE COLOURS, and where each one has to be turned to.
+#
+# Photographed at value 1, the segment centres sit at 36, 108, 180, 252
+# and 324 degrees clockwise from the top - Red, Yellow, Green, Blue,
+# Purple - so the top of the dial was reading the boundary BETWEEN
+# purple and red, half a segment off every colour. These angles bring
+# the named colour to the top instead.
+#
+# IF TYPING 1 LANDS ON BLUE RATHER THAN YELLOW, TTS turns the other way
+# and every angle here wants negating; nothing else would need to
+# change.
+ATTENTION = ('Yellow', 'Green', 'Blue', 'Purple', 'Red')
+CHIP_ANGLE = {'Yellow': 252, 'Green': 180, 'Blue': 108,
+              'Purple': 36, 'Red': 324}
+
 BOX_ORDER = ['BAT', 'NAP', 'AoS', 'NRJ']
 BOX_TITLE = {'BAT': 'BAT  Build-a-Tyrant',
              'NAP': 'NAP  Apprenticeship Program',
@@ -150,6 +165,8 @@ def lua_header(box_guids):
         'HOME = { %s }' % j("['%s'] = '%s'" % (k, v) for k, v in sorted(home.items())),
         'CARD_NAME = { %s }' % j("['%s'] = '%s'" % (d['label'], d['card'])
                                  for d in DECKS if d.get('card')),
+        'CHIP_FACE = { %s }' % j('%s = %d' % (c, CHIP_ANGLE[c])
+                                 for c in ATTENTION),
         # Where the four one-of-a-kind markers live when nothing has
         # borrowed them, so a setup can move them and Pack up can put
         # them back.
@@ -359,14 +376,14 @@ def dice_objects():
         if o['Name'] == 'Custom_Dice':
             d["RotationValues"] = [dict(v) for v in D6]
         if nick == 'Chip':
-            # THE DIAL NEEDS ROTATION VALUES TOO. Typing a number over it
-            # did nothing at all, and the likeliest reason is that TTS
-            # only treats an object as number-settable when it has them.
-            # Five steps of 72 for the five colours, taken on the face
-            # the Chip is built showing.
+            # THE DIAL NEEDS ROTATION VALUES TOO - typing a number over
+            # it did nothing until it had them - and they have to be the
+            # SAME angles the script turns it to, so CHIP_ANGLE owns
+            # both and lua_header() generates the Lua copy.
             d["RotationValues"] = [
-                {"Value": i + 1, "Rotation": {"x": 0, "y": 72 * i, "z": 180}}
-                for i in range(5)]
+                {"Value": i + 1,
+                 "Rotation": {"x": 0, "y": CHIP_ANGLE[c], "z": 180}}
+                for i, c in enumerate(ATTENTION)]
         out.append(d)
     return out
 
