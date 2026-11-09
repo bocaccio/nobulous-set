@@ -72,7 +72,10 @@ FACEDOWN = {0, 180, 180}
 -- far as the back rail allows - the top row reaches 18.86 and the felt
 -- ends at 19 - and the dice took what was left. There is no slack
 -- anywhere in this column of numbers.
-ROW_CHAR = 14.5                    -- characters, nearest the back rail
+ROW_CHAR = 14.8                    -- characters, nearest the back rail
+                                   -- (every card on this row is
+                                   -- landscape, so it reaches 17.92 and
+                                   -- the mat overhangs the felt at 18)
 ROW_MAIN = 5.7                     -- the decks you draw from
 ROW_SIDE = -3.1                    -- mats, slots and the Research Pool
 ROW_TIER = -11.9                   -- what a tier adds
@@ -94,9 +97,10 @@ SLOT_X = -19.5
 -- landscape card's 6.24 depth, and the last of them sits at -14.4 with
 -- its bottom edge at -17.5 - the deepest anything goes on this felt.
 NAP_X = 23.5
--- 9.0, NOT 7.0: an Assignment turned on its side is 8.71 deep, so a row
--- pitch that only cleared a flat card left no room to rotate one.
-NAP_GAP = 9.0
+-- 8.8: an Assignment turned on its side is 8.71 deep, so this is the
+-- tightest pitch that still lets one be rotated in its row. 7.0 did
+-- not; 9.0 did, with a third of a card of air nobody wanted.
+NAP_GAP = 8.8
 
 -- The Assignment deck, top left, with the Time Slots running down
 -- underneath it and four Assignment spaces beside each.
