@@ -1712,10 +1712,111 @@ _decks = text("tts/decks.py")
 sb_ = py_tables("simulation/bat.py")
 
 # Every deck the script reaches for has to exist, by label, in decks.py.
+# COUNTED, not merely compared: this matched findDeck('...') until the
+# setups started calling deckOut('...'), and an empty set is a subset of
+# anything. A check a RENAME can satisfy is not a check - AGENTS.md says
+# so, and this is the fourth time in this repo.
 _labels = set(re.findall(r"label='([^']+)'", _decks))
-_want = set(re.findall(r"findDeck\('([^']+)'\)", _lua))
-check("every findDeck label in tts/lua.lua exists in tts/decks.py",
+_want = set(re.findall(r"deckOut\('([^']+)'", _lua))
+check("tts/lua.lua still asks for its decks by label",
+      len(_want) >= 20, "found only %d deckOut labels" % len(_want))
+check("every deck label in tts/lua.lua exists in tts/decks.py",
       _want <= _labels, "no such deck: %r" % (sorted(_want - _labels),))
+# ...and the other direction, which is the one with teeth now that the
+# cards live in boxes: a deck no setup ever names is dead cardboard that
+# a player can only reach by opening a box and guessing.
+_named = set(l for l in _labels if ("'" + l + "'") in _lua)
+check("every deck in the boxes is reachable from a setup button",
+      _named == _labels, "never dealt: %r" % (sorted(_labels - _named),))
+
+
+def _elts(rel, name):
+    """Elements of a top-level list literal, unevaluated."""
+    with io.open(os.path.join(ROOT, rel), encoding="utf-8") as f:
+        tree = ast.parse(f.read())
+    for node in tree.body:
+        if isinstance(node, ast.Assign) and \
+                getattr(node.targets[0], "id", "") == name:
+            return node.value.elts
+    return []
+
+
+# ---------------------------------------------------------------------
+# THE FOUR BOXES. Every card starts in its game's box and a setup button
+# takes out what the printed setup asks for, so a deck in no box is a deck
+# no button can reach.
+_games = set(re.findall(r"game='([^']+)'", _decks))
+_ord = re.search(r"BOX_ORDER = \[([^\]]*)\]", _mod)
+_boxes = set(re.findall(r"'([^']+)'", _ord.group(1))) if _ord else set()
+check("tts/build_mod.py ships one box per game",
+      _boxes == set(["BAT", "NAP", "AoS", "NRJ"]),
+      "boxes: %r" % (sorted(_boxes),))
+check("every deck in tts/decks.py lands in one of those boxes",
+      _games - set(["IMP"]) <= _boxes
+      and "grouped['NRJ' if d['game'] == 'IMP' else d['game']].append(" in _mod,
+      "homeless: %r" % (sorted(_games - set(["IMP"]) - _boxes),))
+check("nothing is parked in the old row that ran off the table",
+      "x, z = -34.0, -22.0" not in _mod)
+
+# The two card-index tables are DERIVED from the generators at build time:
+# a hand-typed index is the same bug as a hand-typed difficulty number, and
+# the finale would deal the wrong domains in silence.
+check("tts/build_mod.py reads the Credit Tasks out of build_nap.py",
+      "def nap_credit_tasks" in _mod and "'build_nap.py', 'TASKS'" in _mod)
+check("tts/build_mod.py reads the Exhibit domains out of build_nrj.py",
+      "def exhibit_blocks" in _mod and "'build_nrj.py', 'SCEN'" in _mod
+      and "is not contiguous" in _mod)
+check("tts/lua.lua uses those tables instead of typing the indices",
+      "NAP_CREDIT" in _lua and "EXHIBIT_BLOCK" in _lua
+      and "'Exhibits ' .. idx[i]" in _lua
+      and not re.search(r"\{\s*17\s*,\s*24\s*\}", _lua))
+
+# ... and the derivation has to agree with the card tables as they stand.
+_credit = {}
+for _i, _e in enumerate(_elts("generator/build_nap.py", "TASKS"), 1):
+    _s = getattr(_e.elts[1], "id", None)
+    if _s:
+        _credit.setdefault(_s, []).append(_i)
+check("build_nap.py carries 4 Task subjects for the 4 Imposter Tasks",
+      len(_credit) == 4 and min([len(v) for v in _credit.values()] or [0]) >= 1,
+      "subjects: %r" % (sorted(_credit),))
+_dom = {}
+for _i, _e in enumerate(_elts("generator/build_nrj.py", "SCEN"), 1):
+    _dom.setdefault(_e.elts[1].value, []).append(_i)
+check("every Exhibit domain is one contiguous block of at least 5",
+      len(_dom) == 3 and all(v == list(range(v[0], v[-1] + 1)) and len(v) >= 5
+                             for v in _dom.values()),
+      "domains: %r" % (dict((k, (v[0], v[-1])) for k, v in _dom.items()),))
+
+# ---------------------------------------------------------------------
+# THE CONTROL PANEL HAS TO FIT ON THE CONTROL PANEL. ControlPanel.png is
+# 1473x520 and the tile is "Stretch": true, so the tile's local space is
+# about z +/-1 and x +/- that times the image aspect. The layout used to
+# run from z -4.3 to -0.6 in rows 0.9 apart: four of its five rows hung in
+# the air off the top edge of the tile, which is what the mod looked like
+# on the table. Width is in thousandths of a local unit.
+_png = io.open(os.path.join(ROOT, "images", "ControlPanel.png"), "rb").read(24)
+_pw = int.from_bytes(_png[16:20], "big")
+_ph = int.from_bytes(_png[20:24], "big")
+_half_z = 1.0
+_half_x = _half_z * (float(_pw) / _ph)
+# find(), not index(): a renamed function should FAIL this check, not
+# crash the whole script on a ValueError before the rest of it runs.
+_pi = _lua.find("function refreshPanel")
+_pan = _lua[_pi:] if _pi >= 0 else ""
+_pj = _pan.find("\nfunction nop")
+_pan = _pan[:_pj] if _pj >= 0 else _pan
+# Every row is btn(label, fn, x, z, width) or lbl(text, x, z, width), so
+# the triple to check is two decimals followed by an integer width. The
+# {r, g, b} colours cannot match it: their third number is not an integer.
+_rows = re.findall(r"(-?\d+\.\d+),\s*(-?\d+\.\d+),\s*(\d{3,4})", _pan)
+check("the panel layout was read out of tts/lua.lua",
+      len(_rows) >= 10, "found %d button positions" % len(_rows))
+_off = [(x, z, w) for x, z, w in _rows
+        if abs(float(z)) > _half_z
+        or abs(float(x)) + int(w) / 2000.0 > _half_x]
+check("every control-panel button sits on the control panel",
+      not _off, "off the tile: %r" % (_off,))
 
 
 def _lua_rows(name, levels):

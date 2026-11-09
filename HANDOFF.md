@@ -125,9 +125,10 @@ Then copy the save into place. On Windows:
 
 Load the save and check, in this order:
 
-1. **Every deck resolves.** A deck showing a grey question mark means its URL
-   404s. Check the exact filename against `REQUIRED_IMAGES.txt` — matching is
-   case-sensitive.
+1. **Every deck resolves.** Press a setup button first: the cards start
+   inside the four boxes, so nothing is visible until one deals. A deck
+   showing a grey question mark means its URL 404s. Check the exact filename
+   against `REQUIRED_IMAGES.txt` — matching is case-sensitive.
 2. **The Control Panel shows buttons.** If not, the Lua failed to load; open
    Scripting and look for an error.
 3. **Two-sided decks flip correctly.** Seven decks use `UniqueBack`. Take a card
@@ -142,7 +143,9 @@ Load the save and check, in this order:
    Jon's existing Steam-hosted images and need no upload.
 6. **Press each setup button.** BAT, NAP, AoS and Imposter should each deal a
    sensible table and print a chat message. Cycle NRJ Tier to III first and
-   confirm the extra module decks appear.
+   confirm the extra module cards are dealt. Then press **Pack up**: every
+   card, including singles dealt out of a deck, must go back in its box and
+   leave the table bare except the dice and the panel.
 7. **Cycle Difficulty through all four.** Easy, Standard, Hard, Nobulous. Each
    setup message must name that level's own numbers — BAT's Specimens and
    Tyrant Health, NAP's Credit goal and Setbacks, AoS's Program mix, the
@@ -150,6 +153,70 @@ Load the save and check, in this order:
 8. **Read the Notebook.** Six tabs. They are the only rules a Workshop
    subscriber gets, so they are checked against `rules/*.html` by
    `check_app_sync.py` — see §6b.
+9. **Count what a setup dealt.** The scripted setups perform the printed
+   mixes, so the counts are checkable at the table: the Upgrade deck is
+   16 + your difficulty's Specimens, the Assignment deck is 26 + 6 + your
+   Setbacks, the Program deck is exactly 8, and the Dossier is exactly 15.
+   A count that is right at Standard and wrong at Nobulous is a difficulty
+   table being read once and ignored once.
+
+---
+
+## 6c. Four boxes, and setup that actually sets up (2026-11-09)
+
+The mod used to spill all 31 decks into a parking row 68 units wide at
+`z -22`, wrapping to a second row at `z -28` - which is past the front edge
+of the table, so eleven decks shipped sitting on the floor. The setup
+buttons then pushed those decks around and printed a paragraph telling the
+player which cards to shuffle together by hand.
+
+Now **every card starts in its game's box** - BAT, NAP, AoS and NRJ, with
+the Imposter finale's two decks in the NRJ box because the finale is NRJ's,
+not a fifth game - and a setup button takes out what the printed setup asks
+for, performs it, and leaves the rest inside:
+
+- **BAT** deals the four Lab Rats, shuffles the Experiments and the Tyrant
+  Attacks, and shuffles the difficulty's Specimens into the 16 Upgrades.
+- **NAP** builds and shuffles the Assignment deck, draws one FINF card and
+  makes Morning the active Time Slot.
+- **AoS** builds the 8-card Program deck from the difficulty's mix, shuffles
+  the Limitations, sets the Advanced Programs aside and lays out the mats.
+- **Imposter** deals the 15-card Dossier - 5 Knowledge, 5 Physical, 5
+  Cover-Up - and puts the Research Pool out face-up.
+- **The tier swaps happen too**, including the two with an order that
+  matters: Tier II takes 6 **ordinary** Upgrades out *before* the Specimens
+  go in (cutting afterwards would throw away Specimens the difficulty just
+  asked for), and NAP Tier I is one base Setback out per Following Setback
+  in, not four for three.
+
+**Two card-index tables are generated, never typed.** NAP Tier II has to
+name individual cards - each Imposter Task replaces a Credit Task of the
+same subject - and the finale deals by Exhibit domain. `build_mod.py` reads
+both out of `generator/build_nap.py` and `generator/build_nrj.py` with an
+AST walk and emits them into the Lua, so a reordered card table cannot
+leave a stale index behind. The Exhibit reader refuses a domain that is not
+one contiguous run rather than dealing the wrong cards quietly.
+
+**The control panel now fits on the control panel.** `ControlPanel.png` is
+1473x520 and the tile is `"Stretch": true`, so the tile's local space is
+about `z +/-1` by `x +/-2.8`. The layout ran from `z -4.3` to `z -0.6` in
+rows 0.9 apart: four of its five rows hung in the air off the top edge, and
+the buttons overlapped each other. The row that repeated the title the tile
+art already prints is gone, and `check_app_sync.py` now computes the tile's
+extent from the PNG's own aspect ratio and fails any button outside it.
+
+**The deck-label check had to be rewritten, not kept.** It matched
+`findDeck('...')` call sites against `decks.py`; the setups call
+`deckOut('...')` now, and an empty set is a subset of anything, so a rename
+would have left it passing while matching nothing. It counts what it
+matched, and a second check runs the other direction: every deck in a box
+must be named by some setup, because a deck no button deals is cardboard a
+player can only reach by opening a box and guessing.
+
+**Twelve new checks plus one rewritten**, 298 to 310, and all thirteen are
+proven to fail when the defect is put back. Four did not, first time round - three because the mutation was too
+weak to violate the claim, and one because the claim itself was too weak -
+and that is the whole reason for running the proof.
 
 ---
 

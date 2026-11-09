@@ -40,6 +40,11 @@ is right unless you have forked it.
 `NobulousSet.json` and `REQUIRED_IMAGES.txt` are written next to the script and
 are gitignored, since they are build output.
 
+The build also generates the Lua header that carries the four box GUIDs and
+the card-index tables it reads out of `generator/build_nap.py` and
+`generator/build_nrj.py`, so `tts/lua.lua` alone is not the whole script -
+`build_mod.py` prepends to it. Edit `build_mod.py`, never a generated block.
+
 ## Updating a card later
 
 1. Edit the relevant `generator/build_*.py`.
