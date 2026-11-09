@@ -266,10 +266,12 @@ def dice_objects():
     OFFS = ((0.0, 0.0), (1.4, 0.0), (0.0, -1.4), (1.4, -1.4))
     # The Chip sits beside the Red die, which is the one it belongs to:
     # Red is communal and the Chip marks who holds it.
-    # The Chip sits directly ABOVE the Red die it marks, in the same
-    # column; the three utility dice stay inside the same two columns,
-    # clear of the FINF card at z -10.
-    lay = {'Chip': (XCOL, ROWS['Pink'] + 2.0),
+    # The Chip sits above the Red die it marks, centred on the PAIR of
+    # dice columns rather than on the left one - it is wider than a die,
+    # so lining it up with a column leaves it looking off to one side.
+    # The three utility dice stay inside those same two columns, clear
+    # of the FINF card at z -10.
+    lay = {'Chip': (XCOL + 0.7, ROWS['Pink'] + 3.2),
            'Health': (XCOL, -8.5), 'Strategy': (XCOL + 1.4, -8.5),
            'Recovery': (XCOL, -9.9)}
     seen = {}
