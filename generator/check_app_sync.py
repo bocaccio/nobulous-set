@@ -1911,9 +1911,14 @@ check("tts/lua.lua spaces the table in card widths, not literals",
 # so a [^)]*? regex stops at the first one: the first version of this
 # inspected ONE of the eight call sites and passed. Take a window after
 # each call instead, and count them.
-_calls = [m.start() for m in re.finditer(r"spread\(", _lua)]
-_bare = [_lua[i:i + 60].split(chr(10))[0]
-         for i in _calls if "CARD_" not in _lua[i:i + 220]]
+# CODE ONLY. A comment that says "spread() does not know which card it
+# will be left holding" is not a call site, and counting it failed this
+# check on prose - the same trap the deck-name check fell into, two
+# checks down, which is why the stripped copy exists at all.
+_code_only = chr(10).join(l.split("--")[0] for l in _lua.splitlines())
+_calls = [m.start() for m in re.finditer(r"spread\(", _code_only)]
+_bare = [_code_only[i:i + 60].split(chr(10))[0]
+         for i in _calls if "CARD_" not in _code_only[i:i + 220]]
 check("every row is spaced in card widths",
       len(_calls) >= 6 and not _bare,
       "%d call(s), bare: %r" % (len(_calls), _bare))

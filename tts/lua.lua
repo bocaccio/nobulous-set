@@ -175,6 +175,13 @@ REVEAL_SLOTS = 2
 -- space at all: both go INTO the Assignment deck.
 PILE_X = 23.5
 
+-- A READOUT ABOVE EACH PILE, in the band between it and the card above
+-- it - the same NAP_GAP / 2 the stat dice use, for the same reason.
+-- Named here because setupNAP deals them and packUp sends them back.
+CREDIT_PILE = 'Credit Record'
+BANK_PILE = 'Banked Opportunities'
+COUNTER_LIFT = NAP_GAP / 2
+
 -- Where the character you keep ends up. NAP's belongs at the head of its
 -- own column; the other two are dealt across the table and keep the
 -- middle.
@@ -446,6 +453,36 @@ end
 -- Time Slots as Morning, Evening, Afternoon - a clock that reads wrong.
 -- So each card is taken BY NAME to its own slot, from the last back to
 -- the second, which leaves card one in the deck at slot one.
+-- THE LAST CARD IS NOT THE DECK, and this is the third shape that trap
+-- has taken. Taking the second-to-last card out destroys the deck
+-- object and respawns its final card, and TTS does not put that card
+-- down exactly where the deck was standing: on Jon's table Morning
+-- landed at x -21.72, z 5.95 instead of -19.50, 6.05, while the two
+-- cards the loop placed itself were exact to the hundredth.
+--
+-- So the first slot is set again once the collapse has happened. By
+-- POSITION rather than by name, because spread() does not know which
+-- card it will be left holding - the prefix is the only handle, and it
+-- matches both the card ('Time Slot 1') and the deck it came from
+-- ('Time Slots') for the case where no collapse happened at all.
+function snapFirst(label, x, z, rot)
+  Wait.frames(function()
+    local best, bd = nil, 6.0
+    for _, o in ipairs(getAllObjects()) do
+      local n = o.getName() or ''
+      if n ~= '' and string.sub(n, 1, #label) == label then
+        local p = o.getPosition()
+        local d = math.abs(p.x - x) + math.abs(p.z - z)
+        if d < bd then best, bd = o, d end
+      end
+    end
+    if best then
+      best.setPosition({x, 1.6, z})
+      best.setRotation(rot or FACEUP)
+    end
+  end, 4)
+end
+
 function column(deck, n, x, z0, rot, gap)
   if not deck then return end
   gap = gap or (CARD_W + 0.6)
@@ -465,6 +502,7 @@ function column(deck, n, x, z0, rot, gap)
       end
     end
   end
+  snapFirst(label, x, z0, rot)
 end
 
 function spread(deck, n, z, rot, gap)
@@ -477,6 +515,7 @@ function spread(deck, n, z, rot, gap)
     deck.takeObject({position = {x0 + i * gap, 3, z}, rotation = rot or FACEUP,
                      smooth = false})
   end
+  snapFirst(CARD_NAME[deck.getName()] or deck.getName(), x0, z, rot)
 end
 
 -- The Assignment spaces beside each Time Slot. Snap points rather than
@@ -806,16 +845,28 @@ function setupNAP()
     napSnaps(3, ROW_CHAR - NAP_GAP, NAP_GAP)
     -- Below the Apprentices, above the Final Exams.
     drawOne('FINF', {NAP_X, 3, ROW_CHAR - NAP_GAP}, FACEUP)
+    -- A readout over each pile, in the gap above it.
+    deckOut(CREDIT_PILE,
+            {PILE_X, 3, ROW_CHAR - 2 * NAP_GAP + COUNTER_LIFT})
+    deckOut(BANK_PILE,
+            {PILE_X, 3, ROW_CHAR - 3 * NAP_GAP + COUNTER_LIFT})
   end)
 
   step(function()
     -- The Chip to the circle beside Morning, reading 1; the three
     -- dice in a row centred under the Apprentice, at the 2s its own
     -- card prints.
-    local chip = setMarker('Chip', CHIP_X, ROW_CHAR - NAP_GAP)
+    -- TURNED TO 1 THE WAY TYPING 1 TURNS IT, colour side up, through
+    -- the CHIP_FACE table that was calibrated at the table. It used to
+    -- use CHIP_NUM - the number side - which is a different face and a
+    -- different set of angles, so the dial the setup laid down and the
+    -- dial you typed over did not agree.
+    setMarker('Chip', CHIP_X, ROW_CHAR - NAP_GAP)
+    STATE.chip = 1
+    local chip = marker('Chip')
     if chip then
       local r = chip.getRotation()
-      chip.setRotationSmooth({r.x, CHIP_NUM[1], CHIP_NUM_Z})
+      chip.setRotationSmooth({r.x, CHIP_FACE[ATTENTION[1]], CHIP_FACE_Z})
     end
     setMarker('Health', NAP_X - STAT_PITCH, STAT_Z, NAP_START)
     setMarker('Strategy', NAP_X, STAT_Z, NAP_START)
@@ -823,6 +874,7 @@ function setupNAP()
   end)
   step(function()
     STATE.credits = 0
+    refreshCounts()
     refreshPanel()
     say('NAP ready -- ' .. STATE.difficulty .. '. ' .. goal ..
         ' Credits reaches the Final Exam. The Assignment deck is built and' ..
@@ -1019,12 +1071,12 @@ function refreshPanel()
   --
   -- The tier NAME lives in the setup message; the panel has room for
   -- its numeral and nothing more.
-  btn('Difficulty  ' .. STATE.difficulty, 'btnDiff', -2.60, -0.36, 1080,
-      nil, 82)
+  -- SAME BUBBLE AS THE SETUP ROW: height 150 and font 92, like every
+  -- other button on the mat. Only the width differs, because the text
+  -- is longer - 'Difficulty  Nobulous' does not fit in 660.
+  btn('Difficulty  ' .. STATE.difficulty, 'btnDiff', -2.60, -0.36, 1080)
   btn('NRJ Tier  ' .. (STATE.tier == 0 and 'off' or
-      ({'I', 'II', 'III'})[STATE.tier]), 'btnTier', 0.50, -0.36, 820,
-      nil, 82)
-  lbl('click either to change', 2.90, -0.36, 800, 66)
+      ({'I', 'II', 'III'})[STATE.tier]), 'btnTier', 0.50, -0.36, 820)
 
   local g = STATE.game
   if g == 'BAT' then
@@ -1033,11 +1085,25 @@ function refreshPanel()
     btn('+', 'splPlus', -0.82, 0.00, 240)
     if STATE.splices >= 5 then lbl('TYRANT AWAKE', 1.94, 0.00, 560) end
   elseif g == 'NAP' then
-    local goal = NAP_DIFF[STATE.difficulty][1]
-    lbl('Credits  ' .. STATE.credits .. ' / ' .. goal, -3.41, 0.00, 640)
-    btn('-', 'crMinus', -1.70, 0.00, 240)
-    btn('+', 'crPlus', -0.82, 0.00, 240)
-    if STATE.credits >= goal then lbl('FINAL EXAM', 1.94, 0.00, 560) end
+    -- NO CREDIT COUNTER HERE. It counted presses, not cards, and it sat
+    -- at the other end of the table from the pile it claimed to
+    -- describe. The Credit Record plate above that pile counts what is
+    -- actually on it, and breaks it down by subject on hover - which is
+    -- the number the Final Exam asks for and the one you cannot get by
+    -- looking at a stack of face-up cards.
+    -- CALIBRATION, like the dial's: read the numbers off and they go
+    -- into NAP_TABLE_SCALE and NAP_TABLE_Z.
+    local _, mw, md, mz = 0, 0, 0, 0
+    if marker(NAP_TABLE) then _, mw, md, mz = matSize() end
+    lbl(string.format('Mat %.1f x %.1f  z %.2f', mw, md, mz),
+        -3.25, 0.00, 900, 70)
+    btn('wide-', 'matNarrower', -1.72, 0.00, 300, nil, 70)
+    btn('wide+', 'matWider', -1.06, 0.00, 300, nil, 70)
+    btn('deep-', 'matShallower', -0.40, 0.00, 300, nil, 70)
+    btn('deep+', 'matDeeper', 0.26, 0.00, 300, nil, 70)
+    btn('up', 'matUp', 0.86, 0.00, 240, nil, 70)
+    btn('down', 'matDown', 1.44, 0.00, 260, nil, 70)
+    lbl('credits count on the pile', 3.10, 0.00, 900, 62)
   elseif g == 'AoS' then
     lbl('Backdoors  ' .. STATE.backdoors .. ' / 2', -3.32, 0.00, 700)
     btn('-', 'bdMinus', -1.54, 0.00, 240)
@@ -1078,12 +1144,6 @@ function refreshPanel()
 
   btn('Pack up', 'btnPack', -3.80, 0.72, 420, {0.42, 0.18, 0.15})
   btn('Reset counters', 'btnReset', -1.94, 0.72, 640, nil, 82)
-  -- CALIBRATION, and it says so: this is here to be read off and put
-  -- into CHIP_TRIM, not to be part of playing a game.
-  lbl('Dial  ' .. CHIP_TRIM .. ' deg', -0.34, 0.72, 620, 76)
-  btn('-3', 'trimMinus', 0.74, 0.72, 240, nil, 82)
-  btn('+3', 'trimPlus', 1.30, 0.72, 240, nil, 82)
-  lbl('+ is clockwise; read the number out', 3.20, 0.72, 1080, 60)
 end
 
 function nop() end
@@ -1172,9 +1232,15 @@ function turnChip(number)
   return col
 end
 
--- Three degrees a press, because that is the size of the last
--- correction this took. Wrapped into -180..180 so the readout stays a
--- number you can read out loud.
+-- THE DIAL IS SETTLED at CHIP_TRIM -17 and its buttons are off the
+-- panel. These stay: they are how the next person re-measures it if
+-- the art moves, and chipFaces() is what keeps the script's angles and
+-- the save's rotation values the same five numbers. Put the two
+-- buttons back beside Pack up to use them.
+--
+-- Three degrees a press, because that is the size the last correction
+-- took. Wrapped into -180..180 so the readout stays a number you can
+-- read out loud.
 function trimBy(d)
   CHIP_TRIM = (CHIP_TRIM + d) % 360
   if CHIP_TRIM > 180 then CHIP_TRIM = CHIP_TRIM - 360 end
@@ -1188,6 +1254,157 @@ end
 
 function trimPlus() trimBy(3) end
 function trimMinus() trimBy(-3) end
+
+-- ------------------------------------------------------------- the mat
+-- THE FELT'S SIZE WAS MEASURED OFF A SCREENSHOT and is wrong: the mat
+-- comes up narrower than the table. Nothing in here can measure the
+-- table - TTS offers no bounds for it - so it is sized at the table
+-- instead, the way the dial was, and the numbers come back to
+-- NAP_TABLE_SCALE and NAP_TABLE_Z in build_mod.py.
+--
+-- Width and depth move independently, because the mat is short of the
+-- edge across and over it along: one scale cannot fix both, and the
+-- template gets redrawn to whatever rectangle this settles on.
+MAT_STEP = 0.5
+
+function matSize()
+  local o = marker(NAP_TABLE)
+  if not o then return nil end
+  local s = o.getScale()
+  return o, 2 * MAT_ASPECT * s.x, 2 * s.z, o.getPosition().z
+end
+
+function matNudge(dw, dd, dz)
+  local o, w, d, z = matSize()
+  if not o then
+    say('Set up NAP first -- the mat is in the NAP box.')
+    return
+  end
+  local s = o.getScale()
+  o.setLock(false)
+  o.setScale({s.x + dw / (2 * MAT_ASPECT), s.y, s.z + dd / 2})
+  local p = o.getPosition()
+  o.setPosition({p.x, p.y, p.z + dz})
+  o.setLock(true)
+  refreshPanel()
+  local _, w2, d2, z2 = matSize()
+  say(string.format('Mat %.1f wide x %.1f deep, centre z %.2f.', w2, d2, z2))
+end
+
+function matWider() matNudge(MAT_STEP, 0, 0) end
+function matNarrower() matNudge(-MAT_STEP, 0, 0) end
+function matDeeper() matNudge(0, MAT_STEP, 0) end
+function matShallower() matNudge(0, -MAT_STEP, 0) end
+function matUp() matNudge(0, 0, MAT_STEP / 2) end
+function matDown() matNudge(0, 0, -MAT_STEP / 2) end
+
+-- ------------------------------------------------------- the pile counts
+-- WHAT IS ACTUALLY ON THE PILE, not a number someone remembered to
+-- press. Credits are earned by completing Credit Tasks (rules/nap.html)
+-- and NAP_CREDIT - generated from build_nap.py - says which Task
+-- numbers those are and which subject each belongs to. The six Tasks
+-- that carry no subject earn nothing and are not counted.
+--
+-- The subject breakdown is not decoration: the Final Exam reduces its
+-- target by one for every Credit you hold IN THAT SUBJECT, so it is the
+-- number you need and the hardest one to get by eye off a face-up pile.
+function cardsAt(x, z, r, skip)
+  local out = {}
+  for _, o in ipairs(getAllObjects()) do
+    if o.getGUID() ~= skip then
+      local p = o.getPosition()
+      if math.abs(p.x - x) < r and math.abs(p.z - z) < r then
+        local kids = o.getObjects and o.getObjects() or nil
+        if kids and #kids > 0 then
+          for _, e in ipairs(kids) do table.insert(out, e.nickname or '') end
+        else
+          table.insert(out, o.getName() or '')
+        end
+      end
+    end
+  end
+  return out
+end
+
+-- Which subject a Task belongs to, or nil for the six that earn nothing.
+function creditSubject(name)
+  local n = tonumber(string.match(name or '', '^Task (%d+)$'))
+  if not n then return nil end
+  for s, list in pairs(NAP_CREDIT) do
+    for _, i in ipairs(list) do
+      if i == n then return s end
+    end
+  end
+  return nil
+end
+
+function creditTally(skip)
+  local subj, total = {}, 0
+  for _, nm in ipairs(cardsAt(PILE_X, ROW_CHAR - 2 * NAP_GAP, 3.6, skip)) do
+    local s = creditSubject(nm)
+    if s then
+      subj[s] = (subj[s] or 0) + 1
+      total = total + 1
+    end
+  end
+  return total, subj
+end
+
+function bankTally(skip)
+  local names, n = {}, 0
+  for _, nm in ipairs(cardsAt(PILE_X, ROW_CHAR - 3 * NAP_GAP, 3.6, skip)) do
+    if string.match(nm, '^Devious Opportunity %d+$')
+        or string.match(nm, '^Opportunity %d+$') then
+      n = n + 1
+      table.insert(names, nm)
+    end
+  end
+  table.sort(names)
+  return n, names
+end
+
+-- Sorted, because pairs() over a Lua table is in no order at all and a
+-- breakdown that reshuffles itself every time you hover is unreadable.
+function subjectLine(subj)
+  local keys = {}
+  for s in pairs(NAP_CREDIT) do table.insert(keys, s) end
+  table.sort(keys)
+  local parts = {}
+  for _, s in ipairs(keys) do
+    table.insert(parts, (NAP_SUBJECT[s] or s) .. '  ' .. (subj[s] or 0))
+  end
+  return table.concat(parts, '\n')
+end
+
+function refreshCounts()
+  if STATE.game ~= 'NAP' then return end
+  local goal = NAP_DIFF[STATE.difficulty][1]
+  local c = marker(CREDIT_PILE)
+  if c then
+    local n, subj = creditTally(c.getGUID())
+    STATE.credits = n
+    c.TextTool.setValue('CREDITS  ' .. n .. ' / ' .. goal)
+    c.setDescription('Credits by subject, which is what each Final Exam'
+      .. ' reduces its target by:\n' .. subjectLine(subj)
+      .. (n >= goal and '\n\nGoal reached -- sit the Final Exam.' or ''))
+  end
+  local b = marker(BANK_PILE)
+  if b then
+    local n, names = bankTally(b.getGUID())
+    b.TextTool.setValue('BANKED  ' .. n)
+    b.setDescription(n == 0 and 'Nothing banked yet.'
+      or ('Banked here:\n' .. table.concat(names, '\n')))
+  end
+end
+
+-- TTS calls this whenever anything is put down, which is the only
+-- moment either pile can change. Cheap: it does nothing unless the card
+-- landed near one of them.
+function onObjectDrop(color, obj)
+  if STATE.game ~= 'NAP' or not obj then return end
+  local p = obj.getPosition()
+  if math.abs(p.x - PILE_X) < 6.0 then refreshCounts() end
+end
 
 -- ---------------------------------------------------------- the rulebook
 -- A Custom_PDF on the rail in the top right corner, carrying one button

@@ -64,6 +64,25 @@ BAT_SPECIMENS = {"Easy": 5, "Standard": 6, "Hard": 7, "Nobulous": 8}
 NAP_SETBACKS = {"Easy": 3, "Standard": 3, "Hard": 4, "Nobulous": 5}
 
 
+class TextTool(object):
+    """A 3DText's text, which the pile counters rewrite.
+
+    Without this the counters raised inside a setup step, pump() caught
+    it, said 'Setup error', and the harness reported 0 failed - because
+    nothing read what the setups said. Both halves of that are fixed
+    here.
+    """
+
+    def __init__(self, owner):
+        self.owner = owner
+
+    def setValue(self, s):
+        self.owner.text = s
+
+    def getValue(self):
+        return self.owner.text
+
+
 class Obj(object):
     """A deck, a card or a bag. Decks and bags hold other Objs."""
 
@@ -74,6 +93,10 @@ class Obj(object):
         self.pos = (0.0, 0.0, 0.0)
         self.rot = None
         self.value = None
+        self.text = ""
+        self.desc = ""
+        self.scale = (1.0, 1.0, 1.0)
+        self.TextTool = TextTool(self)
 
     def getName(self):
         return self.name
@@ -93,6 +116,13 @@ class Obj(object):
         return self.world.lua.table_from(
             {"x": self.pos[0], "y": self.pos[1], "z": self.pos[2]})
 
+    def getScale(self):
+        return self.world.lua.table_from(
+            {"x": self.scale[0], "y": self.scale[1], "z": self.scale[2]})
+
+    def setScale(self, s):
+        self.scale = tuple(s.values()) if hasattr(s, "values") else tuple(s)
+
     def getObjects(self):
         return self.world.lua.table_from(
             [self.world.lua.table_from({"nickname": k.name, "guid": k.guid})
@@ -104,6 +134,12 @@ class Obj(object):
 
     def setLock(self, *a):
         pass
+
+    def setDescription(self, d):
+        self.desc = d
+
+    def getDescription(self):
+        return self.desc
 
     def setPosition(self, p):
         # RECORDED, not thrown away. The stub ignored every position, so
@@ -142,6 +178,16 @@ class Obj(object):
         else:
             k = self.kids[0]
         self.kids.remove(k)
+        # A DECK OF ONE CARD IS A CARD, AND IT MOVES WHEN IT BECOMES
+        # ONE. Taking the second-to-last card destroys the deck and
+        # respawns its final card, and TTS does not put it back exactly
+        # where the deck stood: on Jon's table Morning came to rest at
+        # x -21.72, z 5.95 having been placed at -19.50, 6.05, while
+        # the cards takeObject itself placed were exact. That offset is
+        # reproduced here so the correction is tested rather than
+        # assumed.
+        if len(self.kids) == 1:
+            self.pos = (self.pos[0] - 2.22, self.pos[1], self.pos[2] - 0.10)
         if "position" in keys:
             k.setPosition(spec["position"])
         self.world.table[k.guid] = k
@@ -216,7 +262,14 @@ def build(lua):
                      for c in (d.get("ContainedObjects") or [])]
             if not cards:                       # a one-card "deck"
                 cards = [Obj(w, gid(), d["Nickname"] + " 1")]
-            decks.append(w.add(Obj(w, d["GUID"], d["Nickname"], cards)))
+            one = Obj(w, d["GUID"], d["Nickname"], cards)
+            # ITS REAL SCALE. The mat is sized at the table through the
+            # panel, and a stub that said every object was scale 1 would
+            # have let it report a 3-unit mat as 56.
+            tr = d.get("Transform") or {}
+            one.scale = (tr.get("scaleX", 1.0), tr.get("scaleY", 1.0),
+                         tr.get("scaleZ", 1.0))
+            decks.append(w.add(one))
         w.add(Obj(w, o["GUID"], o["Nickname"], decks, bag=True))
     # THE DICE ARE OBJECTS, NOT COORDINATES. They were a list of
     # positions, so getAllObjects never returned one, marker() answered
@@ -503,6 +556,13 @@ def layout_assertions():
                 drain(w)
                 fp = footprints(w, lua)
                 want(t + " dealt something", len(fp) > 0, True)
+                # A STEP THAT RAISES IS CAUGHT BY pump() AND ANNOUNCED,
+                # and nothing read the announcement: the pile counters
+                # went in raising on every NAP setup and the harness
+                # reported 0 failed. Every setup, every difficulty,
+                # every tier.
+                want(t + " said no setup error",
+                     [m for m in w.said if "Setup error" in m][:2], [])
                 over = []
                 for i, a in enumerate(fp):
                     for b2 in fp[i + 1:]:
@@ -586,27 +646,31 @@ def layout_assertions():
                     want(t + " stat dice read 2, which is what the card"
                          " prints", [o.value for o in three], [2, 2, 2])
                     # And the Chip in the circle beside Morning, turned
-                    # to the FIRST of the five angles on its number side
-                    # - which is what "set to 1" means - and not to the
-                    # colour side's angles.
+                    # to 1 EXACTLY AS TYPING 1 TURNS IT - the calibrated
+                    # colour angle, colour side up. It used to be turned
+                    # through the number side's own table, so the dial
+                    # the setup laid down and the dial you typed over
+                    # were two different dials.
                     morning = sorted(
                         [f for f in fp if f[0].startswith("Time Slot")],
                         key=lambda f: -f[2])[0]
                     chip = by["Chip"]
-                    nums = [float(v) for v in g.CHIP_NUM.values()]
+                    first = str(g.ATTENTION[1])
                     want(t + " the Chip sits beside Morning",
                          (round(chip.pos[2] - morning[2], 3),
                           chip.pos[0] < morning[1] - morning[3] - 0.5),
                          (0.0, True))
-                    want(t + " the Chip is turned to the first number",
+                    want(t + " the Chip is turned to colour 1, colour"
+                         " side up",
                          (chip.rot is not None
-                          and round(chip.rot[1], 3) == round(nums[0], 3),
+                          and round(chip.rot[1], 3) == round(
+                              float(g.CHIP_FACE[first]), 3),
                           chip.rot is not None
                           and round(chip.rot[2], 3) == round(
-                              float(g.CHIP_NUM_Z), 3)
-                          and round(chip.rot[2], 3) != round(
                               float(g.CHIP_FACE_Z), 3)),
                          (True, True))
+                    want(t + " ...and the trim control knows which"
+                         " colour that is", int(g.STATE.chip), 1)
 
 
 def panel_assertions():
@@ -724,6 +788,85 @@ def panel_assertions():
              sorted((n, p[0], p[1]) for n, p in home.items()))
 
 
+def counter_assertions():
+    """The plates above the piles count the piles.
+
+    COUNTED, NOT PRESSED. The panel's old Credit row counted button
+    presses and sat at the far end of the table from the pile it
+    described; these read the cards. Credits come from Credit Tasks
+    (rules/nap.html) and the six Tasks that carry no subject earn
+    nothing, so a counter that just counted cards on the pile would
+    read six too high at worst - which is what this checks.
+    """
+    w, g = start("Standard", 3, Panel())
+    g.setupNAP()
+    drain(w)
+    by = dict((o.name, o) for o in w.table.values())
+    want("the NAP setup deals both counters",
+         sorted(n for n in by if n in ("Credit Record",
+                                       "Banked Opportunities")),
+         ["Banked Opportunities", "Credit Record"])
+    goal = int(g.NAP_DIFF[g.STATE.difficulty][1])
+    want("an empty pile reads zero",
+         by["Credit Record"].text, "CREDITS  0 / %d" % goal)
+    subs = sorted(str(v) for v in g.NAP_SUBJECT.values())
+    want("the hover text names all four subjects in full",
+         [s for s in subs if s in by["Credit Record"].desc], subs)
+
+    # The pile, as cards: two Anatomy Credit Tasks, one Theory, and one
+    # of the six Tasks that carry no subject and earn nothing.
+    cred = dict((str(k), [int(i) for i in v.values()])
+                for k, v in g.NAP_CREDIT.items())
+    ana = cred[[k for k, v in g.NAP_SUBJECT.items()
+                if str(v) == "Anatomy"][0]]
+    the = cred[[k for k, v in g.NAP_SUBJECT.items()
+                if str(v) == "Theory"][0]]
+    earns = set(i for v in cred.values() for i in v)
+    blank = [i for i in range(1, 27) if i not in earns]
+    want("six Tasks earn no Credit at all", len(blank), 6)
+    pz = float(g.ROW_CHAR) - 2 * float(g.NAP_GAP)
+    for i, n in enumerate([ana[0], ana[1], the[0], blank[0]]):
+        o = Obj(w, "pile%d" % i, "Task %d" % n)
+        o.pos = (float(g.PILE_X), 1.0, pz)
+        w.table[o.guid] = o
+    bz = float(g.ROW_CHAR) - 3 * float(g.NAP_GAP)
+    o = Obj(w, "bank1", "Devious Opportunity 3")
+    o.pos = (float(g.PILE_X), 1.0, bz)
+    w.table[o.guid] = o
+    g.refreshCounts()
+    drain(w)
+    want("four cards on the pile, three of them Credits",
+         by["Credit Record"].text, "CREDITS  3 / %d" % goal)
+    want("...and the counter is what the panel used to hold",
+         int(g.STATE.credits), 3)
+    want("the breakdown is by subject",
+         ("Anatomy  2" in by["Credit Record"].desc,
+          "Theory  1" in by["Credit Record"].desc),
+         (True, True))
+    want("the bank counts and names what is in it",
+         (by["Banked Opportunities"].text,
+          "Devious Opportunity 3" in by["Banked Opportunities"].desc),
+         ("BANKED  1", True))
+    # A card on the OTHER pile is not a Credit.
+    o = Obj(w, "stray", "Task %d" % ana[2])
+    o.pos = (float(g.PILE_X), 1.0, bz)
+    w.table[o.guid] = o
+    g.refreshCounts()
+    drain(w)
+    want("a Task on the bank pile is not counted as a Credit",
+         by["Credit Record"].text, "CREDITS  3 / %d" % goal)
+
+    # The mat reports the rectangle it actually covers, so the numbers
+    # read off at the table mean something.
+    mat = list(g.matSize())
+    want("the mat reports its own size in table units",
+         [round(float(v), 2) for v in mat[1:]], [56.0, 37.6, 0.2])
+    g.matWider()
+    g.matDeeper()
+    want("the Mat buttons move it half a unit at a time",
+         [round(float(v), 2) for v in list(g.matSize())[1:3]], [56.5, 38.1])
+
+
 def dial_assertions():
     """The trim control must agree with the save, and with itself.
 
@@ -773,6 +916,7 @@ def dial_assertions():
 def main():
     layout_assertions()
     panel_assertions()
+    counter_assertions()
     dial_assertions()
     for lvl in ("Easy", "Standard", "Hard", "Nobulous"):
         spec, sb = BAT_SPECIMENS[lvl], NAP_SETBACKS[lvl]
