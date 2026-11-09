@@ -37,6 +37,11 @@ import lupa
 HERE = os.path.dirname(os.path.abspath(__file__))
 SAVE = os.path.join(HERE, "NobulousSet.json")
 
+# Which decks are landscape, so a footprint can be the right way round.
+sys.path.insert(0, HERE)
+from decks import DECKS
+LAND = dict((d["label"], bool(d.get("land"))) for d in DECKS)
+
 BAT_SPECIMENS = {"Easy": 5, "Standard": 6, "Hard": 7, "Nobulous": 8}
 NAP_SETBACKS = {"Easy": 3, "Standard": 3, "Hard": 4, "Nobulous": 5}
 
@@ -48,6 +53,7 @@ class Obj(object):
         self.world, self.guid, self.name = world, guid, name
         self.kids = list(kids or [])
         self.bag = bag
+        self.pos = (0.0, 0.0, 0.0)
 
     def getName(self):
         return self.name
@@ -72,8 +78,12 @@ class Obj(object):
     def setLock(self, *a):
         pass
 
-    def setPosition(self, *a):
-        pass
+    def setPosition(self, p):
+        # RECORDED, not thrown away. The stub ignored every position, so
+        # each overlapping row this mod has had - the Lab Rat behind its
+        # neighbours, the Time Slots stacked on each other - was invisible
+        # to a harness that reported 0 failed.
+        self.pos = tuple(p.values()) if hasattr(p, "values") else tuple(p)
 
     setPositionSmooth = setPosition
 
@@ -95,6 +105,8 @@ class Obj(object):
         else:
             k = self.kids[0]
         self.kids.remove(k)
+        if "position" in keys:
+            k.setPosition(spec["position"])
         self.world.table[k.guid] = k
         if "callback_function" in keys and spec["callback_function"] is not None:
             spec["callback_function"](k)
@@ -300,6 +312,69 @@ def want(tag, got, exp):
         FAIL.append("%s: got %r, want %r" % (tag, got, exp))
 
 
+def footprints(w, lua):
+    """Every object on the table as (label, x, z, half width, half depth).
+
+    A landscape deck is the same card turned, so its footprint is the
+    portrait one swapped. CARD_W and CARD_L come from the Lua the build
+    generated, so this measures what the mod will actually deal.
+    """
+    g = lua.globals()
+    cw, cl = float(g.CARD_W), float(g.CARD_L)
+    out = []
+    for o in w.table.values():
+        base = o.name.rstrip("0123456789").strip()
+        land = LAND.get(base, LAND.get(o.name))
+        if land is None:
+            continue                      # not a card: leave it alone
+        hw, hd = (cl / 2, cw / 2) if land else (cw / 2, cl / 2)
+        out.append((o.name, o.pos[0], o.pos[2], hw, hd))
+    return out
+
+
+# How the felt measures, taken off a screenshot in which the dice - whose
+# world positions this build set - give the scale. Generous rather than
+# exact: this is here to catch a row dealt into the floor, not to shave
+# half a unit off a margin.
+FELT_X, FELT_ZMIN, FELT_ZMAX = 28.0, -18.0, 19.0
+
+
+def layout_assertions():
+    """No dealt card may sit on another, or off the felt.
+
+    The stub threw positions away until now, so every overlap this mod has
+    had - the Lab Rat behind its neighbours, the Time Slots stacked, the
+    FINF card on top of a slot - was invisible to a harness reporting 0
+    failed. Overlap is not visible in any one card's coordinates, only in
+    the pairs, which is the same shape of bug as the control panel.
+    """
+    for lvl in ("Easy", "Standard", "Hard", "Nobulous"):
+        for tier in (0, 1, 2, 3):
+            for which in ("BAT", "NAP", "AoS", "IMP"):
+                t = "%s %s t%d layout" % (which, lvl, tier)
+                lua = lupa.LuaRuntime(unpack_returned_tuples=True)
+                w, src = build(lua)
+                install(lua, w)
+                lua.execute(src)
+                g = lua.globals()
+                g.STATE.difficulty, g.STATE.tier = lvl, tier
+                {"BAT": g.setupBAT, "NAP": g.setupNAP,
+                 "AoS": g.setupAoS, "IMP": g.setupImposter}[which]()
+                fp = footprints(w, lua)
+                want(t + " dealt something", len(fp) > 0, True)
+                over = []
+                for i, a in enumerate(fp):
+                    for b2 in fp[i + 1:]:
+                        if (abs(a[1] - b2[1]) < a[3] + b2[3] - 0.05
+                                and abs(a[2] - b2[2]) < a[4] + b2[4] - 0.05):
+                            over.append((a[0], b2[0]))
+                want(t + " nothing overlaps", over[:3], [])
+                off = [f[0] for f in fp
+                       if abs(f[1]) + f[3] > FELT_X
+                       or f[2] - f[4] < FELT_ZMIN or f[2] + f[4] > FELT_ZMAX]
+                want(t + " nothing dealt off the felt", off[:3], [])
+
+
 def panel_assertions():
     """Draw the panel in every state it can be in.
 
@@ -360,6 +435,7 @@ def panel_assertions():
 
 
 def main():
+    layout_assertions()
     panel_assertions()
     for lvl in ("Easy", "Standard", "Hard", "Nobulous"):
         spec, sb = BAT_SPECIMENS[lvl], NAP_SETBACKS[lvl]

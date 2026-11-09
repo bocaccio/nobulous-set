@@ -1859,21 +1859,28 @@ check("landscape decks are scaled to the same card, turned",
 check("tts/lua.lua spaces the table in card widths, not literals",
       all(k in _lua for k in ("ROW_CHAR", "ROW_MAIN", "ROW_SIDE",
                               "function col(i)", "CARD_L", "CARD_W")))
-# The Rats are one row, and a gap between them reads as four things.
-check("the Lab Rats are dealt touching",
-      "ROW_CHAR, FACEUP, CARD_L)" in _lua)
+# EVERY SPREAD IS SPACED IN CARDS, not in numbers someone liked. These
+# three checks matched implementation strings and all three went stale
+# the first time the implementation moved, so they are properties now.
+_gaps = re.findall(r"spread\([^)]*?FACEUP,\s*([^)]+)\)", _lua, re.S)
+check("every row is spaced in card widths",
+      _gaps and all("CARD_W" in g or "CARD_L" in g for g in _gaps),
+      "bare gaps: %r" % ([g for g in _gaps
+                          if "CARD_W" not in g and "CARD_L" not in g],))
 # TTS drops objects fed to a bag faster than it animates them, which left
 # exactly one card on the table after every setup. tts/test_setup.py
 # refuses one bag put in N and proves a single pass fails.
-check("pack up sweeps more than once",
-      "for _ = 1, 4 do step(sweep) end" in _lua
-      and "Still on the table: " in _lua)
+_passes = re.search(r"for _ = 1, (\d+) do step\(post\) end", _lua)
+check("pack up takes several passes and reports what is left",
+      _passes and int(_passes.group(1)) >= 4
+      and "Still on the table: " in _lua,
+      "passes: %r" % (_passes and _passes.group(1),))
 check("tts/test_setup.py models a bag that drops what it is handed",
       "self.lossy" in text("tts/test_setup.py")
       and "dropping 1 in" in text("tts/test_setup.py"))
 # The dice are a pool, not a heap: one block per colour, blocks apart.
-check("the dice are grouped by colour",
-      "BLOCK = {" in _mod and "OFFS = (" in _mod
+check("the dice are one row per colour down the left edge",
+      "ROWS = {" in _mod and "XCOL = " in _mod
       and "(seen[nick] - 1) * 1.1" not in _mod)
 # The panel art is generated now, so the shape the layout depends on has
 # a source rather than being a hand-drawn PNG nobody can regenerate.

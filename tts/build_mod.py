@@ -142,12 +142,14 @@ def lua_header(box_guids):
 def box(game, contained, x):
     r, g, b = GAME_COLOR[game]
     return {"GUID": guid(), "Name": "Bag",
-            "Transform": xf(x, 2.0, 18.0, (0, 0, 0), 1.6),
+            "Transform": xf(x, 2.00, 20.5, (0, 0, 0), 1.6),
             "Nickname": BOX_TITLE[game],
             "Description": "%d decks. A setup button takes out what it needs."
                            % len(contained),
             "ColorDiffuse": {"r": r, "g": g, "b": b},
-            "Locked": False, "Grid": True, "Snap": True, "Autoraise": True,
+            # Locked: a bag resting on the rail rolls off it otherwise,
+            # and a locked bag still opens and still takes putObject.
+            "Locked": True, "Grid": True, "Snap": True, "Autoraise": True,
             "Sticky": True, "MaterialIndex": -1, "MeshIndex": -1,
             "ContainedObjects": contained}
 
@@ -214,7 +216,10 @@ def build_deck(d, deck_id, pos):
 
 def panel():
     return {"GUID": guid(), "Name": "Custom_Tile",
-            "Transform": xf(0, 0.96, 12, (0, 180, 0), 2.6),
+            # ON THE BACK RAIL, clear of the top dealt row, which
+            # reaches z 17.96. Locked, so it stays on the rail whatever
+            # the rail's real height turns out to be.
+            "Transform": xf(0, 1.70, 21.0, (0, 180, 0), 2.6),
             "Nickname": "Control Panel",
             "Description": "Setup and counters for The Nobulous Set",
             "ColorDiffuse": {"r": 0.93, "g": 0.91, "b": 0.85},
@@ -232,24 +237,25 @@ def dice_objects():
     src = json.load(open(os.path.join(os.path.dirname(
         os.path.abspath(__file__)), 'dice_objects.json')))
     out = []
-    # ONE BLOCK PER COLOUR. The colours used to sit 2 apart with their
-    # four dice stepping 1.1 each, so every colour's second die stood on
-    # the next colour's first and the pool read as one heap. Each colour
-    # now gets a 2x2 block of its own with a clear gap between blocks.
-    BLOCK = {'Purple': -21.0, 'Blue': -16.0, 'Green': -11.0,
-             'Yellow': -6.0, 'Pink': -1.0}
-    OFFS = ((0.0, 0.0), (1.4, 0.0), (0.0, -1.4), (1.4, -1.4))
-    lay = {'Health': (-21.0, -19.5), 'Strategy': (-18.0, -19.5),
-           'Recovery': (-15.0, -19.5), 'Chip': (-12.0, -19.5)}
+    # ONE ROW PER COLOUR, DOWN THE LEFT EDGE, in the order the rules
+    # name them: Red, Purple, Blue, Green, Yellow. The colours used to sit
+    # 2 apart with their four dice stepping 1.1 each, so every colour's
+    # second die stood on the next colour's first and the pool read as one
+    # heap. x -24.5 keeps the whole column clear of the widest dealt row,
+    # which is four landscape cards at +/-18.
+    XCOL = -24.5
+    ROWS = {'Pink': 12.0, 'Purple': 8.0, 'Blue': 4.0,
+            'Green': 0.0, 'Yellow': -4.0}
+    lay = {'Health': (XCOL, -9.0), 'Strategy': (XCOL + 1.6, -9.0),
+           'Recovery': (XCOL + 3.2, -9.0), 'Chip': (XCOL + 4.8, -9.0)}
     seen = {}
     for o in src:
         nick = o.get('Nickname') or 'Die'
         seen[nick] = seen.get(nick, 0) + 1
-        if nick in BLOCK:
-            ox, oz = OFFS[(seen[nick] - 1) % len(OFFS)]
-            bx, bz = BLOCK[nick] + ox, -15.5 + oz
+        if nick in ROWS:
+            bx, bz = XCOL + (seen[nick] - 1) * 1.6, ROWS[nick]
         else:
-            bx, bz = lay.get(nick, (-6.0, -19.5))
+            bx, bz = lay.get(nick, (XCOL + 6.4, -9.0))
         d = {"GUID": guid(), "Name": o['Name'],
              "Transform": xf(bx, 1.4, bz, (0, 0, 0)),
              "Nickname": 'Red' if nick == 'Pink' else nick,
@@ -446,7 +452,9 @@ def main():
             build_deck(d, i + 1, (0, 2.0, 0)))
     box_guids = {}
     for n, game in enumerate(BOX_ORDER):
-        bx = box(game, grouped[game], -16.5 + n * 11.0)
+        # Also on the back rail, two either side of the mat, which is
+        # 14.7 wide and sits in the middle of it.
+        bx = box(game, grouped[game], (-21.0, -14.5, 14.5, 21.0)[n])
         box_guids[game] = bx['GUID']
         objects.append(bx)
     objects.append(panel())
