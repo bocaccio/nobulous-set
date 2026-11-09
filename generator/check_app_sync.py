@@ -1960,9 +1960,17 @@ check("no card is matched by its deck's name",
       not _lit, "literal card prefixes: %r" % (_lit,))
 check("tts/decks.py gives nearly every deck a singular card name",
       len(_cards) >= 25, "only %d" % len(_cards))
+# ONE SET OF ANGLES FOR ONE DIAL. The save's rotation values and the
+# angles the script turns the Chip to were two separate tables that
+# could only agree by accident, and did not. build_mod.py owns them and
+# generates the Lua copy, so this checks the generator rather than the
+# script - where CHIP_FACE no longer appears at all.
 check("typing a number over the Chip turns it to that colour",
-      "function onObjectNumberTyped" in _lua and "CHIP_FACE = {" in _lua
-      and "CHIP_FACE_Z" in _lua)
+      "function onObjectNumberTyped" in _lua and "CHIP_FACE_Z" in _lua
+      and "CHIP_ANGLE = {" in _mod
+      and "'CHIP_FACE = { %s }'" in _mod
+      and "'Rotation': {'x': 0, 'y': CHIP_ANGLE[c], 'z': 180}".replace(
+          chr(39), chr(34)) in _mod)
 check("tts/test_setup.py pins the Lua version it runs on",
       "from lupa import lua54 as lupa" in _ts
       and "lupa.LuaRuntime(" in _ts and "import lupa" + chr(10) not in _ts)
