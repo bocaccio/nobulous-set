@@ -17,6 +17,14 @@
 #                              reportlab, pypdf, pillow
 #   rules/build.py             weasyprint
 #   rules/make_editable.py     beautifulsoup4
+#   tts/test_setup.py          lupa
+#
+# tts/build_mod.py needs NOTHING - json, os, sys, random and ast only - so
+# the mod can be rebuilt on a machine with none of the above installed.
+# tts/test_setup.py is the exception: lupa embeds a real Lua, which is how
+# the setup script gets EXECUTED rather than read. It ships wheels, so pip
+# installs it without a compiler. Without lupa you can still build and play
+# the mod; you just cannot check that a setup deals the right cards.
 #
 # TWO THINGS PIP CANNOT INSTALL, and both fail in ways that do not name
 # themselves:
@@ -44,3 +52,4 @@ pillow
 reportlab
 pypdf
 beautifulsoup4
+lupa

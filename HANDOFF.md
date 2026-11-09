@@ -153,12 +153,22 @@ Load the save and check, in this order:
 8. **Read the Notebook.** Six tabs. They are the only rules a Workshop
    subscriber gets, so they are checked against `rules/*.html` by
    `check_app_sync.py` — see §6b.
-9. **Count what a setup dealt.** The scripted setups perform the printed
-   mixes, so the counts are checkable at the table: the Upgrade deck is
-   16 + your difficulty's Specimens, the Assignment deck is 26 + 6 + your
-   Setbacks, the Program deck is exactly 8, and the Dossier is exactly 15.
-   A count that is right at Standard and wrong at Nobulous is a difficulty
-   table being read once and ignored once.
+9. **Count what a setup dealt** - or let `tts/test_setup.py` do it. The
+   Upgrade deck is 16 + your difficulty's Specimens, the Assignment deck is
+   26 + 6 + your Setbacks, the Program deck is exactly 8, and the Dossier is
+   exactly 15. A count that is right at Standard and wrong at Nobulous is a
+   difficulty table being read once and ignored once.
+
+   ```bash
+   cd tts && python test_setup.py   # 416 assertions over 64 setups
+   ```
+
+   It embeds a real Lua through `lupa`, stubs the slice of the TTS object
+   API the setups use, and presses every setup button at all four
+   difficulties and all four tiers. It cannot test the sequencer's frame
+   delays, which is exactly what steps 1-8 above are for, and `lupa` bundles
+   Lua 5.5 where TTS runs MoonSharp, a 5.2 dialect - so a clean run proves
+   the card arithmetic, not that TTS will accept every construct.
 
 ---
 
@@ -183,11 +193,18 @@ for, performs it, and leaves the rest inside:
   the Limitations, sets the Advanced Programs aside and lays out the mats.
 - **Imposter** deals the 15-card Dossier - 5 Knowledge, 5 Physical, 5
   Cover-Up - and puts the Research Pool out face-up.
-- **The tier swaps happen too**, including the two with an order that
-  matters: Tier II takes 6 **ordinary** Upgrades out *before* the Specimens
-  go in (cutting afterwards would throw away Specimens the difficulty just
-  asked for), and NAP Tier I is one base Setback out per Following Setback
-  in, not four for three.
+- **The tier swaps happen too.** BAT Tier II removes 6 **ordinary**
+  Upgrades by NAME rather than taking six off the top, and NAP Tier I is
+  one base Setback out per Following Setback in, not four for three.
+
+  That naming replaced a claim that did not survive its own test. The
+  comment said the removal had to precede the Specimen mix or it would eat
+  Specimens; the harness below could not tell the two orders apart, and was
+  right not to - both cut from the top of the deck, and a merged-in
+  Specimen lands at the bottom, so neither order could have eaten one. The
+  guarantee rested on deck order that nothing enforced. Named, it holds
+  whatever order the steps run in, and the harness asserts both halves: the
+  Specimen count survives, and the six that left were ordinary.
 
 **Two card-index tables are generated, never typed.** NAP Tier II has to
 name individual cards - each Imposter Task replaces a Credit Task of the

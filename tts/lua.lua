@@ -251,15 +251,19 @@ function setupBAT()
     sp = deckOut('Specimens', pad(5))
   end)
 
-  -- TIER II REMOVES SIX **ORDINARY** UPGRADES, so it has to happen before
-  -- the Specimens go in. Mixing first and cutting afterwards would throw
-  -- away Specimens the difficulty just asked for.
+  -- TIER II REMOVES SIX **ORDINARY** UPGRADES, and says so by NAME.
+  -- Taking six off the top removes ordinary cards only while the
+  -- Specimens happen to be elsewhere in the deck, which is an assumption
+  -- about deck order that nothing here enforces - and the claim that this
+  -- step must precede the Specimen mix rested on it. Named, it cannot eat
+  -- a Specimen whatever order the steps run in.
   if STATE.tier >= 2 then
     step(function()
-      for _ = 1, 6 do
-        if upg then
-          upg.takeObject({position = OFF, smooth = false,
-                          callback_function = function(o) putHome(o) end})
+      local n = 0
+      for _, e in ipairs(upg and upg.getObjects() or {}) do
+        if n < 6 and string.sub(e.nickname, 1, 9) == 'Upgrades ' then
+          dropCard(upg, e.nickname)
+          n = n + 1
         end
       end
     end)
