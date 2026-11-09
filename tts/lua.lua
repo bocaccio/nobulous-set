@@ -5,7 +5,38 @@
 --=====================================================================
 
 STATE = { game = nil, difficulty = 'Standard', tier = 0,
-          splices = 0, credits = 0, suspicion = 0, attempts = 0, backdoors = 0 }
+          splices = 0, credits = 0, session = 0, backdoors = 0 }
+
+-- THE PRINTED NUMBERS, in one place. This script enforces nothing; it only
+-- SAYS them, which is exactly how they drifted - every one below used to be
+-- a hand copy inside the function that announced it. generator/
+-- check_app_sync.py now holds these four tables against bat.DIFFICULTY,
+-- nap.LEVELS, aos.LEVELS and the finale table in rules/nrj.html.
+LEVELS = { 'Easy', 'Standard', 'Hard', 'Nobulous' }
+-- BAT: Specimens shuffled into the Upgrade deck, and the Tyrant's Health.
+BAT_DIFF = { Easy = {5, 9}, Standard = {6, 10}, Hard = {7, 12}, Nobulous = {8, 14} }
+-- NAP: the Credit goal, and how many Setbacks are in the Assignment deck.
+NAP_DIFF = { Easy = {5, 3}, Standard = {6, 3}, Hard = {7, 4}, Nobulous = {8, 5} }
+-- AoS: the 8-Program mix, Routine / Specialized / Unstable. Each step up
+-- trades one Routine for one Unstable; Specialized stays at 3.
+AOS_MIX = { Easy = {3, 3, 2}, Standard = {2, 3, 3}, Hard = {1, 3, 4}, Nobulous = {0, 3, 5} }
+-- The finale: dice that START exhausted, Yellow / Green / Blue / Purple.
+-- Red is never one of them - session 5 allows only Red and Yellow.
+IMP_TIRED = { Easy = {0, 0, 0, 0}, Standard = {3, 2, 2, 2},
+              Hard = {3, 3, 3, 2}, Nobulous = {3, 3, 4, 4} }
+-- The Council's attention advances one step at the end of every session, so
+-- it is derived from the clock rather than tracked by hand.
+ATTENTION = { 'Yellow', 'Green', 'Blue', 'Purple', 'Red' }
+
+function attentionNow()
+  local s = math.max(1, STATE.session + 1)
+  return ATTENTION[((s - 1) % 5) + 1]
+end
+
+function attentionNext()
+  local s = math.max(1, STATE.session + 1)
+  return ATTENTION[(s % 5) + 1]
+end
 
 DECKS = {}            -- label -> guid, filled at load
 PANEL = nil
@@ -56,7 +87,7 @@ end
 
 function resetCounters()
   STATE.splices, STATE.credits = 0, 0
-  STATE.suspicion, STATE.attempts, STATE.backdoors = 0, 0, 0
+  STATE.session, STATE.backdoors = 0, 0
   refreshPanel()
 end
 
@@ -72,19 +103,18 @@ end
 function setupBAT()
   clearTable()
   STATE.game = 'BAT'
-  local buff = ({Easy = 4, Standard = 5, Hard = 6})[STATE.difficulty]
-  local spec = ({Easy = 2, Standard = 3, Hard = 4})[STATE.difficulty]
+  local spec, hp = BAT_DIFF[STATE.difficulty][1], BAT_DIFF[STATE.difficulty][2]
 
   park(findDeck('Lab Rats (A / B)'), {-14, 2, 6}, {0, 180, 0})
   park(findDeck('Encounters'), {-4, 2, 4}, {0, 180, 180})
   park(findDeck('Upgrades'), {2, 2, 4}, {0, 180, 180})
   park(findDeck('Specimens'), {8, 2, 4}, {0, 180, 180})
   park(findDeck('Tyrant Attacks'), {14, 2, -6}, {0, 180, 180})
-  local dial = findDeck('Buff HP Track')
-  if dial then
-    if buff > 0 then park(dial, {20, 2, -6}, {0, 180, 0})
-    else stow({'Buff HP Track'}, 2) end
-  end
+  -- The Buff HP card is OPTIONAL (rules/bat.html, Fine-tuning): it holds
+  -- part of the Tyrant's Health and is spent first. It used to carry a
+  -- difficulty's whole Buff number on top of a flat 20 Health, which is
+  -- why this used to stow it at difficulties that had none.
+  park(findDeck('Buff HP Track'), {20, 2, -6}, {0, 180, 0})
 
   if STATE.tier >= 1 then park(findDeck('Experimental Protocols'), {-4, 2, -10}, {0, 180, 180}) end
   if STATE.tier >= 2 then park(findDeck('Unauthorized Modifications'), {2, 2, -10}, {0, 180, 180}) end
@@ -92,10 +122,14 @@ function setupBAT()
 
   STATE.splices = 0
   refreshPanel()
-  say('BAT ready -- ' .. STATE.difficulty .. '. Tyrant Health 20' ..
-      (buff > 0 and ' plus ' .. buff .. ' Buff HP (put the Health die on the track).' or ', no Buff HP.') ..
-      ' Shuffle ' .. spec .. ' Specimens into the Upgrade deck.' ..
-      (STATE.tier >= 2 and ' Shuffle the 6 Modifications in as well.' or ''))
+  say('BAT ready -- ' .. STATE.difficulty .. '. Tyrant Health ' .. hp ..
+      ' (Health dial). Shuffle ' .. spec ..
+      ' random Specimens in with the 16 Upgrades.' ..
+      ' Five Splices awaken the Tyrant.' ..
+      (STATE.tier >= 2 and
+       ' TIER II: the 6 Modifications REPLACE 6 ordinary Upgrades.' or '') ..
+      ' The Buff HP card is optional -- hold part of the Health on it and' ..
+      ' spend that first.')
 end
 
 function setupNAP()
@@ -105,28 +139,44 @@ function setupNAP()
   park(findDeck('Tasks'), {-4, 2, 4}, {0, 180, 180})
   park(findDeck('Opportunities'), {2, 2, 4}, {0, 180, 180})
   park(findDeck('Setbacks'), {8, 2, 4}, {0, 180, 180})
-  park(findDeck('Time Slots + FINF'), {-14, 2, -2}, {0, 180, 0})
+  park(findDeck('Time Slots'), {-14, 2, -2}, {0, 180, 0})
+  park(findDeck('FINF'), {-14, 2, -6}, {0, 180, 180})
   park(findDeck('Final Exams'), {14, 2, 6}, {0, 180, 180})
 
   if STATE.tier >= 1 then park(findDeck('Following Setbacks'), {-4, 2, -10}, {0, 180, 180}) end
-  if STATE.tier >= 2 then park(findDeck('Impostor Tasks'), {2, 2, -10}, {0, 180, 180}) end
+  if STATE.tier >= 2 then park(findDeck('Imposter Tasks'), {2, 2, -10}, {0, 180, 180}) end
   if STATE.tier >= 3 then park(findDeck('Devious Opportunities'), {8, 2, -10}, {0, 180, 180}) end
 
   STATE.credits = 0
   refreshPanel()
-  local msg = 'NAP ready. Build the Assignment deck: 26 Tasks + 6 Opportunities + 3 of 6 Setbacks.'
-  if STATE.tier >= 1 then msg = msg .. ' TIER I: use the 4 Following Setbacks INSTEAD of the 3 base Setbacks.' end
-  if STATE.tier >= 2 then msg = msg .. ' TIER II: swap in the 4 Impostor Tasks (they grant no Credit).' end
+  local goal, sb = NAP_DIFF[STATE.difficulty][1], NAP_DIFF[STATE.difficulty][2]
+  local msg = 'NAP ready -- ' .. STATE.difficulty .. '. ' .. goal ..
+      ' Credits reaches the Final Exam. Build the Assignment deck: 26 Tasks + ' ..
+      '6 Opportunities + ' .. sb .. ' of the 6 Setbacks.'
+  if STATE.tier >= 1 then
+    -- One for one, and that is the whole point of the 2026-11-07 fix: at
+    -- Hard and Nobulous a 4-for-3 swap HANDED a Setback back, so the tier
+    -- measured easier than no module at all.
+    msg = msg .. ' TIER I: shuffle in 3 of the 4 Following Setbacks at random' ..
+          ' and set aside 3 base Setbacks -- one out for each one in, so you' ..
+          ' still play ' .. sb .. '.'
+  end
+  if STATE.tier >= 2 then msg = msg .. ' TIER II: add the 4 Imposter Tasks, one per subject; each REPLACES a Credit Task of the same subject and grants no Credit.' end
   if STATE.tier >= 3 then msg = msg .. ' TIER III: use the 6 Devious Opportunities instead of the base 6.' end
   say(msg)
 end
 
-function setupAoS(deckLabel)
+function setupAoS()
   clearTable()
   STATE.game = 'AoS'
   park(findDeck('Technicians'), {-14, 2, 6}, {0, 180, 0})
-  park(findDeck(deckLabel), {-4, 2, 4}, {0, 180, 180})
-  park(findDeck('Limitations'), {4, 2, 4}, {0, 180, 180})
+  -- All THREE Program decks, because difficulty is a MIX of them and not a
+  -- choice between them. This used to deal one deck named by difficulty,
+  -- which is a game nothing in the set describes.
+  park(findDeck('Routine Programs'), {-8, 2, 4}, {0, 180, 180})
+  park(findDeck('Specialized Programs'), {-2, 2, 4}, {0, 180, 180})
+  park(findDeck('Unstable Programs'), {4, 2, 4}, {0, 180, 180})
+  park(findDeck('Limitations'), {10, 2, -2}, {0, 180, 180})
   park(findDeck('Advanced Programs'), {12, 2, 4}, {0, 180, 180})
 
   -- five element mats in a row, face up and locked
@@ -146,7 +196,12 @@ function setupAoS(deckLabel)
 
   STATE.backdoors = 0
   refreshPanel()
-  local msg = 'AoS ready -- ' .. deckLabel .. '. Technician starts 2 HP / 2 STR / 3 REC.'
+  local mix = AOS_MIX[STATE.difficulty]
+  local msg = 'AoS ready -- ' .. STATE.difficulty ..
+      '. Build an 8-card Program deck: ' .. mix[1] .. ' Routine, ' ..
+      mix[2] .. ' Specialized, ' .. mix[3] ..
+      ' Unstable. Technician starts 2 HP / 2 STR / 3 REC.' ..
+      ' Every element must receive at least one die.'
   if STATE.tier >= 2 then msg = msg .. ' TIER II: shuffle the 6 Corrupted Limitations into the Limitation deck.' end
   if STATE.tier >= 3 then msg = msg .. ' TIER III: max 2 Backdoor Routines claimed per game.' end
   say(msg)
@@ -156,10 +211,24 @@ function setupImposter()
   clearTable()
   STATE.game = 'IMP'
   park(findDeck('Exhibits'), {0, 2, 6}, {0, 180, 180})
-  STATE.suspicion, STATE.attempts = 0, 0
+  park(findDeck('Imposters (A / B)'), {-14, 2, 6}, {0, 180, 0})
+  -- The Research Pool is kept face-up beside the table, all 18 of them.
+  park(findDeck('Research Notes'), {14, 2, -10}, {0, 180, 0})
+  park(findDeck('Devious Opportunities'), {14, 2, -4}, {0, 180, 0})
+  park(findDeck('Backdoor Routines'), {14, 2, 2}, {0, 180, 0})
+  STATE.session = 0
   refreshPanel()
-  say('Imposter Scenario. Deal 4 Knowledge, 4 Physical and 4 Cover-Up at random, shuffle those 12. ' ..
-      'Imposter starts 4 HP / 2 STR / 3 REC. Nine attempts.')
+  local t = IMP_TIRED[STATE.difficulty]
+  say('Imposter Scenario -- ' .. STATE.difficulty ..
+      '. Deal 5 Knowledge, 5 Physical and 5 Cover-Up at random from the 24' ..
+      ' Exhibits and shuffle those 15 into a face-down Dossier.' ..
+      ' Imposter starts 5 HP / 2 STR / 3 REC with all 17 dice, less ' ..
+      (t[1] + t[2] + t[3] + t[4] == 0 and 'none -- Easy exhausts nothing.'
+       or (t[1] .. ' Yellow, ' .. t[2] .. ' Green, ' .. t[3] .. ' Blue and ' ..
+           t[4] .. ' Purple, which start exhausted (never Red).')) ..
+      ' Nine sessions. Keep all 18 Research Pool cards face-up: a RETAINED' ..
+      ' card reduces one Exhibit Target by 2 -- retain at most 3 NAP,' ..
+      ' 2 BAT, 2 AoS.')
 end
 
 -- ---------------------------------------------------------------- panel
@@ -198,21 +267,23 @@ function refreshPanel()
     btn('+', 'splPlus', 0.15, -1.5, 320)
     if STATE.splices >= 5 then lbl('TYRANT AWAKE', 1.3, -1.5, 1400) end
   elseif g == 'NAP' then
-    lbl('Credits  ' .. STATE.credits .. ' / 6', -1.2, -1.5, 1400)
+    local goal = NAP_DIFF[STATE.difficulty][1]
+    lbl('Credits  ' .. STATE.credits .. ' / ' .. goal, -1.2, -1.5, 1400)
     btn('-', 'crMinus', -0.25, -1.5, 320)
     btn('+', 'crPlus', 0.15, -1.5, 320)
-    if STATE.credits >= 6 then lbl('FINAL EXAM', 1.3, -1.5, 1400) end
+    if STATE.credits >= goal then lbl('FINAL EXAM', 1.3, -1.5, 1400) end
   elseif g == 'AoS' then
     lbl('Backdoors claimed  ' .. STATE.backdoors .. ' / 2', -0.9, -1.5, 2000)
     btn('-', 'bdMinus', 0.35, -1.5, 320)
     btn('+', 'bdPlus', 0.75, -1.5, 320)
   elseif g == 'IMP' then
-    lbl('Attempts  ' .. STATE.attempts .. ' / 9', -1.5, -1.5, 1300)
+    lbl('Session  ' .. math.min(9, STATE.session + 1) .. ' / 9', -1.5, -1.5, 1300)
     btn('-', 'atMinus', -0.62, -1.5, 320)
     btn('+', 'atPlus', -0.22, -1.5, 320)
-    lbl('Suspicion  ' .. STATE.suspicion .. '   (+' .. STATE.suspicion .. ' Target)', 1.1, -1.5, 2100)
-    btn('-', 'suMinus', 0.2, -1.5, 320)
-    btn('+', 'suPlus', 0.6, -1.5, 320)
+    -- Derived, not counted: the attention advances one step at the end of
+    -- every session, so a hand counter for it could only ever disagree.
+    lbl('Attention  ' .. attentionNow() .. '  then ' .. attentionNext(),
+        1.1, -1.5, 2100)
   end
 
   btn('Clear table', 'btnClear', 1.75, -0.6, 1100, {0.42, 0.18, 0.15})
@@ -223,16 +294,11 @@ function nop() end
 function btnBAT() setupBAT() end
 function btnNAP() setupNAP() end
 function btnIMP() setupImposter() end
-function btnAoS()
-  local order = {'Routine Programs', 'Specialized Programs', 'Unstable Programs'}
-  local pick = ({Easy = 1, Standard = 2, Hard = 3})[STATE.difficulty]
-  setupAoS(order[pick])
-end
+function btnAoS() setupAoS() end
 function btnDiff()
-  local order = {'Easy', 'Standard', 'Hard'}
   local i = 1
-  for k, v in ipairs(order) do if v == STATE.difficulty then i = k end end
-  STATE.difficulty = order[(i % 3) + 1]
+  for k, v in ipairs(LEVELS) do if v == STATE.difficulty then i = k end end
+  STATE.difficulty = LEVELS[(i % #LEVELS) + 1]
   refreshPanel()
 end
 function btnTier()
@@ -247,10 +313,8 @@ function crPlus() bump('credits', 1, 'Credits') end
 function crMinus() bump('credits', -1, 'Credits') end
 function bdPlus() bump('backdoors', 1, 'Backdoor Routines claimed') end
 function bdMinus() bump('backdoors', -1, 'Backdoor Routines claimed') end
-function atPlus() bump('attempts', 1, 'Attempted Scenarios') end
-function atMinus() bump('attempts', -1, 'Attempted Scenarios') end
-function suPlus() bump('suspicion', 1, 'Suspicion') end
-function suMinus() bump('suspicion', -1, 'Suspicion') end
+function atPlus() bump('session', 1, 'Sessions played') end
+function atMinus() bump('session', -1, 'Sessions played') end
 
 -- ---------------------------------------------------------------- lifecycle
 function onLoad(saved)

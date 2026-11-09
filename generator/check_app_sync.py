@@ -1698,6 +1698,87 @@ _missing = sorted({_m for _src in (_suite, _app)
 check("every step points at a control that exists",
       not _missing, "no such id: %r" % (_missing,))
 
+# ---------------------------------------------------------------------------
+# THE TTS MOD, which had no checks at all until 2026-11-08 and had drifted
+# a whole design generation: lua.lua still dealt a flat-20-Health Tyrant with
+# per-difficulty Buff HP, a 12-card Imposter Dossier with a Suspicion row,
+# and one AoS Program deck chosen by difficulty instead of a mix of three.
+# Two findDeck labels matched nothing in decks.py, so NAP's Time Slots were
+# never dealt and Tier II dealt nothing. The notebook is a FOURTH copy of
+# the rules after rules/*.html, the lab and the models.
+_lua = text("tts/lua.lua")
+_mod = text("tts/build_mod.py")
+_decks = text("tts/decks.py")
+sb_ = py_tables("simulation/bat.py")
+
+# Every deck the script reaches for has to exist, by label, in decks.py.
+_labels = set(re.findall(r"label='([^']+)'", _decks))
+_want = set(re.findall(r"findDeck\('([^']+)'\)", _lua))
+check("every findDeck label in tts/lua.lua exists in tts/decks.py",
+      _want <= _labels, "no such deck: %r" % (sorted(_want - _labels),))
+
+
+def _lua_rows(name, levels):
+    """The named Lua table, level -> tuple of its numbers."""
+    win = _lua[_lua.index(name + " = {"):][:500]
+    out = {}
+    for lv in levels:
+        m = re.search(r"%s = \{([^}]*)\}" % lv, win)
+        out[lv] = tuple(int(x) for x in re.findall(r"-?\d+", m.group(1))) \
+            if m else None
+    return out
+
+
+_lvl = sa["LEVEL_NAMES"]
+check("tts/lua.lua offers all four difficulties",
+      re.search(r"LEVELS = \{([^}]*)\}", _lua)
+      and [s for s in re.findall(r"'([A-Za-z]+)'",
+                                 re.search(r"LEVELS = \{([^}]*)\}",
+                                           _lua).group(1))] == _lvl)
+check("tts/lua.lua BAT_DIFF matches bat.DIFFICULTY",
+      _lua_rows("BAT_DIFF", _lvl) == dict(
+          (k, tuple(v)) for k, v in sb_["DIFFICULTY"].items()))
+check("tts/lua.lua NAP_DIFF matches nap.LEVELS",
+      _lua_rows("NAP_DIFF", _lvl) == dict(
+          (k, tuple(v)) for k, v in sn["LEVELS"].items()))
+check("tts/lua.lua AOS_MIX matches aos.LEVELS",
+      _lua_rows("AOS_MIX", _lvl) == dict(
+          (k, tuple(v)) for k, v in sa["LEVELS"].items()))
+
+# The finale's starting-exhausted dice are printed in rules/nrj.html and
+# nowhere in a model, so the rulebook's own table is the owner.
+_tired = {}
+for _m in re.finditer(r"<tr><td>(Easy|Standard|Hard|Nobulous)</td>(.*?)</tr>",
+                      _nrules, re.S):
+    _cells = re.findall(r"<td>(?:&mdash;|(\d+))</td>", _m.group(2))
+    if len(_cells) >= 4:
+        _tired[_m.group(1)] = tuple(int(x) if x else 0 for x in _cells[:4])
+check("tts/lua.lua IMP_TIRED matches the table in rules/nrj.html",
+      _tired and _lua_rows("IMP_TIRED", _lvl) == _tired,
+      "rulebook says %r" % (_tired,))
+
+# The notebook quotes the same dials in words, so derive the words.
+_bat_line = "   ".join("%s %d and %d" % (l, sb_["DIFFICULTY"][l][0],
+                                         sb_["DIFFICULTY"][l][1])
+                       for l in _lvl)
+check("the TTS notebook prints BAT's Specimens and Tyrant Health",
+      _bat_line in _mod, "wanted %r" % _bat_line)
+_nap_line = "   ".join("%s %d and %d" % (l, sn["LEVELS"][l][0],
+                                         sn["LEVELS"][l][1])
+                       for l in _lvl)
+check("the TTS notebook prints NAP's Credit goal per difficulty",
+      _nap_line in _mod, "wanted %r" % _nap_line)
+check("the TTS notebook prints AoS's Program mix",
+      ", ".join("%s %d-%d-%d" % ((l,) + tuple(sa["LEVELS"][l]))
+                for l in _lvl) in _mod.replace("\\n\"\n         \"", " "))
+# The superseded finale's vocabulary must not come back anywhere in tts/.
+check("no tts/ file still describes the superseded finale",
+      not any(w in _lua + _mod for w in
+              ("Suspicion", "Impostor", "shuffle those 12", "4 HP / 2 STR")))
+check("the TTS notebook prints the AoS allocation floor and the Reward brake",
+      "MUST RECEIVE AT LEAST ONE" in _mod
+      and "ONLY HEALING IN THE GAME" in _mod)
+
 print()
 print("%d check(s) failed" % len(FAILS))
 for f in FAILS:

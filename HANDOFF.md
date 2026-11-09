@@ -104,7 +104,7 @@ Flags:
 
 | flag | effect |
 |---|---|
-| `--user NAME` | GitHub account, required |
+| `--user NAME` | GitHub account; defaults to `bocaccio`, which is this repo's own remote |
 | `--repo NAME` | default `nobulous-set` |
 | `--ref REF` | branch or tag, default `main` |
 | `--raw` | raw.githubusercontent instead of jsDelivr |
@@ -143,6 +143,55 @@ Load the save and check, in this order:
 6. **Press each setup button.** BAT, NAP, AoS and Imposter should each deal a
    sensible table and print a chat message. Cycle NRJ Tier to III first and
    confirm the extra module decks appear.
+7. **Cycle Difficulty through all four.** Easy, Standard, Hard, Nobulous. Each
+   setup message must name that level's own numbers — BAT's Specimens and
+   Tyrant Health, NAP's Credit goal and Setbacks, AoS's Program mix, the
+   finale's exhausted dice. A level that prints nothing is a missing table row.
+8. **Read the Notebook.** Six tabs. They are the only rules a Workshop
+   subscriber gets, so they are checked against `rules/*.html` by
+   `check_app_sync.py` — see §6b.
+
+---
+
+## 6b. The mod had drifted a whole design generation (FIXED 2026-11-09)
+
+`tts/` carried no checks at all until this date, and every number in it was a
+hand copy of a rulebook table. Four were wrong, two deck lookups matched
+nothing, and the Notebook still taught a superseded game:
+
+- **`lua.lua` dealt a flat-20-Health Tyrant** with per-difficulty Buff HP of
+  4 / 5 / 6 and Specimens of 2 / 3 / 4. The dial has been *Specimens and the
+  Tyrant's Health* — 5/9, 6/10, 7/12, 8/14 — since the Splices started
+  carrying the fight, and the Buff HP card has been optional since.
+- **Two `findDeck` labels matched nothing in `decks.py`**: `'Time Slots + FINF'`
+  (the labels are `'Time Slots'` and `'FINF'`) and `'Impostor Tasks'` (one `s`).
+  So NAP's Time Slots were never dealt and Tier II dealt nothing at all —
+  silently, because `findDeck` returns nil and `park` ignores nil.
+- **AoS picked one Program deck by difficulty.** Difficulty is a *mix* of all
+  three: 3-3-2, 2-3-3, 1-3-4, 0-3-5. One deck is a game nothing describes.
+- **Three difficulties where the set has four.** `btnDiff` cycled mod 3, and
+  `btnAoS` indexed a 3-entry table, so Nobulous was unreachable and would have
+  indexed nil.
+- **The Imposter Scenario was the old finale**: 4+4+4 into 12, 4 HP, and a
+  Suspicion row adding +1 Target. It is 5+5+5 of 24 into a 15-card Dossier,
+  5 HP / 2 STR / 3 REC, nine sessions, and the Council's attention — which the
+  panel now *derives* from the session count rather than tracking by hand.
+- **The Notebook** had a half-finished BAT edit with a duplicated sentence, no
+  AoS allocation floor, nothing about the Program Reward being the only healing
+  in the game, and NAP's Credit goal as a flat 6. It has six tabs now; the
+  finale got its own.
+
+**Eleven checks hold it there**, and all eleven are proven to fail when the
+defect is put back: the four Lua tables against `bat.DIFFICULTY`, `nap.LEVELS`,
+`aos.LEVELS` and the finale table in `rules/nrj.html`; every `findDeck` label
+against `decks.py`; the Notebook's dials derived from the models rather than
+matched as prose; and a check that the superseded finale's vocabulary
+(`Suspicion`, `Impostor`, `4 HP / 2 STR`) never comes back.
+
+**The card faces were never the problem.** `images/` is `deploy.py` output and
+was current; `REQUIRED_IMAGES.txt` reports `ok` on all 52 lines and is
+byte-identical after the rebuild. What had rotted was everything the mod
+*says*.
 
 ---
 

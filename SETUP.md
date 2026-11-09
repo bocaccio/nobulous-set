@@ -31,8 +31,11 @@ a published mod.
 
 ```bash
 cd tts
-python3 build_mod.py --user YOU
+python3 build_mod.py
 ```
+
+`--user` defaults to `bocaccio`, this repo's own remote, so the plain command
+is right unless you have forked it.
 
 `NobulousSet.json` and `REQUIRED_IMAGES.txt` are written next to the script and
 are gitignored, since they are build output.
@@ -53,8 +56,11 @@ NRJ Imposter Tasks and Devious Opportunities print NAP's Assignment back, and
 already there, which is why the order rarely comes up.
 
 Players on `@main` pick up the new art the next time jsDelivr's cache expires;
-the mod JSON does not need rebuilding unless a deck's card count, grid or back
-changed. If it did, re-run `build_mod.py` and re-upload the save.
+the mod JSON does not need rebuilding for a redrawn card. It **does** need
+rebuilding when a deck's card count, grid or back changes, and also when
+`lua.lua` or the Notebook text changes — both are baked into the save, so a
+rules correction reaches nobody until the save is rebuilt and re-uploaded.
+That is how the mod came to be teaching a superseded finale; see HANDOFF §6b.
 
 ## Releasing
 
