@@ -18,6 +18,7 @@ The felt is about 56 by 37.6 units. At 50 px per unit that is a
 2800 x 1880 image, with world x -28 on the left edge and world z +19 at
 the top - TTS's +z runs away from the player, which is up on the page.
 """
+import hashlib
 import io
 import json
 import os
@@ -268,12 +269,25 @@ def main():
     frame(sd)
     draw_game(sd, "NAP", [])
     PEN = dict(PALE)
-    # JPEG, NOT PNG. The parchment is a photograph, so PNG made it 7.2
-    # MB - heavy for a table to fetch, and jsDelivr went on serving the
-    # old one regardless of a purge. A JPEG is about a fifteenth of
-    # that, and the new name is a URL the CDN has never cached.
-    ship = os.path.join(os.path.dirname(HERE), "images", "NAP_Table.jpg")
-    ship_im.convert("RGB").save(ship, quality=88, optimize=True)
+    # JPEG, NOT PNG: the texture is a photograph, so PNG made this 7.2
+    # MB where a JPEG is a fifteenth of that.
+    #
+    # AND NAMED AFTER ITS OWN CONTENTS. jsDelivr twice went on serving
+    # a superseded overlay with the purge endpoint reporting success,
+    # and TTS cached what jsDelivr gave it, so the table showed an
+    # image that had not existed for hours. A name containing the hash
+    # of the bytes cannot have a stale copy anywhere: changed contents
+    # mean a URL nobody has ever asked for.
+    img = os.path.join(os.path.dirname(HERE), "images")
+    buf = io.BytesIO()
+    ship_im.convert("RGB").save(buf, "JPEG", quality=88, optimize=True)
+    raw = buf.getvalue()
+    name = "NAP_Table_%s.jpg" % hashlib.md5(raw).hexdigest()[:8]
+    for old in os.listdir(img):
+        if old.startswith("NAP_Table") and old != name:
+            os.remove(os.path.join(img, old))
+    ship = os.path.join(img, name)
+    io.open(ship, "wb").write(raw)
     wrote.append(ship)
     print("%d x %d at %g px per unit, world x %g..%g, z %g..%g"
           % (W, H, PX, X0, X1, Z1, Z0))

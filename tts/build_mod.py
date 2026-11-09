@@ -299,6 +299,19 @@ def panel():
 NAP_TABLE_SCALE = 18.8
 
 
+def nap_table_image():
+    """The overlay's current filename, which carries its content hash.
+
+    Found rather than named: tts/make_template.py renames it whenever
+    the picture changes, so that no CDN and no TTS cache can serve a
+    superseded one. Both of them did.
+    """
+    for f in sorted(os.listdir(SHEETS)):
+        if f.startswith('NAP_Table') and f.endswith('.jpg'):
+            return f
+    return 'NAP_Table.jpg'
+
+
 def nap_table():
     return {"GUID": guid(), "Name": "Custom_Tile",
             "Transform": xf(0, 0.98, 0.2, (0, 180, 0), NAP_TABLE_SCALE),
@@ -306,7 +319,7 @@ def nap_table():
             "Description": "The NAP layout. Set up NAP lays it down.",
             "ColorDiffuse": {"r": 1.0, "g": 1.0, "b": 1.0},
             "Locked": True, "Grid": False, "Snap": False,
-            "CustomImage": {"ImageURL": url("NAP_Table.jpg"),
+            "CustomImage": {"ImageURL": url(nap_table_image()),
                             "ImageSecondaryURL": "", "ImageScalar": 1.0,
                             "WidthScale": 0.0,
                             "CustomTile": {"Type": 3, "Thickness": 0.05,
@@ -621,7 +634,7 @@ def main():
         need.add(sheet + '_TTS.png')
         need.add(sheet + '_TTS_back.png' if d['back'] == 'unique' else d['back'] + '.png')
     need.add('ControlPanel.png')
-    need.add('NAP_Table.jpg')
+    need.add(nap_table_image())
     with open(os.path.join(os.path.dirname(OUT), 'REQUIRED_IMAGES.txt'), 'w') as f:
         f.write("Upload these to BASE_URL, keeping the filenames:\n\n")
         for n in sorted(need):

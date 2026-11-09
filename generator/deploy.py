@@ -64,7 +64,10 @@ Image.MAX_IMAGE_PIXELS = None
 # game names, every one of which refreshPanel then covered with buttons.
 # Its ASPECT is load-bearing - the tile is "Stretch": true, so the image's
 # proportions are the panel's local space.
-EXTRA_IMAGES = ("ControlPanel.png", "NAP_Table.jpg")
+EXTRA_IMAGES = ("ControlPanel.png",) + tuple(
+    f for f in os.listdir(os.path.join(os.path.dirname(os.path.dirname(
+        os.path.abspath(__file__))), "images"))
+    if f.startswith("NAP_Table"))
 # Anything living in playtest/dist/assets with no source in rules/ would be
 # named here and kept rather than pruned. It held AoS_Full_Rules.pdf until
 # 2026-11-05: a 17 September "Full rules" PDF that nothing linked, that
