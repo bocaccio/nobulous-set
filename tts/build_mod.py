@@ -259,7 +259,7 @@ def dice_objects():
     # reach x -23.86. At -24.5 the second die of every block sat under
     # them - the comment in lua.lua claimed -26.5 before the number did.
     XCOL = -26.5
-    ROWS = {'Pink': 12.0, 'Purple': 8.0, 'Blue': 4.0,
+    ROWS = {'Pink': 10.5, 'Purple': 8.0, 'Blue': 4.0,
             'Green': 0.0, 'Yellow': -4.0}
     # A 2x2 block per colour rather than a row of four: four in a line is
     # as wide as a card and reads as a queue, not a pool.
