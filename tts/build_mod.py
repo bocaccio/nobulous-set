@@ -47,9 +47,19 @@ USED = set()
 # TUNE IT HERE AND NOWHERE ELSE. The Lua lays the table out in multiples
 # of CARD_W and CARD_L, which are derived below and generated into it, so
 # the rows respace themselves rather than needing 30 literals edited.
+# A LANDSCAPE DECK NEEDS A SMALLER NUMBER FOR THE SAME CARD. TTS sizes a
+# SidewaysCard by its own aspect, so one scale applied to both
+# orientations does not rotate a card - it enlarges it, by LONG/SHORT.
+# At 2.6 the Lab Rats came out about 1.36x the portrait cards and
+# overlapped at a gap of exactly one card. Scaled by SHORT/LONG they are
+# the same card, turned.
+CARD_SHORT, CARD_LONG = 2.4, 3.35
 CARD_SCALE = 2.6
-CARD_W = 2.4 * CARD_SCALE          # a portrait card, across
-CARD_L = 3.35 * CARD_SCALE         # a landscape card, across
+LAND_SCALE = CARD_SCALE * CARD_SHORT / CARD_LONG
+CARD_W = CARD_SHORT * CARD_SCALE   # a portrait card, across
+CARD_L = CARD_LONG * CARD_SCALE    # a landscape card, across - which is
+                                   # the portrait card's long edge, because
+                                   # that is all a rotation can make it
 
 BOX_ORDER = ['BAT', 'NAP', 'AoS', 'NRJ']
 BOX_TITLE = {'BAT': 'BAT  Build-a-Tyrant',
@@ -187,7 +197,8 @@ def build_deck(d, deck_id, pos):
         ids.append(deck_id * 100 + i)
     r, g, b = GAME_COLOR[d['game']]
     obj = {"GUID": guid(), "Name": "Deck" if d['count'] > 1 else "CardCustom",
-           "Transform": xf(pos[0], pos[1], pos[2], (0, 180, 180), CARD_SCALE),
+           "Transform": xf(pos[0], pos[1], pos[2], (0, 180, 180),
+                           LAND_SCALE if d['land'] else CARD_SCALE),
            "Nickname": d['label'],
            "Description": "%s  |  %d cards" % (d['game'], d['count']),
            "ColorDiffuse": {"r": 1.0, "g": 1.0, "b": 1.0},

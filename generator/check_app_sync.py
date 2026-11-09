@@ -1848,8 +1848,14 @@ check("the mod names a table TTS has",
 # multiples of it. Thirty position literals is how a layout stops being
 # changeable at all.
 check("one constant owns how big a card is",
-      "CARD_SCALE = " in _mod and "(0, 180, 180), CARD_SCALE)" in _mod
-      and "'CARD_W = %.3f' % CARD_W" in _mod)
+      "CARD_SCALE = " in _mod and "'CARD_W = %.3f' % CARD_W" in _mod)
+# A landscape deck carries a SMALLER number for the same physical card,
+# because TTS sizes a SidewaysCard by its own aspect: one scale for both
+# orientations enlarges the landscape ones by LONG/SHORT rather than
+# turning them.
+check("landscape decks are scaled to the same card, turned",
+      "LAND_SCALE = CARD_SCALE * CARD_SHORT / CARD_LONG" in _mod
+      and "LAND_SCALE if d['land'] else CARD_SCALE" in _mod)
 check("tts/lua.lua spaces the table in card widths, not literals",
       all(k in _lua for k in ("ROW_CHAR", "ROW_MAIN", "ROW_SIDE",
                               "function col(i)", "CARD_L", "CARD_W")))
