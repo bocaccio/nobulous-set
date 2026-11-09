@@ -393,6 +393,27 @@ check("rules/nrj.html says where its percentages come from",
       and "not from recorded play" in _nrules)
 check("no bare win-rate claim is left in rules/aos.html",
       "points of win rate" not in _arules)
+# THE WIN CONDITION IS SURVIVAL, AND THE RULEBOOK HAS TO SAY SO. aos.play()
+# ends `return self.hp > 0` after the third Advanced Program, so an Advanced
+# Program you fail still counts as faced. The rulebook once said "Complete
+# all three with Health remaining", where "complete" reads as "succeed at" -
+# the one phrase that made the deliberate-failure route look open on paper.
+# Fixed 2026-11-03 in e812c7e; HANDOFF.md went on calling it open for five
+# days because nothing held the sentence to the model. This is that.
+check("rules/aos.html states survival, not completion, as the win condition",
+      "Work through all three with Health remaining to win AoS." in _arules
+      and "still counts as faced" in _arules
+      and "is the win condition" in _arules
+      and "Complete all three" not in _arules)
+check("simulation/aos.py wins on surviving the three Advanced Programs",
+      "return self.hp > 0" in _asrc
+      and "self.advanced_done += 1" in _asrc)
+# And the brake that makes survival-as-the-rule safe to print: Health is
+# only ever regained by a Program Reward, and a Reward needs no failed
+# element, so dumping Programs forfeits the only healing in the game.
+check("rules/aos.html prints why failing on purpose is not a shortcut",
+      "only way to heal is to do the work" in _arules
+      and "The deck outlasts you." in _arules)
 
 # THE DECK MIX IS AoS'S DIFFICULTY DIAL and it had three unchecked copies:
 # simulation/aos.py's LEVELS, the lab's AOS_LEVELS and the printed table.
