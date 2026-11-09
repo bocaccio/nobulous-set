@@ -1291,10 +1291,24 @@ Each of these only appears a few turns in.
   `aos.ALLOC_MODE` and `aos.NEGATES_PER_CYCLE` are the levers, both off,
   with the numbers beside them; RESULTS.txt has the table.
 
-  What IS wrong is the wording. "Complete all three with Health remaining"
-  and "face three Advanced Programs" never say the Advanced Programs have
-  to be completed, so the route reads as open on paper even though the
-  economy closes it. Still open as a rules-wording job.
+  **The wording was the one real defect, and it was FIXED 2026-11-03** in
+  `e812c7e` — eighteen minutes after this paragraph was written calling it
+  open, which is why the paragraph then sat wrong for five days. "Complete
+  all three with Health remaining" was the loose phrase, because *complete*
+  reads as *succeed at*; it is now "work through all three", Object of the
+  game states the survival condition outright ("whether or not you completed
+  them"), and a box says plainly why failing on purpose is no shortcut.
+  Checked 2026-11-08: no owner anywhere — rulebooks, lab, generators — still
+  carries the loose phrasing, and `aos.play()` ends `return self.hp > 0`
+  after the third Advanced Program, which is what the rulebook now says.
+
+  **Three `check_app_sync.py` checks now hold it there**, because this is
+  the failure mode prose has and numbers do not: a sentence that was true
+  when written, fixed by the next commit, and re-read five days later as a
+  live defect. The checks hold the rulebook's survival clause against the
+  model's win test and require the Program-Reward brake to stay printed. A
+  "still open" note with no predicate under it is a note that will rot —
+  this one rotted in under twenty minutes.
 
   **FOUR LEVERS WERE TRIED AGAINST IT AND NONE SHIPPED** (2026-11-03), so
   do not reach for a fifth before reading RESULTS.txt. Capping the negate
