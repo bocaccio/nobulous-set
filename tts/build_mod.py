@@ -83,11 +83,11 @@ CHIP_SEGMENT = {'Red': 36, 'Yellow': 108, 'Green': 180,
 
 # How far past the top the turn lands. Turning each colour to minus its
 # own segment put yellow on 1 but left the whole dial a half segment
-# clockwise of the mark, so it came back 36 degrees - and that was 15
-# too many, judged at the table in two passes of 12 and 3. THIS IS THE
-# ONE NUMBER TO NUDGE if it is still off: 72 is a whole segment, and
-# the sign is clockwise-positive.
-CHIP_TRIM = -21
+# clockwise of the mark, so it came back 36 degrees - and that was 18
+# too many, judged at the table over three passes. THIS IS THE ONE
+# NUMBER TO NUDGE if it is still off: 72 is a whole segment, and the
+# sign is clockwise-positive.
+CHIP_TRIM = -18
 
 ATTENTION = ('Yellow', 'Green', 'Blue', 'Purple', 'Red')
 CHIP_ANGLE = dict((c, (360 - a + CHIP_TRIM) % 360)
@@ -174,6 +174,15 @@ def lua_header(box_guids):
                                  for d in DECKS if d.get('card')),
         'CHIP_FACE = { %s }' % j('%s = %d' % (c, CHIP_ANGLE[c])
                                  for c in ATTENTION),
+        # THE MEASUREMENT, NOT ONLY WHAT IT COMES TO. The panel carries
+        # a +/- that turns the dial and prints the offset, so the script
+        # needs the same two numbers CHIP_ANGLE is derived from - and
+        # chipFaces() has to be the same arithmetic as the line above,
+        # or the control would move the dial away from what the save
+        # says. test_setup.py checks the two agree.
+        'CHIP_SEGMENT = { %s }' % j('%s = %d' % (c, CHIP_SEGMENT[c])
+                                    for c in ATTENTION),
+        'CHIP_TRIM = %d' % CHIP_TRIM,
         # Where the four one-of-a-kind markers live when nothing has
         # borrowed them, so a setup can move them and Pack up can put
         # them back.

@@ -17,7 +17,10 @@
 --=====================================================================
 
 STATE = { game = nil, difficulty = 'Standard', tier = 0,
-          splices = 0, credits = 0, session = 0, backdoors = 0 }
+          splices = 0, credits = 0, session = 0, backdoors = 0,
+          -- Which number was last typed over the Chip, so the trim
+          -- control can re-turn it to the colour you are judging.
+          chip = 1 }
 
 -- THE PRINTED NUMBERS, in one place. This script enforces nothing; it only
 -- SAYS them, which is exactly how they drifted - every one below used to be
@@ -1038,6 +1041,12 @@ function refreshPanel()
 
   btn('Pack up', 'btnPack', -3.80, 0.72, 420, {0.42, 0.18, 0.15})
   btn('Reset counters', 'btnReset', -1.94, 0.72, 640, nil, 82)
+  -- CALIBRATION, and it says so: this is here to be read off and put
+  -- into CHIP_TRIM, not to be part of playing a game.
+  lbl('Dial  ' .. CHIP_TRIM .. ' deg', -0.34, 0.72, 620, 76)
+  btn('-3', 'trimMinus', 0.74, 0.72, 240, nil, 82)
+  btn('+3', 'trimPlus', 1.30, 0.72, 240, nil, 82)
+  lbl('+ is clockwise; read the number out', 3.20, 0.72, 1080, 60)
 end
 
 function nop() end
@@ -1095,12 +1104,59 @@ function settle()
   end, 2.0)
 end
 
+-- WHERE THE DIAL'S ZERO IS IS A PROPERTY OF THE ART, and nothing in
+-- here can know it: it was guessed twice and measured off a photograph
+-- twice. So it is calibrated at the table instead. The panel carries a
+-- +/- that turns the Chip and prints the offset; the number it settles
+-- on goes into CHIP_TRIM in build_mod.py, which is where it belongs.
+--
+-- CHIP_SEGMENT, CHIP_TRIM and CHIP_FACE are all generated from there.
+-- This is the same arithmetic as the generator's, so that moving the
+-- control moves the dial to angles the save would also have produced -
+-- test_setup.py checks that it reproduces the generated table exactly
+-- at the generated trim.
+function chipFaces()
+  for c, a in pairs(CHIP_SEGMENT) do
+    CHIP_FACE[c] = (360 - a + CHIP_TRIM) % 360
+  end
+  return CHIP_FACE
+end
+
+-- Turn the Chip to the colour of a typed number, keeping x and z so the
+-- dial turns without flipping.
+function turnChip(number)
+  local col = ATTENTION[number]
+  local o = marker('Chip')
+  if not o or not col or not CHIP_FACE[col] then return nil end
+  local r = o.getRotation()
+  o.setRotationSmooth({r.x, CHIP_FACE[col], r.z})
+  return col
+end
+
+-- Three degrees a press, because that is the size of the last
+-- correction this took. Wrapped into -180..180 so the readout stays a
+-- number you can read out loud.
+function trimBy(d)
+  CHIP_TRIM = (CHIP_TRIM + d) % 360
+  if CHIP_TRIM > 180 then CHIP_TRIM = CHIP_TRIM - 360 end
+  chipFaces()
+  local col = turnChip(STATE.chip)
+  refreshPanel()
+  say('Dial trim ' .. CHIP_TRIM .. ' degrees' ..
+      (col and (' -- now showing ' .. col .. '.') or
+       ' -- no Chip on the table to turn.'))
+end
+
+function trimPlus() trimBy(3) end
+function trimMinus() trimBy(-3) end
+
 -- TTS calls this when a player types a number with the cursor over an
 -- object. Returning true says the script dealt with it.
 function onObjectNumberTyped(obj, player_color, number)
   if not obj or obj.getName() ~= 'Chip' then return false end
   local col = ATTENTION[number]
   if not col or not CHIP_FACE[col] then return false end
+  STATE.chip = number
   -- TURN IT, WHICHEVER WAY UP IT IS. This used to refuse unless the
   -- colour face was up, which meant that when nothing happened there
   -- was no way to tell a refusal from an event that never arrived.

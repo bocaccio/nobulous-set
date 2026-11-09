@@ -724,9 +724,56 @@ def panel_assertions():
              sorted((n, p[0], p[1]) for n, p in home.items()))
 
 
+def dial_assertions():
+    """The trim control must agree with the save, and with itself.
+
+    chipFaces() is a SECOND COPY of the arithmetic in build_mod.py. A
+    second copy that has drifted turns the Chip to angles the save's own
+    rotation values disagree with, and the symptom - a dial that reads
+    one colour when you type and another when a setup places it - looks
+    like anything but a copied formula.
+    """
+    w, g = start("Standard", 0, Panel())
+    cols = [str(c) for c in g.ATTENTION.values()]
+    gen = dict((c, int(g.CHIP_FACE[c])) for c in cols)
+    g.chipFaces()
+    want("the trim arithmetic reproduces the generated angles",
+         dict((c, int(g.CHIP_FACE[c])) for c in cols), gen)
+
+    # Pressing + three times is nine degrees clockwise, on the readout
+    # and on every one of the five colours.
+    w, g = start("Standard", 0, Panel())
+    before = int(g.CHIP_TRIM)
+    for _ in range(3):
+        g.trimPlus()
+    want("three presses of + move the readout nine degrees",
+         int(g.CHIP_TRIM), before + 9)
+    want("three presses of + turn every colour nine degrees",
+         sorted((c, (int(g.CHIP_FACE[c]) - gen[c]) % 360) for c in cols),
+         sorted((c, 9) for c in cols))
+    g.trimMinus()
+    want("- undoes a third of that", int(g.CHIP_TRIM), before + 6)
+
+    # And it turns the Chip that is on the table, to the colour of the
+    # number last typed over it - not always to the first one.
+    w, g = start("Standard", 0, Panel())
+    g.setupNAP()
+    drain(w)
+    chip = [o for o in w.markers.values() if o.name == "Chip"][0]
+    g.onObjectNumberTyped(chip, "White", 3)
+    want("typing 3 turns the Chip to the third colour",
+         int(chip.rot[1]), int(g.CHIP_FACE[cols[2]]))
+    g.trimPlus()
+    want("the trim control re-turns the Chip to the colour you are"
+         " judging", int(chip.rot[1]), int(g.CHIP_FACE[cols[2]]))
+    want("...and that is not where it started",
+         int(chip.rot[1]) != int(gen[cols[2]]), True)
+
+
 def main():
     layout_assertions()
     panel_assertions()
+    dial_assertions()
     for lvl in ("Easy", "Standard", "Hard", "Nobulous"):
         spec, sb = BAT_SPECIMENS[lvl], NAP_SETBACKS[lvl]
         for tier in (0, 1, 2, 3):
