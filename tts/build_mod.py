@@ -142,7 +142,8 @@ def lua_header(box_guids):
 def box(game, contained, x):
     r, g, b = GAME_COLOR[game]
     return {"GUID": guid(), "Name": "Bag",
-            "Transform": xf(x, 2.00, 20.5, (0, 0, 0), 1.6),
+            # A bag rests at 0.66 on the felt, so 0.66 + 4.78 on the rail.
+            "Transform": xf(x, 5.45, 20.5, (0, 0, 0), 1.6),
             "Nickname": BOX_TITLE[game],
             "Description": "%d decks. A setup button takes out what it needs."
                            % len(contained),
@@ -222,11 +223,13 @@ def panel():
             # above it, cleared the woodwork. At 2.0 it is 4 deep, and
             # z 20 puts its front edge at 18, just clear of the top dealt
             # row at 17.96. The height is above the rail rather than on
-            # it: the mat is locked, so floating a little is safe and
-            # being a little low is not - it vanishes. 2.20 still buried
-            # it, so the rail top is above 2.3; 3.0 clears it with room
-            # to spare and a locked tile does not care that it hovers.
-            "Transform": xf(0, 3.00, 20.0, (0, 180, 0), 2.0),
+            # THE RAIL IS 4.8 ABOVE THE FELT, which is nothing like the
+            # half a unit guessed at twice. Measured, not guessed: in
+            # Jon's autosaves of this mod a card resting on the felt sits
+            # at y 0.96 and one that ended up on the front rail sits at
+            # 5.74, and the tile this replaced sat on the felt at 0.96.
+            # Same object, same two surfaces, so 0.96 + 4.78.
+            "Transform": xf(0, 5.75, 20.0, (0, 180, 0), 2.0),
             "Nickname": "Control Panel",
             "Description": "Setup and counters for The Nobulous Set",
             "ColorDiffuse": {"r": 0.93, "g": 0.91, "b": 0.85},
