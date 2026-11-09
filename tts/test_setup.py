@@ -167,14 +167,56 @@ def install(lua, w):
     g.self = None                            # no panel, so refreshPanel returns
 
 
-def run(difficulty, tier, which):
+class Panel(object):
+    """A control-panel tile that records the buttons drawn on it.
+
+    ControlPanel.png is 1473x520 and the tile is "Stretch": true, so the
+    tile's local space is about z +/-1 by x +/-2.8. check_app_sync.py reads
+    the coordinates out of the source with a regex; this draws them.
+    """
+
+    HALF_Z = 1.0
+    HALF_X = 1473.0 / 520.0
+
+    def __init__(self):
+        self.buttons = []
+
+    def getName(self):
+        return "Control Panel"
+
+    def clearButtons(self):
+        self.buttons = []
+
+    def createButton(self, spec):
+        p = spec["position"]
+        pos = list(p.values()) if hasattr(p, "values") else list(p)
+        self.buttons.append((spec["label"], pos[0], pos[2], spec["width"]))
+
+    def setLock(self, *a):
+        pass
+
+    def off_tile(self):
+        return [b for b in self.buttons
+                if abs(b[2]) > self.HALF_Z
+                or abs(b[1]) + b[3] / 2000.0 > self.HALF_X]
+
+
+def start(difficulty, tier, panel=None):
     lua = lupa.LuaRuntime(unpack_returned_tuples=True)
     w, src = build(lua)
     install(lua, w)
     lua.execute(src)
     g = lua.globals()
+    if panel is not None:
+        g.PANEL = panel
     g.STATE.difficulty = difficulty
     g.STATE.tier = tier
+    return w, g
+
+
+def run(difficulty, tier, which):
+    SETUPS[0] += 1
+    w, g = start(difficulty, tier)
     {"BAT": g.setupBAT, "NAP": g.setupNAP,
      "AoS": g.setupAoS, "IMP": g.setupImposter}[which]()
     return w
@@ -207,6 +249,8 @@ def out(w, label):
 
 FAIL = []
 RAN = [0]
+SETUPS = [0]
+PANELS = [0]
 
 
 def want(tag, got, exp):
@@ -217,7 +261,57 @@ def want(tag, got, exp):
         FAIL.append("%s: got %r, want %r" % (tag, got, exp))
 
 
+def panel_assertions():
+    """Draw the panel in every state it can be in.
+
+    The setup assertions leave PANEL nil, so refreshPanel returns at its
+    first line and NOT ONE LINE of the panel code runs in them. Drawing it
+    catches what a regex over the source cannot: a Lua error, a nil in a
+    label, or a counter row that indexes a table that is not there.
+    """
+    for game in (None, "BAT", "NAP", "AoS", "IMP"):
+        for tier in (0, 1, 2, 3):
+            for lvl in ("Easy", "Standard", "Hard", "Nobulous"):
+                t = "panel %s t%d %s" % (game, tier, lvl)
+                PANELS[0] += 1
+                pan = Panel()
+                w, g = start(lvl, tier, pan)
+                g.STATE.game = game
+                # The rows that only appear at a threshold.
+                g.STATE.splices, g.STATE.credits, g.STATE.session = 5, 9, 4
+                try:
+                    g.refreshPanel()
+                except Exception as e:          # a Lua error reaches here
+                    want(t + " raised", str(e), "")
+                    continue
+                want(t + " drew buttons", bool(pan.buttons), True)
+                want(t + " all on the tile", pan.off_tile(), [])
+                want(t + " no nil in a label",
+                     [b for b in pan.buttons if b[0] is None
+                      or "nil" in str(b[0])], [])
+
+    # Both cycles must walk every value and wrap.
+    w, g = start("Easy", 0, Panel())
+    levels, tiers = [], []
+    for _ in range(5):
+        levels.append(g.STATE.difficulty)
+        g.btnDiff()
+    for _ in range(5):
+        tiers.append(g.STATE.tier)
+        g.btnTier()
+    want("difficulty cycle", levels,
+         ["Easy", "Standard", "Hard", "Nobulous", "Easy"])
+    want("tier cycle", tiers, [0, 1, 2, 3, 0])
+
+    # Pack up has to leave the table bare, loose cards included.
+    w, g = start("Nobulous", 3, Panel())
+    g.setupNAP()
+    want("pack up emptied the table", (len(w.table) > 0, g.packUp(False),
+                                       len(w.table))[2], 0)
+
+
 def main():
+    panel_assertions()
     for lvl in ("Easy", "Standard", "Hard", "Nobulous"):
         spec, sb = BAT_SPECIMENS[lvl], NAP_SETBACKS[lvl]
         for tier in (0, 1, 2, 3):
@@ -290,7 +384,8 @@ def main():
                 want(t + " no missing deck",
                      [m for m in w_.said if "MISSING DECK" in m], [])
 
-    print("%d assertions over 64 setups, %d failed" % (RAN[0], len(FAIL)))
+    print("%d assertions over %d setups and %d panel states, %d failed"
+          % (RAN[0], SETUPS[0], PANELS[0], len(FAIL)))
     for f in FAIL:
         print("  -", f)
     return 1 if FAIL else 0

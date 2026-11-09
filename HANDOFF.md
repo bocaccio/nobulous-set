@@ -160,12 +160,17 @@ Load the save and check, in this order:
    difficulty table being read once and ignored once.
 
    ```bash
-   cd tts && python test_setup.py   # 416 assertions over 64 setups
+   cd tts && python test_setup.py
    ```
 
    It embeds a real Lua through `lupa`, stubs the slice of the TTS object
    API the setups use, and presses every setup button at all four
-   difficulties and all four tiers. It cannot test the sequencer's frame
+   difficulties and all four tiers - then draws the control panel in
+   every state it can be in, which the setup assertions never do: they
+   leave PANEL nil, so refreshPanel returns at its first line and not one
+   line of the panel code runs in them. It prints its own coverage
+   rather than claiming a total here, because a total claimed here is a
+   total that rots. It cannot test the sequencer's frame
    delays, which is exactly what steps 1-8 above are for, and `lupa` bundles
    Lua 5.5 where TTS runs MoonSharp, a 5.2 dialect - so a clean run proves
    the card arithmetic, not that TTS will accept every construct.
