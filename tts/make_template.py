@@ -48,9 +48,18 @@ DICE = (235, 232, 224, 120)
 BACK = (0, 0, 0, 0)           # transparent, for painting over
 # TTS DOES NOT HONOUR A TILE'S ALPHA: a transparent PNG on a Custom_Tile
 # comes out black, which is what the first overlay did to the table. So
-# the copy that ships is filled with the felt's own colour instead -
-# sampled off two screenshots of this table, which agree on it.
-FELT = (68, 14, 14, 255)
+# the copy that ships needs a background of its own - this one, which
+# Jon supplied. It arrives portrait and is turned, scaled to cover and
+# cropped from the middle.
+TEXTURE = os.path.join(HERE, "table_texture.png")
+# Light lines for the transparent templates, which get painted over on
+# whatever background you like; dark ones for the parchment, which they
+# would otherwise vanish into.
+PALE = {"ink": (235, 232, 224, 235), "snap": (235, 232, 224, 150),
+        "text": (235, 232, 224, 170)}
+DARK = {"ink": (54, 38, 22, 230), "snap": (54, 38, 22, 165),
+        "text": (54, 38, 22, 210)}
+PEN = dict(PALE)
 LINE = 5
 RADIUS = 14
 
@@ -61,26 +70,78 @@ def px(x, z):
     return ((x - X0) * PX, (Z0 - z) * PX)
 
 
-def card(d, x, z, hw, hd, ink=INK, width=LINE):
+def trim_dark(im, floor=28):
+    """Cut the near-black border off a scanned texture.
+
+    The supplied parchment has black edges. Turned and cropped to the
+    table they landed down the right-hand side as a band, which looks
+    like a bug in the overlay rather than the edge of a photograph.
+    """
+    g = im.convert("L")
+    w, h = g.size
+    rows = [sum(g.getpixel((x, y)) for x in range(0, w, 7)) / float(len(range(0, w, 7)))
+            for y in range(h)]
+    cols = [sum(g.getpixel((x, y)) for y in range(0, h, 7)) / float(len(range(0, h, 7)))
+            for x in range(w)]
+    top = next((i for i, v in enumerate(rows) if v > floor), 0)
+    bot = next((i for i, v in enumerate(reversed(rows)) if v > floor), 0)
+    left = next((i for i, v in enumerate(cols) if v > floor), 0)
+    right = next((i for i, v in enumerate(reversed(cols)) if v > floor), 0)
+    return im.crop((left, top, w - right, h - bot))
+
+
+def table_texture():
+    """The supplied texture, trimmed, turned and cropped to the table."""
+    im = trim_dark(Image.open(TEXTURE).convert("RGB")).rotate(90, expand=True)
+    scale = max(W / float(im.width), H / float(im.height))
+    im = im.resize((int(im.width * scale + 0.5), int(im.height * scale + 0.5)),
+                   Image.LANCZOS)
+    left = (im.width - W) // 2
+    top = (im.height - H) // 2
+    return im.crop((left, top, left + W, top + H)).convert("RGBA")
+
+
+def card(d, x, z, hw, hd, ink=None, width=LINE):
+    ink = ink if ink is not None else PEN["ink"]
     a = px(x - hw, z + hd)
     b = px(x + hw, z - hd)
     d.rounded_rectangle([a[0], a[1], b[0], b[1]], RADIUS, outline=ink,
                         width=width)
 
 
-def label(d, text, x, z, size=34, ink=(235, 232, 224, 170)):
-    """Centred text, for the boxes whose contents are not obvious."""
-    try:
-        f = ImageFont.truetype(FONT, size)
-    except Exception:
-        f = ImageFont.load_default()
+def label(d, text, x, z, size=34, ink=None, fit=None):
+    """Centred text, for the boxes whose contents are not obvious.
+
+    MEASURED AND SHRUNK TO FIT. Chosen by eye, 34pt ran COMPLETED
+    CREDITS out of its box and off the right-hand edge of the image -
+    the labels that need one are the two furthest right, so guessing a
+    size that works is guessing twice. `fit` is the width to stay
+    inside, in table units.
+    """
+    ink = ink if ink is not None else PEN["text"]
+    lines = text.split("\n")
+    for pt in range(size, 9, -2):
+        try:
+            f = ImageFont.truetype(FONT, pt)
+        except Exception:
+            f = ImageFont.load_default()
+            break
+        widest = max(d.textbbox((0, 0), ln, font=f)[2]
+                     - d.textbbox((0, 0), ln, font=f)[0] for ln in lines)
+        if fit is None or widest <= fit * PX:
+            break
     cx, cy = px(x, z)
-    box = d.textbbox((0, 0), text, font=f)
-    d.text((cx - (box[2] - box[0]) / 2.0, cy - (box[3] - box[1]) / 2.0),
-           text, font=f, fill=ink)
+    step = pt * 1.25
+    top = cy - step * (len(lines) - 1) / 2.0
+    for i, ln in enumerate(lines):
+        box = d.textbbox((0, 0), ln, font=f)
+        d.text((cx - (box[2] - box[0]) / 2.0,
+                top + i * step - (box[3] - box[1]) / 2.0),
+               ln, font=f, fill=ink)
 
 
-def circle(d, x, z, r, ink=INK, width=LINE):
+def circle(d, x, z, r, ink=None, width=LINE):
+    ink = ink if ink is not None else PEN["ink"]
     a = px(x - r, z + r)
     b = px(x + r, z - r)
     d.ellipse([a[0], a[1], b[0], b[1]], outline=ink, width=width)
@@ -142,15 +203,17 @@ def draw_game(d, which, slots_out=None):
         except Exception:
             pass
     for sx, sz in snaps:
-        card(d, sx, sz, half, cw, SNAP, 4)
+        card(d, sx, sz, half, cw, PEN["snap"], 4)
     if which == "NAP":
         # The two piles down the right are the only places on this table
         # whose contents a player cannot guess from what is in them.
         slots = sorted([f[2] for f in fp if f[0].startswith("Time Slot")],
                        reverse=True)
         if len(slots) >= 3:
-            label(d, "COMPLETED CREDITS", 23.5, slots[1])
-            label(d, "DEVIOUS OPPORTUNITIES", 23.5, slots[2], 28)
+            label(d, "COMPLETED\nCREDITS", 23.5, slots[1], 44,
+                  fit=half * 1.8)
+            label(d, "DEVIOUS\nOPPORTUNITIES", 23.5, slots[2], 44,
+                  fit=half * 1.8)
     # The Chip goes beside a Time Slot, so give it a circle there.
     if which == "NAP" and slots_out is not None:
         for name, x, z, hw, hd in fp:
@@ -167,8 +230,9 @@ def frame(d):
     x0, x1, zt, zb = EXHAUSTED
     a, b = px(x0, zt), px(x1, zb)
     d.rounded_rectangle([a[0], a[1], b[0], b[1]], RADIUS * 2,
-                        outline=(235, 232, 224, 110), width=4)
-    label(d, "EXHAUSTED DICE", (x0 + x1) / 2.0, (zt + zb) / 2.0)
+                        outline=PEN["snap"], width=4)
+    label(d, "EXHAUSTED DICE", (x0 + x1) / 2.0, (zt + zb) / 2.0,
+          fit=(x1 - x0) * 0.8)
 
 
 def main():
@@ -193,11 +257,17 @@ def main():
     wrote.append(p)
     # NAP's is not just a drawing aid: the mod lays it on the table, so
     # it goes to images/ with the card sheets and is served from there.
+    # The shipped overlay is drawn AGAIN, in dark ink on the parchment:
+    # the pale lines of the painting template disappear into it.
+    global PEN
+    PEN = dict(DARK)
+    ship_im = table_texture()
+    sd = ImageDraw.Draw(ship_im)
+    frame(sd)
+    draw_game(sd, "NAP", [])
+    PEN = dict(PALE)
     ship = os.path.join(os.path.dirname(HERE), "images", "NAP_Table.png")
-    over = Image.open(os.path.join(OUT, "table_NAP.png"))
-    felt = Image.new("RGBA", over.size, FELT)
-    felt.paste(over, (0, 0), over)
-    felt.convert("RGB").save(ship)
+    ship_im.convert("RGB").save(ship)
     wrote.append(ship)
     print("%d x %d at %g px per unit, world x %g..%g, z %g..%g"
           % (W, H, PX, X0, X1, Z1, Z0))
