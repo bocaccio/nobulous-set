@@ -1782,7 +1782,7 @@ check("tts/build_mod.py reads the Exhibit domains out of build_nrj.py",
       and "is not contiguous" in _mod)
 check("tts/lua.lua uses those tables instead of typing the indices",
       "NAP_CREDIT" in _lua and "EXHIBIT_BLOCK" in _lua
-      and "'Exhibits ' .. idx[i]" in _lua
+      and "keep[one .. ' ' .. idx[i]]" in _lua
       and not re.search(r"\{\s*17\s*,\s*24\s*\}", _lua))
 
 # ... and the derivation has to agree with the card tables as they stand.
@@ -1930,11 +1930,28 @@ check("the TTS sheet and the PnP are built from the same card renders",
 # and reads exactly like a mod bug. 5.4 is clean; the harness must name
 # it rather than take lupa's default.
 _ts = text("tts/test_setup.py")
+# A CARD IS NOT ITS DECK, and matching one by the other's name fails
+# silently. BAT Tier II looked for cards starting "Upgrades " when they
+# are called "Upgrade N": it removed nothing and added six
+# Modifications to a full deck. Any card prefix must come from
+# CARD_NAME, so a literal "<label> " in the Lua is the bug itself.
+_cards = dict(re.findall(r"label='([^']+)', card='([^']+)'", _decks))
+# CODE ONLY: the comment explaining this bug quotes the very string it
+# warns about, and the first version of the check failed on itself.
+_lua_code = chr(10).join(l.split("--")[0] for l in _lua.splitlines())
+_lit = [l for l in _cards if (chr(39) + l + " ") in _lua_code]
+check("no card is matched by its deck's name",
+      not _lit, "literal card prefixes: %r" % (_lit,))
+check("tts/decks.py gives nearly every deck a singular card name",
+      len(_cards) >= 25, "only %d" % len(_cards))
+check("typing a number over the Chip turns it to that colour",
+      "function onObjectNumberTyped" in _lua and "CHIP_FACE = {" in _lua
+      and "CHIP_FACE_Z" in _lua)
 check("tts/test_setup.py pins the Lua version it runs on",
       "from lupa import lua54 as lupa" in _ts
       and "lupa.LuaRuntime(" in _ts and "import lupa" + chr(10) not in _ts)
 check("NAP lays four Assignment spaces beside each Time Slot",
-      "ASSIGN_SLOTS = 4" in _lua and "function snapRow" in _lua
+      "ASSIGN_SLOTS = 4" in _lua and "function napSnaps" in _lua
       and "Global.setSnapPoints" in _lua
       and "never exceed 4 Assignments in a row" in _nap_rules)
 check("tts/test_setup.py refuses a save older than lua.lua",

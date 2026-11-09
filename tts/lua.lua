@@ -40,6 +40,17 @@ IMP_TIRED = { Easy = {0, 0, 0, 0}, Standard = {3, 2, 2, 2},
 -- it is derived from the clock rather than tracked by hand.
 ATTENTION = { 'Yellow', 'Green', 'Blue', 'Purple', 'Red' }
 
+-- TYPING A NUMBER OVER THE CHIP turns it to that colour, the way a
+-- number turns a die. 1 to 5 are the colours in the order above.
+--
+-- THE FIVE ANGLES ARE THE ONLY THING TO ADJUST if a number lands on the
+-- wrong colour: where the art's zero sits is not something a script can
+-- know, and five segments are 72 degrees apart. CHIP_FACE_Z is which
+-- way up the coloured face is - flip the Chip and typing does nothing,
+-- because the other side has no colour to turn to.
+CHIP_FACE = { Yellow = 0, Green = 72, Blue = 144, Purple = 216, Red = 288 }
+CHIP_FACE_Z = 180
+
 PANEL = nil
 chr39 = string.char(39)
 FACEUP = {0, 180, 0}
@@ -96,6 +107,24 @@ ASSIGN_SLOTS = 4
 -- rather than one that quietly stopped covering a deck.
 IN_THE_BAG = { 'Final Exams' }
 ASSIGN_PITCH = 8.5
+
+-- The Assignment deck sits over the FIRST Assignment column, with the
+-- two cards it reveals each turn beside it.
+DECK_X = ASSIGN_X + ASSIGN_PITCH
+REVEAL_SLOTS = 2
+
+-- TWO PILES DOWN THE RIGHT, under the FINF card.
+--
+-- Completed Assignments stay in their Time Slot until End of Day and
+-- then go face-up to a discard (rules/nap.html), so that pile is always
+-- wanted. The second is for Tier III only: four of the six Devious
+-- Opportunities pay nothing when completed, and you keep the card to
+-- spend at the Final Exam (rules/nrj.html). A pile rather than four
+-- spaces - they are kept, not laid out, and they stack.
+--
+-- Tier I's Following Setbacks and Tier II's Imposter Tasks need no
+-- space at all: both go INTO the Assignment deck.
+PILE_X = 23.5
 
 -- Where the character you keep ends up. NAP's belongs at the head of its
 -- own column; the other two are dealt across the table and keep the
@@ -317,7 +346,9 @@ end
 function column(deck, n, x, z0, rot, gap)
   if not deck then return end
   gap = gap or (CARD_W + 0.6)
-  local label = deck.getName()
+  -- The cards are named for ONE of them, which is not always the deck's
+  -- own name: a card of Time Slots is a Time Slot.
+  local label = CARD_NAME[deck.getName()] or deck.getName()
   deck.setPosition({x, 3, z0})
   deck.setRotation(rot or FACEUP)
   for i = n, 2, -1 do
@@ -352,14 +383,29 @@ end
 -- Global.setSnapPoints takes WORLD positions and replaces the lot, so
 -- this builds every row at once. Wrapped, because a snap point is a
 -- convenience and must never be the reason a setup fails.
-function snapRow(rows, z0, gap)
+local function snapAt(pts, x, z)
+  table.insert(pts, {position = {x, 1.0, z},
+                     rotation = {0, 0, 0}, rotation_snap = false})
+end
+
+-- Every space NAP wants, in one call: setSnapPoints REPLACES the lot.
+function napSnaps(rows, z0, gap)
   local pts = {}
+  -- The two cards revealed off the top of the Assignment deck, beside it.
+  for k = 1, REVEAL_SLOTS do
+    snapAt(pts, DECK_X + k * ASSIGN_PITCH, ROW_CHAR)
+  end
+  -- Four Assignment spaces beside each Time Slot.
   for r = 0, rows - 1 do
     for k = 1, ASSIGN_SLOTS do
-      table.insert(pts, {position = {ASSIGN_X + k * ASSIGN_PITCH, 1.0,
-                                     z0 - r * gap},
-                         rotation = {0, 0, 0}, rotation_snap = false})
+      snapAt(pts, ASSIGN_X + k * ASSIGN_PITCH, z0 - r * gap)
     end
+  end
+  -- The discard pile for completed Assignments, under the FINF card.
+  snapAt(pts, PILE_X, z0 - gap)
+  -- And the banked Devious Opportunities under that, at Tier III.
+  if STATE.tier >= 3 then
+    snapAt(pts, PILE_X, z0 - 2 * gap)
   end
   local ok = pcall(function() Global.setSnapPoints(pts) end)
   if not ok then say('Snap points are not available in this build.') end
@@ -388,10 +434,11 @@ function keepChar(i)
   -- card, and what that card ends up called is TTS's business, not this
   -- script's. Left to right is also what the button means to someone
   -- looking at the table.
+  local one = CARD_NAME[label] or label
   local t = {}
   for _, o in ipairs(getAllObjects()) do
     local n = o.getName()
-    if n == label or (n and n:sub(1, #label + 1) == label .. ' ') then
+    if n == label or (n and n:sub(1, #one + 1) == one .. ' ') then
       table.insert(t, o)
     end
   end
@@ -406,7 +453,7 @@ function keepChar(i)
   -- spreads them rather than the other way round.
   if #t == 1 and count(t[1]) > 1 then
     local deck = t[1]
-    local want = label .. ' ' .. i
+    local want = one .. ' ' .. i
     for _, e in ipairs(deck.getObjects()) do
       if e.nickname == want then
         deck.takeObject({guid = e.guid, position = {home[1], 3, home[2]},
@@ -543,9 +590,14 @@ function setupBAT()
   -- a Specimen whatever order the steps run in.
   if STATE.tier >= 2 then
     step(function()
+      -- BY THE CARD'S OWN NAME, which is not the deck's: one of
+      -- Upgrades is an Upgrade. Matching 'Upgrades ' removed nothing
+      -- at all, and Tier II quietly added six Modifications to a full
+      -- deck instead of swapping them in.
+      local pre = (CARD_NAME['Upgrades'] or 'Upgrades') .. ' '
       local n = 0
       for _, e in ipairs(upg and upg.getObjects() or {}) do
-        if n < 6 and string.sub(e.nickname, 1, 9) == 'Upgrades ' then
+        if n < 6 and string.sub(e.nickname, 1, #pre) == pre then
           dropCard(upg, e.nickname)
           n = n + 1
         end
@@ -603,7 +655,7 @@ function setupNAP()
     -- sends the rest back, so there is no reason to spread three cards
     -- across the table first.
     deckOut('Apprentices', {NAP_X, 3, ROW_CHAR}, FACEUP)
-    asg = deckOut('Tasks', {ASSIGN_X, 3, ROW_CHAR})
+    asg = deckOut('Assignment', {DECK_X, 3, ROW_CHAR})
   end)
 
   if STATE.tier >= 2 then
@@ -614,7 +666,7 @@ function setupNAP()
     step(function()
       for _, idx in pairs(NAP_CREDIT) do
         local pick = shuffled(idx)[1]
-        dropCard(asg, 'Tasks ' .. pick)
+        dropCard(asg, (CARD_NAME['Assignment'] or 'Assignment') .. ' ' .. pick)
       end
     end)
     step(function() merge(asg, deckOut('Imposter Tasks', pad(2))) end)
@@ -640,7 +692,7 @@ function setupNAP()
     -- the top.
     column(deckOut('Time Slots', {ASSIGN_X, 3, ROW_CHAR - NAP_GAP}, FACEUP),
            3, ASSIGN_X, ROW_CHAR - NAP_GAP, FACEUP, NAP_GAP)
-    snapRow(3, ROW_CHAR - NAP_GAP, NAP_GAP)
+    napSnaps(3, ROW_CHAR - NAP_GAP, NAP_GAP)
     -- Below the Apprentices, above the Final Exams.
     drawOne('FINF', {NAP_X, 3, ROW_CHAR - NAP_GAP}, FACEUP)
   end)
@@ -656,7 +708,10 @@ function setupNAP()
         ' 3, take all 17 dice, and work the Morning Time Slot first.' ..
         ' The Final Exams stay in the bag until you reach them.' ..
         (STATE.tier >= 2 and ' TIER II: the 4 Imposter Tasks are in, and one Credit Task of each subject came out.' or '') ..
-        (STATE.tier >= 3 and ' TIER III: the Devious Opportunities replaced the base six.' or '') ..
+        ' Completed Assignments pile under the FINF card at End of Day.' ..
+        (STATE.tier >= 3 and (' TIER III: the Devious Opportunities replaced the base' ..
+         ' six, and four of them BANK - keep the card and spend it at the' ..
+         ' Final Exam. The pile under the discard is for those.') or '') ..
         ' FINF is set to one card at random -- swap it if you want another setting.')
   end)
   run()
@@ -746,7 +801,8 @@ function setupImposter()
       local idx = {}
       for i = b[1], b[2] do table.insert(idx, i) end
       idx = shuffled(idx)
-      for i = 1, 5 do keep['Exhibits ' .. idx[i]] = true end
+      local one = CARD_NAME['Exhibits'] or 'Exhibits'
+      for i = 1, 5 do keep[one .. ' ' .. idx[i]] = true end
     end
     if ex then
       for _, e in ipairs(ex.getObjects()) do
@@ -824,43 +880,43 @@ function refreshPanel()
   -- FIVE ROWS AT A 0.36 PITCH, which is what a half-height of 0.15 allows
   -- inside a tile that is 1.0 deep from its middle. The tile art already
   -- prints THE NOBULOUS SET, so no row repeats it.
-  btn('Set up BAT', 'btnBAT', -2.86, -0.72, 660, {0.17, 0.37, 0.29})
-  btn('Set up NAP', 'btnNAP', -0.96, -0.72, 660, {0.42, 0.25, 0.55})
-  btn('Set up AoS', 'btnAoS', 0.96, -0.72, 660, {0.54, 0.24, 0.18})
-  btn('Imposter', 'btnIMP', 2.86, -0.72, 660, {0.29, 0.23, 0.42})
+  btn('Set up BAT', 'btnBAT', -3.43, -0.72, 660, {0.17, 0.37, 0.29})
+  btn('Set up NAP', 'btnNAP', -1.15, -0.72, 660, {0.42, 0.25, 0.55})
+  btn('Set up AoS', 'btnAoS', 1.15, -0.72, 660, {0.54, 0.24, 0.18})
+  btn('Imposter', 'btnIMP', 3.43, -0.72, 660, {0.29, 0.23, 0.42})
 
-  lbl('Difficulty  ' .. STATE.difficulty, -2.56, -0.36, 900)
-  btn('cycle', 'btnDiff', -0.74, -0.36, 330, nil, 82)
+  lbl('Difficulty  ' .. STATE.difficulty, -3.07, -0.36, 900)
+  btn('cycle', 'btnDiff', -0.89, -0.36, 330, nil, 82)
   -- The tier NAME lives in the setup message; the panel has room for its
   -- numeral and nothing more.
   lbl('NRJ Tier  ' .. (STATE.tier == 0 and 'off' or
-      ({'I', 'II', 'III'})[STATE.tier]), 0.68, -0.36, 620)
-  btn('cycle', 'btnTier', 2.29, -0.36, 330, nil, 82)
+      ({'I', 'II', 'III'})[STATE.tier]), 0.82, -0.36, 620)
+  btn('cycle', 'btnTier', 2.75, -0.36, 330, nil, 82)
 
   local g = STATE.game
   if g == 'BAT' then
-    lbl('Splices  ' .. STATE.splices .. ' / 5', -2.84, 0.00, 640)
-    btn('-', 'splMinus', -1.42, 0.00, 240)
-    btn('+', 'splPlus', -0.68, 0.00, 240)
-    if STATE.splices >= 5 then lbl('TYRANT AWAKE', 1.62, 0.00, 560) end
+    lbl('Splices  ' .. STATE.splices .. ' / 5', -3.41, 0.00, 640)
+    btn('-', 'splMinus', -1.70, 0.00, 240)
+    btn('+', 'splPlus', -0.82, 0.00, 240)
+    if STATE.splices >= 5 then lbl('TYRANT AWAKE', 1.94, 0.00, 560) end
   elseif g == 'NAP' then
     local goal = NAP_DIFF[STATE.difficulty][1]
-    lbl('Credits  ' .. STATE.credits .. ' / ' .. goal, -2.84, 0.00, 640)
-    btn('-', 'crMinus', -1.42, 0.00, 240)
-    btn('+', 'crPlus', -0.68, 0.00, 240)
-    if STATE.credits >= goal then lbl('FINAL EXAM', 1.62, 0.00, 560) end
+    lbl('Credits  ' .. STATE.credits .. ' / ' .. goal, -3.41, 0.00, 640)
+    btn('-', 'crMinus', -1.70, 0.00, 240)
+    btn('+', 'crPlus', -0.82, 0.00, 240)
+    if STATE.credits >= goal then lbl('FINAL EXAM', 1.94, 0.00, 560) end
   elseif g == 'AoS' then
-    lbl('Backdoors  ' .. STATE.backdoors .. ' / 2', -2.77, 0.00, 700)
-    btn('-', 'bdMinus', -1.28, 0.00, 240)
-    btn('+', 'bdPlus', -0.54, 0.00, 240)
+    lbl('Backdoors  ' .. STATE.backdoors .. ' / 2', -3.32, 0.00, 700)
+    btn('-', 'bdMinus', -1.54, 0.00, 240)
+    btn('+', 'bdPlus', -0.65, 0.00, 240)
   elseif g == 'IMP' then
-    lbl('Session  ' .. math.min(9, STATE.session + 1) .. ' / 9', -2.84, 0.00, 640)
-    btn('-', 'atMinus', -1.42, 0.00, 240)
-    btn('+', 'atPlus', -0.68, 0.00, 240)
+    lbl('Session  ' .. math.min(9, STATE.session + 1) .. ' / 9', -3.41, 0.00, 640)
+    btn('-', 'atMinus', -1.70, 0.00, 240)
+    btn('+', 'atPlus', -0.82, 0.00, 240)
     -- Derived, not counted: the attention advances one step at the end of
     -- every session, so a hand counter for it could only ever disagree.
     lbl('Attention  ' .. attentionNow() .. ' / ' .. attentionNext(),
-        1.82, 0.00, 900, 72)
+        2.18, 0.00, 900, 72)
   end
 
   -- CHOOSING YOUR CHARACTER, for the three games that have one to
@@ -871,20 +927,20 @@ function refreshPanel()
   -- choose your character told you that you could not.
   local n = CHAR_N[g]
   if n then
-    lbl('Keep', -3.31, 0.36, 380, 82)
+    lbl('Keep', -3.97, 0.36, 380, 82)
     for i = 1, n do
-      btn(tostring(i), 'keep' .. i, -2.30 + (i - 1) * 0.52, 0.36, 210, nil, 82)
+      btn(tostring(i), 'keep' .. i, -2.30 + (i - 1) * 0.62, 0.36, 210, nil, 82)
     end
-    lbl('then flip for the other side', 1.69, 0.36, 1050, 70)
+    lbl('then flip for the other side', 2.03, 0.36, 1050, 70)
   else
-    lbl('Keep', -3.31, 0.36, 380, 82)
+    lbl('Keep', -3.97, 0.36, 380, 82)
     lbl(g == 'BAT' and 'BAT plays all four Lab Rats'
         or 'set up NAP, AoS or Imposter to choose a character',
-        0.20, 0.36, 2300, 70)
+        0.24, 0.36, 2300, 70)
   end
 
-  btn('Pack up', 'btnPack', -3.17, 0.72, 420, {0.42, 0.18, 0.15})
-  btn('Reset counters', 'btnReset', -1.62, 0.72, 640, nil, 82)
+  btn('Pack up', 'btnPack', -3.80, 0.72, 420, {0.42, 0.18, 0.15})
+  btn('Reset counters', 'btnReset', -1.94, 0.72, 640, nil, 82)
 end
 
 function nop() end
@@ -940,6 +996,26 @@ function settle()
   Wait.time(function()
     for _, o in ipairs(t) do if o then o.setLock(true) end end
   end, 2.0)
+end
+
+-- TTS calls this when a player types a number with the cursor over an
+-- object. Returning true says the script dealt with it.
+function onObjectNumberTyped(obj, player_color, number)
+  if not obj or obj.getName() ~= 'Chip' then return false end
+  local col = ATTENTION[number]
+  if not col or not CHIP_FACE[col] then return false end
+  local r = obj.getRotation()
+  local z = (r.z + 360) % 360
+  local up = (CHIP_FACE_Z + 360) % 360
+  local off = math.abs(z - up)
+  if off > 180 then off = 360 - off end
+  if off > 45 then
+    say('The Chip is colour-side down.')
+    return false
+  end
+  obj.setRotationSmooth({r.x, CHIP_FACE[col], r.z})
+  say('Chip set to ' .. col .. '.')
+  return true
 end
 
 -- ----------------------------------------------------------------- onLoad

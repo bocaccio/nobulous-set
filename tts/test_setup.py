@@ -50,7 +50,15 @@ SAVE = os.path.join(HERE, "NobulousSet.json")
 # Which decks are landscape, so a footprint can be the right way round.
 sys.path.insert(0, HERE)
 from decks import DECKS
-LAND = dict((d["label"], bool(d.get("land"))) for d in DECKS)
+# BOTH NAMES. A card is named for one of its kind - a card of Time
+# Slots is a Time Slot - so a footprint looked up by the card's name
+# found nothing and the whole layout check quietly skipped it.
+LAND = {}
+ONE = {}
+for _d in DECKS:
+    LAND[_d["label"]] = bool(_d.get("land"))
+    LAND[_d.get("card", _d["label"])] = bool(_d.get("land"))
+    ONE[_d["label"]] = _d.get("card", _d["label"])
 
 BAT_SPECIMENS = {"Easy": 5, "Standard": 6, "Hard": 7, "Nobulous": 8}
 NAP_SETBACKS = {"Easy": 3, "Standard": 3, "Hard": 4, "Nobulous": 5}
@@ -370,6 +378,11 @@ def inside(w, deckname, label):
     return len([c for c in (d.kids if d else []) if c.name.startswith(label)])
 
 
+def names_of(label):
+    """The deck's own name and the name one of its cards carries."""
+    return (label, ONE.get(label, label))
+
+
 def out(w, label):
     """CARDS of that deck on the table, not counting the container.
 
@@ -379,7 +392,7 @@ def out(w, label):
     """
     n = 0
     for o in w.table.values():
-        if o.name.startswith(label):
+        if any(o.name.startswith(x) for x in names_of(label)):
             n += len(o.kids) if o.kids else 1
     return n
 
@@ -479,13 +492,22 @@ def layout_assertions():
                 # Four Assignment spaces beside every Time Slot, and
                 # only for the game that has Time Slots.
                 slots = [o.pos[2] for o in w.table.values()
-                         if o.name.startswith("Time Slots")]
-                want(t + " Assignment spaces", len(w.snaps),
-                     4 * len(slots) if which == "NAP" else 0)
+                         if o.name.startswith("Time Slot")]
+                # 4 beside every Time Slot, 2 for the cards the deck
+                # reveals, 1 discard pile, and at Tier III one more for
+                # the banked Opportunities.
+                exp = (4 * len(slots) + 2 + 1 + (1 if tier >= 3 else 0)
+                       if which == "NAP" else 0)
+                want(t + " Assignment spaces", len(w.snaps), exp)
                 if which == "NAP":
-                    want(t + " spaces line up with the Time Slots",
-                         sorted({round(s[1], 1) for s in w.snaps}),
-                         sorted(round(z, 1) for z in slots))
+                    for sz in slots:
+                        # The Assignment columns only: the discard and
+                        # bank piles share a row with a Time Slot but
+                        # are off to the right, past x 20.
+                        want(t + " four spaces beside the slot at %.1f" % sz,
+                             len([s for s in w.snaps
+                                  if abs(s[1] - sz) < 0.05
+                                  and s[0] < 20.0]), 4)
                     want(t + " no space lands on a dealt card",
                          [f[0] for f in fp for sx, sz in w.snaps
                           if abs(f[1] - sx) < f[3] - 0.1
@@ -551,7 +573,7 @@ def panel_assertions():
             # top to bottom. takeObject hands back whichever card it
             # likes, which dealt them Morning, Evening, Afternoon.
             col = sorted([o for o in w.table.values()
-                          if o.name.startswith("Time Slots")],
+                          if o.name.startswith("Time Slot")],
                          key=lambda o: -o.pos[2])
             order = [int(o.name.split()[-1]) if o.name.split()[-1].isdigit()
                      else 1 for o in col]
@@ -613,11 +635,11 @@ def main():
             want(t + " BAT Upgrade deck", len(deck(w, "Upgrades").kids),
                  16 + spec)
             want(t + " BAT Specimens in it",
-                 inside(w, "Upgrades", "Specimens"), spec)
+                 inside(w, "Upgrades", "Specimen"), spec)
             want(t + " BAT ordinary Upgrades in it",
-                 inside(w, "Upgrades", "Upgrades "), 16 - 6 if tier >= 2 else 16)
+                 inside(w, "Upgrades", "Upgrade "), 16 - 6 if tier >= 2 else 16)
             want(t + " BAT Modifications in it",
-                 inside(w, "Upgrades", "Unauthorized Modifications"),
+                 inside(w, "Upgrades", "Unauthorized Modification"),
                  6 if tier >= 2 else 0)
             want(t + " BAT Protocol dealt",
                  out(w, "Experimental Protocols"), 1 if tier >= 1 else 0)
@@ -627,22 +649,22 @@ def main():
                  "Encounters" in w.shuffled, True)
 
             n = run(lvl, tier, "NAP")
-            want(t + " NAP Assignment deck", len(deck(n, "Tasks").kids),
+            want(t + " NAP Assignment deck", len(deck(n, "Assignment").kids),
                  26 + 6 + sb)
             # One base Setback out per Following Setback in - the 4-for-3
             # swap handed a Setback back at Hard and Nobulous.
-            want(t + " NAP base Setbacks", inside(n, "Tasks", "Setbacks"),
+            want(t + " NAP base Setbacks", inside(n, "Assignment", "Setback"),
                  sb - 3 if tier >= 1 else sb)
             want(t + " NAP Following Setbacks",
-                 inside(n, "Tasks", "Following Setbacks"), 3 if tier >= 1 else 0)
+                 inside(n, "Assignment", "Following Setback"), 3 if tier >= 1 else 0)
             want(t + " NAP Imposter Tasks",
-                 inside(n, "Tasks", "Imposter Tasks"), 4 if tier >= 2 else 0)
-            want(t + " NAP base Tasks", inside(n, "Tasks", "Tasks "),
+                 inside(n, "Assignment", "Imposter Task"), 4 if tier >= 2 else 0)
+            want(t + " NAP base Tasks", inside(n, "Assignment", "Task "),
                  26 - 4 if tier >= 2 else 26)
             want(t + " NAP Opportunities",
-                 inside(n, "Tasks", "Opportunities "), 0 if tier >= 3 else 6)
+                 inside(n, "Assignment", "Opportunity "), 0 if tier >= 3 else 6)
             want(t + " NAP Devious Opportunities",
-                 inside(n, "Tasks", "Devious Opportunities"),
+                 inside(n, "Assignment", "Devious Opportunity"),
                  6 if tier >= 3 else 0)
             want(t + " NAP one FINF card", out(n, "FINF"), 1)
 
@@ -653,7 +675,7 @@ def main():
             want(t + " AoS Limitation deck", len(deck(a, "Limitations").kids),
                  12 if tier >= 2 else 6)
             want(t + " AoS Corrupted in it",
-                 inside(a, "Limitations", "Corrupted Limitations"),
+                 inside(a, "Limitations", "Corrupted Limitation"),
                  6 if tier >= 2 else 0)
             want(t + " AoS Interference dealt",
                  out(a, "Nobulous Interference"), 1 if tier >= 1 else 0)
