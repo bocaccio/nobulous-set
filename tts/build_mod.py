@@ -62,9 +62,11 @@ CARD_L = CARD_LONG * CARD_SCALE    # a landscape card, across - which is
                                    # that is all a rotation can make it
 
 # THE LOWER RIGHT CORNER IS LEFT EMPTY ON PURPOSE: exhausted dice go
-# there. Module level so tts/make_template.py can draw the space.
+# there. Two Assignment columns wide - 2 x 8.5 - and it fills the gap
+# between the lowest card edge at -16.26 and the front of the felt.
+# Module level so tts/make_template.py can draw the space.
 # (x from, x to, z top, z bottom)
-EXHAUSTED = (1.0, 27.0, -16.3, -18.3)
+EXHAUSTED = (10.0, 27.0, -16.3, -18.5)
 
 BOX_ORDER = ['BAT', 'NAP', 'AoS', 'NRJ']
 BOX_TITLE = {'BAT': 'BAT  Build-a-Tyrant',

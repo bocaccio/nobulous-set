@@ -94,7 +94,9 @@ SLOT_X = -19.5
 -- landscape card's 6.24 depth, and the last of them sits at -14.4 with
 -- its bottom edge at -17.5 - the deepest anything goes on this felt.
 NAP_X = 23.5
-NAP_GAP = 7.0
+-- 9.0, NOT 7.0: an Assignment turned on its side is 8.71 deep, so a row
+-- pitch that only cleared a flat card left no room to rotate one.
+NAP_GAP = 9.0
 
 -- The Assignment deck, top left, with the Time Slots running down
 -- underneath it and four Assignment spaces beside each.
