@@ -1898,11 +1898,21 @@ check("tts/test_setup.py models a bag that drops what it is handed",
       "self.lossy" in text("tts/test_setup.py")
       and "dropping 1 in" in text("tts/test_setup.py"))
 # The dice are a pool, not a heap: one block per colour, blocks apart.
-check("the dice are a 2x2 block per colour down the left edge",
-      "ROWS = {" in _mod and "XCOL = " in _mod and "OFFS = (" in _mod
-      and "(seen[nick] - 1) * 1.1" not in _mod)
-check("the Chip sits with the Red die it marks, not on it",
-      "'Chip': (XCOL + 0.7, ROWS['Pink'] + 3.2)" in _mod)
+check("the dice are a 2x2 block per colour in a row under the cards",
+      "DICE_Z = " in _mod and "BLOCK_PITCH" in _mod and "OFFS = (" in _mod
+      and "ORDER = ('Pink', 'Purple', 'Blue', 'Green', 'Yellow')" in _mod)
+# The lower right corner is left empty for exhausted dice, and the
+# template draws it, so the two have to agree about where it is.
+_tmpl = text("tts/make_template.py")
+check("the exhausted corner is declared where the template reads it",
+      "EXHAUSTED = (" in _mod and "from build_mod import EXHAUSTED" in _tmpl)
+# DRAWN FROM THE SETUPS, not from a second copy of the layout: the
+# template presses each setup button through test_setup.py and outlines
+# what the script actually dealt. A template typed out separately would
+# be wrong the first time a row moved, and wrong silently.
+check("the table template runs the mod rather than repeating it",
+      "import test_setup" in _tmpl and "T.footprints" in _tmpl
+      and "T.start(" in _tmpl)
 # The rail's height is not in the save, and four attempts to name it
 # failed, so the mat and the boxes are dropped onto it and locked where
 # they land.

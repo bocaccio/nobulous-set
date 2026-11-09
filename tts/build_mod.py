@@ -61,6 +61,11 @@ CARD_L = CARD_LONG * CARD_SCALE    # a landscape card, across - which is
                                    # the portrait card's long edge, because
                                    # that is all a rotation can make it
 
+# THE LOWER RIGHT CORNER IS LEFT EMPTY ON PURPOSE: exhausted dice go
+# there. Module level so tts/make_template.py can draw the space.
+# (x from, x to, z top, z bottom)
+EXHAUSTED = (4.0, 26.0, -15.6, -18.4)
+
 BOX_ORDER = ['BAT', 'NAP', 'AoS', 'NRJ']
 BOX_TITLE = {'BAT': 'BAT  Build-a-Tyrant',
              'NAP': 'NAP  Apprenticeship Program',
@@ -261,40 +266,33 @@ def dice_objects():
     src = json.load(open(os.path.join(os.path.dirname(
         os.path.abspath(__file__)), 'dice_objects.json')))
     out = []
-    # ONE ROW PER COLOUR, DOWN THE LEFT EDGE, in the order the rules
-    # name them: Red, Purple, Blue, Green, Yellow. The colours used to sit
-    # 2 apart with their four dice stepping 1.1 each, so every colour's
-    # second die stood on the next colour's first and the pool read as one
-    # heap. x -24.5 keeps the whole column clear of the widest dealt row,
-    # which is four landscape cards at +/-18.
-    # FAR ENOUGH LEFT TO CLEAR THE NAP TIME SLOT COLUMN, whose cards
-    # reach x -23.86. At -24.5 the second die of every block sat under
-    # them - the comment in lua.lua claimed -26.5 before the number did.
-    XCOL = -26.5
-    ROWS = {'Pink': 10.5, 'Purple': 8.0, 'Blue': 4.0,
-            'Green': 0.0, 'Yellow': -4.0}
-    # A 2x2 block per colour rather than a row of four: four in a line is
-    # as wide as a card and reads as a queue, not a pool.
-    OFFS = ((0.0, 0.0), (1.4, 0.0), (0.0, -1.4), (1.4, -1.4))
-    # The Chip sits beside the Red die, which is the one it belongs to:
-    # Red is communal and the Chip marks who holds it.
-    # The Chip sits above the Red die it marks, centred on the PAIR of
-    # dice columns rather than on the left one - it is wider than a die,
-    # so lining it up with a column leaves it looking off to one side.
-    # The three utility dice stay inside those same two columns, clear
-    # of the FINF card at z -10.
-    lay = {'Chip': (XCOL + 0.7, ROWS['Pink'] + 3.2),
-           'Health': (XCOL, -8.5), 'Strategy': (XCOL + 1.4, -8.5),
-           'Recovery': (XCOL, -9.9)}
+    # ONE ROW ALONG THE BOTTOM, UNDER EVERY CARD. Still a 2x2 block per
+    # colour - four in a line reads as a queue, not a pool - but the
+    # blocks run left to right instead of down the left edge, which is
+    # what leaves the lower right corner free for exhausted dice.
+    #
+    # The lowest card row reaches z -16.26, so the blocks sit at -16.9
+    # and -17.9. Every number in here is spoken for.
+    DICE_Z = -16.9
+    DROP = 1.0
+    ORDER = ('Pink', 'Purple', 'Blue', 'Green', 'Yellow')
+    BLOCK0, BLOCK_PITCH = -26.0, 3.9
+    BLOCK = dict((n, BLOCK0 + i * BLOCK_PITCH) for i, n in enumerate(ORDER))
+    OFFS = ((0.0, 0.0), (1.1, 0.0), (0.0, -DROP), (1.1, -DROP))
+    # The Chip and the three utility dice follow the colours along the
+    # same row, and all of it stops well left of the exhausted corner.
+    lay = {'Chip': (-6.0, DICE_Z - DROP / 2),
+           'Health': (-2.5, DICE_Z), 'Strategy': (-1.0, DICE_Z),
+           'Recovery': (-2.5, DICE_Z - DROP)}
     seen = {}
     for o in src:
         nick = o.get('Nickname') or 'Die'
         seen[nick] = seen.get(nick, 0) + 1
-        if nick in ROWS:
+        if nick in BLOCK:
             ox, oz = OFFS[(seen[nick] - 1) % len(OFFS)]
-            bx, bz = XCOL + ox, ROWS[nick] + oz
+            bx, bz = BLOCK[nick] + ox, DICE_Z + oz
         else:
-            bx, bz = lay.get(nick, (XCOL + 1.4, -9.9))
+            bx, bz = lay.get(nick, (0.0, DICE_Z))
         d = {"GUID": guid(), "Name": o['Name'],
              "Transform": xf(bx, 1.4, bz, (0, 0, 0)),
              "Nickname": 'Red' if nick == 'Pink' else nick,

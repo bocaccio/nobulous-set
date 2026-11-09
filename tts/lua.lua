@@ -67,10 +67,15 @@ FACEDOWN = {0, 180, 180}
 -- card and a hair. There is no room for a fifth row and none for a
 -- generous gap; what bought these four was moving the mat and the bags
 -- up onto the back rail.
-ROW_CHAR = 13.6                    -- characters, nearest the back rail
-ROW_MAIN = 4.8                     -- the decks you draw from
-ROW_SIDE = -4.0                    -- mats, slots and the Research Pool
-ROW_TIER = -12.8                   -- what a tier adds
+-- FOUR CARD ROWS AND THE DICE, in 37 units of felt. Four rows of 8.71
+-- at a pitch of 8.8 left nothing underneath, so every row moved up as
+-- far as the back rail allows - the top row reaches 18.86 and the felt
+-- ends at 19 - and the dice took what was left. There is no slack
+-- anywhere in this column of numbers.
+ROW_CHAR = 14.5                    -- characters, nearest the back rail
+ROW_MAIN = 5.7                     -- the decks you draw from
+ROW_SIDE = -3.1                    -- mats, slots and the Research Pool
+ROW_TIER = -11.9                   -- what a tier adds
 
 -- A single card a tier deals sits out at the right, clear of the six-card
 -- spreads that share this row.
