@@ -36,6 +36,7 @@ The releases differ only in resolution, which is the whole reason to cut two:
 import io
 import json
 import os
+import re
 import shutil
 import sys
 
@@ -64,10 +65,29 @@ Image.MAX_IMAGE_PIXELS = None
 # game names, every one of which refreshPanel then covered with buttons.
 # Its ASPECT is load-bearing - the tile is "Stretch": true, so the image's
 # proportions are the panel's local space.
-EXTRA_IMAGES = ("ControlPanel.png",) + tuple(
-    f for f in os.listdir(os.path.join(os.path.dirname(os.path.dirname(
-        os.path.abspath(__file__))), "images"))
-    if f.startswith("NAP_Table"))
+# WHAT THE TTS MOD NEEDS, READ OFF THE MOD'S OWN LIST. This was
+# "ControlPanel.png" plus anything starting with NAP_Table, which was
+# true when NAP had the only overlay; BAT, AoS and the Imposter
+# scenario each got one of their own, and the readout plate makes
+# five images this would have pruned the moment anyone ran --prune.
+# tts/REQUIRED_IMAGES.txt is written by build_mod.py as it builds the
+# save, so it cannot fall behind what the save asks for.
+def _tts_images():
+    path = os.path.join(os.path.dirname(os.path.dirname(
+        os.path.abspath(__file__))), "tts", "REQUIRED_IMAGES.txt")
+    if not os.path.exists(path):
+        raise SystemExit("%s is missing - run tts/build_mod.py first" % path)
+    out = set()
+    for line in io.open(path, encoding="utf-8"):
+        m = re.match(r"\s+(\S+\.(?:png|jpg))\s", line)
+        if m:
+            out.add(m.group(1))
+    if not out:
+        raise SystemExit("%s names no images" % path)
+    return tuple(sorted(out))
+
+
+EXTRA_IMAGES = _tts_images()
 # Anything living in playtest/dist/assets with no source in rules/ would be
 # named here and kept rather than pruned. It held AoS_Full_Rules.pdf until
 # 2026-11-05: a 17 September "Full rules" PDF that nothing linked, that

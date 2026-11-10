@@ -30,7 +30,27 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(os.path.dirname(HERE), "images", "ControlPanel.png")
 
 
+# THE HEALTH READOUT'S TILE, which carries no picture at all.
+#
+# It was this same mat, scaled small, and Jon wanted it narrower and
+# without the dark ground - so what the player sees is the three
+# buttons the script draws on it and the outline the BAT felt already
+# prints underneath. A Custom_Tile still needs an image, and its
+# ASPECT is load-bearing: the tile's local space is 1 deep by the
+# aspect wide, which is what the button positions in lua.lua are
+# measured in. 2.31 : 1 is a row of three buttons and no more.
+DIAL_W, DIAL_H = 1200, 520
+DIAL_OUT = os.path.join(os.path.dirname(HERE), "images", "DialPlate.png")
+
+
+def dial_plate():
+    im = Image.new("RGBA", (DIAL_W, DIAL_H), (0, 0, 0, 0))
+    im.save(DIAL_OUT, optimize=True)
+    print("wrote %s  %dx%d" % (DIAL_OUT, DIAL_W, DIAL_H))
+
+
 def main():
+    dial_plate()
     im = Image.new("RGBA", (W * 2, H * 2), (0, 0, 0, 0))
     d = ImageDraw.Draw(im)
     d.rounded_rectangle([0, 0, W * 2 - 1, H * 2 - 1], RADIUS * 2, fill=BACK)

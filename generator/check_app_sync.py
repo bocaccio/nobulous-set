@@ -1949,12 +1949,14 @@ _bare = [_code_only[i:i + 60].split(chr(10))[0]
          for i in _calls
          if not re.search(r"CARD_|_COL|_PITCH|_GAP",
                           _code_only[i:i + 220])]
-# THE FLOOR IS SO IT CANNOT PASS ON AN EMPTY SET, not a count of
-# what happens to be there: it was 6 and AoS went from spreading
-# three Technicians across the table to stacking them on one
-# space, which is a better layout and left five.
+# THE FLOOR IS AGAINST A REGEX THAT HAS STOPPED MATCHING, and
+# nothing else. It was 6, then 5, then 4, and each time a layout
+# got better by spreading one row fewer - the Technicians became a
+# stack, then the Research Notes did - the number here was wrong
+# and the code was right. Counting what happens to exist is not a
+# claim about anything; one call proves the regex still finds them.
 check("every row is spaced in card widths",
-      len(_calls) >= 4 and not _bare,
+      len(_calls) >= 1 and not _bare,
       "%d call(s), bare: %r" % (len(_calls), _bare))
 # TTS drops objects fed to a bag faster than it animates them, which left
 # exactly one card on the table after every setup. tts/test_setup.py

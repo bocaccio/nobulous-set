@@ -92,7 +92,16 @@ CARD_L = CARD_LONG * CARD_SCALE    # a landscape card, across - which is
 # (x from, x to, z top, z bottom)
 
 # Filled in by dice_objects(), read by lua_header().
+#
+# TWO TABLES, BECAUSE THERE ARE TWO QUESTIONS. HOME_MARKERS answers
+# "where does the Chip live", by name, for the four one-of-a-kind
+# markers a setup moves about. MARKER_HOME answers "where did THIS
+# object come from", by GUID, for every loose thing on the table -
+# which is the question Pack up has to ask, because there are four
+# Purple dice and one name between them. Keyed by name, Pack up sent
+# one Purple home and left three where the game left them.
 HOME_MARKERS = {}
+MARKER_HOME = {}
 
 # FOUR ROWS, ANCHORED TO THE BACK EDGE. The top row is landscape in
 # every game, so it sits half a card's SHORT side below the felt's back
@@ -420,7 +429,6 @@ def lua_header(box_guids, rules_guid):
     home['BAT Table'] = 'BAT'
     home['AoS Table'] = 'AoS'
     home['IMP Table'] = 'NRJ'
-    home['Dial'] = 'BAT'
     home['Health Readout'] = 'BAT'
     for _nick, _ in NAP_COUNTERS:
         home[_nick] = 'NAP'
@@ -512,6 +520,11 @@ def lua_header(box_guids, rules_guid):
         # them back.
         'DICE_HOME = { %s }' % j("['%s'] = {%.2f, %.2f}" % (k, v[0], v[1])
                                  for k, v in sorted(HOME_MARKERS.items())),
+        # ...and where every loose object on the table belongs, by
+        # GUID, which is the only thing that tells four Purple dice
+        # apart. Pack up reads this one.
+        'MARKER_HOME = { %s }' % j("['%s'] = {%.2f, %.2f}" % (k, v[0], v[1])
+                                   for k, v in sorted(MARKER_HOME.items())),
         'NAP_CREDIT = { %s }' % j('%s = {%s}' % (k, j(str(i) for i in v))
                                   for k, v in sorted(nap_credit_tasks().items())),
         'NAP_SUBJECT = { %s }' % j("%s = '%s'" % (k, v)
@@ -790,21 +803,24 @@ def nap_table_image():
     return 'NAP_Table.jpg'
 
 
-def dial_object():
+def dial_object(pos=(0, 1.4, 0)):
     """BAT's 0-20 dial: the Chip's other face, as an object of its own.
 
-    IT LIVES IN THE BAT BAG and is dealt by the setup, like the table
-    overlay, because only BAT reads it - the Tyrant's Health. The Chip
-    stays where it is and keeps its colours for NAP.
+    IT LIES ON THE TABLE BESIDE THE CHIP, and is moved rather than
+    dealt. It was in the BAT bag, which meant Pack up swallowed it;
+    Jon wants it back in its place at the bottom of the table with the
+    dice, which is exactly what the Chip already does. Only BAT reads
+    it - the Tyrant's Health - and only NAP reads the Chip, so both
+    simply wait their turn in the same row.
 
     ITS OWN ROTATION VALUES, so typing a number at it is TTS's job
     rather than the script's: twenty-one of them, one per number, from
     the same measurement of the scan that CHIP_DIAL comes from.
     """
     return {"GUID": guid(), "Name": "Custom_Token",
-            "Transform": xf(0, 1.4, 0, (0, 0, 0), CHIP_SCALE),
+            "Transform": xf(pos[0], pos[1], pos[2], (0, 0, 0), CHIP_SCALE),
             "Nickname": "Dial",
-            "Description": "The Tyrant's Health. Set up BAT lays it down.",
+            "Description": "The Tyrant's Health. Set up BAT turns it.",
             "ColorDiffuse": {"r": 1.0, "g": 1.0, "b": 1.0},
             "Locked": False, "Grid": True, "Snap": True,
             "Autoraise": True, "Sticky": True,
@@ -820,13 +836,18 @@ def dial_object():
                 for n, a in sorted(chip_dial_angles().items())]}
 
 
-# THE HEALTH READOUT'S PLATE. The same mat the control panel uses,
-# small: it is a dark rounded rectangle and that is all a plate under
-# three buttons has to be, so this ships no second image. A stretched
-# tile's local space is 1 deep by its image's aspect wide, so a uniform
-# scale s makes it 2s deep and 2 * aspect * s across - and the half
-# width the script places it by is the one number both sides read.
-READOUT_HW = 3.3
+# THE HEALTH READOUT'S PLATE, AND IT IS NOT A PLATE ANY MORE. It was
+# the control panel's dark mat, small; Jon wanted it narrower and
+# without the dark ground, so the image is a transparent one of its
+# own and what you see is the three buttons and the outline the felt
+# already draws under them.
+#
+# A stretched tile's local space is 1 deep by its image's aspect wide,
+# so a uniform scale s makes it 2s deep and 2 * aspect * s across. The
+# half width is the one number lua.lua and this file both read, and
+# the aspect is what sets where the buttons go inside it.
+READOUT_HW = 2.0
+READOUT_IMAGE = 'DialPlate.png'
 
 
 def readout_object():
@@ -838,14 +859,14 @@ def readout_object():
     frozen at whatever it was when this file ran.
     """
     aspect = (lambda wh: wh[0] / float(wh[1]))(
-        png_size(os.path.join(SHEETS, 'ControlPanel.png')))
+        png_size(os.path.join(SHEETS, READOUT_IMAGE)))
     return {"GUID": guid(), "Name": "Custom_Tile",
             "Transform": xf(0, 1.2, 0, (0, 180, 0), READOUT_HW / aspect),
             "Nickname": "Health Readout",
-            "Description": "The Tyrant's Health. Set up BAT lays it down.",
-            "ColorDiffuse": {"r": 0.93, "g": 0.91, "b": 0.85},
+            "Description": "The Tyrant's Health, with a button each side.",
+            "ColorDiffuse": {"r": 1.0, "g": 1.0, "b": 1.0},
             "Locked": True, "Grid": False, "Snap": False,
-            "CustomImage": {"ImageURL": url("ControlPanel.png"),
+            "CustomImage": {"ImageURL": url(READOUT_IMAGE),
                             "ImageSecondaryURL": "", "ImageScalar": 1.0,
                             "WidthScale": 0.0,
                             "CustomTile": {"Type": 3, "Thickness": 0.1,
@@ -927,7 +948,10 @@ def dice_objects():
     # band, in one row now that a die is 1.8 across.
     lay = {'Chip': (-4.8, DICE_Z - DROP / 2),
            'Health': (-2.0, DICE_Z), 'Strategy': (0.0, DICE_Z),
-           'Recovery': (2.0, DICE_Z)}
+           'Recovery': (2.0, DICE_Z),
+           # Right of the three stat dice and left of where BAT's
+           # exhausted corner begins.
+           'Dial': (4.6, DICE_Z - DROP / 2)}
     HOME_MARKERS.update(lay)
     seen = {}
     for o in src:
@@ -938,6 +962,10 @@ def dice_objects():
             bx, bz = BLOCK[nick] + ox, DICE_Z + oz
         else:
             bx, bz = lay.get(nick, (0.0, DICE_Z))
+        # BY GUID, NOT BY NAME. There are four Purple dice and one
+        # name between them, so a table keyed by nickname sends one of
+        # them home and leaves three where the game left them - which
+        # is what Pack up had been doing to fourteen of the seventeen.
         d = {"GUID": guid(), "Name": o['Name'],
              "Transform": xf(bx, 1.4, bz, (0, 0, 0),
                              DIE_SCALE if o['Name'] == 'Custom_Dice' else 1.0),
@@ -963,7 +991,14 @@ def dice_objects():
                  "Rotation": {"x": 0, "y": CHIP_ANGLE[c],
                               "z": CHIP_FACE_Z}}
                 for i, c in enumerate(ATTENTION)]
+        MARKER_HOME[d['GUID']] = (bx, bz)
         out.append(d)
+    # The Dial is loose on the table too, beside the Chip, so it goes
+    # home with everything else rather than into a bag.
+    dx, dz = lay['Dial']
+    dial = dial_object((dx, 1.4, dz))
+    MARKER_HOME[dial['GUID']] = (dx, dz)
+    out.append(dial)
     return out
 
 
@@ -1163,7 +1198,6 @@ def main():
     grouped['BAT'].append(game_table('BAT'))
     grouped['AoS'].append(game_table('AoS'))
     grouped['NRJ'].append(game_table('IMP'))
-    grouped['BAT'].append(dial_object())
     grouped['BAT'].append(readout_object())
     for _nick, _text in NAP_COUNTERS:
         grouped['NAP'].append(counter(_nick, _text))
@@ -1214,13 +1248,32 @@ def main():
           sum(d['count'] for d in DECKS), "cards in",
           len(BOX_ORDER), "bags")
 
+    # WHAT THE SAVE ACTUALLY ASKS FOR, read out of the save. This list
+    # used to be rebuilt here from DECKS plus two names typed in - a
+    # second derivation of the same thing, and it fell behind the
+    # moment anything that was not a card deck grew an image. It was
+    # missing the BAT, AoS and Imposter overlays, both faces of the
+    # Chip and the readout's tile: six files it told Jon he did not
+    # need to upload, and six that deploy.py --prune would have
+    # deleted out of images/ for not being on it.
     need = set()
-    for d in DECKS:
-        sheet = d.get('sheet', d['key'])
-        need.add(sheet + '_TTS.png')
-        need.add(sheet + '_TTS_back.png' if d['back'] == 'unique' else d['back'] + '.png')
-    need.add('ControlPanel.png')
-    need.add(nap_table_image())
+    base = BASE_URL.rstrip('/') + '/'
+
+    def harvest(node):
+        if isinstance(node, dict):
+            for k, v in node.items():
+                if (isinstance(v, str) and v.startswith(base)
+                        and k.endswith('URL')):
+                    need.add(v[len(base):])
+                else:
+                    harvest(v)
+        elif isinstance(node, list):
+            for v in node:
+                harvest(v)
+
+    harvest(save)
+    if not need:
+        raise SystemExit('the save references no images under BASE_URL')
     with open(os.path.join(os.path.dirname(OUT), 'REQUIRED_IMAGES.txt'), 'w') as f:
         f.write("Upload these to BASE_URL, keeping the filenames:\n\n")
         for n in sorted(need):

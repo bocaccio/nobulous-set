@@ -270,6 +270,12 @@ def draw_bat(d, lua):
     label(d, "ATTACK\nDECK", rx(2), rz(3), fit=half * 1.8)
     label(d, "BUFF HP", rx(3), rz(3), fit=half * 1.8)
     label(d, "TYRANT\nSPLICES", rx(1), rz(4), fit=half * 1.8)
+    # What the NRJ tiers put out and you keep in front of you: the
+    # Tier I Protocol, and the six Tier III Research Notes as one
+    # face-up stack rather than a row this table has no room for.
+    label(d, "PROTOCOL", rx(int(g.BAT_PROTOCOL)), rz(1), fit=half * 1.8)
+    label(d, "RESEARCH\nNOTES", rx(int(g.BAT_NOTES)), rz(1),
+          fit=half * 1.8)
     # The two piles that fill every turn, past the three revealed
     # cards in the same row.
     label(d, "EXPERIMENT\nDISCARD", rx(int(g.BAT_EXP_DISCARD)), rz(2),

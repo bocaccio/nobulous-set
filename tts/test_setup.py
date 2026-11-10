@@ -834,8 +834,8 @@ def layout_assertions():
                     # its active-Rat mark on each row, the two decks,
                     # and one per cell of the Buff HP track.
                     rows, ups = int(g.BAT_ROWS), int(g.BAT_UPGRADES)
-                    exp = (rows * ups + 3 + 2 + 3 + 1 + int(g.BAT_SPLICES)
-                           + 2 * rows + 2
+                    exp = (rows * ups + 2 + 3 + 2 + 3 + 1
+                           + int(g.BAT_SPLICES) + 2 * rows + 2
                            + len(list(g.BUFF_CELL.values())))
                 elif which == "AoS":
                     # The Technician, the two decks and the two
@@ -1365,10 +1365,11 @@ def bat_assertions():
     # The spaces are a grid: none overlaps another, none leaves the felt.
     boxes = [(float(b.x), float(b.z), float(b.hw), float(b.hd))
              for b in g.batBoxes().values()]
-    # Twelve beside the Rats; three revealed and two discards; the
-    # Tyrant's three and its dice tray; the five Splices.
+    # Twelve beside the Rats; the Protocol and the Research Notes on
+    # the deck row; three revealed and two discards; the Tyrant's
+    # three and its dice tray; the five Splices.
     want("BAT draws a space for every card you put down", len(boxes),
-         int(g.BAT_ROWS) * int(g.BAT_UPGRADES) + 3 + 2 + 3 + 1
+         int(g.BAT_ROWS) * int(g.BAT_UPGRADES) + 2 + 3 + 2 + 3 + 1
          + int(g.BAT_SPLICES))
     over = [(a, b) for i, a in enumerate(boxes) for b in boxes[i + 1:]
             if abs(a[0] - b[0]) < a[2] + b[2] - 0.02
@@ -1397,14 +1398,17 @@ def bat_assertions():
            for r in range(1, 5)],
           [b for b in boxes if abs(b[0] - float(g.BAT_RAT_X)) < 0.05]),
          ([True] * 4, []))
-    # THE RIGHT-HAND COLUMNS ONLY. Row 1 also carries the three Upgrade
-    # spaces beside the top Rat, which are a long way to the left of
-    # the decks and do have boxes.
+    # THE TWO DECK COLUMNS ONLY. Row 1 also carries the three Upgrade
+    # spaces beside the top Rat, a long way to the left; and, to the
+    # right of the decks, the Protocol, the Research Notes and the
+    # banished dice, all three of which DO have boxes.
     want("so do the two decks",
          ([snapped(float(g.batRightX(k)), float(g.batRowZ(1)))
            for k in (1, 2)],
           [b for b in boxes if abs(b[1] - float(g.batRowZ(1))) < 0.05
-           and b[0] > float(g.BAT_RIGHT1) - 1.0]),
+           and abs(b[0] - float(g.batRightX(1))) < 0.05
+           or abs(b[1] - float(g.batRowZ(1))) < 0.05
+           and abs(b[0] - float(g.batRightX(2))) < 0.05]),
          ([True, True], []))
 
     # The banished-dice corner is clear of everything the grid draws.
@@ -1449,14 +1453,15 @@ def bat_assertions():
     # The markers are not on w.table - they live in their own
     # index, keyed by GUID - so ask the script for it by name.
     chip = g.marker("Chip")
-    # AND BAT DEALS ITS OWN DIAL, turned to this difficulty's Tyrant
-    # Health. The Dial is an object of its own in the BAT bag, not a
-    # face of the Chip: no game reads both, so two objects cost one
-    # more thing to pack away and save working out which way up a
-    # thing is every time somebody types at it.
+    # AND BAT MOVES ITS OWN DIAL under the Splices, turned to this
+    # difficulty's Tyrant Health. The Dial is an object of its own,
+    # not a face of the Chip: no game reads both, so two objects cost
+    # one more thing to put away and save working out which way up a
+    # thing is every time somebody types at it. It lies loose on the
+    # table beside the Chip, so it is a marker, not a dealt card.
     hp = int(g.BAT_DIFF[g.STATE.difficulty][2])
-    dial = by.get('Dial')
-    want("BAT deals the Dial below the rightmost Splice",
+    dial = g.marker("Dial")
+    want("BAT moves the Dial below the rightmost Splice",
          (dial is not None, round(dial.pos[0], 2) if dial else None),
          (True, round(float(g.batRightX(int(g.BAT_SPLICES))), 2)))
     want("...turned to the Tyrant's Health",
@@ -1564,7 +1569,7 @@ def chip_face_assertions():
     drain(w)
     want("typing 2 at the Chip turns it to a colour",
          chip.rot[1], float(g.CHIP_FACE[g.ATTENTION[2]]))
-    dial = dict((o.name, o) for o in w.table.values()).get("Dial")
+    dial = g.marker("Dial")
     want("the Dial is a separate object, not a face of the Chip",
          (dial is not None, dial.guid != chip.guid if dial else None),
          (True, True))
@@ -1665,6 +1670,113 @@ def pile_assertions():
          sum(1 for b in w.byguid.values() if b.bag
              for k in b.kids for c in ([k] if not k.kids else k.kids)
              if c.name.startswith("Task ")), 30)
+
+
+def covered_assertions():
+    """Every card a setup deals sits on a space the overlay draws.
+
+    THIS IS THE CHECK THAT WAS MISSING. BAT's and AoS's overlays stopped
+    being drawn from where the setup puts cards and started being drawn
+    from the script's own list of boxes, which is right - a box on the
+    felt and a space you can drop onto cannot then disagree - but it
+    left nothing comparing the two halves. BAT's Tier I Protocol was
+    being dealt onto bare felt right of the Buff HP space and its six
+    Tier III Research Notes along the Splice row, each one straddling
+    two boxes belonging to something else, for as long as that overlay
+    has existed. Nothing failed, because nothing asked.
+
+    Run at tier 3, which deals everything the lower tiers do and more.
+
+    A FEW PLACES HAVE NO BOX ON PURPOSE and are named here. Jon asked
+    for no outline under BAT's Lab Rats or under either of its decks:
+    a deck is a stack you can already see. Naming them is the point -
+    an unnamed card with nowhere to be is a failure, not a default.
+    """
+    BOXLESS = {"BAT": ("Lab Rat", "Lab Rats (A / B)", "Encounters",
+                       "Experiment", "Upgrades"),
+               "AoS": ()}
+    for which, listing in (("BAT", "batBoxes"), ("AoS", "aosBoxes")):
+        for lvl in ("Easy", "Nobulous"):
+            w, g = start(lvl, 3, Panel())
+            {"BAT": g.setupBAT, "AoS": g.setupAoS}[which]()
+            drain(w)
+            boxes = [(float(b.x), float(b.z), float(b.hw), float(b.hd))
+                     for b in getattr(g, listing)().values()]
+            if which == "BAT":
+                x0, x1, zt, zb = [float(v) for v in g.batBanished().values()]
+                boxes.append(((x0 + x1) / 2, (zt + zb) / 2,
+                              (x1 - x0) / 2, (zt - zb) / 2))
+            cw, cl = float(g.CARD_W), float(g.CARD_L)
+            homeless = []
+            for o in w.table.values():
+                name = o.name
+                base = name.rstrip("0123456789").strip()
+                if LAND.get(base, LAND.get(name)) is None:
+                    continue          # the overlay, the Dial, the plate
+                x, z = o.pos[0], o.pos[2]
+                if base in BOXLESS[which] or at_staging(g, x, z):
+                    continue
+                if not any(abs(x - b[0]) <= b[2] and abs(z - b[1]) <= b[3]
+                           for b in boxes):
+                    homeless.append((name, round(x, 2), round(z, 2)))
+            want("%s %s t3 deals every card onto a drawn space"
+                 % (which, lvl), sorted(homeless), [])
+
+
+def at_staging(g, x, z):
+    """Is this point in the band under the table, where a deck waits?"""
+    return (abs(z - float(g.OFF_Z)) < 1.0
+            and abs(x) <= float(g.OFF_X) + 0.01)
+
+
+def markers_home_assertions():
+    """Pack up puts every die, the Chip and the Dial back in their row.
+
+    THERE ARE FOUR PURPLE DICE AND ONE NAME BETWEEN THEM. markersHome
+    walked DICE_HOME, which is keyed by nickname, and marker() answers
+    with the first object of that name - so of the four Purple dice
+    Pack up could fetch exactly one, and the same for Blue, Green and
+    Yellow. A setup only ever moves the Chip, the Dial and the stat
+    dice, so a check that only ran a setup would barely notice; what
+    leaves fourteen dice strewn over the table is PLAYING, which is
+    what the scatter below stands in for.
+
+    Checked after each game in turn, because each one starts them in
+    a different place.
+    """
+    for which in ("BAT", "NAP", "AoS", "IMP"):
+        w, g = start("Standard", 3, Panel())
+        {"BAT": g.setupBAT, "NAP": g.setupNAP,
+         "AoS": g.setupAoS, "IMP": g.setupImposter}[which]()
+        drain(w)
+        home = dict((str(k), [float(v) for v in p.values()])
+                    for k, p in g.MARKER_HOME.items())
+        want("%s: every loose object has a place to go back to" % which,
+             sorted(home) == sorted(w.markers), True)
+        moved = [o.name for gid, o in w.markers.items()
+                 if abs(o.pos[0] - home[gid][0]) > 0.05
+                 or abs(o.pos[2] - home[gid][1]) > 0.05]
+        want("...and %s moves some of them" % which, bool(moved), True)
+        # PLAYED WITH. Every die ends a game somewhere it was spent,
+        # and that is the state Pack up has to clear - not the tidy
+        # one a setup leaves.
+        for i, o in enumerate(w.markers.values()):
+            o.pos = (-20.0 + (i % 8) * 5.0, 1.6, 12.0 - (i // 8) * 6.0)
+        g.btnPack()
+        drain(w)
+        away = sorted(set(
+            o.name for gid, o in w.markers.items()
+            if abs(o.pos[0] - home[gid][0]) > 0.05
+            or abs(o.pos[2] - home[gid][1]) > 0.05))
+        want("...and pack up brings every one of them back", away, [])
+    # AND NO TWO OF THEM SHARE A PLACE, which is the other half of
+    # keying this by GUID: a table that sent two dice to one spot
+    # would pass the check above and pile them up.
+    w, g = start("Standard", 0, Panel())
+    seats = [tuple(round(float(v), 2) for v in p.values())
+             for p in g.MARKER_HOME.values()]
+    want("no two loose objects go home to the same place",
+         len(set(seats)), len(seats))
 
 
 def landing_assertions():
@@ -2133,6 +2245,8 @@ def main():
     buff_lock_assertions()
     pile_assertions()
     landing_assertions()
+    markers_home_assertions()
+    covered_assertions()
     rules_assertions()
     panel_game_assertions()
     for lvl in ("Easy", "Standard", "Hard", "Nobulous"):
