@@ -974,9 +974,10 @@ def shape(w, g):
 
 def in_staging(w, g):
     """Anything with a bag to go home to, resting in the staging band."""
-    z = float(g.OFF_Z)
+    z, x = float(g.OFF_Z), float(g.OFF_X)
     return sorted(o.name for o in w.table.values()
-                  if abs(o.pos[2] - z) < 2.5 and g.homeBox(o.name) is not None)
+                  if abs(o.pos[2] - z) < 2.5 and abs(o.pos[0]) < x
+                  and g.homeBox(o.name) is not None)
 
 
 def buried(w):
@@ -1300,21 +1301,24 @@ def bat_assertions():
     # The markers are not on w.table - they live in their own
     # index, keyed by GUID - so ask the script for it by name.
     chip = g.marker("Chip")
-    want("the Chip stands below the rightmost Splice",
-         (round(chip.pos[0], 2), chip.pos[2] < float(g.batRowZ(4))
-          - float(g.BAT_BOX_HD)),
-         (round(float(g.batRightX(int(g.BAT_SPLICES))), 2), True))
-    # AND SHOWS ITS DIAL, turned to this difficulty's Tyrant Health.
-    # The dial is a real second face now: the Chip is a Custom_Tile
-    # carrying both scans, where it was a Custom_Token carrying one
-    # and showing it mirrored underneath.
+    # AND BAT DEALS ITS OWN DIAL, turned to this difficulty's Tyrant
+    # Health. The Dial is an object of its own in the BAT bag, not a
+    # face of the Chip: no game reads both, so two objects cost one
+    # more thing to pack away and save working out which way up a
+    # thing is every time somebody types at it.
     hp = int(g.BAT_DIFF[g.STATE.difficulty][2])
-    want("...dial side up, turned to the Tyrant's Health",
-         (chip.rot[2] if chip.rot else None,
-          chip.rot[1] if chip.rot else None),
-         (float(g.CHIP_DIAL_Z), float(g.CHIP_DIAL[hp])))
+    dial = by.get('Dial')
+    want("BAT deals the Dial below the rightmost Splice",
+         (dial is not None, round(dial.pos[0], 2) if dial else None),
+         (True, round(float(g.batRightX(int(g.BAT_SPLICES))), 2)))
+    want("...turned to the Tyrant's Health",
+         dial.rot[1] if dial and dial.rot else None,
+         float(g.CHIP_DIAL[hp]))
     want("...and the dial has an angle for every number it prints",
          sorted(int(k) for k in dict(g.CHIP_DIAL)), list(range(21)))
+    # The Chip is NAP's and stays out of this.
+    want("...while the Chip is left where it was",
+         round(chip.pos[0], 2), round(float(dict(g.DICE_HOME)['Chip'][1]), 2))
 
     # The overlay goes down and is locked.
     want("BAT lays its own overlay", "BAT Table" in by, True)
@@ -1324,40 +1328,54 @@ def bat_assertions():
 
 
 def chip_face_assertions():
-    """What you type at the Chip depends on which way up it is.
+    """Two objects, read two ways, and neither has to be flipped.
 
-    IT HAS TWO FACES AND THEY ARE READ DIFFERENTLY: five colours on
-    one, 0 to 20 on the other. Typing 3 at the dial turned it to BLUE,
-    because the only table the handler knew was the colours' - the
-    right amount in the right direction, on the wrong face, and
-    nothing said so.
+    The Chip shows five colours and the Dial shows 0 to 20. No game
+    reads both - NAP reads the attention colours, BAT reads the
+    Tyrant's Health - which is what lets them be separate objects and
+    lets each carry its own rotation values, so TTS does the turning.
+    While it was one two-faced object, typing 3 at the dial turned it
+    to BLUE: the right amount, in the right direction, on the wrong
+    face, and nothing said so.
     """
     w, g = start("Standard", 0, Panel())
     g.setupBAT()
     drain(w)
     chip = g.marker("Chip")
-
-    chip.setRotation({"x": 0, "y": 0, "z": float(g.CHIP_DIAL_Z)})
-    g.onObjectNumberTyped(chip, "White", 7)
-    drain(w)
-    want("typing 7 at the dial reads 7, not a colour",
-         chip.rot[1], float(g.CHIP_DIAL[7]))
-    want("...and the dial stays the way up it was",
-         chip.rot[2], float(g.CHIP_DIAL_Z))
-
-    chip.setRotation({"x": 0, "y": 0, "z": float(g.CHIP_FACE_Z)})
     g.onObjectNumberTyped(chip, "White", 2)
     drain(w)
-    want("typing 2 at the colours still reads a colour",
+    want("typing 2 at the Chip turns it to a colour",
          chip.rot[1], float(g.CHIP_FACE[g.ATTENTION[2]]))
+    dial = dict((o.name, o) for o in w.table.values()).get("Dial")
+    want("the Dial is a separate object, not a face of the Chip",
+         (dial is not None, dial.guid != chip.guid if dial else None),
+         (True, True))
+    # ITS OWN ROTATION VALUES, so typing at it is TTS's job and the
+    # script does not have to work out which way up anything is.
+    vals = dial_values()
+    want("...carrying a rotation value for every number it prints",
+         sorted(vals), list(range(21)))
+    want("...each one the angle the script would turn it to",
+         [vals[n] for n in range(21)],
+         [int(g.CHIP_DIAL[n]) for n in range(21)])
+    # And nothing claims a face that is gone: CHIP_DIAL_Z said which
+    # way up the dial was while it was the Chip's other side.
+    want("...and nothing claims a face that no longer exists",
+         g.CHIP_DIAL_Z, None)
 
-    # A number the face does not have is refused, not guessed at.
-    chip.setRotation({"x": 0, "y": 0, "z": float(g.CHIP_DIAL_Z)})
-    before = chip.rot
-    g.onObjectNumberTyped(chip, "White", 44)
-    drain(w)
-    want("a number off the end of the dial turns nothing",
-         chip.rot, before)
+
+def dial_values():
+    """The Dial's RotationValues, read out of the built save."""
+    save = json.load(io.open(SAVE, encoding="utf-8"))
+    out = {}
+    def walk(objs):
+        for o in objs:
+            if o.get("Nickname") == "Dial":
+                for v in o.get("RotationValues") or []:
+                    out[int(v["Value"])] = int(v["Rotation"]["y"])
+            walk(o.get("ContainedObjects", []))
+    walk(save["ObjectStates"])
+    return out
 
 
 def buff_lock_assertions():

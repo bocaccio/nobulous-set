@@ -165,16 +165,18 @@ CHIP_FACE_Z = 0
 # import dialog has only one image field. Type 2 is the circular tile,
 # which is 1,839 of those.
 CHIP_TILE_TYPE = 2
-# A tile is 2 units across at scale 1, so this is half the chip's
-# diameter in units.
+# TWO OBJECTS, ONE PER GAME, rather than one with a face each way up.
+# Jon's call, and the right one: no game uses both faces, so nothing is
+# lost, and what goes with the two-faced version is most of its cost -
+# the Chip stays the Custom_Token every other marker is, nothing is
+# ever flipped so it does not matter which way TTS draws an underside,
+# the typing handler stops having to work out which way up a thing is,
+# and each object carries its own RotationValues so TTS does the
+# turning itself.
 #
-# MEASURED OFF THE TABLE, not guessed from the overlay. 1.1 was
-# taken from the 1.1-radius circle the NAP overlay draws for the
-# Chip, and came out visibly too small, because that circle was
-# itself a guess: the Custom_Token it replaced reads about 3.3
-# units across in Jon's screenshot of the NAP table, against the
-# felt whose width is known.
-CHIP_SCALE = 1.65
+# A token at scale 1 is the size the Chip has always been, about 3.3
+# units across; the tile needed 1.65 to match it.
+CHIP_SCALE = 1.0
 
 # WHERE THE NUMBERS ARE, measured off the dial scan. The olive moon
 # marker sits at 327.8 degrees clockwise from the top of the picture
@@ -184,27 +186,29 @@ CHIP_DIAL_MARK = 327.8
 CHIP_DIAL_SLOTS = 22
 CHIP_DIAL_ZERO = CHIP_DIAL_MARK + 360.0 / CHIP_DIAL_SLOTS
 
-# Which way up the dial is, and the nudge that lands its numbers where
-# the colour wheel's colours land - at the edge nearest the player.
-# ONE NUMBER TO TURN if the dial reads off by a step: 16 degrees is one
-# number, and the sign is clockwise-positive, exactly like CHIP_TRIM.
-CHIP_DIAL_Z = 180
+# The nudge that lands the dial's numbers where the colour wheel's
+# colours land - at the edge nearest the player. ONE NUMBER TO TURN if
+# the dial reads off by a step: 16 degrees is one number, and the sign
+# is clockwise-positive, exactly like CHIP_TRIM.
 CHIP_DIAL_TRIM = 0
 
 
 def chip_dial_angles():
     """y rotation that brings each number to the player's edge.
 
-    The dial is the tile's BACK face, so the picture is handed the
-    other way round from the front: a point at art angle A shows at
-    180 - A rather than at A. That mirroring is why this is derived
-    rather than copied from CHIP_ANGLE, and it is the one part of the
-    measurement that the table has to confirm - hence CHIP_DIAL_TRIM.
+    THE DIAL IS ITS OWN OBJECT AND LIES FACE UP, so there is no
+    mirroring to undo: a point at art angle A shows at A plus however
+    far the object is turned, and the player's edge is 180. Exactly the
+    arithmetic CHIP_ANGLE does for the colours.
+
+    When the dial was the back of a two-faced tile this had to guess at
+    how TTS hands a bottom face over, which was the last assumption in
+    here that only the table could settle.
     """
     out = {}
     for n in range(21):
         art = (CHIP_DIAL_ZERO + n * 360.0 / CHIP_DIAL_SLOTS) % 360.0
-        out[n] = int(round((art + CHIP_DIAL_TRIM) % 360.0))
+        out[n] = int(round((180.0 - art + CHIP_DIAL_TRIM) % 360.0))
     return out
 
 
@@ -394,6 +398,7 @@ def lua_header(box_guids, rules_guid):
     # Not decks, but they live in a bag and go home like one.
     home['NAP Table'] = 'NAP'
     home['BAT Table'] = 'BAT'
+    home['Dial'] = 'BAT'
     for _nick, _ in NAP_COUNTERS:
         home[_nick] = 'NAP'
     j = lambda xs: ', '.join(xs)
@@ -444,9 +449,10 @@ def lua_header(box_guids, rules_guid):
         # the setup's own turn both have to name the same side of the
         # token or typing a number and pressing Set up NAP disagree.
         'CHIP_FACE_Z = %d' % CHIP_FACE_Z,
-        # The dial on the other face: which way up it is, and the angle
-        # that brings each number to the player's edge.
-        'CHIP_DIAL_Z = %d' % CHIP_DIAL_Z,
+        # BAT's dial: the angle that brings each number to the player's
+        # edge. The object carries these as RotationValues too, so TTS
+        # turns it when you type a number; the script needs them to set
+        # the Tyrant's Health at setup.
         'CHIP_DIAL = { %s }' % j('[%d] = %d' % (n, a)
                                  for n, a in sorted(
                                      chip_dial_angles().items())),
@@ -745,6 +751,36 @@ def nap_table_image():
     return 'NAP_Table.jpg'
 
 
+def dial_object():
+    """BAT's 0-20 dial: the Chip's other face, as an object of its own.
+
+    IT LIVES IN THE BAT BAG and is dealt by the setup, like the table
+    overlay, because only BAT reads it - the Tyrant's Health. The Chip
+    stays where it is and keeps its colours for NAP.
+
+    ITS OWN ROTATION VALUES, so typing a number at it is TTS's job
+    rather than the script's: twenty-one of them, one per number, from
+    the same measurement of the scan that CHIP_DIAL comes from.
+    """
+    return {"GUID": guid(), "Name": "Custom_Token",
+            "Transform": xf(0, 1.4, 0, (0, 0, 0), CHIP_SCALE),
+            "Nickname": "Dial",
+            "Description": "The Tyrant's Health. Set up BAT lays it down.",
+            "ColorDiffuse": {"r": 1.0, "g": 1.0, "b": 1.0},
+            "Locked": False, "Grid": True, "Snap": True,
+            "Autoraise": True, "Sticky": True,
+            "CustomImage": {"ImageURL": url(chip_image('Dial')),
+                            "ImageSecondaryURL": "", "ImageScalar": 1.0,
+                            "WidthScale": 0.0,
+                            "CustomToken": {"Thickness": 0.2,
+                                            "MergeDistancePixels": 15.0,
+                                            "StandUp": False,
+                                            "Stackable": False}},
+            "RotationValues": [
+                {"Value": n, "Rotation": {"x": 0, "y": a, "z": 0}}
+                for n, a in sorted(chip_dial_angles().items())]}
+
+
 def game_table(game):
     """The printed layout a setup lays down. One shape, two pictures.
 
@@ -841,15 +877,11 @@ def dice_objects():
         if o['Name'] == 'Custom_Dice':
             d["RotationValues"] = [dict(v) for v in D6]
         if nick == 'Chip':
-            # TWO FACES, so it stops being a token. See CHIP_TILE_TYPE.
-            d['Name'] = 'Custom_Tile'
+            # OUR OWN COPY OF THE FACE, so the pair of scans that the
+            # dial's angles were measured from is the pair that ships.
             d['Transform'] = xf(bx, 1.4, bz, (0, 0, 0), CHIP_SCALE)
-            d['CustomImage'] = {
-                "ImageURL": url(chip_image('Colour')),
-                "ImageSecondaryURL": url(chip_image('Dial')),
-                "ImageScalar": 1.0, "WidthScale": 0.0,
-                "CustomTile": {"Type": CHIP_TILE_TYPE, "Thickness": 0.2,
-                               "Stackable": False, "Stretch": False}}
+            d['CustomImage'] = dict(
+                o['CustomImage'], ImageURL=url(chip_image('Colour')))
             # THE DIAL NEEDS ROTATION VALUES TOO - typing a number over
             # it did nothing until it had them - and they have to be the
             # SAME angles the script turns it to, so CHIP_ANGLE owns
@@ -1057,6 +1089,7 @@ def main():
             build_deck(d, i + 1, (0, 2.0, 0)))
     grouped['NAP'].append(game_table('NAP'))
     grouped['BAT'].append(game_table('BAT'))
+    grouped['BAT'].append(dial_object())
     for _nick, _text in NAP_COUNTERS:
         grouped['NAP'].append(counter(_nick, _text))
     box_guids = {}

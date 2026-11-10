@@ -2337,20 +2337,43 @@ check("every deck in tts/decks.py can be found again from its cards",
 check("nothing writes that table down a second time",
       "DECK_OF = {" not in _lua and "'DECK_OF = { %s }'" in _mod)
 
-# THE CHIP HAS TWO REAL FACES NOW. It was a Custom_Token carrying one
-# image, and a token with one image shows that image MIRRORED on its
+# ONE OBJECT PER FACE. The Chip was a Custom_Token carrying one image,
+# and a token with one image shows that image MIRRORED on its
 # underside - which is why the script spent weeks turning to a number
-# side that did not exist. Of the Custom_Tokens in the mods on this
-# machine not one carries a second image; a back face is a TILE's.
+# side that did not exist. It briefly became a two-faced Custom_Tile;
+# it is a token again, and BAT's dial is an object of its own, because
+# no game reads both and two objects cost almost nothing.
 _chip_obj = [o for o in _sv['ObjectStates'] if o.get('Nickname') == 'Chip']
 _ci = (_chip_obj[0].get('CustomImage') or {}) if _chip_obj else {}
-check("the Chip carries both of its faces",
-      bool(_chip_obj) and _chip_obj[0]['Name'] == 'Custom_Tile'
+_dial_obj = []
+
+
+def _find_dial(objs):
+    for o in objs:
+        if o.get('Nickname') == 'Dial':
+            _dial_obj.append(o)
+        _find_dial(o.get('ContainedObjects', []))
+
+
+_find_dial(_sv['ObjectStates'])
+_di = (_dial_obj[0].get('CustomImage') or {}) if _dial_obj else {}
+check("the Chip carries the colours and nothing else",
+      bool(_chip_obj) and _chip_obj[0]['Name'] == 'Custom_Token'
       and 'Chip_Colour' in (_ci.get('ImageURL') or '')
-      and 'Chip_Dial' in (_ci.get('ImageSecondaryURL') or ''),
-      'the Chip is %r with face %r'
+      and not (_ci.get('ImageSecondaryURL') or ''),
+      'the Chip is %r with a second image %r'
       % (_chip_obj[0]['Name'] if _chip_obj else None,
          (_ci.get('ImageSecondaryURL') or '(none)')[-22:]))
+check("the Dial is an object of its own, with the dial on it",
+      len(_dial_obj) == 1 and 'Chip_Dial' in (_di.get('ImageURL') or ''),
+      'found %d Dial objects' % len(_dial_obj))
+# ITS OWN ROTATION VALUES, so TTS turns it when a number is typed.
+_dv = (dict((int(v['Value']), int(v['Rotation']['y']))
+            for v in (_dial_obj[0].get('RotationValues') or []))
+       if _dial_obj else {})
+check("the Dial turns itself when you type a number at it",
+      sorted(_dv) == list(range(21)),
+      'rotation values %r' % sorted(_dv))
 check("both faces ship from images/",
       len([f for f in os.listdir(os.path.join(ROOT, 'images'))
            if f.startswith('Chip_Colour')]) == 1
@@ -2417,9 +2440,12 @@ _dial = dict((int(a), int(b)) for a, b in
                                   _sv['LuaScript'], re.M).group(1)))
 _step = 360.0 / _slots
 _gaps = [(_dial[n + 1] - _dial[n]) % 360 for n in range(20)]
+# EITHER WAY ROUND. The numbers run one way on the picture and the
+# turn that brings them to the player goes the other, so what is
+# held here is the size of the step, not its sign.
 check("its numbers are one slot apart, all the way round",
       sorted(_dial) == list(range(21))
-      and all(abs(g - _step) < 1.0 for g in _gaps),
+      and all(abs(min(g, 360 - g) - _step) < 1.0 for g in _gaps),
       'gaps %r, a slot is %.2f' % (sorted(set(_gaps)), _step))
 
 

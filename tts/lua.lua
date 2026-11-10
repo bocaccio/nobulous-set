@@ -314,6 +314,11 @@ function pad(i) return {(i - 3) * (CARD_W + 1.0), 14, OFF_Z} end
 
 OFF_Z = FELT.z0 + 2.0
 OFF = {0, 14, OFF_Z}
+-- AND IT IS ONLY AS WIDE AS THE SPOTS THEMSELVES. pad() spreads
+-- five of them either side of the middle; past that the band is
+-- ordinary felt, which is where BAT stands its Dial. Reading the
+-- band as the whole row called that Dial a stranded card.
+OFF_X = 2 * (CARD_W + 1.0) + CARD_W / 2
 
 function attentionNow()
   local s = math.max(1, STATE.session + 1)
@@ -1322,18 +1327,18 @@ function setupBAT()
   end
 
   step(function()
-    -- THE CHIP IS THE TYRANT'S HEALTH DIAL in BAT (rules/bat.html's
-    -- components), so it goes where the Tyrant's cards are - below
-    -- the rightmost Splice - dial side up and turned to the Health
-    -- this difficulty gives it.
+    -- THE DIAL IS THE TYRANT'S HEALTH (rules/bat.html's components),
+    -- so it goes where the Tyrant's cards are - below the rightmost
+    -- Splice - turned to the Health this difficulty gives it.
     --
-    -- THE DIAL IS A REAL SECOND FACE NOW. Jon had the scan; the
-    -- Chip is a Custom_Tile carrying both pictures, where it used
-    -- to be a Custom_Token carrying one and showing it mirrored on
-    -- the back. CHIP_DIAL is generated from where the numbers sit
-    -- in that scan.
-    setMarker('Chip', BAT_CHIP_X, BAT_CHIP_Z, nil,
-              {CHIP_DIAL[hp] or CHIP_DIAL[0], CHIP_DIAL_Z})
+    -- AN OBJECT OF ITS OWN, in the BAT bag, dealt like the overlay.
+    -- It was the Chip's other face for a while; two objects cost one
+    -- more thing to pack away and save everything else, because no
+    -- game reads both.
+    local dial = deckOut('Dial', {BAT_CHIP_X, 1.6, BAT_CHIP_Z}, FACEUP)
+    if dial then
+      dial.setRotation({0, CHIP_DIAL[hp] or CHIP_DIAL[0], 0})
+    end
   end)
 
   step(function()
@@ -2087,39 +2092,22 @@ end
 
 -- TTS calls this when a player types a number with the cursor over an
 -- object. Returning true says the script dealt with it.
--- Is the Chip showing its dial rather than its colours? Within a
--- quarter turn of CHIP_DIAL_Z counts: a chip settles a degree or two
--- off whatever it was set to.
-function chipOnDial(obj)
-  local ok, r = pcall(function() return obj.getRotation() end)
-  if not ok or not r then return false end
-  local d = math.abs(((r.z - CHIP_DIAL_Z) % 360 + 540) % 360 - 180)
-  return d < 90
-end
-
--- WHAT YOU TYPE DEPENDS ON WHICH WAY UP IT IS. The Chip has two faces
--- and they are read differently: five colours on one, 0 to 20 on the
--- other. Typing 3 at the dial used to turn it to BLUE, because the
--- only table this knew was the colours' - correct direction, wrong
--- face, and nothing said so.
+-- ONE OBJECT, ONE WAY OF READING IT. The Chip shows colours and the
+-- Dial shows 0 to 20, and no game uses both - NAP reads the attention
+-- colours, BAT reads the Tyrant's Health - so nothing here has to work
+-- out which way up anything is.
+--
+-- The Dial is not handled here at all: it carries its own
+-- RotationValues, twenty-one of them, so typing a number at it is
+-- TTS's job. This is only the Chip, whose five values TTS would
+-- honour too, but this says which colour it turned to.
 function onObjectNumberTyped(obj, player_color, number)
   if not obj or obj.getName() ~= 'Chip' then return false end
-  -- Keeping x and z turns the Chip without flipping it.
-  local r = obj.getRotation()
-  if chipOnDial(obj) then
-    local a = CHIP_DIAL[number]
-    if not a then
-      say('The dial reads 0 to 20.')
-      return true
-    end
-    STATE.dial = number
-    obj.setRotationSmooth({r.x, a, r.z})
-    say('Dial set to ' .. number .. '.')
-    return true
-  end
   local col = ATTENTION[number]
   if not col or not CHIP_FACE[col] then return false end
   STATE.chip = number
+  -- Keeping x and z turns the Chip without flipping it.
+  local r = obj.getRotation()
   obj.setRotationSmooth({r.x, CHIP_FACE[col], r.z})
   say('Chip turned to ' .. col .. '.')
   return true
