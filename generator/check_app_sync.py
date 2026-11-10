@@ -2326,11 +2326,26 @@ _num = lambda k, s=None: float(re.search(
 _feltz0 = float(re.search(r"FELT = \{[^}]*z0 = (-?[\d.]+)", _hdr).group(1))
 _offz = _feltz0 + 2.0
 check("the staging band is below every row a setup deals on",
-      "OFF_Z = FELT.z0 + 2.0" in _lua and "OFF = {0, 14, OFF_Z}" in _lua
-      and "14, OFF_Z}" in _lua
+      "OFF_Z = FELT.z0 + 2.0" in _lua and "14, OFF_Z}" in _lua
       and _offz + 1.0 < _num("ROW_TIER") - _num("CARD_L") / 2.0,
       "staging at z %.2f, the lowest row reaches %.2f"
       % (_offz, _num("ROW_TIER") - _num("CARD_L") / 2.0))
+
+# AND NO PARKING SPOT IS THE DROP POINT. Every takeObject in the script
+# puts its card down at OFF on the way to wherever it is going, so a
+# deck parked there collects them: OFF was pad(3) exactly, and AoS
+# parked the Specialized Programs on it. This check used to assert the
+# string "OFF = {0, 14, OFF_Z}", which is to say it held the bug in
+# place and called it a check.
+_pitch = _num("CARD_W") + 1.0
+_offx = float(re.search(r"^OFF = \{(-?[\d.]+) \* BAND_PITCH", _lua,
+                        re.M).group(1)) * _pitch
+_padm = float(re.search(r"^function pad\(i\) return \{\(i - ([\d.]+)\)"
+                        r" \* BAND_PITCH", _lua, re.M).group(1))
+_pads = [(i - _padm) * _pitch for i in range(1, 6)]
+check("no staging pad is within a card of the point cards are taken to",
+      all(abs(p - _offx) >= _num("CARD_W") for p in _pads),
+      "OFF at x %.2f, pads at %s" % (_offx, [round(p, 2) for p in _pads]))
 
 # DECK_OF IS WHAT LETS A MERGED DECK BE TAKEN APART AGAIN - it is the
 # only table that says a Task belongs to the Assignment deck - so it is

@@ -61,6 +61,13 @@ for _d in DECKS:
     LAND[_d.get("card", _d["label"])] = bool(_d.get("land"))
     ONE[_d["label"]] = _d.get("card", _d["label"])
 
+
+def is_card(o):
+    """A card or a deck of them - not the overlay, the panel or a die."""
+    base = o.name.rstrip("0123456789").strip()
+    return LAND.get(base, LAND.get(o.name)) is not None
+
+
 BAT_SPECIMENS = {"Easy": 5, "Standard": 6, "Hard": 7, "Nobulous": 8}
 NAP_SETBACKS = {"Easy": 3, "Standard": 3, "Hard": 4, "Nobulous": 5}
 
@@ -99,6 +106,9 @@ class Obj(object):
         self.scale = (1.0, 1.0, 1.0)
         self.locked = False
         self.TextTool = TextTool(self)
+        self.custom = {}
+        self.buttons = []
+        self.dead = False
 
     def getName(self):
         return self.name
@@ -173,6 +183,46 @@ class Obj(object):
     def setName(self, n):
         self.name = n
 
+    # ---------------------------------------------- the rulebook's corner
+    # A Custom_PDF carries the URL it is showing, takes buttons the way
+    # the panel does, and RESPAWNS when reloaded. The last of those is
+    # the trap: reload destroys the object and hands back a new one, so
+    # a script that keeps its old reference is holding a corpse and
+    # every call on it is a red line in Jon's chat. The stub had none of
+    # this - getObjectFromGUID answered nil for the Rulebook, showRules
+    # returned on its first line, and nothing about the rules in the
+    # corner was ever exercised.
+    def setCustomObject(self, spec):
+        self._live("setCustomObject")
+        self.custom = dict(spec.items()) if hasattr(spec, "items") else dict(spec)
+
+    def reload(self):
+        self._live("reload")
+        fresh = Obj(self.world, self.guid, self.name)
+        fresh.pos, fresh.rot, fresh.locked = self.pos, self.rot, self.locked
+        fresh.custom = dict(self.custom)
+        self.dead = True
+        self.world.byguid[self.guid] = fresh
+        if self.world.table.get(self.guid) is self:
+            self.world.table[self.guid] = fresh
+        return fresh
+
+    def clearButtons(self):
+        self._live("clearButtons")
+        self.buttons = []
+
+    def createButton(self, spec):
+        self._live("createButton")
+        self.buttons.append(
+            dict(spec.items()) if hasattr(spec, "items") else dict(spec))
+
+    def _live(self, call):
+        """TTS logs and carries on when you touch a destroyed object."""
+        if self.dead:
+            self.world.errors.append(
+                "[%s] Lua Error <%s>: object has been destroyed"
+                % (self.name, call))
+
     def setDescription(self, d):
         self.desc = d
 
@@ -228,6 +278,16 @@ class Obj(object):
             self.pos = (self.pos[0] - 2.22, self.pos[1], self.pos[2] - 0.10)
         if "position" in keys:
             k.setPosition(spec["position"])
+            # DEALT ONTO SOMETHING THAT IS ALREADY THERE. A card
+            # dropped on a deck joins it, so a deck parked on the point
+            # every takeObject drops at eats whatever passes through -
+            # which is what OFF being pad(3) did to AoS: a correct
+            # 8-card Program deck, and five of its own cards left lying
+            # in the staging band beside it.
+            #
+            # Measured rather than named: this fails for any pair of
+            # places that overlap, not just for the pair that was wrong.
+            self.world.land(k)
         # AND THE ROTATION IT WAS ASKED FOR. The stub threw this away,
         # which is exactly the thing that went wrong at the table: a
         # deck whose contained cards carried their own rotation handed
@@ -309,6 +369,11 @@ class World(object):
         self.markers = {}      # the dice and the Chip, by GUID
         self.pending = []       # Wait.frames callbacks, run by drain()
         self.snaps = []         # Assignment spaces laid by a setup
+        # Every time a card was dealt onto something already standing
+        # there. A card dropped on a deck joins it, so a deck parked
+        # where cards are dropped eats them.
+        self.landings = []
+        self.card_half = 0.0
         self.lossy = 0          # refuse one bag put in N, like TTS does
         self.puts = 0
         self.rng = random.Random(7)
@@ -318,6 +383,25 @@ class World(object):
         """Where the dice are NOW. A card dealt on top of one is a card
         dealt on top of one wherever the setup has just moved it to."""
         return [(o.pos[0], o.pos[2]) for o in self.markers.values()]
+
+    def land(self, k):
+        """Record a card dealt on top of something already standing there.
+
+        Two cards at the same point are one pile in TTS. The setups
+        rely on that nowhere; every place they deal to is meant to be
+        clear when the card arrives.
+        """
+        h = self.card_half
+        # CARDS ONLY. The thing everything is dealt onto is the table
+        # overlay, a 56-unit tile that is meant to be underneath.
+        if not h or not is_card(k):
+            return
+        for o in self.table.values():
+            if o is k or o.guid == k.guid or not is_card(o):
+                continue
+            if (abs(o.pos[0] - k.pos[0]) < h and abs(o.pos[2] - k.pos[2]) < h):
+                self.landings.append((k.name, o.name,
+                                      round(k.pos[0], 2), round(k.pos[2], 2)))
 
     def add(self, o):
         self.byguid[o.guid] = o
@@ -376,6 +460,20 @@ def build(lua):
     # a second face - a token carries only one image - so the type
     # is no longer what identifies it. Anything on the table that
     # is not a bag is one of these.
+    # THE BOOK IN THE CORNER IS AN OBJECT TOO. It was not in this world
+    # at all, so getObjectFromGUID answered nil for it, showRules
+    # returned on its first line, and every run of this harness tested
+    # a rulebook that was not there.
+    w.rules_guid = None
+    for o in save["ObjectStates"]:
+        if o["Name"] == "Custom_PDF":
+            b = Obj(w, o["GUID"], o.get("Nickname") or "Rulebook")
+            b.custom = dict(o["CustomPDF"])
+            b.pos = (o["Transform"]["posX"], o["Transform"]["posY"],
+                     o["Transform"]["posZ"])
+            b.locked = bool(o.get("Locked"))
+            w.byguid[o["GUID"]] = b
+            w.rules_guid = o["GUID"]
     for o in save["ObjectStates"]:
         if o["Name"] in ("Custom_Dice", "Custom_Token") or (
                 o.get("Nickname") in ("Chip",)):
@@ -523,6 +621,10 @@ def start(difficulty, tier, panel=None):
     install(lua, w)
     lua.execute(src)
     g = lua.globals()
+    # HOW WIDE A CARD IS, from the Lua the build generated, so the
+    # "dealt onto something" check measures the card this mod deals
+    # rather than a number written down here.
+    w.card_half = float(g.CARD_W) * 0.9
     if panel is not None:
         g.PANEL = panel
     g.STATE.difficulty = difficulty
@@ -1551,6 +1653,81 @@ def pile_assertions():
              if c.name.startswith("Task ")), 30)
 
 
+def landing_assertions():
+    """No setup deals a card onto something already standing there.
+
+    A card dropped on a deck joins it. OFF - the point every takeObject
+    in the script drops at on the way somewhere - WAS pad(3), one of
+    the five places a deck is parked while it is being built, so AoS
+    spent its whole middle step dropping cards onto the Specialized
+    Programs deck. Jon's table showed the symptom the wrong way round:
+    the Program deck was perfectly correct, and five of its own cards
+    were ALSO lying in the staging band.
+
+    Reads every pair, not the pair that was wrong, so a new deal onto
+    an occupied spot fails here too.
+    """
+    for which in ("BAT", "NAP", "AoS", "IMP"):
+        for lvl in ("Easy", "Standard", "Hard", "Nobulous"):
+            for tier in (0, 1, 2, 3):
+                w = run(lvl, tier, which)
+                want("%s %s t%d deals nothing onto an occupied spot"
+                     % (which, lvl, tier), w.landings, [])
+    # AND THE TWO POINTS CANNOT BE THE SAME POINT, which is the whole
+    # of the bug above stated in one line.
+    lua = lupa.LuaRuntime(unpack_returned_tuples=True)
+    w, src = build(lua)
+    install(lua, w)
+    lua.execute(src)
+    g = lua.globals()
+    off = [round(float(v), 3) for v in g.OFF.values()]
+    want("no staging pad is the point cards are taken to",
+         [i for i in range(1, 6)
+          if [round(float(v), 3) for v in g.pad(i).values()] == off], [])
+    want("...and none of them is within a card of it",
+         [i for i in range(1, 6)
+          if abs(float(g.pad(i)[1]) - off[0]) < float(g.CARD_W)], [])
+
+
+def rules_assertions():
+    """The corner shows the rules for the game on the table.
+
+    The button has always NAMED the right game, and clicking it loaded
+    that game's PDF - so the book in the corner was whichever one was
+    last clicked for, under a label claiming otherwise. Jon read the
+    NAP rules under a BAT table.
+    """
+    def book(w):
+        o = w.byguid[w.rules_guid]
+        return (o.custom.get("PDFUrl", "").rsplit("/", 1)[-1], o.buttons)
+
+    for which, pdf in (("BAT", "BAT_Rulebook.pdf"), ("NAP", "NAP_Rulebook.pdf"),
+                       ("AoS", "AoS_Rulebook.pdf"),
+                       ("IMP", "NRJ_Campaign_Supplement.pdf")):
+        w, g = start("Standard", 3, Panel())
+        # Start from a book that is NOT the one this game wants, which
+        # is the state the bug lived in: BAT ships loaded and every
+        # other game has to swap it.
+        g.STATE.rules = "NAP" if which != "NAP" else "BAT"
+        {"BAT": g.setupBAT, "NAP": g.setupNAP,
+         "AoS": g.setupAoS, "IMP": g.setupImposter}[which]()
+        drain(w)
+        url, buttons = book(w)
+        want("setting up %s loads its own rulebook" % which, url, pdf)
+        want("...and labels the button for it", [b["label"] for b in buttons],
+             ["Rules: " + ("NRJ" if which == "IMP" else which)])
+        want("...on the live object, not the one reload destroyed",
+             [e for e in w.errors if "destroyed" in e], [])
+        # Setting up the SAME game again must not respawn the object:
+        # a reload under the cursor is worse than the swap is worth.
+        before = w.byguid[w.rules_guid]
+        {"BAT": g.setupBAT, "NAP": g.setupNAP,
+         "AoS": g.setupAoS, "IMP": g.setupImposter}[which]()
+        drain(w)
+        want("...and the same game again does not reload it",
+             w.byguid[w.rules_guid] is before, True)
+
+
 def panel_game_assertions():
     """A game's own options appear when that game is on the table."""
     def labels(p):
@@ -1920,6 +2097,8 @@ def main():
     chip_face_assertions()
     buff_lock_assertions()
     pile_assertions()
+    landing_assertions()
+    rules_assertions()
     panel_game_assertions()
     for lvl in ("Easy", "Standard", "Hard", "Nobulous"):
         spec, sb = BAT_SPECIMENS[lvl], NAP_SETBACKS[lvl]

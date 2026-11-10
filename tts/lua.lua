@@ -366,15 +366,29 @@ function col(i) return (i - 2.5) * (CARD_W + 1.0) end
 -- row so that the rare card which defeats even that lands on bare felt
 -- instead of in the middle of a row, where it reads as a card the
 -- setup dealt. check_app_sync.py holds it below the lowest row.
-function pad(i) return {(i - 3) * (CARD_W + 1.0), 14, OFF_Z} end
+-- SIX SLOTS, AND OFF IS ONE OF THEM.
+--
+-- OFF WAS pad(3) - the same three numbers - and every takeObject in
+-- this script drops its card at OFF on the way to wherever it is
+-- going. So a deck parked on pad(3) spent the step with cards landing
+-- on top of it, and AoS parked the Specialized Programs there: Jon's
+-- table came out with a correct 8-card Program deck AND five of its
+-- own cards lying in the staging band, one copy in the deck and one
+-- on the felt. Nothing about the deck was wrong, which is why nothing
+-- that reads a deck could see it.
+--
+-- Derived rather than typed, so the two cannot be made to coincide
+-- again: OFF takes the leftmost slot and pad() hands out the rest.
+BAND_PITCH = CARD_W + 1.0
+function pad(i) return {(i - 2.5) * BAND_PITCH, 14, OFF_Z} end
 
 OFF_Z = FELT.z0 + 2.0
-OFF = {0, 14, OFF_Z}
--- AND IT IS ONLY AS WIDE AS THE SPOTS THEMSELVES. pad() spreads
--- five of them either side of the middle; past that the band is
--- ordinary felt, which is where BAT stands its Dial. Reading the
--- band as the whole row called that Dial a stranded card.
-OFF_X = 2 * (CARD_W + 1.0) + CARD_W / 2
+OFF = {-2.5 * BAND_PITCH, 14, OFF_Z}
+-- AND IT IS ONLY AS WIDE AS THE SPOTS THEMSELVES. OFF and pad() share
+-- one row of six; past that the band is ordinary felt, which is where
+-- BAT stands its Dial. Reading the band as the whole row called that
+-- Dial a stranded card.
+OFF_X = 2.5 * BAND_PITCH + CARD_W / 2
 
 function attentionNow()
   local s = math.max(1, STATE.session + 1)
@@ -1569,7 +1583,7 @@ function setupAoS()
   packUp(true)
   STATE.game = 'AoS'
   local mix = AOS_MIX[STATE.difficulty]
-  local prog
+  local prog, lim
 
   -- The table overlay first, so everything else lands on
   -- top of it.
@@ -1602,7 +1616,7 @@ function setupAoS()
     end
   end)
   step(function()
-    local lim = deckOut('Limitations', {aosCol(AOS_LIMITS), 3, AOS_ROW1})
+    lim = deckOut('Limitations', {aosCol(AOS_LIMITS), 3, AOS_ROW1})
     if STATE.tier >= 2 then merge(lim, deckOut('Corrupted Limitations', pad(2))) end
     if lim then lim.shuffle() end
     -- SET ASIDE FOR THE FINALE, so out at the end of the row rather
@@ -1726,9 +1740,19 @@ end
 PANEL_UNIT = 500          -- width units per local unit
 
 function refreshPanel()
-  -- The rulebook's button names the game too, and this is the one call
-  -- every setup and every counter change already makes.
-  if RULES_OBJ then drawRulesButton(RULES_OBJ) end
+  -- THE BOOK ITSELF, NOT JUST ITS LABEL. The button has always named
+  -- the game you set up, and clicking it loaded that game's PDF - so
+  -- the corner showed whichever book was last CLICKED FOR, not the
+  -- game on the table. Set up BAT after reading the NAP rules and the
+  -- NAP rules stayed in the corner under a button reading "Rules: BAT",
+  -- which is worse than no swap at all: the label says it is right.
+  --
+  -- showRules does nothing when the right book is already loaded, so
+  -- this is one respawn on the setup that changes game and a no-op on
+  -- every counter bump. No camera move - nobody asked to be flown to
+  -- the corner because they pressed Set up.
+  if STATE.game then showRules(STATE.game)
+  elseif RULES_OBJ then drawRulesButton(RULES_OBJ) end
   if not PANEL then return end
   PANEL.clearButtons()
   local y = 0.2
