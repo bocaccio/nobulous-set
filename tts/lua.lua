@@ -133,11 +133,19 @@ ASSIGN_X = -19.5
 -- pushing it off the edge.
 ASSIGN_SLOTS = 4
 
--- DEALT BY NOTHING, DELIBERATELY. The Final Exams are not part of the
--- setup: you reach them, and a later script option will start the exam.
+-- DEALT BY NOTHING, DELIBERATELY. Three decks belong to a part of a
+-- game the setup does not reach:
+--
+--   Final Exams     you reach them; a later script option starts the exam
+--   Tyrant Attacks  nothing draws one until the Tyrant is awake, which is
+--                   five Splices away
+--   Buff HP Track   optional (rules/bat.html, Fine-tuning), and it holds
+--                   part of the Tyrant's Health - so it belongs to the
+--                   battle too
+--
 -- Named here so that "every deck a setup can reach" stays a real check
 -- rather than one that quietly stopped covering a deck.
-IN_THE_BAG = { 'Final Exams' }
+IN_THE_BAG = { 'Final Exams', 'Tyrant Attacks', 'Buff HP Track' }
 
 -- Dealt by NAP alone: the printed layout under the cards.
 NAP_TABLE = 'NAP Table'
@@ -331,6 +339,40 @@ function deckLabel(name)
   return DECK_OF[base] or base
 end
 
+-- The first card inside something, or nil if it holds none.
+function firstCard(obj)
+  local kids = obj and obj.getObjects and obj.getObjects() or nil
+  if kids then
+    for _, e in ipairs(kids) do
+      if e.nickname and e.nickname ~= '' then return e.nickname end
+    end
+  end
+  return nil
+end
+
+-- WHICH BAG AN OBJECT BELONGS IN, asked of the object rather than of
+-- its name. A PILE THE PLAYER BUILT HAS NO NAME: the Completed Credits
+-- pile is precisely that, cards dropped on each other, and TTS gives
+-- the deck it makes no nickname at all. homeBox had nothing to look up,
+-- so Pack up walked past the biggest pile on the table and then
+-- reported it as still out under a blank name.
+function boxFor(obj)
+  if not obj then return nil end
+  local b = homeBox(obj.getName())
+  if not b then b = homeBox(firstCard(obj)) end
+  -- NOTHING IS ITS OWN HOME. A box answers to the first deck
+  -- inside it, so asking this of one of the four boxes hands back
+  -- the box itself - and unmix, which asks it of every object on
+  -- the table, would then take every deck out of every box and
+  -- tip it onto the felt.
+  --
+  -- BY GUID, NOT BY ==. Two references to the same TTS object do
+  -- not always compare equal, so the identity test quietly did
+  -- nothing and the bag was still its own home.
+  if b ~= nil and b.getGUID() == obj.getGUID() then return nil end
+  return b
+end
+
 -- TAKE THE STRANGERS OUT OF A DECK BEFORE IT IS STOWED.
 --
 -- A setup MERGES decks: the six Opportunities and the Setbacks go into
@@ -344,8 +386,12 @@ end
 -- time without anything having to remember what was merged where.
 function unmix()
   for _, o in ipairs(getAllObjects()) do
-    if homeBox(o.getName()) and count(o) > 1 then
+    if boxFor(o) and count(o) > 1 then
+      -- A nameless pile is whatever is in it, not a deck of nothing:
+      -- without this every card in the Completed Credits pile counts
+      -- as a stranger and the pile is taken apart card by card.
       local mine = deckLabel(o.getName())
+      if mine == '' then mine = deckLabel(firstCard(o)) end
       local strays = {}
       for _, e in ipairs(o.getObjects()) do
         if deckLabel(e.nickname) ~= mine then
@@ -374,9 +420,28 @@ end
 -- has it, which is the only honest way to tell that the put took; the
 -- GUID is read before the attempt because a swallowed object cannot be
 -- asked for it afterwards.
+-- NAME A PILE ON THE WAY INTO A BOX. A box cannot see inside a
+-- deck it holds - findDeck matches a nickname and the gather loop
+-- reads the box's top level - so a nameless pile put away is
+-- cards nobody can get back: the next setup deals without them
+-- and says nothing at all. The Completed Credits pile is exactly
+-- that, cards the player dropped onto each other, and TTS gives
+-- the deck it makes no nickname.
+--
+-- unmix has already taken the strangers out by the time a
+-- pack-up reaches this, so what is left belongs to one deck and
+-- can be named after it.
+function nameIt(obj)
+  if not obj or count(obj) <= 1 then return end
+  local n = obj.getName()
+  if n ~= nil and n ~= '' then return end
+  local lab = deckLabel(firstCard(obj))
+  if lab and lab ~= '' then obj.setName(lab) end
+end
+
 function putHome(obj, tries)
   if not obj then return end
-  local b = homeBox(obj.getName())
+  local b = boxFor(obj)
   if not b then return end
   local gid = obj.getGUID()
   obj.setLock(false)
@@ -480,6 +545,15 @@ function deckOut(label, pos, rot)
     say('MISSING DECK: ' .. label)   -- a label that matches nothing, out loud
     return nil
   end
+  -- A DECK TTS BUILDS FOR YOU HAS NO NAME. Gathering one out of loose
+  -- cards makes exactly that, and then nothing can put it away:
+  -- homeBox reads '' , finds no bag for it and putHome achieves
+  -- nothing however many times it tries. Increase 3 puts all three
+  -- FINF cards into the Assignment deck, which consumes the FINF deck
+  -- object itself, so the next setting had to build one - and the
+  -- remainder sat in the staging band at dead centre of the bottom
+  -- edge, face down and wearing the Assignment back.
+  if count(d) > 1 and d.getName() ~= label then d.setName(label) end
   d.setLock(false)
   d.setPosition(pos)
   d.setRotation(rot or FACEDOWN)
@@ -948,7 +1022,7 @@ function packUp(quiet)
   local function loose()
     local t = {}
     for _, o in ipairs(getAllObjects()) do
-      local b = homeBox(o.getName())
+      local b = boxFor(o)
       if b and o ~= b then table.insert(t, o) end
     end
     return t
@@ -966,7 +1040,8 @@ function packUp(quiet)
     for i = 1, math.min(8, #t) do
       local o = t[i]
       o.setLock(false)
-      local b = homeBox(o.getName())
+      nameIt(o)
+      local b = boxFor(o)
       if b then b.putObject(o) end
     end
   end
@@ -980,7 +1055,15 @@ function packUp(quiet)
   step(function()
     local left = {}
     for _, o in ipairs(getAllObjects()) do
-      if homeBox(o.getName()) then table.insert(left, o.getName()) end
+      if boxFor(o) then
+        -- A pile has no name of its own; say what is in it rather
+        -- than printing an empty string.
+        local n = o.getName()
+        if n == nil or n == '' then
+          n = 'a pile of ' .. (firstCard(o) or 'cards')
+        end
+        table.insert(left, n)
+      end
     end
     -- Only a real Pack up clears the game: a setup calls this first and
     -- has already said which game it is dealing.
@@ -1014,11 +1097,11 @@ function setupBAT()
   step(function()
     local exp = deckOut('Encounters', {col(1), 3, ROW_MAIN})
     if exp then exp.shuffle() end
-    local ta = deckOut('Tyrant Attacks', {col(3), 3, ROW_MAIN})
-    if ta then ta.shuffle() end
-    -- The Buff HP card is OPTIONAL (rules/bat.html, Fine-tuning): it holds
-    -- part of the Tyrant's Health and is spent first.
-    deckOut('Buff HP Track', {col(4), 3, ROW_MAIN}, FACEUP)
+    -- THE TYRANT'S OWN CARDS STAY IN THE BAG. Nothing draws a Tyrant
+    -- Attack until it is awake, five Splices away, and the Buff HP
+    -- card is optional and holds part of its Health - so both belong
+    -- to the battle rather than to the Splice Phase, and the row they
+    -- were taking up is the row the Splice Phase is played on.
     upg = deckOut('Upgrades', {col(2), 3, ROW_MAIN})
     sp = deckOut('Specimens', pad(5))
   end)
@@ -1074,8 +1157,9 @@ function setupBAT()
         (STATE.tier >= 1 and ' TIER I: your Experimental Protocol is face-up.' or '') ..
         (STATE.tier >= 2 and ' TIER II: 6 ordinary Upgrades out, the 6 Modifications in.' or '') ..
         (STATE.tier >= 3 and ' TIER III: the 6 Research Notes are face-up beside the table.' or '') ..
-        ' The Buff HP card is optional -- hold part of the Health on it and' ..
-        ' spend that first.')
+        ' The Tyrant Attacks and the Buff HP card stay in the bag until' ..
+        ' the Tyrant wakes; the Buff HP card is optional, and holds part' ..
+        ' of the Health to be spent first.')
   end)
   run()
 end
@@ -1428,11 +1512,12 @@ function refreshPanel()
     for i = 1, n do
       btn(tostring(i), 'keep' .. i, -2.30 + (i - 1) * 0.62, 0.36, 210, nil, 82)
     end
-  else
+  elseif g ~= 'NAP' then
+    -- THE WHOLE ROW GOES FOR NAP, not just the note on it: a 'Keep'
+    -- label with nothing beside it is a control that looks broken.
     lbl('Keep', -3.97, 0.36, 380, 82)
     lbl(g == 'BAT' and 'BAT plays all four Lab Rats'
-        or (g == 'NAP' and 'the Apprentice button picks the card and the side'
-            or 'set up NAP, AoS or Imposter to choose a character'),
+        or 'set up NAP, AoS or Imposter to choose a character',
         0.24, 0.36, 2300, 70)
   end
 

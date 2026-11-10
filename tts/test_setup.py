@@ -139,6 +139,9 @@ class Obj(object):
         # lock the stub threw away is a lock nothing can check.
         self.locked = bool(lock)
 
+    def setName(self, n):
+        self.name = n
+
     def setDescription(self, d):
         self.desc = d
 
@@ -238,6 +241,16 @@ class Obj(object):
             inner.pos, inner.rot = self.pos, self.rot
             was = self.guid
             self.guid = was + "#deck"
+            # ...AND IT HAS NO NAME. A deck TTS builds for you out of
+            # loose cards carries no nickname at all - the cards keep
+            # theirs inside it - and the stub gave the container the
+            # first card's name, which made every gathered deck look
+            # like something homeBox could place. It cannot: putHome
+            # read "" , found no bag for it and quietly did nothing, so
+            # the three unused Setbacks stayed in the staging band at
+            # dead centre of the bottom edge, face down and wearing the
+            # Assignment back.
+            self.name = ""
             if self.world.table.get(was) is self:
                 del self.world.table[was]
                 self.world.table[self.guid] = self
@@ -906,6 +919,37 @@ def in_staging(w, g):
                   if abs(o.pos[2] - z) < 2.5 and g.homeBox(o.name) is not None)
 
 
+def buried(w):
+    """Nameless decks sitting inside a box.
+
+    A BOX CANNOT SEE INSIDE A DECK IT HOLDS. findDeck matches a
+    nickname and the gather loop reads the box's top level, so a deck
+    with no name in there is cards nobody can get back - the next setup
+    deals without them and says nothing. Getting the deck INTO the box
+    is not enough; it has to be able to come out again.
+    """
+    out = []
+    for b in w.byguid.values():
+        if b.bag:
+            out += ["%s(%d)" % (k.name or "<unnamed deck>", len(k.kids))
+                    for k in b.kids if k.kids and not k.name]
+    return sorted(out)
+
+
+def nameless(w):
+    """Decks on the table that nothing can put away.
+
+    A DECK TTS BUILDS FOR YOU HAS NO NICKNAME. Gathering a deck out of
+    loose cards makes one of these, and homeBox has nothing to look
+    up - so putHome read "", found no bag and quietly did nothing,
+    however many times it tried. in_staging could not see it either,
+    because it only looks at objects that HAVE a home: the one object
+    that cannot go home was the one it skipped.
+    """
+    return sorted("%s(%d)" % (o.name or "<unnamed deck>", len(o.kids) or 1)
+                  for o in w.table.values() if not o.name)
+
+
 def repeat_assertions():
     """Setting up twice.
 
@@ -931,7 +975,8 @@ def repeat_assertions():
             for _ in range(3):
                 fn()
                 drain(w)
-                seen.append((census(w), shape(w, g), in_staging(w, g)))
+                seen.append((census(w), shape(w, g), in_staging(w, g),
+                             nameless(w), buried(w)))
             t = "%s t%d setting up three times" % (which, tier)
             want(t + " loses or gains no card",
                  [i for i, s in enumerate(seen) if s[0] != seen[0][0]], [])
@@ -942,6 +987,10 @@ def repeat_assertions():
             # ROW_TIER, where AoS spreads the Research Notes.
             want(t + " leaves nothing in the staging band",
                  [s[2] for s in seen], [[], [], []])
+            want(t + " leaves no deck on the table that nothing can stow",
+                 [s[3] for s in seen], [[], [], []])
+            want(t + " puts nothing in the box it cannot get back",
+                 [s[4] for s in seen], [[], [], []])
             want(t + " says nothing went missing",
                  [m for m in w.said
                   if "MISSING" in m or "Setup error" in m][:2], [])
@@ -985,6 +1034,127 @@ def finf_assertions():
              % (lossy or "none"),
              sorted(k for k, v in census(w).items()
                     if k.startswith("FINF") and v != 1), [])
+        # AND NOTHING IS LEFT BEHIND BY THE CHANGE. Increase 3
+        # puts all three cards into the Assignment deck, which
+        # consumes the FINF deck object itself - so the next
+        # setting has to build one out of loose cards, and a deck
+        # TTS builds for you has no name to go home by.
+        want("cycling the setting strands nothing (1 in %s)"
+             % (lossy or "none"),
+             (nameless(w), in_staging(w, g)), ([], []))
+
+
+def round_trip_assertions():
+    """Cycle the FINF setting, pack up, set up again.
+
+    THE BAG CANNOT SEE INSIDE A NAMELESS DECK. Increase 3 puts all three
+    FINF cards into the Assignment deck, which consumes the FINF deck
+    object itself, so the next setting has to build one out of loose
+    cards - and the deck TTS builds for you has no nickname. boxFor
+    gets that deck into the box by asking what is inside it, but
+    findDeck matches a nickname and the gather loop reads the box's top
+    level, so a nameless deck in there is a deck nobody can find again:
+    the next setup says MISSING DECK and deals without it.
+    """
+    for lossy in (0, 3):
+        w, g = start("Standard", 0, Panel())
+        w.lossy = lossy
+        g.setupNAP()
+        drain(w)
+        for _ in range(len(list(g.FINF_SET.values()))):
+            g.btnFinf()
+            drain(w)
+        g.btnPack()
+        drain(w)
+        g.setupNAP()
+        drain(w)
+        t = "cycling FINF, packing up and setting up again (1 in %s)" % (
+            lossy or "none")
+        want(t + " finds every deck",
+             [m for m in w.said if "MISSING" in m][:2], [])
+        want(t + " strands nothing",
+             (nameless(w), in_staging(w, g)), ([], []))
+        want(t + " buries nothing in the box", buried(w), [])
+        want(t + " still deals three Time Slots",
+             sum(1 for o in w.table.values()
+                 if o.name.startswith("Time Slot")), 3)
+        want(t + " still has all three FINF cards",
+             sorted(k for k, v in census(w).items()
+                    if k.startswith("FINF") and v != 1), [])
+
+
+def in_the_bag_assertions():
+    """Decks a setup leaves alone on purpose.
+
+    IN_THE_BAG IS A DECLARATION, and the only thing that makes "every
+    deck is dealt by a setup" a real check rather than one that quietly
+    stops covering a deck. So it has to be true: what it names must
+    still be in its box after the setup that could have dealt it, and
+    what it does NOT name must not be sitting there forgotten.
+    """
+    bagged = sorted(str(v) for v in g_in_the_bag())
+    want("three decks are declared as staying in the bag", bagged,
+         ["Buff HP Track", "Final Exams", "Tyrant Attacks"])
+    for which, tier in (("BAT", 0), ("BAT", 3), ("NAP", 0), ("NAP", 3)):
+        w, g = start("Standard", tier, Panel())
+        {"BAT": g.setupBAT, "NAP": g.setupNAP}[which]()
+        drain(w)
+        out = sorted(n for n in bagged if out_count(w, n))
+        want("%s t%d deals none of them" % (which, tier), out, [])
+        still = sorted(n for n in bagged
+                       for b in w.byguid.values() if b.bag
+                       for k in b.kids if k.name == n)
+        want("%s t%d leaves all three in their boxes" % (which, tier),
+             still, bagged)
+
+
+def out_count(w, label):
+    return sum(1 for o in w.table.values() if o.name == label)
+
+
+def g_in_the_bag():
+    w, g = start("Standard", 0, Panel())
+    return list(g.IN_THE_BAG.values())
+
+
+def pile_assertions():
+    """A pile the player built is the one thing on the table with no name.
+
+    THAT IS WHAT THE COMPLETED CREDITS PILE IS - cards dropped onto each
+    other - and the deck TTS makes for you carries no nickname at all.
+    Pack up asked homeBox for a bag by name, got nothing for "", walked
+    past the biggest pile on the table and then reported it as still out
+    under a blank name.
+    """
+    w, g = start("Standard", 3, Panel())
+    w.lossy = 3
+    g.setupNAP()
+    drain(w)
+    pz = float(g.ROW_CHAR) - 2 * float(g.NAP_GAP)
+    # Four Tasks dropped on each other, the way a Credit pile is made.
+    pile = Obj(w, "pile", "Task 1")
+    pile.pos = (float(g.PILE_X), 1.0, pz)
+    w.table[pile.guid] = pile
+    for i in range(2, 5):
+        c = Obj(w, "pile%d" % i, "Task %d" % i)
+        c.pos = pile.pos
+        w.table[c.guid] = c
+        pile.putObject(c)
+    want("a pile of four cards has no name of its own",
+         (pile.name, len(pile.kids)), ("", 4))
+    g.btnPack()
+    drain(w)
+    want("pack up takes the pile away too",
+         sorted(o.name for o in w.table.values()
+                if g.boxFor(o) is not None), [])
+    want("...as a pile the box can hand back", buried(w), [])
+    want("...and says so rather than naming a blank",
+         [m for m in w.said if "Still on the table" in m], [])
+    # 26 Tasks from the deck and the four this test made.
+    want("...and every card of it is back in the box",
+         sum(1 for b in w.byguid.values() if b.bag
+             for k in b.kids for c in ([k] if not k.kids else k.kids)
+             if c.name.startswith("Task ")), 30)
 
 
 def panel_game_assertions():
@@ -1018,6 +1188,12 @@ def panel_game_assertions():
              sorted(b["label"] for b in g.PANEL.buttons
                     if b["label"] in "12345" and len(b["label"]) == 1),
              keeps)
+        # AND NO ROW AT ALL WHERE THERE ARE NONE. A "Keep" label
+        # with nothing beside it is a control that looks broken.
+        want("...under a Keep label only when there are some",
+             [b["label"] for b in g.PANEL.buttons
+              if b["label"] == "Keep"],
+             ["Keep"] if keeps else [])
 
     # Pack up puts the panel back to having none.
     g.setupNAP()
@@ -1328,6 +1504,9 @@ def main():
     choice_assertions()
     repeat_assertions()
     finf_assertions()
+    round_trip_assertions()
+    in_the_bag_assertions()
+    pile_assertions()
     panel_game_assertions()
     for lvl in ("Easy", "Standard", "Hard", "Nobulous"):
         spec, sb = BAT_SPECIMENS[lvl], NAP_SETBACKS[lvl]
