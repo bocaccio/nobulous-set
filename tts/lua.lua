@@ -339,9 +339,31 @@ function deckLabel(name)
   return DECK_OF[base] or base
 end
 
+-- WHAT IS INSIDE AN OBJECT, or nil if it is not the kind of thing that
+-- has an inside.
+--
+-- getObjects() EXISTS ON EVERY TTS OBJECT and throws on anything that
+-- is not a container, so `o.getObjects and o.getObjects()` is not a
+-- guard - it IS the call, and the guard in front of it always passes.
+-- Every die and the Chip threw it on load. Worse, cardsAt had been
+-- written the same way since the pile counters were: the first die the
+-- counter walked past killed the count, which is why the plate over
+-- the Completed Credits pile showed no number and no hover text even
+-- once it was the right way up.
+--
+-- pcall, because there is no property that says which objects have an
+-- inside: Deck, Bag and Infinite do, Card, Dice, Tile and 3DText do
+-- not, and the list is TTS's to change.
+function contents(obj)
+  if not obj then return nil end
+  local ok, kids = pcall(function() return obj.getObjects() end)
+  if ok and kids then return kids end
+  return nil
+end
+
 -- The first card inside something, or nil if it holds none.
 function firstCard(obj)
-  local kids = obj and obj.getObjects and obj.getObjects() or nil
+  local kids = contents(obj)
   if kids then
     for _, e in ipairs(kids) do
       if e.nickname and e.nickname ~= '' then return e.nickname end
@@ -393,7 +415,7 @@ function unmix()
       local mine = deckLabel(o.getName())
       if mine == '' then mine = deckLabel(firstCard(o)) end
       local strays = {}
-      for _, e in ipairs(o.getObjects()) do
+      for _, e in ipairs(contents(o) or {}) do
         if deckLabel(e.nickname) ~= mine then
           table.insert(strays, e.guid)
         end
@@ -1722,7 +1744,7 @@ function cardsAt(x, z, r, skip)
     if o.getGUID() ~= skip then
       local p = o.getPosition()
       if math.abs(p.x - x) < r and math.abs(p.z - z) < r then
-        local kids = o.getObjects and o.getObjects() or nil
+        local kids = contents(o)
         if kids and #kids > 0 then
           for _, e in ipairs(kids) do table.insert(out, e.nickname or '') end
         else

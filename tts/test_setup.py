@@ -126,6 +126,18 @@ class Obj(object):
         self.scale = tuple(s.values()) if hasattr(s, "values") else tuple(s)
 
     def getObjects(self):
+        # IT THROWS ON ANYTHING WITHOUT AN INSIDE, the way TTS does. The
+        # stub answered an empty list for a die, which made
+        # `o.getObjects and o.getObjects()` look like a guard - it is
+        # not one, because the method exists on every object and only
+        # the CALL fails. That shipped twice: every die threw it on
+        # load, and the pile counter had been dying on the first die it
+        # walked past since the day it was written, which is why the
+        # plate over the Completed Credits pile never showed a number.
+        if not self.bag and not self.kids:
+            raise RuntimeError(
+                "Attempting to call getObjects() on an object that does"
+                " not support getObjects()")
         return self.world.lua.table_from(
             [self.world.lua.table_from({"nickname": k.name, "guid": k.guid})
              for k in self.kids])
@@ -1407,6 +1419,18 @@ def counter_assertions():
     want("letting go of a Credit over the pile counts it",
          by["Credit Record"].text, "CREDITS  4 / %d" % goal)
     w.table.pop(dropped.guid)
+    # A DIE PARKED ON THE PILE MUST NOT KILL THE COUNT. cardsAt
+    # looks inside whatever it finds near the pile, and
+    # getObjects() throws on anything that is not a container -
+    # one die resting there took the counter out entirely.
+    die = Obj(w, "stray-die", "Yellow")
+    die.pos = (float(g.PILE_X), 1.0, pz)
+    w.table[die.guid] = die
+    g.refreshCounts()
+    drain(w)
+    want("a die resting on the pile does not stop the count",
+         by["Credit Record"].text, "CREDITS  3 / %d" % goal)
+    w.table.pop(die.guid)
     g.refreshCounts()
     drain(w)
     want("four cards on the pile, three of them Credits",
