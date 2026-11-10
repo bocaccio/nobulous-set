@@ -17,6 +17,7 @@ stripped and JS's unquoted object keys are quoted.
 Exit status is the number of failed checks, so it can gate a commit.
 """
 import ast
+import hashlib
 import io
 import json
 import os
@@ -2527,7 +2528,7 @@ def _jpeg_wh(path):
 if _fx and _fz:
     _fw = float(_fx.group(2)) - float(_fx.group(1))
     _fd = float(_fz.group(2)) - float(_fz.group(1))
-    for _g in ("NAP", "BAT"):
+    for _g in ("NAP", "BAT", "AoS", "IMP"):
         _mo = [k for o in _sv["ObjectStates"]
                for k in (o.get("ContainedObjects") or [])
                if k.get("Nickname") == "%s Table" % _g]
@@ -2548,18 +2549,29 @@ if _fx and _fz:
                   and abs(_t["scaleX"] - _t["scaleZ"]) < 0.01,
                   "scale %.3f/%.3f for a felt %.2f deep"
                   % (_t["scaleX"], _t["scaleZ"], _fd))
-    # AND EACH IS BUILT FROM ITS OWN FELT. Comparing the two
-    # pictures proves nothing - they carry different layouts, so
-    # they differ whatever they are drawn on. What varies is which
-    # texture each game is given.
-    _tex = dict(re.findall(r'"(\w+)": os\.path\.join\(HERE, "([^"]+)"\)',
-                           _tmpl))
+    # AND EACH IS BUILT FROM ITS OWN FELT. Comparing the finished
+    # pictures proves nothing - they carry different layouts, so they
+    # differ whatever they are drawn on. What varies is the texture
+    # each game is given, and four games must mean four of them: a
+    # felt copied from another game's is the mistake this catches.
+    _felts = {}
+    for _g in ('BAT', 'NAP', 'AoS', 'IMP'):
+        _fp = os.path.join(ROOT, 'tts', 'felt_%s.jpg' % _g)
+        if os.path.exists(_fp):
+            _felts[_g] = hashlib.md5(io.open(_fp, 'rb').read()).hexdigest()
     check("each game's overlay is built from its own felt",
-          sorted(_tex) == ['BAT', 'NAP']
-          and _tex['BAT'] != _tex['NAP']
-          and all(os.path.exists(os.path.join(ROOT, 'tts', v))
-                  for v in _tex.values()),
-          'textures %r' % (_tex,))
+          sorted(_felts) == ['AoS', 'BAT', 'IMP', 'NAP']
+          and len(set(_felts.values())) == 4,
+          'felts found: %r' % sorted(_felts))
+    # AND ALL CUT TO ONE SHAPE, so the cover-and-crop onto the table
+    # throws the same amount away from each and their dark borders
+    # land in the same place. The gold arrived a fifth taller than
+    # the rest and sat differently until it was cut to match.
+    _sizes = set()
+    for _g in sorted(_felts):
+        _sizes.add(_jpeg_wh(os.path.join(ROOT, 'tts', 'felt_%s.jpg' % _g)))
+    check("the four felts are the same shape",
+          len(_sizes) == 1, 'sizes %r' % sorted(_sizes))
 
 check("the template is drawn to the felt build_mod.py records",
       "from build_mod import (EXHAUSTED, FELT_X0, FELT_X1" in _tmpl

@@ -67,11 +67,18 @@ BACK = (0, 0, 0, 0)           # transparent, for painting over
 # Jon supplied. It arrives portrait and is turned, scaled to cover and
 # cropped from the middle.
 # ONE PER GAME. Each game's overlay is its own tile in its own bag, so
-# they can be different felts; Jon picked gold for BAT and kept the
-# turquoise for NAP. Both arrive portrait and are turned, scaled to
-# cover and cropped from the middle.
-TEXTURE = {"NAP": os.path.join(HERE, "table_texture.png"),
-           "BAT": os.path.join(HERE, "bat_texture.jpg")}
+# each can have its own felt: turquoise for NAP, gold for BAT, green
+# for AoS, magenta for the Imposter scenario. They arrive portrait and
+# are turned, scaled to cover and cropped from the middle.
+#
+# ALL FOUR ARE THE SAME SHAPE, 1318 x 2000, which is what the turquoise
+# has always been. The cover-and-crop keeps whatever fits and throws
+# the rest away, so a source of a different shape loses a different
+# amount: the gold arrived at 2613 x 3184 and lost a fifth of its
+# height, which put its dark border somewhere else than the others'.
+# Cut to one shape they all sit on the table the same way.
+TEXTURE = dict((g, os.path.join(HERE, "felt_%s.jpg" % g))
+               for g in ("BAT", "NAP", "AoS", "IMP"))
 # Light lines for the transparent templates, which get painted over on
 # whatever background you like; dark ones for the parchment, which they
 # would otherwise vanish into.
@@ -82,12 +89,23 @@ PALE = {"ink": (235, 232, 224, 235), "snap": (235, 232, 224, 150),
 DARK = {"ink": (255, 255, 255, 235), "snap": (255, 255, 255, 180),
         "text": (255, 255, 255, 225)}
 # AND DARK AGAIN FOR A LIGHT FELT. BAT's gold is bright through the
-# middle - luminance 153 against the turquoise's 71 - and white lines
-# disappear into it. Which ink a game gets is a property of its felt,
-# so it is chosen here beside them rather than at each call.
+# middle where the others are not, and white lines disappear into it.
+# Which ink a game gets is a property of its felt, so it is chosen here
+# beside them rather than at each call - and chosen by MEASURING the
+# felt rather than by eye, so a recoloured texture gets the right ink
+# without anyone remembering to change it.
 SEPIA = {"ink": (48, 30, 6, 245), "snap": (48, 30, 6, 205),
          "text": (48, 30, 6, 235)}
-SHIP_PEN = {"NAP": DARK, "BAT": SEPIA}
+
+
+def ship_pen(game):
+    """White on a dark felt, sepia on a light one."""
+    im = Image.open(TEXTURE[game]).convert("L")
+    w, h = im.size
+    mid = [im.getpixel((x, y))
+           for x in range(w // 4, 3 * w // 4, 40)
+           for y in range(h // 4, 3 * h // 4, 40)]
+    return dict(SEPIA if sum(mid) / float(len(mid)) > 140 else DARK)
 PEN = dict(PALE)
 LINE = 5
 RADIUS = 14
@@ -360,9 +378,8 @@ def main():
     # of the bytes cannot have a stale copy anywhere: changed contents
     # mean a URL nobody has ever asked for.
     img = os.path.join(os.path.dirname(HERE), "images")
-    for game in ("NAP", "BAT"):
-        PEN = dict(SHIP_PEN[game])
-        globals()["PEN"] = PEN
+    for game in GAMES:
+        globals()["PEN"] = ship_pen(game)
         ship_im = table_texture(game)
         sd = ImageDraw.Draw(ship_im)
         # DRAWN FIRST, because BAT's spaces are what tell the corner

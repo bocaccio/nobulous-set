@@ -1179,6 +1179,35 @@ def g_in_the_bag():
     return list(g.IN_THE_BAG.values())
 
 
+def overlay_assertions():
+    """Every game lays its own felt, and only its own.
+
+    Each overlay is a tile in that game's bag, which is what lets
+    them be four different pictures - turquoise, gold, green,
+    magenta. The Imposter scenario's lives in the NRJ bag with the
+    rest of its cards.
+    """
+    mats = ["NAP Table", "BAT Table", "AoS Table", "IMP Table"]
+    for which, mine in (("NAP", "NAP Table"), ("BAT", "BAT Table"),
+                        ("AoS", "AoS Table"), ("IMP", "IMP Table")):
+        w, g = start("Standard", 3, Panel())
+        w.lossy = 3
+        {"NAP": g.setupNAP, "BAT": g.setupBAT,
+         "AoS": g.setupAoS, "IMP": g.setupImposter}[which]()
+        drain(w)
+        out = dict((o.name, o) for o in w.table.values())
+        want("%s lays its own overlay" % which,
+             sorted(n for n in out if n in mats), [mine])
+        want("...and locks it so it cannot be dragged",
+             out[mine].locked if mine in out else None, True)
+        # AND PACKS IT AWAY AGAIN, into the bag it came out of.
+        g.btnPack()
+        drain(w)
+        want("...and packs it away again" % (),
+             [n for n in (o.name for o in w.table.values()) if n in mats],
+             [])
+
+
 def bat_assertions():
     """The BAT table Jon laid out, squared up.
 
@@ -1812,6 +1841,7 @@ def main():
     finf_assertions()
     round_trip_assertions()
     in_the_bag_assertions()
+    overlay_assertions()
     bat_assertions()
     chip_face_assertions()
     buff_lock_assertions()

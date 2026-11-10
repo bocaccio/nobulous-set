@@ -218,9 +218,20 @@ ASSIGN_SLOTS = 4
 -- rather than one that quietly stopped covering a deck.
 IN_THE_BAG = { 'Final Exams', 'Tyrant Attacks', 'Buff HP Track' }
 
--- The printed layout under the cards. One per game that has one.
+-- The printed layout under the cards. One per game, each its own tile
+-- in its own bag, which is what lets them be different felts.
 NAP_TABLE = 'NAP Table'
 BAT_TABLE = 'BAT Table'
+AOS_TABLE = 'AoS Table'
+IMP_TABLE = 'IMP Table'
+
+-- Lay a game's overlay down and lock it a moment later: a 56-unit tile
+-- that can be dragged is a tile that will be dragged.
+function tableOut(label)
+  local mat = deckOut(label, {0, 0.98, MAT_Z}, FACEUP)
+  if mat then Wait.time(function() if mat then mat.setLock(true) end end, 0.6) end
+  return mat
+end
 
 -- An Apprentice starts at 2 HP / 2 STR / 2 REC - printed on every one
 -- of the six sides, from the single literal in generator/build_nap.py -
@@ -1257,13 +1268,8 @@ function setupBAT()
   local spec, hp = BAT_DIFF[STATE.difficulty][1], BAT_DIFF[STATE.difficulty][2]
   local upg, sp
 
-  step(function()
-    -- THE OVERLAY FIRST, so everything else lands on top of it, and
-    -- locked a moment later: a 56-unit tile that can be dragged is a
-    -- tile that will be dragged.
-    local mat = deckOut(BAT_TABLE, {0, 0.98, MAT_Z}, FACEUP)
-    if mat then Wait.time(function() if mat then mat.setLock(true) end end, 0.6) end
-  end)
+  -- THE OVERLAY FIRST, so everything else lands on top of it.
+  step(function() tableOut(BAT_TABLE) end)
   step(function()
     -- A COLUMN, NOT A ROW. The four Rats run down the left-hand side
     -- with their Upgrade spaces beside them, which is how Jon laid the
@@ -1371,13 +1377,8 @@ function setupNAP()
   local base = (STATE.tier >= 1) and (sb - 3) or sb
   local asg
 
-  step(function()
-    -- THE TABLE OVERLAY FIRST, so everything else lands on top of it.
-    -- Locked a moment later: a 56-unit tile that can be dragged is a
-    -- tile that will be dragged.
-    local mat = deckOut('NAP Table', {0, 0.98, MAT_Z}, FACEUP)
-    if mat then Wait.time(function() if mat then mat.setLock(true) end end, 0.6) end
-  end)
+  -- The table overlay first, so everything else lands on top of it.
+  step(function() tableOut(NAP_TABLE) end)
   step(function()
     -- ONE STACK. Keep 1 / 2 / 3 takes the one you want out of it and
     -- sends the rest back, so there is no reason to spread three cards
@@ -1491,6 +1492,10 @@ function setupAoS()
   local mix = AOS_MIX[STATE.difficulty]
   local prog
 
+  -- The table overlay first, so everything else lands on
+  -- top of it.
+  step(function() tableOut(AOS_TABLE) end)
+
   step(function()
     spread(deckOut('Technicians', {0, 3, ROW_CHAR}, FACEUP), 3,
            ROW_CHAR, FACEUP, CARD_L + 1.0)
@@ -1554,6 +1559,10 @@ function setupImposter()
   STATE.game = 'IMP'
   local t = IMP_TIRED[STATE.difficulty]
   local ex
+
+  -- The table overlay first, so everything else lands on
+  -- top of it.
+  step(function() tableOut(IMP_TABLE) end)
 
   step(function()
     spread(deckOut('Imposters (A / B)', {0, 3, ROW_CHAR}, FACEUP), 5,

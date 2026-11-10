@@ -395,9 +395,13 @@ def lua_header(box_guids, rules_guid):
         g = 'NRJ' if d['game'] == 'IMP' else d['game']
         home[d['label']] = g
         home[d.get('card', d['label'])] = g
-    # Not decks, but they live in a bag and go home like one.
+    # Not decks, but they live in a bag and go home like one. The
+    # Imposter scenario's cards are in the NRJ bag, so its overlay is
+    # too.
     home['NAP Table'] = 'NAP'
     home['BAT Table'] = 'BAT'
+    home['AoS Table'] = 'AoS'
+    home['IMP Table'] = 'NRJ'
     home['Dial'] = 'BAT'
     for _nick, _ in NAP_COUNTERS:
         home[_nick] = 'NAP'
@@ -1089,6 +1093,8 @@ def main():
             build_deck(d, i + 1, (0, 2.0, 0)))
     grouped['NAP'].append(game_table('NAP'))
     grouped['BAT'].append(game_table('BAT'))
+    grouped['AoS'].append(game_table('AoS'))
+    grouped['NRJ'].append(game_table('IMP'))
     grouped['BAT'].append(dial_object())
     for _nick, _text in NAP_COUNTERS:
         grouped['NAP'].append(counter(_nick, _text))
