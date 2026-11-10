@@ -523,6 +523,12 @@ def lua_header(box_guids):
         # middle of each one. Measured off the printed card.
         'BUFF_CELL = { %s }' % j('{%.3f, %.3f}' % c for c in buff_cells()),
         'DIE_SCALE = %.2f' % DIE_SCALE,
+        # THE ALT VIEW'S ANGLE FOR EACH FACE of a landscape card. The
+        # save bakes the face-up one into every such card; the script
+        # swaps them as cards are turned over, because one angle is
+        # right for one face and upside down on the other.
+        'ALT_LOOK_UP = {%d, %d, %d}' % ALT_LOOK_UP,
+        'ALT_LOOK_DOWN = {%d, %d, %d}' % ALT_LOOK_DOWN,
         # WHICH BOOK BELONGS TO WHICH GAME, where a setup stands it,
         # and which way up. Four objects now rather than one whose URL
         # was swapped - see RULES_NICK for why.
@@ -597,20 +603,34 @@ DECK_ROT = (0, 180, 180)
 #
 # The TTS API says of alt_view_angle only that "when non-zero, the Alt
 # view will use the specified Euler angle to look at the object". The
-# z is the roll that matters here and the y is the card's own facing,
-# which is 180 for every card this mod ships face-up. Both numbers are
-# in one place so that a wrong guess is one edit.
+# z is the roll that matters here and the y is the card's own facing.
+#
+# ONE ANGLE CANNOT BE RIGHT FOR BOTH FACES. Flipping a card reverses
+# the sense of the roll, so a single number is right for the side it
+# was measured on and 180 degrees out on the other: the first value
+# tried here was (0, 180, 90), which Jon reported as side B correct
+# and side A - the side you actually read - upside down. The two
+# differ by exactly that 180, and which one an object wants depends on
+# which way up it is lying, so lua.lua sets it as cards are turned.
+#
+# THE SAVE BAKES THE FACE-UP ONE, because every landscape card this
+# mod deals is dealt face-up, and because it is the fallback: if
+# assigning alt_view_angle from a script turns out not to take on this
+# build - as setCustomObject on a PDF did not - the front still reads
+# correctly and only the backs are upside down, which is the better
+# half of the trade rather than a new bug.
 #
 # AND DO NOT PRESS Q OR E IN THE ALT VIEW. Those rotate the preview and
 # TTS saves the result onto the object, so one press on one card is a
 # setting you then have to find; that is the mechanism behind every
 # report of a deck that comes up sideways on one player's machine and
 # not another's.
-ALT_LOOK_LAND = (0, 180, 90)
+ALT_LOOK_UP = (0, 180, 270)
+ALT_LOOK_DOWN = (0, 180, 90)
 
 
 def alt_look(sideways):
-    """The Alt view's angle, for a card that needs one.
+    """The Alt view's angle for a card lying face up, if it needs one.
 
     Portrait cards get no field at all rather than an explicit zero:
     zero IS the default, and writing it would say this had been
@@ -618,7 +638,7 @@ def alt_look(sideways):
     """
     if not sideways:
         return {}
-    x, y, z = ALT_LOOK_LAND
+    x, y, z = ALT_LOOK_UP
     return {"AltLookAngle": {"x": float(x), "y": float(y), "z": float(z)}}
 
 

@@ -111,6 +111,8 @@ class Obj(object):
         self.TextTool = TextTool(self)
         self.custom = {}
         self.buttons = []
+        # The Alt view's angle, which only landscape cards carry.
+        self.alt_view_angle = None
         self.dead = False
         # IN A BAG. getObjectFromGUID does not reach inside a container
         # in TTS, and getAllObjects does not list what is in one - so a
@@ -123,6 +125,38 @@ class Obj(object):
 
     def getGUID(self):
         return self.guid
+
+    # WHAT KIND OF THING THIS IS, which the script asks before it
+    # touches an object's Alt angle: only a landscape CARD gets one,
+    # and giving one to a deck or a tile is how a preview that works
+    # stops working.
+    @property
+    def type(self):
+        if self.bag:
+            return "Bag"
+        if self.kids:
+            return "Deck"
+        return "Card" if is_card(self) else "Tile"
+
+    def getData(self):
+        """The object's save entry - the script reads SidewaysCard off it.
+
+        decks.py says which decks are landscape and build_mod.py writes
+        the flag from the same field, so this answers from the source
+        both of them use rather than from a copy.
+        """
+        base = self.name.rstrip("0123456789").strip()
+        return self.world.lua.table_from(
+            {"SidewaysCard": bool(LAND.get(base, LAND.get(self.name)))})
+
+    # WHICH WAY UP IT IS LYING. FACEDOWN is {0, 180, 180} and FACEUP is
+    # {0, 180, 0}, so the z is the whole answer. The stub had no notion
+    # of this at all, which meant the Alt-angle code could be called in
+    # every test and do nothing in all of them.
+    @property
+    def is_face_down(self):
+        z = (self.rot or (0.0, 0.0, 0.0))[2]
+        return 90.0 < (float(z) % 360.0) < 270.0
 
     def getQuantity(self):
         # TTS answers -1 for a single card, which is why the Lua has its
@@ -456,11 +490,21 @@ def build(lua):
                     leaf.custom = dict(d["CustomPDF"])
                 decks.append(w.add(leaf))
                 continue
-            cards = [Obj(w, gid(), c["Nickname"])
-                     for c in (d.get("ContainedObjects") or [])]
+            cards = []
+            for c in (d.get("ContainedObjects") or []):
+                kid = Obj(w, gid(), c["Nickname"])
+                # THE ANGLE IS IN THE SAVE, not set by a script at
+                # load - so a card that is never turned over has to
+                # start out holding it, or a check that the right one
+                # is on the right card can only ever see the ones the
+                # script has touched.
+                kid.alt_view_angle = c.get("AltLookAngle")
+                cards.append(kid)
             if not cards:                       # a one-card "deck"
                 cards = [Obj(w, gid(), d["Nickname"] + " 1")]
+                cards[0].alt_view_angle = d.get("AltLookAngle")
             one = Obj(w, d["GUID"], d["Nickname"], cards)
+            one.alt_view_angle = d.get("AltLookAngle")
             # ITS REAL SCALE. The mat is sized at the table through the
             # panel, and a stub that said every object was scale 1 would
             # have let it report a 3-unit mat as 56.
@@ -1846,6 +1890,138 @@ def at_staging(g, x, z):
             and abs(x) <= float(g.OFF_X) + 0.01)
 
 
+def alt_view_assertions():
+    """The Alt view is shown the face that is actually up.
+
+    A landscape card's preview is rolled one way face up and the other
+    way face down, so the single angle baked into the save is right for
+    one side and 180 degrees out on the other: with the first value
+    tried, Jon got side B of a Lab Rat correct and side A - the side
+    you read - upside down. build_mod.py bakes the face-up angle and
+    lua.lua swaps it as cards are turned, which is the only way one
+    card can be right both ways up.
+
+    THE BAKED ANGLE IS ALSO THE FALLBACK. If assigning alt_view_angle
+    from a script does not take on Jon's build - as setCustomObject on
+    a PDF did not - every card still reads correctly face up and only
+    the backs are wrong, so these two halves are checked apart.
+    """
+    w, g = start("Standard", 0, Panel())
+    up = tuple(float(v) for v in g.ALT_LOOK_UP.values())
+    down = tuple(float(v) for v in g.ALT_LOOK_DOWN.values())
+    want("the two Alt angles are a half turn apart",
+         round(abs(up[2] - down[2]) % 360.0, 3), 180.0)
+
+    def angle(o):
+        a = o.alt_view_angle
+        if a is None:
+            return None
+        # TWO SHAPES FOR ONE ANGLE. The save writes {x=, y=, z=} and
+        # the script assigns {0, 180, 270}, the sequence form every
+        # other rotation in lua.lua uses; TTS takes either as a
+        # Vector, so the harness has to as well or it compares the
+        # baked angle with the set one and finds them different.
+        if hasattr(a, "values"):
+            d = dict(a)
+            if "x" in d:
+                return (float(d["x"]), float(d["y"]), float(d["z"]))
+            return tuple(float(d[k]) for k in sorted(d))
+        return tuple(float(v) for v in a)
+
+    # EVERY LANDSCAPE CARD IN EVERY BOX, straight out of the save.
+    missing, spurious = [], []
+    for b in [o for o in w.byguid.values() if o.bag]:
+        for d in b.kids:
+            for o in [d] + list(d.kids):
+                if not is_card(o):
+                    continue
+                base = o.name.rstrip("0123456789").strip()
+                land = bool(LAND.get(base, LAND.get(o.name)))
+                if land and angle(o) != up:
+                    missing.append((o.name, angle(o)))
+                elif not land and angle(o) is not None:
+                    spurious.append((o.name, angle(o)))
+    want("every landscape card is built holding the face-up angle",
+         (bool(missing), missing[:3]), (False, []))
+    want("...and no portrait card carries one", spurious[:3], [])
+
+    # TURNED OVER BY A PLAYER. onObjectRotate fires on a deliberate
+    # rotation; the handler waits for the card to get where it is
+    # going before it reads which way up that is.
+    g.setupBAT()
+    drain(w)
+    # A DEALT RAT, NOT THE STACK IT CAME OUT OF. "Lab Rats (A / B)" is
+    # still on the table and its name starts with "Lab Rat" too - the
+    # first draft flipped the deck and asserted the card's angle had
+    # changed, which it rightly had not.
+    rat = [o for o in w.table.values()
+           if o.type == "Card" and o.name.startswith("Lab Rat")][0]
+    want("a dealt Lab Rat is face up", rat.is_face_down, False)
+    # BY NAME, NOT BY TRACEBACK. Rename the handler and the next line
+    # calls nil: the harness died on "'NoneType' object is not
+    # callable" six frames deep, which is a true report of a real
+    # failure and tells you nothing about what broke.
+    want("the script listens for a flip at all",
+         callable(g.onObjectRotate), True)
+    if not callable(g.onObjectRotate):
+        return
+    rat.setRotation(g.FACEDOWN)
+    g.onObjectRotate(rat, 0, 180, "White", 0, 0)
+    drain(w)
+    want("...and turning it over gives the Alt view the other angle",
+         angle(rat), down)
+    rat.setRotation(g.FACEUP)
+    g.onObjectRotate(rat, 0, 0, "White", 0, 180)
+    drain(w)
+    want("...and turning it back gives the first one again",
+         angle(rat), up)
+
+    # NOT EVERYTHING THAT TURNS. A portrait card and a deck both have
+    # to come through a flip with no angle at all: zero is the right
+    # answer for a portrait card, and a deck is not a card.
+    port = [o for o in w.table.values()
+            if o.name.startswith("Experiment") or o.name.startswith("Upgrade")]
+    for o in port[:1] + [deck(w, "Upgrades")]:
+        if o is None:
+            continue
+        before = angle(o)
+        o.setRotation(g.FACEDOWN)
+        g.onObjectRotate(o, 0, 180, "White", 0, 0)
+        drain(w)
+        want("flipping %s leaves its Alt angle alone" % o.name,
+             angle(o), before)
+
+    # THE SCRIPT TURNS ONE OVER TOO. A character on side B is dealt
+    # face down by showChar, which is a flip onObjectRotate never
+    # hears about - the player did not make it.
+    for game, setup in (("AoS", "setupAoS"), ("IMP", "setupImposter")):
+        w, g = start("Standard", 0, Panel())
+        getattr(g, setup)()
+        drain(w)
+        seen = {}
+        for _ in range(12):
+            a = g.charOf(game)
+            if a is None:
+                break
+            card = [o for o in w.table.values()
+                    if o.name.startswith(str(g.CARD_NAME[g.CHAR_DECK[game]]
+                                             or ""))]
+            if card:
+                seen[bool(a.back)] = (card[0].is_face_down, angle(card[0]))
+            if len(seen) == 2:
+                break
+            g.btnChar()
+            drain(w)
+        want("%s: a character on each side was dealt" % game,
+             sorted(seen), [False, True])
+        for back, (facedown, ang) in sorted(seen.items()):
+            want("%s: side %s is dealt face %s"
+                 % (game, "B" if back else "A", "down" if back else "up"),
+                 facedown, back)
+            want("%s: ...and the Alt view is given the matching angle"
+                 % game, ang, down if back else up)
+
+
 def markers_home_assertions():
     """Pack up puts every die, the Chip and the Dial back in their row.
 
@@ -2386,6 +2562,7 @@ def main():
     pile_assertions()
     landing_assertions()
     markers_home_assertions()
+    alt_view_assertions()
     covered_assertions()
     rules_assertions()
     panel_game_assertions()

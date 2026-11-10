@@ -2565,14 +2565,41 @@ check("the readout's width has one owner",
 # up. Eleven of the thirty decks are landscape, so this was most of the
 # text in the mod being read with your head tilted.
 #
+# AND ONE ANGLE IS NOT ENOUGH. A flip reverses the sense of the roll,
+# so a single value is right for the face it was measured on and 180
+# degrees out on the other: the first one tried gave Jon side B of a
+# Lab Rat correct and side A - the side you read - upside down. The
+# save bakes the face-up angle, which is the one every landscape card
+# is dealt on and the one that still reads correctly if assigning the
+# angle from a script turns out not to take; lua.lua swaps them as
+# cards are turned over.
+#
 # BOTH HALVES, OR NEITHER. A card dragged off a deck is built from the
 # entry inside it, so the deck and every card in it have to carry the
 # angle - exactly like SidewaysCard and the scale, both of which were
 # once set on the deck alone.
-_alt_want = re.search(r"^ALT_LOOK_LAND = \((-?[\d.]+), (-?[\d.]+), (-?[\d.]+)\)",
-                      _mod, re.M)
-_alt = tuple(float(v) for v in _alt_want.groups()) if _alt_want else None
+_alt_up = re.search(r"^ALT_LOOK_UP = \((-?[\d.]+), (-?[\d.]+), (-?[\d.]+)\)",
+                    _mod, re.M)
+_alt_dn = re.search(r"^ALT_LOOK_DOWN = \((-?[\d.]+), (-?[\d.]+), (-?[\d.]+)\)",
+                    _mod, re.M)
+_up = tuple(float(v) for v in _alt_up.groups()) if _alt_up else None
+_dn = tuple(float(v) for v in _alt_dn.groups()) if _alt_dn else None
+check("there is an Alt-view angle for each face of a landscape card",
+      None not in (_up, _dn), "up %r, down %r" % (_up, _dn))
+check("...and they are a half turn apart, which is what a flip does",
+      _up and _dn and round(abs(_up[2] - _dn[2]) % 360.0, 3) == 180.0,
+      "up %r, down %r" % (_up, _dn))
+# ONE OWNER. Both numbers are generated into the header, so the script
+# cannot drift from the angle the save was built with.
+check("...and the script is given both of them, not its own copies",
+      bool(re.search(r"^ALT_LOOK_UP = \{-?\d+, -?\d+, -?\d+\}$",
+                     _sv["LuaScript"], re.M))
+      and bool(re.search(r"^ALT_LOOK_DOWN = \{-?\d+, -?\d+, -?\d+\}$",
+                         _sv["LuaScript"], re.M))
+      and not re.search(r"^ALT_LOOK_(UP|DOWN) = ", _lua, re.M),
+      "the header or lua.lua has the wrong one")
 _noangle, _extra = [], []
+_counts = {True: 0, False: 0}
 
 
 def _walk_cards(o):
@@ -2580,8 +2607,9 @@ def _walk_cards(o):
         got = o.get("AltLookAngle")
         got = ((got["x"], got["y"], got["z"]) if got else None)
         name = o.get("Nickname") or o.get("Name")
+        _counts[bool(o.get("SidewaysCard"))] += 1
         if o.get("SidewaysCard"):
-            if got != _alt:
+            if got != _up:
                 _noangle.append((name, got))
         elif got is not None:
             _extra.append((name, got))
@@ -2591,24 +2619,9 @@ def _walk_cards(o):
 
 for _o in _sv["ObjectStates"]:
     _walk_cards(_o)
-_counts = {True: 0, False: 0}
-
-
-def _count_cards(o):
-    if o.get("Name") in ("Card", "CardCustom", "Deck"):
-        _counts[bool(o.get("SidewaysCard"))] += 1
-    for k in o.get("ContainedObjects") or []:
-        _count_cards(k)
-
-
-for _o in _sv["ObjectStates"]:
-    _count_cards(_o)
-check("the Alt view's angle for a landscape card has one owner",
-      _alt is not None and _alt[2] != 0.0,
-      "ALT_LOOK_LAND is %r" % (_alt,))
-check("every landscape card and deck tells the Alt view its angle",
+check("every landscape card and deck is built holding the face-up angle",
       not _noangle and _counts[True] > 0,
-      "%d sideways objects, %d without the angle: %r"
+      "%d sideways objects, %d wrong: %r"
       % (_counts[True], len(_noangle), _noangle[:4]))
 check("...and no portrait one carries an angle it does not need",
       not _extra, "%d with an angle they should not have: %r"
@@ -2616,13 +2629,26 @@ check("...and no portrait one carries an angle it does not need",
 # AND IT IS THE LANDSCAPE DECKS OF decks.py, not a list typed twice:
 # the sheets are 1050x750 cells for exactly those, so the flag, the
 # scale and now the Alt angle all come off the same `land`.
-_land = [d for d in re.findall(r"land=(True|False)", _decks)]
+_land = re.findall(r"land=(True|False)", _decks)
 check("the mod's landscape cards are decks.py's landscape decks",
       _counts[True] > 0 and _land.count("True") > 0
       and "alt_look(bool(d['land']))" in _mod
       and "out.update(alt_look(sideways))" in _mod,
       "%d sideways objects for %d landscape decks"
       % (_counts[True], _land.count("True")))
+# THE SWAP ITSELF: read off the face the card is lying on, and only
+# for a landscape CARD - a deck is not a card and a portrait card
+# wants no angle at all. tts/test_setup.py turns one over both ways
+# and checks the angle follows; this is that the mechanism is there.
+check("the script sets the angle from the face that is actually up",
+      "function onObjectRotate" in _lua_code
+      and "o.is_face_down and ALT_LOOK_DOWN or ALT_LOOK_UP" in _lua_code
+      and "o.type ~= 'Card'" in _lua_code
+      and "d.SidewaysCard == true" in _lua_code)
+check("...and the harness turns a card over and checks it followed",
+      "...and turning it over gives the Alt view the other angle" in _ts
+      and "and turning it back gives the first one again" in _ts
+      and "leaves its Alt angle alone" in _ts)
 
 # DECK_OF IS WHAT LETS A MERGED DECK BE TAKEN APART AGAIN - it is the
 # only table that says a Task belongs to the Assignment deck - so it is
