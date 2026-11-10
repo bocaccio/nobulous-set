@@ -1006,6 +1006,17 @@ def panel_assertions():
                 want(t + " no nil in a label",
                      [b["label"] for b in pan.buttons
                       if b["label"] is None or "nil" in str(b["label"])], [])
+                # EVERYTHING ON THE MAT IS A THING YOU PRESS. One row
+                # was a pale strip reading "set up NAP, AoS or Imposter
+                # to choose a character", drawn with click_function
+                # 'nop' so that a press did nothing - in a row where
+                # every other state of the panel puts a button. A row
+                # you cannot press is a row players press. Checked in
+                # all eighty states, because the label only appeared in
+                # the ones with no character to cycle.
+                want(t + " every row is pressable",
+                     [b["label"] for b in pan.buttons
+                      if b["fn"] in (None, "", "nop")], [])
 
     # Both cycles must walk every value and wrap.
     w, g = start("Easy", 0, Panel())

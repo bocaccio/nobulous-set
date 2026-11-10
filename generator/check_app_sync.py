@@ -1733,6 +1733,14 @@ check("every step points at a control that exists",
 # never dealt and Tier II dealt nothing. The notebook is a FOURTH copy of
 # the rules after rules/*.html, the lab and the models.
 _lua = text("tts/lua.lua")
+# CODE ONLY, for the checks that say a thing is NOT in the script. Every
+# such check has a comment next to it explaining what used to be there,
+# and three of them have failed on their own explanation: the deck-name
+# check quoted the literal it forbids, the rulebook check named
+# setCustomObject, and the no-labels check wrote "lbl() has gone". A
+# comment is not code. This was computed twice further down, both times
+# below the checks that needed it first.
+_lua_code = chr(10).join(l.split("--")[0] for l in _lua.splitlines())
 _mod = text("tts/build_mod.py")
 _decks = text("tts/decks.py")
 sb_ = py_tables("simulation/bat.py")
@@ -1875,12 +1883,23 @@ _pi = _lua.find("function refreshPanel")
 _pan = _lua[_pi:] if _pi >= 0 else ""
 _pj = _pan.find("\nfunction nop")
 _pan = _pan[:_pj] if _pj >= 0 else _pan
-# Every row is btn(label, fn, x, z, width) or lbl(text, x, z, width), so
-# the triple to check is two decimals followed by an integer width. The
-# {r, g, b} colours cannot match it: their third number is not an integer.
+_pan_code = chr(10).join(l.split("--")[0] for l in _pan.splitlines())
+# Every row is btn(label, fn, x, z, width), so the triple to check is two
+# decimals followed by an integer width. The {r, g, b} colours cannot
+# match it: their third number is not an integer.
 _rows = re.findall(r"(-?\d+\.\d+),\s*(-?\d+\.\d+),\s*(\d{3,4})", _pan)
-check("the panel layout was read out of tts/lua.lua",
-      len(_rows) >= 10, "found %d button positions" % len(_rows))
+# AS MANY POSITIONS AS THERE ARE ROWS. This was `>= 10`, which is the
+# count the panel happened to have the day it was written: removing the
+# one row that was a label and not a button left nine, and a check that
+# the layout had been READ failed because the layout had got smaller.
+# Counting what exists is not a claim about anything. What has to be
+# true is that the regex found EVERY row - miss one and the bounds
+# check below never looks at it, which is how four rows came to hang
+# off the top edge of the tile with this check passing.
+_sites = re.findall(r"(?m)^[ \t]*btn\(", _pan_code)
+check("every button on the panel was read out of tts/lua.lua",
+      len(_rows) == len(_sites) and _sites,
+      "%d positions for %d btn() calls" % (len(_rows), len(_sites)))
 # width is a HALF-extent in thousandths of a local unit, so a button of
 # width 1000 is TWO units across. This divided by 2000 and so believed
 # every button was half its real size: it passed a panel whose rows
@@ -1897,6 +1916,39 @@ check("tts/lua.lua records what a button width actually means",
 check("tts/test_setup.py asserts the buttons do not overlap each other",
       "def overlaps" in text("tts/test_setup.py")
       and "nothing overlaps" in text("tts/test_setup.py"))
+# NOTHING ON THE PANEL IS A LABEL. Jon asked for no labels on it, and
+# the reason holds on its own: every other row is a button, so a pale
+# unpressable strip in the same grid is a button that is broken. The
+# harness draws all eighty states and fails on any row whose click
+# function does nothing; this is the source side of it - lbl() is gone,
+# and 'nop' is left only on the BAT readout's number, which is not on
+# the panel.
+# AND THE NOTEBOOK NAMES BUTTONS THAT EXIST. It went on describing
+# "Keep 1 / 2 / 3" for a row deleted from the panel, and nothing
+# noticed, because the notebook is prose in build_mod.py while the
+# panel is code in lua.lua. It matters more now that the panel carries
+# no labels: the notebook is the only place the controls are explained,
+# so a control it names has to be one you can press.
+#
+# Every entry in that list is "<name> -- what it does", and the first
+# word of the name has to be a word the panel prints on a button. The
+# character row's label is built from CHAR_WORD, so those three words
+# come from the table rather than from the btn() call.
+_told = re.findall(r'(?m)^\s*"(?:\s*\d+\.\s+)?([A-Z][\w /]*?) -- ',
+                   text("tts/build_mod.py"))
+_words = set()
+for _l in (re.findall(r"btn\('([^']*)'", _pan_code)
+           + re.findall(r"'([^']+)'",
+                        re.search(r"CHAR_WORD = \{([^}]*)\}",
+                                  _lua).group(1))):
+    _words.update(_l.split())
+_ghost = sorted(set(t for t in _told if t.split()[0] not in _words))
+check("the notebook explains no button the panel does not draw",
+      _told and not _ghost,
+      "%d entries, named but not on the panel: %r" % (len(_told), _ghost))
+check("the panel draws no labels, only buttons",
+      "lbl(" not in _lua_code and "'nop'" not in _pan_code
+      and "every row is pressable" in text("tts/test_setup.py"))
 
 # ---------------------------------------------------------------------
 # THE TABLE, THE CARD SIZE AND PACK-UP, all reported from the table on
@@ -2032,9 +2084,9 @@ _ts = text("tts/test_setup.py")
 # Modifications to a full deck. Any card prefix must come from
 # CARD_NAME, so a literal "<label> " in the Lua is the bug itself.
 _cards = dict(re.findall(r"label='([^']+)', card='([^']+)'", _decks))
-# CODE ONLY: the comment explaining this bug quotes the very string it
-# warns about, and the first version of the check failed on itself.
-_lua_code = chr(10).join(l.split("--")[0] for l in _lua.splitlines())
+# CODE ONLY (_lua_code, at the top): the comment explaining this bug
+# quotes the very string it warns about, and the first version of the
+# check failed on itself.
 _lit = [l for l in _cards if (chr(39) + l + " ") in _lua_code]
 check("no card is matched by its deck's name",
       not _lit, "literal card prefixes: %r" % (_lit,))
@@ -2601,7 +2653,6 @@ check("every rulebook has a box to go home to",
 # did and why it is gone, and a check that reads the prose fails on
 # the explanation - which is the trap the spread() check fell into
 # further down, and the deck-name check before it.
-_lua_code = chr(10).join(l.split("--")[0] for l in _lua.splitlines())
 check("no book has its URL rewritten at the table",
       "setCustomObject" not in _lua_code and ".reload()" not in _lua_code
       and "RULES_GUID" not in _lua_code)

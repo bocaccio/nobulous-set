@@ -1933,12 +1933,6 @@ function refreshPanel()
       position = {x, y, z}, width = w or 660, height = 150, font_size = fs or 92,
       color = col or {0.16, 0.15, 0.13}, font_color = {1, 1, 1}})
   end
-  local function lbl(text, x, z, w, fs)
-    PANEL.createButton({click_function = 'nop', function_owner = self, label = text,
-      position = {x, y, z}, width = w or 660, height = 145, font_size = fs or 82,
-      color = {0.93, 0.91, 0.85}, font_color = {0.13, 0.11, 0.09}})
-  end
-
   -- FIVE ROWS AT A 0.36 PITCH, which is what a half-height of 0.15 allows
   -- inside a tile that is 1.0 deep from its middle. The tile art already
   -- prints THE NOBULOUS SET, so no row repeats it.
@@ -1991,11 +1985,15 @@ function refreshPanel()
   -- nobody had chosen. NAP had already dropped it for exactly that
   -- reason; AoS and the Imposter scenario now have the same button
   -- NAP has, so the argument applies to them too and the row goes.
-  if not CHAR_LIST[g] then
-    lbl(g == 'BAT' and 'BAT plays all four Lab Rats'
-        or 'set up NAP, AoS or Imposter to choose a character',
-        -1.60, 0.36, 2300, 70)
-  end
+  --
+  -- NOTHING ON THIS PANEL IS A LABEL. A pale strip reading "set up
+  -- NAP, AoS or Imposter to choose a character" stood in this row
+  -- whenever the game on the table had no character to cycle. Every
+  -- other row is a thing you press, so a row you cannot press is a row
+  -- you try to press - and it said nothing a player could not read off
+  -- the four setup buttons an inch below it. The row is simply empty
+  -- now, and lbl() has gone with it: the only thing on the mat is
+  -- buttons.
 
   btn('Pack up', 'btnPack', -3.80, 0.72, 420, {0.42, 0.18, 0.15})
 end
