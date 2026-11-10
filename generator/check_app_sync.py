@@ -2052,6 +2052,23 @@ check("Increase hides the FINF cards in the deck and Reduce lays them out",
                          _lua)),
       "the FINF step is missing, or no longer runs before the shuffle")
 
+# getObjects() EXISTS ON EVERY TTS OBJECT and throws on anything with
+# no inside, so `o.getObjects and o.getObjects()` is not a guard in
+# front of the call - it IS the call, and the test always passes. It
+# was written that way twice and shipped twice: every die threw it on
+# load, and the pile counter died on the first die it walked past.
+# Asking an unknown object what is inside it goes through contents().
+check("nothing tests for getObjects() by calling it",
+      "function contents(obj)" in _lua
+      and "pcall(function() return obj.getObjects() end)" in _lua
+      and "getObjects and " not in _lua.replace(
+          chr(96) + 'o.getObjects and o.getObjects()' + chr(96), ''),
+      "the not-a-guard is back in tts/lua.lua")
+check("the two that walk unknown objects use it",
+      bool(re.search(r"function firstCard.*?contents\(obj\)", _lua, re.S))
+      and bool(re.search(r"function cardsAt.*?contents\(o\)", _lua, re.S)),
+      "firstCard or cardsAt looks inside an object without asking")
+
 check("NAP lays four Assignment spaces beside each Time Slot",
       "ASSIGN_SLOTS = 4" in _lua and "function napSnaps" in _lua
       and "Global.setSnapPoints" in _lua

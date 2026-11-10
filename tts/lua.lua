@@ -952,7 +952,9 @@ function finfApply()
   end
   if asg then
     local strays = {}
-    for _, e in ipairs(asg.getObjects()) do
+    -- contents(), because the Assignment deck can be down to its
+    -- last card by the end of a game, and a deck of one is a card.
+    for _, e in ipairs(contents(asg) or {}) do
       if deckLabel(e.nickname) == 'FINF' then table.insert(strays, e.guid) end
     end
     for _, g in ipairs(strays) do
