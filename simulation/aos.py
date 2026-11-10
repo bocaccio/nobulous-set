@@ -239,10 +239,20 @@ RECYCLE_SCOPE = "program"
 #
 #   KEEP_LAST     True: a cycle ends when one Program is left rather
 #                 than running it, and that Program goes back into the
-#                 deck for the next cycle. This one DOES change the
-#                 game - it is roughly one Program per cycle you never
-#                 face - and the whole question is in which direction,
-#                 because a Program is both a risk and a reward.
+#                 deck for the next cycle.
+#
+#                 MEASURED AND NOT TAKEN, 2026-11-10. It is worth
+#                 +2.3 to +2.8 at almost every rung and +3.6 / +3.8 at
+#                 Hard and Nobulous with no tier - about a third of a
+#                 difficulty level, which is 8 points a step - and the
+#                 deck mix cannot pay that back, because the printed
+#                 ladder is already at its top rung at Nobulous and
+#                 one step of it is worth 8. Jon's call was that what
+#                 the rule buys is the last card of a cycle, which is
+#                 one card's worth of planning, and that is not worth
+#                 a third of a level. simulation/aosrules.txt is the
+#                 grid; the dial stays so the figures in it can be
+#                 reproduced.
 DRAW_RANDOM = False
 KEEP_LAST = False
 

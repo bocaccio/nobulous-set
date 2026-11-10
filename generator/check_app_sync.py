@@ -2383,14 +2383,15 @@ check("no staging pad is within a card of the point cards are taken to",
 # is exactly the sort of arithmetic that silently stops being true.
 _rhw = _num("BAT_READOUT_HW")
 _bandx = (_pads / 2.0) * _pitch + _num("CARD_W") / 2.0
-# READ THE SCRIPT'S OWN SUM, not a copy of it. Recomputing the right
-# answer here and comparing it with itself is a check that passes
-# whatever lua.lua says - which is what the first draft of this did,
-# and moving the plate onto the band did not trouble it.
-_rm = re.search(r"^BAT_READOUT_X = OFF_X ([-+]) ([\d.]+) \+ BAT_READOUT_HW$",
-                _lua, re.M)
-_rx = (_bandx + (1 if _rm.group(1) == "+" else -1) * float(_rm.group(2))
-       + _rhw) if _rm else None
+# READ THE SCRIPT'S OWN PLACING, not a copy of it. Recomputing the
+# right answer here and comparing it with itself is a check that
+# passes whatever lua.lua says - which is what the first draft of this
+# did, and moving the plate onto the band did not trouble it. The
+# plate is centred under one of the Splices now, so the number to read
+# out is WHICH Splice.
+_rm = re.search(r"^BAT_READOUT_SPLICE = (\d+)$", _lua, re.M)
+_rx = (_num("BAT_RIGHT1", _lua)
+       + (int(_rm.group(1)) - 1) * (_num("CARD_W") - 0.02)) if _rm else None
 _dialx = _num("BAT_RIGHT1", _lua) + 4 * (_num("CARD_W") - 0.02)
 check("the Health readout fits between the staging band and the Dial",
       _rx is not None and _rx - _rhw >= _bandx and _rx + _rhw <= _dialx - 1.0,
@@ -2548,30 +2549,62 @@ check("its numbers are one slot apart, all the way round",
 # images/, so they are the one set of files the image manifest would
 # not have covered, and a URL that 404s shows as a blank page with no
 # error anywhere.
+# FOUR BOOKS, ONE PER GAME. It was one Custom_PDF whose URL the
+# script rewrote with setCustomObject and reload, which is the
+# documented way and did not work at Jon's table: his autosave after a
+# NAP setup still held BAT_Rulebook.pdf as the object's own URL. No
+# error anywhere, right GUID, right URL table, wrong book in the
+# corner. Each game's book is a component in that game's box now.
+#
+# They are fetched from rules/ rather than images/, so they are the
+# one set of files the image manifest does not cover, and a URL that
+# 404s shows as a blank page with no error anywhere.
 _pdf = [o for o in _sv["ObjectStates"] if o["Name"] == "Custom_PDF"]
-check("the rulebook is in the save exactly once", len(_pdf) == 1,
-      "found %d" % len(_pdf))
-_rg = re.search(r"RULES_GUID = '([^']+)'", _sv["LuaScript"])
-check("the script holds the rulebook's own GUID",
-      bool(_pdf) and bool(_rg) and _rg.group(1) == _pdf[0]["GUID"],
-      "script %r vs object %r" % (_rg and _rg.group(1),
-                                  _pdf and _pdf[0]["GUID"]))
-_rt = re.search(r"RULES = \{([^}]*)\}", _sv["LuaScript"])
-_rules = dict(re.findall(r"(\w+) = '([^']+)'", _rt.group(1))) if _rt else {}
+_bagged = [d for o in _sv["ObjectStates"] if o["Name"] == "Bag"
+           for d in o.get("ContainedObjects", [])
+           if d["Name"] == "Custom_PDF"]
+check("there is one rulebook per game, and one of them starts out",
+      (len(_pdf), len(_bagged)) == (1, 3),
+      "%d on the table, %d in boxes" % (len(_pdf), len(_bagged)))
+_books = dict((o["Nickname"], o["CustomPDF"]["PDFUrl"])
+              for o in _pdf + _bagged)
+_nick = re.search(r"RULES_NICK = \{([^}]*)\}", _sv["LuaScript"])
+_want = dict(re.findall(r"(\w+) = '([^']+)'",
+                        _nick.group(1))) if _nick else {}
 check("the script names a rulebook for all four games",
-      sorted(_rules) == ["AoS", "BAT", "IMP", "NAP"], "got %r" % (sorted(_rules),))
-_norules = [g for g, u in sorted(_rules.items())
+      sorted(_want) == ["AoS", "BAT", "IMP", "NAP"],
+      "got %r" % (sorted(_want),))
+check("...and every name it uses is a book that is really there",
+      sorted(_want.values()) == sorted(_books),
+      "script %r vs save %r" % (sorted(_want.values()), sorted(_books)))
+_norules = [n for n, u in sorted(_books.items())
             if not os.path.exists(os.path.join(ROOT, "rules",
                                                u.rsplit("/", 1)[-1]))]
-check("every rulebook the script can load is a file in rules/",
+check("every rulebook the script can deal is a file in rules/",
       not _norules, "no such PDF: %r" % (_norules,))
 check("the rulebooks are served from rules/, not images/",
-      all("/rules/" in u for u in _rules.values()), "%r" % (_rules,))
-# reload() respawns the object, and a script-made button does not
-# survive that - nor does the reference the script was holding.
-check("the rulebook's button is redrawn on whatever reload returns",
-      "o = o.reload()" in _lua and "drawRulesButton(o)" in _lua
-      and "drawRulesButton(getObjectFromGUID(RULES_GUID))" in _lua)
+      all("/rules/" in u for u in _books.values()), "%r" % (_books,))
+# EACH BOOK GOES HOME TO ITS OWN GAME'S BOX, which is what lets
+# showRules put the three it does not want away; the Imposter
+# scenario's is the campaign supplement and belongs with NRJ.
+_hm = re.search(r"^HOME = \{(.*)\}$", _sv["LuaScript"], re.M)
+_homes = dict(re.findall(r"\['([^']+)'\] = '([^']+)'",
+                         _hm.group(1) if _hm else ""))
+check("every rulebook has a box to go home to",
+      all(_homes.get(_want.get(g)) == ("NRJ" if g == "IMP" else g)
+          for g in ("BAT", "NAP", "AoS", "IMP")),
+      "%r" % ({n: _homes.get(n) for n in _want.values()},))
+# AND NOTHING REWRITES A BOOK ANY MORE. setCustomObject on a PDF is
+# the mechanism that failed; leaving the call in the script would
+# leave the next person to read it believing it works.
+# CODE ONLY. The comment above showRules explains what setCustomObject
+# did and why it is gone, and a check that reads the prose fails on
+# the explanation - which is the trap the spread() check fell into
+# further down, and the deck-name check before it.
+_lua_code = chr(10).join(l.split("--")[0] for l in _lua.splitlines())
+check("no book has its URL rewritten at the table",
+      "setCustomObject" not in _lua_code and ".reload()" not in _lua_code
+      and "RULES_GUID" not in _lua_code)
 
 # THE MAT IS STRETCHED OVER THE FELT, so a picture drawn to any other
 # rectangle puts every printed box somewhere the cards are not. That is

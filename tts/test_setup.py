@@ -112,6 +112,11 @@ class Obj(object):
         self.custom = {}
         self.buttons = []
         self.dead = False
+        # IN A BAG. getObjectFromGUID does not reach inside a container
+        # in TTS, and getAllObjects does not list what is in one - so a
+        # marker a setup has stowed is gone until something goes and
+        # looks for it, which is the whole point of the stowing.
+        self.bagged = False
 
     def getName(self):
         return self.name
@@ -269,6 +274,7 @@ class Obj(object):
         else:
             k = self.kids[0]
         self.kids.remove(k)
+        k.bagged = False
         # A DECK OF ONE CARD IS A CARD, AND IT MOVES WHEN IT BECOMES
         # ONE. Taking the second-to-last card destroys the deck and
         # respawns its final card, and TTS does not put it back exactly
@@ -298,7 +304,12 @@ class Obj(object):
         # could see it. A card drawn with a rotation has that rotation.
         if "rotation" in keys:
             k.setRotation(spec["rotation"])
-        self.world.table[k.guid] = k
+        # A MARKER TAKEN BACK OUT OF A BAG IS A MARKER AGAIN, not a
+        # dealt card. w.table is what a setup has put out and what
+        # Pack up has to clear; the dice and the two faces live in
+        # their own index and are never in both.
+        if k.guid not in self.world.markers:
+            self.world.table[k.guid] = k
         if "callback_function" in keys and spec["callback_function"] is not None:
             spec["callback_function"](k)
         return k
@@ -316,6 +327,7 @@ class Obj(object):
             if self.world.puts % self.world.lossy == 0:
                 return other
         self.world.table.pop(other.guid, None)
+        other.bagged = True
         if not self.kids and not self.bag:
             # A CARD THAT RECEIVES A CARD BECOMES A DECK OF BOTH. The
             # stub kept the receiver as the container and dropped its
@@ -384,8 +396,11 @@ class World(object):
     @property
     def dice(self):
         """Where the dice are NOW. A card dealt on top of one is a card
-        dealt on top of one wherever the setup has just moved it to."""
-        return [(o.pos[0], o.pos[2]) for o in self.markers.values()]
+        dealt on top of one wherever the setup has just moved it to -
+        and a marker a setup has stowed in a bag is not on the table
+        at all, so nothing can be dealt onto it."""
+        return [(o.pos[0], o.pos[2]) for o in self.markers.values()
+                if not o.bagged]
 
     def land(self, k):
         """Record a card dealt on top of something already standing there.
@@ -428,6 +443,19 @@ def build(lua):
             continue
         decks = []
         for d in o["ContainedObjects"]:
+            # NOT EVERYTHING IN A BOX IS A DECK. Three of the four
+            # rulebooks wait in theirs, and a Custom_PDF has no cards
+            # inside it - inventing one gave the NAP box a card called
+            # "NAP Rules 1" that nothing could ever put anywhere.
+            if d["Name"] not in ("Deck", "DeckCustom", "Card", "CardCustom"):
+                leaf = Obj(w, d["GUID"], d["Nickname"])
+                tr = d.get("Transform") or {}
+                leaf.scale = (tr.get("scaleX", 1.0), tr.get("scaleY", 1.0),
+                              tr.get("scaleZ", 1.0))
+                if "CustomPDF" in d:
+                    leaf.custom = dict(d["CustomPDF"])
+                decks.append(w.add(leaf))
+                continue
             cards = [Obj(w, gid(), c["Nickname"])
                      for c in (d.get("ContainedObjects") or [])]
             if not cards:                       # a one-card "deck"
@@ -467,7 +495,9 @@ def build(lua):
     # at all, so getObjectFromGUID answered nil for it, showRules
     # returned on its first line, and every run of this harness tested
     # a rulebook that was not there.
-    w.rules_guid = None
+    # THE BOOK ON THE RAIL IS ON THE TABLE. The other three are in
+    # their boxes and were added by the loop above; this is the one
+    # the save stands out, which is what a fresh load shows.
     for o in save["ObjectStates"]:
         if o["Name"] == "Custom_PDF":
             b = Obj(w, o["GUID"], o.get("Nickname") or "Rulebook")
@@ -476,7 +506,7 @@ def build(lua):
                      o["Transform"]["posZ"])
             b.locked = bool(o.get("Locked"))
             w.byguid[o["GUID"]] = b
-            w.rules_guid = o["GUID"]
+            w.table[o["GUID"]] = b
     for o in save["ObjectStates"]:
         if o["Name"] in ("Custom_Dice", "Custom_Token") or (
                 o.get("Nickname") in ("Chip",)):
@@ -501,7 +531,10 @@ def build(lua):
 
 def install(lua, w):
     g = lua.globals()
-    g.getObjectFromGUID = lambda guid: w.byguid.get(guid)
+    def by_guid(guid):
+        o = w.byguid.get(guid)
+        return None if (o is not None and o.bagged) else o
+    g.getObjectFromGUID = by_guid
     def all_objects():
         # ONLY Obj, AND BUILT BY INDEX. Returning lua.table_from(list)
         # intermittently put a bound method into the table the script
@@ -515,7 +548,7 @@ def install(lua, w):
         n = 0
         for o in (list(w.table.values()) + list(w.markers.values())
                   + [b for b in w.byguid.values() if b.bag]):
-            if isinstance(o, Obj):
+            if isinstance(o, Obj) and not o.bagged:
                 n += 1
                 t[n] = o
         return t
@@ -1037,8 +1070,14 @@ def panel_assertions():
         if any("getName" in m for m in w.said[mark:]):
             SKIPPED.append("pack up, dropping 1 in %d" % lossy)
             continue
+        # THE RULEBOOK IS NOT CLEARED AWAY. It has a box, because
+        # showRules puts the three a game does not want back in
+        # theirs, but taking the rules off the table at the end of a
+        # game is not tidying up, it is confiscating them.
         want("pack up emptied the table, dropping 1 in %d" % lossy,
-             (dealt > 0, len(w.table))[1], 0)
+             (dealt > 0,
+              sorted(o.name for o in w.table.values()
+                     if not o.name.endswith(" Rules")))[1], [])
         # AND THE DICE ARE BACK WHERE THEY LIVE. They are not bagged, so
         # "the table is bare" says nothing about them: a setup that
         # moved the Chip across the table and a pack-up that left it
@@ -1065,7 +1104,8 @@ def census(w):
     for o in w.byguid.values():
         if o.bag:
             for k in o.kids:
-                walk(k)
+                if k.guid not in w.markers:
+                    walk(k)        # a stowed Chip is not a card
     return c
 
 
@@ -1469,9 +1509,15 @@ def bat_assertions():
          float(g.CHIP_DIAL[hp]))
     want("...and the dial has an angle for every number it prints",
          sorted(int(k) for k in dict(g.CHIP_DIAL)), list(range(21)))
-    # The Chip is NAP's and stays out of this.
-    want("...while the Chip is left where it was",
-         round(chip.pos[0], 2), round(float(dict(g.DICE_HOME)['Chip'][1]), 2))
+    # THE CHIP IS NAP'S AND GOES IN THE NAP BOX. It used to stay in
+    # the row at the bottom of the table through a game of BAT, which
+    # is a thing with five colours on it that this game never reads.
+    want("...while the Chip is stowed in its own box",
+         (chip is None,
+          sorted(k.name for b in w.byguid.values() if b.bag
+                 and b.name.startswith("NAP")
+                 for k in b.kids if k.name == "Chip")),
+         (True, ["Chip"]))
 
     # The overlay goes down and is locked.
     want("BAT lays its own overlay", "BAT Table" in by, True)
@@ -1561,18 +1607,28 @@ def chip_face_assertions():
     to BLUE: the right amount, in the right direction, on the wrong
     face, and nothing said so.
     """
+    # EACH FACE IN THE GAME THAT READS IT. BAT stows the Chip in the
+    # NAP box and NAP stows the Dial in BAT's, so the two halves of
+    # this are measured in the two games rather than in one.
     w, g = start("Standard", 0, Panel())
-    g.setupBAT()
+    g.setupNAP()
     drain(w)
     chip = g.marker("Chip")
     g.onObjectNumberTyped(chip, "White", 2)
     drain(w)
     want("typing 2 at the Chip turns it to a colour",
          chip.rot[1], float(g.CHIP_FACE[g.ATTENTION[2]]))
+    want("...and NAP has stowed the Dial it does not read",
+         g.marker("Dial"), None)
+    w, g = start("Standard", 0, Panel())
+    g.setupBAT()
+    drain(w)
     dial = g.marker("Dial")
     want("the Dial is a separate object, not a face of the Chip",
          (dial is not None, dial.guid != chip.guid if dial else None),
          (True, True))
+    want("...and BAT has stowed the Chip it does not read",
+         g.marker("Chip"), None)
     # ITS OWN ROTATION VALUES, so typing at it is TTS's job and the
     # script does not have to work out which way up anything is.
     vals = dial_values()
@@ -1661,7 +1717,7 @@ def pile_assertions():
     want("a pile of loose cards prints nothing in red", w.errors[:2], [])
     want("pack up takes the pile away too",
          sorted(o.name for o in w.table.values()
-                if g.boxFor(o) is not None), [])
+                if g.packable(o) is not None), [])
     want("...as a pile the box can hand back", buried(w), [])
     want("...and says so rather than naming a blank",
          [m for m in w.said if "Still on the table" in m], [])
@@ -1816,42 +1872,64 @@ def landing_assertions():
 
 
 def rules_assertions():
-    """The corner shows the rules for the game on the table.
+    """The book on the rail is the one for the game on the table.
 
-    The button has always NAMED the right game, and clicking it loaded
-    that game's PDF - so the book in the corner was whichever one was
-    last clicked for, under a label claiming otherwise. Jon read the
-    NAP rules under a BAT table.
+    IT WAS ONE BOOK WHOSE URL THE SCRIPT REWROTE, with setCustomObject
+    and reload, which is the documented way and did not work at Jon's
+    table: his autosave after a NAP setup still held BAT_Rulebook.pdf
+    as the object's own URL. No Lua error anywhere, the right GUID,
+    the right URL table - and the harness passed, because the stub
+    did what the documentation says and TTS did not.
+
+    SO THIS DOES NOT TEST THE MECHANISM ANY MORE, it tests the result:
+    exactly one book is out, it is this game's, and the other three
+    are in their boxes. That is a claim a stub cannot flatter, because
+    taking an object out of a bag is the one thing this harness has
+    always modelled honestly.
     """
-    def book(w):
-        o = w.byguid[w.rules_guid]
-        return (o.custom.get("PDFUrl", "").rsplit("/", 1)[-1], o.buttons)
+    nick = {"BAT": "BAT Rules", "NAP": "NAP Rules",
+            "AoS": "AoS Rules", "IMP": "NRJ Rules"}
+    pdf = {"BAT Rules": "BAT_Rulebook.pdf", "NAP Rules": "NAP_Rulebook.pdf",
+           "AoS Rules": "AoS_Rulebook.pdf",
+           "NRJ Rules": "NRJ_Campaign_Supplement.pdf"}
 
-    for which, pdf in (("BAT", "BAT_Rulebook.pdf"), ("NAP", "NAP_Rulebook.pdf"),
-                       ("AoS", "AoS_Rulebook.pdf"),
-                       ("IMP", "NRJ_Campaign_Supplement.pdf")):
+    def out(w):
+        return [o for o in w.table.values() if o.name in nick.values()]
+
+    w, g = start("Standard", 3, Panel())
+    want("a fresh table has BAT's book on the rail",
+         sorted(o.name for o in out(w)), ["BAT Rules"])
+    for which in ("BAT", "NAP", "AoS", "IMP"):
         w, g = start("Standard", 3, Panel())
-        # Start from a book that is NOT the one this game wants, which
-        # is the state the bug lived in: BAT ships loaded and every
-        # other game has to swap it.
-        g.STATE.rules = "NAP" if which != "NAP" else "BAT"
         {"BAT": g.setupBAT, "NAP": g.setupNAP,
          "AoS": g.setupAoS, "IMP": g.setupImposter}[which]()
         drain(w)
-        url, buttons = book(w)
-        want("setting up %s loads its own rulebook" % which, url, pdf)
-        want("...and labels the button for it", [b["label"] for b in buttons],
+        books = out(w)
+        want("setting up %s leaves one book on the rail" % which,
+             [o.name for o in books], [nick[which]])
+        want("...and it is that game's rulebook",
+             books[0].custom.get("PDFUrl", "").rsplit("/", 1)[-1],
+             pdf[nick[which]])
+        want("...standing where the rail is",
+             (round(books[0].pos[0], 2), round(books[0].pos[2], 2)),
+             (round(float(g.RULES_POS[1]), 2),
+              round(float(g.RULES_POS[3]), 2)))
+        want("...locked, so it cannot be dragged off", books[0].locked, True)
+        want("...under a button naming the game",
+             [b["label"] for b in books[0].buttons],
              ["Rules: " + ("NRJ" if which == "IMP" else which)])
-        want("...on the live object, not the one reload destroyed",
-             [e for e in w.errors if "destroyed" in e], [])
-        # Setting up the SAME game again must not respawn the object:
-        # a reload under the cursor is worse than the swap is worth.
-        before = w.byguid[w.rules_guid]
-        {"BAT": g.setupBAT, "NAP": g.setupNAP,
-         "AoS": g.setupAoS, "IMP": g.setupImposter}[which]()
+        want("...and the other three are in their boxes",
+             sorted(k.name for b in w.byguid.values() if b.bag
+                    for k in b.kids if k.name in nick.values()),
+             sorted(v for kk, v in nick.items() if kk != which))
+        want("...and nothing printed in red", w.errors[:2], [])
+        # PACK UP LEAVES IT THERE. Clearing the table at the end of a
+        # game is no reason to take the rules away from someone who
+        # may still be reading them.
+        g.btnPack()
         drain(w)
-        want("...and the same game again does not reload it",
-             w.byguid[w.rules_guid] is before, True)
+        want("...and pack up leaves the book out" % (),
+             [o.name for o in out(w)], [nick[which]])
 
 
 def panel_game_assertions():
@@ -1975,7 +2053,8 @@ def choice_assertions():
     # the player cannot pick up.
     want("...and nothing else NAP deals is",
          [o.name for o in w.table.values()
-          if o.locked and not o.name.startswith(
+          if o.locked and not o.name.endswith(" Rules")
+          and not o.name.startswith(
               ("Time Slot", "NAP Table", "Credit Record",
                "Banked Opportunities"))],
          [])

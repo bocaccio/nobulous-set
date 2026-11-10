@@ -413,7 +413,7 @@ def exhibit_blocks():
     return out
 
 
-def lua_header(box_guids, rules_guid):
+def lua_header(box_guids):
     """The generated block prepended to lua.lua: GUIDs and card indices."""
     # Both names map home: a deck is found by its label, a card by its
     # own name with the number stripped off.
@@ -430,6 +430,18 @@ def lua_header(box_guids, rules_guid):
     home['AoS Table'] = 'AoS'
     home['IMP Table'] = 'NRJ'
     home['Health Readout'] = 'BAT'
+    # THE TWO FACES. Neither is dealt - both lie in the row at the
+    # bottom of the table - but each has a box, because a setup stows
+    # the one its game does not read. BAT reads the Dial, NAP reads
+    # the Chip's colours, and AoS and the Imposter scenario read
+    # neither.
+    home['Chip'] = 'NAP'
+    home['Dial'] = 'BAT'
+    # Each game's rulebook goes home to that game's box. The Imposter
+    # scenario is NRJ's finale, so its book is the campaign supplement
+    # and it lives in the NRJ box with the rest of NRJ.
+    for _g, _nick in RULES_NICK.items():
+        home[_nick] = 'NRJ' if _g == 'IMP' else _g
     for _nick, _ in NAP_COUNTERS:
         home[_nick] = 'NAP'
     j = lambda xs: ', '.join(xs)
@@ -511,10 +523,13 @@ def lua_header(box_guids, rules_guid):
         # middle of each one. Measured off the printed card.
         'BUFF_CELL = { %s }' % j('{%.3f, %.3f}' % c for c in buff_cells()),
         'DIE_SCALE = %.2f' % DIE_SCALE,
-        # The rulebook on the rail, and the four books it can show.
-        "RULES_GUID = '%s'" % rules_guid,
-        'RULES = { %s }' % j("%s = '%s'" % (g, rules_url(g))
-                             for g in ('BAT', 'NAP', 'AoS', 'IMP')),
+        # WHICH BOOK BELONGS TO WHICH GAME, where a setup stands it,
+        # and which way up. Four objects now rather than one whose URL
+        # was swapped - see RULES_NICK for why.
+        'RULES_NICK = { %s }' % j("%s = '%s'" % (g, RULES_NICK[g])
+                                  for g in ('BAT', 'NAP', 'AoS', 'IMP')),
+        'RULES_POS = {%.2f, %.3f, %.3f}' % RULES_POS,
+        'RULES_ROT = {%d, %d, %d}' % RULES_ROT,
         # Where the four one-of-a-kind markers live when nothing has
         # borrowed them, so a setup can move them and Pack up can put
         # them back.
@@ -581,31 +596,50 @@ RULEBOOK = {'BAT': 'BAT_Rulebook.pdf', 'NAP': 'NAP_Rulebook.pdf',
             'AoS': 'AoS_Rulebook.pdf', 'IMP': 'NRJ_Campaign_Supplement.pdf'}
 RULEBOOK_DIR = os.path.join(_REPO, 'rules')
 
+# FOUR BOOKS, NOT ONE BOOK THAT CHANGES.
+#
+# It was one Custom_PDF and showRules swapped its URL with
+# setCustomObject() and reload(), which is the documented way to do
+# it. At Jon's table it did not take: his autosave after a NAP setup
+# still held BAT_Rulebook.pdf as the object's own URL, so the call had
+# not changed the object's DATA, let alone failed to fetch a file.
+# There was no Lua error in the chat or in Player.log, the GUID the
+# script looks the object up by is the one the object has, and the
+# URL table it reads from is right - the mechanism simply does not
+# work on this build.
+#
+# So the book is a component now, like the table overlay: each game's
+# lives in that game's box and its setup deals it to the rail. Taking
+# a thing out of a bag and putting it back is the one piece of
+# machinery in this mod that has never let us down.
+RULES_NICK = {'BAT': 'BAT Rules', 'NAP': 'NAP Rules',
+              'AoS': 'AoS Rules', 'IMP': 'NRJ Rules'}
+# WHERE JON PUT IT, read off his table rather than guessed at.
+RULES_POS = (30.10, 3.622, 19.092)
+RULES_ROT = (0, 180, 0)
+RULES_SCALE = 1.25
+
 
 def rules_url(game):
     return "%s/%s" % (RULES_URL.rstrip('/'), RULEBOOK[game])
 
 
-def rulebook():
-    """The rulebook that sits on the rail in the top right corner.
+def rulebook(game, on_rail=False):
+    """One game's rulebook. BAT's starts on the rail; the rest wait.
 
-    It opens on BAT and a setup swaps it for that game's book. Placed a
-    little above the rail and settled onto it like the mat and the
-    boxes, because the rail's height is not in the save.
+    It is NOT in settle() - settling would drop it onto whatever is
+    under it and undo the placement.
     """
-    # WHERE JON PUT IT, read off his table rather than guessed at: he
-    # moved it to the corner and said so, and these are the numbers
-    # TS_AutoSave caught. It is NOT in settle() - settling would drop
-    # it onto whatever is under it and undo the placement.
+    pos = RULES_POS if on_rail else (0, 2.0, 0)
     return {"GUID": guid(), "Name": "Custom_PDF",
-            "Transform": xf(30.10, 3.622, 19.092, (0, 180, 0), 1.25),
-            "Nickname": "Rulebook",
-            "Description": "The rules for the game you set up. Click the"
-                           " button, then zoom in to read.",
+            "Transform": xf(pos[0], pos[1], pos[2], RULES_ROT, RULES_SCALE),
+            "Nickname": RULES_NICK[game],
+            "Description": "The rules for %s. Click the button, then zoom"
+                           " in to read." % game,
             "Tooltip": True,
             "ColorDiffuse": {"r": 1.0, "g": 1.0, "b": 1.0},
             "Locked": True, "Grid": False, "Snap": False,
-            "CustomPDF": {"PDFUrl": rules_url('BAT'), "PDFPassword": "",
+            "CustomPDF": {"PDFUrl": rules_url(game), "PDFPassword": "",
                           "PDFPage": 0, "PDFPageOffset": 0}}
 
 
@@ -1199,6 +1233,12 @@ def main():
     grouped['AoS'].append(game_table('AoS'))
     grouped['NRJ'].append(game_table('IMP'))
     grouped['BAT'].append(readout_object())
+    # BAT's book starts on the rail so that a table nobody has set up
+    # yet still has something to read; the other three wait in their
+    # boxes until their setup deals them.
+    rail = rulebook('BAT', on_rail=True)
+    for _g in ('NAP', 'AoS', 'IMP'):
+        grouped['NRJ' if _g == 'IMP' else _g].append(rulebook(_g))
     for _nick, _text in NAP_COUNTERS:
         grouped['NAP'].append(counter(_nick, _text))
     box_guids = {}
@@ -1209,8 +1249,7 @@ def main():
         box_guids[game] = bx['GUID']
         objects.append(bx)
     objects.append(panel())
-    rules = rulebook()
-    objects.append(rules)
+    objects.append(rail)
     objects += dice_objects()
 
     save = {
@@ -1235,7 +1274,7 @@ def main():
         "Sky": "Sky_Museum", "Note": "Fan expansion for 20 Strong. Prototype.",
         "Rules": "See the Notebook.",
         "TabStates": {str(i): t for i, t in enumerate(notebook())},
-        "LuaScript": lua_header(box_guids, rules['GUID']) + io.open(
+        "LuaScript": lua_header(box_guids) + io.open(
             os.path.join(os.path.dirname(__file__), 'lua.lua'),
             encoding='utf-8').read(),
         "LuaScriptState": "",
