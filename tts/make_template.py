@@ -66,7 +66,12 @@ BACK = (0, 0, 0, 0)           # transparent, for painting over
 # the copy that ships needs a background of its own - this one, which
 # Jon supplied. It arrives portrait and is turned, scaled to cover and
 # cropped from the middle.
-TEXTURE = os.path.join(HERE, "table_texture.png")
+# ONE PER GAME. Each game's overlay is its own tile in its own bag, so
+# they can be different felts; Jon picked gold for BAT and kept the
+# turquoise for NAP. Both arrive portrait and are turned, scaled to
+# cover and cropped from the middle.
+TEXTURE = {"NAP": os.path.join(HERE, "table_texture.png"),
+           "BAT": os.path.join(HERE, "bat_texture.jpg")}
 # Light lines for the transparent templates, which get painted over on
 # whatever background you like; dark ones for the parchment, which they
 # would otherwise vanish into.
@@ -76,6 +81,13 @@ PALE = {"ink": (235, 232, 224, 235), "snap": (235, 232, 224, 150),
 # ink and this one wants the opposite.
 DARK = {"ink": (255, 255, 255, 235), "snap": (255, 255, 255, 180),
         "text": (255, 255, 255, 225)}
+# AND DARK AGAIN FOR A LIGHT FELT. BAT's gold is bright through the
+# middle - luminance 153 against the turquoise's 71 - and white lines
+# disappear into it. Which ink a game gets is a property of its felt,
+# so it is chosen here beside them rather than at each call.
+SEPIA = {"ink": (48, 30, 6, 245), "snap": (48, 30, 6, 205),
+         "text": (48, 30, 6, 235)}
+SHIP_PEN = {"NAP": DARK, "BAT": SEPIA}
 PEN = dict(PALE)
 LINE = 5
 RADIUS = 14
@@ -111,9 +123,9 @@ def trim_dark(im, floor=28):
     return im.crop((left, top, w - right, h - bot))
 
 
-def table_texture():
+def table_texture(game="NAP"):
     """The supplied texture, trimmed, turned and cropped to the table."""
-    im = trim_dark(Image.open(TEXTURE).convert("RGB")).rotate(90, expand=True)
+    im = trim_dark(Image.open(TEXTURE[game]).convert("RGB")).rotate(90, expand=True)
     scale = max(W / float(im.width), H / float(im.height))
     im = im.resize((int(im.width * scale + 0.5), int(im.height * scale + 0.5)),
                    Image.LANCZOS)
@@ -349,7 +361,9 @@ def main():
     # mean a URL nobody has ever asked for.
     img = os.path.join(os.path.dirname(HERE), "images")
     for game in ("NAP", "BAT"):
-        ship_im = table_texture()
+        PEN = dict(SHIP_PEN[game])
+        globals()["PEN"] = PEN
+        ship_im = table_texture(game)
         sd = ImageDraw.Draw(ship_im)
         # DRAWN FIRST, because BAT's spaces are what tell the corner
         # where to stop.

@@ -2497,41 +2497,70 @@ check("the rulebook's button is redrawn on whatever reload returns",
 # are measurable here.
 _tile = [o for o in _sv["ObjectStates"] for k in (o.get("ContainedObjects") or [])
          if False] or None
-_matobj = [k for o in _sv["ObjectStates"]
-           for k in (o.get("ContainedObjects") or [])
-           if k.get("Nickname") == "NAP Table"]
 _fx = re.search(r"FELT_X0, FELT_X1 = (-?[\d.]+), (-?[\d.]+)", _mod)
 _fz = re.search(r"FELT_Z0, FELT_Z1 = (-?[\d.]+), (-?[\d.]+)", _mod)
 check("build_mod.py records the felt it was measured to", bool(_fx and _fz))
-if _fx and _fz and _matobj:
+
+
+def _jpeg_wh(path):
+    """(width, height) of a JPEG, read from its own header."""
+    with open(path, "rb") as fh:
+        d = fh.read()
+    i = 2
+    while i < len(d) - 9:
+        if d[i] != 0xFF:
+            i += 1
+            continue
+        m = d[i + 1]
+        if 0xC0 <= m <= 0xCF and m not in (0xC4, 0xC8, 0xCC):
+            return ((d[i + 7] << 8) | d[i + 8], (d[i + 5] << 8) | d[i + 6])
+        i += 2 + ((d[i + 2] << 8) | d[i + 3])
+    return None
+
+
+# EVERY GAME THAT LAYS AN OVERLAY, not just NAP. Each one is its own
+# tile in its own bag, so they can be - and now are - different felts:
+# gold for BAT, turquoise for NAP. Both are stretched over the same
+# rectangle, so both have to be drawn to its shape, and a drawing made
+# for a different one puts every printed box somewhere the cards are
+# not.
+if _fx and _fz:
     _fw = float(_fx.group(2)) - float(_fx.group(1))
     _fd = float(_fz.group(2)) - float(_fz.group(1))
-    _img = [f for f in os.listdir(os.path.join(ROOT, "images"))
-            if f.startswith("NAP_Table")]
-    check("one overlay image ships", len(_img) == 1, "%r" % (_img,))
-    if _img:
-        with open(os.path.join(ROOT, "images", _img[0]), "rb") as _fh:
-            _d = _fh.read()
-        _i, _wh = 2, None
-        while _i < len(_d) - 9 and _wh is None:
-            if _d[_i] != 0xFF:
-                _i += 1
-                continue
-            _m = _d[_i + 1]
-            if 0xC0 <= _m <= 0xCF and _m not in (0xC4, 0xC8, 0xCC):
-                _wh = ((_d[_i + 7] << 8) | _d[_i + 8],
-                       (_d[_i + 5] << 8) | _d[_i + 6])
-            else:
-                _i += 2 + ((_d[_i + 2] << 8) | _d[_i + 3])
-        check("the overlay is drawn to the felt's own shape",
-              _wh and abs(_wh[0] / float(_wh[1]) - _fw / _fd) < 0.002,
-              "image %r vs felt %.4f" % (_wh, _fw / _fd))
-    _t = _matobj[0]["Transform"]
-    check("the mat is scaled to cover the felt exactly",
-          abs(2 * _t["scaleZ"] - _fd) < 0.01
-          and abs(_t["scaleX"] - _t["scaleZ"]) < 0.01,
-          "scale %.3f/%.3f for a felt %.2f deep"
-          % (_t["scaleX"], _t["scaleZ"], _fd))
+    for _g in ("NAP", "BAT"):
+        _mo = [k for o in _sv["ObjectStates"]
+               for k in (o.get("ContainedObjects") or [])
+               if k.get("Nickname") == "%s Table" % _g]
+        _img = [f for f in os.listdir(os.path.join(ROOT, "images"))
+                if f.startswith("%s_Table" % _g)]
+        check("one %s overlay image ships" % _g,
+              len(_img) == 1 and len(_mo) == 1,
+              "%d images %r, %d tiles" % (len(_img), _img, len(_mo)))
+        if _img:
+            _wh = _jpeg_wh(os.path.join(ROOT, "images", _img[0]))
+            check("the %s overlay is drawn to the felt's own shape" % _g,
+                  bool(_wh) and abs(_wh[0] / float(_wh[1]) - _fw / _fd) < 0.002,
+                  "image %r vs felt %.4f" % (_wh, _fw / _fd))
+        if _mo:
+            _t = _mo[0]["Transform"]
+            check("the %s mat is scaled to cover the felt exactly" % _g,
+                  abs(2 * _t["scaleZ"] - _fd) < 0.01
+                  and abs(_t["scaleX"] - _t["scaleZ"]) < 0.01,
+                  "scale %.3f/%.3f for a felt %.2f deep"
+                  % (_t["scaleX"], _t["scaleZ"], _fd))
+    # AND EACH IS BUILT FROM ITS OWN FELT. Comparing the two
+    # pictures proves nothing - they carry different layouts, so
+    # they differ whatever they are drawn on. What varies is which
+    # texture each game is given.
+    _tex = dict(re.findall(r'"(\w+)": os\.path\.join\(HERE, "([^"]+)"\)',
+                           _tmpl))
+    check("each game's overlay is built from its own felt",
+          sorted(_tex) == ['BAT', 'NAP']
+          and _tex['BAT'] != _tex['NAP']
+          and all(os.path.exists(os.path.join(ROOT, 'tts', v))
+                  for v in _tex.values()),
+          'textures %r' % (_tex,))
+
 check("the template is drawn to the felt build_mod.py records",
       "from build_mod import (EXHAUSTED, FELT_X0, FELT_X1" in _tmpl
       and "X0, X1 = FELT_X0, FELT_X1" in _tmpl)
