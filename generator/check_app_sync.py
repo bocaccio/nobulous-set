@@ -2557,6 +2557,73 @@ check("the readout's width has one owner",
       and bool(re.search(r"^BAT_READOUT_HW = [\d.]+$",
                          _sv["LuaScript"], re.M)))
 
+# THE ALT VIEW IS TOLD WHICH WAY UP A LANDSCAPE CARD IS.
+#
+# SidewaysCard is what makes the card landscape ON THE TABLE and it was
+# always right; the Alt preview is a separate thing that reads
+# AltLookAngle, and with no angle set it stands every card's long edge
+# up. Eleven of the thirty decks are landscape, so this was most of the
+# text in the mod being read with your head tilted.
+#
+# BOTH HALVES, OR NEITHER. A card dragged off a deck is built from the
+# entry inside it, so the deck and every card in it have to carry the
+# angle - exactly like SidewaysCard and the scale, both of which were
+# once set on the deck alone.
+_alt_want = re.search(r"^ALT_LOOK_LAND = \((-?[\d.]+), (-?[\d.]+), (-?[\d.]+)\)",
+                      _mod, re.M)
+_alt = tuple(float(v) for v in _alt_want.groups()) if _alt_want else None
+_noangle, _extra = [], []
+
+
+def _walk_cards(o):
+    if o.get("Name") in ("Card", "CardCustom", "Deck"):
+        got = o.get("AltLookAngle")
+        got = ((got["x"], got["y"], got["z"]) if got else None)
+        name = o.get("Nickname") or o.get("Name")
+        if o.get("SidewaysCard"):
+            if got != _alt:
+                _noangle.append((name, got))
+        elif got is not None:
+            _extra.append((name, got))
+    for k in o.get("ContainedObjects") or []:
+        _walk_cards(k)
+
+
+for _o in _sv["ObjectStates"]:
+    _walk_cards(_o)
+_counts = {True: 0, False: 0}
+
+
+def _count_cards(o):
+    if o.get("Name") in ("Card", "CardCustom", "Deck"):
+        _counts[bool(o.get("SidewaysCard"))] += 1
+    for k in o.get("ContainedObjects") or []:
+        _count_cards(k)
+
+
+for _o in _sv["ObjectStates"]:
+    _count_cards(_o)
+check("the Alt view's angle for a landscape card has one owner",
+      _alt is not None and _alt[2] != 0.0,
+      "ALT_LOOK_LAND is %r" % (_alt,))
+check("every landscape card and deck tells the Alt view its angle",
+      not _noangle and _counts[True] > 0,
+      "%d sideways objects, %d without the angle: %r"
+      % (_counts[True], len(_noangle), _noangle[:4]))
+check("...and no portrait one carries an angle it does not need",
+      not _extra, "%d with an angle they should not have: %r"
+      % (len(_extra), _extra[:4]))
+# AND IT IS THE LANDSCAPE DECKS OF decks.py, not a list typed twice:
+# the sheets are 1050x750 cells for exactly those, so the flag, the
+# scale and now the Alt angle all come off the same `land`.
+_land = [d for d in re.findall(r"land=(True|False)", _decks)]
+check("the mod's landscape cards are decks.py's landscape decks",
+      _counts[True] > 0 and _land.count("True") > 0
+      and "alt_look(bool(d['land']))" in _mod
+      and "out.update(alt_look(sideways))" in _mod,
+      "%d sideways objects for %d landscape decks"
+      % (_counts[True], _land.count("True")))
+
 # DECK_OF IS WHAT LETS A MERGED DECK BE TAKEN APART AGAIN - it is the
 # only table that says a Task belongs to the Assignment deck - so it is
 # generated from decks.py rather than typed, and it has to cover every

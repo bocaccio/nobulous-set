@@ -579,6 +579,48 @@ def guid():
 # agree - see card() - so this is named rather than written twice.
 DECK_ROT = (0, 180, 180)
 
+# WHICH WAY UP THE ALT VIEW HOLDS A LANDSCAPE CARD.
+#
+# Hold Alt over a Lab Rat and it came up on its side: the preview turns
+# every card's long edge vertical, so the eleven landscape decks - the
+# Rats, the Technicians, the Imposters, every NAP Task, Opportunity,
+# Setback, Final Exam, Time Slot and FINF card, and NRJ's Imposter
+# Tasks, Following Setbacks and Devious Opportunities - were read with
+# your head tilted.
+#
+# SidewaysCard was already right: the sheets are 1050x750 cells and
+# both the deck and every card inside it carry the flag, which is all
+# TTS gives you for the TABLE. The Alt view is a separate thing with
+# its own field, AltLookAngle, which is {0, 0, 0} on every object in
+# every save on this machine - nobody had ever set one, so the preview
+# was using its default.
+#
+# The TTS API says of alt_view_angle only that "when non-zero, the Alt
+# view will use the specified Euler angle to look at the object". The
+# z is the roll that matters here and the y is the card's own facing,
+# which is 180 for every card this mod ships face-up. Both numbers are
+# in one place so that a wrong guess is one edit.
+#
+# AND DO NOT PRESS Q OR E IN THE ALT VIEW. Those rotate the preview and
+# TTS saves the result onto the object, so one press on one card is a
+# setting you then have to find; that is the mechanism behind every
+# report of a deck that comes up sideways on one player's machine and
+# not another's.
+ALT_LOOK_LAND = (0, 180, 90)
+
+
+def alt_look(sideways):
+    """The Alt view's angle, for a card that needs one.
+
+    Portrait cards get no field at all rather than an explicit zero:
+    zero IS the default, and writing it would say this had been
+    thought about for a card where there is nothing to think about.
+    """
+    if not sideways:
+        return {}
+    x, y, z = ALT_LOOK_LAND
+    return {"AltLookAngle": {"x": float(x), "y": float(y), "z": float(z)}}
+
 
 def xf(x, y, z, rot=(0, 180, 0), s=1.0):
     return {"posX": x, "posY": y, "posZ": z, "rotX": rot[0], "rotY": rot[1], "rotZ": rot[2],
@@ -659,10 +701,17 @@ def card(deck_id, idx, nickname, rot, s, sideways, desc=''):
     # face up - and a default here hid the fix just as well: dropping
     # the caller's rot=DECK_ROT changed nothing and no check noticed,
     # because the signature put it back. The caller says.
-    return {"GUID": guid(), "Name": "Card", "Transform": xf(0, 0, 0, rot, s),
-            "Nickname": nickname, "Description": desc, "CardID": deck_id * 100 + idx,
-            "Locked": False, "Grid": True, "Snap": True, "Autoraise": True, "Sticky": True,
-            "SidewaysCard": sideways}
+    out = {"GUID": guid(), "Name": "Card", "Transform": xf(0, 0, 0, rot, s),
+           "Nickname": nickname, "Description": desc, "CardID": deck_id * 100 + idx,
+           "Locked": False, "Grid": True, "Snap": True, "Autoraise": True, "Sticky": True,
+           "SidewaysCard": sideways}
+    # THE CARD CARRIES IT, NOT JUST THE DECK. A card dragged off a deck
+    # is a new object built from the entry inside it, so an angle set
+    # on the deck alone is an angle the card you are actually holding
+    # has never heard of - the same way SidewaysCard and the scale had
+    # to go on both.
+    out.update(alt_look(sideways))
+    return out
 
 
 def build_deck(d, deck_id, pos):
@@ -701,6 +750,7 @@ def build_deck(d, deck_id, pos):
            "Locked": False, "Grid": True, "Snap": True, "Autoraise": True, "Sticky": True,
            "SidewaysCard": bool(d['land']),
            "DeckIDs": ids, "CustomDeck": custom, "ContainedObjects": contained}
+    obj.update(alt_look(bool(d['land'])))
     if d['count'] == 1:
         obj.pop("DeckIDs")
         obj.pop("ContainedObjects")
