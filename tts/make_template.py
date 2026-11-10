@@ -66,19 +66,28 @@ BACK = (0, 0, 0, 0)           # transparent, for painting over
 # the copy that ships needs a background of its own - this one, which
 # Jon supplied. It arrives portrait and is turned, scaled to cover and
 # cropped from the middle.
-# ONE PER GAME. Each game's overlay is its own tile in its own bag, so
-# each can have its own felt: turquoise for NAP, gold for BAT, green
-# for AoS, magenta for the Imposter scenario. They arrive portrait and
-# are turned, scaled to cover and cropped from the middle.
+# ONE FELT, OR ONE PER GAME. Each game's overlay is its own tile in
+# its own bag, so they CAN be different pictures - they were, for a
+# while: gold for BAT, green for AoS, magenta for the Imposter
+# scenario. Jon preferred the turquoise everywhere, so that is what
+# they all use.
 #
-# ALL FOUR ARE THE SAME SHAPE, 1318 x 2000, which is what the turquoise
-# has always been. The cover-and-crop keeps whatever fits and throws
-# the rest away, so a source of a different shape loses a different
-# amount: the gold arrived at 2613 x 3184 and lost a fifth of its
-# height, which put its dark border somewhere else than the others'.
-# Cut to one shape they all sit on the table the same way.
-TEXTURE = dict((g, os.path.join(HERE, "felt_%s.jpg" % g))
-               for g in ("BAT", "NAP", "AoS", "IMP"))
+# A game still gets its own by having its own file. Drop a
+# felt_AoS.jpg in beside this and AoS uses it; nothing here has to
+# change, and nothing has to be remembered for the three that do
+# not have one.
+#
+# THE SHAPE IS NOT A MATTER OF TASTE. The cover-and-crop onto the
+# table keeps whatever fits and throws the rest away, so a source
+# of a different shape loses a different amount: the gold arrived a
+# fifth taller than the rest and its dark border landed somewhere
+# else until it was cut to match. 1318 x 2000 is what they are.
+FELT = os.path.join(HERE, "felt.jpg")
+TEXTURE = dict(
+    (g, os.path.join(HERE, "felt_%s.jpg" % g)
+        if os.path.exists(os.path.join(HERE, "felt_%s.jpg" % g))
+        else FELT)
+    for g in ("BAT", "NAP", "AoS", "IMP"))
 # Light lines for the transparent templates, which get painted over on
 # whatever background you like; dark ones for the parchment, which they
 # would otherwise vanish into.

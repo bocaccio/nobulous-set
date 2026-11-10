@@ -2549,28 +2549,29 @@ if _fx and _fz:
                   and abs(_t["scaleX"] - _t["scaleZ"]) < 0.01,
                   "scale %.3f/%.3f for a felt %.2f deep"
                   % (_t["scaleX"], _t["scaleZ"], _fd))
-    # AND EACH IS BUILT FROM ITS OWN FELT. Comparing the finished
-    # pictures proves nothing - they carry different layouts, so they
-    # differ whatever they are drawn on. What varies is the texture
-    # each game is given, and four games must mean four of them: a
-    # felt copied from another game's is the mistake this catches.
+    # AND EVERY GAME HAS A FELT TO BE BUILT FROM. One shared file,
+    # unless a game has its own beside it: felt_AoS.jpg would make
+    # AoS green again without a line of code changing.
+    #
+    # WHAT IS NOT HELD HERE is that they are four DIFFERENT felts.
+    # That check existed for a day and was wrong the moment Jon said
+    # he preferred the turquoise everywhere: four colours was a
+    # preference, and a preference written down as an invariant fails
+    # the first time somebody changes their mind. The shape is not a
+    # preference - a felt cut differently sits differently - so that
+    # is what is checked.
     _felts = {}
     for _g in ('BAT', 'NAP', 'AoS', 'IMP'):
-        _fp = os.path.join(ROOT, 'tts', 'felt_%s.jpg' % _g)
+        _own = os.path.join(ROOT, 'tts', 'felt_%s.jpg' % _g)
+        _fp = _own if os.path.exists(_own) else os.path.join(
+            ROOT, 'tts', 'felt.jpg')
         if os.path.exists(_fp):
-            _felts[_g] = hashlib.md5(io.open(_fp, 'rb').read()).hexdigest()
-    check("each game's overlay is built from its own felt",
-          sorted(_felts) == ['AoS', 'BAT', 'IMP', 'NAP']
-          and len(set(_felts.values())) == 4,
-          'felts found: %r' % sorted(_felts))
-    # AND ALL CUT TO ONE SHAPE, so the cover-and-crop onto the table
-    # throws the same amount away from each and their dark borders
-    # land in the same place. The gold arrived a fifth taller than
-    # the rest and sat differently until it was cut to match.
-    _sizes = set()
-    for _g in sorted(_felts):
-        _sizes.add(_jpeg_wh(os.path.join(ROOT, 'tts', 'felt_%s.jpg' % _g)))
-    check("the four felts are the same shape",
+            _felts[_g] = _fp
+    check("every game has a felt to draw its overlay on",
+          sorted(_felts) == ['AoS', 'BAT', 'IMP', 'NAP'],
+          'felts found for %r' % sorted(_felts))
+    _sizes = set(_jpeg_wh(v) for v in _felts.values())
+    check("the felts are all one shape",
           len(_sizes) == 1, 'sizes %r' % sorted(_sizes))
 
 check("the template is drawn to the felt build_mod.py records",
