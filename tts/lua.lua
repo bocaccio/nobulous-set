@@ -270,6 +270,32 @@ function batMarkX() return BAT_RAT_X + CARD_L / 2 - BAT_MARK_IN end
 function batMarkZ(r) return batRatZ(r) + CARD_W / 2 - BAT_MARK_IN end
 function batRedZ(r) return batRatZ(r) - CARD_W / 2 + BAT_MARK_IN end
 
+-- A ROW OF FOUR DICE UNDER EVERY RAT, which is what the setup message
+-- used to ASK THE PLAYER TO DO: "one Purple, Blue, Green and Yellow die
+-- each". There are exactly four of each colour in the pool and four
+-- Rats, so this is the whole supply dealt out, one row per Rat, and no
+-- shared heap at the bottom of the table for four players to reach
+-- across each other into.
+--
+-- LEFT TO RIGHT IN THE ORDER THE COLOURS RESTRICT IN - Purple with no
+-- Upgrades held, Yellow with three - so a row reads the same way the
+-- rule does.
+BAT_RAT_DICE = { 'Purple', 'Blue', 'Green', 'Yellow' }
+
+-- THE BAND BETWEEN ONE RAT AND THE NEXT, and all of it. The row pitch
+-- is 7.82 and a Rat is a landscape card 5.88 deep, so there are 1.94
+-- units of felt between two Rats that nothing else wants; a die is
+-- 1.62 across at DIE_SCALE, which leaves a sixth of a unit at each
+-- edge. Centred in the band rather than measured down from the card,
+-- so moving a Rat row moves its dice and the clearance stays even at
+-- both ends. check_app_sync.py measures it; the harness fails if a
+-- die touches a card.
+BAT_DIE_PITCH = 1.9
+function batDieZ(r) return batRatZ(r) - BAT_ROW_PITCH / 2 end
+function batDieX(i)
+  return BAT_RAT_X + (i - (#BAT_RAT_DICE + 1) / 2) * BAT_DIE_PITCH
+end
+
 -- SOMEWHERE FOR DICE THAT ARE OUT FOR GOOD: one space, the same size
 -- as every other, in the top right corner of the grid. That corner
 -- is the only part of the row nothing else wants - the two decks
@@ -521,6 +547,23 @@ function marker(name)
   return nil
 end
 
+-- EVERY OBJECT OF THAT NAME, in an order that does not change.
+-- marker() answers with whichever one getAllObjects reaches first,
+-- which is the whole answer for the Chip or the Health die because
+-- there is one of each - but there are four Purple dice, and BAT gives
+-- one to every Rat. Sorted by GUID so the same die goes to the same
+-- Rat on every setup: getAllObjects promises no order, and a row that
+-- reshuffles itself between two setups of the same game looks like a
+-- bug even when it is not.
+function markersNamed(name)
+  local out = {}
+  for _, o in ipairs(getAllObjects()) do
+    if o.getName() == name then table.insert(out, o) end
+  end
+  table.sort(out, function(a, b) return a.getGUID() < b.getGUID() end)
+  return out
+end
+
 -- THE FACE FIRST, THE MOVE AFTER, AND A FRAME BETWEEN THEM.
 --
 -- setPositionSmooth is a tween; setRotationValue is a physics call that
@@ -535,8 +578,16 @@ end
 -- was sent is put there outright: setPosition is instant, so there is
 -- no tween for anything to interrupt.
 function setMarker(name, x, z, value, face)
-  local o = marker(name)
+  return moveMarker(marker(name), x, z, value, face)
+end
+
+-- THE SAME MOVE, GIVEN THE OBJECT. BAT's dice rows cannot go through
+-- setMarker - there are four dice to one name - and the tween, the
+-- backstop and the ordering below are the part that was hard to get
+-- right, so they are not written twice.
+function moveMarker(o, x, z, value, face)
   if not o then return nil end
+  local name = o.getName() or 'that die'
   o.setLock(false)
   if value then
     local ok = pcall(function() o.setRotationValue(value) end)
@@ -562,6 +613,24 @@ function setMarker(name, x, z, value, face)
     end, 30)
   end, 2)
   return o
+end
+
+-- ONE PURPLE, BLUE, GREEN AND YELLOW UNDER EVERY RAT.
+--
+-- The Tyrant's six dice - 2 Purple / 2 Blue / 1 Green / 1 Yellow - come
+-- out of this same supply when it wakes, so they come off the Rats'
+-- rows; there is no separate Tyrant die in the mod to deal.
+function batRatDice()
+  for i, colour in ipairs(BAT_RAT_DICE) do
+    local pool = markersNamed(colour)
+    for r = 1, BAT_ROWS do
+      if pool[r] then moveMarker(pool[r], batDieX(i), batDieZ(r)) end
+    end
+    if #pool < BAT_ROWS then
+      say('Only ' .. #pool .. ' ' .. colour .. ' dice found -- ' ..
+          BAT_ROWS .. ' Rats need ' .. BAT_ROWS .. '.')
+    end
+  end
 end
 
 -- THE TWO FACES, AND WHICH GAME READS WHICH. They were one chip with
@@ -1166,6 +1235,11 @@ function batSnaps()
   for r = 1, BAT_ROWS do
     at(BAT_RAT_X, batRatZ(r))
     at(batMarkX(), batMarkZ(r))
+    -- A PLACE TO PUT A DIE BACK. The active-Rat mark has had one all
+    -- along; a row of four spent dice under the card is the same kind
+    -- of place, and without snap points the row drifts apart over a
+    -- game until it is a heap again.
+    for i = 1, #BAT_RAT_DICE do at(batDieX(i), batDieZ(r)) end
   end
   at(batRightX(BAT_EXPERIMENTS), batRowZ(1))
   at(batRightX(BAT_UPGRADE_DECK), batRowZ(1))
@@ -1590,6 +1664,7 @@ function setupBAT()
     -- "...and the Red die on a random Rat" - rules/bat.html's setup,
     -- which until now the script only said in words.
     setMarker('Red', batMarkX(), batRedZ(math.random(BAT_ROWS)))
+    batRatDice()
   end)
 
   step(function()
@@ -1597,10 +1672,10 @@ function setupBAT()
     refreshPanel()
     say('BAT ready -- ' .. STATE.difficulty .. '. Tyrant Health ' .. hp ..
         ' (Health dial), ' .. spec ..
-        ' Specimens shuffled into the Upgrade deck. Four Lab Rats are out:' ..
-        ' pick a side for each, then one Purple, Blue, Green and Yellow die' ..
-        ' each, and the Red die on a random Rat. Five Splices awaken the' ..
-        ' Tyrant.' ..
+        ' Specimens shuffled into the Upgrade deck. Four Lab Rats are out' ..
+        ' with a Purple, Blue, Green and Yellow die under each and the Red' ..
+        ' die on a random one -- pick a side for each Rat. Five Splices' ..
+        ' awaken the Tyrant, and its six dice come off these rows.' ..
         (STATE.tier >= 1 and ' TIER I: your Experimental Protocol is face-up.' or '') ..
         (STATE.tier >= 2 and ' TIER II: 6 ordinary Upgrades out, the 6 Modifications in.' or '') ..
         (STATE.tier >= 3 and (' TIER III: the 6 Research Notes are a face-up' ..

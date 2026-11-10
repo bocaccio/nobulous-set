@@ -2429,6 +2429,105 @@ check("no staging pad is within a card of the point cards are taken to",
       all(abs(x - _offx) >= _num("CARD_W") for x in _padx),
       "OFF at x %.2f, pads at %s" % (_offx, [round(x, 2) for x in _padx]))
 
+# AND THE ROW OF DICE UNDER EACH RAT FITS BETWEEN THE RATS.
+#
+# The row pitch is 7.82 and a Rat is a landscape card 5.88 deep, so
+# there are 1.94 units of felt between one Rat and the next and a die
+# is 1.62 across at DIE_SCALE. That is the whole budget: a change to
+# the pitch, or one more press of the scale key, puts sixteen dice
+# under the cards.
+#
+# EVALUATE THE SCRIPT'S OWN PLACING. The first version of this matched
+# "batRatZ(r) - <rest of line>" and evaluated the rest as the drop,
+# which reads `- CARD_W / 2 - 0.9` as 2.04 when the Lua means 3.84 -
+# so it failed a mutation for the wrong reason and would have passed
+# the next one. The functions are evaluated here instead, x relative
+# to the card's centre (BAT_RAT_X is CHAR_X, which is not a literal)
+# and z against batRatZ itself.
+_die_half = 0.45 * _num("DIE_SCALE", _mod)
+_cols = re.search(r"^BAT_RAT_DICE = \{([^}]*)\}", _lua, re.M)
+_colours = re.findall(r"'([^']+)'", _cols.group(1) if _cols else "")
+_nrats = int(re.search(r"^BAT_ROWS = (\d+)", _lua, re.M).group(1))
+
+
+def _lua_fn(name, arg, **env):
+    """One of lua.lua's one-line geometry functions, as a Python one."""
+    m = re.search(r"function %s\(%s\)\s+return (.+?)\s+end"
+                  % (name, arg), _lua, re.S)
+    if not m:
+        return None
+    env.update({"__builtins__": {}})
+    body = m.group(1).replace("#BAT_RAT_DICE", str(len(_colours)))
+    return lambda v: eval(body, env, {arg: v})            # noqa: S307
+
+
+_ratZ = _lua_fn("batRatZ", "i", BAT_RAT_Z1=_num("BAT_RAT_Z1", _lua),
+                BAT_ROW_PITCH=_num("BAT_ROW_PITCH", _lua))
+_dieZ = _lua_fn("batDieZ", "r", BAT_RAT_Z1=_num("BAT_RAT_Z1", _lua),
+                BAT_ROW_PITCH=_num("BAT_ROW_PITCH", _lua),
+                CARD_W=_num("CARD_W"), CARD_L=_num("CARD_L"),
+                batRatZ=_ratZ)
+# x RELATIVE TO THE CARD, so the Rat column's own position drops out.
+_dieX = _lua_fn("batDieX", "i", BAT_RAT_X=0.0,
+                BAT_DIE_PITCH=_num("BAT_DIE_PITCH", _lua),
+                CARD_L=_num("CARD_L"), CARD_W=_num("CARD_W"))
+check("the script's dice-row geometry could be read at all",
+      None not in (_ratZ, _dieZ, _dieX) and _colours,
+      "ratZ %s dieZ %s dieX %s colours %r"
+      % (_ratZ is not None, _dieZ is not None, _dieX is not None, _colours))
+if _ratZ and _dieZ and _dieX and _colours:
+    _reach = _num("CARD_W") / 2.0 + _die_half
+    # CENTRED IN THE BAND, which is the claim the comment in lua.lua
+    # makes: the clearance above a row equals the clearance below it.
+    # Both being merely POSITIVE is a weaker thing - a row measured
+    # down from the card's edge leaves 0.09 at one end and 0.23 at the
+    # other, which is legal, ugly, and the first thing a pitch change
+    # turns into an overlap.
+    _gaps = dict(((_r, _q), round(abs(_dieZ(_r) - _ratZ(_q)) - _reach, 3))
+                 for _r in range(1, _nrats + 1)
+                 for _q in range(1, _nrats + 1))
+    check("every row of dice clears every Rat card on the table",
+          min(_gaps.values()) > 0,
+          "closest: %r" % (sorted(_gaps.items(), key=lambda e: e[1])[:3],))
+    # BETWEEN THE TWO, NOT AGAINST ONE. Measured down from the card's
+    # edge instead, a row leaves 0.09 at one end of the band and 0.23
+    # at the other: legal, lopsided, and the first thing a change to
+    # the pitch turns into an overlap. The last row has no Rat below
+    # it, so it is the one row this cannot ask about.
+    _off = [(r, _gaps[(r, r)], _gaps[(r, r + 1)])
+            for r in range(1, _nrats)
+            if abs(_gaps[(r, r)] - _gaps[(r, r + 1)]) > 0.01]
+    check("...and sits centred between them, not against one of them",
+          not _off, "lopsided rows %r" % (_off,))
+    # ...AND ACROSS THE CARD, which is the other axis and a different
+    # number: the dice have to sit within the Rat's own width, or the
+    # row reads as belonging to the column beside it.
+    _xs = [_dieX(i) for i in range(1, len(_colours) + 1)]
+    check("...and the row of dice is no wider than the Rat it sits under",
+          max(abs(x) for x in _xs) + _die_half <= _num("CARD_L") / 2.0,
+          "dice at %r on a card %s long"
+          % ([round(x, 2) for x in _xs], _num("CARD_L")))
+    check("...centred on the card, so the row looks like the card's own",
+          abs(min(_xs) + max(_xs)) < 0.01, "dice at %r" % (_xs,))
+    check("...and no two dice in a row touch each other",
+          min(_xs[i + 1] - _xs[i] for i in range(len(_xs) - 1))
+          > 2 * _die_half,
+          "dice at %r, a die is %.2f across"
+          % ([round(x, 2) for x in _xs], 2 * _die_half))
+# THE COLOURS ARE THE DICE THAT EXIST, one row's worth of each. The
+# pool is four Purple, four Blue, four Green and four Yellow and there
+# are four Rats, so the row is the whole supply dealt out - name a
+# fifth colour, drop one, or rename a die in dice_objects.json and the
+# setup moves nothing while the message still promises a full row.
+_pool = {}
+for _o in _sv["ObjectStates"]:
+    if _o["Name"] == "Custom_Dice":
+        _pool[_o["Nickname"]] = _pool.get(_o["Nickname"], 0) + 1
+_supply = sorted(n for n, k in _pool.items() if k == _nrats)
+check("a Rat's dice are the colours the mod really has, one per Rat",
+      sorted(_colours) == _supply and len(_colours) == 4,
+      "row %r, dice with %d copies %r" % (_colours, _nrats, _supply))
+
 # AND THE HEALTH READOUT FITS IN WHAT IS LEFT. BAT's bottom strip
 # carries the exhausted dice, the staging band, the plate and the Dial,
 # and it is the only clear strip on that table: four things in one row

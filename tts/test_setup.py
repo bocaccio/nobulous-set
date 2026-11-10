@@ -863,12 +863,14 @@ def layout_assertions():
                 elif which == "BAT":
                     # Twelve Upgrade spaces beside the Rats, three
                     # revealed, the Tyrant's three, the Splices; then
-                    # the places with no box of their own - a Rat and
-                    # its active-Rat mark on each row, the two decks,
-                    # and one per cell of the Buff HP track.
+                    # the places with no box of their own - a Rat, its
+                    # active-Rat mark and its row of dice on each row,
+                    # the two decks, and one per cell of the Buff HP
+                    # track.
                     rows, ups = int(g.BAT_ROWS), int(g.BAT_UPGRADES)
+                    cols = len(list(g.BAT_RAT_DICE.values()))
                     exp = (rows * ups + 2 + 3 + 2 + 3 + 1
-                           + int(g.BAT_SPLICES) + 2 * rows + 2
+                           + int(g.BAT_SPLICES) + (2 + cols) * rows + 2
                            + len(list(g.BUFF_CELL.values())))
                 elif which == "AoS":
                     # The Technician, the two decks and the two
@@ -1488,6 +1490,54 @@ def bat_assertions():
                      and mz < float(g.batRatZ(r)) + cw)
     want("each Rat has a mark on it for being the active one",
          marks, [True] * 4)
+
+    # A ROW OF FOUR DICE UNDER EVERY RAT, which the setup message asked
+    # the players to lay out by hand until Jon asked for it to be dealt.
+    # Four colours, four of each in the pool and four Rats, so this is
+    # the whole supply out on the table: what has to hold is that every
+    # row gets one of EACH colour - the failure that reads as right at a
+    # glance is four Purples on one Rat - and that no die is left behind
+    # in the block it came from.
+    colours = [str(c) for c in g.BAT_RAT_DICE.values()]
+    want("BAT names the four colours a Rat is given", colours,
+         ["Purple", "Blue", "Green", "Yellow"])
+    rows, wrong, unplaced = {}, [], []
+    for o in w.markers.values():
+        if o.name not in colours:
+            continue
+        hit = None
+        for r in range(1, 5):
+            for i, c in enumerate(colours, 1):
+                if (abs(o.pos[0] - float(g.batDieX(i))) < 0.05
+                        and abs(o.pos[2] - float(g.batDieZ(r))) < 0.05):
+                    hit = (r, c)
+        if hit is None:
+            unplaced.append((o.name, round(o.pos[0], 2), round(o.pos[2], 2)))
+        elif hit[1] != o.name:
+            wrong.append((o.name, hit))         # a Blue in the Purple column
+        else:
+            rows.setdefault(hit[0], []).append(o.name)
+    want("every colour die is under a Rat", unplaced, [])
+    want("...each in its own colour's column", wrong, [])
+    want("...one of each colour per Rat",
+         sorted((r, sorted(v)) for r, v in rows.items()),
+         sorted((r, sorted(colours)) for r in range(1, 5)))
+
+    # AND THE ROW CLEARS THE CARDS AT BOTH ENDS. The band between two
+    # Rats is 1.94 units and a die is 1.62 across, so there is a sixth
+    # of a unit at each edge and no more: a row measured down from the
+    # card instead of centred in the band, or a pitch change above,
+    # puts dice under the cards rather than between them.
+    bad = []
+    for r in range(1, 5):
+        dz = float(g.batDieZ(r))
+        for edge in [float(g.batRatZ(q)) for q in range(1, 5)]:
+            if abs(dz - edge) < cw + w.die_half:
+                bad.append((r, round(dz, 2), round(edge, 2)))
+    want("...and no row of dice touches a Rat card", bad, [])
+    want("...with every die on a snap point",
+         [(r, i) for r in range(1, 5) for i in range(1, len(colours) + 1)
+          if not snapped(float(g.batDieX(i)), float(g.batDieZ(r)))], [])
 
     # The Buff HP track's cells are snap points inside the Buff HP space.
     bx, bz = float(g.batRightX(int(g.BAT_BUFF))), float(g.batRowZ(3))
