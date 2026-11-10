@@ -231,12 +231,11 @@ def draw_bat(d, lua):
     label(d, "BUFF HP", rx(3), rz(3), fit=half * 1.8)
     label(d, "TYRANT\nSPLICES", rx(1), rz(4), fit=half * 1.8)
     # Dice that are out of the game, in the corner the grid leaves.
+    # Drawn as a card space, because that is what it is now.
     bx0, bx1, bzt, bzb = [float(v) for v in g.batBanished().values()]
-    a, b = px(bx0, bzt), px(bx1, bzb)
-    d.rounded_rectangle([a[0], a[1], b[0], b[1]], RADIUS * 2,
-                        outline=PEN["snap"], width=4)
-    label(d, "BANISHED DICE", (bx0 + bx1) / 2.0, (bzt + bzb) / 2.0,
-          fit=(bx1 - bx0) * 0.8)
+    bcx, bcz = (bx0 + bx1) / 2.0, (bzt + bzb) / 2.0
+    card(d, bcx, bcz, (bx1 - bx0) / 2.0, (bzt - bzb) / 2.0, PEN["snap"], 4)
+    label(d, "BANISHED\nDICE", bcx, bcz, fit=half * 1.8)
     # The Chip's own circle, the way NAP marks the dial's place, and
     # where the exhausted-dice corner has to stop to clear it.
     global BAT_STOP

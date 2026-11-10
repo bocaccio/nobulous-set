@@ -1250,6 +1250,11 @@ def bat_assertions():
          (bq[1] <= float(felt.x1), bq[2] <= float(felt.z1),
           bq[0] > float(g.BAT_RIGHT1)),
          (True, True, True))
+    # ONE SPACE, THE SAME SIZE AS EVERY OTHER. It began as a wide
+    # corner like the exhausted-dice one; Jon asked for a card.
+    want("...and is one space, the size of all the others",
+         (round((bq[1] - bq[0]) / 2, 3), round((bq[2] - bq[3]) / 2, 3)),
+         (round(float(g.BAT_BOX_HW), 3), round(float(g.BAT_BOX_HD), 3)))
     want("...and nothing else is drawn inside it",
          [b for b in boxes
           if b[0] + b[2] > bq[0] and b[1] - b[3] < bq[2]

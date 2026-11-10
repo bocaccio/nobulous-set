@@ -156,13 +156,18 @@ BAT_CHIP_Z = -16.0
 -- enough in that the die sits ON the card rather than over its edge.
 BAT_MARK_IN = 1.25
 
--- SOMEWHERE FOR DICE THAT ARE OUT FOR GOOD. The top right is the only
--- part of the grid nothing else wants: the two decks take the left of
--- that row and the Rats' own spaces stop well short of it. A function
--- rather than a table so it cannot be read before batRightX exists.
+-- SOMEWHERE FOR DICE THAT ARE OUT FOR GOOD: one space, the same size
+-- as every other, in the top right corner of the grid. That corner
+-- is the only part of the row nothing else wants - the two decks
+-- take the left of it and the Rats' spaces stop well short.
+--
+-- A function rather than a table so it cannot be read before
+-- batRightX exists, and derived from the grid so it stays a card
+-- the day the card scale changes.
 function batBanished()
-  return { batRightX(3) - BAT_BOX_HW, FELT.x1 - 0.15,
-           batRowZ(1) + BAT_BOX_HD, batRowZ(1) - BAT_BOX_HD }
+  local x, z = batRightX(BAT_SPLICES), batRowZ(1)
+  return { x - BAT_BOX_HW, x + BAT_BOX_HW,
+           z + BAT_BOX_HD, z - BAT_BOX_HD }
 end
 
 -- The NAP Time Slot column, down the left. It has to clear the dice at
