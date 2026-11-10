@@ -291,6 +291,19 @@ def lua_header(box_guids, rules_guid):
         'HOME = { %s }' % j("['%s'] = '%s'" % (k, v) for k, v in sorted(home.items())),
         'CARD_NAME = { %s }' % j("['%s'] = '%s'" % (d['label'], d['card'])
                                  for d in DECKS if d.get('card')),
+        # WHICH DECK A CARD BELONGS TO, both ways round: by the name a
+        # card carries and by the deck's own label.
+        #
+        # A SETUP MERGES DECKS - the Opportunities and the Setbacks go
+        # into the Assignment deck and the Opportunities deck ceases to
+        # exist - so packing up and setting up again looked for a deck
+        # that was not there any more and said MISSING DECK. This is
+        # what lets the pack-up take the strangers back out of a deck
+        # before it stows it.
+        'DECK_OF = { %s }' % j(
+            "['%s'] = '%s'" % (n, d['label'])
+            for d in DECKS
+            for n in dict.fromkeys([d.get('card') or d['label'], d['label']])),
         'CHIP_FACE = { %s }' % j('%s = %d' % (c, CHIP_ANGLE[c])
                                  for c in ATTENTION),
         # THE MEASUREMENT, NOT ONLY WHAT IT COMES TO. The panel carries

@@ -190,6 +190,22 @@ CREDIT_PILE = 'Credit Record'
 BANK_PILE = 'Banked Opportunities'
 COUNTER_LIFT = NAP_GAP / 2
 
+-- A 3DText IS NOT A CARD, and it was being dealt like one. build_mod.py
+-- authors both plates lying flat and locked - rotX 90 is what makes a
+-- 3DText readable from above - and deckOut turns whatever it takes out
+-- FACEDOWN, which stood the plate on edge, pointing away. There was no
+-- number over the Completed Credits pile and no hover text either,
+-- which reads exactly like a counter that is not counting; the counter
+-- was working the whole time and had nothing anyone could see.
+TEXT_ROT = {90, 0, 0}
+TEXT_Y = 1.5
+
+function counterOut(nick, z)
+  local o = deckOut(nick, {PILE_X, TEXT_Y, z}, TEXT_ROT)
+  if o then o.setLock(true) end
+  return o
+end
+
 -- Where the character you keep ends up. NAP's belongs at the head of its
 -- own column; the other two are dealt across the table and keep the
 -- middle.
@@ -202,9 +218,22 @@ function col(i) return (i - 2.5) * (CARD_W + 1.0) end
 -- sit OVER the table, not past its edge: a deck that waits a step beyond
 -- the rim is a deck falling on the floor. They are spread out so decks
 -- merged in the same step do not land on each other.
-function pad(i) return {(i - 3) * (CARD_W + 1.0), 14, ROW_TIER} end
+-- THE STAGING BAND. A deck being built is held in the air here while
+-- cards are moved between decks, and it used to be held over ROW_TIER
+-- - which is where AoS spreads the Research Notes and the Imposter
+-- scenario the Backdoor Routines. A card that never makes it into a
+-- bag falls out of the air onto whatever is below, and Jon found an
+-- Apprentice in the middle of the table that way.
+--
+-- A MARGIN, NOT A MECHANISM. putHome keeps trying until the bag takes
+-- the card, which is what actually stops this; the band is below every
+-- row so that the rare card which defeats even that lands on bare felt
+-- instead of in the middle of a row, where it reads as a card the
+-- setup dealt. check_app_sync.py holds it below the lowest row.
+function pad(i) return {(i - 3) * (CARD_W + 1.0), 14, OFF_Z} end
 
-OFF = {0, 14, ROW_TIER}
+OFF_Z = FELT.z0 + 2.0
+OFF = {0, 14, OFF_Z}
 
 function attentionNow()
   local s = math.max(1, STATE.session + 1)
@@ -294,13 +323,74 @@ function markersHome()
   end
 end
 
-function putHome(obj)
+-- Which deck a card belongs to. DECK_OF is generated from decks.py and
+-- answers to both names: a 'Task 7' and an 'Assignment' both go home
+-- to 'Assignment'.
+function deckLabel(name)
+  local base = (name or ''):gsub(' %d+$', '')
+  return DECK_OF[base] or base
+end
+
+-- TAKE THE STRANGERS OUT OF A DECK BEFORE IT IS STOWED.
+--
+-- A setup MERGES decks: the six Opportunities and the Setbacks go into
+-- the Assignment deck, and when the pack-up puts that deck away the
+-- Opportunities are inside it. The next setup asked for a deck called
+-- Opportunities, found nothing, said MISSING DECK and dealt a
+-- 38-card Assignment deck with no Opportunities left to add.
+--
+-- The strangers come out here and go into the box as single cards; a
+-- deckOut gathers its own back up, so the deck is whole again next
+-- time without anything having to remember what was merged where.
+function unmix()
+  for _, o in ipairs(getAllObjects()) do
+    if homeBox(o.getName()) and count(o) > 1 then
+      local mine = deckLabel(o.getName())
+      local strays = {}
+      for _, e in ipairs(o.getObjects()) do
+        if deckLabel(e.nickname) ~= mine then
+          table.insert(strays, e.guid)
+        end
+      end
+      for _, g in ipairs(strays) do
+        -- NEVER THE LAST ONE: a deck of one card is a card, and taking
+        -- a card out of a card throws.
+        if count(o) > 1 then
+          o.takeObject({guid = g, position = OFF, smooth = false})
+        end
+      end
+    end
+  end
+end
+
+-- ONE ATTEMPT AT A BAG IS NOT A PUT. TTS refuses roughly one in three
+-- under load - that is what twenty pack-up passes are for - and every
+-- other caller here made a single attempt and walked away. A refused
+-- put leaves the card hanging in the staging band, from where it drops
+-- onto the table looking like something the setup dealt, or simply
+-- misses the deal it was being gathered for.
+--
+-- So look again. The object is gone from getAllObjects() once the bag
+-- has it, which is the only honest way to tell that the put took; the
+-- GUID is read before the attempt because a swallowed object cannot be
+-- asked for it afterwards.
+function putHome(obj, tries)
   if not obj then return end
   local b = homeBox(obj.getName())
-  if b then
-    obj.setLock(false)
-    b.putObject(obj)
-  end
+  if not b then return end
+  local gid = obj.getGUID()
+  obj.setLock(false)
+  b.putObject(obj)
+  tries = (tries or 0) + 1
+  if tries >= 8 then return end
+  Wait.frames(function()
+    for _, o in ipairs(getAllObjects()) do
+      if o.getGUID() == gid then
+        putHome(o, tries)
+        return
+      end
+    end
+  end, 6)
 end
 
 -- The named deck, wherever it currently is: inside a box, or already out
@@ -320,21 +410,80 @@ function findDeck(label)
   return nil, nil, nil
 end
 
--- Take the named deck OUT of its box and put it at pos.
+-- Is this card one of that deck's? A DECK'S CARDS ARE ITS NAME AND A
+-- NUMBER, and nothing else is: matching the name and a space made
+-- 'Imposter Task 1' a card of the Imposters, so the finale gathered
+-- the four Tier II Tasks into the five Imposters and dealt nine
+-- characters to choose between.
+function isCardOf(name, one)
+  name = name or ''
+  if name:sub(1, #one + 1) ~= one .. ' ' then return false end
+  return name:sub(#one + 2):match('^%d+$') ~= nil
+end
+
+-- Take the named deck OUT of its box and put it at pos - AND EVERY
+-- CARD OF IT that an earlier game left lying in the box beside it.
+--
+-- findDeck MATCHES A NICKNAME EXACTLY, and a deck does not survive
+-- being played with. column() deals the Time Slots and leaves a deck
+-- of one called 'Time Slots' next to two loose 'Time Slot' cards;
+-- choosing an Apprentice takes one card out of three. Pack up stows
+-- each of those separately, because that is what they are by then, and
+-- the next setup took the deck out and dealt whatever was left in it:
+-- one Time Slot where there should have been three.
 function deckOut(label, pos, rot)
   local b, gu, loose = findDeck(label)
+  local d = nil
   if b then
-    return b.takeObject({guid = gu, position = pos, rotation = rot or FACEDOWN,
-                         smooth = false})
-  end
-  if loose then
+    d = b.takeObject({guid = gu, position = pos, rotation = rot or FACEDOWN,
+                      smooth = false})
+  elseif loose then
     loose.setLock(false)
-    loose.setPosition(pos)
-    loose.setRotation(rot or FACEDOWN)
-    return loose
+    d = loose
   end
-  say('MISSING DECK: ' .. label)     -- a label that matches nothing, out loud
-  return nil
+  -- The cards of this deck carry a name of their own, which is not the
+  -- deck's: a card of Time Slots is a Time Slot.
+  local one = CARD_NAME[label] or label
+  for _, g in pairs(BOX) do
+    local box = getObjectFromGUID(g)
+    if box then
+      local want = {}
+      for _, e in ipairs(box.getObjects()) do
+        if isCardOf(e.nickname, one) then table.insert(want, e.guid) end
+      end
+      for _, gid in ipairs(want) do
+        local c = box.takeObject({guid = gid, position = OFF, smooth = false})
+        if c then
+          if d then d.putObject(c) else d = c end
+        end
+      end
+    end
+  end
+  -- AND OFF THE TABLE, not only out of the boxes. Sending cards home
+  -- and taking them straight back out again is a race: a bag refuses
+  -- about one put in three, the refused one is still on the table when
+  -- the deck is gathered, and the deal comes up short with nothing to
+  -- say so. Changing the FINF setting mid-game lost a card that way
+  -- every time it asked for all three.
+  --
+  -- Safe because a setup packs up first, so the table is bare when one
+  -- of these runs; the two that run mid-game - the Apprentice and FINF
+  -- buttons - want exactly this.
+  for _, o in ipairs(getAllObjects()) do
+    if isCardOf(o.getName(), one)
+        and (d == nil or o.getGUID() ~= d.getGUID()) then
+      o.setLock(false)
+      if d then d.putObject(o) else d = o end
+    end
+  end
+  if not d then
+    say('MISSING DECK: ' .. label)   -- a label that matches nothing, out loud
+    return nil
+  end
+  d.setLock(false)
+  d.setPosition(pos)
+  d.setRotation(rot or FACEDOWN)
+  return d
 end
 
 -- ---------------------------------------------------------- the sequencer
@@ -413,40 +562,6 @@ function moveN(src, dst, n)
   end
   putHome(src)
   return dst
-end
-
--- The deck AND any single card of it an earlier choice left behind.
---
--- findDeck MATCHES A NICKNAME EXACTLY, so an 'Apprentice 2' sitting
--- loose in the bag is invisible to it: take the deck out after one has
--- been chosen and you get a stack of two, with nothing anywhere saying
--- why. That was already true of Keep 1/2/3; an Apprentice button you
--- can press twice makes it happen every time.
-function takeWhole(label, card, pos, rot)
-  local d = deckOut(label, pos, rot)
-  for _, g in pairs(BOX) do
-    local b = getObjectFromGUID(g)
-    if b then
-      local want = {}
-      for _, e in ipairs(b.getObjects()) do
-        local n = e.nickname or ''
-        if n:sub(1, #card + 1) == card .. ' ' then
-          table.insert(want, e.guid)
-        end
-      end
-      for _, gu in ipairs(want) do
-        local c = b.takeObject({guid = gu, position = OFF, smooth = false})
-        if c then
-          if d then d.putObject(c) else d = c end
-        end
-      end
-    end
-  end
-  if d then
-    d.setPosition(pos)
-    d.setRotation(rot or FACEDOWN)
-  end
-  return d
 end
 
 -- Deal ONE card of a deck to a place, and send the rest home.
@@ -639,9 +754,7 @@ function keepChar(i)
   local t = {}
   for _, o in ipairs(getAllObjects()) do
     local n = o.getName()
-    if n == label or (n and n:sub(1, #one + 1) == one .. ' ') then
-      table.insert(t, o)
-    end
+    if n == label or isCardOf(n, one) then table.insert(t, o) end
   end
   if #t == 0 then
     say('No ' .. label .. ' are on the table - press that game' .. chr39 .. 's setup first.')
@@ -691,7 +804,7 @@ end
 function finfOut(asg)
   local set = FINF_SET[STATE.finf] or FINF_SET[4]
   local n = set[2]
-  local d = takeWhole('FINF', 'FINF', OFF, FACEUP)
+  local d = deckOut('FINF', OFF, FACEUP)
   if not d then return end
   d.shuffle()
   if set[1] == 'Increase' then
@@ -725,6 +838,48 @@ function finfOut(asg)
   d.setRotation(FACEUP)
 end
 
+-- The FINF setting, applied to a table that is already dealt.
+--
+-- The button only appears once NAP is on the table, so pressing it has
+-- to move cards rather than set a number for a later setup to read:
+-- take back whatever the last setting put out - off the FINF space AND
+-- out of the Assignment deck, because Increase hides them in there -
+-- and then deal the new setting into the deck as it now stands.
+function finfApply()
+  if STATE.game ~= 'NAP' then return false end
+  local asg = nil
+  for _, o in ipairs(getAllObjects()) do
+    if deckLabel(o.getName()) == 'Assignment'
+        and (asg == nil or count(o) > count(asg)) then
+      asg = o
+    end
+  end
+  if asg then
+    local strays = {}
+    for _, e in ipairs(asg.getObjects()) do
+      if deckLabel(e.nickname) == 'FINF' then table.insert(strays, e.guid) end
+    end
+    for _, g in ipairs(strays) do
+      -- OUT ONTO THE TABLE, not home: deckOut gathers them from there
+      -- in a moment, and a trip through the bag is a trip something
+      -- can refuse.
+      if count(asg) > 1 then
+        asg.takeObject({guid = g, position = OFF, smooth = false})
+      end
+    end
+  end
+  Wait.frames(function()
+    finfOut(asg)
+    Wait.frames(function()
+      -- A card shuffled into a deck you are already drawing from has
+      -- to be lost in it, which the setup gets for free by dealing
+      -- FINF before it shuffles.
+      if asg and FINF_SET[STATE.finf][1] == 'Increase' then asg.shuffle() end
+    end, 10)
+  end, 10)
+  return true
+end
+
 -- The chosen Apprentice, on the table, the right way up.
 --
 -- SIX CHARACTERS ON THREE CARDS, so a choice is a card AND a side, and
@@ -738,12 +893,10 @@ function showApprentice()
   local one = CARD_NAME['Apprentices'] or 'Apprentice'
   for _, o in ipairs(getAllObjects()) do
     local n = o.getName() or ''
-    if n == 'Apprentices' or n:sub(1, #one + 1) == one .. ' ' then
-      putHome(o)
-    end
+    if n == 'Apprentices' or isCardOf(n, one) then putHome(o) end
   end
   Wait.frames(function()
-    local d = takeWhole('Apprentices', one, OFF, FACEUP)
+    local d = deckOut('Apprentices', OFF, FACEUP)
     if not d then say('No Apprentices to deal.') return end
     local home = CHAR_HOME.NAP
     local rot = a.back and FACEDOWN or FACEUP
@@ -822,6 +975,7 @@ function packUp(quiet)
   -- card out often enough for the harness to notice. A pass that finds
   -- nothing costs a few frames and nothing else.
   step(markersHome)
+  step(unmix)
   for _ = 1, 20 do step(post) end
   step(function()
     local left = {}
@@ -1002,10 +1156,8 @@ function setupNAP()
       end
     end, 0.9)
     -- A readout over each pile, in the gap above it.
-    deckOut(CREDIT_PILE,
-            {PILE_X, 3, ROW_CHAR - 2 * NAP_GAP + COUNTER_LIFT})
-    deckOut(BANK_PILE,
-            {PILE_X, 3, ROW_CHAR - 3 * NAP_GAP + COUNTER_LIFT})
+    counterOut(CREDIT_PILE, ROW_CHAR - 2 * NAP_GAP + COUNTER_LIFT)
+    counterOut(BANK_PILE, ROW_CHAR - 3 * NAP_GAP + COUNTER_LIFT)
   end)
 
   step(function()
@@ -1238,9 +1390,11 @@ function refreshPanel()
   btn('NRJ Tier  ' .. (STATE.tier == 0 and 'off' or
       ({'I', 'II', 'III'})[STATE.tier]), 'btnTier', 0.50, -0.36, 820)
 
-  -- THE MIDDLE ROW IS NAP'S TWO OTHER DIALS, under the two it already
-  -- has. Each one reads and sets the same way the difficulty does: the
-  -- button says what is chosen and pressing it chooses the next.
+  -- THE MIDDLE ROW IS THE DEALT GAME'S OWN OPTIONS, and it is empty
+  -- until a setup has run. These two move cards that are on the table,
+  -- so there is nothing for them to do before there is a table; the
+  -- difficulty and the tier stay in the row above, because those are
+  -- read BY a setup and have to be set before one.
   --
   -- NOTHING COUNTS ON THIS PANEL ANY MORE. Splices, Credits, Backdoors
   -- and Session all sat here as a number and a +/-, which counted
@@ -1249,12 +1403,13 @@ function refreshPanel()
   -- still here and still drive STATE, so a row can go back on a button
   -- or on a plate over the pile it describes - which is what the Credit
   -- Record above the Completed Credits pile already does.
-  local a = APPRENTICE[STATE.apprentice]
-  btn('Apprentice  ' .. a.name, 'btnApp', -2.44, 0.00, 1240)
-  btn('FINF  ' .. FINF_SET[STATE.finf][1] .. ' ' .. FINF_SET[STATE.finf][2],
-      'btnFinf', 0.70, 0.00, 940)
-
   local g = STATE.game
+  if g == 'NAP' then
+    btn('Apprentice  ' .. APPRENTICE[STATE.apprentice].name,
+        'btnApp', -2.44, 0.00, 1240)
+    btn('FINF  ' .. FINF_SET[STATE.finf][1] .. ' ' ..
+        FINF_SET[STATE.finf][2], 'btnFinf', 0.70, 0.00, 940)
+  end
   -- CHOOSING YOUR CHARACTER, for the three games that have one to
   -- choose. Every card is two characters, so this keeps a card and
   -- leaves the flip to you. NAP has the Apprentice button above for
@@ -1262,7 +1417,12 @@ function refreshPanel()
   -- ALWAYS DRAWN, even with no game set up. It only appeared once a
   -- setup had run, so looking at the panel to find out whether you could
   -- choose your character told you that you could not.
-  local n = CHAR_N[g]
+  -- NOT FOR NAP ANY MORE. Keep 1/2/3 takes a card out of the stack and
+  -- leaves the side to you, which is a second way to choose an
+  -- Apprentice that knows nothing about the first: press it and the
+  -- panel still names whoever the Apprentice button last dealt, on a
+  -- side nobody chose. The Apprentice button does both halves.
+  local n = (g ~= 'NAP') and CHAR_N[g] or nil
   if n then
     lbl('Keep', -3.97, 0.36, 380, 82)
     for i = 1, n do
@@ -1271,7 +1431,8 @@ function refreshPanel()
   else
     lbl('Keep', -3.97, 0.36, 380, 82)
     lbl(g == 'BAT' and 'BAT plays all four Lab Rats'
-        or 'set up NAP, AoS or Imposter to choose a character',
+        or (g == 'NAP' and 'the Apprentice button picks the card and the side'
+            or 'set up NAP, AoS or Imposter to choose a character'),
         0.24, 0.36, 2300, 70)
   end
 
@@ -1319,18 +1480,20 @@ function btnApp()
       (STATE.game == 'NAP' and '' or ' Press Set up NAP to deal it.'))
 end
 
--- FINF CANNOT ACT AT ONCE, and that is the rule rather than a
--- shortcut: on Increase the cards are shuffled INTO the Assignment
--- deck, so the setting has to be chosen before the deck is built.
+-- IT ACTS AT ONCE TOO, now that it only appears once NAP is dealt.
+-- It used to set a number for the next setup to read, which is how
+-- Jon came to press Set up NAP a second time - and the second setup
+-- was the thing that was broken.
 function btnFinf()
   STATE.finf = (STATE.finf % #FINF_SET) + 1
   refreshPanel()
   local s = FINF_SET[STATE.finf]
   local many = s[2] > 1 and 's' or ''
+  local live = finfApply()
   say('FINF: ' .. s[1] .. ' ' .. s[2] .. ' -- ' .. s[2] .. ' FINF card' ..
       many .. (s[1] == 'Increase' and ' shuffled into the Assignment deck.'
                or ' face-up to spend, one use each.') ..
-      ' Press Set up NAP to deal it.')
+      (live and '' or ' Press Set up NAP to deal it.'))
 end
 
 function splPlus() bump('splices', 1, 'Splices') end

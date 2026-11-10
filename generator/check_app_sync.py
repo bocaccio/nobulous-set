@@ -2269,6 +2269,41 @@ check("nothing writes the Apprentice list down a second time",
       "APPRENTICE = {" not in _lua and "def nap_apprentices" in _mod
       and "nap_apprentices()" in _mod)
 
+# THE STAGING BAND IS BELOW EVERY ROW. A deck being built is held in
+# the air over it, and a card the bag will not take falls out of that
+# air. It used to be held over ROW_TIER, which is where AoS spreads the
+# Research Notes, so the card landed in the middle of a row and read as
+# one the setup had dealt - that is what Jon found. putHome keeps
+# trying, so this is the margin rather than the mechanism, but a margin
+# that overlaps the thing it is protecting is not one.
+_hdr = _sv["LuaScript"]
+_num = lambda k, s=None: float(re.search(
+    r"^%s = (-?[\d.]+)" % k, s or _hdr, re.M).group(1))
+_feltz0 = float(re.search(r"FELT = \{[^}]*z0 = (-?[\d.]+)", _hdr).group(1))
+_offz = _feltz0 + 2.0
+check("the staging band is below every row a setup deals on",
+      "OFF_Z = FELT.z0 + 2.0" in _lua and "OFF = {0, 14, OFF_Z}" in _lua
+      and "14, OFF_Z}" in _lua
+      and _offz + 1.0 < _num("ROW_TIER") - _num("CARD_L") / 2.0,
+      "staging at z %.2f, the lowest row reaches %.2f"
+      % (_offz, _num("ROW_TIER") - _num("CARD_L") / 2.0))
+
+# DECK_OF IS WHAT LETS A MERGED DECK BE TAKEN APART AGAIN - it is the
+# only table that says a Task belongs to the Assignment deck - so it is
+# generated from decks.py rather than typed, and it has to cover every
+# deck: one missing entry is one deck that never comes back.
+_dof = re.search(r"^DECK_OF = \{(.*)\}$", _hdr, re.M)
+_dcards = dict(re.findall(r"\['([^']+)'\] = '([^']+)'",
+                          _dof.group(1) if _dof else ""))
+_dlabels = set(re.findall(r"label='([^']+)'", _decks))
+check("every deck in tts/decks.py can be found again from its cards",
+      set(_dcards.values()) == _dlabels
+      and all(_dcards.get(l) == l for l in _dlabels),
+      "DECK_OF covers %r, decks.py has %r"
+      % (sorted(set(_dcards.values())), sorted(_dlabels)))
+check("nothing writes that table down a second time",
+      "DECK_OF = {" not in _lua and "'DECK_OF = { %s }'" in _mod)
+
 # THE RULEBOOK IN THE CORNER. Four PDFs fetched from rules/ rather than
 # images/, so they are the one set of files the image manifest would
 # not have covered, and a URL that 404s shows as a blank page with no

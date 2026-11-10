@@ -30,6 +30,7 @@ import io
 import json
 import os
 import random
+import re
 import sys
 
 # PINNED TO 5.4, AND THE PIN IS THE POINT. lupa 2.8 defaults to its new
@@ -218,6 +219,31 @@ class Obj(object):
             if self.world.puts % self.world.lossy == 0:
                 return other
         self.world.table.pop(other.guid, None)
+        if not self.kids and not self.bag:
+            # A CARD THAT RECEIVES A CARD BECOMES A DECK OF BOTH. The
+            # stub kept the receiver as the container and dropped its
+            # own face, so a deck built out of loose cards came back one
+            # card short - and the one it lost was the first one, which
+            # is the card the deck was built on. Rebuilding the
+            # Opportunities out of the box after a game lost Opportunity
+            # 5 every single time, silently.
+            # ...AND THE DECK IS A NEW OBJECT. TTS gives it a fresh
+            # GUID and the card keeps its own inside it, which is what
+            # anything holding that GUID depends on: putHome retries by
+            # GUID until the object is gone from the table, and with
+            # the id left on the container a retry found the deck the
+            # card had just been gathered into and put the whole deck
+            # in the bag.
+            inner = Obj(self.world, self.guid, self.name)
+            inner.pos, inner.rot = self.pos, self.rot
+            was = self.guid
+            self.guid = was + "#deck"
+            if self.world.table.get(was) is self:
+                del self.world.table[was]
+                self.world.table[self.guid] = self
+            self.world.byguid[self.guid] = self
+            self.world.byguid[was] = inner
+            self.kids.append(inner)
         if other.kids and not self.bag:
             self.kids.extend(other.kids)     # deck into deck merges, as TTS does
             other.kids = []
@@ -838,6 +864,170 @@ def panel_assertions():
              sorted((n, p[0], p[1]) for n, p in home.items()))
 
 
+def census(w):
+    """Every card in the world, wherever it is, by name."""
+    c = {}
+    def walk(o):
+        if o.kids:
+            for k in o.kids:
+                walk(k)
+        else:
+            c[o.name] = c.get(o.name, 0) + 1
+    for o in list(w.table.values()):
+        walk(o)
+    for o in w.byguid.values():
+        if o.bag:
+            for k in o.kids:
+                walk(k)
+    return c
+
+
+def shape(w, g):
+    """How many cards of each DECK are on the table, and in how many piles.
+
+    By deck rather than by card, because the cards themselves differ
+    between two deals of a shuffled deck - that is the deck working,
+    not the setup failing.
+    """
+    lab = dict(g.DECK_OF)
+    out = {}
+    for o in w.table.values():
+        base = re.sub(r" \d+$", "", o.name)
+        key = str(lab.get(base, base))
+        n, piles = out.get(key, (0, 0))
+        out[key] = (n + (len(o.kids) or 1), piles + 1)
+    return out
+
+
+def in_staging(w, g):
+    """Anything with a bag to go home to, resting in the staging band."""
+    z = float(g.OFF_Z)
+    return sorted(o.name for o in w.table.values()
+                  if abs(o.pos[2] - z) < 2.5 and g.homeBox(o.name) is not None)
+
+
+def repeat_assertions():
+    """Setting up twice.
+
+    NONE OF THIS NEEDED A SECOND GAME, only a second press, and every
+    part of it was silent. A setup MERGES decks - the Opportunities go
+    into the Assignment deck and cease to exist - and SPREADS others,
+    which leaves 'Time Slot 2' lying beside a deck of one called 'Time
+    Slots'. Pack-up stowed each of those as what it had become, and the
+    next setup asked for decks that were no longer there: it said
+    MISSING DECK: Opportunities, dealt one Time Slot instead of three,
+    and left an Apprentice in the middle of the table.
+
+    Run with the bag refusing a put, because that is what TTS does and
+    what stranded the card.
+    """
+    for which in ("NAP", "BAT", "AoS", "IMP"):
+        for tier in (0, 3):
+            w, g = start("Standard", tier, Panel())
+            w.lossy = 2
+            fn = {"NAP": g.setupNAP, "BAT": g.setupBAT,
+                  "AoS": g.setupAoS, "IMP": g.setupImposter}[which]
+            seen = []
+            for _ in range(3):
+                fn()
+                drain(w)
+                seen.append((census(w), shape(w, g), in_staging(w, g)))
+            t = "%s t%d setting up three times" % (which, tier)
+            want(t + " loses or gains no card",
+                 [i for i, s in enumerate(seen) if s[0] != seen[0][0]], [])
+            want(t + " deals the same decks every time",
+                 [i for i, s in enumerate(seen) if s[1] != seen[0][1]], [])
+            # THE STAGING BAND IS BELOW EVERY ROW A SETUP DEALS ON, which
+            # is what lets run() sweep it unconditionally. It used to be
+            # ROW_TIER, where AoS spreads the Research Notes.
+            want(t + " leaves nothing in the staging band",
+                 [s[2] for s in seen], [[], [], []])
+            want(t + " says nothing went missing",
+                 [m for m in w.said
+                  if "MISSING" in m or "Setup error" in m][:2], [])
+
+
+def finf_assertions():
+    """The FINF button moves cards on a table that is already dealt.
+
+    It only appears once NAP is out, so it has to take back whatever
+    the last setting put out - off the FINF space AND out of the
+    Assignment deck, since Increase hides them in there - and deal the
+    new one. Under a bag that refuses puts, routing those cards home
+    and taking them straight back out lost one every time the setting
+    asked for all three.
+    """
+    for lossy in (0, 2, 3):
+        w, g = start("Standard", 0, Panel())
+        w.lossy = lossy
+        g.setupNAP()
+        drain(w)
+        fz = float(g.FINF_Z)
+        got, exp = [], []
+        for _ in range(len(list(g.FINF_SET.values())) + 1):
+            way = str(g.FINF_SET[int(g.STATE.finf)][1])
+            many = int(g.FINF_SET[int(g.STATE.finf)][2])
+            laid = sum(len(o.kids) or 1 for o in w.table.values()
+                       if o.name.startswith("FINF")
+                       and abs(o.pos[2] - fz) < 0.1)
+            hidden = sum(1 for d in w.table.values()
+                         if str(dict(g.DECK_OF).get(
+                             re.sub(r" \d+$", "", d.name), "")) == "Assignment"
+                         for c in d.kids if c.name.startswith("FINF"))
+            got.append((way, many, laid, hidden))
+            exp.append((way, many, 0 if way == "Increase" else many,
+                        many if way == "Increase" else 0))
+            g.btnFinf()
+            drain(w)
+        want("the FINF button deals its setting exactly (bag refuses 1 in %s)"
+             % (lossy or "none"), got, exp)
+        want("...and the three FINF cards are never anywhere else (1 in %s)"
+             % (lossy or "none"),
+             sorted(k for k, v in census(w).items()
+                    if k.startswith("FINF") and v != 1), [])
+
+
+def panel_game_assertions():
+    """A game's own options appear when that game is on the table."""
+    def labels(p):
+        return sorted(b["label"].split("  ")[0] for b in p.buttons)
+    w, g = start("Standard", 0, Panel())
+    g.refreshPanel()
+    want("no game's options are offered before a setup",
+         [n for n in labels(g.PANEL) if n in ("Apprentice", "FINF")], [])
+    for which, exp in (("NAP", ["Apprentice", "FINF"]), ("BAT", []),
+                       ("AoS", []), ("IMP", [])):
+        w, g = start("Standard", 0, Panel())
+        {"NAP": g.setupNAP, "BAT": g.setupBAT,
+         "AoS": g.setupAoS, "IMP": g.setupImposter}[which]()
+        drain(w)
+        want("%s offers its own options and no other game's" % which,
+             [n for n in labels(g.PANEL) if n in ("Apprentice", "FINF")], exp)
+    # ONE CHOOSER PER GAME. Keep 1/2/3 takes a card out of the stack
+    # and leaves the side to you; for NAP that is a second way to
+    # choose an Apprentice which does not know what the first chose, so
+    # the panel would go on naming a character that was no longer the
+    # one on the table.
+    for which, keeps in (("NAP", []), ("AoS", ["1", "2", "3"]),
+                         ("IMP", ["1", "2", "3", "4", "5"])):
+        w, g = start("Standard", 0, Panel())
+        {"NAP": g.setupNAP, "AoS": g.setupAoS,
+         "IMP": g.setupImposter}[which]()
+        drain(w)
+        want("%s offers the Keep buttons its character needs" % which,
+             sorted(b["label"] for b in g.PANEL.buttons
+                    if b["label"] in "12345" and len(b["label"]) == 1),
+             keeps)
+
+    # Pack up puts the panel back to having none.
+    g.setupNAP()
+    drain(w)
+    g.btnPack()
+    drain(w)
+    want("packing up takes the game's options away",
+         [n for n in labels(g.PANEL) if n in ("Apprentice", "FINF")], [])
+
+
 def choice_assertions():
     """NAP's two panel dials: which Apprentice, and which FINF setting.
 
@@ -897,9 +1087,14 @@ def choice_assertions():
     slots = [o for o in w.table.values() if o.name.startswith("Time Slot")]
     want("the three Time Slots are locked",
          (len(slots), sorted(set(o.locked for o in slots))), (3, [True]))
+    # THE CLOCK, THE MAT AND THE TWO PLATES, and nothing else. All
+    # four are furniture rather than cards: a locked card is a card
+    # the player cannot pick up.
     want("...and nothing else NAP deals is",
          [o.name for o in w.table.values()
-          if o.locked and not o.name.startswith(("Time Slot", "NAP Table"))],
+          if o.locked and not o.name.startswith(
+              ("Time Slot", "NAP Table", "Credit Record",
+               "Banked Opportunities"))],
          [])
 
     # FINF: Increase hides them in the Assignment deck, Reduce lays them
@@ -977,6 +1172,24 @@ def counter_assertions():
          sorted(n for n in by if n in ("Credit Record",
                                        "Banked Opportunities")),
          ["Banked Opportunities", "Credit Record"])
+    # AND DEALS THEM SO THEY CAN BE READ. A 3DText is authored lying
+    # flat - rotX 90 - and locked; deckOut turns what it takes out
+    # FACEDOWN like a deck, which stood both plates on edge pointing
+    # away from the table. Jon moved a Credit onto the pile and saw
+    # neither a count nor hover text, because there was nothing on the
+    # table to see: the counter had been counting into an invisible
+    # object through every build.
+    flat = tuple(float(v) for v in g.TEXT_ROT.values())
+    want("...lying flat, the way a 3DText is readable",
+         [by[n].rot for n in ("Credit Record", "Banked Opportunities")],
+         [flat, flat])
+    want("...and locked, so a dropped card cannot shove them",
+         [by[n].locked for n in ("Credit Record", "Banked Opportunities")],
+         [True, True])
+    want("...above the pile and clear of the felt",
+         [round(by[n].pos[1], 2) for n in ("Credit Record",
+                                           "Banked Opportunities")],
+         [round(float(g.TEXT_Y), 2)] * 2)
     goal = int(g.NAP_DIFF[g.STATE.difficulty][1])
     want("an empty pile reads zero",
          by["Credit Record"].text, "CREDITS  0 / %d" % goal)
@@ -1004,6 +1217,20 @@ def counter_assertions():
     o = Obj(w, "bank1", "Devious Opportunity 3")
     o.pos = (float(g.PILE_X), 1.0, bz)
     w.table[o.guid] = o
+    # THROUGH THE DROP, not through the call. Everything above puts
+    # cards on the pile and asks the script to count them; what a
+    # player does is let go of a card, and nothing here had ever been
+    # through onObjectDrop - whose arguments are (player colour,
+    # object) in that order, so a script that read them the other way
+    # round would count nothing and say nothing about it.
+    dropped = Obj(w, "dropped", "Task %d" % ana[0])
+    dropped.pos = (float(g.PILE_X), 1.0, pz)
+    w.table[dropped.guid] = dropped
+    g.onObjectDrop("White", dropped)
+    drain(w)
+    want("letting go of a Credit over the pile counts it",
+         by["Credit Record"].text, "CREDITS  4 / %d" % goal)
+    w.table.pop(dropped.guid)
     g.refreshCounts()
     drain(w)
     want("four cards on the pile, three of them Credits",
@@ -1099,6 +1326,9 @@ def main():
     counter_assertions()
     dial_assertions()
     choice_assertions()
+    repeat_assertions()
+    finf_assertions()
+    panel_game_assertions()
     for lvl in ("Easy", "Standard", "Hard", "Nobulous"):
         spec, sb = BAT_SPECIMENS[lvl], NAP_SETBACKS[lvl]
         for tier in (0, 1, 2, 3):
