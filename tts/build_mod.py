@@ -152,6 +152,62 @@ CHIP_TRIM = -17
 # the panel's +/-, and the thing that is true only on the printed side.
 CHIP_FACE_Z = 0
 
+# THE OTHER FACE, which turned out to exist after all. Jon has both
+# scans of the physical chip: the colour wheel, and a 0-20 dial with a
+# sun in the middle. The official 20 Strong mod never modelled it - its
+# Chip is a Custom_Token carrying one image, and a token with one image
+# shows that image MIRRORED underneath - which is why the script spent
+# weeks believing in a number side it could not turn to.
+#
+# A CUSTOM_TILE, NOT A TOKEN. Of the 2,611 Custom_Tokens in the mods on
+# this machine not one carries a second image, and 2,991 of the 4,079
+# Custom_Tiles do: the back face is a tile's feature, and the token's
+# import dialog has only one image field. Type 2 is the circular tile,
+# which is 1,839 of those.
+CHIP_TILE_TYPE = 2
+# A tile is 2 units across at scale 1, so this is the chip's diameter
+# in units - the same 2.2 the overlay draws its circle at.
+CHIP_SCALE = 1.1
+
+# WHERE THE NUMBERS ARE, measured off the dial scan. The olive moon
+# marker sits at 327.8 degrees clockwise from the top of the picture
+# and takes a slot of its own, so the rim holds 22 slots of 16.364
+# degrees: the moon, then 0 through 20 running clockwise after it.
+CHIP_DIAL_MARK = 327.8
+CHIP_DIAL_SLOTS = 22
+CHIP_DIAL_ZERO = CHIP_DIAL_MARK + 360.0 / CHIP_DIAL_SLOTS
+
+# Which way up the dial is, and the nudge that lands its numbers where
+# the colour wheel's colours land - at the edge nearest the player.
+# ONE NUMBER TO TURN if the dial reads off by a step: 16 degrees is one
+# number, and the sign is clockwise-positive, exactly like CHIP_TRIM.
+CHIP_DIAL_Z = 180
+CHIP_DIAL_TRIM = 0
+
+
+def chip_dial_angles():
+    """y rotation that brings each number to the player's edge.
+
+    The dial is the tile's BACK face, so the picture is handed the
+    other way round from the front: a point at art angle A shows at
+    180 - A rather than at A. That mirroring is why this is derived
+    rather than copied from CHIP_ANGLE, and it is the one part of the
+    measurement that the table has to confirm - hence CHIP_DIAL_TRIM.
+    """
+    out = {}
+    for n in range(21):
+        art = (CHIP_DIAL_ZERO + n * 360.0 / CHIP_DIAL_SLOTS) % 360.0
+        out[n] = int(round((art + CHIP_DIAL_TRIM) % 360.0))
+    return out
+
+
+def chip_image(which):
+    """The chip face's filename, which carries its content hash."""
+    for f in sorted(os.listdir(SHEETS)):
+        if f.startswith('Chip_%s' % which) and f.endswith('.png'):
+            return f
+    raise SystemExit('no Chip_%s image in images/' % which)
+
 ATTENTION = ('Yellow', 'Green', 'Blue', 'Purple', 'Red')
 CHIP_ANGLE = dict((c, (360 - a + CHIP_TRIM) % 360)
                   for c, a in CHIP_SEGMENT.items())
@@ -381,6 +437,12 @@ def lua_header(box_guids, rules_guid):
         # the setup's own turn both have to name the same side of the
         # token or typing a number and pressing Set up NAP disagree.
         'CHIP_FACE_Z = %d' % CHIP_FACE_Z,
+        # The dial on the other face: which way up it is, and the angle
+        # that brings each number to the player's edge.
+        'CHIP_DIAL_Z = %d' % CHIP_DIAL_Z,
+        'CHIP_DIAL = { %s }' % j('[%d] = %d' % (n, a)
+                                 for n, a in sorted(
+                                     chip_dial_angles().items())),
         # The six Apprentices: which card carries each and which way up.
         'APPRENTICE = { %s }' % j("{card = %d, back = %s, name = '%s'}"
                                   % (c, 'true' if s == 'back' else 'false', n)
@@ -772,6 +834,15 @@ def dice_objects():
         if o['Name'] == 'Custom_Dice':
             d["RotationValues"] = [dict(v) for v in D6]
         if nick == 'Chip':
+            # TWO FACES, so it stops being a token. See CHIP_TILE_TYPE.
+            d['Name'] = 'Custom_Tile'
+            d['Transform'] = xf(bx, 1.4, bz, (0, 0, 0), CHIP_SCALE)
+            d['CustomImage'] = {
+                "ImageURL": url(chip_image('Colour')),
+                "ImageSecondaryURL": url(chip_image('Dial')),
+                "ImageScalar": 1.0, "WidthScale": 0.0,
+                "CustomTile": {"Type": CHIP_TILE_TYPE, "Thickness": 0.2,
+                               "Stackable": False, "Stretch": False}}
             # THE DIAL NEEDS ROTATION VALUES TOO - typing a number over
             # it did nothing until it had them - and they have to be the
             # SAME angles the script turns it to, so CHIP_ANGLE owns

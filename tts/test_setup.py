@@ -363,8 +363,14 @@ def build(lua):
     w.die_half = 0.45 * max(
         [o["Transform"]["scaleX"] for o in save["ObjectStates"]
          if o["Name"] == "Custom_Dice"] or [1.0])
+    # THE MARKERS ARE THE LOOSE THINGS A SETUP MOVES: the dice, and
+    # the Chip. The Chip became a Custom_Tile the day it was given
+    # a second face - a token carries only one image - so the type
+    # is no longer what identifies it. Anything on the table that
+    # is not a bag is one of these.
     for o in save["ObjectStates"]:
-        if o["Name"] in ("Custom_Dice", "Custom_Token"):
+        if o["Name"] in ("Custom_Dice", "Custom_Token") or (
+                o.get("Nickname") in ("Chip",)):
             m = Obj(w, o["GUID"], o["Nickname"])
             m.pos = (o["Transform"]["posX"], o["Transform"]["posY"],
                      o["Transform"]["posZ"])
@@ -1290,6 +1296,17 @@ def bat_assertions():
          (round(chip.pos[0], 2), chip.pos[2] < float(g.batRowZ(4))
           - float(g.BAT_BOX_HD)),
          (round(float(g.batRightX(int(g.BAT_SPLICES))), 2), True))
+    # AND SHOWS ITS DIAL, turned to this difficulty's Tyrant Health.
+    # The dial is a real second face now: the Chip is a Custom_Tile
+    # carrying both scans, where it was a Custom_Token carrying one
+    # and showing it mirrored underneath.
+    hp = int(g.BAT_DIFF[g.STATE.difficulty][2])
+    want("...dial side up, turned to the Tyrant's Health",
+         (chip.rot[2] if chip.rot else None,
+          chip.rot[1] if chip.rot else None),
+         (float(g.CHIP_DIAL_Z), float(g.CHIP_DIAL[hp])))
+    want("...and the dial has an angle for every number it prints",
+         sorted(int(k) for k in dict(g.CHIP_DIAL)), list(range(21)))
 
     # The overlay goes down and is locked.
     want("BAT lays its own overlay", "BAT Table" in by, True)

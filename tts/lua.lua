@@ -72,11 +72,12 @@ ATTENTION = { 'Yellow', 'Green', 'Blue', 'Purple', 'Red' }
 -- 180 - the token's MIRRORED underside, which shows a dial running the
 -- wrong way round and reads as a trim that has drifted.
 
--- The dial's NUMBER side, which is the other way up. Same five steps
--- round, same caveat: these are the angles to change if the dial reads
--- wrong, and nothing else depends on them.
-CHIP_NUM = { 0, 72, 144, 216, 288 }
-CHIP_NUM_Z = 0
+-- The dial's other face is REAL now, and generated: CHIP_DIAL holds
+-- the angle that brings each of its 0-20 numbers to the player's
+-- edge, measured off the scan, and CHIP_DIAL_Z is which way up it
+-- is. What used to stand here was CHIP_NUM - five angles for a
+-- 'number side' that did not exist, because a Custom_Token carries
+-- one image and shows it mirrored underneath.
 
 PANEL = nil
 chr39 = string.char(39)
@@ -1319,16 +1320,17 @@ function setupBAT()
 
   step(function()
     -- THE CHIP IS THE TYRANT'S HEALTH DIAL in BAT (rules/bat.html's
-    -- components), so it goes where the Tyrant's cards are: below the
-    -- rightmost Splice.
+    -- components), so it goes where the Tyrant's cards are - below
+    -- the rightmost Splice - dial side up and turned to the Health
+    -- this difficulty gives it.
     --
-    -- FACE AS IT LIES. Jon asked for the 20-point counter side up, and
-    -- there is no such side: the Chip carries ONE image, the colour
-    -- wheel, and a Custom_Token with one image shows that same picture
-    -- mirrored underneath. The official 20 Strong mod has no counter
-    -- art either - its 'Counter' token is a blank white disc - so the
-    -- face has to be drawn before it can be turned to.
-    setMarker('Chip', BAT_CHIP_X, BAT_CHIP_Z)
+    -- THE DIAL IS A REAL SECOND FACE NOW. Jon had the scan; the
+    -- Chip is a Custom_Tile carrying both pictures, where it used
+    -- to be a Custom_Token carrying one and showing it mirrored on
+    -- the back. CHIP_DIAL is generated from where the numbers sit
+    -- in that scan.
+    setMarker('Chip', BAT_CHIP_X, BAT_CHIP_Z, nil,
+              {CHIP_DIAL[hp] or CHIP_DIAL[0], CHIP_DIAL_Z})
   end)
 
   step(function()

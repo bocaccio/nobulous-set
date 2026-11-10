@@ -2337,6 +2337,103 @@ check("every deck in tts/decks.py can be found again from its cards",
 check("nothing writes that table down a second time",
       "DECK_OF = {" not in _lua and "'DECK_OF = { %s }'" in _mod)
 
+# THE CHIP HAS TWO REAL FACES NOW. It was a Custom_Token carrying one
+# image, and a token with one image shows that image MIRRORED on its
+# underside - which is why the script spent weeks turning to a number
+# side that did not exist. Of the Custom_Tokens in the mods on this
+# machine not one carries a second image; a back face is a TILE's.
+_chip_obj = [o for o in _sv['ObjectStates'] if o.get('Nickname') == 'Chip']
+_ci = (_chip_obj[0].get('CustomImage') or {}) if _chip_obj else {}
+check("the Chip carries both of its faces",
+      bool(_chip_obj) and _chip_obj[0]['Name'] == 'Custom_Tile'
+      and 'Chip_Colour' in (_ci.get('ImageURL') or '')
+      and 'Chip_Dial' in (_ci.get('ImageSecondaryURL') or ''),
+      'the Chip is %r with face %r'
+      % (_chip_obj[0]['Name'] if _chip_obj else None,
+         (_ci.get('ImageSecondaryURL') or '(none)')[-22:]))
+check("both faces ship from images/",
+      len([f for f in os.listdir(os.path.join(ROOT, 'images'))
+           if f.startswith('Chip_Colour')]) == 1
+      and len([f for f in os.listdir(os.path.join(ROOT, 'images'))
+               if f.startswith('Chip_Dial')]) == 1)
+# AND NOTHING CLAIMS THE OLD IMAGINARY ONE. CHIP_NUM was five angles
+# for a face that was never there.
+check("nothing turns the Chip to a face it does not have",
+      not re.search(r'^CHIP_NUM', _lua, re.M)
+      and bool(re.search(r'^CHIP_DIAL = ', _sv['LuaScript'], re.M)),
+      'CHIP_NUM is back, or CHIP_DIAL is not generated')
+
+# THE DIAL IS HELD TO ITS OWN SCAN. CHIP_DIAL is generated from where
+# the numbers sit in the picture, so the picture is what can say the
+# table is wrong: find the olive moon marker again and check it is
+# where build_mod.py says it is, and that the numbers come out one
+# slot apart all the way round.
+#
+# CHIP_DIAL_TRIM is NOT held here and cannot be: it is the nudge that
+# lands the numbers where a player reads them, and only the table can
+# say what that is. The same is true of CHIP_TRIM on the other face.
+_dial_png = [f for f in os.listdir(os.path.join(ROOT, 'images'))
+             if f.startswith('Chip_Dial')]
+_said_mark = float(re.search(r'^CHIP_DIAL_MARK = ([\d.]+)', _mod,
+                             re.M).group(1))
+_slots = int(re.search(r'^CHIP_DIAL_SLOTS = (\d+)', _mod, re.M).group(1))
+
+
+def _marker_angle(path):
+    import math
+    from PIL import Image
+    im = Image.open(path).convert('RGBA')
+    w, h = im.size
+    px = im.load()
+    cx, cy = (w - 1) / 2.0, (h - 1) / 2.0
+    sx = sy = 0.0
+    n = 0
+    for rr in range(int(cx * 0.55), int(cx * 0.95)):
+        for d in range(1440):
+            t = d * math.pi / 720
+            x, y = cx + rr * math.sin(t), cy - rr * math.cos(t)
+            if not (0 <= x < w and 0 <= y < h):
+                continue
+            r, g, b, a = px[int(x), int(y)]
+            if (a > 200 and 90 < r < 175 and 100 < g < 185
+                    and b < 110 and g > b + 30):
+                sx += math.sin(math.radians(d / 4.0))
+                sy += math.cos(math.radians(d / 4.0))
+                n += 1
+    if not n:
+        return None
+    return math.degrees(math.atan2(sx, sy)) % 360.0
+
+
+_got_mark = (_marker_angle(os.path.join(ROOT, 'images', _dial_png[0]))
+             if _dial_png else None)
+check("the dial's zero is measured off the dial",
+      _got_mark is not None and abs(_got_mark - _said_mark) < 1.5,
+      'the scan puts the marker at %s, build_mod.py says %s'
+      % (None if _got_mark is None else round(_got_mark, 1), _said_mark))
+_dial = dict((int(a), int(b)) for a, b in
+             re.findall(r'\[(\d+)\] = (\d+)',
+                        re.search(r'^CHIP_DIAL = \{([^}]*)\}',
+                                  _sv['LuaScript'], re.M).group(1)))
+_step = 360.0 / _slots
+_gaps = [(_dial[n + 1] - _dial[n]) % 360 for n in range(20)]
+check("its numbers are one slot apart, all the way round",
+      sorted(_dial) == list(range(21))
+      and all(abs(g - _step) < 1.0 for g in _gaps),
+      'gaps %r, a slot is %.2f' % (sorted(set(_gaps)), _step))
+
+
+# HOW MANY SLOTS THE RIM HOLDS IS AN OBSERVATION, like the five
+# segment angles on the other face, and it is NOT checked here.
+# Laying the numbers out for each candidate count and asking where
+# the white ink falls looked like a measurement and is not one:
+# 22 scores 1.19 against 24's 1.33, so the test prefers a count
+# that is plainly wrong. A predicate that cannot tell right from
+# wrong is worse than none - it would have passed whatever the
+# table said. The count and CHIP_DIAL_TRIM are both for the table
+# to confirm; what is held above is that the marker is where the
+# scan puts it and that the numbers come out evenly spaced.
+
 # THE RULEBOOK IN THE CORNER. Four PDFs fetched from rules/ rather than
 # images/, so they are the one set of files the image manifest would
 # not have covered, and a URL that 404s shows as a blank page with no
