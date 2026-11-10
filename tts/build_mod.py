@@ -165,9 +165,16 @@ CHIP_FACE_Z = 0
 # import dialog has only one image field. Type 2 is the circular tile,
 # which is 1,839 of those.
 CHIP_TILE_TYPE = 2
-# A tile is 2 units across at scale 1, so this is the chip's diameter
-# in units - the same 2.2 the overlay draws its circle at.
-CHIP_SCALE = 1.1
+# A tile is 2 units across at scale 1, so this is half the chip's
+# diameter in units.
+#
+# MEASURED OFF THE TABLE, not guessed from the overlay. 1.1 was
+# taken from the 1.1-radius circle the NAP overlay draws for the
+# Chip, and came out visibly too small, because that circle was
+# itself a guess: the Custom_Token it replaced reads about 3.3
+# units across in Jon's screenshot of the NAP table, against the
+# felt whose width is known.
+CHIP_SCALE = 1.65
 
 # WHERE THE NUMBERS ARE, measured off the dial scan. The olive moon
 # marker sits at 327.8 degrees clockwise from the top of the picture

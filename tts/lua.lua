@@ -27,7 +27,10 @@ STATE = { game = nil, difficulty = 'Standard', tier = 0,
           -- The two NAP choices the panel makes, kept the way the
           -- difficulty is: chosen before a setup and dealt by it.
           -- 4 is Reduce 1, which rules/nap.html calls Standard.
-          apprentice = 1, finf = 4 }
+          apprentice = 1, finf = 4,
+          -- What the dial face was last set to, the way chip is what
+          -- the colour face was last set to.
+          dial = 0 }
 
 -- THE PRINTED NUMBERS, in one place. This script enforces nothing; it only
 -- SAYS them, which is exactly how they drifted - every one below used to be
@@ -2084,16 +2087,39 @@ end
 
 -- TTS calls this when a player types a number with the cursor over an
 -- object. Returning true says the script dealt with it.
+-- Is the Chip showing its dial rather than its colours? Within a
+-- quarter turn of CHIP_DIAL_Z counts: a chip settles a degree or two
+-- off whatever it was set to.
+function chipOnDial(obj)
+  local ok, r = pcall(function() return obj.getRotation() end)
+  if not ok or not r then return false end
+  local d = math.abs(((r.z - CHIP_DIAL_Z) % 360 + 540) % 360 - 180)
+  return d < 90
+end
+
+-- WHAT YOU TYPE DEPENDS ON WHICH WAY UP IT IS. The Chip has two faces
+-- and they are read differently: five colours on one, 0 to 20 on the
+-- other. Typing 3 at the dial used to turn it to BLUE, because the
+-- only table this knew was the colours' - correct direction, wrong
+-- face, and nothing said so.
 function onObjectNumberTyped(obj, player_color, number)
   if not obj or obj.getName() ~= 'Chip' then return false end
+  -- Keeping x and z turns the Chip without flipping it.
+  local r = obj.getRotation()
+  if chipOnDial(obj) then
+    local a = CHIP_DIAL[number]
+    if not a then
+      say('The dial reads 0 to 20.')
+      return true
+    end
+    STATE.dial = number
+    obj.setRotationSmooth({r.x, a, r.z})
+    say('Dial set to ' .. number .. '.')
+    return true
+  end
   local col = ATTENTION[number]
   if not col or not CHIP_FACE[col] then return false end
   STATE.chip = number
-  -- TURN IT, WHICHEVER WAY UP IT IS. This used to refuse unless the
-  -- colour face was up, which meant that when nothing happened there
-  -- was no way to tell a refusal from an event that never arrived.
-  -- Keeping x and z turns the dial without flipping it.
-  local r = obj.getRotation()
   obj.setRotationSmooth({r.x, CHIP_FACE[col], r.z})
   say('Chip turned to ' .. col .. '.')
   return true

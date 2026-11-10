@@ -112,7 +112,15 @@ class Obj(object):
         return len(self.kids) if self.kids else -1
 
     def getRotation(self):
-        return self.world.lua.table_from({"x": 0.0, "y": 0.0, "z": 0.0})
+        # IT ANSWERS WHAT IT WAS TURNED TO. The stub answered zero
+        # whatever had happened, so a script asking which way up
+        # something is always heard "face up" - and the Chip, which
+        # has two faces that are read differently, could not be
+        # told apart from itself. setMarker and turnChip read this
+        # too, and were reading a constant.
+        r = self.rot or (0.0, 0.0, 0.0)
+        return self.world.lua.table_from(
+            {"x": float(r[0]), "y": float(r[1]), "z": float(r[2])})
 
     def getPosition(self):
         return self.world.lua.table_from(
@@ -1315,6 +1323,43 @@ def bat_assertions():
     want("...and prints nothing in red", w.errors[:2], [])
 
 
+def chip_face_assertions():
+    """What you type at the Chip depends on which way up it is.
+
+    IT HAS TWO FACES AND THEY ARE READ DIFFERENTLY: five colours on
+    one, 0 to 20 on the other. Typing 3 at the dial turned it to BLUE,
+    because the only table the handler knew was the colours' - the
+    right amount in the right direction, on the wrong face, and
+    nothing said so.
+    """
+    w, g = start("Standard", 0, Panel())
+    g.setupBAT()
+    drain(w)
+    chip = g.marker("Chip")
+
+    chip.setRotation({"x": 0, "y": 0, "z": float(g.CHIP_DIAL_Z)})
+    g.onObjectNumberTyped(chip, "White", 7)
+    drain(w)
+    want("typing 7 at the dial reads 7, not a colour",
+         chip.rot[1], float(g.CHIP_DIAL[7]))
+    want("...and the dial stays the way up it was",
+         chip.rot[2], float(g.CHIP_DIAL_Z))
+
+    chip.setRotation({"x": 0, "y": 0, "z": float(g.CHIP_FACE_Z)})
+    g.onObjectNumberTyped(chip, "White", 2)
+    drain(w)
+    want("typing 2 at the colours still reads a colour",
+         chip.rot[1], float(g.CHIP_FACE[g.ATTENTION[2]]))
+
+    # A number the face does not have is refused, not guessed at.
+    chip.setRotation({"x": 0, "y": 0, "z": float(g.CHIP_DIAL_Z)})
+    before = chip.rot
+    g.onObjectNumberTyped(chip, "White", 44)
+    drain(w)
+    want("a number off the end of the dial turns nothing",
+         chip.rot, before)
+
+
 def buff_lock_assertions():
     """The Buff HP card locks itself when it reaches its space.
 
@@ -1750,6 +1795,7 @@ def main():
     round_trip_assertions()
     in_the_bag_assertions()
     bat_assertions()
+    chip_face_assertions()
     buff_lock_assertions()
     pile_assertions()
     panel_game_assertions()
