@@ -1993,12 +1993,19 @@ check("the table template runs the mod rather than repeating it",
 # The rail's height is not in the save, and four attempts to name it
 # failed, so the mat and the boxes are dropped onto it and locked where
 # they land.
-# The three games with a character to choose can choose it from the mat.
+# The three games with a character to choose can choose it from the
+# mat, and there is ONE way to do it. Keep 1/2/3 used to stand beside
+# the character button for AoS and the Imposter scenario: it took a
+# card out of the stack and left the side to you, which is a second
+# chooser that knows nothing about the first, so the panel went on
+# naming a character who was no longer on the table. NAP dropped it
+# first and the other two have followed it.
 check("the mat picks a character for the games that have one",
-      "CHAR_DECK = {" in _lua and "function keepChar" in _lua
-      and all(("function keep%d()" % i) in _lua for i in (1, 2, 3, 4, 5)))
-check("keeping a character goes by position, not by nickname",
-      "a.getPosition().x < b.getPosition().x" in _lua)
+      "CHAR_DECK = {" in _lua and "CHAR_LIST = {" in _lua
+      and "function btnChar" in _lua and "function showChar" in _lua)
+check("...and there is only one way to pick one",
+      "function keepChar" not in _lua
+      and not any(("function keep%d()" % i) in _lua for i in (1, 2, 3, 4, 5)))
 # THE TTS CARD AND THE PRINTED CARD ARE THE SAME IMAGE. render_deck
 # renders the deck ONCE, turns that one PDF into per-card PNGs, and then
 # builds the TTS sheet and the PnP pages from that same list - so the two
@@ -2296,22 +2303,40 @@ if _chip:
           "save z %r vs script %r" % (sorted(_rz),
                                       _lz and _lz.group(1)))
 
-# THE SIX APPRENTICES COME FROM build_nap.py, which prints them: three
-# duplex cards, fronts over backs. A hand-typed list in the script is a
-# list that can name the wrong character on the wrong side of the right
-# card, and nothing at the table would say so - every Apprentice card
-# looks like every other until you read it.
-_apps = [e.elts[0].value for e in _elts("generator/build_nap.py", "APPS")]
-_paired = [x for p in zip(_apps[0::2], _apps[1::2]) for x in p]
-_latable = re.findall(r"\{card = (\d+), back = (\w+), name = '([^']+)'\}",
-                      _sv["LuaScript"])
-check("the panel's Apprentices are build_nap.py's, in card and side order",
-      [(int(k), b == "true", n) for k, b, n in _latable] ==
-      [(i // 2 + 1, bool(i % 2), n) for i, n in enumerate(_paired)],
-      "script %r vs build_nap.py %r" % (_latable, _paired))
-check("nothing writes the Apprentice list down a second time",
-      "APPRENTICE = {" not in _lua and "def nap_apprentices" in _mod
-      and "nap_apprentices()" in _mod)
+# EVERY CHOOSABLE CHARACTER COMES FROM THE SCRIPT THAT PRINTS IT.
+# All three decks are duplex, fronts over backs, so a hand-typed list
+# in the mod is a list that can name the wrong character on the wrong
+# side of the right card - and nothing at the table would say so,
+# because every card of a deck looks like every other until you read
+# it.
+#
+# THE IMPOSTERS CARRY THEIR SIDE LETTER. The other two decks are six
+# and six people on three cards; the five Imposters print two
+# abilities each under one name, so without the A or the B the panel
+# would offer "The Archivist" twice.
+_chars = [("APPRENTICE", "build_nap.py", "APPS", None),
+          ("TECHNICIAN", "build_aos.py", "TECHS", None),
+          ("IMPOSTER", "build_nrj.py", "IMPOSTERS", 2)]
+for _var, _script, _tab, _sfx in _chars:
+    _src = [e for e in _elts("generator/" + _script, _tab)]
+    _names = [e.elts[0].value if _sfx is None
+              else "%s %s" % (e.elts[0].value, e.elts[_sfx].value)
+              for e in _src]
+    _paired = [x for p in zip(_names[0::2], _names[1::2]) for x in p]
+    _row = re.search(r"^%s = \{(.*)\}$" % _var, _sv["LuaScript"], re.M)
+    _latable = re.findall(r"\{card = (\d+), back = (\w+), name = '([^']+)'\}",
+                          _row.group(1) if _row else "")
+    check("the panel's %s are %s's, in card and side order"
+          % (_var.title() + "s", _script),
+          [(int(k), b == "true", n) for k, b, n in _latable] ==
+          [(i // 2 + 1, bool(i % 2), n) for i, n in enumerate(_paired)],
+          "script %r vs %s %r" % (_latable, _script, _paired))
+    check("...and the mod does not write the %s list down a second time"
+          % _var.title(),
+          ("%s = {" % _var) not in _lua)
+check("one function reads all three of them out of the generators",
+      "def duplex_characters" in _mod and "CHARACTERS = [" in _mod
+      and _mod.count("duplex_characters(") == 2)
 
 # THE STAGING BAND IS BELOW EVERY ROW. A deck being built is held in
 # the air over it, and a card the bag will not take falls out of that
@@ -2338,14 +2363,45 @@ check("the staging band is below every row a setup deals on",
 # string "OFF = {0, 14, OFF_Z}", which is to say it held the bug in
 # place and called it a check.
 _pitch = _num("CARD_W") + 1.0
-_offx = float(re.search(r"^OFF = \{(-?[\d.]+) \* BAND_PITCH", _lua,
-                        re.M).group(1)) * _pitch
-_padm = float(re.search(r"^function pad\(i\) return \{\(i - ([\d.]+)\)"
-                        r" \* BAND_PITCH", _lua, re.M).group(1))
-_pads = [(i - _padm) * _pitch for i in range(1, 6)]
+_pads = int(re.search(r"^BAND_PADS = (\d+)", _lua, re.M).group(1))
+_offx = -(_pads / 2.0) * _pitch
+_padx = [(i - _pads / 2.0) * _pitch for i in range(1, _pads + 1)]
+check("pad() is called with every slot it has and no more",
+      sorted(set(int(i) for i in re.findall(r"\bpad\((\d)\)", _lua)))
+      == list(range(1, _pads + 1)),
+      "pad() called with %r for %d slots"
+      % (sorted(set(re.findall(r"\bpad\((\d)\)", _lua))), _pads))
 check("no staging pad is within a card of the point cards are taken to",
-      all(abs(p - _offx) >= _num("CARD_W") for p in _pads),
-      "OFF at x %.2f, pads at %s" % (_offx, [round(p, 2) for p in _pads]))
+      all(abs(x - _offx) >= _num("CARD_W") for x in _padx),
+      "OFF at x %.2f, pads at %s" % (_offx, [round(x, 2) for x in _padx]))
+
+# AND THE HEALTH READOUT FITS IN WHAT IS LEFT. BAT's bottom strip
+# carries the exhausted dice, the staging band, the plate and the Dial,
+# and it is the only clear strip on that table: four things in one row
+# is exactly the sort of arithmetic that silently stops being true.
+_rhw = _num("BAT_READOUT_HW")
+_bandx = (_pads / 2.0) * _pitch + _num("CARD_W") / 2.0
+# READ THE SCRIPT'S OWN SUM, not a copy of it. Recomputing the right
+# answer here and comparing it with itself is a check that passes
+# whatever lua.lua says - which is what the first draft of this did,
+# and moving the plate onto the band did not trouble it.
+_rm = re.search(r"^BAT_READOUT_X = OFF_X ([-+]) ([\d.]+) \+ BAT_READOUT_HW$",
+                _lua, re.M)
+_rx = (_bandx + (1 if _rm.group(1) == "+" else -1) * float(_rm.group(2))
+       + _rhw) if _rm else None
+_dialx = _num("BAT_RIGHT1", _lua) + 4 * (_num("CARD_W") - 0.02)
+check("the Health readout fits between the staging band and the Dial",
+      _rx is not None and _rx - _rhw >= _bandx and _rx + _rhw <= _dialx - 1.0,
+      "plate %.2f..%.2f, band ends %.2f, Dial at %.2f"
+      % ((_rx or 0) - _rhw, (_rx or 0) + _rhw, _bandx, _dialx))
+check("...and the exhausted corner stops short of it",
+      "BAT_EXHAUST_X1 = BAT_READOUT_X - BAT_READOUT_HW" in _lua
+      and "BAT_EXHAUST_X0 = BAT_RIGHT1 + BAT_COL - BAT_BOX_HW" in _lua)
+check("the readout's width has one owner",
+      bool(re.search(r"^READOUT_HW = ", _mod, re.M))
+      and not re.search(r"^BAT_READOUT_HW = [\d.]", _lua, re.M)
+      and bool(re.search(r"^BAT_READOUT_HW = [\d.]+$",
+                         _sv["LuaScript"], re.M)))
 
 # DECK_OF IS WHAT LETS A MERGED DECK BE TAKEN APART AGAIN - it is the
 # only table that says a Task belongs to the Assignment deck - so it is
@@ -2648,10 +2704,27 @@ check("an Apprentice starts NAP at the 2s its own card prints",
       "HP 2 &nbsp;|&nbsp; STR 2 &nbsp;|&nbsp; REC 2" in text(
           "generator/build_nap.py")
       and "NAP_START = 2" in _lua)
-check("the stat dice are a row under the Apprentice, measured from it",
-      "STAT_Z = ROW_CHAR - NAP_GAP / 2" in _lua
-      and "setMarker('Strategy', NAP_X, STAT_Z, NAP_START)" in _lua
+# ONE DROP FOR ALL THREE GAMES. NAP, AoS and the Imposter scenario all
+# stand their character in the same corner and all three print their
+# stats on it, so the row of dice under it is one rule measured from
+# the card rather than three numbers that can drift apart. Every
+# character card in the set is landscape, which is what makes one drop
+# right for all of them.
+check("the stat dice are a row under the character card, measured from it",
+      "STAT_DROP = CARD_W / 2 + 1.3" in _lua
+      and "function statZ(cardZ) return cardZ - STAT_DROP end" in _lua
+      and "function statRow(x)" in _lua
+      and _lua.count("statRow(") == 4
       and "MARKER_X" not in _lua)
+# Three stat rows - NAP, AoS, the Imposter scenario - and the Health
+# die once more in BAT, where it is not a stat at all but the marker
+# on the active Lab Rat's corner.
+check("...and every game that has a character places all three of them",
+      [_lua.count("setMarker('%s'" % d)
+       for d in ("Health", "Strategy", "Recovery")] == [4, 3, 3],
+      "Health %d, Strategy %d, Recovery %d"
+      % tuple(_lua.count("setMarker('%s'" % d)
+              for d in ("Health", "Strategy", "Recovery")))
 
 # The overlay's three box labels are one size, and make_template proves
 # it at build time rather than leaving it to the eye: `fit` can shrink

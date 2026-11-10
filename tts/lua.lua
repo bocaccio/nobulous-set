@@ -24,10 +24,13 @@ STATE = { game = nil, difficulty = 'Standard', tier = 0,
           -- Which rulebook the corner is showing, so a setup does not
           -- respawn the object to load what is already in it.
           rules = 'BAT',
-          -- The two NAP choices the panel makes, kept the way the
-          -- difficulty is: chosen before a setup and dealt by it.
+          -- WHICH CHARACTER EACH GAME IS SHOWING. One entry per game
+          -- that has a choice, because the choice outlives the setup:
+          -- press Set up AoS after picking the Compiler and you want
+          -- the Compiler, not whoever is first in the list.
+          pick = { NAP = 1, AoS = 1, IMP = 1 },
           -- 4 is Reduce 1, which rules/nap.html calls Standard.
-          apprentice = 1, finf = 4,
+          finf = 4,
           -- What the dial face was last set to, the way chip is what
           -- the colour face was last set to.
           dial = 0 }
@@ -107,6 +110,61 @@ FACEDOWN = {0, 180, 180}
 -- exhausted dice the whole bottom band.
 TIER_X = 24.0
 
+-- THE LEFT-HAND CARD COLUMN, one number for all four games. A
+-- landscape card against the left edge with a 0.3 margin: BAT's Lab
+-- Rats, AoS's Technician, NAP's Apprentice and the Imposter all stand
+-- here, so the four tables open the same way and a change of card
+-- scale moves all four together.
+CHAR_X = FELT.x0 + 0.30 + CARD_L / 2
+
+-- Staging points for a card or deck on its way home or into a merge. They
+-- sit OVER the table, not past its edge: a deck that waits a step beyond
+-- the rim is a deck falling on the floor. They are spread out so decks
+-- merged in the same step do not land on each other.
+-- THE STAGING BAND. A deck being built is held in the air here while
+-- cards are moved between decks, and it used to be held over ROW_TIER
+-- - which is where AoS spreads the Research Notes and the Imposter
+-- scenario the Backdoor Routines. A card that never makes it into a
+-- bag falls out of the air onto whatever is below, and Jon found an
+-- Apprentice in the middle of the table that way.
+--
+-- A MARGIN, NOT A MECHANISM. putHome keeps trying until the bag takes
+-- the card, which is what actually stops this; the band is below every
+-- row so that the rare card which defeats even that lands on bare felt
+-- instead of in the middle of a row, where it reads as a card the
+-- setup dealt. check_app_sync.py holds it below the lowest row.
+-- SIX SLOTS, AND OFF IS ONE OF THEM.
+--
+-- OFF WAS pad(3) - the same three numbers - and every takeObject in
+-- this script drops its card at OFF on the way to wherever it is
+-- going. So a deck parked on pad(3) spent the step with cards landing
+-- on top of it, and AoS parked the Specialized Programs there: Jon's
+-- table came out with a correct 8-card Program deck AND five of its
+-- own cards lying in the staging band, one copy in the deck and one
+-- on the felt. Nothing about the deck was wrong, which is why nothing
+-- that reads a deck could see it.
+--
+-- Derived rather than typed, so the two cannot be made to coincide
+-- again: OFF takes the leftmost slot and pad() hands out the rest.
+--
+-- FIVE SLOTS, NOT SIX. pad() is called with four distinct numbers and
+-- never has been with more, so the band is as wide as it always was
+-- and OFF simply has one of the slots. Six would have pushed its
+-- right-hand end out under BAT's Dial and the Health readout beside
+-- it, which stand in this same strip because it is the only clear one
+-- left under four rows of cards.
+BAND_PITCH = CARD_W + 1.0
+BAND_PADS = 4
+function pad(i) return {(i - BAND_PADS / 2) * BAND_PITCH, 14, OFF_Z} end
+
+OFF_Z = FELT.z0 + 2.0
+OFF = {-(BAND_PADS / 2) * BAND_PITCH, 14, OFF_Z}
+-- AND IT IS ONLY AS WIDE AS THE SPOTS THEMSELVES. OFF and pad() share
+-- one row of six; past that the band is ordinary felt, which is where
+-- BAT stands its Dial. Reading the band as the whole row called that
+-- Dial a stranded card.
+OFF_X = (BAND_PADS / 2) * BAND_PITCH + CARD_W / 2
+
 -- ------------------------------------------------------------ the BAT table
 -- JON LAID THIS OUT BY HAND AND ASKED FOR IT SQUARED UP, so the shape
 -- is his and only the arithmetic is mine. Four Lab Rats down the left,
@@ -128,7 +186,7 @@ TIER_X = 24.0
 -- the bottom row has to clear is the dice strip at ROW_TIER.
 BAT_COL = CARD_W - 0.02
 BAT_ROW_PITCH = 7.82
-BAT_RAT_X = -23.85
+BAT_RAT_X = CHAR_X
 BAT_RAT_Z1 = 14.80
 BAT_LEFT1 = -16.45
 BAT_RIGHT1 = 1.75
@@ -140,6 +198,8 @@ BAT_BOX_DROP = (CARD_W - CARD_L) / 2
 -- A drawn space is the pitch less a hair, not a card: see above.
 BAT_BOX_HW = (BAT_COL - 0.25) / 2
 BAT_BOX_HD = (BAT_ROW_PITCH - 0.25) / 2
+-- ...and a two-column space is two pitches less the same hair.
+BAT_WIDE_HW = (2 * BAT_COL - 0.25) / 2
 
 function batRatZ(i) return BAT_RAT_Z1 - (i - 1) * BAT_ROW_PITCH end
 function batRowZ(i) return batRatZ(i) + BAT_BOX_DROP end
@@ -147,18 +207,54 @@ function batLeftX(k) return BAT_LEFT1 + (k - 1) * BAT_COL end
 function batRightX(k) return BAT_RIGHT1 + (k - 1) * BAT_COL end
 
 -- WHICH COLUMN IS WHICH on the right. Row 1 is the two decks, row 2
--- what they reveal, row 3 the Tyrant's, row 4 the Splices.
+-- what they reveal and what you did not take, row 3 the Tyrant's,
+-- row 4 the Splices.
 BAT_EXPERIMENTS, BAT_UPGRADE_DECK = 1, 2
 BAT_REVEALED = 1                       -- revealed Experiment, then 2 Upgrades
+-- TWO DISCARDS, past the three revealed cards in the same row. An
+-- Experiment is finished with when it is done and two Upgrades are
+-- revealed for every one taken, so both piles fill every turn and
+-- neither had anywhere to be.
+BAT_EXP_DISCARD, BAT_UPG_DISCARD = 4, 5
 BAT_ATTACK_UP, BAT_ATTACK_DECK, BAT_BUFF = 1, 2, 3
+-- THE TYRANT'S OWN DICE, over the two Splices at the right-hand end:
+-- one space two columns wide, because a handful of dice is not a card
+-- and reads better in a wide tray than in a card-shaped box.
+BAT_TYRANT_DICE = 4                    -- the first of the two columns
 
--- The Chip sits below the rightmost Splice, clear of the row above it.
+-- The Dial sits below the rightmost Splice, clear of the row above it.
 BAT_CHIP_X = BAT_RIGHT1 + (BAT_SPLICES - 1) * BAT_COL
 BAT_CHIP_Z = -16.0
 
+-- THE HEALTH READOUT, beside the Dial and left of it. The Dial is a
+-- disc with twenty-one numbers printed round its rim, which is exact
+-- and unreadable across a table; this is the same number in one large
+-- figure with a button either side of it. The two cannot disagree -
+-- the buttons turn the Dial and write the figure in the same call.
+-- IT FILLS WHAT IS LEFT. The staging band's right-hand end and the
+-- Dial are what bound it: BAT_READOUT_HW is generated by build_mod.py,
+-- which builds the plate, and the two edges below say where that
+-- plate will fit without standing on either.
+BAT_READOUT_X = OFF_X + 0.3 + BAT_READOUT_HW
+BAT_READOUT_Z = BAT_CHIP_Z
+
+-- WHERE THE EXHAUSTED CORNER STOPS AT EITHER END. Its left edge lines
+-- up with the second Splice - Jon's own call, and it leaves the first
+-- Splice's width of felt clear beside the Rats - and its right edge
+-- stops short of the readout, which stands between it and the Dial.
+BAT_EXHAUST_X0 = BAT_RIGHT1 + BAT_COL - BAT_BOX_HW
+BAT_EXHAUST_X1 = BAT_READOUT_X - BAT_READOUT_HW - 0.6
+
 -- The active Rat is marked at the top right corner of its card, far
 -- enough in that the die sits ON the card rather than over its edge.
+-- The Health die is what marks it, and the setup starts it on the top
+-- Rat; the Red die - the one die a Rat is given at random - sits in
+-- the opposite corner of whichever Rat drew it, so the two markings
+-- on one card cannot be mistaken for each other.
 BAT_MARK_IN = 1.25
+function batMarkX() return BAT_RAT_X + CARD_L / 2 - BAT_MARK_IN end
+function batMarkZ(r) return batRatZ(r) + CARD_W / 2 - BAT_MARK_IN end
+function batRedZ(r) return batRatZ(r) - CARD_W / 2 + BAT_MARK_IN end
 
 -- SOMEWHERE FOR DICE THAT ARE OUT FOR GOOD: one space, the same size
 -- as every other, in the top right corner of the grid. That corner
@@ -202,7 +298,7 @@ AOS_WIDE_HD = (CARD_W - 0.30) / 2
 -- same number the other way round.
 AOS_WIDE_LIFT = (CARD_L - CARD_W) / 2
 
-AOS_TECH_X = FELT.x1 - 56.5 + 0.3 + CARD_L / 2
+AOS_TECH_X = CHAR_X
 AOS_DECK1 = AOS_TECH_X + CARD_L / 2 + 0.35 + AOS_COL / 2
 AOS_RIGHT = FELT.x1 - 0.30 - AOS_COL / 2
 
@@ -215,6 +311,10 @@ function aosMid(k, n) return (k - (n + 1) / 2) * AOS_COL end
 -- WHICH SPACE IS WHICH along the top.
 AOS_PROGRAMS, AOS_PROGRAM = 1, 2       -- the deck, then the card it reveals
 AOS_LIMITS, AOS_LIMIT = 3, 4
+-- AND THE PROGRAMS FINISHED WITH THIS CYCLE, next along the same row.
+-- Not SET ASIDE, which is the pile a Program leaves the game by: this
+-- is the one it comes back from when the deck is rebuilt.
+AOS_DISCARD = 5
 AOS_MATS = 5
 AOS_BACKDOORS = 6
 
@@ -260,7 +360,8 @@ ASSIGN_SLOTS = 4
 --
 -- Named here so that "every deck a setup can reach" stays a real check
 -- rather than one that quietly stopped covering a deck.
-IN_THE_BAG = { 'Final Exams', 'Tyrant Attacks', 'Buff HP Track' }
+IN_THE_BAG = { 'Final Exams', 'Tyrant Attacks', 'Buff HP Track',
+               'Advanced Programs' }
 
 -- The printed layout under the cards. One per game, each its own tile
 -- in its own bag, which is what lets them be different felts.
@@ -295,8 +396,14 @@ NAP_START = 2
 -- things now want it: the setup that lays the cards there, the snap
 -- point under them, and the mat box the template draws from the snap.
 FINF_Z = ROW_CHAR - NAP_GAP
-STAT_Z = ROW_CHAR - NAP_GAP / 2
 STAT_PITCH = 2.1
+-- A DIE AND A MARGIN UNDER THE CARD'S BOTTOM EDGE. Every character
+-- card in the set is landscape, so this one drop works for all three
+-- games and the row cannot end up at a different height in each.
+STAT_DROP = CARD_W / 2 + 1.3
+function statZ(cardZ) return cardZ - STAT_DROP end
+function statRow(x) return {x - STAT_PITCH, x, x + STAT_PITCH} end
+STAT_Z = statZ(ROW_CHAR)
 CHIP_X = ASSIGN_X - CARD_L / 2 - 1.9
 ASSIGN_PITCH = ROW_PITCH
 
@@ -304,6 +411,20 @@ ASSIGN_PITCH = ROW_PITCH
 -- two cards it reveals each turn beside it.
 DECK_X = ASSIGN_X + ASSIGN_PITCH
 REVEAL_SLOTS = 2
+
+-- AND THE ONE YOU DID NOT TAKE, next along the same row. "Reveal 2
+-- Assignments and take one into the row as your Primary. Discard the
+-- other" (rules/nap.html) - so this is a pile that fills every turn,
+-- and it is not the Completed Credits pile down the right, which is
+-- the record of what you finished.
+NAP_DISCARD_X = DECK_X + (REVEAL_SLOTS + 1) * ASSIGN_PITCH
+
+-- THE APPRENTICE IN THE TOP LEFT CORNER, with its three stat dice in
+-- the band under it. It stood at the head of the right-hand column
+-- over the FINF card; the corner is where the other three games put
+-- their character, and this table has room for it because the clock
+-- starts a row lower.
+NAP_CHAR_X = CHAR_X
 
 -- TWO PILES DOWN THE RIGHT, under the FINF card.
 --
@@ -344,51 +465,12 @@ end
 -- Where the character you keep ends up. NAP's belongs at the head of its
 -- own column; the other two are dealt across the table and keep the
 -- middle.
-CHAR_HOME = { NAP = {NAP_X, ROW_CHAR},
+CHAR_HOME = { NAP = {NAP_CHAR_X, ROW_CHAR},
               AoS = {AOS_TECH_X, AOS_ROW1 + AOS_WIDE_LIFT},
-              IMP = {0, ROW_CHAR} }
+              IMP = {CHAR_X, ROW_CHAR} }
 
 function col(i) return (i - 2.5) * (CARD_W + 1.0) end
 
--- Staging points for a card or deck on its way home or into a merge. They
--- sit OVER the table, not past its edge: a deck that waits a step beyond
--- the rim is a deck falling on the floor. They are spread out so decks
--- merged in the same step do not land on each other.
--- THE STAGING BAND. A deck being built is held in the air here while
--- cards are moved between decks, and it used to be held over ROW_TIER
--- - which is where AoS spreads the Research Notes and the Imposter
--- scenario the Backdoor Routines. A card that never makes it into a
--- bag falls out of the air onto whatever is below, and Jon found an
--- Apprentice in the middle of the table that way.
---
--- A MARGIN, NOT A MECHANISM. putHome keeps trying until the bag takes
--- the card, which is what actually stops this; the band is below every
--- row so that the rare card which defeats even that lands on bare felt
--- instead of in the middle of a row, where it reads as a card the
--- setup dealt. check_app_sync.py holds it below the lowest row.
--- SIX SLOTS, AND OFF IS ONE OF THEM.
---
--- OFF WAS pad(3) - the same three numbers - and every takeObject in
--- this script drops its card at OFF on the way to wherever it is
--- going. So a deck parked on pad(3) spent the step with cards landing
--- on top of it, and AoS parked the Specialized Programs there: Jon's
--- table came out with a correct 8-card Program deck AND five of its
--- own cards lying in the staging band, one copy in the deck and one
--- on the felt. Nothing about the deck was wrong, which is why nothing
--- that reads a deck could see it.
---
--- Derived rather than typed, so the two cannot be made to coincide
--- again: OFF takes the leftmost slot and pad() hands out the rest.
-BAND_PITCH = CARD_W + 1.0
-function pad(i) return {(i - 2.5) * BAND_PITCH, 14, OFF_Z} end
-
-OFF_Z = FELT.z0 + 2.0
-OFF = {-2.5 * BAND_PITCH, 14, OFF_Z}
--- AND IT IS ONLY AS WIDE AS THE SPOTS THEMSELVES. OFF and pad() share
--- one row of six; past that the band is ordinary felt, which is where
--- BAT stands its Dial. Reading the band as the whole row called that
--- Dial a stranded card.
-OFF_X = 2.5 * BAND_PITCH + CARD_W / 2
 
 function attentionNow()
   local s = math.max(1, STATE.session + 1)
@@ -974,7 +1056,11 @@ function batBoxes()
     for k = 1, BAT_UPGRADES do box(batLeftX(k), batRowZ(r)) end
   end
   for k = 1, 3 do box(batRightX(k), batRowZ(2)) end
+  box(batRightX(BAT_EXP_DISCARD), batRowZ(2))
+  box(batRightX(BAT_UPG_DISCARD), batRowZ(2))
   for k = 1, 3 do box(batRightX(k), batRowZ(3)) end
+  table.insert(out, {x = batRightX(BAT_TYRANT_DICE) + BAT_COL / 2,
+                     z = batRowZ(3), hw = BAT_WIDE_HW, hd = BAT_BOX_HD})
   for k = 1, BAT_SPLICES do box(batRightX(k), batRowZ(4)) end
   return out
 end
@@ -996,8 +1082,7 @@ function batSnaps()
   for _, b in ipairs(batBoxes()) do at(b.x, b.z) end
   for r = 1, BAT_ROWS do
     at(BAT_RAT_X, batRatZ(r))
-    at(BAT_RAT_X + CARD_L / 2 - BAT_MARK_IN,
-       batRatZ(r) + CARD_W / 2 - BAT_MARK_IN)
+    at(batMarkX(), batMarkZ(r))
   end
   at(batRightX(BAT_EXPERIMENTS), batRowZ(1))
   at(batRightX(BAT_UPGRADE_DECK), batRowZ(1))
@@ -1022,6 +1107,7 @@ function aosBoxes()
   end
   box(AOS_TECH_X, AOS_ROW1 + AOS_WIDE_LIFT, AOS_WIDE_HW, AOS_WIDE_HD)
   for k = 1, 4 do box(aosCol(k), AOS_ROW1) end
+  box(aosCol(AOS_DISCARD), AOS_ROW1)
   box(AOS_RIGHT - AOS_COL, AOS_ROW1)     -- Advanced Programs, for the finale
   box(AOS_RIGHT, AOS_ROW1)               -- what a tier deals face-up
   for k = 1, AOS_MATS do box(aosMid(k, AOS_MATS), AOS_ROW2) end
@@ -1055,11 +1141,13 @@ function napSnaps(rows, z0, gap)
       snapAt(pts, ASSIGN_X + k * ASSIGN_PITCH, z0 - r * gap)
     end
   end
-  -- The right-hand column: the Apprentice you chose, and the FINF
-  -- cards under it. Both were dealt onto bare felt - the mat draws a
-  -- box for every snap point NAP makes, so no snap meant no box and
-  -- nothing to line a card up against.
-  snapAt(pts, NAP_X, z0 + gap)
+  -- The Assignment you did not take, beyond the two you revealed.
+  snapAt(pts, NAP_DISCARD_X, ROW_CHAR)
+  -- The Apprentice in its corner, and the FINF cards at the head of
+  -- the right-hand column. Both were dealt onto bare felt - the mat
+  -- draws a box for every snap point NAP makes, so no snap meant no
+  -- box and nothing to line a card up against.
+  snapAt(pts, NAP_CHAR_X, ROW_CHAR)
   snapAt(pts, NAP_X, z0)
   -- The discard pile for completed Assignments, under the FINF card.
   snapAt(pts, PILE_X, z0 - gap)
@@ -1082,62 +1170,24 @@ end
 -- choose between them.
 CHAR_DECK = { NAP = 'Apprentices', AoS = 'Technicians',
               IMP = 'Imposters (A / B)' }
-CHAR_N = { NAP = 3, AoS = 3, IMP = 5 }
+
+-- WHO IS ON EACH OF THOSE CARDS. All three decks are two-sided, so
+-- three cards are six characters and five are ten; these tables are
+-- generated by build_mod.py out of the generator scripts, which is
+-- what stops the panel naming someone who is on the other side of a
+-- different card.
+CHAR_LIST = { NAP = APPRENTICE, AoS = TECHNICIAN, IMP = IMPOSTER }
+-- What the button calls them, which is not the deck's name.
+CHAR_WORD = { NAP = 'Apprentice', AoS = 'Technician', IMP = 'Imposter' }
+
+function charOf(game)
+  local t = CHAR_LIST[game]
+  return t and t[STATE.pick[game] or 1] or nil
+end
 
 -- Keep the nth character and send the rest home. The side is still
 -- yours to pick: every one of these cards is two characters, and
 -- flipping it is the one part of setup a script should not do for you.
-function keepChar(i)
-  local label = CHAR_DECK[STATE.game]
-  if not label then return end
-  -- BY POSITION, LEFT TO RIGHT, not by the number in the nickname. The
-  -- last card of a spread is the deck object collapsing to its final
-  -- card, and what that card ends up called is TTS's business, not this
-  -- script's. Left to right is also what the button means to someone
-  -- looking at the table.
-  local one = CARD_NAME[label] or label
-  local t = {}
-  for _, o in ipairs(getAllObjects()) do
-    local n = o.getName()
-    if n == label or isCardOf(n, one) then table.insert(t, o) end
-  end
-  if #t == 0 then
-    say('No ' .. label .. ' are on the table - press that game' .. chr39 .. 's setup first.')
-    return
-  end
-  local home = CHAR_HOME[STATE.game] or {0, ROW_CHAR}
-  -- A SINGLE STACK: take the one asked for out of it by name and send
-  -- the stack back. Position cannot pick a card out of a pile, and the
-  -- Apprentices are dealt as a pile precisely so that choosing is what
-  -- spreads them rather than the other way round.
-  if #t == 1 and count(t[1]) > 1 then
-    local deck = t[1]
-    local want = one .. ' ' .. i
-    for _, e in ipairs(deck.getObjects()) do
-      if e.nickname == want then
-        deck.takeObject({guid = e.guid, position = {home[1], 3, home[2]},
-                         rotation = FACEUP, smooth = false})
-        putHome(deck)
-        say('Kept ' .. want .. '. Flip it for the character on the other side.')
-        return
-      end
-    end
-    say('There is no ' .. want .. ' in that stack.')
-    return
-  end
-  table.sort(t, function(a, b) return a.getPosition().x < b.getPosition().x end)
-  if i > #t then
-    say('There are only ' .. #t .. ' to choose from.')
-    return
-  end
-  for k, o in ipairs(t) do
-    if k ~= i then putHome(o) end
-  end
-  t[i].setPosition({home[1], 3, home[2]})
-  say('Kept the ' .. i .. ' of ' .. #t ..
-      '. Flip it for the character on the other side.')
-end
-
 -- NAP's second dial, dealt. rules/nap.html: Increase shuffles that many
 -- of the 3 FINF cards INTO the Assignment deck, where they share its
 -- back and stay hidden until drawn; Reduce lays them face-up beside the
@@ -1234,18 +1284,19 @@ end
 -- than copied here. Pressing the button again has to put back the one
 -- that is out before it can deal another, which is why the stack comes
 -- out with takeWhole: deckOut alone would find a deck of two.
-function showApprentice()
-  local a = APPRENTICE[STATE.apprentice]
-  if not a or STATE.game ~= 'NAP' then return end
-  local one = CARD_NAME['Apprentices'] or 'Apprentice'
+function showChar(game)
+  local a = charOf(game)
+  local label = CHAR_DECK[game]
+  if not a or not label or STATE.game ~= game then return end
+  local one = CARD_NAME[label] or label
   for _, o in ipairs(getAllObjects()) do
     local n = o.getName() or ''
-    if n == 'Apprentices' or isCardOf(n, one) then putHome(o) end
+    if n == label or isCardOf(n, one) then putHome(o) end
   end
   Wait.frames(function()
-    local d = deckOut('Apprentices', OFF, FACEUP)
-    if not d then say('No Apprentices to deal.') return end
-    local home = CHAR_HOME.NAP
+    local d = deckOut(label, OFF, FACEUP)
+    if not d then say('No ' .. label .. ' to deal.') return end
+    local home = CHAR_HOME[game]
     local rot = a.back and FACEDOWN or FACEUP
     if count(d) <= 1 then
       d.setPosition({home[1], 3, home[2]})
@@ -1383,7 +1434,7 @@ function setupBAT()
     -- were taking up is the row the Splice Phase is played on.
     upg = deckOut('Upgrades',
                   {batRightX(BAT_UPGRADE_DECK), 3, batRowZ(1)})
-    sp = deckOut('Specimens', pad(5))
+    sp = deckOut('Specimens', pad(4))
   end)
 
   -- TIER II REMOVES SIX **ORDINARY** UPGRADES, and says so by NAME.
@@ -1438,6 +1489,18 @@ function setupBAT()
     if dial then
       dial.setRotation({0, CHIP_DIAL[hp] or CHIP_DIAL[0], 0})
     end
+    STATE.dial = hp
+    readoutOut(hp)
+  end)
+
+  step(function()
+    -- THE HEALTH DIE MARKS THE ACTIVE RAT, and the first Rat is the
+    -- one that starts. No value is set: it is a marker here, not a
+    -- number, and a die turned to a face would read as one.
+    setMarker('Health', batMarkX(), batMarkZ(1))
+    -- "...and the Red die on a random Rat" - rules/bat.html's setup,
+    -- which until now the script only said in words.
+    setMarker('Red', batMarkX(), batRedZ(math.random(BAT_ROWS)))
   end)
 
   step(function()
@@ -1476,7 +1539,7 @@ function setupNAP()
     -- ONE STACK. Keep 1 / 2 / 3 takes the one you want out of it and
     -- sends the rest back, so there is no reason to spread three cards
     -- across the table first.
-    deckOut('Apprentices', {NAP_X, 3, ROW_CHAR}, FACEUP)
+    deckOut('Apprentices', {NAP_CHAR_X, 3, ROW_CHAR}, FACEUP)
     asg = deckOut('Assignment', {DECK_X, 3, ROW_CHAR})
   end)
 
@@ -1501,7 +1564,7 @@ function setupNAP()
   end)
   step(function() moveN(deckOut('Setbacks', pad(3)), asg, base) end)
   if STATE.tier >= 1 then
-    step(function() moveN(deckOut('Following Setbacks', pad(5)), asg, 3) end)
+    step(function() moveN(deckOut('Following Setbacks', pad(4)), asg, 3) end)
   end
   -- BEFORE THE SHUFFLE. On Increase the FINF cards go into this deck
   -- and have to be lost in it.
@@ -1546,14 +1609,15 @@ function setupNAP()
     setMarker('Chip', CHIP_X, ROW_CHAR - NAP_GAP, nil,
               {CHIP_FACE[ATTENTION[1]], CHIP_FACE_Z})
     STATE.chip = 1
-    setMarker('Health', NAP_X - STAT_PITCH, STAT_Z, NAP_START)
-    setMarker('Strategy', NAP_X, STAT_Z, NAP_START)
-    setMarker('Recovery', NAP_X + STAT_PITCH, STAT_Z, NAP_START)
+    local sx = statRow(NAP_CHAR_X)
+    setMarker('Health', sx[1], STAT_Z, NAP_START)
+    setMarker('Strategy', sx[2], STAT_Z, NAP_START)
+    setMarker('Recovery', sx[3], STAT_Z, NAP_START)
   end)
   -- THE PANEL'S CHOICE, DEALT. The stack came out a step ago; this
   -- leaves the one the Apprentice button is showing on the table and
   -- sends the other two back, so the panel and the felt agree.
-  step(function() showApprentice() end)
+  step(function() showChar('NAP') end)
   step(function()
     STATE.credits = 0
     refreshCounts()
@@ -1562,7 +1626,7 @@ function setupNAP()
         ' Credits reaches the Final Exam. The Assignment deck is built and' ..
         ' shuffled: 26 Tasks + 6 Opportunities + ' .. sb .. ' Setbacks' ..
         (STATE.tier >= 1 and (' (3 Following and ' .. base .. ' base)') or '') ..
-        '. ' .. APPRENTICE[STATE.apprentice].name ..
+        '. ' .. charOf('NAP').name ..
         ' is out at 2 HP / 2 STR / 2 REC -- press Apprentice for another.' ..
         ' Take all 17 dice and work the Morning Time Slot first.' ..
         ' The Final Exams stay in the bag until you reach them.' ..
@@ -1596,6 +1660,13 @@ function setupAoS()
     -- Apprentices work.
     deckOut('Technicians', {AOS_TECH_X, 3, AOS_ROW1 + AOS_WIDE_LIFT}, FACEUP)
     aosSnaps()
+    -- 2 HP / 2 STR / 3 REC, printed on every Technician card
+    -- (generator/build_aos.py), in a row under it the way NAP's are.
+    local sx = statRow(AOS_TECH_X)
+    local sz = statZ(AOS_ROW1 + AOS_WIDE_LIFT)
+    setMarker('Health', sx[1], sz, 2)
+    setMarker('Strategy', sx[2], sz, 2)
+    setMarker('Recovery', sx[3], sz, 3)
   end)
   -- The Program deck is the difficulty: a MIX of all three decks, not a
   -- choice between them. Routine can be 0 at Nobulous, which is why the
@@ -1606,7 +1677,7 @@ function setupAoS()
     -- and going stale. The other two move INTO it.
     prog = cutTo(deckOut('Specialized Programs', pad(3)), mix[2])
     moveN(deckOut('Routine Programs', pad(1)), prog, mix[1])
-    moveN(deckOut('Unstable Programs', pad(5)), prog, mix[3])
+    moveN(deckOut('Unstable Programs', pad(4)), prog, mix[3])
   end)
   step(function()
     if prog then
@@ -1619,11 +1690,10 @@ function setupAoS()
     lim = deckOut('Limitations', {aosCol(AOS_LIMITS), 3, AOS_ROW1})
     if STATE.tier >= 2 then merge(lim, deckOut('Corrupted Limitations', pad(2))) end
     if lim then lim.shuffle() end
-    -- SET ASIDE FOR THE FINALE, so out at the end of the row rather
-    -- than among the decks you draw from every turn.
-    local adv = deckOut('Advanced Programs',
-                        {AOS_RIGHT - AOS_COL, 3, AOS_ROW1})
-    if adv then adv.shuffle() end
+    -- THE ADVANCED PROGRAMS STAY IN THE BAG. They are the endgame -
+    -- three of the eight, after the third cycle - so nothing touches
+    -- them for most of a game, and a deck on the table that nothing
+    -- touches is a deck in the way. Their space is still drawn.
     spread(deckOut('Element Mats', {0, 3, AOS_ROW2}, FACEUP), AOS_MATS,
            AOS_ROW2, FACEUP, AOS_COL)
   end)
@@ -1639,6 +1709,7 @@ function setupAoS()
     end)
   end
 
+  step(function() showChar('AoS') end)
   step(function()
     STATE.backdoors = 0
     refreshPanel()
@@ -1665,8 +1736,18 @@ function setupImposter()
   step(function() tableOut(IMP_TABLE) end)
 
   step(function()
-    spread(deckOut('Imposters (A / B)', {0, 3, ROW_CHAR}, FACEUP), 5,
-           ROW_CHAR, FACEUP, CARD_L * 1.04)
+    -- ONE STACK IN THE CORNER, where the other three games put their
+    -- character, with the stat dice under it. Five Imposters spread
+    -- across the top of the table took the whole row and four of them
+    -- were going back in the bag the moment you chose.
+    deckOut('Imposters (A / B)', {CHAR_X, 3, ROW_CHAR}, FACEUP)
+    -- 5 HP / 2 STR / 3 REC, which is what this setup already says in
+    -- words at the end of it.
+    local sx = statRow(CHAR_X)
+    local sz = statZ(ROW_CHAR)
+    setMarker('Health', sx[1], sz, 5)
+    setMarker('Strategy', sx[2], sz, 2)
+    setMarker('Recovery', sx[3], sz, 3)
     ex = deckOut('Exhibits', {col(2), 3, ROW_MAIN})
   end)
   -- THE DOSSIER IS 5 OF EACH DOMAIN, not 15 of 24 at large. EXHIBIT_BLOCK
@@ -1701,6 +1782,7 @@ function setupImposter()
     deckOut('Backdoor Routines', {10.0, 3, ROW_SIDE}, FACEUP)
   end)
 
+  step(function() showChar('IMP') end)
   step(function()
     STATE.session = 0
     refreshPanel()
@@ -1803,37 +1885,26 @@ function refreshPanel()
   -- or on a plate over the pile it describes - which is what the Credit
   -- Record above the Completed Credits pile already does.
   local g = STATE.game
+  if CHAR_LIST[g] then
+    btn(CHAR_WORD[g] .. '  ' .. charOf(g).name, 'btnChar', -2.44, 0.00, 1240)
+  end
   if g == 'NAP' then
-    btn('Apprentice  ' .. APPRENTICE[STATE.apprentice].name,
-        'btnApp', -2.44, 0.00, 1240)
     btn('FINF  ' .. FINF_SET[STATE.finf][1] .. ' ' ..
         FINF_SET[STATE.finf][2], 'btnFinf', 0.70, 0.00, 940)
   end
-  -- CHOOSING YOUR CHARACTER, for the three games that have one to
-  -- choose. Every card is two characters, so this keeps a card and
-  -- leaves the flip to you. NAP has the Apprentice button above for
-  -- that, which picks the side too; these stay for AoS and Imposter.
-  -- ALWAYS DRAWN, even with no game set up. It only appeared once a
-  -- setup had run, so looking at the panel to find out whether you could
-  -- choose your character told you that you could not.
-  -- NOT FOR NAP ANY MORE. Keep 1/2/3 takes a card out of the stack and
-  -- leaves the side to you, which is a second way to choose an
-  -- Apprentice that knows nothing about the first: press it and the
-  -- panel still names whoever the Apprentice button last dealt, on a
-  -- side nobody chose. The Apprentice button does both halves.
-  local n = (g ~= 'NAP') and CHAR_N[g] or nil
-  if n then
-    lbl('Keep', -3.97, 0.36, 380, 82)
-    for i = 1, n do
-      btn(tostring(i), 'keep' .. i, -2.30 + (i - 1) * 0.62, 0.36, 210, nil, 82)
-    end
-  elseif g ~= 'NAP' then
-    -- THE WHOLE ROW GOES FOR NAP, not just the note on it: a 'Keep'
-    -- label with nothing beside it is a control that looks broken.
-    lbl('Keep', -3.97, 0.36, 380, 82)
+  -- ONE WAY TO CHOOSE A CHARACTER, not two.
+  --
+  -- Keep 1/2/3 used to stand here beside the character button: it took
+  -- a card out of the stack and left the side to you, which is a
+  -- second way to choose that knows nothing about the first. Press it
+  -- and the panel still named whoever the button last dealt, on a side
+  -- nobody had chosen. NAP had already dropped it for exactly that
+  -- reason; AoS and the Imposter scenario now have the same button
+  -- NAP has, so the argument applies to them too and the row goes.
+  if not CHAR_LIST[g] then
     lbl(g == 'BAT' and 'BAT plays all four Lab Rats'
         or 'set up NAP, AoS or Imposter to choose a character',
-        0.24, 0.36, 2300, 70)
+        -1.60, 0.36, 2300, 70)
   end
 
   btn('Pack up', 'btnPack', -3.80, 0.72, 420, {0.42, 0.18, 0.15})
@@ -1845,11 +1916,6 @@ function btnNAP() setupNAP() end
 function btnIMP() setupImposter() end
 function btnAoS() setupAoS() end
 function btnPack() packUp(false); run() end
-function keep1() keepChar(1) end
-function keep2() keepChar(2) end
-function keep3() keepChar(3) end
-function keep4() keepChar(4) end
-function keep5() keepChar(5) end
 function btnReset() resetCounters() end
 
 function btnDiff()
@@ -1870,14 +1936,16 @@ end
 -- THE ONE THAT ACTS AT ONCE. The difficulty, the tier and FINF all
 -- change what a setup will deal; this changes what is on the table, so
 -- it deals the card as well as recording the choice.
-function btnApp()
-  STATE.apprentice = (STATE.apprentice % #APPRENTICE) + 1
+function btnChar()
+  local game = STATE.game
+  local t = CHAR_LIST[game]
+  if not t then return end
+  STATE.pick[game] = (STATE.pick[game] % #t) + 1
   refreshPanel()
-  local a = APPRENTICE[STATE.apprentice]
-  showApprentice()
-  say('Apprentice: ' .. a.name .. ' -- card ' .. a.card .. ', ' ..
-      (a.back and 'back' or 'front') .. ' side.' ..
-      (STATE.game == 'NAP' and '' or ' Press Set up NAP to deal it.'))
+  local a = charOf(game)
+  showChar(game)
+  say(CHAR_WORD[game] .. ': ' .. a.name .. ' -- card ' .. a.card .. ', ' ..
+      (a.back and 'back' or 'front') .. ' side.')
 end
 
 -- IT ACTS AT ONCE TOO, now that it only appears once NAP is dealt.
@@ -2145,6 +2213,62 @@ function onObjectDrop(color, obj)
   if math.abs(p.x - PILE_X) < 6.0 then refreshCounts() end
 end
 
+-- --------------------------------------------------- BAT's Health readout
+-- THE DIAL IS EXACT AND UNREADABLE. Twenty-one numbers round the rim
+-- of a disc is the right object for turning and the wrong one for
+-- reading across a table, and the Tyrant's Health is the number both
+-- players look at most. This is the same number once more in one big
+-- figure, with a button either side.
+--
+-- ONE CALL WRITES BOTH, so they cannot drift: dialSet turns the Dial
+-- and relabels the plate. Typing a number over the Dial goes through
+-- the same call, which is why onObjectNumberTyped no longer ignores
+-- it - TTS turns the disc itself from its RotationValues and this
+-- only has to catch up the figure.
+READOUT_NAME = 'Health Readout'
+READOUT = nil
+DIAL_MAX = 20
+
+function readoutOut(n)
+  local o = deckOut(READOUT_NAME, {BAT_READOUT_X, 1.2, BAT_READOUT_Z}, FACEUP)
+  if o then
+    READOUT = o
+    o.setLock(true)
+    drawReadout()
+  end
+  return o
+end
+
+function drawReadout()
+  local o = READOUT
+  if not o then return end
+  o.clearButtons()
+  local function btn(label, fn, x, w, fs)
+    o.createButton({click_function = fn, function_owner = self, label = label,
+      position = {x, 0.3, 0}, width = w, height = 420, font_size = fs,
+      color = {0.16, 0.15, 0.13}, font_color = {1, 1, 1},
+      tooltip = 'The Tyrant' .. chr39 .. 's Health'})
+  end
+  btn('-', 'dialMinus', -1.45, 420, 260)
+  btn(tostring(STATE.dial or 0), 'nop', 0, 820, 420)
+  btn('+', 'dialPlus', 1.45, 420, 260)
+end
+
+-- Turn the Dial and write the figure. `turn` is false when TTS has
+-- already turned the disc itself, which it does for a typed number.
+function dialSet(n, turn)
+  STATE.dial = math.max(0, math.min(DIAL_MAX, math.floor(n)))
+  if turn ~= false then
+    local d = marker('Dial')
+    if d then d.setRotation({0, CHIP_DIAL[STATE.dial] or CHIP_DIAL[0], 0}) end
+  end
+  drawReadout()
+  return STATE.dial
+end
+
+function dialPlus() dialSet((STATE.dial or 0) + 1) end
+function dialMinus() dialSet((STATE.dial or 0) - 1) end
+
 -- ---------------------------------------------------------- the rulebook
 -- A Custom_PDF on the rail in the top right corner, carrying one button
 -- that loads the rules for the game you have set up and flies your
@@ -2221,7 +2345,16 @@ end
 -- TTS's job. This is only the Chip, whose five values TTS would
 -- honour too, but this says which colour it turned to.
 function onObjectNumberTyped(obj, player_color, number)
-  if not obj or obj.getName() ~= 'Chip' then return false end
+  if not obj then return false end
+  -- THE DIAL TURNS ITSELF - it carries twenty-one RotationValues, so
+  -- TTS does the turning - but the figure beside it has to follow, or
+  -- the table shows the Tyrant's Health twice and disagrees with
+  -- itself. false says TTS still handles the turn.
+  if obj.getName() == 'Dial' then
+    dialSet(number, false)
+    return false
+  end
+  if obj.getName() ~= 'Chip' then return false end
   local col = ATTENTION[number]
   if not col or not CHIP_FACE[col] then return false end
   STATE.chip = number
@@ -2241,6 +2374,14 @@ function onLoad()
   -- script - so without this it is a picture of a page that does
   -- nothing.
   drawRulesButton(getObjectFromGUID(RULES_GUID))
+  -- The readout is in the BAT bag and carries no button in the save
+  -- either, so a table reloaded mid-game finds its own plate again.
+  for _, o in ipairs(getAllObjects()) do
+    if o.getName() == READOUT_NAME then
+      READOUT = o
+      drawReadout()
+    end
+  end
   settle()
   local missing = {}
   for game, g in pairs(BOX) do

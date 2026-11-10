@@ -221,6 +221,31 @@ INTERFERENCE = [
 RECYCLE_LIMIT = 1
 RECYCLE_SCOPE = "program"
 
+# HOW THE NEXT PROGRAM IS CHOSEN, and whether the last one is played.
+# Both of these are about INFORMATION, not difficulty: a deck in front
+# of you leaks its top card, and its last card is known by elimination.
+#
+#   DRAW_RANDOM   True: shuffle and take a Program at random each turn,
+#                 as the proposed wording reads. False: the printed
+#                 rule - shuffle once per cycle and run them in the
+#                 order they come up.
+#
+#                 THESE TWO CANNOT DIFFER, and the point of the dial is
+#                 to measure that rather than argue it. Consuming a
+#                 uniformly random permutation in order IS repeatedly
+#                 drawing a uniform card from what is left; the player
+#                 in this model never reads the queue, so there is no
+#                 lookahead for the change to take away either.
+#
+#   KEEP_LAST     True: a cycle ends when one Program is left rather
+#                 than running it, and that Program goes back into the
+#                 deck for the next cycle. This one DOES change the
+#                 game - it is roughly one Program per cycle you never
+#                 face - and the whole question is in which direction,
+#                 because a Program is both a risk and a reward.
+DRAW_RANDOM = False
+KEEP_LAST = False
+
 # Forces the Interference card rather than drawing one of the six, so each
 # can be priced on its own: the Tier I table in RESULTS.txt is this knob
 # swept over INTERFERENCE. None draws at random, as the card says. The draw
@@ -961,6 +986,9 @@ class Game(object):
         self.rng.shuffle(self.queue)
         self.advanced_done = 0
         self.completed = 0
+        # Programs actually put in front of the player, which KEEP_LAST
+        # changes directly and is the first place to look at its effect.
+        self.ran = 0
         # -1 is unlimited; see NEGATES_PER_CYCLE.
         self.negates_left = NEGATES_PER_CYCLE or -1
         # The Limitations still in the game. A Program Reward may banish
@@ -2054,6 +2082,11 @@ class Game(object):
         guard = 0
         while self.hp > 0 and guard < 200:
             guard += 1
+            # DO NOT RUN THE LAST PROGRAM IN THE DECK. One card left is
+            # a card you have identified by elimination, so the cycle
+            # ends there and it goes back in for the next one.
+            if KEEP_LAST and len(self.queue) == 1:
+                self.queue = []
             if not self.queue:
                 active = [p for p in self.programs
                           if p["status"] not in ("aside", "removed")]
@@ -2068,8 +2101,10 @@ class Game(object):
                     self.rng.shuffle(self.queue)
                 else:
                     break  # into Advanced Programming
-            pid = self.queue.pop(0)
+            pid = (self.queue.pop(self.rng.randrange(len(self.queue)))
+                   if DRAW_RANDOM else self.queue.pop(0))
             prog = self.programs[pid]
+            self.ran += 1
             face = "back" if prog["status"] == "overheated" else "front"
             failed = self.run_program(prog["deck"], prog["pid"], face,
                                       slot=pid)

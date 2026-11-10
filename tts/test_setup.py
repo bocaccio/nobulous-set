@@ -68,6 +68,9 @@ def is_card(o):
     return LAND.get(base, LAND.get(o.name)) is not None
 
 
+# Which markers a setup deliberately stands on a card.
+ON_CARD = {"BAT": ("Health", "Red")}
+
 BAT_SPECIMENS = {"Easy": 5, "Standard": 6, "Hard": 7, "Nobulous": 8}
 NAP_SETBACKS = {"Easy": 3, "Standard": 3, "Hard": 4, "Nobulous": 5}
 
@@ -588,7 +591,8 @@ class Panel(object):
         self.buttons.append({"label": spec["label"], "x": pos[0], "z": pos[2],
                              "hw": spec["width"] / self.UNIT,
                              "hh": spec["height"] / self.UNIT,
-                             "font": spec["font_size"]})
+                             "font": spec["font_size"],
+                             "fn": spec["click_function"]})
 
     def setLock(self, *a):
         pass
@@ -781,8 +785,15 @@ def layout_assertions():
                        if abs(f[1]) + f[3] > FELT_X
                        or f[2] - f[4] < FELT_ZMIN or f[2] + f[4] > FELT_ZMAX]
                 want(t + " nothing dealt off the felt", off[:3], [])
+                # MARKERS THAT ARE MEANT TO BE ON A CARD are not part
+                # of the pool this is about. BAT's setup puts the
+                # Health die on the active Rat's corner and the Red
+                # die on whichever Rat drew it, which is a marking,
+                # not a die left lying where a card was dealt.
+                pool = [(o.pos[0], o.pos[2]) for o in w.markers.values()
+                        if o.name not in ON_CARD.get(which, ())]
                 on_dice = [f[0] for f in fp
-                           for dx, dz in w.dice
+                           for dx, dz in pool
                            if abs(f[1] - dx) < f[3] + w.die_half
                            and abs(f[2] - dz) < f[4] + w.die_half]
                 want(t + " nothing dealt on top of the dice",
@@ -808,12 +819,14 @@ def layout_assertions():
                 slots = [o.pos[2] for o in w.table.values()
                          if o.name.startswith("Time Slot")]
                 # 4 beside every Time Slot, 2 for the cards the deck
-                # reveals, the Apprentice and the FINF cards down the
-                # right, and the two piles under them. The bank is not
-                # conditional on the tier any more: the mat prints its
-                # box at every tier, so the space has to be there too.
+                # reveals and 1 for the one you did not take, the
+                # Apprentice in its corner, the FINF cards at the head
+                # of the right-hand column, and the two piles under
+                # them. The bank is not conditional on the tier any
+                # more: the mat prints its box at every tier, so the
+                # space has to be there too.
                 if which == "NAP":
-                    exp = 4 * len(slots) + 2 + 2 + 2
+                    exp = 4 * len(slots) + 2 + 1 + 1 + 1 + 2
                 elif which == "BAT":
                     # Twelve Upgrade spaces beside the Rats, three
                     # revealed, the Tyrant's three, the Splices; then
@@ -821,7 +834,7 @@ def layout_assertions():
                     # its active-Rat mark on each row, the two decks,
                     # and one per cell of the Buff HP track.
                     rows, ups = int(g.BAT_ROWS), int(g.BAT_UPGRADES)
-                    exp = (rows * ups + 3 + 3 + int(g.BAT_SPLICES)
+                    exp = (rows * ups + 3 + 2 + 3 + 1 + int(g.BAT_SPLICES)
                            + 2 * rows + 2
                            + len(list(g.BUFF_CELL.values())))
                 elif which == "AoS":
@@ -831,7 +844,7 @@ def layout_assertions():
                     # five element mats; and along the bottom the
                     # Programs finished with, the six Backdoor
                     # Routines and the banished dice.
-                    exp = (1 + 4 + 2 + int(g.AOS_MATS)
+                    exp = (1 + 4 + 1 + 2 + int(g.AOS_MATS)
                            + 1 + int(g.AOS_BACKDOORS) + 1)
                 else:
                     exp = 0
@@ -974,14 +987,16 @@ def panel_assertions():
          ["Easy", "Standard", "Hard", "Nobulous", "Easy"])
     want("tier cycle", tiers, [0, 1, 2, 3, 0])
 
-    # Keeping a character leaves exactly one of them on the table.
-    # NAP DEALS ONE, not three: the panel's Apprentice button picks the
-    # character and the side, so the setup leaves that one out and
-    # sends the other two back rather than dealing a stack to choose
-    # from. AoS and Imposter still deal theirs and use Keep 1/2/3.
+    # EVERY SETUP LEAVES ONE CHARACTER OUT, not a stack to choose
+    # from. The panel's character button picks the card AND the side,
+    # so the setup deals the one it names and sends the rest back.
+    # Keep 1/2/3 used to stand beside that button for AoS and the
+    # Imposter scenario and is gone: two ways to choose that know
+    # nothing about each other left the panel naming a character
+    # nobody had picked, which is why NAP dropped it first.
     for which, deck, n in (("NAP", "Apprentices", 1),
-                           ("AoS", "Technicians", 3),
-                           ("IMP", "Imposters (A / B)", 5)):
+                           ("AoS", "Technicians", 1),
+                           ("IMP", "Imposters (A / B)", 1)):
         w, g = start("Standard", 0, Panel())
         {"NAP": g.setupNAP, "AoS": g.setupAoS, "IMP": g.setupImposter}[which]()
         drain(w)
@@ -997,18 +1012,6 @@ def panel_assertions():
             order = [int(o.name.split()[-1]) if o.name.split()[-1].isdigit()
                      else 1 for o in col]
             want("NAP Time Slots run in printed order", order, [1, 2, 3])
-        # Every index, including the LAST - which is the deck object
-        # collapsing to its final card, the case a nickname lookup could
-        # not find and a left-to-right one can.
-        for i in (1, 2, n):
-            w2, g2 = start("Standard", 0, Panel())
-            {"NAP": g2.setupNAP, "AoS": g2.setupAoS,
-             "IMP": g2.setupImposter}[which]()
-            drain(w2)
-            g2.keepChar(i)
-            drain(w2)
-            want("%s keep %d leaves one character" % (which, i),
-                 out(w2, deck), 1)
 
     # Pack up has to leave the table bare, loose cards included - and it
     # has to do it when the bag refuses some of what it is handed, which
@@ -1266,11 +1269,13 @@ def in_the_bag_assertions():
     what it does NOT name must not be sitting there forgotten.
     """
     bagged = sorted(str(v) for v in g_in_the_bag())
-    want("three decks are declared as staying in the bag", bagged,
-         ["Buff HP Track", "Final Exams", "Tyrant Attacks"])
-    for which, tier in (("BAT", 0), ("BAT", 3), ("NAP", 0), ("NAP", 3)):
+    want("four decks are declared as staying in the bag", bagged,
+         ["Advanced Programs", "Buff HP Track", "Final Exams",
+          "Tyrant Attacks"])
+    for which, tier in (("BAT", 0), ("BAT", 3), ("NAP", 0), ("NAP", 3),
+                        ("AoS", 0), ("AoS", 3)):
         w, g = start("Standard", tier, Panel())
-        {"BAT": g.setupBAT, "NAP": g.setupNAP}[which]()
+        {"BAT": g.setupBAT, "NAP": g.setupNAP, "AoS": g.setupAoS}[which]()
         drain(w)
         out = sorted(n for n in bagged if out_count(w, n))
         want("%s t%d deals none of them" % (which, tier), out, [])
@@ -1360,8 +1365,11 @@ def bat_assertions():
     # The spaces are a grid: none overlaps another, none leaves the felt.
     boxes = [(float(b.x), float(b.z), float(b.hw), float(b.hd))
              for b in g.batBoxes().values()]
+    # Twelve beside the Rats; three revealed and two discards; the
+    # Tyrant's three and its dice tray; the five Splices.
     want("BAT draws a space for every card you put down", len(boxes),
-         int(g.BAT_ROWS) * int(g.BAT_UPGRADES) + 3 + 3 + int(g.BAT_SPLICES))
+         int(g.BAT_ROWS) * int(g.BAT_UPGRADES) + 3 + 2 + 3 + 1
+         + int(g.BAT_SPLICES))
     over = [(a, b) for i, a in enumerate(boxes) for b in boxes[i + 1:]
             if abs(a[0] - b[0]) < a[2] + b[2] - 0.02
             and abs(a[1] - b[1]) < a[3] + b[3] - 0.02]
@@ -1499,11 +1507,12 @@ def aos_assertions():
         return (o is not None
                 and abs(o.pos[0] - x) < 0.05 and abs(o.pos[2] - z) < 0.05)
 
-    # THE TECHNICIAN IS A STACK ON ONE SPACE, not three cards across
-    # the table: Keep 1/2/3 takes the one you want out of it.
-    techs = [o for o in w.table.values() if o.name.startswith("Technician")]
-    want("the Technicians are one stack on the character space",
-         (len(techs), len(techs[0].kids) if techs else 0), (1, 3))
+    # ONE TECHNICIAN ON THE CHARACTER SPACE, the one the panel names -
+    # the setup ends by dealing the panel's pick and sending the rest
+    # of the stack back, the way NAP's has always ended.
+    techs = [o for o in w.table.values() if of_family(o.name, "Technician")]
+    want("the Technicians are one card on the character space",
+         (len(techs), len(techs[0].kids) if techs else 0), (1, 0))
     want("...level with the decks beside it",
          round(techs[0].pos[2] + float(g.CARD_W) / 2, 2) if techs else None,
          round(float(g.AOS_ROW1) + float(g.CARD_L) / 2, 2))
@@ -1515,9 +1524,14 @@ def aos_assertions():
           at("Limitations", float(g.aosCol(int(g.AOS_LIMITS))),
              float(g.AOS_ROW1))),
          (True, True))
-    want("the Advanced Programs are out at the end of the row",
-         at("Advanced Programs", float(g.AOS_RIGHT) - float(g.AOS_COL),
-            float(g.AOS_ROW1)), True)
+    # THE ADVANCED PROGRAMS STAY IN THE BAG - they are the endgame -
+    # but their space is still drawn, because they come out onto it.
+    want("the Advanced Programs are not on the table",
+         "Advanced Programs" in by, False)
+    want("...and their space is still drawn",
+         any(abs(float(b.x) - (float(g.AOS_RIGHT) - float(g.AOS_COL))) < 0.05
+             and abs(float(b.z) - float(g.AOS_ROW1)) < 0.05
+             for b in g.aosBoxes().values()), True)
     mats = sorted(o.pos[0] for o in w.table.values()
                   if o.name.startswith("Element Mat"))
     want("the five element mats are a row across the middle",
@@ -1744,27 +1758,28 @@ def panel_game_assertions():
         drain(w)
         want("%s offers its own options and no other game's" % which,
              [n for n in labels(g.PANEL) if n in ("Apprentice", "FINF")], exp)
-    # ONE CHOOSER PER GAME. Keep 1/2/3 takes a card out of the stack
-    # and leaves the side to you; for NAP that is a second way to
-    # choose an Apprentice which does not know what the first chose, so
-    # the panel would go on naming a character that was no longer the
-    # one on the table.
-    for which, keeps in (("NAP", []), ("AoS", ["1", "2", "3"]),
-                         ("IMP", ["1", "2", "3", "4", "5"])):
+    # ONE CHOOSER PER GAME, and it names the character on the table.
+    # Keep 1/2/3 used to stand beside it for AoS and the Imposter
+    # scenario: a second way to choose that knew nothing about the
+    # first, so the panel went on naming someone who was no longer out.
+    # It is gone, and nothing on the mat says "Keep" any more.
+    for which, word in (("NAP", "Apprentice"), ("AoS", "Technician"),
+                        ("IMP", "Imposter"), ("BAT", None)):
         w, g = start("Standard", 0, Panel())
-        {"NAP": g.setupNAP, "AoS": g.setupAoS,
+        {"NAP": g.setupNAP, "BAT": g.setupBAT, "AoS": g.setupAoS,
          "IMP": g.setupImposter}[which]()
         drain(w)
-        want("%s offers the Keep buttons its character needs" % which,
-             sorted(b["label"] for b in g.PANEL.buttons
-                    if b["label"] in "12345" and len(b["label"]) == 1),
-             keeps)
-        # AND NO ROW AT ALL WHERE THERE ARE NONE. A "Keep" label
-        # with nothing beside it is a control that looks broken.
-        want("...under a Keep label only when there are some",
+        shown = [b["label"] for b in g.PANEL.buttons
+                 if b["fn"] == "btnChar"]
+        want("%s offers one character button" % which, len(shown),
+             1 if word else 0)
+        if word:
+            want("...naming the character that is on the table",
+                 shown[0], "%s  %s" % (word, g.charOf(which).name))
+        want("%s offers no Keep row" % which,
              [b["label"] for b in g.PANEL.buttons
-              if b["label"] == "Keep"],
-             ["Keep"] if keeps else [])
+              if b["label"] == "Keep" or (len(b["label"]) == 1
+                                          and b["label"] in "12345")], [])
 
     # Pack up puts the panel back to having none.
     g.setupNAP()
@@ -1776,57 +1791,66 @@ def panel_game_assertions():
 
 
 def choice_assertions():
-    """NAP's two panel dials: which Apprentice, and which FINF setting.
+    """The character dial on the panel, for each game that has one.
 
-    BOTH ARE CHECKED THROUGH WHAT LANDS ON THE TABLE, not through
-    STATE. The panel can hold any number it likes; what matters is that
-    the card out is the one the button names, on the side it names, and
-    that the FINF cards went where that setting sends them.
+    CHECKED THROUGH WHAT LANDS ON THE TABLE, not through STATE. The
+    panel can hold any number it likes; what matters is that the card
+    out is the one the button names, on the side it names.
+
+    All three decks are two-sided, so the button walks characters and
+    not cards: three cards are six Apprentices and five are ten
+    Imposters, and half of each walk is a flip rather than a swap.
     """
-    app = []
+    faceup = facedown = None
+    for which, deck, cards in (("NAP", "Apprentices", 3),
+                               ("AoS", "Technicians", 3),
+                               ("IMP", "Imposters (A / B)", 5)):
+        w, g = start("Standard", 0, Panel())
+        {"NAP": g.setupNAP, "AoS": g.setupAoS,
+         "IMP": g.setupImposter}[which]()
+        drain(w)
+        faceup = tuple(float(v) for v in g.FACEUP.values())
+        facedown = tuple(float(v) for v in g.FACEDOWN.values())
+        want("a card's two sides are two different rotations",
+             faceup != facedown, True)
+        table = g.CHAR_LIST[which]
+        n = len(list(table.values()))
+        want("%s offers two characters per card" % which, n, cards * 2)
+        one = str(g.CARD_NAME[deck]) if g.CARD_NAME[deck] else deck
+        seen = []
+        for _ in range(n + 1):
+            a = g.charOf(which)
+            out_now = [o for o in w.table.values()
+                       if of_family(o.name, one)]
+            seen.append((str(a.name), int(a.card), bool(a.back),
+                         [o.name for o in out_now],
+                         [o.rot for o in out_now]))
+            g.btnChar()
+            drain(w)
+        want("%s has exactly one character on the table" % which,
+             sorted(set(len(e[3]) for e in seen)), [1])
+        want("%s deals the card the button names" % which,
+             [e[3][0] for e in seen],
+             ["%s %d" % (one, e[1]) for e in seen])
+        want("...%s turns it to the side the button names" % which,
+             [e[4][0] == (facedown if e[2] else faceup) for e in seen],
+             [True] * len(seen))
+        want("...%s reaches every character and comes back round" % which,
+             [e[0] for e in seen[:n]] + [seen[n][0] == seen[0][0]],
+             [str(table[i + 1].name) for i in range(n)] + [True])
+        # NOTHING IS LOST ON THE WAY ROUND. Choosing again has to put
+        # the card that is out back into a stack before it can take
+        # another one, and findDeck cannot see a loose card in a bag:
+        # a deckOut here would have dealt a short stack the second time.
+        box = {"NAP": "NAP", "AoS": "AoS", "IMP": "NRJ"}[which]
+        want("%s keeps all its cards through a full cycle" % which,
+             out(w, deck) + inbag(w, box, one, deck), cards)
+        want("...and strands none of them loose in the bag",
+             stranded(w, box, one), 0)
+
     w, g = start("Standard", 0, Panel())
     g.setupNAP()
     drain(w)
-    n = int(g.APPRENTICE and len(list(g.APPRENTICE.values())) or 0)
-    want("the panel offers every Apprentice build_nap.py prints", n, 6)
-    faceup = tuple(float(v) for v in g.FACEUP.values())
-    facedown = tuple(float(v) for v in g.FACEDOWN.values())
-    want("a card's two sides are two different rotations",
-         faceup != facedown, True)
-    for _ in range(n + 1):
-        a = g.APPRENTICE[int(g.STATE.apprentice)]
-        cards = [o for o in w.table.values()
-                 if o.name.startswith("Apprentice")]
-        app.append((str(a.name), int(a.card), bool(a.back),
-                    [o.name for o in cards],
-                    [o.rot for o in cards]))
-        g.btnApp()
-        drain(w)
-    want("exactly one Apprentice is ever on the table",
-         sorted(set(len(e[3]) for e in app)), [1])
-    want("the card out is the one the button names",
-         [e[3][0] for e in app],
-         ["Apprentice %d" % e[1] for e in app])
-    want("...and it is turned to the side the button names",
-         [e[4][0] == (facedown if e[2] else faceup) for e in app],
-         [True] * len(app))
-    want("every Apprentice is reachable, and the button comes back round",
-         [e[0] for e in app[:n]] + [app[n][0] == app[0][0]],
-         [str(g.APPRENTICE[i + 1].name) for i in range(n)] + [True])
-    # NOTHING IS LOST ON THE WAY ROUND. Choosing again has to put the
-    # card that is out back into a stack of three before it can take
-    # another one, and findDeck cannot see a loose card in a bag: a
-    # deckOut here would have dealt a stack of two the second time.
-    want("all three Apprentice cards survive six choices",
-         out(w, "Apprentices") + inbag(w, "NAP", "Apprentice"), 3)
-    # AND THEY SURVIVE AS ONE STACK. Counting cards is not the claim -
-    # a bag holding a deck of two and a card beside it holds three
-    # cards and is still broken, because findDeck matches a nickname
-    # exactly and the next deckOut would deal the deck of two. That is
-    # what the choice before last left behind every single time.
-    want("...and none of them is stranded loose in the bag",
-         stranded(w, "NAP", "Apprentice"), 0)
-
     # THE CLOCK IS NAILED DOWN.
     # THE FIRST OF THEM IS THE DECK OBJECT, still carrying the deck's
     # name after collapsing to one card - which is why this counts
@@ -1887,8 +1911,19 @@ def stranded(w, game, card):
     return n
 
 
-def inbag(w, game, prefix):
-    """Cards of a family sitting loose in a game's bag."""
+def of_family(name, one):
+    """A card of `one` is `one` and a number - never a longer name.
+
+    "Imposter 3" is one of the Imposters and "Imposter Task 3" is not,
+    and a startswith test cannot tell them apart. It counted the four
+    Imposter Tasks as Imposters and reported nine cards in a deck of
+    five.
+    """
+    return bool(re.match(r"^%s( \d+)?$" % re.escape(one), name))
+
+
+def inbag(w, game, prefix, deck=None):
+    """Cards of a family in a game's bag, loose or in their own deck."""
     n = 0
     # BAGS ARE NOT ON THE TABLE. w.table is what is out; the four boxes
     # live in byguid, which is why this read zero and said the cards
@@ -1896,7 +1931,7 @@ def inbag(w, game, prefix):
     for o in w.byguid.values():
         if o.bag and o.name.startswith(game):
             for k in o.kids:
-                if k.name.startswith(prefix):
+                if of_family(k.name, prefix) or k.name == (deck or prefix):
                     n += len(k.kids) if k.kids else 1
     return n
 

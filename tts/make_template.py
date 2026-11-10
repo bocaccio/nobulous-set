@@ -124,6 +124,7 @@ GAMES = ("BAT", "NAP", "AoS", "IMP")
 # Where the exhausted-dice corner has to stop on BAT, set by
 # draw_bat from the script's own Chip position.
 BAT_STOP = None
+BAT_START = None
 
 
 def px(x, z):
@@ -269,6 +270,16 @@ def draw_bat(d, lua):
     label(d, "ATTACK\nDECK", rx(2), rz(3), fit=half * 1.8)
     label(d, "BUFF HP", rx(3), rz(3), fit=half * 1.8)
     label(d, "TYRANT\nSPLICES", rx(1), rz(4), fit=half * 1.8)
+    # The two piles that fill every turn, past the three revealed
+    # cards in the same row.
+    label(d, "EXPERIMENT\nDISCARD", rx(int(g.BAT_EXP_DISCARD)), rz(2),
+          fit=half * 1.8)
+    label(d, "UPGRADE\nDISCARD", rx(int(g.BAT_UPG_DISCARD)), rz(2),
+          fit=half * 1.8)
+    # The Tyrant's own dice, two columns wide over the Splices.
+    label(d, "TYRANT DICE",
+          rx(int(g.BAT_TYRANT_DICE)) + float(g.BAT_COL) / 2, rz(3),
+          fit=float(g.BAT_WIDE_HW) * 1.8)
     # Dice that are out of the game, in the corner the grid leaves.
     # Drawn as a card space, because that is what it is now.
     bx0, bx1, bzt, bzb = [float(v) for v in g.batBanished().values()]
@@ -277,8 +288,17 @@ def draw_bat(d, lua):
     label(d, "BANISHED\nDICE", bcx, bcz, fit=half * 1.8)
     # The Chip's own circle, the way NAP marks the dial's place, and
     # where the exhausted-dice corner has to stop to clear it.
-    global BAT_STOP
-    BAT_STOP = float(g.BAT_CHIP_X) - 2.6
+    # WHERE THE EXHAUSTED CORNER STOPS AT EITHER END, read off the
+    # script rather than guessed at here: its left edge lines up with
+    # the second Splice - Jon's own call - and its right edge stops
+    # short of the Health readout, which stands between it and the
+    # Dial.
+    global BAT_STOP, BAT_START
+    BAT_START = float(g.BAT_EXHAUST_X0)
+    BAT_STOP = float(g.BAT_EXHAUST_X1)
+    # The readout's own plate, so the felt says where it belongs.
+    card(d, float(g.BAT_READOUT_X), float(g.BAT_READOUT_Z),
+         float(g.BAT_READOUT_HW), 0.95, PEN["snap"], 4)
     circle(d, float(g.BAT_CHIP_X), float(g.BAT_CHIP_Z), 1.1)
 
 
@@ -305,6 +325,7 @@ def draw_aos(d, lua):
     # The space a tier lays its one face-up card on, which is empty
     # and unexplained at tier 0.
     label(d, "TIER CARD", float(g.AOS_RIGHT), r1, fit=fit)
+    label(d, "DISCARD", col(int(g.AOS_DISCARD)), r1, fit=fit)
     label(d, "SET ASIDE", float(g.AOS_TECH_X), r3, fit=fit)
     label(d, "BANISHED\nDICE", float(g.AOS_RIGHT), r3, fit=fit)
 
@@ -322,8 +343,18 @@ def draw_game(d, which, slots_out=None):
     # the FINF card only draws a line round a card that is already
     # there. The other three games have no snap points, so for them the
     # card places are all there is to show.
+    # NO OUTLINE UNDER THE CHARACTER. Jon asked for none under BAT's
+    # Lab Rats and none under the Imposter; the card is the only thing
+    # that ever stands there, so a box round it draws a line nobody
+    # needs and the stat dice under it have nothing to do with it.
+    bare = ()
+    if which == "IMP":
+        one = str(lua.globals().CARD_NAME["Imposters (A / B)"])
+        bare = (one, "Imposters (A / B)")
     if which != "NAP":
         for name, x, z, hw, hd in fp:
+            if name.rstrip("0123456789").strip() in bare:
+                continue
             card(d, x, z, hw, hd)
     cw = cl = None
     for name, x, z, hw, hd in fp:
@@ -346,11 +377,15 @@ def draw_game(d, which, slots_out=None):
         # whose contents a player cannot guess from what is in them.
         slots = sorted([f[2] for f in fp if f[0].startswith("Time Slot")],
                        reverse=True)
+        gl = lua.globals()
         if len(slots) >= 3:
-            label(d, "COMPLETED\nCREDITS", 23.5, slots[1],
+            label(d, "COMPLETED\nCREDITS", float(gl.PILE_X), slots[1],
                   fit=half * 1.8)
-            label(d, "DEVIOUS\nOPPORTUNITIES", 23.5, slots[2],
+            label(d, "DEVIOUS\nOPPORTUNITIES", float(gl.PILE_X), slots[2],
                   fit=half * 1.8)
+        # The Assignment you did not take, past the two you revealed.
+        label(d, "DISCARD", float(gl.NAP_DISCARD_X), float(gl.ROW_CHAR),
+              fit=half * 1.8)
     # The Chip goes beside a Time Slot, so give it a circle there.
     if which == "NAP" and slots_out is not None:
         for name, x, z, hw, hd in fp:
@@ -371,7 +406,7 @@ def frame(d, game=None):
     is the only clear strip left once four rows of cards are down."""
     x0, x1, zt, zb = EXHAUSTED
     if game == "BAT" and BAT_STOP is not None:
-        x1 = BAT_STOP
+        x0, x1 = BAT_START, BAT_STOP
     a, b = px(x0, zt), px(x1, zb)
     d.rounded_rectangle([a[0], a[1], b[0], b[1]], RADIUS * 2,
                         outline=PEN["snap"], width=4)

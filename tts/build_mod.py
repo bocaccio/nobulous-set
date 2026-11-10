@@ -282,28 +282,46 @@ def nap_subject_names():
     raise SystemExit('build_nap.py no longer names the four subjects')
 
 
-def nap_apprentices():
-    """The six Apprentices in (card, side, name) order, from build_nap.py.
+def duplex_characters(script, name, suffix=None):
+    """A duplex character deck in (card, side, name) order.
 
-    THREE CARDS, SIX CHARACTERS. build_nap.py renders them duplex -
-    APPS[0::2] are the fronts and APPS[1::2] the backs - so Apprentice 1
-    is Prodigy over Slacker and so on. The panel picks one of the six by
-    name and has to know which card to deal and which way up; deriving
-    both here means a reordered APPS cannot leave the panel showing a
-    name on the wrong side of the wrong card.
+    HALF AS MANY CARDS AS CHARACTERS. All three of these decks are
+    rendered the same way - render_duplex(T[0::2], T[1::2]) - so card 1
+    is the first name over the second, and so on. The panel picks one
+    by name and has to know which card to deal and which way up;
+    deriving both here means a reordered table cannot leave the panel
+    showing a name on the wrong side of the wrong card.
     """
     names = []
-    for e in _table('build_nap.py', 'APPS'):
-        names.append(e.elts[0].value)
+    for e in _table(script, name):
+        n = e.elts[0].value
+        # AN IMPOSTER'S TWO SIDES ARE THE SAME PERSON. Apprentices and
+        # Technicians are six people on three cards; the five Imposters
+        # print two abilities each under one name, so without the side
+        # letter the panel would offer "The Archivist" twice and the
+        # player could not tell which ability they were picking.
+        if suffix is not None:
+            n = '%s %s' % (n, e.elts[suffix].value)
+        names.append(n)
     if len(names) % 2:
-        raise SystemExit('build_nap.py has %d Apprentices, which does not '
-                         'pair into two-sided cards' % len(names))
-    front, back = names[0::2], names[1::2]
+        raise SystemExit('%s has %d %s, which does not pair into '
+                         'two-sided cards' % (script, len(names), name))
+    if len(set(names)) != len(names):
+        raise SystemExit('%s %s does not name its characters uniquely: %s'
+                         % (script, name, sorted(names)))
     out = []
-    for i, (a, b) in enumerate(zip(front, back), 1):
+    for i, (a, b) in enumerate(zip(names[0::2], names[1::2]), 1):
         out.append((i, 'front', a))
         out.append((i, 'back', b))
     return out
+
+
+# The three games whose character is chosen from a two-sided stack, and
+# the table each one's names are written in. BAT is not here: all four
+# Lab Rats stay in play, so there is nothing to choose between them.
+CHARACTERS = [('APPRENTICE', 'build_nap.py', 'APPS', None),
+              ('TECHNICIAN', 'build_aos.py', 'TECHS', None),
+              ('IMPOSTER', 'build_nrj.py', 'IMPOSTERS', 2)]
 
 
 def buff_cells():
@@ -403,6 +421,7 @@ def lua_header(box_guids, rules_guid):
     home['AoS Table'] = 'AoS'
     home['IMP Table'] = 'NRJ'
     home['Dial'] = 'BAT'
+    home['Health Readout'] = 'BAT'
     for _nick, _ in NAP_COUNTERS:
         home[_nick] = 'NAP'
     j = lambda xs: ', '.join(xs)
@@ -453,6 +472,10 @@ def lua_header(box_guids, rules_guid):
         # the setup's own turn both have to name the same side of the
         # token or typing a number and pressing Set up NAP disagree.
         'CHIP_FACE_Z = %d' % CHIP_FACE_Z,
+        # HALF THE HEALTH READOUT'S WIDTH. The plate is built here, so
+        # its size is settled here and the script is told; lua.lua
+        # works out where it goes from this and the space it has.
+        'BAT_READOUT_HW = %.2f' % READOUT_HW,
         # BAT's dial: the angle that brings each number to the player's
         # edge. The object carries these as RotationValues too, so TTS
         # turns it when you type a number; the script needs them to set
@@ -460,10 +483,13 @@ def lua_header(box_guids, rules_guid):
         'CHIP_DIAL = { %s }' % j('[%d] = %d' % (n, a)
                                  for n, a in sorted(
                                      chip_dial_angles().items())),
-        # The six Apprentices: which card carries each and which way up.
-        'APPRENTICE = { %s }' % j("{card = %d, back = %s, name = '%s'}"
-                                  % (c, 'true' if s == 'back' else 'false', n)
-                                  for c, s, n in nap_apprentices()),
+    ] + [
+        # Each choosable character: which card carries it, which way up.
+        '%s = { %s }' % (var, j("{card = %d, back = %s, name = '%s'}"
+                                % (c, 'true' if s == 'back' else 'false', n)
+                                for c, s, n in duplex_characters(mod, tab, sfx)))
+        for var, mod, tab, sfx in CHARACTERS
+    ] + [
         # THE MAT'S OWN SHAPE, so the script can resize it at the
         # table. A stretched tile's local space is 1 deep by its
         # image's aspect wide, so world depth is 2 * scaleZ and world
@@ -706,6 +732,15 @@ def counter(nick, text):
                      "fontSize": 52}}
 
 
+def png_size(path):
+    """(width, height) of a PNG, from its IHDR, for the same reason."""
+    with open(path, 'rb') as fh:
+        d = fh.read(24)
+    if d[1:4] != b'PNG':
+        raise SystemExit('%s is not a PNG' % path)
+    return (int.from_bytes(d[16:20], 'big'), int.from_bytes(d[20:24], 'big'))
+
+
 def jpeg_size(path):
     """(width, height) of a JPEG, without Pillow.
 
@@ -783,6 +818,39 @@ def dial_object():
             "RotationValues": [
                 {"Value": n, "Rotation": {"x": 0, "y": a, "z": 0}}
                 for n, a in sorted(chip_dial_angles().items())]}
+
+
+# THE HEALTH READOUT'S PLATE. The same mat the control panel uses,
+# small: it is a dark rounded rectangle and that is all a plate under
+# three buttons has to be, so this ships no second image. A stretched
+# tile's local space is 1 deep by its image's aspect wide, so a uniform
+# scale s makes it 2s deep and 2 * aspect * s across - and the half
+# width the script places it by is the one number both sides read.
+READOUT_HW = 3.3
+
+
+def readout_object():
+    """BAT's Health readout: a plate beside the Dial, with +/- buttons.
+
+    IT CARRIES NO BUTTONS HERE. lua.lua draws them, as it does for the
+    rulebook, because the label in the middle is the Tyrant's Health
+    and changes; a button written into the save would be a number
+    frozen at whatever it was when this file ran.
+    """
+    aspect = (lambda wh: wh[0] / float(wh[1]))(
+        png_size(os.path.join(SHEETS, 'ControlPanel.png')))
+    return {"GUID": guid(), "Name": "Custom_Tile",
+            "Transform": xf(0, 1.2, 0, (0, 180, 0), READOUT_HW / aspect),
+            "Nickname": "Health Readout",
+            "Description": "The Tyrant's Health. Set up BAT lays it down.",
+            "ColorDiffuse": {"r": 0.93, "g": 0.91, "b": 0.85},
+            "Locked": True, "Grid": False, "Snap": False,
+            "CustomImage": {"ImageURL": url("ControlPanel.png"),
+                            "ImageSecondaryURL": "", "ImageScalar": 1.0,
+                            "WidthScale": 0.0,
+                            "CustomTile": {"Type": 3, "Thickness": 0.1,
+                                           "Stackable": False,
+                                           "Stretch": True}}}
 
 
 def game_table(game):
@@ -1096,6 +1164,7 @@ def main():
     grouped['AoS'].append(game_table('AoS'))
     grouped['NRJ'].append(game_table('IMP'))
     grouped['BAT'].append(dial_object())
+    grouped['BAT'].append(readout_object())
     for _nick, _text in NAP_COUNTERS:
         grouped['NAP'].append(counter(_nick, _text))
     box_guids = {}
