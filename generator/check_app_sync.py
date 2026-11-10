@@ -1761,8 +1761,24 @@ check("tts/lua.lua still asks for its decks by label",
 # A bag can hold something that is not a deck - the NAP table overlay
 # is a tile - so a name the Lua deals is good if decks.py has it OR
 # build_mod.py builds an object with that nickname.
-_objs = set(re.findall(chr(39) + chr(39) + chr(39) + r'"Nickname": "([^"]+)"' + chr(39) + chr(39) + chr(39), _mod))
-_objs = set(re.findall(r'"Nickname": "([^"]+)"', _mod))
+# NICKNAMES FROM THE SAVE, not from build_mod's source. The two
+# table overlays are built by one function now - the nickname is
+# '%s Table' % game - so a regex over the builder finds neither of
+# them, and this went looking for a deck called NAP Table that has
+# been shipping for weeks. What matters is what is IN the save.
+_objs = set()
+
+
+def _nicknames(objs):
+    for o in objs:
+        if o.get('Nickname'):
+            _objs.add(o['Nickname'])
+        _nicknames(o.get('ContainedObjects', []))
+
+
+_nicknames(json.load(io.open(os.path.join(ROOT, 'tts',
+                                          'NobulousSet.json'),
+                             encoding='utf-8'))['ObjectStates'])
 check("every deck label in tts/lua.lua exists in tts/decks.py",
       _want <= (_labels | _objs),
       "no such deck or object: %r" % (sorted(_want - _labels - _objs),))

@@ -239,6 +239,67 @@ def nap_apprentices():
     return out
 
 
+def buff_cells():
+    """The 15 track cells on the Buff HP card, as offsets from its centre.
+
+    MEASURED OFF THE PRINTED CARD, not counted out from the CSS that
+    drew it. generator/build_bat.py lays the track as 5 rows of 3 pale
+    squares, and a snap point is wanted in the middle of each so the
+    Health die sits where the number is. Reading the rendered sheet
+    means a redesign of that card moves the snap points with it; a grid
+    typed out here would go on pointing at where the boxes used to be,
+    and nothing at the table would say so.
+
+    The cells are the pale fill (#f2eee2) inside a darker border, on a
+    card body that is darker still, so they find themselves: scan for
+    runs of that colour and keep the 15 biggest blobs.
+    """
+    from PIL import Image
+    path = os.path.join(SHEETS, 'BAT_BuffHP_TTS.png')
+    im = Image.open(path).convert('RGB')
+    w, h = im.size
+    px = im.load()
+
+    def pale(x, y):
+        r, g, b = px[x, y]
+        return abs(r - 242) < 10 and abs(g - 238) < 10 and abs(b - 226) < 12
+
+    # BY ROWS AND COLUMNS, NOT BY BLOB. The number printed in a cell's
+    # corner cuts that cell's fill in two, and both halves are square
+    # enough to pass for cells - which crowded a real one out of the
+    # fifteen and put two snap points on top of each other. The track
+    # is a grid, so find the grid: three bands of pale down the card
+    # and five across, and the cells are where they cross.
+    cols = [sum(1 for y in range(0, h, 2) if pale(x, y)) for x in range(w)]
+    rows = [sum(1 for x in range(0, w, 2) if pale(x, y)) for y in range(h)]
+
+    def bands(counts, floor, wide):
+        # WIDE BANDS ONLY. The card's own cream border is the same
+        # colour as a cell and runs the full height and width, so a
+        # band narrower than half a cell is the margin, not a cell.
+        out, start = [], None
+        for i, v in enumerate(list(counts) + [0]):
+            if v >= floor and start is None:
+                start = i
+            elif v < floor and start is not None:
+                if i - start >= wide:
+                    out.append((start + i - 1) / 2.0)
+                start = None
+        return out
+
+    xs = bands(cols, max(cols) // 3, w // 12)
+    ys = bands(rows, max(rows) // 3, h // 18)
+    if len(xs) != 3 or len(ys) != 5:
+        raise SystemExit('the Buff HP track reads as %d columns by %d rows,'
+                         ' not 3 by 5' % (len(xs), len(ys)))
+    cells = [(0, cx, cy) for cy in ys for cx in xs]
+    out = []
+    for _, cx, cy in cells:
+        out.append(((cx / float(w) - 0.5) * CARD_SHORT * CARD_SCALE,
+                    (0.5 - cy / float(h)) * CARD_LONG * CARD_SCALE))
+    return out
+
+
 def exhibit_blocks():
     """1-based index range of each Exhibit domain in build_nrj.py's SCEN.
 
@@ -267,8 +328,9 @@ def lua_header(box_guids, rules_guid):
         g = 'NRJ' if d['game'] == 'IMP' else d['game']
         home[d['label']] = g
         home[d.get('card', d['label'])] = g
-    # Not decks, but they live in the NAP bag and go home like one.
+    # Not decks, but they live in a bag and go home like one.
     home['NAP Table'] = 'NAP'
+    home['BAT Table'] = 'BAT'
     for _nick, _ in NAP_COUNTERS:
         home[_nick] = 'NAP'
     j = lambda xs: ', '.join(xs)
@@ -332,6 +394,9 @@ def lua_header(box_guids, rules_guid):
         'MAT_ASPECT = %.5f' % (lambda wh: wh[0] / float(wh[1]))(
             jpeg_size(os.path.join(SHEETS, nap_table_image()))),
         'MAT_Z = %.2f' % NAP_TABLE_Z,
+        # The Buff HP track's cells, so BAT can put a snap point in the
+        # middle of each one. Measured off the printed card.
+        'BUFF_CELL = { %s }' % j('{%.3f, %.3f}' % c for c in buff_cells()),
         'DIE_SCALE = %.2f' % DIE_SCALE,
         # The rulebook on the rail, and the four books it can show.
         "RULES_GUID = '%s'" % rules_guid,
@@ -585,6 +650,19 @@ def jpeg_size(path):
     raise SystemExit('no JPEG size in %s' % path)
 
 
+def table_image(game):
+    """A game's overlay filename, which carries its content hash.
+
+    Found rather than named: tts/make_template.py renames it whenever
+    the picture changes, so that no CDN and no TTS cache can serve a
+    superseded one. Both of them did.
+    """
+    for f in sorted(os.listdir(SHEETS)):
+        if f.startswith('%s_Table' % game) and f.endswith('.jpg'):
+            return f
+    return '%s_Table.jpg' % game
+
+
 def nap_table_image():
     """The overlay's current filename, which carries its content hash.
 
@@ -598,26 +676,28 @@ def nap_table_image():
     return 'NAP_Table.jpg'
 
 
-def nap_table():
+def game_table(game):
+    """The printed layout a setup lays down. One shape, two pictures.
+
+    NAP's and BAT's overlays are the same tile stretched over the same
+    felt; only the drawing differs, so there is one builder rather than
+    two that could drift apart in scale or in which way up they go.
+    """
     return {"GUID": guid(), "Name": "Custom_Tile",
             "Transform": xf(0, 0.98, NAP_TABLE_Z, (0, 180, 0),
                             NAP_TABLE_SCALE),
-            "Nickname": "NAP Table",
-            "Description": "The NAP layout. Set up NAP lays it down.",
+            "Nickname": "%s Table" % game,
+            "Description": "The %s layout. Set up %s lays it down."
+                           % (game, game),
             "ColorDiffuse": {"r": 1.0, "g": 1.0, "b": 1.0},
             "Locked": True, "Grid": False, "Snap": False,
-            # NO TOOLTIP. This is scenery, and a 56-unit tile that names
-            # itself whenever the cursor crosses it puts its own hover
-            # text in front of every card on the table.
             "Tooltip": False,
-            "CustomImage": {"ImageURL": url(nap_table_image()),
+            "CustomImage": {"ImageURL": url(table_image(game)),
                             "ImageSecondaryURL": "", "ImageScalar": 1.0,
-                            # TYPE 0 IS A SQUARE TILE. Type 3 rounds the
-                            # corners, which cut the background away
-                            # from the four corners of the table.
                             "CustomTile": {"Type": 0, "Thickness": 0.05,
                                            "Stackable": False,
                                            "Stretch": True}}}
+
 
 
 # A DIE WITH NO ROTATION VALUES CANNOT BE SET TO A NUMBER. These carried
@@ -897,7 +977,8 @@ def main():
     for i, d in enumerate(DECKS):
         grouped['NRJ' if d['game'] == 'IMP' else d['game']].append(
             build_deck(d, i + 1, (0, 2.0, 0)))
-    grouped['NAP'].append(nap_table())
+    grouped['NAP'].append(game_table('NAP'))
+    grouped['BAT'].append(game_table('BAT'))
     for _nick, _text in NAP_COUNTERS:
         grouped['NAP'].append(counter(_nick, _text))
     box_guids = {}

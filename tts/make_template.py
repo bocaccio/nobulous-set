@@ -82,6 +82,10 @@ RADIUS = 14
 
 GAMES = ("BAT", "NAP", "AoS", "IMP")
 
+# Where the exhausted-dice corner has to stop on BAT, set by
+# draw_bat from the script's own Chip position.
+BAT_STOP = None
+
 
 def px(x, z):
     return ((x - X0) * PX, (Z0 - z) * PX)
@@ -204,8 +208,47 @@ def places_for(which, difficulty="Standard", tier=3):
     return T.footprints(w, lua), list(w.snaps), w, lua
 
 
+def draw_bat(d, lua):
+    """BAT'S SPACES COME FROM THE SCRIPT, not from where it put cards.
+
+    batBoxes() is the list the setup draws its own snap points from, so
+    a box on the felt and a space you can drop onto cannot disagree -
+    there is one of them. The Lab Rats and the two decks are
+    deliberately absent: Jon asked for no outline under either, and a
+    deck is a stack you can already see.
+    """
+    for b in lua.globals().batBoxes().values():
+        card(d, float(b.x), float(b.z), float(b.hw), float(b.hd),
+             PEN["snap"], 4)
+    g = lua.globals()
+    rx = lambda k: float(g.batRightX(k))
+    rz = lambda r: float(g.batRowZ(r))
+    half = float(g.BAT_BOX_HW)
+    # The three rows on the right hold things you cannot tell apart by
+    # looking at an empty space.
+    label(d, "TYRANT\nATTACK", rx(1), rz(3), fit=half * 1.8)
+    label(d, "ATTACK\nDECK", rx(2), rz(3), fit=half * 1.8)
+    label(d, "BUFF HP", rx(3), rz(3), fit=half * 1.8)
+    label(d, "TYRANT\nSPLICES", rx(1), rz(4), fit=half * 1.8)
+    # Dice that are out of the game, in the corner the grid leaves.
+    bx0, bx1, bzt, bzb = [float(v) for v in g.batBanished().values()]
+    a, b = px(bx0, bzt), px(bx1, bzb)
+    d.rounded_rectangle([a[0], a[1], b[0], b[1]], RADIUS * 2,
+                        outline=PEN["snap"], width=4)
+    label(d, "BANISHED DICE", (bx0 + bx1) / 2.0, (bzt + bzb) / 2.0,
+          fit=(bx1 - bx0) * 0.8)
+    # The Chip's own circle, the way NAP marks the dial's place, and
+    # where the exhausted-dice corner has to stop to clear it.
+    global BAT_STOP
+    BAT_STOP = float(g.BAT_CHIP_X) - 2.6
+    circle(d, float(g.BAT_CHIP_X), float(g.BAT_CHIP_Z), 1.1)
+
+
 def draw_game(d, which, slots_out=None):
     fp, snaps, w, lua = places_for(which)
+    if which == "BAT":
+        draw_bat(d, lua)
+        return fp
     # NAP OUTLINES WHERE YOU PUT THINGS, NOT WHERE THE GAME PUTS THEM.
     # A box under the Time Slot, the Assignment deck, the Apprentice or
     # the FINF card only draws a line round a card that is already
@@ -249,11 +292,18 @@ def draw_game(d, which, slots_out=None):
     return fp
 
 
-def frame(d):
+def frame(d, game=None):
     """The exhausted-dice corner. The dice themselves are not outlined:
     they are loose things that move, and drawing a box round each one
-    only clutters a background that has to sit under them."""
+    only clutters a background that has to sit under them.
+
+    IT STOPS SHORT ON BAT, because BAT's Chip stands below the
+    rightmost Splice and the corner would otherwise be drawn straight
+    through it. There is nowhere else for either to go: the bottom band
+    is the only clear strip left once four rows of cards are down."""
     x0, x1, zt, zb = EXHAUSTED
+    if game == "BAT" and BAT_STOP is not None:
+        x1 = BAT_STOP
     a, b = px(x0, zt), px(x1, zb)
     d.rounded_rectangle([a[0], a[1], b[0], b[1]], RADIUS * 2,
                         outline=PEN["snap"], width=4)
@@ -271,9 +321,11 @@ def main():
     for game in GAMES:
         im = Image.new("RGBA", (W, H), BACK)
         d = ImageDraw.Draw(im)
-        frame(d)
         slots = []
+        # DRAWN FIRST, because BAT's spaces are what tell the corner
+        # where to stop.
         draw_game(d, game, slots)
+        frame(d, game)
         draw_game(cd, game, [])
         p = os.path.join(OUT, "table_%s.png" % game)
         im.save(p)
@@ -287,11 +339,6 @@ def main():
     # the pale lines of the painting template disappear into it.
     global PEN
     PEN = dict(DARK)
-    ship_im = table_texture()
-    sd = ImageDraw.Draw(ship_im)
-    frame(sd)
-    draw_game(sd, "NAP", [])
-    PEN = dict(PALE)
     # JPEG, NOT PNG: the texture is a photograph, so PNG made this 7.2
     # MB where a JPEG is a fifteenth of that.
     #
@@ -302,16 +349,24 @@ def main():
     # of the bytes cannot have a stale copy anywhere: changed contents
     # mean a URL nobody has ever asked for.
     img = os.path.join(os.path.dirname(HERE), "images")
-    buf = io.BytesIO()
-    ship_im.convert("RGB").save(buf, "JPEG", quality=88, optimize=True)
-    raw = buf.getvalue()
-    name = "NAP_Table_%s.jpg" % hashlib.md5(raw).hexdigest()[:8]
-    for old in os.listdir(img):
-        if old.startswith("NAP_Table") and old != name:
-            os.remove(os.path.join(img, old))
-    ship = os.path.join(img, name)
-    io.open(ship, "wb").write(raw)
-    wrote.append(ship)
+    for game in ("NAP", "BAT"):
+        ship_im = table_texture()
+        sd = ImageDraw.Draw(ship_im)
+        # DRAWN FIRST, because BAT's spaces are what tell the corner
+        # where to stop.
+        draw_game(sd, game, [])
+        frame(sd, game)
+        buf = io.BytesIO()
+        ship_im.convert("RGB").save(buf, "JPEG", quality=88, optimize=True)
+        raw = buf.getvalue()
+        name = "%s_Table_%s.jpg" % (game, hashlib.md5(raw).hexdigest()[:8])
+        for old in os.listdir(img):
+            if old.startswith("%s_Table" % game) and old != name:
+                os.remove(os.path.join(img, old))
+        ship = os.path.join(img, name)
+        io.open(ship, "wb").write(raw)
+        wrote.append(ship)
+    PEN = dict(PALE)
     # AND THEY REALLY ARE ONE SIZE. `fit` shrinks a label that would
     # run out of its box, so asking for LABEL_PT is not the same as
     # getting it. This fails the build rather than shipping a picture

@@ -696,9 +696,21 @@ def layout_assertions():
                 # right, and the two piles under them. The bank is not
                 # conditional on the tier any more: the mat prints its
                 # box at every tier, so the space has to be there too.
-                exp = (4 * len(slots) + 2 + 2 + 2
-                       if which == "NAP" else 0)
-                want(t + " Assignment spaces", len(w.snaps), exp)
+                if which == "NAP":
+                    exp = 4 * len(slots) + 2 + 2 + 2
+                elif which == "BAT":
+                    # Twelve Upgrade spaces beside the Rats, three
+                    # revealed, the Tyrant's three, the Splices; then
+                    # the places with no box of their own - a Rat and
+                    # its active-Rat mark on each row, the two decks,
+                    # and one per cell of the Buff HP track.
+                    rows, ups = int(g.BAT_ROWS), int(g.BAT_UPGRADES)
+                    exp = (rows * ups + 3 + 3 + int(g.BAT_SPLICES)
+                           + 2 * rows + 2
+                           + len(list(g.BUFF_CELL.values())))
+                else:
+                    exp = 0
+                want(t + " spaces laid", len(w.snaps), exp)
                 if which == "NAP":
                     for sz in slots:
                         # The Assignment columns only: the discard and
@@ -1152,6 +1164,165 @@ def g_in_the_bag():
     return list(g.IN_THE_BAG.values())
 
 
+def bat_assertions():
+    """The BAT table Jon laid out, squared up.
+
+    THE GRID IS THE CLAIM, not the card positions: a space on the felt
+    is drawn from batBoxes() and a snap point is made from the same
+    list, so what has to be checked is that the grid itself holds
+    together - rows that line up with the Rats, spaces that do not
+    overlap each other or run off the felt, and the things that sit
+    outside it.
+    """
+    w, g = start("Standard", 0, Panel())
+    w.lossy = 3
+    g.setupBAT()
+    drain(w)
+    by = dict((o.name, o) for o in w.table.values())
+    cw, cl = float(g.CARD_W) / 2, float(g.CARD_L) / 2
+
+    # The four Rats are a column down the left, in order, top to bottom.
+    rats = sorted([o for o in w.table.values() if o.name.startswith("Lab Rat")],
+                  key=lambda o: -o.pos[2])
+    want("BAT deals four Lab Rats in a column",
+         [round(o.pos[0], 2) for o in rats],
+         [round(float(g.BAT_RAT_X), 2)] * 4)
+    want("...one to a row, in the script's order",
+         [round(o.pos[2], 2) for o in rats],
+         [round(float(g.batRatZ(i)), 2) for i in range(1, 5)])
+
+    # EACH RAT'S THREE UPGRADE SPACES SHARE ITS TOP EDGE. That is the
+    # thing Jon asked for by eye and the one relation a pitch change
+    # could quietly break.
+    bad = []
+    for r in range(1, 5):
+        top = float(g.batRatZ(r)) + cw
+        for k in range(1, 4):
+            if abs((float(g.batRowZ(r)) + cl) - top) > 0.01:
+                bad.append((r, k))
+    want("every Upgrade space is level with its Rat's top edge", bad, [])
+
+    # The spaces are a grid: none overlaps another, none leaves the felt.
+    boxes = [(float(b.x), float(b.z), float(b.hw), float(b.hd))
+             for b in g.batBoxes().values()]
+    want("BAT draws a space for every card you put down", len(boxes),
+         int(g.BAT_ROWS) * int(g.BAT_UPGRADES) + 3 + 3 + int(g.BAT_SPLICES))
+    over = [(a, b) for i, a in enumerate(boxes) for b in boxes[i + 1:]
+            if abs(a[0] - b[0]) < a[2] + b[2] - 0.02
+            and abs(a[1] - b[1]) < a[3] + b[3] - 0.02]
+    want("no two spaces overlap", over[:2], [])
+    felt = g.FELT
+    off = [b for b in boxes
+           if b[0] - b[2] < float(felt.x0) or b[0] + b[2] > float(felt.x1)
+           or b[1] - b[3] < float(felt.z0) or b[1] + b[3] > float(felt.z1)]
+    want("no space runs off the felt", off[:2], [])
+
+    # A CARD OVERHANGS ITS SPACE, which is what the pitch buys: the
+    # grid is a shade under a card wide, the way NAP's is.
+    want("a card is wider than the space it sits in",
+         (round(cw * 2, 2) > round(float(g.BAT_BOX_HW) * 2, 2),
+          round(cl * 2, 2) > round(float(g.BAT_BOX_HD) * 2, 2)),
+         (True, True))
+
+    # The Rats and the two decks get no box - Jon asked for none - but
+    # they do get somewhere to drop onto.
+    def snapped(x, z):
+        return any(abs(s[0] - x) < 0.05 and abs(s[1] - z) < 0.05
+                   for s in w.snaps)
+    want("a Rat has a snap point and no box",
+         ([snapped(float(g.BAT_RAT_X), float(g.batRatZ(r)))
+           for r in range(1, 5)],
+          [b for b in boxes if abs(b[0] - float(g.BAT_RAT_X)) < 0.05]),
+         ([True] * 4, []))
+    # THE RIGHT-HAND COLUMNS ONLY. Row 1 also carries the three Upgrade
+    # spaces beside the top Rat, which are a long way to the left of
+    # the decks and do have boxes.
+    want("so do the two decks",
+         ([snapped(float(g.batRightX(k)), float(g.batRowZ(1)))
+           for k in (1, 2)],
+          [b for b in boxes if abs(b[1] - float(g.batRowZ(1))) < 0.05
+           and b[0] > float(g.BAT_RIGHT1) - 1.0]),
+         ([True, True], []))
+
+    # The banished-dice corner is clear of everything the grid draws.
+    bq = [float(v) for v in g.batBanished().values()]
+    want("the banished-dice corner is in the top right",
+         (bq[1] <= float(felt.x1), bq[2] <= float(felt.z1),
+          bq[0] > float(g.BAT_RIGHT1)),
+         (True, True, True))
+    want("...and nothing else is drawn inside it",
+         [b for b in boxes
+          if b[0] + b[2] > bq[0] and b[1] - b[3] < bq[2]
+          and b[1] + b[3] > bq[3]][:2], [])
+
+    # The active-Rat mark sits ON its Rat, near the top right corner.
+    marks = []
+    for r in range(1, 5):
+        mx = float(g.BAT_RAT_X) + cl - float(g.BAT_MARK_IN)
+        mz = float(g.batRatZ(r)) + cw - float(g.BAT_MARK_IN)
+        marks.append(snapped(mx, mz)
+                     and mx < float(g.BAT_RAT_X) + cl
+                     and mz < float(g.batRatZ(r)) + cw)
+    want("each Rat has a mark on it for being the active one",
+         marks, [True] * 4)
+
+    # The Buff HP track's cells are snap points inside the Buff HP space.
+    bx, bz = float(g.batRightX(int(g.BAT_BUFF))), float(g.batRowZ(3))
+    cells = [(bx + float(c[1]), bz + float(c[2]))
+             for c in g.BUFF_CELL.values()]
+    want("the Buff HP track has fifteen cells", len(cells), 15)
+    want("...every one of them inside the card's own space",
+         [c for c in cells
+          if abs(c[0] - bx) > cw or abs(c[1] - bz) > cl][:2], [])
+    want("...and every one of them a snap point",
+         [c for c in cells if not snapped(c[0], c[1])][:2], [])
+
+    # The Chip stands below the rightmost Splice, clear of the row.
+    # The markers are not on w.table - they live in their own
+    # index, keyed by GUID - so ask the script for it by name.
+    chip = g.marker("Chip")
+    want("the Chip stands below the rightmost Splice",
+         (round(chip.pos[0], 2), chip.pos[2] < float(g.batRowZ(4))
+          - float(g.BAT_BOX_HD)),
+         (round(float(g.batRightX(int(g.BAT_SPLICES))), 2), True))
+
+    # The overlay goes down and is locked.
+    want("BAT lays its own overlay", "BAT Table" in by, True)
+    want("...and locks it so it cannot be dragged",
+         by["BAT Table"].locked, True)
+    want("...and prints nothing in red", w.errors[:2], [])
+
+
+def buff_lock_assertions():
+    """The Buff HP card locks itself when it reaches its space.
+
+    It starts in the bag, because it is optional; you fetch it when you
+    want it. It holds part of the Tyrant's Health on a track you push a
+    die along, so a card that slides when you nudge the die is worse
+    than no card at all.
+    """
+    w, g = start("Standard", 0, Panel())
+    g.setupBAT()
+    drain(w)
+    bx, bz = float(g.batRightX(int(g.BAT_BUFF))), float(g.batRowZ(3))
+    card = Obj(w, "buff", "Buff HP Track")
+    card.pos = (bx + 0.4, 1.0, bz - 0.3)
+    w.table[card.guid] = card
+    g.onObjectDrop("White", card)
+    drain(w)
+    want("the Buff HP card locks when it lands on its space",
+         (card.locked, round(card.pos[0], 2), round(card.pos[2], 2)),
+         (True, round(bx, 2), round(bz, 2)))
+
+    # Dropped anywhere else it is just a card.
+    loose = Obj(w, "buff2", "Buff HP Track")
+    loose.pos = (bx, 1.0, bz + 12.0)
+    w.table[loose.guid] = loose
+    g.onObjectDrop("White", loose)
+    drain(w)
+    want("...and not when it lands somewhere else", loose.locked, False)
+
+
 def pile_assertions():
     """A pile the player built is the one thing on the table with no name.
 
@@ -1556,6 +1727,8 @@ def main():
     finf_assertions()
     round_trip_assertions()
     in_the_bag_assertions()
+    bat_assertions()
+    buff_lock_assertions()
     pile_assertions()
     panel_game_assertions()
     for lvl in ("Easy", "Standard", "Hard", "Nobulous"):
