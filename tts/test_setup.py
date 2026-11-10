@@ -96,6 +96,7 @@ class Obj(object):
         self.text = ""
         self.desc = ""
         self.scale = (1.0, 1.0, 1.0)
+        self.locked = False
         self.TextTool = TextTool(self)
 
     def getName(self):
@@ -132,8 +133,10 @@ class Obj(object):
         self.world.shuffled.add(self.name)
         self.world.rng.shuffle(self.kids)
 
-    def setLock(self, *a):
-        pass
+    def setLock(self, lock=None, *a):
+        # RECORDED. The Time Slots are locked after they land, and a
+        # lock the stub threw away is a lock nothing can check.
+        self.locked = bool(lock)
 
     def setDescription(self, d):
         self.desc = d
@@ -190,6 +193,13 @@ class Obj(object):
             self.pos = (self.pos[0] - 2.22, self.pos[1], self.pos[2] - 0.10)
         if "position" in keys:
             k.setPosition(spec["position"])
+        # AND THE ROTATION IT WAS ASKED FOR. The stub threw this away,
+        # which is exactly the thing that went wrong at the table: a
+        # deck whose contained cards carried their own rotation handed
+        # every drawn Assignment back upside down, and nothing here
+        # could see it. A card drawn with a rotation has that rotation.
+        if "rotation" in keys:
+            k.setRotation(spec["rotation"])
         self.world.table[k.guid] = k
         if "callback_function" in keys and spec["callback_function"] is not None:
             spec["callback_function"](k)
@@ -609,9 +619,11 @@ def layout_assertions():
                 slots = [o.pos[2] for o in w.table.values()
                          if o.name.startswith("Time Slot")]
                 # 4 beside every Time Slot, 2 for the cards the deck
-                # reveals, 1 discard pile, and at Tier III one more for
-                # the banked Opportunities.
-                exp = (4 * len(slots) + 2 + 1 + (1 if tier >= 3 else 0)
+                # reveals, the Apprentice and the FINF cards down the
+                # right, and the two piles under them. The bank is not
+                # conditional on the tier any more: the mat prints its
+                # box at every tier, so the space has to be there too.
+                exp = (4 * len(slots) + 2 + 2 + 2
                        if which == "NAP" else 0)
                 want(t + " Assignment spaces", len(w.snaps), exp)
                 if which == "NAP":
@@ -623,10 +635,20 @@ def layout_assertions():
                              len([s for s in w.snaps
                                   if abs(s[1] - sz) < 0.05
                                   and s[0] < 20.0]), 4)
+                    # TWO OF THEM DO, ON PURPOSE. The Apprentice and
+                    # the FINF cards are dealt onto their own spaces so
+                    # that the mat draws a box under each - that is
+                    # what the box is for. Every other space is still
+                    # somewhere you put a card rather than somewhere
+                    # the setup already put one, and naming the two
+                    # exceptions is what keeps that true: a third one
+                    # appearing fails this.
+                    allowed = ("Apprentice", "FINF")
                     want(t + " no space lands on a dealt card",
                          [f[0] for f in fp for sx, sz in w.snaps
                           if abs(f[1] - sx) < f[3] - 0.1
-                          and abs(f[2] - sz) < f[4] - 0.1][:3], [])
+                          and abs(f[2] - sz) < f[4] - 0.1
+                          and not f[0].startswith(allowed)][:3], [])
                     # THE THREE STAT DICE, in a row under the Apprentice
                     # and centred on it, each showing the 2 that card
                     # prints. Nothing checked them at all before: the
@@ -743,7 +765,11 @@ def panel_assertions():
     want("tier cycle", tiers, [0, 1, 2, 3, 0])
 
     # Keeping a character leaves exactly one of them on the table.
-    for which, deck, n in (("NAP", "Apprentices", 3),
+    # NAP DEALS ONE, not three: the panel's Apprentice button picks the
+    # character and the side, so the setup leaves that one out and
+    # sends the other two back rather than dealing a stack to choose
+    # from. AoS and Imposter still deal theirs and use Keep 1/2/3.
+    for which, deck, n in (("NAP", "Apprentices", 1),
                            ("AoS", "Technicians", 3),
                            ("IMP", "Imposters (A / B)", 5)):
         w, g = start("Standard", 0, Panel())
@@ -810,6 +836,127 @@ def panel_assertions():
              sorted((o.name, round(o.pos[0], 3), round(o.pos[2], 3))
                     for o in w.markers.values() if o.name in home),
              sorted((n, p[0], p[1]) for n, p in home.items()))
+
+
+def choice_assertions():
+    """NAP's two panel dials: which Apprentice, and which FINF setting.
+
+    BOTH ARE CHECKED THROUGH WHAT LANDS ON THE TABLE, not through
+    STATE. The panel can hold any number it likes; what matters is that
+    the card out is the one the button names, on the side it names, and
+    that the FINF cards went where that setting sends them.
+    """
+    app = []
+    w, g = start("Standard", 0, Panel())
+    g.setupNAP()
+    drain(w)
+    n = int(g.APPRENTICE and len(list(g.APPRENTICE.values())) or 0)
+    want("the panel offers every Apprentice build_nap.py prints", n, 6)
+    faceup = tuple(float(v) for v in g.FACEUP.values())
+    facedown = tuple(float(v) for v in g.FACEDOWN.values())
+    want("a card's two sides are two different rotations",
+         faceup != facedown, True)
+    for _ in range(n + 1):
+        a = g.APPRENTICE[int(g.STATE.apprentice)]
+        cards = [o for o in w.table.values()
+                 if o.name.startswith("Apprentice")]
+        app.append((str(a.name), int(a.card), bool(a.back),
+                    [o.name for o in cards],
+                    [o.rot for o in cards]))
+        g.btnApp()
+        drain(w)
+    want("exactly one Apprentice is ever on the table",
+         sorted(set(len(e[3]) for e in app)), [1])
+    want("the card out is the one the button names",
+         [e[3][0] for e in app],
+         ["Apprentice %d" % e[1] for e in app])
+    want("...and it is turned to the side the button names",
+         [e[4][0] == (facedown if e[2] else faceup) for e in app],
+         [True] * len(app))
+    want("every Apprentice is reachable, and the button comes back round",
+         [e[0] for e in app[:n]] + [app[n][0] == app[0][0]],
+         [str(g.APPRENTICE[i + 1].name) for i in range(n)] + [True])
+    # NOTHING IS LOST ON THE WAY ROUND. Choosing again has to put the
+    # card that is out back into a stack of three before it can take
+    # another one, and findDeck cannot see a loose card in a bag: a
+    # deckOut here would have dealt a stack of two the second time.
+    want("all three Apprentice cards survive six choices",
+         out(w, "Apprentices") + inbag(w, "NAP", "Apprentice"), 3)
+    # AND THEY SURVIVE AS ONE STACK. Counting cards is not the claim -
+    # a bag holding a deck of two and a card beside it holds three
+    # cards and is still broken, because findDeck matches a nickname
+    # exactly and the next deckOut would deal the deck of two. That is
+    # what the choice before last left behind every single time.
+    want("...and none of them is stranded loose in the bag",
+         stranded(w, "NAP", "Apprentice"), 0)
+
+    # THE CLOCK IS NAILED DOWN.
+    # THE FIRST OF THEM IS THE DECK OBJECT, still carrying the deck's
+    # name after collapsing to one card - which is why this counts
+    # three rather than naming them.
+    slots = [o for o in w.table.values() if o.name.startswith("Time Slot")]
+    want("the three Time Slots are locked",
+         (len(slots), sorted(set(o.locked for o in slots))), (3, [True]))
+    want("...and nothing else NAP deals is",
+         [o.name for o in w.table.values()
+          if o.locked and not o.name.startswith(("Time Slot", "NAP Table"))],
+         [])
+
+    # FINF: Increase hides them in the Assignment deck, Reduce lays them
+    # out to spend. Six settings, and the two directions do genuinely
+    # different things with the same three cards.
+    got = []
+    for i in range(1, 7):
+        w, g = start("Standard", 0, Panel())
+        g.STATE.finf = i
+        g.setupNAP()
+        drain(w)
+        fz = float(g.FINF_Z)
+        laid = sum(len(o.kids) if o.kids else 1
+                   for o in w.table.values()
+                   if o.name.startswith("FINF")
+                   and abs(o.pos[2] - fz) < 0.05)
+        deck = [o for o in w.table.values() if o.name.startswith("Assignment")]
+        hidden = sum(1 for d in deck for c in d.kids
+                     if c.name.startswith("FINF"))
+        way, many = str(g.FINF_SET[i][1]), int(g.FINF_SET[i][2])
+        got.append((way, many, hidden, laid))
+    want("Increase shuffles that many FINF cards into the Assignment deck",
+         [(e[1], e[2]) for e in got if e[0] == "Increase"],
+         [(1, 1), (2, 2), (3, 3)])
+    want("...and lays none of them out",
+         [e[3] for e in got if e[0] == "Increase"], [0, 0, 0])
+    want("Reduce lays that many FINF cards on the FINF space",
+         [(e[1], e[3]) for e in got if e[0] == "Reduce"],
+         [(1, 1), (2, 2), (3, 3)])
+    want("...and hides none of them in the deck",
+         [e[2] for e in got if e[0] == "Reduce"], [0, 0, 0])
+    want("the six settings are three of each", sorted(e[0] for e in got),
+         ["Increase"] * 3 + ["Reduce"] * 3)
+
+
+def stranded(w, game, card):
+    """Single cards of a family sitting in a bag beside their own deck."""
+    n = 0
+    for o in w.byguid.values():
+        if o.bag and o.name.startswith(game):
+            n += len([k for k in o.kids
+                      if k.name.startswith(card + " ") and not k.kids])
+    return n
+
+
+def inbag(w, game, prefix):
+    """Cards of a family sitting loose in a game's bag."""
+    n = 0
+    # BAGS ARE NOT ON THE TABLE. w.table is what is out; the four boxes
+    # live in byguid, which is why this read zero and said the cards
+    # had been lost.
+    for o in w.byguid.values():
+        if o.bag and o.name.startswith(game):
+            for k in o.kids:
+                if k.name.startswith(prefix):
+                    n += len(k.kids) if k.kids else 1
+    return n
 
 
 def counter_assertions():
@@ -951,6 +1098,7 @@ def main():
     panel_assertions()
     counter_assertions()
     dial_assertions()
+    choice_assertions()
     for lvl in ("Easy", "Standard", "Hard", "Nobulous"):
         spec, sb = BAT_SPECIMENS[lvl], NAP_SETBACKS[lvl]
         for tier in (0, 1, 2, 3):

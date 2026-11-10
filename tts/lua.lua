@@ -23,7 +23,11 @@ STATE = { game = nil, difficulty = 'Standard', tier = 0,
           chip = 1,
           -- Which rulebook the corner is showing, so a setup does not
           -- respawn the object to load what is already in it.
-          rules = 'BAT' }
+          rules = 'BAT',
+          -- The two NAP choices the panel makes, kept the way the
+          -- difficulty is: chosen before a setup and dealt by it.
+          -- 4 is Reduce 1, which rules/nap.html calls Standard.
+          apprentice = 1, finf = 4 }
 
 -- THE PRINTED NUMBERS, in one place. This script enforces nothing; it only
 -- SAYS them, which is exactly how they drifted - every one below used to be
@@ -35,6 +39,13 @@ LEVELS = { 'Easy', 'Standard', 'Hard', 'Nobulous' }
 BAT_DIFF = { Easy = {5, 9}, Standard = {6, 10}, Hard = {7, 12}, Nobulous = {8, 14} }
 -- NAP: the Credit goal, and how many Setbacks are in the Assignment deck.
 NAP_DIFF = { Easy = {5, 3}, Standard = {6, 3}, Hard = {7, 4}, Nobulous = {8, 5} }
+-- NAP's second dial, from rules/nap.html: Increase 1-3 shuffles that
+-- many of the 3 FINF cards INTO the Assignment deck, Reduce 1-3 lays
+-- them out face-up to spend. Standard is Reduce 1. The two directions
+-- are not symmetrical and the setup does genuinely different things
+-- with them, so the direction is stored rather than a signed number.
+FINF_SET = { {'Increase', 1}, {'Increase', 2}, {'Increase', 3},
+             {'Reduce', 1}, {'Reduce', 2}, {'Reduce', 3} }
 -- AoS: the 8-Program mix, Routine / Specialized / Unstable. Each step up
 -- trades one Routine for one Unstable; Specialized stays at 3.
 AOS_MIX = { Easy = {3, 3, 2}, Standard = {2, 3, 3}, Hard = {1, 3, 4}, Nobulous = {0, 3, 5} }
@@ -51,14 +62,15 @@ ATTENTION = { 'Yellow', 'Green', 'Blue', 'Purple', 'Red' }
 --
 -- THE FIVE ANGLES ARE THE ONLY THING TO ADJUST if a number lands on the
 -- wrong colour: where the art's zero sits is not something a script can
--- know, and five segments are 72 degrees apart. CHIP_FACE_Z is which
--- way up the coloured face is - flip the Chip and typing does nothing,
--- because the other side has no colour to turn to.
--- CHIP_FACE is GENERATED from build_mod.py, because the dial's rotation
--- values in the save and the angles this script turns it to have to be
--- the same five numbers. They were not: the values went round in steps
--- of 72 from zero and the script had its own table.
-CHIP_FACE_Z = 180
+-- know, and five segments are 72 degrees apart.
+--
+-- CHIP_FACE and CHIP_FACE_Z are both GENERATED from build_mod.py,
+-- because the dial's rotation values in the save and the angles this
+-- script turns it to have to be the same numbers. They were not,
+-- twice: first the values went round in steps of 72 from zero while
+-- the script had its own table, then the face was written down here as
+-- 180 - the token's MIRRORED underside, which shows a dial running the
+-- wrong way round and reads as a trim that has drifted.
 
 -- The dial's NUMBER side, which is the other way up. Same five steps
 -- round, same caveat: these are the angles to change if the dial reads
@@ -144,6 +156,10 @@ NAP_TABLE = 'NAP Table'
 --
 -- The Chip starts in the circle beside Morning, reading 1.
 NAP_START = 2
+-- The FINF space, one row under the Apprentice. Named because three
+-- things now want it: the setup that lays the cards there, the snap
+-- point under them, and the mat box the template draws from the snap.
+FINF_Z = ROW_CHAR - NAP_GAP
 STAT_Z = ROW_CHAR - NAP_GAP / 2
 STAT_PITCH = 2.1
 CHIP_X = ASSIGN_X - CARD_L / 2 - 1.9
@@ -399,6 +415,40 @@ function moveN(src, dst, n)
   return dst
 end
 
+-- The deck AND any single card of it an earlier choice left behind.
+--
+-- findDeck MATCHES A NICKNAME EXACTLY, so an 'Apprentice 2' sitting
+-- loose in the bag is invisible to it: take the deck out after one has
+-- been chosen and you get a stack of two, with nothing anywhere saying
+-- why. That was already true of Keep 1/2/3; an Apprentice button you
+-- can press twice makes it happen every time.
+function takeWhole(label, card, pos, rot)
+  local d = deckOut(label, pos, rot)
+  for _, g in pairs(BOX) do
+    local b = getObjectFromGUID(g)
+    if b then
+      local want = {}
+      for _, e in ipairs(b.getObjects()) do
+        local n = e.nickname or ''
+        if n:sub(1, #card + 1) == card .. ' ' then
+          table.insert(want, e.guid)
+        end
+      end
+      for _, gu in ipairs(want) do
+        local c = b.takeObject({guid = gu, position = OFF, smooth = false})
+        if c then
+          if d then d.putObject(c) else d = c end
+        end
+      end
+    end
+  end
+  if d then
+    d.setPosition(pos)
+    d.setRotation(rot or FACEDOWN)
+  end
+  return d
+end
+
 -- Deal ONE card of a deck to a place, and send the rest home.
 function drawOne(label, pos, rot)
   local d = deckOut(label, OFF)
@@ -545,12 +595,19 @@ function napSnaps(rows, z0, gap)
       snapAt(pts, ASSIGN_X + k * ASSIGN_PITCH, z0 - r * gap)
     end
   end
+  -- The right-hand column: the Apprentice you chose, and the FINF
+  -- cards under it. Both were dealt onto bare felt - the mat draws a
+  -- box for every snap point NAP makes, so no snap meant no box and
+  -- nothing to line a card up against.
+  snapAt(pts, NAP_X, z0 + gap)
+  snapAt(pts, NAP_X, z0)
   -- The discard pile for completed Assignments, under the FINF card.
   snapAt(pts, PILE_X, z0 - gap)
-  -- And the banked Devious Opportunities under that, at Tier III.
-  if STATE.tier >= 3 then
-    snapAt(pts, PILE_X, z0 - 2 * gap)
-  end
+  -- AND THE BANKED DEVIOUS OPPORTUNITIES UNDER THAT, ALWAYS. It was
+  -- made at Tier III only, which is where the cards come from - but
+  -- the box is printed on the mat at every tier, so three quarters of
+  -- the time the table showed a space that nothing would snap to.
+  snapAt(pts, PILE_X, z0 - 2 * gap)
   local ok = pcall(function() Global.setSnapPoints(pts) end)
   if not ok then say('Snap points are not available in this build.') end
   return pts
@@ -621,6 +678,91 @@ function keepChar(i)
   t[i].setPosition({home[1], 3, home[2]})
   say('Kept the ' .. i .. ' of ' .. #t ..
       '. Flip it for the character on the other side.')
+end
+
+-- NAP's second dial, dealt. rules/nap.html: Increase shuffles that many
+-- of the 3 FINF cards INTO the Assignment deck, where they share its
+-- back and stay hidden until drawn; Reduce lays them face-up beside the
+-- table to spend. One setting, chosen before the game and kept.
+--
+-- CALLED BEFORE THE DECK IS SHUFFLED, which is the whole reason it is a
+-- step of its own rather than part of the Time Slot step that used to
+-- deal one FINF card at random.
+function finfOut(asg)
+  local set = FINF_SET[STATE.finf] or FINF_SET[4]
+  local n = set[2]
+  local d = takeWhole('FINF', 'FINF', OFF, FACEUP)
+  if not d then return end
+  d.shuffle()
+  if set[1] == 'Increase' then
+    moveN(d, asg, n)
+    return
+  end
+  -- TAKE THE ONES WANTED, not the ones not wanted. Taking cards off a
+  -- three card deck until one is left takes the last card out of a
+  -- deck of one, which is taking a card out of a card; this way the
+  -- deck is never emptied and the remainder goes back whole.
+  if n >= count(d) then
+    d.setPosition({NAP_X, 3, FINF_Z})
+    d.setRotation(FACEUP)
+    return
+  end
+  if n == 1 then
+    d.takeObject({position = {NAP_X, 3, FINF_Z}, rotation = FACEUP,
+                  smooth = false})
+    putHome(d)
+    return
+  end
+  -- TWO OF THREE: take the odd one out and leave the rest standing.
+  -- Building the stack the other way round - taking the two wanted and
+  -- putting one into the other - makes a deck out of a card, which TTS
+  -- allows and the harness does not have to.
+  for _ = 1, count(d) - n do
+    d.takeObject({position = OFF, smooth = false,
+                  callback_function = function(o) putHome(o) end})
+  end
+  d.setPosition({NAP_X, 3, FINF_Z})
+  d.setRotation(FACEUP)
+end
+
+-- The chosen Apprentice, on the table, the right way up.
+--
+-- SIX CHARACTERS ON THREE CARDS, so a choice is a card AND a side, and
+-- APPRENTICE is generated from build_nap.py's own APPS table rather
+-- than copied here. Pressing the button again has to put back the one
+-- that is out before it can deal another, which is why the stack comes
+-- out with takeWhole: deckOut alone would find a deck of two.
+function showApprentice()
+  local a = APPRENTICE[STATE.apprentice]
+  if not a or STATE.game ~= 'NAP' then return end
+  local one = CARD_NAME['Apprentices'] or 'Apprentice'
+  for _, o in ipairs(getAllObjects()) do
+    local n = o.getName() or ''
+    if n == 'Apprentices' or n:sub(1, #one + 1) == one .. ' ' then
+      putHome(o)
+    end
+  end
+  Wait.frames(function()
+    local d = takeWhole('Apprentices', one, OFF, FACEUP)
+    if not d then say('No Apprentices to deal.') return end
+    local home = CHAR_HOME.NAP
+    local rot = a.back and FACEDOWN or FACEUP
+    if count(d) <= 1 then
+      d.setPosition({home[1], 3, home[2]})
+      d.setRotation(rot)
+      return
+    end
+    local want = one .. ' ' .. a.card
+    for _, e in ipairs(d.getObjects()) do
+      if e.nickname == want then
+        d.takeObject({guid = e.guid, position = {home[1], 3, home[2]},
+                      rotation = rot, smooth = false})
+        putHome(d)
+        return
+      end
+    end
+    say('There is no ' .. want .. ' in that stack.')
+  end, 6)
 end
 
 -- --------------------------------------------------------------- counters
@@ -833,6 +975,9 @@ function setupNAP()
   if STATE.tier >= 1 then
     step(function() moveN(deckOut('Following Setbacks', pad(5)), asg, 3) end)
   end
+  -- BEFORE THE SHUFFLE. On Increase the FINF cards go into this deck
+  -- and have to be lost in it.
+  step(function() finfOut(asg) end)
   step(function() if asg then asg.shuffle() end end)
 
   step(function()
@@ -842,11 +987,20 @@ function setupNAP()
     -- The Time Slots are a column UNDER THE ASSIGNMENT DECK, in their
     -- own order, because they are a clock and not a hand: Morning at
     -- the top.
-    column(deckOut('Time Slots', {ASSIGN_X, 3, ROW_CHAR - NAP_GAP}, FACEUP),
-           3, ASSIGN_X, ROW_CHAR - NAP_GAP, FACEUP, NAP_GAP)
-    napSnaps(3, ROW_CHAR - NAP_GAP, NAP_GAP)
-    -- Below the Apprentices, above the Final Exams.
-    drawOne('FINF', {NAP_X, 3, ROW_CHAR - NAP_GAP}, FACEUP)
+    column(deckOut('Time Slots', {ASSIGN_X, 3, FINF_Z}, FACEUP),
+           3, ASSIGN_X, FINF_Z, FACEUP, NAP_GAP)
+    napSnaps(3, FINF_Z, NAP_GAP)
+    -- LOCKED ONCE THEY HAVE LANDED. The clock is the one thing on this
+    -- table that never moves, and three cards that cannot be nudged
+    -- are three cards an Assignment cannot be dropped on top of by
+    -- accident. snapFirst still re-places the first of them four
+    -- frames from now, so the lock waits for that.
+    Wait.time(function()
+      for _, o in ipairs(getAllObjects()) do
+        local n = o.getName() or ''
+        if n:sub(1, 9) == 'Time Slot' then o.setLock(true) end
+      end
+    end, 0.9)
     -- A readout over each pile, in the gap above it.
     deckOut(CREDIT_PILE,
             {PILE_X, 3, ROW_CHAR - 2 * NAP_GAP + COUNTER_LIFT})
@@ -870,6 +1024,10 @@ function setupNAP()
     setMarker('Strategy', NAP_X, STAT_Z, NAP_START)
     setMarker('Recovery', NAP_X + STAT_PITCH, STAT_Z, NAP_START)
   end)
+  -- THE PANEL'S CHOICE, DEALT. The stack came out a step ago; this
+  -- leaves the one the Apprentice button is showing on the table and
+  -- sends the other two back, so the panel and the felt agree.
+  step(function() showApprentice() end)
   step(function()
     STATE.credits = 0
     refreshCounts()
@@ -878,15 +1036,19 @@ function setupNAP()
         ' Credits reaches the Final Exam. The Assignment deck is built and' ..
         ' shuffled: 26 Tasks + 6 Opportunities + ' .. sb .. ' Setbacks' ..
         (STATE.tier >= 1 and (' (3 Following and ' .. base .. ' base)') or '') ..
-        '. Choose an Apprentice at 2 HP / 2 STR / 2 REC with Keep 1, 2 or' ..
-        ' 3, take all 17 dice, and work the Morning Time Slot first.' ..
+        '. ' .. APPRENTICE[STATE.apprentice].name ..
+        ' is out at 2 HP / 2 STR / 2 REC -- press Apprentice for another.' ..
+        ' Take all 17 dice and work the Morning Time Slot first.' ..
         ' The Final Exams stay in the bag until you reach them.' ..
         (STATE.tier >= 2 and ' TIER II: the 4 Imposter Tasks are in, and one Credit Task of each subject came out.' or '') ..
         ' Completed Assignments pile under the FINF card at End of Day.' ..
         (STATE.tier >= 3 and (' TIER III: the Devious Opportunities replaced the base' ..
          ' six, and four of them BANK - keep the card and spend it at the' ..
          ' Final Exam. The pile under the discard is for those.') or '') ..
-        ' FINF is set to one card at random -- swap it if you want another setting.')
+        ' FINF ' .. FINF_SET[STATE.finf][1] .. ' ' .. FINF_SET[STATE.finf][2] ..
+        (FINF_SET[STATE.finf][1] == 'Increase'
+         and ' -- those cards are shuffled into the Assignment deck.'
+         or ' -- those cards are face-up under the Apprentice, one use each.'))
   end)
   run()
 end
@@ -1076,38 +1238,27 @@ function refreshPanel()
   btn('NRJ Tier  ' .. (STATE.tier == 0 and 'off' or
       ({'I', 'II', 'III'})[STATE.tier]), 'btnTier', 0.50, -0.36, 820)
 
-  local g = STATE.game
-  if g == 'BAT' then
-    lbl('Splices  ' .. STATE.splices .. ' / 5', -3.41, 0.00, 640)
-    btn('-', 'splMinus', -1.70, 0.00, 240)
-    btn('+', 'splPlus', -0.82, 0.00, 240)
-    if STATE.splices >= 5 then lbl('TYRANT AWAKE', 1.94, 0.00, 560) end
-  elseif g == 'NAP' then
-    -- NO CREDIT COUNTER HERE. It counted presses, not cards, and it sat
-    -- at the other end of the table from the pile it claimed to
-    -- describe. The Credit Record plate above that pile counts what is
-    -- actually on it, and breaks it down by subject on hover - which is
-    -- the number the Final Exam asks for and the one you cannot get by
-    -- looking at a stack of face-up cards.
-    lbl('Credits are counted on the pile, under the FINF card',
-        -1.30, 0.00, 2100, 72)
-  elseif g == 'AoS' then
-    lbl('Backdoors  ' .. STATE.backdoors .. ' / 2', -3.32, 0.00, 700)
-    btn('-', 'bdMinus', -1.54, 0.00, 240)
-    btn('+', 'bdPlus', -0.65, 0.00, 240)
-  elseif g == 'IMP' then
-    lbl('Session  ' .. math.min(9, STATE.session + 1) .. ' / 9', -3.41, 0.00, 640)
-    btn('-', 'atMinus', -1.70, 0.00, 240)
-    btn('+', 'atPlus', -0.82, 0.00, 240)
-    -- Derived, not counted: the attention advances one step at the end of
-    -- every session, so a hand counter for it could only ever disagree.
-    lbl('Attention  ' .. attentionNow() .. ' / ' .. attentionNext(),
-        2.18, 0.00, 900, 72)
-  end
+  -- THE MIDDLE ROW IS NAP'S TWO OTHER DIALS, under the two it already
+  -- has. Each one reads and sets the same way the difficulty does: the
+  -- button says what is chosen and pressing it chooses the next.
+  --
+  -- NOTHING COUNTS ON THIS PANEL ANY MORE. Splices, Credits, Backdoors
+  -- and Session all sat here as a number and a +/-, which counted
+  -- presses rather than what was on the table and sat at the far end of
+  -- it from the thing being counted. bump() and resetCounters() are
+  -- still here and still drive STATE, so a row can go back on a button
+  -- or on a plate over the pile it describes - which is what the Credit
+  -- Record above the Completed Credits pile already does.
+  local a = APPRENTICE[STATE.apprentice]
+  btn('Apprentice  ' .. a.name, 'btnApp', -2.44, 0.00, 1240)
+  btn('FINF  ' .. FINF_SET[STATE.finf][1] .. ' ' .. FINF_SET[STATE.finf][2],
+      'btnFinf', 0.70, 0.00, 940)
 
+  local g = STATE.game
   -- CHOOSING YOUR CHARACTER, for the three games that have one to
   -- choose. Every card is two characters, so this keeps a card and
-  -- leaves the flip to you.
+  -- leaves the flip to you. NAP has the Apprentice button above for
+  -- that, which picks the side too; these stay for AoS and Imposter.
   -- ALWAYS DRAWN, even with no game set up. It only appeared once a
   -- setup had run, so looking at the panel to find out whether you could
   -- choose your character told you that you could not.
@@ -1117,11 +1268,6 @@ function refreshPanel()
     for i = 1, n do
       btn(tostring(i), 'keep' .. i, -2.30 + (i - 1) * 0.62, 0.36, 210, nil, 82)
     end
-    -- WHAT IT MEANS, not what to do next. "then flip for the other
-    -- side" read as a button that would do the flipping; it is a note
-    -- that the card you keep has a second character on its back.
-    lbl('each card is two characters -- flip to pick a side',
-        2.26, 0.36, 1560, 62)
   else
     lbl('Keep', -3.97, 0.36, 380, 82)
     lbl(g == 'BAT' and 'BAT plays all four Lab Rats'
@@ -1130,7 +1276,6 @@ function refreshPanel()
   end
 
   btn('Pack up', 'btnPack', -3.80, 0.72, 420, {0.42, 0.18, 0.15})
-  btn('Reset counters', 'btnReset', -1.94, 0.72, 640, nil, 82)
 end
 
 function nop() end
@@ -1159,6 +1304,33 @@ function btnTier()
   refreshPanel()
   say('NRJ Tier: ' .. (STATE.tier == 0 and 'off' or STATE.tier) ..
       '. Press a setup button to deal it.')
+end
+
+-- THE ONE THAT ACTS AT ONCE. The difficulty, the tier and FINF all
+-- change what a setup will deal; this changes what is on the table, so
+-- it deals the card as well as recording the choice.
+function btnApp()
+  STATE.apprentice = (STATE.apprentice % #APPRENTICE) + 1
+  refreshPanel()
+  local a = APPRENTICE[STATE.apprentice]
+  showApprentice()
+  say('Apprentice: ' .. a.name .. ' -- card ' .. a.card .. ', ' ..
+      (a.back and 'back' or 'front') .. ' side.' ..
+      (STATE.game == 'NAP' and '' or ' Press Set up NAP to deal it.'))
+end
+
+-- FINF CANNOT ACT AT ONCE, and that is the rule rather than a
+-- shortcut: on Increase the cards are shuffled INTO the Assignment
+-- deck, so the setting has to be chosen before the deck is built.
+function btnFinf()
+  STATE.finf = (STATE.finf % #FINF_SET) + 1
+  refreshPanel()
+  local s = FINF_SET[STATE.finf]
+  local many = s[2] > 1 and 's' or ''
+  say('FINF: ' .. s[1] .. ' ' .. s[2] .. ' -- ' .. s[2] .. ' FINF card' ..
+      many .. (s[1] == 'Increase' and ' shuffled into the Assignment deck.'
+               or ' face-up to spend, one use each.') ..
+      ' Press Set up NAP to deal it.')
 end
 
 function splPlus() bump('splices', 1, 'Splices') end

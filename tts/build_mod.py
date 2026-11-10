@@ -119,11 +119,13 @@ DIE_SCALE = 1.8
 
 # THE DIAL'S FIVE COLOURS, and where each one has to be turned to.
 #
-# MEASURED OFF THE DIAL, TWICE. Photographed at rest, its five segment
-# centres sit at these angles clockwise from the top. Everything else
-# about the dial - the save's RotationValues and the Lua CHIP_FACE
-# both - is derived from them, so there is one place to correct and
-# what is written there is an observation.
+# THESE ARE NOT THE ART'S OWN ANGLES, whatever the comment here used to
+# say. Read off the dial image itself - a 1 degree sweep of the colour
+# ring, 2026-11-09 - the wedge centres sit at Red 233, Yellow 305,
+# Green 17, Blue 89, Purple 161 clockwise from the top of the picture.
+# Every number below is that, less 197. The constant difference is
+# absorbed by CHIP_TRIM, so the pair still turns the dial correctly and
+# the five numbers here are only meaningful together with it.
 CHIP_SEGMENT = {'Red': 36, 'Yellow': 108, 'Green': 180,
                 'Blue': 252, 'Purple': 324}
 
@@ -134,6 +136,21 @@ CHIP_SEGMENT = {'Red': 36, 'Yellow': 108, 'Green': 180,
 # NUMBER TO NUDGE if it is ever off again: 72 is a whole segment, and
 # the sign is clockwise-positive.
 CHIP_TRIM = -17
+
+# WHICH WAY UP THE COLOURS ARE. Zero - the side the token spawns on.
+#
+# It was 180, and that is what put the dial on no colour in particular
+# after the turn was finally firing: a Custom_Token with one image is
+# an extruded disc with the art on top and the SAME ART MIRRORED
+# underneath, so rotZ 180 shows a dial whose colours run the other way
+# round. It still looks like a dial, which is why it read as a trim
+# that had drifted rather than as the wrong face.
+#
+# The art measurement above settles it. Every colour's CHIP_ANGLE plus
+# its own angle in the picture comes to 180, which means the colour is
+# turned to the edge NEAREST THE PLAYER - the calibration Jon made with
+# the panel's +/-, and the thing that is true only on the printed side.
+CHIP_FACE_Z = 0
 
 ATTENTION = ('Yellow', 'Green', 'Blue', 'Purple', 'Red')
 CHIP_ANGLE = dict((c, (360 - a + CHIP_TRIM) % 360)
@@ -196,6 +213,30 @@ def nap_subject_names():
             if sorted(names) == ['ANA', 'ENG', 'PRO', 'THE']:
                 return dict(zip(names, vals))
     raise SystemExit('build_nap.py no longer names the four subjects')
+
+
+def nap_apprentices():
+    """The six Apprentices in (card, side, name) order, from build_nap.py.
+
+    THREE CARDS, SIX CHARACTERS. build_nap.py renders them duplex -
+    APPS[0::2] are the fronts and APPS[1::2] the backs - so Apprentice 1
+    is Prodigy over Slacker and so on. The panel picks one of the six by
+    name and has to know which card to deal and which way up; deriving
+    both here means a reordered APPS cannot leave the panel showing a
+    name on the wrong side of the wrong card.
+    """
+    names = []
+    for e in _table('build_nap.py', 'APPS'):
+        names.append(e.elts[0].value)
+    if len(names) % 2:
+        raise SystemExit('build_nap.py has %d Apprentices, which does not '
+                         'pair into two-sided cards' % len(names))
+    front, back = names[0::2], names[1::2]
+    out = []
+    for i, (a, b) in enumerate(zip(front, back), 1):
+        out.append((i, 'front', a))
+        out.append((i, 'back', b))
+    return out
 
 
 def exhibit_blocks():
@@ -261,6 +302,14 @@ def lua_header(box_guids, rules_guid):
         'CHIP_SEGMENT = { %s }' % j('%s = %d' % (c, CHIP_SEGMENT[c])
                                     for c in ATTENTION),
         'CHIP_TRIM = %d' % CHIP_TRIM,
+        # WHICH FACE, not only which angle. The save's RotationValues and
+        # the setup's own turn both have to name the same side of the
+        # token or typing a number and pressing Set up NAP disagree.
+        'CHIP_FACE_Z = %d' % CHIP_FACE_Z,
+        # The six Apprentices: which card carries each and which way up.
+        'APPRENTICE = { %s }' % j("{card = %d, back = %s, name = '%s'}"
+                                  % (c, 'true' if s == 'back' else 'false', n)
+                                  for c, s, n in nap_apprentices()),
         # THE MAT'S OWN SHAPE, so the script can resize it at the
         # table. A stretched tile's local space is 1 deep by its
         # image's aspect wide, so world depth is 2 * scaleZ and world
@@ -636,7 +685,8 @@ def dice_objects():
             # both and lua_header() generates the Lua copy.
             d["RotationValues"] = [
                 {"Value": i + 1,
-                 "Rotation": {"x": 0, "y": CHIP_ANGLE[c], "z": 180}}
+                 "Rotation": {"x": 0, "y": CHIP_ANGLE[c],
+                              "z": CHIP_FACE_Z}}
                 for i, c in enumerate(ATTENTION)]
         out.append(d)
     return out

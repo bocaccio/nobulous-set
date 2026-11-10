@@ -1746,9 +1746,16 @@ _labels = set(re.findall(r"label='([^']+)'", _decks))
 # whole deck, drawOne deals a single card from it, and a tier can pick
 # between two with "and 'A' or 'B'". Counting only deckOut made four live
 # decks look abandoned.
-_want = set(re.findall(r"(?:deckOut|drawOne)\('([^']+)'", _lua))
-_want |= set(l for pair in re.findall(r"and '([^']+)' or '([^']+)'", _lua)
-             for l in pair)
+_want = set(re.findall(r"(?:deckOut|drawOne|takeWhole)\('([^']+)'", _lua))
+# A TIER CAN PICK BETWEEN TWO DECKS - "local opps = ... and 'A' or 'B'"
+# - and the name only reaches a deck through the variable. Matching the
+# and/or on its own read every ternary in the file as a pair of deck
+# names, including 'back' or 'front' on the Apprentice button; the
+# variable has to actually be handed to one of the three.
+for _v, _a, _b in re.findall(
+        r"local (\w+) = [^\n]*?and '([^']+)' or '([^']+)'", _lua):
+    if re.search(r"(?:deckOut|drawOne|takeWhole)\(%s\b" % _v, _lua):
+        _want |= set([_a, _b])
 check("tts/lua.lua still asks for its decks by label",
       len(_want) >= 20, "found only %d deckOut labels" % len(_want))
 # A bag can hold something that is not a deck - the NAP table overlay
@@ -2003,14 +2010,48 @@ check("tts/decks.py gives nearly every deck a singular card name",
 # generates the Lua copy, so this checks the generator rather than the
 # script - where CHIP_FACE no longer appears at all.
 check("typing a number over the Chip turns it to that colour",
-      "function onObjectNumberTyped" in _lua and "CHIP_FACE_Z" in _lua
+      "function onObjectNumberTyped" in _lua
       and "CHIP_ANGLE = dict(" in _mod
       and "'CHIP_FACE = { %s }'" in _mod
-      and "'Rotation': {'x': 0, 'y': CHIP_ANGLE[c], 'z': 180}".replace(
-          chr(39), chr(34)) in _mod)
+      and "'CHIP_FACE_Z = %d' % CHIP_FACE_Z" in _mod)
 check("tts/test_setup.py pins the Lua version it runs on",
       "from lupa import lua54 as lupa" in _ts
       and "lupa.LuaRuntime(" in _ts and "import lupa" + chr(10) not in _ts)
+# NAP'S SECOND DIAL. rules/nap.html offers Increase 1-3 and Reduce 1-3
+# and calls Reduce 1 Standard; the panel button is the only way to pick
+# one, so a setting the rules have and the button does not is a setting
+# nobody can play. Held against the RULES rather than against a copy of
+# the list, and the default is held too - it is one index into a table
+# and an off-by-one there plays the wrong game without saying so.
+_fset = re.search(r"FINF_SET = \{(.*?)\}\s*$", _lua, re.M | re.S)
+_fs = re.findall(r"\{'(\w+)', (\d)\}", _fset.group(1)) if _fset else []
+_fdef = re.search(r"finf = (\d+)", _lua)
+_rule_dirs = set(m.lower() for m in
+                 re.findall(r"<h3>(Increase|Reduce) ", _nap_rules))
+check("the FINF button offers every setting rules/nap.html prints",
+      _fs == [("Increase", "1"), ("Increase", "2"), ("Increase", "3"),
+              ("Reduce", "1"), ("Reduce", "2"), ("Reduce", "3")]
+      and _rule_dirs == set(["increase", "reduce"]),
+      "script %r, rules %r" % (_fs, sorted(_rule_dirs)))
+_std = re.search(r"Standard is <b>(Increase|Reduce) (\d)</b>", _nap_rules)
+check("it starts on the setting rules/nap.html calls Standard",
+      bool(_fdef) and bool(_std) and 1 <= int(_fdef.group(1)) <= len(_fs)
+      and list(_fs[int(_fdef.group(1)) - 1]) == list(_std.groups()),
+      "starts on %r, rules say %r"
+      % (_fs[int(_fdef.group(1)) - 1] if _fs and _fdef else None,
+         _std and _std.groups()))
+# AND THE TWO DIRECTIONS DO DIFFERENT THINGS WITH THE SAME THREE CARDS.
+# Increase shuffles them into the Assignment deck, which can only
+# happen before that deck is shuffled; Reduce lays them out to spend.
+check("Increase hides the FINF cards in the deck and Reduce lays them out",
+      bool(re.search(r"if set\[1\] == 'Increase' then\s*\n\s*"
+                     r"moveN\(d, asg, n\)", _lua))
+      and "FINF_Z" in _lua and "function finfOut" in _lua
+      and bool(re.search(r"step\(function\(\) finfOut\(asg\) end\)\s*\n"
+                         r"\s*step\(function\(\) if asg then asg\.shuffle",
+                         _lua)),
+      "the FINF step is missing, or no longer runs before the shuffle")
+
 check("NAP lays four Assignment spaces beside each Time Slot",
       "ASSIGN_SLOTS = 4" in _lua and "function napSnaps" in _lua
       and "Global.setSnapPoints" in _lua
@@ -2186,6 +2227,47 @@ if _chip:
           and all(_rv.get(i + 1) == _lf.get(c)
                   for i, c in enumerate(_cols)),
           "save %r vs script %r" % (_rv, _lf))
+    # AND THE SAME WAY UP. Typing a number uses the save's z; the setup
+    # uses the script's. They were 180 and 180 and both wrong; they
+    # could as easily be 0 and 180 and only one wrong, which is a dial
+    # that reads correctly until you press Set up NAP.
+    _rz = set(round(v["Rotation"]["z"])
+              for v in _chip[0].get("RotationValues") or [])
+    # WHICH SIDE OF THE TOKEN, not only which angle. A Custom_Token with one
+    # image is an extruded disc with that art on top and the same art
+    # MIRRORED underneath, so rotZ 180 shows a dial whose colours run the
+    # other way round - it still looks like a dial, which is why it read as
+    # a trim that had drifted rather than as the wrong face. The face has
+    # one owner in build_mod.py and the Lua copy is generated from it;
+    # nothing may write the number down a second time.
+    check("the dial's face has one owner",
+          bool(re.search(r"^CHIP_FACE_Z = \d+$", _mod, re.M))
+          and not re.search(r"^CHIP_FACE_Z = ", _lua, re.M)
+          and bool(re.search(r"^CHIP_FACE_Z = \d+$",
+                             _sv["LuaScript"], re.M)),
+          "tts/lua.lua writes CHIP_FACE_Z down itself, or the header does not")
+    _lz = re.search(r"^CHIP_FACE_Z = (\d+)$", _sv["LuaScript"], re.M)
+    check("the Chip's numbers and the setup agree which way up it is",
+          len(_rz) == 1 and _lz and int(_lz.group(1)) in _rz,
+          "save z %r vs script %r" % (sorted(_rz),
+                                      _lz and _lz.group(1)))
+
+# THE SIX APPRENTICES COME FROM build_nap.py, which prints them: three
+# duplex cards, fronts over backs. A hand-typed list in the script is a
+# list that can name the wrong character on the wrong side of the right
+# card, and nothing at the table would say so - every Apprentice card
+# looks like every other until you read it.
+_apps = [e.elts[0].value for e in _elts("generator/build_nap.py", "APPS")]
+_paired = [x for p in zip(_apps[0::2], _apps[1::2]) for x in p]
+_latable = re.findall(r"\{card = (\d+), back = (\w+), name = '([^']+)'\}",
+                      _sv["LuaScript"])
+check("the panel's Apprentices are build_nap.py's, in card and side order",
+      [(int(k), b == "true", n) for k, b, n in _latable] ==
+      [(i // 2 + 1, bool(i % 2), n) for i, n in enumerate(_paired)],
+      "script %r vs build_nap.py %r" % (_latable, _paired))
+check("nothing writes the Apprentice list down a second time",
+      "APPRENTICE = {" not in _lua and "def nap_apprentices" in _mod
+      and "nap_apprentices()" in _mod)
 
 # THE RULEBOOK IN THE CORNER. Four PDFs fetched from rules/ rather than
 # images/, so they are the one set of files the image manifest would
