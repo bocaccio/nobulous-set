@@ -1941,10 +1941,20 @@ check("tts/lua.lua spaces the table in card widths, not literals",
 # checks down, which is why the stripped copy exists at all.
 _code_only = chr(10).join(l.split("--")[0] for l in _lua.splitlines())
 _calls = [m.start() for m in re.finditer(r"spread\(", _code_only)]
+# A NAMED PITCH COUNTS TOO. What this is against is a bare number
+# for the gap between cards in a row; CARD_W + 0.6 is one way to
+# say it and AOS_COL - itself CARD_W less a hair - is another. A
+# literal is still a literal.
 _bare = [_code_only[i:i + 60].split(chr(10))[0]
-         for i in _calls if "CARD_" not in _code_only[i:i + 220]]
+         for i in _calls
+         if not re.search(r"CARD_|_COL|_PITCH|_GAP",
+                          _code_only[i:i + 220])]
+# THE FLOOR IS SO IT CANNOT PASS ON AN EMPTY SET, not a count of
+# what happens to be there: it was 6 and AoS went from spreading
+# three Technicians across the table to stacking them on one
+# space, which is a better layout and left five.
 check("every row is spaced in card widths",
-      len(_calls) >= 6 and not _bare,
+      len(_calls) >= 4 and not _bare,
       "%d call(s), bare: %r" % (len(_calls), _bare))
 # TTS drops objects fed to a bag faster than it animates them, which left
 # exactly one card on the table after every setup. tts/test_setup.py

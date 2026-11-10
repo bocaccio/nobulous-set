@@ -722,6 +722,15 @@ def layout_assertions():
                     exp = (rows * ups + 3 + 3 + int(g.BAT_SPLICES)
                            + 2 * rows + 2
                            + len(list(g.BUFF_CELL.values())))
+                elif which == "AoS":
+                    # The Technician, the two decks and the two
+                    # cards they reveal, the Advanced Programs and
+                    # whatever a tier lays face-up beside them; the
+                    # five element mats; and along the bottom the
+                    # Programs finished with, the six Backdoor
+                    # Routines and the banished dice.
+                    exp = (1 + 4 + 2 + int(g.AOS_MATS)
+                           + 1 + int(g.AOS_BACKDOORS) + 1)
                 else:
                     exp = 0
                 want(t + " spaces laid", len(w.snaps), exp)
@@ -1356,6 +1365,70 @@ def bat_assertions():
     want("...and prints nothing in red", w.errors[:2], [])
 
 
+def aos_assertions():
+    """The AoS table.
+
+    FIVE ELEMENT MATS ACROSS THE MIDDLE, because that is where the
+    dice go: every element must receive at least one die and an
+    element holds up to its Target plus one, so that row is the only
+    part of this table that needs room around it. The decks and the
+    two cards they reveal run along the top, what a tier adds along
+    the bottom.
+    """
+    w, g = start("Standard", 3, Panel())
+    w.lossy = 3
+    g.setupAoS()
+    drain(w)
+    by = dict((o.name, o) for o in w.table.values())
+    boxes = [(float(b.x), float(b.z), float(b.hw), float(b.hd))
+             for b in g.aosBoxes().values()]
+    over = [(a, b) for i, a in enumerate(boxes) for b in boxes[i + 1:]
+            if abs(a[0] - b[0]) < a[2] + b[2] - 0.02
+            and abs(a[1] - b[1]) < a[3] + b[3] - 0.02]
+    want("no two AoS spaces overlap", over[:2], [])
+    felt = g.FELT
+    off = [b for b in boxes
+           if b[0] - b[2] < float(felt.x0) or b[0] + b[2] > float(felt.x1)
+           or b[1] - b[3] < float(felt.z0) or b[1] + b[3] > float(felt.z1)]
+    want("no AoS space runs off the felt", off[:2], [])
+
+    def at(name, x, z):
+        o = by.get(name)
+        return (o is not None
+                and abs(o.pos[0] - x) < 0.05 and abs(o.pos[2] - z) < 0.05)
+
+    # THE TECHNICIAN IS A STACK ON ONE SPACE, not three cards across
+    # the table: Keep 1/2/3 takes the one you want out of it.
+    techs = [o for o in w.table.values() if o.name.startswith("Technician")]
+    want("the Technicians are one stack on the character space",
+         (len(techs), len(techs[0].kids) if techs else 0), (1, 3))
+    want("...level with the decks beside it",
+         round(techs[0].pos[2] + float(g.CARD_W) / 2, 2) if techs else None,
+         round(float(g.AOS_ROW1) + float(g.CARD_L) / 2, 2))
+    want("the Program deck and the Limitations are on their spaces",
+         (at("Specialized Programs", float(g.aosCol(int(g.AOS_PROGRAMS))),
+             float(g.AOS_ROW1))
+          or at("Routine Programs", float(g.aosCol(int(g.AOS_PROGRAMS))),
+                float(g.AOS_ROW1)),
+          at("Limitations", float(g.aosCol(int(g.AOS_LIMITS))),
+             float(g.AOS_ROW1))),
+         (True, True))
+    want("the Advanced Programs are out at the end of the row",
+         at("Advanced Programs", float(g.AOS_RIGHT) - float(g.AOS_COL),
+            float(g.AOS_ROW1)), True)
+    mats = sorted(o.pos[0] for o in w.table.values()
+                  if o.name.startswith("Element Mat"))
+    want("the five element mats are a row across the middle",
+         [round(x, 2) for x in mats],
+         [round(float(g.aosMid(k, int(g.AOS_MATS))), 2)
+          for k in range(1, int(g.AOS_MATS) + 1)])
+    want("...all on the same row",
+         sorted(set(round(o.pos[2], 2) for o in w.table.values()
+                    if o.name.startswith("Element Mat"))),
+         [round(float(g.AOS_ROW2), 2)])
+    want("AoS prints nothing in red", w.errors[:2], [])
+
+
 def chip_face_assertions():
     """Two objects, read two ways, and neither has to be flipped.
 
@@ -1843,6 +1916,7 @@ def main():
     in_the_bag_assertions()
     overlay_assertions()
     bat_assertions()
+    aos_assertions()
     chip_face_assertions()
     buff_lock_assertions()
     pile_assertions()

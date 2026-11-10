@@ -126,7 +126,7 @@ TIER_X = 24.0
 -- card, so a card overhangs its space by a tenth the way NAP's do.
 -- Four rows at 7.82 is the same bargain against the depth, and what
 -- the bottom row has to clear is the dice strip at ROW_TIER.
-BAT_COL = 5.86
+BAT_COL = CARD_W - 0.02
 BAT_ROW_PITCH = 7.82
 BAT_RAT_X = -23.85
 BAT_RAT_Z1 = 14.80
@@ -173,6 +173,50 @@ function batBanished()
   return { x - BAT_BOX_HW, x + BAT_BOX_HW,
            z + BAT_BOX_HD, z - BAT_BOX_HD }
 end
+
+-- ------------------------------------------------------------ the AoS table
+-- FIVE ELEMENT MATS ACROSS THE MIDDLE, because that is where the dice
+-- go and it is the only part of this game that needs room around it:
+-- every element must receive at least one die, and an element holds up
+-- to its Target plus one. The decks and the two cards they reveal run
+-- along the top, what a tier adds runs along the bottom.
+--
+-- A GAME WITH A TURN, NOT A BOARD. AoS reveals a Program and a
+-- Limitation, allocates, rolls, and sets the Program aside - so the
+-- spaces that matter are the two decks, the two cards face-up beside
+-- them, and somewhere for what has been finished with.
+AOS_COL = CARD_W - 0.02
+AOS_ROW1 = 13.635                      -- decks and what they reveal
+AOS_ROW2 = 3.335                       -- the five element mats
+AOS_ROW3 = -6.965                      -- set aside, and what a tier adds
+AOS_BOX_HW = (AOS_COL - 0.25) / 2
+AOS_BOX_HD = (CARD_L - 0.30) / 2
+-- The Technician is landscape, so its space is turned and its top is
+-- levelled with the portrait spaces beside it - the same relation the
+-- BAT table uses between a Lab Rat and its Upgrades.
+AOS_WIDE_HW = (CARD_L - 0.30) / 2
+AOS_WIDE_HD = (CARD_W - 0.30) / 2
+-- A LIFT, NOT A DROP. BAT hangs a portrait space below a landscape
+-- card to share its top edge; here it is the landscape card that
+-- has to rise to meet the portrait spaces beside it, which is the
+-- same number the other way round.
+AOS_WIDE_LIFT = (CARD_L - CARD_W) / 2
+
+AOS_TECH_X = FELT.x1 - 56.5 + 0.3 + CARD_L / 2
+AOS_DECK1 = AOS_TECH_X + CARD_L / 2 + 0.35 + AOS_COL / 2
+AOS_RIGHT = FELT.x1 - 0.30 - AOS_COL / 2
+
+function aosCol(k) return AOS_DECK1 + (k - 1) * AOS_COL end
+
+-- Centred rows: the mats and the Backdoor Routines are read as a row
+-- rather than as a list, so they sit about the middle of the felt.
+function aosMid(k, n) return (k - (n + 1) / 2) * AOS_COL end
+
+-- WHICH SPACE IS WHICH along the top.
+AOS_PROGRAMS, AOS_PROGRAM = 1, 2       -- the deck, then the card it reveals
+AOS_LIMITS, AOS_LIMIT = 3, 4
+AOS_MATS = 5
+AOS_BACKDOORS = 6
 
 -- The NAP Time Slot column, down the left. It has to clear the dice at
 -- -26.5 on one side and the Assignment deck, which reaches -14.07, on
@@ -300,7 +344,8 @@ end
 -- Where the character you keep ends up. NAP's belongs at the head of its
 -- own column; the other two are dealt across the table and keep the
 -- middle.
-CHAR_HOME = { NAP = {NAP_X, ROW_CHAR}, AoS = {0, ROW_CHAR},
+CHAR_HOME = { NAP = {NAP_X, ROW_CHAR},
+              AoS = {AOS_TECH_X, AOS_ROW1 + AOS_WIDE_LIFT},
               IMP = {0, ROW_CHAR} }
 
 function col(i) return (i - 2.5) * (CARD_W + 1.0) end
@@ -949,6 +994,40 @@ function batSnaps()
   return pts
 end
 
+-- EVERY SPACE AoS DRAWS. Like BAT's, the overlay is painted from this
+-- list and the snap points are made from it, so a box on the felt and
+-- a space you can drop onto cannot disagree.
+--
+-- The Technician's space is here but drawn turned, because the card
+-- is; everything else on this table is portrait.
+function aosBoxes()
+  local out = {}
+  local function box(x, z, hw, hd)
+    table.insert(out, {x = x, z = z, hw = hw or AOS_BOX_HW,
+                       hd = hd or AOS_BOX_HD})
+  end
+  box(AOS_TECH_X, AOS_ROW1 + AOS_WIDE_LIFT, AOS_WIDE_HW, AOS_WIDE_HD)
+  for k = 1, 4 do box(aosCol(k), AOS_ROW1) end
+  box(AOS_RIGHT - AOS_COL, AOS_ROW1)     -- Advanced Programs, for the finale
+  box(AOS_RIGHT, AOS_ROW1)               -- what a tier deals face-up
+  for k = 1, AOS_MATS do box(aosMid(k, AOS_MATS), AOS_ROW2) end
+  box(AOS_TECH_X, AOS_ROW3)              -- Programs finished with
+  for k = 1, AOS_BACKDOORS do box(aosMid(k, AOS_BACKDOORS), AOS_ROW3) end
+  box(AOS_RIGHT, AOS_ROW3)               -- banished dice
+  return out
+end
+
+function aosSnaps()
+  local pts = {}
+  for _, b in ipairs(aosBoxes()) do
+    table.insert(pts, {position = {b.x, 1.0, b.z},
+                       rotation = {0, 0, 0}, rotation_snap = false})
+  end
+  local ok = pcall(function() Global.setSnapPoints(pts) end)
+  if not ok then say('Snap points are not available in this build.') end
+  return pts
+end
+
 -- Every space NAP wants, in one call: setSnapPoints REPLACES the lot.
 function napSnaps(rows, z0, gap)
   local pts = {}
@@ -1497,8 +1576,12 @@ function setupAoS()
   step(function() tableOut(AOS_TABLE) end)
 
   step(function()
-    spread(deckOut('Technicians', {0, 3, ROW_CHAR}, FACEUP), 3,
-           ROW_CHAR, FACEUP, CARD_L + 1.0)
+    -- ONE STACK ON THE TECHNICIAN'S SPACE, not three cards across the
+    -- table: the layout has one space for the character and Keep 1/2/3
+    -- takes the one you want out of the stack, the way NAP's
+    -- Apprentices work.
+    deckOut('Technicians', {AOS_TECH_X, 3, AOS_ROW1 + AOS_WIDE_LIFT}, FACEUP)
+    aosSnaps()
   end)
   -- The Program deck is the difficulty: a MIX of all three decks, not a
   -- choice between them. Routine can be 0 at Nobulous, which is why the
@@ -1514,28 +1597,31 @@ function setupAoS()
   step(function()
     if prog then
       prog.shuffle()
-      prog.setPosition({col(2), 3, ROW_MAIN})
+      prog.setPosition({aosCol(AOS_PROGRAMS), 3, AOS_ROW1})
       prog.setRotation(FACEDOWN)
     end
   end)
   step(function()
-    local lim = deckOut('Limitations', {col(3), 3, ROW_MAIN})
+    local lim = deckOut('Limitations', {aosCol(AOS_LIMITS), 3, AOS_ROW1})
     if STATE.tier >= 2 then merge(lim, deckOut('Corrupted Limitations', pad(2))) end
     if lim then lim.shuffle() end
-    local adv = deckOut('Advanced Programs', {col(4), 3, ROW_MAIN})
+    -- SET ASIDE FOR THE FINALE, so out at the end of the row rather
+    -- than among the decks you draw from every turn.
+    local adv = deckOut('Advanced Programs',
+                        {AOS_RIGHT - AOS_COL, 3, AOS_ROW1})
     if adv then adv.shuffle() end
-    spread(deckOut('Element Mats', {0, 3, ROW_SIDE}, FACEUP), 5,
-           ROW_SIDE, FACEUP, CARD_W + 0.6)
+    spread(deckOut('Element Mats', {0, 3, AOS_ROW2}, FACEUP), AOS_MATS,
+           AOS_ROW2, FACEUP, AOS_COL)
   end)
   if STATE.tier >= 1 then
     step(function()
-      drawOne('Nobulous Interference', {TIER_X, 3, ROW_SIDE}, FACEUP)
+      drawOne('Nobulous Interference', {AOS_RIGHT, 3, AOS_ROW1}, FACEUP)
     end)
   end
   if STATE.tier >= 3 then
     step(function()
-      spread(deckOut('Backdoor Routines', {0, 3, ROW_TIER}, FACEUP), 6,
-             ROW_TIER, FACEUP, CARD_W + 0.6)
+      spread(deckOut('Backdoor Routines', {0, 3, AOS_ROW3}, FACEUP),
+             AOS_BACKDOORS, AOS_ROW3, FACEUP, AOS_COL)
     end)
   end
 

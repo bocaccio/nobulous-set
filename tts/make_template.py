@@ -282,10 +282,40 @@ def draw_bat(d, lua):
     circle(d, float(g.BAT_CHIP_X), float(g.BAT_CHIP_Z), 1.1)
 
 
+def draw_aos(d, lua):
+    """AoS'S SPACES COME FROM THE SCRIPT, the way BAT's do.
+
+    aosBoxes() is the list the setup makes its snap points from, so a
+    box on the felt and a space you can drop onto cannot disagree.
+    Everything is labelled except the five element mats, which say what
+    they are on the card itself.
+    """
+    g = lua.globals()
+    for b in g.aosBoxes().values():
+        card(d, float(b.x), float(b.z), float(b.hw), float(b.hd),
+             PEN["snap"], 4)
+    col = lambda k: float(g.aosCol(k))
+    r1, r3 = float(g.AOS_ROW1), float(g.AOS_ROW3)
+    fit = float(g.AOS_BOX_HW) * 1.8
+    label(d, "PROGRAM\nDECK", col(1), r1, fit=fit)
+    label(d, "PROGRAM", col(2), r1, fit=fit)
+    label(d, "LIMITATION\nDECK", col(3), r1, fit=fit)
+    label(d, "LIMITATION", col(4), r1, fit=fit)
+    label(d, "ADVANCED", float(g.AOS_RIGHT) - float(g.AOS_COL), r1, fit=fit)
+    # The space a tier lays its one face-up card on, which is empty
+    # and unexplained at tier 0.
+    label(d, "TIER CARD", float(g.AOS_RIGHT), r1, fit=fit)
+    label(d, "SET ASIDE", float(g.AOS_TECH_X), r3, fit=fit)
+    label(d, "BANISHED\nDICE", float(g.AOS_RIGHT), r3, fit=fit)
+
+
 def draw_game(d, which, slots_out=None):
     fp, snaps, w, lua = places_for(which)
     if which == "BAT":
         draw_bat(d, lua)
+        return fp
+    if which == "AoS":
+        draw_aos(d, lua)
         return fp
     # NAP OUTLINES WHERE YOU PUT THINGS, NOT WHERE THE GAME PUTS THEM.
     # A box under the Time Slot, the Assignment deck, the Apprentice or
