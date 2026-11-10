@@ -125,19 +125,30 @@ class Obj(object):
     def setScale(self, s):
         self.scale = tuple(s.values()) if hasattr(s, "values") else tuple(s)
 
+    @property
+    def type(self):
+        """What TTS calls this: the thing you ask BEFORE getObjects."""
+        if self.bag:
+            return "Bag"
+        return "Deck" if self.kids else "Card"
+
     def getObjects(self):
-        # IT THROWS ON ANYTHING WITHOUT AN INSIDE, the way TTS does. The
-        # stub answered an empty list for a die, which made
-        # `o.getObjects and o.getObjects()` look like a guard - it is
-        # not one, because the method exists on every object and only
-        # the CALL fails. That shipped twice: every die threw it on
-        # load, and the pile counter had been dying on the first die it
-        # walked past since the day it was written, which is why the
-        # plate over the Completed Credits pile never showed a number.
-        if not self.bag and not self.kids:
-            raise RuntimeError(
-                "Attempting to call getObjects() on an object that does"
-                " not support getObjects()")
+        # IT LOGS AND HANDS BACK NOTHING, the way TTS does - it does not
+        # raise. That is the whole trap: `o.getObjects and
+        # o.getObjects()` is not a guard, because the method exists on
+        # every object and only the call is wrong; and pcall around it
+        # buys nothing either, because what you are trying to avoid is
+        # a message, not an error. Jon's chat filled with one red line
+        # per die on every load, twice, through both of those.
+        #
+        # The stub used to answer an empty list here and say nothing,
+        # which is what let the bad call look fine for months.
+        if self.type not in ("Bag", "Deck", "Infinite"):
+            self.world.errors.append(
+                "[%s] Lua Error <getObjects>: Attempting to call"
+                " getObjects() on an object that does not support"
+                " getObjects()" % self.name)
+            return self.world.lua.table_from([])
         return self.world.lua.table_from(
             [self.world.lua.table_from({"nickname": k.name, "guid": k.guid})
              for k in self.kids])
@@ -283,6 +294,9 @@ class World(object):
         self.byguid = {}
         self.table = {}        # guid -> object currently out on the table
         self.said = []
+        # What TTS would have printed in red. Not exceptions: TTS logs
+        # a bad API call and carries on, so nothing fails on its own.
+        self.errors = []
         self.shuffled = set()
         self.markers = {}      # the dice and the Chip, by GUID
         self.pending = []       # Wait.frames callbacks, run by drain()
@@ -630,6 +644,14 @@ def layout_assertions():
                 # went in raising on every NAP setup and the harness
                 # reported 0 failed. Every setup, every difficulty,
                 # every tier.
+                # A BAD API CALL IS NOT AN ERROR IN TTS. It prints a
+                # red line in the chat, attributed to the object, and
+                # carries on - so nothing fails, nothing throws, and
+                # the only symptom is a wall of red and a load that
+                # takes its time. Jon saw one line per die, twice,
+                # through two different attempts at a guard.
+                want(t + " printed nothing in red",
+                     w.errors[:2], [])
                 want(t + " said no setup error",
                      [m for m in w.said if "Setup error" in m][:2], [])
                 over = []
@@ -1087,6 +1109,7 @@ def round_trip_assertions():
         want(t + " strands nothing",
              (nameless(w), in_staging(w, g)), ([], []))
         want(t + " buries nothing in the box", buried(w), [])
+        want(t + " prints nothing in red", w.errors[:2], [])
         want(t + " still deals three Time Slots",
              sum(1 for o in w.table.values()
                  if o.name.startswith("Time Slot")), 3)
@@ -1156,6 +1179,7 @@ def pile_assertions():
          (pile.name, len(pile.kids)), ("", 4))
     g.btnPack()
     drain(w)
+    want("a pile of loose cards prints nothing in red", w.errors[:2], [])
     want("pack up takes the pile away too",
          sorted(o.name for o in w.table.values()
                 if g.boxFor(o) is not None), [])
@@ -1430,6 +1454,8 @@ def counter_assertions():
     drain(w)
     want("a die resting on the pile does not stop the count",
          by["Credit Record"].text, "CREDITS  3 / %d" % goal)
+    want("...and does not print a red line either",
+         w.errors[:2], [])
     w.table.pop(die.guid)
     g.refreshCounts()
     drain(w)

@@ -339,25 +339,41 @@ function deckLabel(name)
   return DECK_OF[base] or base
 end
 
+-- The three TTS types that have an inside. Everything else - Card,
+-- Dice, Tile, 3DText, Figurine - does not.
+CONTAINER = { Deck = true, Bag = true, Infinite = true }
+
 -- WHAT IS INSIDE AN OBJECT, or nil if it is not the kind of thing that
 -- has an inside.
 --
--- getObjects() EXISTS ON EVERY TTS OBJECT and throws on anything that
--- is not a container, so `o.getObjects and o.getObjects()` is not a
--- guard - it IS the call, and the guard in front of it always passes.
--- Every die and the Chip threw it on load. Worse, cardsAt had been
--- written the same way since the pile counters were: the first die the
--- counter walked past killed the count, which is why the plate over
--- the Completed Credits pile showed no number and no hover text even
--- once it was the right way up.
+-- ASK WHAT IT IS; DO NOT ASK IT FOR ITS CONTENTS AND SEE. getObjects()
+-- exists on every TTS object, so `o.getObjects and o.getObjects()` is
+-- not a guard in front of the call - it IS the call, and the test in
+-- front of it always passes. And TTS does not raise when the call is
+-- wrong: it prints a red
 --
--- pcall, because there is no property that says which objects have an
--- inside: Deck, Bag and Infinite do, Card, Dice, Tile and 3DText do
--- not, and the list is TTS's to change.
+--   Lua Error <getObjects>: Attempting to call getObjects() on an
+--   object that does not support getObjects()
+--
+-- into the chat, attributed to the object, and hands back nil. pcall
+-- cannot suppress a message, which is why wrapping it was no use at
+-- all: Jon's chat filled up with one line per die on every load.
+--
+-- So the only way not to see it is not to make the call. obj.type is
+-- a plain string on every object and costs nothing to read.
+--
+-- WHAT IT COST BEFORE: firstCard is asked of every object on the
+-- table, which took boxFor with it, and boxFor is how putHome and the
+-- whole pack-up decide where a thing belongs. cardsAt had the same
+-- line from the day the pile counters were written, so a die resting
+-- near a pile silently stopped the count - which is half of why the
+-- plate over the Completed Credits pile never showed a number.
 function contents(obj)
   if not obj then return nil end
-  local ok, kids = pcall(function() return obj.getObjects() end)
-  if ok and kids then return kids end
+  local ok, kind = pcall(function() return obj.type end)
+  if ok and kind ~= nil and not CONTAINER[kind] then return nil end
+  local got, kids = pcall(function() return obj.getObjects() end)
+  if got and kids then return kids end
   return nil
 end
 
