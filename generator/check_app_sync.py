@@ -1630,6 +1630,41 @@ for _b in _books:
         _stale.append(_b + " (not deployed)")
     elif io.open(_src, "rb").read() != io.open(_dst, "rb").read():
         _stale.append(_b)
+# AND EACH ONE IS THE LENGTH IT IS MEANT TO BE.
+#
+# BAT ran to four pages, the fourth holding eight lines and a footer.
+# It is three now, and the thing that got it there is four lines of
+# CSS in bat.html's own style block - so the next paragraph anybody
+# adds puts it back, silently, in a PDF nobody re-opens. A page count
+# is cheap to read and it is the only thing that notices.
+#
+# A BUDGET, NOT A MEASUREMENT. These are what each book SHOULD be, so
+# a book that grows fails and a book that shrinks fails too - the
+# second because a page that disappeared is a section that went
+# missing, which is worth hearing about.
+_PAGES = {"BAT_Rulebook.pdf": 3, "NAP_Rulebook.pdf": 4,
+          "AoS_Rulebook.pdf": 3, "NRJ_Campaign_Supplement.pdf": 6}
+try:
+    import pypdf
+except ImportError:
+    skip("every rulebook is the length it is meant to be",
+         "pypdf is not installed")
+else:
+    _long = []
+    for _b, _want in sorted(_PAGES.items()):
+        _f = os.path.join(ROOT, "rules", _b)
+        if not os.path.exists(_f):
+            _long.append((_b, "missing", _want))
+            continue
+        _got = len(pypdf.PdfReader(_f).pages)
+        if _got != _want:
+            _long.append((_b, _got, _want))
+    check("every rulebook is the length it is meant to be",
+          not _long, "%r" % (_long,))
+    check("...and the three-page fit for BAT is recorded where it lives",
+          "THREE PAGES, NOT FOUR" in text("rules/bat.html")
+          and "line-height: 1.34" in text("rules/bat.html"))
+
 check("the app serves the rulebooks that rules/ built",
       not _stale, "differ from rules/: %r" % (_stale,))
 
