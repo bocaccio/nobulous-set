@@ -265,10 +265,19 @@ BAT_EXHAUST_X1 = BAT_READOUT_X - BAT_READOUT_HW - 0.6
 
 -- The active Rat is marked at the top right corner of its card, far
 -- enough in that the die sits ON the card rather than over its edge.
--- The Health die is what marks it, and the setup starts it on the top
--- Rat; the Red die - the one die a Rat is given at random - sits in
--- the opposite corner of whichever Rat drew it, so the two markings
--- on one card cannot be mistaken for each other.
+--
+-- THE STRATEGY DIE IS WHAT MARKS IT. This laid the Health die there,
+-- against the rulebook's own component list - "the Strategy die,
+-- which marks the active Lab Rat all game" - and against the Splice
+-- Phase, which says to "put the Strategy die on it after seeing the
+-- Experiment and the two Upgrades", and against the battle, which
+-- moves the Strategy die to the attacking Rat. Three statements of
+-- the same thing in rules/bat.html and the mod did the other one.
+--
+-- The setup starts it on the top Rat; the Red die - the one die a Rat
+-- is given at random - sits in the opposite corner of whichever Rat
+-- drew it, so the two markings on one card cannot be mistaken for
+-- each other.
 BAT_MARK_IN = 1.25
 function batMarkX() return BAT_RAT_X + CARD_L / 2 - BAT_MARK_IN end
 function batMarkZ(r) return batRatZ(r) + CARD_W / 2 - BAT_MARK_IN end
@@ -1665,10 +1674,10 @@ function setupBAT()
   end)
 
   step(function()
-    -- THE HEALTH DIE MARKS THE ACTIVE RAT, and the first Rat is the
-    -- one that starts. No value is set: it is a marker here, not a
-    -- number, and a die turned to a face would read as one.
-    setMarker('Health', batMarkX(), batMarkZ(1))
+    -- THE STRATEGY DIE MARKS THE ACTIVE RAT, and the first Rat is
+    -- the one that starts. No value is set: it is a marker here, not
+    -- a number, and a die turned to a face would read as one.
+    setMarker('Strategy', batMarkX(), batMarkZ(1))
     -- "...and the Red die on a random Rat" - rules/bat.html's setup,
     -- which until now the script only said in words.
     setMarker('Red', batMarkX(), batRedZ(math.random(BAT_ROWS)))

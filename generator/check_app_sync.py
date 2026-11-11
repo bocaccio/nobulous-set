@@ -2557,6 +2557,31 @@ check("the readout's width has one owner",
       and bool(re.search(r"^BAT_READOUT_HW = [\d.]+$",
                          _sv["LuaScript"], re.M)))
 
+# THE DIE THAT MARKS THE ACTIVE RAT IS THE ONE THE RULEBOOK NAMES.
+#
+# rules/bat.html says it three times - in the components, in the
+# Splice Phase and again in the battle - and setupBAT laid the Health
+# die on the corner instead. Nothing compared the two, because the
+# harness only asked whether that corner was a snap point and the
+# rulebook checks are all about numbers. This reads the die out of the
+# sentence that defines it.
+_bat_html = text("rules/bat.html")
+_marks = re.search(r"the <b>(\w+) die</b>, which marks the active Lab Rat",
+                   _bat_html)
+_mark_src = re.search(r"setMarker\('(\w+)', batMarkX\(\), batMarkZ\(1\)\)",
+                      _lua)
+check("the mod marks the active Rat with the die rules/bat.html names",
+      _marks and _mark_src and _marks.group(1) == _mark_src.group(1),
+      "rulebook %r, setup %r"
+      % (_marks and _marks.group(1), _mark_src and _mark_src.group(1)))
+check("...and the Splice Phase names the same die as the components",
+      _marks and ("put the <b>%s die</b> on it" % _marks.group(1))
+      in _bat_html,
+      "components say %r" % (_marks and _marks.group(1),))
+check("...and the harness checks which die is really on the card",
+      "and the Strategy die is the one on the top Rat" in _ts
+      and "and no Health die is sitting on any Rat" in _ts)
+
 # EVERY DECK THAT WAITS IN A BOX HAS SOMETHING THAT TAKES IT OUT.
 #
 # IN_THE_BAG names the decks no setup deals, because they belong to a
@@ -3077,15 +3102,23 @@ check("the stat dice are a row under the character card, measured from it",
       and "function statRow(x)" in _lua
       and _lua.count("statRow(") == 4
       and "MARKER_X" not in _lua)
-# Three stat rows - NAP, AoS, the Imposter scenario - and the Health
-# die once more in BAT, where it is not a stat at all but the marker
-# on the active Lab Rat's corner.
+# Three stat rows - NAP, AoS, the Imposter scenario - and ONE die
+# placed once more, in BAT, where it is not a stat at all but the
+# marker on the active Lab Rat's corner.
+#
+# NOT [4, 3, 3]. Those were the counts the day it was written and the
+# extra one was the Health die, which was the bug: the moment the
+# marker became the Strategy die the numbers moved and a check about
+# stat rows failed for a reason that had nothing to do with stat rows.
+# What has to hold is that the three rows are complete and exactly one
+# game marks a card as well.
+_mk = dict((d, _lua.count("setMarker('%s'" % d))
+           for d in ("Health", "Strategy", "Recovery"))
+_mark_die = _mark_src.group(1) if _mark_src else None
 check("...and every game that has a character places all three of them",
-      [_lua.count("setMarker('%s'" % d)
-       for d in ("Health", "Strategy", "Recovery")] == [4, 3, 3],
-      "Health %d, Strategy %d, Recovery %d"
-      % tuple(_lua.count("setMarker('%s'" % d)
-              for d in ("Health", "Strategy", "Recovery")))
+      _mark_die in _mk
+      and all(_mk[d] == 3 + (1 if d == _mark_die else 0) for d in _mk),
+      "%r, with %r marking the active Rat" % (_mk, _mark_die))
 
 # The overlay's three box labels are one size, and make_template proves
 # it at build time rather than leaving it to the eye: `fit` can shrink

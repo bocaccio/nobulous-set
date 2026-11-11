@@ -69,7 +69,7 @@ def is_card(o):
 
 
 # Which markers a setup deliberately stands on a card.
-ON_CARD = {"BAT": ("Health", "Red")}
+ON_CARD = {"BAT": ("Strategy", "Red")}
 
 BAT_SPECIMENS = {"Easy": 5, "Standard": 6, "Hard": 7, "Nobulous": 8}
 NAP_SETBACKS = {"Easy": 3, "Standard": 3, "Hard": 4, "Nobulous": 5}
@@ -873,7 +873,7 @@ def layout_assertions():
                 want(t + " nothing dealt off the felt", off[:3], [])
                 # MARKERS THAT ARE MEANT TO BE ON A CARD are not part
                 # of the pool this is about. BAT's setup puts the
-                # Health die on the active Rat's corner and the Red
+                # Strategy die on the active Rat's corner and the Red
                 # die on whichever Rat drew it, which is a marking,
                 # not a die left lying where a card was dealt.
                 pool = [(o.pos[0], o.pos[2]) for o in w.markers.values()
@@ -1543,6 +1543,25 @@ def bat_assertions():
                      and mz < float(g.batRatZ(r)) + cw)
     want("each Rat has a mark on it for being the active one",
          marks, [True] * 4)
+
+    # AND IT IS THE STRATEGY DIE ON IT. This asked only whether the
+    # corner was a snap point, so the setup could have put any die
+    # there - and it put the Health die, against three separate
+    # statements in rules/bat.html that the Strategy die is what marks
+    # the active Rat. A snap point is a place; this is what is on it.
+    mx, mz = float(g.batMarkX()), float(g.batMarkZ(1))
+    on_top = sorted(o.name for o in w.markers.values()
+                    if abs(o.pos[0] - mx) < 0.05 and abs(o.pos[2] - mz) < 0.05)
+    want("...and the Strategy die is the one on the top Rat", on_top,
+         ["Strategy"])
+    # The Health die has no job in BAT at all: the Tyrant's Health is
+    # the dial, and a Rat's is written on its card.
+    rat_z = [float(g.batRatZ(r)) for r in range(1, 5)]
+    want("...and no Health die is sitting on any Rat",
+         [(round(o.pos[0], 2), round(o.pos[2], 2))
+          for o in w.markers.values() if o.name == "Health"
+          and abs(o.pos[0] - float(g.BAT_RAT_X)) < cl
+          and any(abs(o.pos[2] - z) < cw for z in rat_z)], [])
 
     # A ROW OF FOUR DICE UNDER EVERY RAT, which the setup message asked
     # the players to lay out by hand until Jon asked for it to be dealt.

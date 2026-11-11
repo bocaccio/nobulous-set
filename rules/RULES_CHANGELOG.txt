@@ -1130,3 +1130,65 @@ as a trade (item 3i above, and rules/bat.html has it in three places), and
 Slacker's passive was reworded in b57eedd to "Your Time Slot rows hold a
 maximum of 3 Assignments instead of 4".  Nothing in the set has said
 "voluntarily draw an additional Assignment" for some time.
+
+===========================================================================
+2026-11-10  BAT wording pass, and the Strategy die
+===========================================================================
+
+Twelve edits to rules/bat.html, all Jon's:
+
+  * "Place all four Rats in a row" -> "in a row/column".  The TTS table
+    runs them down the left-hand side, so the rulebook said one thing and
+    every screenshot showed another.
+  * Setup step 5 split in two - shuffling the Experiment deck and leaving
+    room for the Tyrant's half of the table are different jobs - and
+    "Leave room beside it for" -> "Leave room for" now that it stands on
+    its own.
+  * "(if applicable)" dropped from Splice Phase step 4.
+  * Success: "at least equal to the Target" -> "greater than or equal to".
+  * Failure: "stacked beside" -> "stack near"; "Discard the other" ->
+    "Discard the other upgrade"; "choose randomly" -> "choose either card".
+  * "Holding Upgrades also narrows what you may borrow" -> "...also limits
+    which dice you may borrow from other rats".
+  * "a threshold, not a pool" -> "a threshold", and "a Tyrant Splice must
+    be met by that much damage in a single attack to break" -> "damage to
+    a Tyrant Splice must meet or exceed this threshold in a single attack
+    in order to be removed", with the Rat's Upgrade as its own sentence.
+
+THE SECOND STRATEGY ROLL IS NO LONGER DESCRIBED.  The last two sentences
+of Committing and rolling are gone, because "rethrow any dice you have not
+applied - misses, hits or both" is not the 20 Strong rule: you may reroll
+MISSES.  Two consequences, neither of them automatic:
+
+  1. simulation/bat.py still runs PHASE2_POLICY = "push", whose own
+     docstring describes the deleted sentence - "reroll misses, commit
+     more dice, and reroll hits when only a Crit can still close the gap".
+     The dial already has the rulebook's reading in it, and it is worth
+     nothing measurable.  3 seeds x 4000 games a cell:
+
+                        Easy    Standard   Hard    Nobulous
+       push             62.5     51.9      38.6     26.6
+       reroll_misses    61.9     53.0      39.0     26.4
+       delta            -0.7     +1.1      +0.3     -0.2
+
+     against a seed-to-seed spread of 0.4 to 3.0 on the same cells, so
+     every one of those four is noise.  A single seed first showed
+     -2.3 / +0.7 / +2.3 / 0.0, which is what one seed is worth here.
+     The default is UNCHANGED: switching it is free but it is a model
+     change, and the published ladder was measured through "push".
+
+  2. The battle section still says "STR 2 gives a second Strategy roll
+     here too", and "here too" now points at nothing - the paragraph it
+     referred to is the one that went.  bat.html no longer explains the
+     mechanism anywhere.  Left as it is, because the deletion was
+     deliberate; it wants one line pointing at the 20 Strong rule.
+
+AND THE MOD MARKED THE WRONG RAT.  setupBAT laid the HEALTH die on the
+active Lab Rat's corner.  rules/bat.html says the Strategy die three
+times - in the components ("the Strategy die, which marks the active Lab
+Rat all game"), in Splice Phase step 3, and again in the battle, which
+moves the Strategy die to the attacking Rat.  Nothing compared the two:
+the harness asked only whether that corner was a snap point, and the
+rulebook checks are all about numbers.  check_app_sync now reads the die
+out of the sentence that defines it and compares it with the one setupBAT
+places, and the harness checks which die is really on the card.
