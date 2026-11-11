@@ -912,7 +912,8 @@ def layout_assertions():
                 # more: the mat prints its box at every tier, so the
                 # space has to be there too.
                 if which == "NAP":
-                    exp = 4 * len(slots) + 2 + 1 + 1 + 1 + 2
+                    # ...plus the Chip's circle beside each Time Slot.
+                    exp = 4 * len(slots) + len(slots) + 2 + 1 + 1 + 1 + 2
                 elif which == "BAT":
                     # Twelve Upgrade spaces beside the Rats, three
                     # revealed, the Tyrant's three, the Splices; then
@@ -945,7 +946,12 @@ def layout_assertions():
                         want(t + " four spaces beside the slot at %.1f" % sz,
                              len([s for s in w.snaps
                                   if abs(s[1] - sz) < 0.05
-                                  and s[0] < 20.0]), 4)
+                                  and s[0] < 20.0
+                                  and s[0] > float(g.CHIP_X) + 0.5]), 4)
+                        want(t + " and the Chip's circle at %.1f" % sz,
+                             len([s for s in w.snaps
+                                  if abs(s[1] - sz) < 0.05
+                                  and abs(s[0] - float(g.CHIP_X)) < 0.05]), 1)
                     # TWO OF THEM DO, ON PURPOSE. The Apprentice and
                     # the FINF cards are dealt onto their own spaces so
                     # that the mat draws a box under each - that is

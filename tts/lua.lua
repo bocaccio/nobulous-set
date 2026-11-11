@@ -1311,6 +1311,15 @@ function napSnaps(rows, z0, gap)
       snapAt(pts, ASSIGN_X + k * ASSIGN_PITCH, z0 - r * gap)
     end
   end
+  -- THE CHIP'S CIRCLE BESIDE EACH TIME SLOT. The dial is the one
+  -- thing on this table that moves every slot, and it was the one
+  -- thing with nowhere to land: the mat has painted these three
+  -- circles since make_template.py learned where the Chip goes, and
+  -- they had no snap under them. CHIP_X is where the setup already
+  -- puts it on Day 1, so the Morning circle is the one it starts in.
+  for r = 0, rows - 1 do
+    snapAt(pts, CHIP_X, z0 - r * gap)
+  end
   -- The Assignment you did not take, beyond the two you revealed.
   snapAt(pts, NAP_DISCARD_X, ROW_CHAR)
   -- The Apprentice in its corner, and the FINF cards at the head of
@@ -1321,10 +1330,13 @@ function napSnaps(rows, z0, gap)
   snapAt(pts, NAP_X, z0)
   -- The discard pile for completed Assignments, under the FINF card.
   snapAt(pts, PILE_X, z0 - gap)
-  -- AND THE BANKED DEVIOUS OPPORTUNITIES UNDER THAT, ALWAYS. It was
-  -- made at Tier III only, which is where the cards come from - but
-  -- the box is printed on the mat at every tier, so three quarters of
-  -- the time the table showed a space that nothing would snap to.
+  -- AND THE COMPLETED OPPORTUNITIES UNDER THAT, ALWAYS. This space
+  -- was made at Tier III only, back when the mat called it Devious
+  -- Opportunities and those were the only cards anyone banked - but
+  -- a completed Opportunity is kept in front of you in EVERY game,
+  -- the Devious six only replace the base six at Tier III, and the
+  -- box is printed at every tier regardless. Three quarters of the
+  -- time the table showed a space that nothing would snap to.
   snapAt(pts, PILE_X, z0 - 2 * gap)
   local ok = pcall(function() Global.setSnapPoints(pts) end)
   if not ok then say('Snap points are not available in this build.') end

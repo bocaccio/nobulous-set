@@ -376,7 +376,16 @@ def draw_game(d, which, slots_out=None):
             half = (float(lua.globals().ASSIGN_PITCH) - 0.3) / 2.0
         except Exception:
             pass
+    # THE CHIP'S THREE SNAPS ARE NOT CARD SPACES. Every other NAP
+    # snap is somewhere a card goes and is drawn as a card-shaped box;
+    # these are drawn as circles below, and a box over a circle reads
+    # as a space for something that never stands there.
+    chips = [(x - hw - 1.9, z) for name, x, z, hw, hd in fp
+             if which == "NAP" and name.startswith("Time Slot")]
     for sx, sz in snaps:
+        if any(abs(sx - cx) < 0.3 and abs(sz - cz) < 0.3
+               for cx, cz in chips):
+            continue
         card(d, sx, sz, half, cw, PEN["snap"], 4)
     if which == "NAP":
         # The two piles down the right are the only places on this table
@@ -387,17 +396,16 @@ def draw_game(d, which, slots_out=None):
         if len(slots) >= 3:
             label(d, "COMPLETED\nCREDITS", float(gl.PILE_X), slots[1],
                   fit=half * 1.8)
-            label(d, "DEVIOUS\nOPPORTUNITIES", float(gl.PILE_X), slots[2],
+            label(d, "COMPLETED\nOPPORTUNITIES", float(gl.PILE_X), slots[2],
                   fit=half * 1.8)
         # The Assignment you did not take, past the two you revealed.
         label(d, "DISCARD", float(gl.NAP_DISCARD_X), float(gl.ROW_CHAR),
               fit=half * 1.8)
     # The Chip goes beside a Time Slot, so give it a circle there.
-    if which == "NAP" and slots_out is not None:
-        for name, x, z, hw, hd in fp:
-            if name.startswith("Time Slot"):
-                circle(d, x - hw - 1.9, z, 1.1)
-                slots_out.append((x - hw - 1.9, z))
+    for cx, cz in chips:
+        circle(d, cx, cz, 1.1)
+        if slots_out is not None:
+            slots_out.append((cx, cz))
     return fp
 
 
