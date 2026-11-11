@@ -146,6 +146,28 @@ are in the band at Standard on their own column - AoS since the 2026-11-05
 re-pitch onto the strongest allocation line the printed rules allow, and NAP
 since the model started playing the printed End-of-Day burn.
 
+**NAP left the band on 2026-11-11** and the paragraph above is the model as
+it stood on 2026-11-06. `rules/nap.html` was revised that day and five of the
+edits changed rules `nap.py` implements - one row per Time Slot, a Demand
+penalty that bills once and discards, REC at End of Day only, the higher
+Target of two revealed Setbacks, and two printed rules the model had never
+played at all. It plays all of them now; the dial block above `LEVELS` says
+which and what each is worth. Six Apprentices averaged, 4000 games a cell,
+solo column:
+
+| difficulty | 2026-11-06 | 2026-11-11 |
+| --- | --- | --- |
+| Easy | 56.4% | 50.8% |
+| Standard | 49.5% | **43.3%** |
+| Hard | 38.6% | 31.8% |
+| Nobulous | 29.8% | 24.9% |
+
+Standard is 3.7 points under the 47% floor, and all six Apprentices are under
+it together - 41.4 to 44.8, a 3.4-point spread, so the ladder has dropped
+rather than come apart. Whether to re-peg `LEVELS` or accept the new pitch is
+a design decision and has not been taken: nothing in `LEVELS` has moved.
+`RESULTS.txt` is the 2026-11-06 run, so its NAP grid is the left column here.
+
 Do not retype these. `table.py` computes the calibration verdicts from the
 grids it just ran, and `RESULTS.txt` is its transcript; this paragraph is a
 summary that has gone stale twice, once in the figures and once in the

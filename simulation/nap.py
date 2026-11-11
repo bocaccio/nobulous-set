@@ -666,6 +666,58 @@ LEAVE_AT_END_OF_DAY = True
 ROW_MAX = 4
 SLOTS_PER_DAY = 3
 
+# ----------------------------------------------------------------------
+# THE 2026-11-11 RULES REVISION. Jon rewrote rules/nap.html and five of
+# the edits changed rules this file implements. Each gets a dial, True
+# being the printed rule and False the behaviour every NAP figure
+# published before 2026-11-11 was measured through.
+#
+# ONE ROW PER TIME SLOT. "Assignments placed in a given Time Slot stay
+# there until completed or discarded; they do not follow you into the
+# next Time Slot." The page used to say the opposite in as many words -
+# "the row is THE SAME ROW all game" - and this model kept one list.
+#
+# It is the largest of the five and it drags three others with it, which
+# is why they have no dials of their own:
+#   - a Setback's upkeep bills when its own slot is active, so once a
+#     day rather than three times;
+#   - a rotated Opportunity gets its last chance when that slot comes
+#     round again, which is the next DAY, exactly as the page now says;
+#   - a Task that flipped to Demand bills on its slot's next visit.
+SLOT_ROWS = True
+# A DEMAND-SIDE ASSIGNMENT BILLS ONCE. "...inflicts its printed Demand
+# penalty and is then discarded." It used to bill again at the end of
+# every slot it survived, which with SLOT_ROWS off was every slot.
+DEMAND_ONCE = True
+# REC RECOVERS AT END OF DAY, not at the top of every Time Slot. "Note,
+# REC only occurs at the end of the day. Dice can only be recovered
+# during the day via the Special Recovery or from card-specific
+# effects." This is three recoveries a day becoming one and is the
+# heaviest of the five on its own.
+REC_AT_END_OF_DAY = True
+# TWO SETBACKS REVEALED: TAKE THE HIGHER TARGET. "If two Setbacks are
+# revealed, take the one with the higher Target." The model took
+# whichever came off the deck first, which is not a rule, just an
+# artefact of the order they were drawn in.
+SETBACK_PICK_HIGHER = True
+# ----------------------------------------------------------------------
+# TWO PRINTED RULES THE MODEL NEVER PLAYED. Neither is new on
+# 2026-11-11; both were found while reading the page against the code
+# and both live in draw_into_row, which returned silently whenever the
+# row was full.
+#
+# A BLOCKED SKULL STILL COSTS YOU. "If a Skull would add an Assignment
+# while the slot already holds 4, do not add a card - instead rotate the
+# Skull-generating Assignment to its Demand side once." The lab plays
+# it; this file did nothing at all. Rotating early is worth more than it
+# looks: the free end-of-slot flip is spent, so the card bills a real
+# Demand penalty at the end of the slot instead of merely turning over.
+SKULL_BLOCKED_DEMAND = True
+# THE SLACKER'S ROW HOLDS 3. reveal() honoured the card and
+# draw_into_row did not, so a Skull or a FINF card could push the one
+# Apprentice whose printed ability is a smaller row up to four.
+SMALL_ROW_CAPS_ADDS = True
+
 
 def fresh_dice():
     return [c for c in COLORS for _ in range(4)] + ["red"]
@@ -727,7 +779,13 @@ class Game(object):
         self.credit_total = 0
         self.available = fresh_dice()
         self.exhausted = []
-        self.row = []
+        # One row per Time Slot under SLOT_ROWS, and `self.row` is
+        # whichever of them is active; `_row` is the single all-game row
+        # the model kept before 2026-11-11. Everything below goes on
+        # using `self.row`, which is why this is a property and not a
+        # rename of twenty call sites.
+        self.rows = [[], [], []]
+        self._row = []
         self.queued = None          # color dot queued for Special Recovery
 
         # FINF: three cards numbered for the Time Slots (0 Morning .. 2 Evening).
@@ -946,11 +1004,49 @@ class Game(object):
     # ------------------------------------------------------------------
     # a Time Slot
     # ------------------------------------------------------------------
+    @property
+    def row(self):
+        """The Assignments you can work right now."""
+        if not SLOT_ROWS:
+            return self._row
+        return self.rows[self.slot if self.slot >= 0 else 0]
+
+    @row.setter
+    def row(self, cards):
+        if not SLOT_ROWS:
+            self._row = cards
+        else:
+            self.rows[self.slot if self.slot >= 0 else 0] = cards
+
+    def all_rows(self):
+        """Every row there is, for the ends of things."""
+        return self.rows if SLOT_ROWS else [self._row]
+
+    def row_cap(self):
+        """How many unresolved Assignments this slot may hold."""
+        if SMALL_ROW_CAPS_ADDS and self.ability == "small_row":
+            return 3
+        return ROW_MAX
+
     def unresolved(self):
         return len(self.row)
 
-    def draw_into_row(self, free=True):
-        if not self.deck or self.unresolved() >= ROW_MAX:
+    def draw_into_row(self, free=True, source=None):
+        """Add the top card to the row. `source` is the card whose Skull
+        called for it, and is what pays when the slot is full."""
+        if self.unresolved() >= self.row_cap():
+            # "If a Skull would add an Assignment while the slot already
+            # holds 4, do not add a card - instead rotate the
+            # Skull-generating Assignment to its Demand side once."
+            # `not source.on_demand` is the "once": a second blocked
+            # Skull finds it already turned and does nothing.
+            if (SKULL_BLOCKED_DEMAND and source is not None
+                    and source.kind == "task" and not source.on_demand):
+                source.on_demand = True
+            return
+        if not self.deck:
+            # Out of deck is not a full slot, and the penalty is printed
+            # for a full slot. Nothing is owed.
             return
         card = self.deck.pop()
         card.free = free
@@ -995,9 +1091,10 @@ class Game(object):
         while len(drawn) < 2 and self.deck:
             card = self.deck.pop()
             if card.kind == "finf":
-                # The card adds an Assignment to its own Time Slot, which may be
-                # this one. The model keeps a single row, so a card for another
-                # slot waits until that slot comes round.
+                # The card adds an Assignment to its own Time Slot,
+                # which may be this one. A card for another slot waits
+                # until that slot comes round, which under SLOT_ROWS is
+                # also where the Assignment lands.
                 if card.slot == self.slot:
                     self.draw_into_row(free=True)
                 else:
@@ -1014,12 +1111,22 @@ class Game(object):
             # is still Mandatory.
             forced = [c for c in forced if c.kind == "impostor"]
             drawn = [c for c in drawn if c.kind != "setback"] or drawn
-        primary = forced[0] if forced else max(drawn, key=self.card_worth)
+        if forced:
+            # "If two Setbacks are revealed, take the one with the higher
+            # Target." Only Setbacks: an Imposter Task is Mandatory for a
+            # reason of its own and keeps the old precedence.
+            _sb = [c for c in forced if c.kind == "setback"]
+            if SETBACK_PICK_HIGHER and len(_sb) > 1:
+                primary = max(_sb, key=lambda c: c.target)
+            else:
+                primary = forced[0]
+        else:
+            primary = max(drawn, key=self.card_worth)
         self.row.append(primary)
         self.queued = primary.dot
         # Skulls resolve only on the Assignment you chose.
         for _ in range(primary.skulls):
-            self.draw_into_row(free=True)
+            self.draw_into_row(free=True, source=primary)
         return primary
 
     def work(self):
@@ -1540,6 +1647,12 @@ class Game(object):
                 survivors.append(card)      # no printed Demand side
             elif card.on_demand:
                 self.demand_penalty(card)
+                if DEMAND_ONCE:
+                    # "...and is then discarded." Its stored dice are
+                    # locked to it, so they exhaust as the card leaves,
+                    # the same way final_exam releases them.
+                    self.exhausted += card.stored_dice
+                    continue
                 survivors.append(card)
             else:
                 # CONTAINMENT DRILL: "If unresolved, exhaust 1 available die
@@ -1572,7 +1685,8 @@ class Game(object):
             self.use_daily_ability()
         if self.queued:
             self.recover_color(DOT_COLOR[self.queued])
-        self.recover(self.rec)
+        if not REC_AT_END_OF_DAY:
+            self.recover(self.rec)
         # A Setback with no stored dice exhausts 1 available die each slot.
         for card in self.row:
             if card.kind != "setback":
@@ -1604,11 +1718,18 @@ class Game(object):
                 self.exhausted += worst.stored_dice
                 self.row.remove(worst)
                 self.finf_uses -= 1
-        if not self.deck and not self.row:
+        if not self.deck and not any(self.all_rows()):
             return False
         self.reveal()
         self.work()
         self.end_of_slot()
+        if REC_AT_END_OF_DAY and self.slot == 2:
+            # End of Day, and BEFORE the Opportunity bonuses below come
+            # back off: a card that paid "+1 REC next slot" into the
+            # Evening has to be worth something when the Day settles.
+            # The book puts this after the deck burn; the burn touches
+            # the deck and not the dice, so the two do not interact.
+            self.recover(self.rec)
         self.str_ -= carried["str"]
         self.rec -= carried["rec"]
         self.crit_bonus = 0
@@ -1626,9 +1747,10 @@ class Game(object):
     def final_exam(self):
         # Leaving the apprenticeship: discard unresolved Assignments and
         # exhaust their stored dice.
-        for card in self.row:
-            self.exhausted += card.stored_dice
-        self.row = []
+        for _row in self.all_rows():
+            for card in _row:
+                self.exhausted += card.stored_dice
+            del _row[:]
         missing = max(0, CREDITS_TO_LEAVE - self.credit_total)
         order = ["red", "purple", "blue", "green", "yellow"]
         i = 0

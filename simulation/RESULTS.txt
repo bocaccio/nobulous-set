@@ -22,6 +22,12 @@ NAP  Nobulous Apprenticeship Program
   
     * Standard difficulty. Mean of the six Apprentices.
     Re-measured 2026-11-06 at the full 20,000 games a cell.
+    SUPERSEDED 2026-11-11 by the rules revision in rules/nap.html.
+    This grid is the game BEFORE it.  Solo column at 4000 games a
+    cell now reads 50.8 / 43.3 / 31.8 / 24.9 and Standard is under
+    the 47% floor; simulation/README.md carries the comparison.
+    Re-run table.py once LEVELS is settled, not before - a re-peg
+    would only throw the run away.
     TWO THINGS MOVED ON 2026-11-06 AND THEY VERY NEARLY CANCEL,
     which is why this block reads within a point and a half of
     what it held that morning - 55.5 / 48.8 / 37.5 / 29.7 solo,

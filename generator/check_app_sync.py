@@ -794,6 +794,55 @@ check("simulation/nap.py plays the printed End-of-Day burn",
 check("the lab burns a card at the day rollover too",
       "n.discard.push(n.deck.pop())" in text("playtest/dist/suite.js"))
 
+# THE 2026-11-11 REVISION, SENTENCE BY DIAL. Five rules in rules/nap.html
+# changed that day and simulation/nap.py implemented all five the old way -
+# which is how NAP's published ladder came to describe a game the book no
+# longer does. Each check reads the VALUE out of nap.py rather than matching
+# a name, so flipping a dial back without touching the page fails here.
+#
+# The rulebook side is matched against the page with its whitespace
+# collapsed: these sentences wrap, and a rewrap is not a rules change. That
+# lesson is already paid for twice over - "Separate"/"Set aside the 12 Final
+# Exams" and "a row"/"one row" both failed checks that nothing had broken.
+_napflat = " ".join(_nap_rules.split())
+
+
+def _says(phrase):
+    return " ".join(phrase.split()) in _napflat
+
+
+check("Assignments stay in their Time Slot, in the book and the model",
+      _says("they do not follow you into the next Time Slot")
+      and sn.get("SLOT_ROWS") is True,
+      "SLOT_ROWS = %r" % (sn.get("SLOT_ROWS"),))
+check("a Demand-side Assignment bills once and is discarded",
+      _says("<b>inflicts its printed Demand penalty</b> and is then discarded")
+      and sn.get("DEMAND_ONCE") is True,
+      "DEMAND_ONCE = %r" % (sn.get("DEMAND_ONCE"),))
+check("REC recovers at End of Day and nowhere else",
+      _says("REC only occurs at the end of the day")
+      and _says("Then recover exhausted dice equal to your <b>REC</b>")
+      and sn.get("REC_AT_END_OF_DAY") is True,
+      "REC_AT_END_OF_DAY = %r" % (sn.get("REC_AT_END_OF_DAY"),))
+check("two Setbacks revealed: the higher Target is the one you take",
+      _says("If two Setbacks are revealed, take the one with the higher"
+            " Target")
+      and sn.get("SETBACK_PICK_HIGHER") is True,
+      "SETBACK_PICK_HIGHER = %r" % (sn.get("SETBACK_PICK_HIGHER"),))
+
+# AND TWO THAT ARE NOT NEW, just never played. Both were printed long before
+# the revision and both lived in the same silent `return` in draw_into_row.
+check("a blocked Skull rotates its own Assignment, as the box says",
+      _says("instead rotate the Skull&#8209;generating Assignment to its"
+            " Demand side once")
+      and sn.get("SKULL_BLOCKED_DEMAND") is True,
+      "SKULL_BLOCKED_DEMAND = %r" % (sn.get("SKULL_BLOCKED_DEMAND"),))
+check("the Slacker's row holds the 3 the card prints",
+      "maximum of 3 Assignments instead of 4" in text("generator/build_nap.py")
+      and sn.get("SMALL_ROW_CAPS_ADDS") is True
+      and "self.row_cap()" in text("simulation/nap.py"),
+      "SMALL_ROW_CAPS_ADDS = %r" % (sn.get("SMALL_ROW_CAPS_ADDS"),))
+
 # NAP'S NAME, ONE SPELLING. rules/nap.html is the authority and its <h1>
 # reads "Nobulous Apprenticeship Program (NAP)". Until 2026-11-05 the set
 # printed it three ways: "Nobulous' Apprentice Program" in build_catalog.py
