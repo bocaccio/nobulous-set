@@ -1252,11 +1252,17 @@ FOUR KINDS LOOKED FOR AND DELIBERATELY NOT APPLIED:
   * NRJ's session step 3 says "take up any dice you have not applied,
     add more if you want, and throw again.  Nothing is compulsory" -
     word for word the construction BAT lost.  KEPT - Jon's call, same
-    day.  finale.py runs it in one line, `rolling = unapplied + take`,
-    and `unapplied` holds the misses AND a hit that had no Exhibit left
-    to go on.  The model never holds a hit back voluntarily, so the two
-    agree: the sentence permits exactly what the model ever has to
-    rethrow.
+    day.  finale.py runs it in one line, `rolling = unapplied + take`.
+
+    AND IT COMES TO THE SAME PLAY AS 20 STRONG, which is better than
+    "deliberate": the extra permission is unreachable.  `unapplied`
+    holds the misses and also a hit that had no Exhibit left to go on
+    - but a hit only goes unapplied once nothing is standing, and the
+    phase loop breaks the moment nothing is standing, so that die is
+    exhausted rather than rethrown.  Measured over 4000 finales:
+    15,812 hits had nowhere to go, and NOT ONE was rethrown.  The
+    sentence is broader than the base rule in wording and identical in
+    effect, so there is nothing here to narrow.
 
   BOTH SENTENCES ARE NOW LOAD-BEARING, and the next pass like this one
   would delete them for the same reason BAT's went.  check_app_sync

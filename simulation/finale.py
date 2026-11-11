@@ -718,6 +718,17 @@ def session(g, pace, recov, rew, commit, res):
                     tgt = e
                     break
             if tgt is None:
+                # A HIT WITH NOWHERE TO GO, which happens when the last
+                # standing Exhibit fell earlier in this same loop. It
+                # joins `unapplied` and is NEVER rethrown: the phase
+                # loop's own guard breaks the moment nothing is
+                # standing, so the die is simply exhausted below.
+                #
+                # Which is why nrj.html's "take up any dice you have
+                # not applied ... and throw again" and 20 Strong's
+                # reroll-the-misses come to the same play. Measured
+                # 2026-11-10, 4000 finales: 15,812 hits had nowhere to
+                # go and not one of them was rethrown.
                 unapplied.append(c)
                 continue
             tgt.dealt += v
