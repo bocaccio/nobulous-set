@@ -1,6 +1,38 @@
 <!DOCTYPE html><html><head><meta charset="utf-8">
 <link rel="stylesheet" href="style.css">
-<style>:root { --accent: #6b3f8c; } .subject-key-section { break-inside:avoid; } .subject-key svg { width:5mm; height:5mm; vertical-align:middle; margin-right:1.5mm; } .subject-key td:first-child { width:11mm; text-align:center; }</style>
+<style>
+:root { --accent: #6b3f8c; }
+/* THREE PAGES, NOT FOUR.
+   NAP ran half a page over - the whole Final Exam section and
+   Carrying NAP forward - which is about five times BAT's spill, and
+   BAT's setting does nothing here: tried at leading 1.26, still four
+   pages. The text is unchanged; this is the gentlest setting that
+   fits it, found by building the book and counting the pages.
+
+   THE TYPE STAYS AT 8.6pt, which is the whole point of this
+   combination. Shrinking it to 8.3 also fits, with about the same
+   room to spare, and would have left NAP the one book in the set set
+   smaller than the other three - the most visible difference
+   available for no gain. Narrower margins and tighter leading buy
+   the same page and nobody reads a margin.
+
+   11mm is still comfortably inside what a home printer will take
+   (most manage 6.5mm), and it leaves ~10.2mm of blank paper under
+   the last line - about the same headroom BAT has.
+
+   NAP ONLY, in its own style block: style.css is shared and the
+   other three are 3, 3 and 6 pages with nobody asking for those to
+   move. */
+body { line-height: 1.30; }
+@page { margin: 11mm 11mm 11mm 11mm; }
+p { margin-bottom: 1.4mm; }
+li { margin-bottom: 0.6mm; }
+.box { margin-bottom: 2mm; padding: 1.8mm 2.4mm; }
+ol.seq li { margin-bottom: 0.9mm; }
+h2 { margin: 2.6mm 0 1.4mm; }
+h3 { margin: 2.2mm 0 0.8mm; }
+table { margin-bottom: 2mm; }
+.subject-key-section { break-inside:avoid; } .subject-key svg { width:5mm; height:5mm; vertical-align:middle; margin-right:1.5mm; } .subject-key td:first-child { width:11mm; text-align:center; }</style>
 </head><body>
 
 <div class="cover">

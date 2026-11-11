@@ -1696,7 +1696,7 @@ check("...and BAT no longer prints a reroll rule of its own",
 # a book that grows fails and a book that shrinks fails too - the
 # second because a page that disappeared is a section that went
 # missing, which is worth hearing about.
-_PAGES = {"BAT_Rulebook.pdf": 3, "NAP_Rulebook.pdf": 4,
+_PAGES = {"BAT_Rulebook.pdf": 3, "NAP_Rulebook.pdf": 3,
           "AoS_Rulebook.pdf": 3, "NRJ_Campaign_Supplement.pdf": 6}
 try:
     import pypdf
@@ -1715,9 +1715,22 @@ else:
             _long.append((_b, _got, _want))
     check("every rulebook is the length it is meant to be",
           not _long, "%r" % (_long,))
-    check("...and the three-page fit for BAT is recorded where it lives",
-          "THREE PAGES, NOT FOUR" in text("rules/bat.html")
-          and "line-height: 1.34" in text("rules/bat.html"))
+    # BOTH FITS ARE RECORDED WHERE THEY LIVE, because each is a few
+    # lines of CSS in one book's own style block and nothing else
+    # says why the book is set differently from its neighbours.
+    check("...and each three-page fit is recorded where it lives",
+          all("THREE PAGES, NOT FOUR" in text("rules/%s.html" % g)
+              for g in ("bat", "nap"))
+          and "line-height: 1.34" in text("rules/bat.html")
+          and "line-height: 1.30" in text("rules/nap.html"))
+    # ...AND NAP KEEPS THE SET'S TYPE SIZE. It fits at 8.3pt too, with
+    # the same room to spare, which would have made it the one book
+    # set smaller than the other three. The margin does the work
+    # instead, and this is what stops a later tidy-up swapping them
+    # back the other way.
+    check("...and NAP buys its page with margin, not with smaller type",
+          "font-size" not in text("rules/nap.html")
+          and "margin: 11mm" in text("rules/nap.html"))
 
 check("the app serves the rulebooks that rules/ built",
       not _stale, "differ from rules/: %r" % (_stale,))
