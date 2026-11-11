@@ -2557,6 +2557,67 @@ check("the readout's width has one owner",
       and bool(re.search(r"^BAT_READOUT_HW = [\d.]+$",
                          _sv["LuaScript"], re.M)))
 
+# EVERY DECK THAT WAITS IN A BOX HAS SOMETHING THAT TAKES IT OUT.
+#
+# IN_THE_BAG names the decks no setup deals, because they belong to a
+# part of the game you reach rather than one you set up: the Final
+# Exams, the Tyrant Attacks, the Buff HP card and the Advanced
+# Programs. Three of the four now have a finale button that deals
+# them; the Buff HP card is the one that stays optional, and it says
+# so where it is named.
+_bagged = re.findall(r"'([^']+)'",
+                     re.search(r"IN_THE_BAG = \{([^}]*)\}",
+                               _lua, re.S).group(1))
+_dealt_by_finale = [d for d in _bagged
+                    if re.search(r"deckOut\('%s'" % re.escape(d), _lua_code)]
+check("every deck that waits in a box is either dealt or called optional",
+      sorted(set(_bagged) - set(_dealt_by_finale)) == ["Buff HP Track"],
+      "never dealt: %r" % (sorted(set(_bagged) - set(_dealt_by_finale)),))
+
+# ONE BUTTON PER GAME THAT HAS A FINALE, and none for the Imposter
+# scenario, which is itself NRJ's finale and has nothing after it.
+_fin = re.search(r"^FINALE = \{(.*?)^\}", _lua, re.M | re.S)
+_fingames = re.findall(r"(\w+) = \{'([^']+)', (\w+),",
+                       _fin.group(1) if _fin else "")
+check("each of the three games has a finale button",
+      sorted(g for g, _, _ in _fingames) == ["AoS", "BAT", "NAP"],
+      "%r" % (_fingames,))
+check("...and each one calls a function that exists",
+      all(re.search(r"^function %s\(" % fn, _lua, re.M)
+          for _, _, fn in _fingames),
+      "%r" % ([fn for _, _, fn in _fingames],))
+# THE PANEL SHOWS IT ONCE. It deals cards and shuffles decks, so
+# pressing it twice would deal a second set of Final Exams onto the
+# first - and the thing that stops that is one flag, set before the
+# work starts and cleared by every setup.
+check("...shown only after a setup, and only until it is used",
+      "if FINALE[g] and not STATE.finale then" in _lua_code
+      and _lua_code.count("STATE.finale = false") == 5
+      and "STATE.finale = true" in _lua_code,
+      "%d resets" % _lua_code.count("STATE.finale = false"))
+# A SWEEP ASKS DECK_OF, NOT o.type. In TTS the overlay is a Tile and
+# the type test spares it; in the harness every leaf answers "Card",
+# and the sweep bagged the NAP table - the mat is 56 units wide, so
+# its centre sits inside an Assignment space. DECK_OF holds exactly
+# the cards this mod prints, which is the question being asked.
+check("the finale sweep decides what a card is from DECK_OF",
+      "function isGameCard" in _lua_code
+      and "DECK_OF[base] ~= nil" in _lua_code
+      and "if isGameCard(o) and packable(o) then" in _lua_code
+      and not re.search(r"t == 'Card' or t == 'Deck'", _lua_code))
+check("...and the harness checks the overlay survives all three",
+      "and the table overlay is still on the table" in _ts
+      and "and so is the rulebook and both counters" in _ts)
+# EVERY FINALE PLACEMENT IS A BOX THE MAT ALREADY DRAWS. The overlay
+# is a printed image built when the mod is built, so a finale space
+# that is not one of the drawn ones is a card on bare felt with no
+# outline under it and no snap to catch it.
+_placed = re.findall(r"deckOut\('(?:Final Exams|Tyrant Attacks|"
+                     r"Advanced Programs)'[^)]*\{([^}]*)\}", _lua_code)
+check("the finales deal onto spaces, not onto coordinates",
+      _placed and not [p for p in _placed if re.search(r"-?\d+\.\d", p)],
+      "literal positions: %r" % (_placed,))
+
 # THE ALT VIEW IS TOLD WHICH WAY UP A LANDSCAPE CARD IS.
 #
 # SidewaysCard is what makes the card landscape ON THE TABLE and it was

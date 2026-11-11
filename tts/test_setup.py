@@ -126,18 +126,6 @@ class Obj(object):
     def getGUID(self):
         return self.guid
 
-    # WHAT KIND OF THING THIS IS, which the script asks before it
-    # touches an object's Alt angle: only a landscape CARD gets one,
-    # and giving one to a deck or a tile is how a preview that works
-    # stops working.
-    @property
-    def type(self):
-        if self.bag:
-            return "Bag"
-        if self.kids:
-            return "Deck"
-        return "Card" if is_card(self) else "Tile"
-
     def getData(self):
         """The object's save entry - the script reads SidewaysCard off it.
 
@@ -187,7 +175,17 @@ class Obj(object):
 
     @property
     def type(self):
-        """What TTS calls this: the thing you ask BEFORE getObjects."""
+        """What TTS calls this: the thing you ask BEFORE getObjects.
+
+        EVERY LEAF HERE IS A "Card", the overlay and the counters
+        included, where TTS would answer Tile and 3D Text. That is
+        harsher than the real thing and it stays that way: a second
+        `type` was added above this one that told them apart, Python
+        kept the LAST definition in the class body, and the finale
+        sweep - written against the kinder one - bagged the NAP
+        overlay. Nothing in lua.lua may decide what an object is from
+        this string alone; isGameCard() asks DECK_OF instead.
+        """
         if self.bag:
             return "Bag"
         return "Deck" if self.kids else "Card"
@@ -2062,6 +2060,253 @@ def alt_view_assertions():
                  % game, ang, down if back else up)
 
 
+def take_from(w, g, deckname, x, z):
+    """Deal one card off a deck onto (x, z), the way the script would.
+
+    NOT BY REACHING INTO .kids. A card inside a deck carries the same
+    "in a container" flag as a card inside a bag - which is right,
+    because getAllObjects cannot see either - and lifting one out by
+    hand leaves the flag set. The card then sits on the table where
+    nothing can find it, so a check that something DID NOT happen to
+    it passes for the wrong reason. That is exactly what hid a sweep
+    that bags the Upgrades a Rat is holding.
+    """
+    d = deck(w, deckname)
+    if d is None or not d.kids:
+        return None
+    c = d.takeObject(w.lua.table_from(
+        {"position": w.lua.table_from([x, 1.6, z]), "smooth": False}))
+    drain(w)
+    return c
+
+
+def finale_assertions():
+    """Each game's last button: clear the old table, deal the new one.
+
+    All three finales are REACHED rather than set up, so no setup deals
+    them and nothing on the table could take their cards out of the box
+    - Final Exams, Tyrant Attacks and Advanced Programs sat in their
+    bags for the life of the mod. IN_THE_BAG has said "a later script
+    option starts the exam" since it was written.
+
+    WHAT IS EASY TO GET WRONG IS NOT THE DEALING. It is the sweep: each
+    finale puts away the part of the table the game has finished with,
+    and each of the three has something sitting in the middle of that
+    which it must NOT touch - NAP's Completed Credits pile is the
+    record the exam pool is built from, BAT's Rats keep their own
+    Upgrades, and AoS still reveals a Limitation per Program. So every
+    case below checks a keeper as well as a leaver.
+    """
+    FIN = {"NAP": ("Start the Final Exam", "setupNAP"),
+           "BAT": ("Start the Tyrant Battle", "setupBAT"),
+           "AoS": ("Start Advanced Programming", "setupAoS")}
+
+    def pressed(pan):
+        return [b for b in pan.buttons if b["fn"] == "btnFinale"]
+
+    # NO BUTTON BEFORE THERE IS A GAME, and none for the Imposter
+    # scenario, which has no finale to start because it IS one.
+    w, g = start("Standard", 0, Panel())
+    g.refreshPanel()
+    want("a bare table offers no finale", pressed(g.PANEL), [])
+    w, g = start("Standard", 3, Panel())
+    g.setupImposter()
+    drain(w)
+    want("the Imposter scenario offers no finale", pressed(g.PANEL), [])
+
+    for game, (label, setup) in sorted(FIN.items()):
+        w, g = start("Standard", 0, Panel())
+        getattr(g, setup)()
+        drain(w)
+        shown = pressed(g.PANEL)
+        want("%s offers its finale once it is set up" % game,
+             [b["label"] for b in shown], [label])
+        before = dict((o.guid, o.name) for o in w.table.values())
+        g.btnFinale()
+        drain(w)
+        want("%s: ...and the button goes once it is pressed" % game,
+             pressed(g.PANEL), [])
+        # PRESSED AGAIN, NOT ASKED ABOUT. This read the flag and the
+        # panel and called that "does nothing", so removing the guard
+        # in btnFinale passed it: the button is gone from the panel
+        # either way, and a second press deals a second set of Final
+        # Exams onto the first.
+        dealt = {"NAP": ("Final Exams", 12), "BAT": ("Tyrant Attacks", 7),
+                 "AoS": ("Advanced Programs", 3)}[game]
+        want("%s: the finale deals %d %s" % (game, dealt[1], dealt[0]),
+             out(w, dealt[0]), dealt[1])
+
+        def shape():
+            """How those cards are arranged, not just how many.
+
+            Counting them is not enough: deckOut finds a deck already
+            on the table and simply moves it, so a second press deals
+            no extra cards in two of the three games. What it does do
+            is turn a SECOND Tyrant Attack face-up, which changes the
+            commit colour and shortens the deck - and that is only
+            visible in the split, never in the total.
+            """
+            return sorted((len(o.kids) or 1, o.is_face_down)
+                          for o in w.table.values()
+                          if o.name.startswith(names_of(dealt[0])))
+
+        was, said = shape(), len(w.said)
+        g.btnFinale()
+        drain(w)
+        want("%s: ...and pressing it again changes nothing" % game,
+             (out(w, dealt[0]), shape()), (dealt[1], was))
+        # AND DOES NOT RUN. The two above are worth having but neither
+        # can fail on its own: deckOut gathers a deck's stray cards
+        # back in before it deals, so a second run of any of the three
+        # puts the table back exactly as it was. What it really costs
+        # is a re-shuffle - BAT would deal the five Splices a fresh
+        # random order under a battle already in progress - and the
+        # only deterministic mark a second run leaves is that it
+        # speaks again.
+        want("%s: ...and says nothing further" % game, len(w.said), said)
+        want("%s: the finale printed nothing in red" % game, w.errors[:2], [])
+        # THE FELT IS STILL THERE. The overlay is 56 units wide and
+        # lies at the middle of the table, so its CENTRE sits inside
+        # one of the spaces a finale sweeps - NAP's falls in an
+        # Assignment box - and a sweep by position finds it there and
+        # bags the table out from under the game. That is exactly what
+        # the first version of this did, with all of the assertions
+        # above it passing.
+        want("%s: ...and the table overlay is still on the table" % game,
+             bool([o for o in w.table.values()
+                   if o.name.endswith(" Table")]), True)
+        want("%s: ...and so is the rulebook and both counters" % game,
+             sorted(o.name for o in w.table.values()
+                    if o.name.endswith(" Rules")
+                    or o.name in ("Credit Record", "Banked Opportunities",
+                                  "Health Readout")),
+             sorted(n for n in (
+                 {"NAP": ["NAP Rules", "Credit Record",
+                          "Banked Opportunities"],
+                  "BAT": ["BAT Rules", "Health Readout"],
+                  "AoS": ["AoS Rules"]}[game])))
+        want("%s: ...and raised no setup error" % game,
+             [m for m in w.said if "Setup error" in m][:2], [])
+        # NOTHING IS LEFT LYING ON THE FELT. A card swept off a space
+        # travels through OFF on its way to the bag, and one the bag
+        # refuses stays there - which is the bug that left five ghost
+        # cards on the AoS table.
+        want("%s: the finale strands nothing in the staging band" % game,
+             [o.name for o in w.table.values()
+              if at_staging(g, o.pos[0], o.pos[2])][:3], [])
+        g.btnPack()
+        drain(w)
+        want("%s: and Pack up still empties the table after it" % game,
+             sorted(set(o.name for o in w.table.values()
+                        if g.packable(o))), [])
+
+    # ---- NAP: the exam comes out, the record stays -------------------
+    w, g = start("Standard", 0, Panel())
+    g.setupNAP()
+    drain(w)
+    want("NAP deals no Final Exams during setup", out(w, "Final Exams"), 0)
+    # A DAY'S PLAY, not a fresh table. The Completed Credits pile is
+    # the record the exam pool is built from and it sits inside the
+    # area the exam sweeps; empty, there is nothing there to sweep, so
+    # a sweep that took it passed every check here. One completed Task
+    # on it is the whole difference. taken out of the deck the way the
+    # script takes one, because a card lifted out of a deck's kids by
+    # hand is still flagged as being inside a container and nothing on
+    # the table can see it - which is how the same mistake hid the BAT
+    # case below.
+    done = take_from(w, g, "Assignment",
+                     float(g.PILE_X), float(g.FINF_Z) - float(g.NAP_GAP))
+    coupon = take_from(w, g, "Assignment",
+                       float(g.PILE_X), float(g.FINF_Z) - 2 * float(g.NAP_GAP))
+    g.btnFinale()
+    drain(w)
+    want("the Completed Credits pile survives the exam",
+         done is not None and done.guid in w.table, True)
+    want("...and so do the Banked Opportunities under it",
+         coupon is not None and coupon.guid in w.table, True)
+    want("the Final Exam deals all 12 exams", out(w, "Final Exams"), 12)
+    want("...face up, as one stack to spread",
+         [o.is_face_down for o in w.table.values()
+          if o.name.startswith(names_of("Final Exams"))], [False])
+    for gone in ("Assignment", "Time Slot", "FINF"):
+        want("...and the %s cards are back in the box" % gone,
+             [o.name for o in w.table.values()
+              if o.name.startswith(gone)][:3], [])
+    # THE KEEPERS. The two piles and the Apprentice are what the exam
+    # is played with, and all three sit inside the area being swept.
+    want("...while the Apprentice stays on the table",
+         bool([o for o in w.table.values()
+               if o.name.startswith("Apprentice")]), True)
+    want("...and so do both pile counters",
+         sorted(o.name for o in w.table.values()
+                if o.name in ("Credit Record", "Banked Opportunities")),
+         ["Banked Opportunities", "Credit Record"])
+
+    # ---- BAT: the Attacks come out, the Rats keep their kit ----------
+    w, g = start("Standard", 0, Panel())
+    g.setupBAT()
+    drain(w)
+    want("BAT deals no Tyrant Attacks during setup",
+         out(w, "Tyrant Attacks"), 0)
+    # A PLAYED TABLE, not a fresh one. The sweep has to tell an Upgrade
+    # a Rat has taken from one still in the deck, and after a bare
+    # setup there is no difference to get wrong: both are in the deck.
+    held = take_from(w, g, "Upgrades",
+                     float(g.batLeftX(1)), float(g.batRowZ(1)))
+    spliced = take_from(w, g, "Upgrades",
+                        float(g.batRightX(1)), float(g.batRowZ(4)))
+    g.btnFinale()
+    drain(w)
+    want("the Tyrant Battle deals all 7 Attack cards",
+         out(w, "Tyrant Attacks"), 7)
+    attacks = [o for o in w.table.values()
+               if o.name.startswith(names_of("Tyrant Attacks"))]
+    want("...as a face-down deck and one card face-up beside it",
+         sorted((len(o.kids) or 1, o.is_face_down) for o in attacks),
+         [(1, False), (6, True)])
+    want("...with the face-up one on the discard space",
+         [round(o.pos[0], 2) for o in attacks if not o.is_face_down],
+         [round(float(g.batRightX(int(g.BAT_ATTACK_UP))), 2)])
+    want("...and both Splice-Phase decks back in the box",
+         [o.name for o in w.table.values()
+          if o.name in ("Encounters", "Upgrades")], [])
+    want("...while the Upgrade a Rat is holding stays with it",
+         held.guid in w.table, True)
+    want("...and the Splice stays on the Tyrant's track",
+         (spliced.guid in w.table,
+          round(spliced.pos[2], 2) == round(float(g.batRowZ(4)), 2)),
+         (True, True))
+
+    # ---- AoS: three of the eight, and the Limitations stay -----------
+    w, g = start("Standard", 0, Panel())
+    g.setupAoS()
+    drain(w)
+    want("AoS deals no Advanced Programs during setup",
+         out(w, "Advanced Programs"), 0)
+    g.btnFinale()
+    drain(w)
+    want("Advanced Programming deals 3 of the 8", out(w, "Advanced Programs"), 3)
+    want("...and the other 5 go back in the box",
+         inbag(w, "AoS", "Advanced Program"), 5)
+    want("...face down on their own space",
+         [(o.is_face_down, round(o.pos[0], 2))
+          for o in w.table.values()
+          if o.name.startswith(names_of("Advanced Programs"))],
+         [(True, round(float(g.AOS_RIGHT) - float(g.AOS_COL), 2))])
+    want("...with the Program deck put away",
+         [o.name for o in w.table.values()
+          if o.name.startswith("Specialized Program")
+          or o.name.startswith("Program")], [])
+    # THE LIMITATIONS STAY. An Advanced Program is run by the ordinary
+    # rule, Limitation and all - the model runs the finale through the
+    # same run_program - so sweeping them is the plausible mistake.
+    want("...and the Limitation deck still on the table",
+         bool([o for o in w.table.values()
+               if o.name.startswith(names_of("Limitations"))]), True)
+    want("...and the element mats too",
+         out(w, "Element Mats"), int(g.AOS_MATS))
+
+
 def markers_home_assertions():
     """Pack up puts every die, the Chip and the Dial back in their row.
 
@@ -2603,6 +2848,7 @@ def main():
     landing_assertions()
     markers_home_assertions()
     alt_view_assertions()
+    finale_assertions()
     covered_assertions()
     rules_assertions()
     panel_game_assertions()

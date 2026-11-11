@@ -29,6 +29,10 @@ STATE = { game = nil, difficulty = 'Standard', tier = 0,
           -- press Set up AoS after picking the Compiler and you want
           -- the Compiler, not whoever is first in the list.
           pick = { NAP = 1, AoS = 1, IMP = 1 },
+          -- WHETHER THE LAST PART HAS BEEN STARTED. The finale button
+          -- deals cards and shuffles decks, so it is a thing you do
+          -- once; this is what takes it off the panel afterwards.
+          finale = false,
           -- 4 is Reduce 1, which rules/nap.html calls Standard.
           finf = 4,
           -- What the dial face was last set to, the way chip is what
@@ -1557,6 +1561,7 @@ function packUp(quiet)
     -- has already said which game it is dealing.
     if not quiet then
       STATE.game = nil
+      STATE.finale = false
       resetCounters()
       refreshPanel()
     end
@@ -1573,6 +1578,7 @@ end
 function setupBAT()
   packUp(true)
   STATE.game = 'BAT'
+  STATE.finale = false
   local spec, hp = BAT_DIFF[STATE.difficulty][1], BAT_DIFF[STATE.difficulty][2]
   local upg, sp
 
@@ -1692,6 +1698,7 @@ end
 function setupNAP()
   packUp(true)
   STATE.game = 'NAP'
+  STATE.finale = false
   local goal, sb = NAP_DIFF[STATE.difficulty][1], NAP_DIFF[STATE.difficulty][2]
   -- TIER I IS ONE FOR ONE: three Following Setbacks in, three base ones
   -- out, so the deck still holds the number the difficulty asks for. The
@@ -1813,6 +1820,7 @@ end
 function setupAoS()
   packUp(true)
   STATE.game = 'AoS'
+  STATE.finale = false
   local mix = AOS_MIX[STATE.difficulty]
   local prog, lim
 
@@ -1895,6 +1903,7 @@ end
 function setupImposter()
   packUp(true)
   STATE.game = 'IMP'
+  STATE.finale = false
   local t = IMP_TIRED[STATE.difficulty]
   local ex
 
@@ -1965,6 +1974,300 @@ function setupImposter()
         ' 2 BAT, 2 AoS.')
   end)
   run()
+end
+
+
+-- ------------------------------------------------------------ finales
+-- EVERY GAME ENDS SOMEWHERE ITS SETUP CANNOT REACH. NAP sits a Final
+-- Exam, BAT fights the Tyrant it spent the game building, AoS faces
+-- three Advanced Programs. All three are REACHED - you play until the
+-- trigger - so no setup can deal them, and until now the cards for all
+-- three sat in their boxes with nothing on the table able to take them
+-- out. IN_THE_BAG has said so in a comment since the day it was
+-- written: "a later script option starts the exam".
+--
+-- THE SHAPE IS THE SAME THREE TIMES. Put away the spaces belonging to
+-- the part of the game that is over, deal what the finale needs, and
+-- say in chat the things the rules ask you to do by hand - which are
+-- mostly dice, and dice are not something a script can sort out for
+-- you once a game has been played over them.
+--
+-- ONTO BOXES THAT ALREADY EXIST. The overlay is a printed image, built
+-- by make_template.py from batBoxes / aosBoxes / napSnaps when the mod
+-- is built, so a finale space that is not one of those is a card lying
+-- on bare felt with no outline and no snap. Every placement below
+-- reuses a box that the Splice Phase, the day or the cycle has just
+-- finished with.
+
+-- IS THIS ONE OF THE GAME'S CARDS?
+--
+-- DECK_OF is generated from decks.py and holds every deck's label and
+-- every card's own name, so a lookup in it is the question "is this a
+-- card this mod prints" asked of the table that defines the answer.
+--
+-- NOT o.type. The first version of the sweep below took anything
+-- whose type was Card or Deck, which in TTS spares the overlay
+-- because a Custom_Tile is a Tile - and in the harness does not,
+-- because every leaf object there answers "Card". It bagged the NAP
+-- table: the mat is 56 units wide and lies at the middle of the felt,
+-- so its CENTRE falls inside an Assignment space, and a sweep by
+-- position finds it there. The overlay, the two counters and the
+-- rulebooks are all outside DECK_OF, which is what makes this the
+-- right question rather than a luckier one.
+function isGameCard(o)
+  if not o then return false end
+  local base = (o.getName() or ''):gsub(' %d+$', '')
+  return base ~= '' and DECK_OF[base] ~= nil
+end
+
+-- Clear these spaces into the boxes the cards came from.
+function clearBoxes(boxes)
+  for _, o in ipairs(getAllObjects()) do
+    if isGameCard(o) and packable(o) then
+      local p = o.getPosition()
+      for _, b in ipairs(boxes) do
+        if math.abs(p.x - b.x) <= b.hw and math.abs(p.z - b.z) <= b.hd then
+          -- The Time Slots are locked when they are dealt, and a
+          -- locked card cannot be put in a bag.
+          o.setLock(false)
+          putHome(o)
+          break
+        end
+      end
+    end
+  end
+end
+
+-- ---------------------------------------------------------------- NAP
+-- "Discard unresolved Assignments and exhaust their stored dice"
+-- (rules/nap.html, Leaving the apprenticeship). The clock has stopped,
+-- the deck is finished with either way - you sit the exam when you
+-- reach your goal OR when the deck runs out - and FINF is explicitly
+-- not used during the Final Exam, in either direction.
+--
+-- THE COMPLETED CREDITS PILE STAYS, and it is the one a tidy-up would
+-- reach for first: it is face-up, it is finished with, and it is the
+-- record of which subjects you studied. The exam pool is built out of
+-- it. The Banked Opportunities stay too - a coupon has no expiry and
+-- may be spent during the Final Exam.
+function napExamBoxes()
+  local out = {}
+  local hw, hd = CARD_L / 2 - 0.15, CARD_W / 2 - 0.15
+  local function box(x, z)
+    table.insert(out, {x = x, z = z, hw = hw, hd = hd})
+  end
+  box(DECK_X, ROW_CHAR)                       -- the Assignment deck
+  for k = 1, REVEAL_SLOTS do
+    box(DECK_X + k * ASSIGN_PITCH, ROW_CHAR)  -- the two it revealed
+  end
+  box(NAP_DISCARD_X, ROW_CHAR)                -- the one you did not take
+  box(NAP_X, FINF_Z)                          -- the FINF cards
+  for r = 0, 2 do
+    box(ASSIGN_X, FINF_Z - r * NAP_GAP)       -- the Time Slot itself
+    for k = 1, ASSIGN_SLOTS do
+      box(ASSIGN_X + k * ASSIGN_PITCH, FINF_Z - r * NAP_GAP)
+    end
+  end
+  return out
+end
+
+function startExam()
+  local goal = NAP_DIFF[STATE.difficulty][1]
+  step(function() clearBoxes(napExamBoxes()) end)
+  step(function()
+    -- ONE FACE-UP STACK, on the space the Assignment deck has just
+    -- left. Twelve landscape cards laid out is wider than the felt and
+    -- the pool you build from them is three, so this is the same call
+    -- Jon made for the Research Notes: a stack you spread to read.
+    -- The three spaces beside it are where the three you draw go -
+    -- they are the deck's own reveal spaces, which the day has
+    -- finished with.
+    if not deckOut('Final Exams', {DECK_X, 3, ROW_CHAR}, FACEUP) then
+      say('No Final Exams in the NAP box.')
+    end
+  end)
+  step(function()
+    say('FINAL EXAM. The Assignment deck, the Time Slots and FINF are' ..
+        ' back in the box -- FINF is not used in the exam, in either' ..
+        ' direction. The Completed Credits pile stays out: it is the' ..
+        ' record of what you studied and the pool is built from it, and' ..
+        ' so do your unspent coupons. The 12 Final Exams are a face-up' ..
+        ' stack on the old deck space -- spread it to read them.' ..
+        ' BY HAND: discard unresolved Assignments and exhaust their' ..
+        ' stored dice; short of ' .. goal .. ' Credits, exhaust 1' ..
+        ' available die per missing Credit in the order Red, Purple,' ..
+        ' Blue, Green, Yellow, looping as needed. Then recover 1 die,' ..
+        ' 1 more per Credit ABOVE ' .. goal .. ' (never the same colour' ..
+        ' twice), and the queued Morning recovery. Build the pool per' ..
+        ' subject -- 1 card at 0-1 Credits in it, 2 at 2-3, 3 at 4+ --' ..
+        ' shuffle it, draw 3 onto the three spaces beside the stack.' ..
+        ' Each exam Target drops by 1 per Credit you hold in its' ..
+        ' subject; lose 1 Health per success short; Special Recovery' ..
+        ' uses that card own colour dot. All three are mandatory, and' ..
+        ' finishing all three with at least 1 Health wins NAP.')
+  end)
+  run()
+end
+
+-- ---------------------------------------------------------------- BAT
+-- The Splice Phase is over the moment the Tyrant has five Splices, so
+-- everything the Splice Phase used goes away: both decks, the three
+-- cards they reveal each turn and both discards. THE RATS KEEP THEIR
+-- OWN UPGRADES - "Each Rat keeps its own Health and its own Upgrades"
+-- - so the twelve spaces beside the Rats are not touched, and neither
+-- is the Splice row or anything a tier dealt.
+function batBattleBoxes()
+  local out = {}
+  local function box(x, z)
+    table.insert(out, {x = x, z = z, hw = BAT_BOX_HW, hd = BAT_BOX_HD})
+  end
+  box(batRightX(BAT_EXPERIMENTS), batRowZ(1))
+  box(batRightX(BAT_UPGRADE_DECK), batRowZ(1))
+  for k = 1, 3 do box(batRightX(k), batRowZ(2)) end
+  box(batRightX(BAT_EXP_DISCARD), batRowZ(2))
+  box(batRightX(BAT_UPG_DISCARD), batRowZ(2))
+  return out
+end
+
+-- "From left to right, place the five Tyrant Splices in a random
+-- order." They are on the track in the order you failed in, which is
+-- an order - just not a random one, and it is the order damage has to
+-- chew through.
+function shuffleSplices()
+  local xs, found = {}, {}
+  for k = 1, BAT_SPLICES do xs[k] = batRightX(k) end
+  for _, o in ipairs(getAllObjects()) do
+    if isGameCard(o) and packable(o) then
+      local p = o.getPosition()
+      if math.abs(p.z - batRowZ(4)) <= BAT_BOX_HD then
+        for k = 1, BAT_SPLICES do
+          if math.abs(p.x - xs[k]) <= BAT_BOX_HW then
+            table.insert(found, o)
+            break
+          end
+        end
+      end
+    end
+  end
+  local order = shuffled(xs)
+  for i, o in ipairs(found) do
+    if order[i] then
+      o.setLock(false)
+      o.setPositionSmooth({order[i], 1.6, batRowZ(4)}, false, true)
+    end
+  end
+  return #found
+end
+
+function startBattle()
+  local hp = BAT_DIFF[STATE.difficulty][2]
+  local spliced = 0
+  step(function() clearBoxes(batBattleBoxes()) end)
+  step(function()
+    -- "Shuffle the 7 Tyrant Attack cards face-down, then flip the top
+    -- card face-up to start the Attack discard. It does not attack; it
+    -- only supplies the first commit color."
+    local d = deckOut('Tyrant Attacks',
+                      {batRightX(BAT_ATTACK_DECK), 3, batRowZ(3)})
+    if not d then say('No Tyrant Attacks in the BAT box.') return end
+    d.shuffle()
+    d.takeObject({position = {batRightX(BAT_ATTACK_UP), 3, batRowZ(3)},
+                  rotation = FACEUP, smooth = false})
+  end)
+  step(function() spliced = shuffleSplices() end)
+  step(function()
+    say('TYRANT BATTLE. Tyrant Health ' .. hp .. ' on the dial. Both' ..
+        ' decks, the three cards they reveal and both discards are back' ..
+        ' in the box; the Rats keep their own Upgrades and their own' ..
+        ' Health. The 7 Tyrant Attacks are shuffled with the top card' ..
+        ' face-up -- it does not attack, it only sets the first commit' ..
+        ' colour. ' .. spliced .. ' Splices put in a random order.' ..
+        ' BY HAND: take 2 Purple, 2 Blue, 1 Green and 1 Yellow out of' ..
+        ' the Rats own dice into a bag on the Tyrant Dice space -- the' ..
+        ' Tyrant draws from those six fresh every round and they never' ..
+        ' exhaust; if a colour is short, take it back out of the' ..
+        ' banished pile. Sweep every other personal die, available and' ..
+        ' exhausted, into one shared pool, all available; banished dice' ..
+        ' stay gone and Red is not in the pool. Rat abilities are' ..
+        ' silent in the battle. A Splice never chips: meet its printed' ..
+        ' Value in ONE attack or the whole attack bounces. Eight rounds' ..
+        ' to break five walls. The Buff HP card is optional and still' ..
+        ' in the box.')
+  end)
+  run()
+end
+
+-- ---------------------------------------------------------------- AoS
+-- "After the third cycle -- or as soon as the deck is empty -- go to
+-- Advanced Programming." What is left of the Program deck, the Program
+-- on the table and both piles are finished with.
+--
+-- THE LIMITATIONS STAY. An Advanced Program is run by the ordinary
+-- rule - "Reveal exactly 1 Limitation per Program", and the model runs
+-- the finale through the same run_program - so the Limitation deck and
+-- the card it has revealed are still in play. The element mats, the
+-- Backdoor Routines and whatever a tier laid face-up all stay too.
+function aosAdvancedBoxes()
+  local out = {}
+  local function box(x, z)
+    table.insert(out, {x = x, z = z, hw = AOS_BOX_HW, hd = AOS_BOX_HD})
+  end
+  box(aosCol(AOS_PROGRAMS), AOS_ROW1)    -- whatever is left of the deck
+  box(aosCol(AOS_PROGRAM), AOS_ROW1)     -- the Program it last revealed
+  box(aosCol(AOS_DISCARD), AOS_ROW1)     -- and the pile they go to
+  box(AOS_TECH_X, AOS_ROW3)              -- Programs set aside for good
+  return out
+end
+
+function startAdvanced()
+  step(function() clearBoxes(aosAdvancedBoxes()) end)
+  step(function()
+    -- "Select 3 Advanced Programs." Eight are shuffled and set aside
+    -- at setup and only three are ever faced; cutTo shuffles, keeps
+    -- three and sends the other five back to the box. They go on the
+    -- space the mat has always drawn for them.
+    local d = cutTo(deckOut('Advanced Programs', pad(1)), 3)
+    if not d then say('No Advanced Programs in the AoS box.') return end
+    d.setPosition({AOS_RIGHT - AOS_COL, 3, AOS_ROW1})
+    d.setRotation(FACEDOWN)
+  end)
+  step(function()
+    say('ADVANCED PROGRAMMING. What is left of the Program deck, the' ..
+        ' Program it last revealed and both piles are back in the box.' ..
+        ' 3 of the 8 Advanced Programs are face-down on their own' ..
+        ' space; the other 5 are back in the box. The Limitation deck' ..
+        ' stays -- reveal exactly 1 per Program, as always. They are' ..
+        ' longer, 4 or 5 elements, and carry 2 required-colour dots,' ..
+        ' except Rapid Approach and Unobserved Entry, which carry 3.' ..
+        ' Recover between them. The first begins Stable; each next one' ..
+        ' begins Overheated if the one before ended in Catastrophic' ..
+        ' Failure. Catastrophic Failure does not stop Advanced' ..
+        ' Programming unless Health reaches 0. Work through all three' ..
+        ' with at least 1 Health and you have won AoS, whether or not' ..
+        ' you completed them.')
+  end)
+  run()
+end
+
+-- WHAT EACH GAME'S LAST BUTTON SAYS AND DOES. Below the functions,
+-- because it holds references to them: a table built above them holds
+-- three nils. The Imposter scenario has no entry - it IS the finale.
+FINALE = {
+  NAP = {'Start the Final Exam', startExam, {0.42, 0.25, 0.55}},
+  BAT = {'Start the Tyrant Battle', startBattle, {0.17, 0.37, 0.29}},
+  AoS = {'Start Advanced Programming', startAdvanced, {0.54, 0.24, 0.18}},
+}
+
+-- ONCE. Pressing it twice would deal a second set of Final Exams onto
+-- the first and put the Tyrant's Attack deck back through a shuffle it
+-- has already had, so the button goes once it has been used and comes
+-- back with the next setup.
+function btnFinale()
+  local f = FINALE[STATE.game]
+  if not f or STATE.finale then return end
+  STATE.finale = true
+  refreshPanel()
+  f[2]()
 end
 
 -- ------------------------------------------------------------------ panel
@@ -2068,9 +2371,17 @@ function refreshPanel()
   -- whenever the game on the table had no character to cycle. Every
   -- other row is a thing you press, so a row you cannot press is a row
   -- you try to press - and it said nothing a player could not read off
-  -- the four setup buttons an inch below it. The row is simply empty
-  -- now, and lbl() has gone with it: the only thing on the mat is
-  -- buttons.
+  -- the four setup buttons an inch below it. lbl() went with it: the
+  -- only thing on this mat is buttons.
+  --
+  -- WHAT STANDS HERE NOW IS THE LAST BUTTON OF A GAME: the Final Exam,
+  -- the Tyrant Battle, Advanced Programming. In the game's own colour,
+  -- because it belongs to that game and to no other, and only once
+  -- there is a game on the table to finish.
+  if FINALE[g] and not STATE.finale then
+    btn(FINALE[g][1], 'btnFinale', -2.44, 0.36, 1240, FINALE[g][3])
+  end
+
 
   btn('Pack up', 'btnPack', -3.80, 0.72, 420, {0.42, 0.18, 0.15})
 end
