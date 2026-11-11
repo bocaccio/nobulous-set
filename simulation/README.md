@@ -152,32 +152,39 @@ edits changed rules `nap.py` implements - one row per Time Slot, a Demand
 penalty that bills once and discards, REC at End of Day only, the higher
 Target of two revealed Setbacks, and two printed rules the model had never
 played at all. It plays all of them now; the dial block above `LEVELS` says
-which and what each is worth. Six Apprentices averaged, 4000 games a cell,
-solo column:
+which and what each is worth. Both columns below are 20,000 games a cell, six
+Apprentices averaged, straight off `RESULTS.txt`:
 
-| difficulty | 2026-11-06 | 2026-11-11 |
-| --- | --- | --- |
-| Easy | 56.4% | 50.8% |
-| Standard | 49.5% | **43.3%** |
-| Hard | 38.6% | 31.8% |
-| Nobulous | 29.8% | 24.9% |
+| difficulty | 2026-11-06 | 2026-11-11 | |
+| --- | --- | --- | --- |
+| Easy | 56.3% | 50.5% | -5.8 |
+| Standard | 48.6% | **43.0%** | -5.6 |
+| Hard | 38.4% | 31.8% | -6.6 |
+| Nobulous | 29.4% | 24.8% | -4.6 |
 
-Standard is 3.7 points under the 47% floor, and all six Apprentices are under
+Standard is 4.0 points under the 47% floor, and all six Apprentices are under
 it together, so the ladder dropped rather than came apart:
 
 | Apprentice | Easy | Standard | Hard | Nobulous |
 | --- | --- | --- | --- | --- |
-| Prodigy | 51.3% | 44.4% | 33.3% | 25.2% |
-| Slacker | 48.4% | 41.4% | 29.0% | 23.1% |
-| Technician | 53.0% | 44.3% | 34.6% | 28.4% |
-| Savant | 50.3% | 42.4% | 31.6% | 23.4% |
-| Opportunist | 51.1% | 44.8% | 29.8% | 24.3% |
-| Lab Rat | 50.5% | 42.6% | 32.6% | 24.7% |
-| spread | 4.6 | 3.4 | 5.6 | 5.3 |
+| Prodigy | 51.6% | 44.2% | 32.7% | 25.0% |
+| Slacker | 47.9% | 40.6% | 29.4% | 22.7% |
+| Technician | 52.5% | 44.8% | 34.7% | 27.6% |
+| Savant | 50.6% | 42.0% | 31.4% | 23.8% |
+| Opportunist | 50.1% | 42.7% | 30.2% | 23.8% |
+| Lab Rat | 50.2% | 43.5% | 32.5% | 25.9% |
+| spread | 4.6 | 4.2 | 5.3 | 4.9 |
 
-The rungs sit 7.5, 11.5 and 6.9 points apart against 6.9, 10.9 and 8.8
-before, so Hard to Nobulous flattened by about two points and the rest of the
-shape held.
+The rungs sit 7.5, 11.2 and 7.0 points apart against 7.7, 10.2 and 9.0
+before: the top step held, Standard to Hard steepened by a point, and Hard to
+Nobulous flattened by two. The hard end of the ladder is the part that
+compressed.
+
+**Tier II took worse than the solo column shows** - -9.8 / -8.7 / -7.0 / -6.8
+against solo's -5.8 / -5.6 / -6.6 / -4.6. The campaign's pressure peak was
+already the weakest cell on the board and Nobulous at Tier II now reads
+15.8%. That has not been looked at, and it is a separate question from the
+pitch decision below, which was taken on the solo column.
 
 **Decided 2026-11-11: the new pitch stands and `LEVELS` does not move.** NAP
 is the one game in the set pitched below the 47-57% band, and that is now a
