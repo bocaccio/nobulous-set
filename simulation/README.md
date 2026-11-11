@@ -163,10 +163,28 @@ solo column:
 | Nobulous | 29.8% | 24.9% |
 
 Standard is 3.7 points under the 47% floor, and all six Apprentices are under
-it together - 41.4 to 44.8, a 3.4-point spread, so the ladder has dropped
-rather than come apart. Whether to re-peg `LEVELS` or accept the new pitch is
-a design decision and has not been taken: nothing in `LEVELS` has moved.
-`RESULTS.txt` is the 2026-11-06 run, so its NAP grid is the left column here.
+it together, so the ladder dropped rather than came apart:
+
+| Apprentice | Easy | Standard | Hard | Nobulous |
+| --- | --- | --- | --- | --- |
+| Prodigy | 51.3% | 44.4% | 33.3% | 25.2% |
+| Slacker | 48.4% | 41.4% | 29.0% | 23.1% |
+| Technician | 53.0% | 44.3% | 34.6% | 28.4% |
+| Savant | 50.3% | 42.4% | 31.6% | 23.4% |
+| Opportunist | 51.1% | 44.8% | 29.8% | 24.3% |
+| Lab Rat | 50.5% | 42.6% | 32.6% | 24.7% |
+| spread | 4.6 | 3.4 | 5.6 | 5.3 |
+
+The rungs sit 7.5, 11.5 and 6.9 points apart against 6.9, 10.9 and 8.8
+before, so Hard to Nobulous flattened by about two points and the rest of the
+shape held.
+
+**Decided 2026-11-11: the new pitch stands and `LEVELS` does not move.** NAP
+is the one game in the set pitched below the 47-57% band, and that is now a
+choice on the record rather than a number nobody re-read. The lever if it is
+ever revisited is the Setback count - about 5 points a card at the 2026-11-06
+measurement, so Standard 3 -> 2 would land near 48 - and the Credit goal is
+the other half of `LEVELS` if a finer step is wanted.
 
 Do not retype these. `table.py` computes the calibration verdicts from the
 grids it just ran, and `RESULTS.txt` is its transcript; this paragraph is a
