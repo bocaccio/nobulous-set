@@ -268,6 +268,26 @@ def nap_credit_tasks():
     return out
 
 
+def nap_exam_subjects():
+    """1-based Final Exam indices per subject, READ OUT OF build_nap.py.
+
+    The exam pool is built per subject - 1 card at 0-1 Credits in it,
+    2 at 2-3, 3 at 4+ - so the script has to know which of the twelve
+    belong to which. The cards are nicknamed "Final Exam N" in EXAMS
+    order, so the index is the whole of the answer and a reordered
+    EXAMS table cannot leave a stale one behind.
+    """
+    out = {}
+    for i, e in enumerate(_table('build_nap.py', 'EXAMS'), 1):
+        subj = getattr(e.elts[1], 'id', None)
+        if not subj:
+            raise SystemExit('Final Exam %d carries no subject' % i)
+        out.setdefault(subj, []).append(i)
+    if len(out) != 4:
+        raise SystemExit('expected 4 exam subjects, found %r' % (sorted(out),))
+    return out
+
+
 def nap_subject_names():
     """ANA -> 'Anatomy', read out of build_nap.py's own line.
 
@@ -551,6 +571,9 @@ def lua_header(box_guids):
         'NAP_SUBJECT = { %s }' % j("%s = '%s'" % (k, v)
                                    for k, v in sorted(
                                        nap_subject_names().items())),
+        'NAP_EXAM = { %s }' % j('%s = {%s}' % (k, j(str(i) for i in v))
+                                for k, v in sorted(
+                                    nap_exam_subjects().items())),
         'EXHIBIT_BLOCK = { %s }' % j("['%s'] = {%d, %d}" % (k, v[0], v[1])
                                      for k, v in sorted(exhibit_blocks().items())),
         '-- ======================= end generated =======================',
