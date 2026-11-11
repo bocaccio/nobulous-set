@@ -2358,6 +2358,10 @@ end
 -- landed near one of them.
 function onObjectDrop(color, obj)
   if not obj then return end
+  -- PICKED UP, TURNED OVER AND PUT DOWN is a flip no rotation event
+  -- hears about: it is physics. Cheap - altFace leaves anything that
+  -- is not a landscape card alone on its first line.
+  altFace(obj, 'drop')
   -- THE BUFF HP CARD IS FURNITURE ONCE IT IS DOWN. It holds part of
   -- the Tyrant's Health on a track you push a die along, so a card
   -- that slides when you nudge the die is worse than no card. It
@@ -2568,21 +2572,66 @@ function isLandCard(o)
   return ok and d ~= nil and d.SidewaysCard == true
 end
 
-function altFace(o)
+-- A VECTOR, NOT A TABLE OF THREE NUMBERS. Every rotation in this
+-- script is a plain {x, y, z} and TTS takes them all, so the first
+-- version of this assigned one here too and the preview did not
+-- change. Every example of alt_view_angle anybody has published uses
+-- Vector(), and one report has the plain form erroring outright from
+-- the console. The named table is the fallback for a build with no
+-- Vector in scope; the save writes that form, so it is known good.
+function altVector(a)
+  local ok, v = pcall(function() return Vector(a[1], a[2], a[3]) end)
+  if ok and v then return v end
+  return {x = a[1], y = a[2], z = a[3]}
+end
+
+-- ONE LINE, ONCE PER LOAD. Whether the angle is wrong, the event
+-- never fires, or TTS declines the assignment are three different
+-- faults with one symptom, and none of them can be told apart from
+-- outside the game. This says which: that it printed at all means the
+-- flip was heard, and the read-back says whether the value stuck.
+ALT_SAID = false
+
+function altFace(o, why)
   if not isLandCard(o) then return end
+  local want = o.is_face_down and ALT_LOOK_DOWN or ALT_LOOK_UP
+  local ok = pcall(function() o.alt_view_angle = altVector(want) end)
+  if ALT_SAID then return end
+  ALT_SAID = true
+  local got = 'nothing'
   pcall(function()
-    o.alt_view_angle = o.is_face_down and ALT_LOOK_DOWN or ALT_LOOK_UP
+    local v = o.alt_view_angle
+    if v then got = string.format('%.0f, %.0f, %.0f', v.x, v.y, v.z) end
   end)
+  say('ALT ' .. (why or '?') .. ': ' .. (o.getName() or '?') .. ' face ' ..
+      (o.is_face_down and 'DOWN' or 'UP') .. ', set {' ..
+      want[1] .. ', ' .. want[2] .. ', ' .. want[3] .. '}, reads {' ..
+      got .. '}' .. (ok and '' or ' -- ASSIGNMENT THREW'))
 end
 
 -- AFTER THE TURN, NOT DURING IT. onObjectRotate fires with the flip
 -- the card is heading FOR, so is_face_down still reads the old side
 -- while the handler runs; two frames later the card is where it is
--- going. The event is only raised for a deliberate rotation by a
--- player - physics does not trigger it - so this costs nothing while
--- a game is being played.
+-- going.
+--
+-- THREE WAYS TO TURN A CARD OVER, because onObjectRotate alone did
+-- not do it at Jon's table. The docs say it is raised for a
+-- deliberate rotation and not for physics, which leaves at least two
+-- ways to flip a card that it may not cover: F is a player ACTION
+-- (Player.Action.FlipOver, its own event), and picking a card up,
+-- turning it and dropping it is physics. All three land here, and
+-- altFace does nothing it has not been asked to do twice.
 function onObjectRotate(obj, spin, flip, color, oldSpin, oldFlip)
-  Wait.frames(function() altFace(obj) end, 2)
+  Wait.frames(function() altFace(obj, 'rotate') end, 2)
+end
+
+function onPlayerAction(player, action, targets)
+  if action == Player.Action.FlipOver then
+    for _, o in ipairs(targets or {}) do
+      Wait.frames(function() altFace(o, 'flip') end, 30)
+    end
+  end
+  return true
 end
 
 -- AND WHEN THE SCRIPT ITSELF TURNS ONE OVER. showChar deals a

@@ -617,6 +617,17 @@ def install(lua, w):
     wait.frames = lambda fn, n=1: w.pending.append(fn)
     wait.time = lambda fn, t=0: w.pending.append(fn)
     g.Wait = wait
+    # VECTOR, TAGGED. Every published example of alt_view_angle uses
+    # Vector() and the plain {x, y, z} table is reported to error from
+    # the console, so which of the two the script reaches for is worth
+    # asserting rather than hoping. The tag is how a test can tell -
+    # the fallback table does not carry it.
+    g.Vector = lambda x, y, z: lua.table_from(
+        {"x": float(x), "y": float(y), "z": float(z), "vector": True})
+    # Player.Action.FlipOver, which is what F is. onObjectRotate is
+    # documented for deliberate rotations and did not cover Jon's
+    # flip, so the action event is one of the three ways in.
+    g.Player = lua.eval("{Action = {FlipOver = 'FlipOver'}}")
     g.self = None                            # no panel, so refreshPanel returns
     # SEEDED. Lua 5.5 seeds math.random from the clock, so the setups
     # picked different cards every run and the harness disagreed with
@@ -1975,6 +1986,34 @@ def alt_view_assertions():
     drain(w)
     want("...and turning it back gives the first one again",
          angle(rat), up)
+    # A VECTOR, NOT THREE NUMBERS IN A TABLE.
+    want("...and the angle was set as a Vector",
+         bool(dict(rat.alt_view_angle).get("vector")), True)
+
+    # THREE WAYS TO TURN A CARD OVER, and onObjectRotate was not the
+    # one Jon used: the preview stayed wrong at his table while every
+    # test here passed. F is a player ACTION with its own event, and
+    # picking a card up and putting it down the other way round is
+    # physics, which raises neither.
+    for trigger, call in (
+            ("the F key", lambda o: g.onPlayerAction(
+                None, g.Player.Action.FlipOver, w.lua.table_from([o]))),
+            ("a pick-up and drop", lambda o: g.onObjectDrop("White", o))):
+        rat.setRotation(g.FACEDOWN)
+        rat.alt_view_angle = None
+        call(rat)
+        drain(w)
+        want("%s turns the card and the Alt angle follows" % trigger,
+             angle(rat), down)
+        rat.setRotation(g.FACEUP)
+        call(rat)
+        drain(w)
+        want("...and back again, for %s" % trigger, angle(rat), up)
+
+    # ONE LINE, ONCE. The report that says which of the three faults
+    # is in play would be chat spam if it came on every flip.
+    want("the Alt diagnostic is said once, not once per flip",
+         len([m for m in w.said if m.startswith("ALT ")]), 1)
 
     # NOT EVERYTHING THAT TURNS. A portrait card and a deck both have
     # to come through a flip with no angle at all: zero is the right

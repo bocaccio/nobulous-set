@@ -2649,6 +2649,28 @@ check("...and the harness turns a card over and checks it followed",
       "...and turning it over gives the Alt view the other angle" in _ts
       and "and turning it back gives the first one again" in _ts
       and "leaves its Alt angle alone" in _ts)
+# THREE WAYS IN, because onObjectRotate alone did not catch the flip
+# Jon actually made. The docs raise it for a deliberate rotation and
+# not for physics, which leaves F - a player ACTION with its own
+# event - and picking a card up and putting it down the other way up.
+check("every way of turning a card over reaches the Alt angle",
+      all(t in _lua_code for t in ("function onObjectRotate",
+                                   "function onPlayerAction",
+                                   "Player.Action.FlipOver",
+                                   "altFace(obj, 'drop')")),
+      "a trigger is missing")
+check("...and the harness exercises all three of them",
+      "the F key" in _ts and "a pick-up and drop" in _ts
+      and "g.onObjectRotate(" in _ts)
+# A VECTOR. Every rotation in lua.lua is a plain {x, y, z} and TTS
+# takes them all, so the first version assigned one here too and
+# nothing changed at the table; every published example of
+# alt_view_angle uses Vector(), and the plain form is reported to
+# error from the console.
+check("the Alt angle is assigned as a Vector, not three loose numbers",
+      "Vector(a[1], a[2], a[3])" in _lua_code
+      and "o.alt_view_angle = altVector(want)" in _lua_code
+      and "and the angle was set as a Vector" in _ts)
 
 # DECK_OF IS WHAT LETS A MERGED DECK BE TAKEN APART AGAIN - it is the
 # only table that says a Task belongs to the Assignment deck - so it is
