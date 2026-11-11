@@ -117,6 +117,8 @@ ol.seq > li {
   position: relative;
   margin-bottom: 1.6mm;
 }
+ol.seq li ul { margin: 1mm 0 0; padding-left: 3.4mm; }
+ol.seq li ul > li { margin-bottom: .5mm; }
 ol.seq > li::before {
   content: counter(s);
   position: absolute; left: 0; top: .2mm;
