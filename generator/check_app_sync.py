@@ -1648,19 +1648,30 @@ check("AoS prints the full-element reroll, and aos.py runs it",
       "rulebook %r, REROLL_MODE %r"
       % ("full reroll of that element" in _aos_rules,
          _mode and _mode.group(1)))
-# THE FINALE REJOINS WHAT DID NOT LAND. "Take up any dice you have not
-# applied, add more if you want, and throw again": in finale.py that is
-# one line, `rolling = unapplied + take`, and `unapplied` holds both the
-# misses and a hit that had no Exhibit left to go on.
+# THE FINALE TAKES UP THE MISSES, which is 20 Strong's rule and is
+# what it always did. It used to SAY "any dice you have not applied",
+# which is broader than both: a hit that found no Exhibit joins
+# `unapplied` but is never thrown again, because the phase loop breaks
+# the moment nothing is standing. Measured over 4000 finales, 15,812
+# such hits and not one rethrow - so the book was reworded to the
+# model rather than the model changed to the book.
+#
+# The old phrasing must not come back, in either place.
 _nrj_rules = text("rules/nrj.html")
 _fin_sim = text("simulation/finale.py")
-check("the finale rethrows what applied nothing, as nrj.html says",
-      "take up any dice you have not applied" in _nrj_rules
-      and "rolling = unapplied + take" in _fin_sim
-      and "unapplied.append(c)" in _fin_sim,
+check("the finale takes up the misses, as nrj.html now says",
+      "take up the dice that missed" in _nrj_rules
+      and "any dice you have not applied" not in _nrj_rules
+      and "rolling = unapplied + take" in _fin_sim,
       "rulebook %r, model %r"
-      % ("take up any dice you have not applied" in _nrj_rules,
+      % ("take up the dice that missed" in _nrj_rules,
          "rolling = unapplied + take" in _fin_sim))
+# ...AND COMMITTING MORE IN THE SECOND PHASE IS REAL, so that half of
+# the sentence stays: want_dice runs every phase, not just the first.
+check("...while adding more dice in the second phase stays printed",
+      "add more if you\n      want, and throw again" in _nrj_rules
+      and _fin_sim.count("take = want_dice(") == 1
+      and "for _ in range(phases):" in _fin_sim)
 # ...AND BAT NO LONGER PRINTS ONE, which is the other half of the same
 # decision: its sentence went because nothing about BAT needed it.
 check("...and BAT no longer prints a reroll rule of its own",

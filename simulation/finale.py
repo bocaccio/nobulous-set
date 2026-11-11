@@ -724,11 +724,13 @@ def session(g, pace, recov, rew, commit, res):
                 # loop's own guard breaks the moment nothing is
                 # standing, so the die is simply exhausted below.
                 #
-                # Which is why nrj.html's "take up any dice you have
-                # not applied ... and throw again" and 20 Strong's
-                # reroll-the-misses come to the same play. Measured
-                # 2026-11-10, 4000 finales: 15,812 hits had nowhere to
-                # go and not one of them was rethrown.
+                # This is why nrj.html says "take up the dice that
+                # missed": the sentence used to say "any dice you have
+                # not applied", which is broader than 20 Strong AND
+                # broader than this - measured 2026-11-10 over 4000
+                # finales, 15,812 hits had nowhere to go and not one
+                # was rethrown. The book was reworded to match rather
+                # than the model to match the book.
                 unapplied.append(c)
                 continue
             tgt.dealt += v

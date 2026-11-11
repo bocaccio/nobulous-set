@@ -1252,17 +1252,29 @@ FOUR KINDS LOOKED FOR AND DELIBERATELY NOT APPLIED:
   * NRJ's session step 3 says "take up any dice you have not applied,
     add more if you want, and throw again.  Nothing is compulsory" -
     word for word the construction BAT lost.  KEPT - Jon's call, same
-    day.  finale.py runs it in one line, `rolling = unapplied + take`.
+    day - AND THEN REWORDED, same day, once the measurement was in.
 
-    AND IT COMES TO THE SAME PLAY AS 20 STRONG, which is better than
-    "deliberate": the extra permission is unreachable.  `unapplied`
-    holds the misses and also a hit that had no Exhibit left to go on
-    - but a hit only goes unapplied once nothing is standing, and the
-    phase loop breaks the moment nothing is standing, so that die is
-    exhausted rather than rethrown.  Measured over 4000 finales:
-    15,812 hits had nowhere to go, and NOT ONE was rethrown.  The
-    sentence is broader than the base rule in wording and identical in
-    effect, so there is nothing here to narrow.
+    The sentence was broader than 20 Strong AND broader than the
+    finale itself.  `unapplied` holds the misses and also a hit that
+    had no Exhibit left to go on - but a hit only goes unapplied once
+    nothing is standing, and the phase loop breaks the moment nothing
+    is standing, so that die is exhausted rather than rethrown.
+    Measured over 4000 finales: 15,812 hits had nowhere to go, and NOT
+    ONE was rethrown.  A rule that promises something the game never
+    does is worth nothing to a player and costs them a re-read, so the
+    book was reworded to the model rather than the model changed to
+    the book:
+
+      "Then take up any dice you have not applied, add more if you
+       want, and throw again."
+      "Then take up the dice that missed, add more if you want, and
+       throw again."
+
+    No behaviour changed and the finale still wins 50.45 at 4000
+    games, seed 20.  "Add more if you want" STAYS: committing further
+    dice in the second phase is real - want_dice runs every phase -
+    and only the rethrow clause was out of step.  check_app_sync holds
+    both halves, and fails if the old phrasing returns.
 
   BOTH SENTENCES ARE NOW LOAD-BEARING, and the next pass like this one
   would delete them for the same reason BAT's went.  check_app_sync
