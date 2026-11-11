@@ -1270,11 +1270,25 @@ FOUR KINDS LOOKED FOR AND DELIBERATELY NOT APPLIED:
       "Then take up the dice that missed, add more if you want, and
        throw again."
 
-    No behaviour changed and the finale still wins 50.45 at 4000
-    games, seed 20.  "Add more if you want" STAYS: committing further
-    dice in the second phase is real - want_dice runs every phase -
-    and only the rethrow clause was out of step.  check_app_sync holds
-    both halves, and fails if the old phrasing returns.
+    "Add more if you want" went the same day, for the same reason in
+    the other direction: the base game already allows it, so the page
+    was restating a rule it does not own.  What is left says only the
+    part that is NRJ's:
+
+      "Then take up the dice that missed and throw again.  Nothing is
+       compulsory."
+
+    The model is unchanged throughout - committing further dice in the
+    second phase is real and `rolling = unapplied + take` is both
+    halves in one line - and the finale still wins 50.45 at 4000
+    games, seed 20.
+
+    check_app_sync fails if either old phrasing returns or if the
+    model line goes.  IT CANNOT CHECK that the second phase still
+    commits: that is behaviour and the check is a text match, so a
+    guard on want_dice would leave every string intact.  A mutation
+    doing exactly that went through, so the claim was cut back to what
+    can fail rather than left reading as more than it is.
 
   BOTH SENTENCES ARE NOW LOAD-BEARING, and the next pass like this one
   would delete them for the same reason BAT's went.  check_app_sync

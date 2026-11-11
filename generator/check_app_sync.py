@@ -1659,19 +1659,26 @@ check("AoS prints the full-element reroll, and aos.py runs it",
 # The old phrasing must not come back, in either place.
 _nrj_rules = text("rules/nrj.html")
 _fin_sim = text("simulation/finale.py")
+# "ADD MORE IF YOU WANT" IS GONE TOO - 20 Strong already allows it, so
+# the page does not restate it. The model still does it, and one line
+# says both halves: `rolling = unapplied + take` is the misses rejoined
+# PLUS whatever this phase just committed.
+#
+# WHAT THIS CHECK CANNOT DO is prove the model still commits in the
+# second phase. That is behaviour, and this is a text match: a guard
+# put on want_dice would leave every string here intact, and a
+# mutation that did exactly that went through. The claim is therefore
+# limited to what can fail - the two sentences, and the model line
+# that answers them - and audit.py is where a behavioural version of
+# it would belong.
 check("the finale takes up the misses, as nrj.html now says",
       "take up the dice that missed" in _nrj_rules
       and "any dice you have not applied" not in _nrj_rules
+      and "add more if you" not in _nrj_rules
       and "rolling = unapplied + take" in _fin_sim,
       "rulebook %r, model %r"
       % ("take up the dice that missed" in _nrj_rules,
          "rolling = unapplied + take" in _fin_sim))
-# ...AND COMMITTING MORE IN THE SECOND PHASE IS REAL, so that half of
-# the sentence stays: want_dice runs every phase, not just the first.
-check("...while adding more dice in the second phase stays printed",
-      "add more if you\n      want, and throw again" in _nrj_rules
-      and _fin_sim.count("take = want_dice(") == 1
-      and "for _ in range(phases):" in _fin_sim)
 # ...AND BAT NO LONGER PRINTS ONE, which is the other half of the same
 # decision: its sentence went because nothing about BAT needed it.
 check("...and BAT no longer prints a reroll rule of its own",
