@@ -2010,10 +2010,11 @@ def alt_view_assertions():
         drain(w)
         want("...and back again, for %s" % trigger, angle(rat), up)
 
-    # ONE LINE, ONCE. The report that says which of the three faults
-    # is in play would be chat spam if it came on every flip.
-    want("the Alt diagnostic is said once, not once per flip",
-         len([m for m in w.said if m.startswith("ALT ")]), 1)
+    # AND IT SAYS NOTHING. The line that told the three faults apart
+    # has done its job and gone; a preview that works does not
+    # announce itself once per load for the rest of the mod's life.
+    want("setting the Alt angle prints nothing in chat",
+         [m for m in w.said if m.startswith("ALT ")], [])
 
     # NOT EVERYTHING THAT TURNS. A portrait card and a deck both have
     # to come through a flip with no angle at all: zero is the right

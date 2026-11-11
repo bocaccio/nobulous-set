@@ -2657,7 +2657,7 @@ check("every way of turning a card over reaches the Alt angle",
       all(t in _lua_code for t in ("function onObjectRotate",
                                    "function onPlayerAction",
                                    "Player.Action.FlipOver",
-                                   "altFace(obj, 'drop')")),
+                                   "altFace(obj)")),
       "a trigger is missing")
 check("...and the harness exercises all three of them",
       "the F key" in _ts and "a pick-up and drop" in _ts
