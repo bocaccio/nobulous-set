@@ -1242,18 +1242,27 @@ FOUR KINDS LOOKED FOR AND DELIBERATELY NOT APPLIED:
 
   * AoS prints "An extra roll is a FULL REROLL of that element's dice:
     pick the element up, roll all of them again".  That is the sentence
-    BAT deleted, except that in AoS it is deliberate and the model
-    implements it.  Deleting it would change the game rather than tidy
-    it.  LEFT, AND WORTH A DECISION: if AoS means to override the base
-    game here, it is worth saying so on the page.
+    BAT deleted, except that in AoS it is deliberate.  KEPT - Jon's
+    call, 2026-11-10.  aos.py runs it: REROLL_MODE = "element" is the
+    default and the comment above it cites rules/aos.html by line.  The
+    Compiler is the one exception and keeps what landed, which is its
+    printed ability.  "select", the base 20 Strong procedure, is kept
+    as a dial so the difference can still be measured.
 
   * NRJ's session step 3 says "take up any dice you have not applied,
     add more if you want, and throw again.  Nothing is compulsory" -
-    word for word the construction BAT lost, and for the same reason it
-    is wrong against 20 Strong, which rerolls misses.  But this is the
-    ONLY description of the finale's second Strategy roll, and narrowing
-    it to misses is a rules change the model implements.  LEFT for the
-    same decision as AoS.
+    word for word the construction BAT lost.  KEPT - Jon's call, same
+    day.  finale.py runs it in one line, `rolling = unapplied + take`,
+    and `unapplied` holds the misses AND a hit that had no Exhibit left
+    to go on.  The model never holds a hit back voluntarily, so the two
+    agree: the sentence permits exactly what the model ever has to
+    rethrow.
+
+  BOTH SENTENCES ARE NOW LOAD-BEARING, and the next pass like this one
+  would delete them for the same reason BAT's went.  check_app_sync
+  holds each against the model that runs it - the rulebook text AND the
+  dial - so removing either side fails.  All four halves were
+  mutation-tested.
 
 Page counts unchanged: BAT 3, NAP 4, AoS 3, NRJ 6.
 

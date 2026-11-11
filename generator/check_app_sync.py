@@ -1630,6 +1630,42 @@ for _b in _books:
         _stale.append(_b + " (not deployed)")
     elif io.open(_src, "rb").read() != io.open(_dst, "rb").read():
         _stale.append(_b)
+# THE TWO REROLLS THAT ARE NOT THE BASE GAME'S, AND ARE MEANT.
+#
+# 20 Strong rerolls MISSES. BAT printed a sentence saying otherwise and
+# it was deleted on 2026-11-10; AoS and NRJ print the same shape of
+# sentence and Jon kept both, because in those two it is deliberate and
+# the models run it. Which makes the sentences load-bearing: a later
+# tidy-up pass that removes them for the reason BAT's went would leave
+# the books describing a game nothing plays. This is what notices.
+_aos_rules = text("rules/aos.html")
+_aos_sim = text("simulation/aos.py")
+_mode = re.search(r'^REROLL_MODE = "(\w+)"', _aos_sim, re.M)
+check("AoS prints the full-element reroll, and aos.py runs it",
+      "full reroll of that element" in _aos_rules
+      and "roll all of them again" in _aos_rules
+      and _mode and _mode.group(1) == "element",
+      "rulebook %r, REROLL_MODE %r"
+      % ("full reroll of that element" in _aos_rules,
+         _mode and _mode.group(1)))
+# THE FINALE REJOINS WHAT DID NOT LAND. "Take up any dice you have not
+# applied, add more if you want, and throw again": in finale.py that is
+# one line, `rolling = unapplied + take`, and `unapplied` holds both the
+# misses and a hit that had no Exhibit left to go on.
+_nrj_rules = text("rules/nrj.html")
+_fin_sim = text("simulation/finale.py")
+check("the finale rethrows what applied nothing, as nrj.html says",
+      "take up any dice you have not applied" in _nrj_rules
+      and "rolling = unapplied + take" in _fin_sim
+      and "unapplied.append(c)" in _fin_sim,
+      "rulebook %r, model %r"
+      % ("take up any dice you have not applied" in _nrj_rules,
+         "rolling = unapplied + take" in _fin_sim))
+# ...AND BAT NO LONGER PRINTS ONE, which is the other half of the same
+# decision: its sentence went because nothing about BAT needed it.
+check("...and BAT no longer prints a reroll rule of its own",
+      "misses, hits or both" not in text("rules/bat.html"))
+
 # AND EACH ONE IS THE LENGTH IT IS MEANT TO BE.
 #
 # BAT ran to four pages, the fourth holding eight lines and a footer.
