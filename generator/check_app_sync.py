@@ -2192,10 +2192,18 @@ check("the two that walk unknown objects use it",
       and bool(re.search(r"function cardsAt.*?contents\(o\)", _lua, re.S)),
       "firstCard or cardsAt looks inside an object without asking")
 
-check("NAP lays four Assignment spaces beside each Time Slot",
-      "ASSIGN_SLOTS = 4" in _lua and "function napSnaps" in _lua
-      and "Global.setSnapPoints" in _lua
-      and "never exceed 4 Assignments in a row" in _nap_rules)
+# THE NUMBER, NOT THE SENTENCE. This matched "never exceed 4
+# Assignments in a row" literally, so changing "a row" to "one row" -
+# which says the same thing about the same cap - failed a check about
+# how many spaces the lab draws. What has to agree is the CAP: the
+# rulebook prints it and ASSIGN_SLOTS is how many spaces that buys.
+_cap = re.search(r"never exceed (\d+) Assignments in", _nap_rules)
+_slots = re.search(r"^ASSIGN_SLOTS = (\d+)", _lua, re.M)
+check("NAP lays as many Assignment spaces as the rulebook allows",
+      _cap and _slots and _cap.group(1) == _slots.group(1)
+      and "function napSnaps" in _lua and "Global.setSnapPoints" in _lua,
+      "rulebook caps at %r, the lab draws %r"
+      % (_cap and _cap.group(1), _slots and _slots.group(1)))
 check("tts/test_setup.py refuses a save older than lua.lua",
       "older than lua.lua" in text("tts/test_setup.py"))
 check("the mat and the bags are settled onto the rail, not placed on it",

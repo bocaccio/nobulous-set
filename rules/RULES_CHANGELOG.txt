@@ -1192,3 +1192,74 @@ the harness asked only whether that corner was a snap point, and the
 rulebook checks are all about numbers.  check_app_sync now reads the die
 out of the sentence that defines it and compares it with the one setupBAT
 places, and the harness checks which die is really on the card.
+
+===========================================================================
+2026-11-10  The BAT wording pass, applied to the other three
+===========================================================================
+
+Jon's BAT edits fall into four kinds.  Each was looked for in nap.html,
+aos.html and nrj.html, and applied where the same thing was being said.
+
+A STEP THAT DOES TWO JOBS BECOMES TWO STEPS, as BAT's "shuffle the
+Experiments AND leave room for the Tyrant" did:
+
+  NAP  "Take all 17 dice as available. Place the Morning Time Slot card
+       as active for Day 1."                          -> steps 6 and 7
+  AoS  "Lay out the element mats. All 17 dice start available."
+                                                      -> steps 5 and 6
+  NRJ  "Keep the Research Pool face-up near the table. Play 9 sessions."
+                                                      -> steps 4 and 5
+
+NAME THE CARD RATHER THAN SAY "THE OTHER", as both BAT boxes now do:
+
+  NAP  "Discard the other." -> "Discard the other Assignment."
+  NAP  "never exceed 4 Assignments in a row" -> "in one row".  "In a
+       row" is an idiom meaning one after another; the row is a place,
+       and this book calls it "the row" everywhere else.
+
+SAY THE COMPARISON IN FULL, as "greater than or equal to the Target
+value" and "meet or exceed this threshold" do:
+
+  NRJ  "An Exhibit falls when the successes on it reach its Target."
+       -> "...meet or exceed its Target."
+
+WHERE A PILE LIVES IS THE PLAYER'S BUSINESS, as "stacked beside the
+Tyrant Attack deck" became "stack near" it:
+
+  NRJ  the Research Notes, the Backdoor Routines and the Research Pool
+       are laid "near the table" rather than "beside the table" (3x).
+
+FOUR KINDS LOOKED FOR AND DELIBERATELY NOT APPLIED:
+
+  * "at random" in all three books is a REAL randomisation - the FINF
+    cards, the Program mix, the Following Setbacks, the 15 Exhibits -
+    and not BAT's free tie-break between two equal Upgrades.  Left.
+
+  * ", not a pool" came out of a rules definition.  The remaining
+    "X, not a Y" constructions - "a decision, not a free move", "proper
+    play, not an exploit", "a real price, not a flourish" - are all
+    headings and discussion, where the contrast is the point.  Left.
+
+  * AoS prints "An extra roll is a FULL REROLL of that element's dice:
+    pick the element up, roll all of them again".  That is the sentence
+    BAT deleted, except that in AoS it is deliberate and the model
+    implements it.  Deleting it would change the game rather than tidy
+    it.  LEFT, AND WORTH A DECISION: if AoS means to override the base
+    game here, it is worth saying so on the page.
+
+  * NRJ's session step 3 says "take up any dice you have not applied,
+    add more if you want, and throw again.  Nothing is compulsory" -
+    word for word the construction BAT lost, and for the same reason it
+    is wrong against 20 Strong, which rerolls misses.  But this is the
+    ONLY description of the finale's second Strategy roll, and narrowing
+    it to misses is a rules change the model implements.  LEFT for the
+    same decision as AoS.
+
+Page counts unchanged: BAT 3, NAP 4, AoS 3, NRJ 6.
+
+AND ONE CHECK READ A SENTENCE WHERE IT MEANT A NUMBER.  "NAP lays four
+Assignment spaces beside each Time Slot" matched the literal string
+"never exceed 4 Assignments in a row", so saying the same thing with
+"one row" failed a check about how many spaces the lab draws.  It reads
+the cap out of the sentence now and compares it with ASSIGN_SLOTS, and
+both sides of that were mutation-tested.
