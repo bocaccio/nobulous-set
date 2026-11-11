@@ -23,6 +23,7 @@ import json
 import os
 import re
 import sys
+from html.parser import HTMLParser
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -678,7 +679,7 @@ check("rules/bat.html: the Tyrant's six dice match bat.TYRANT_NEED",
 # -- NAP ---------------------------------------------------------------------
 _nap, _gnap = sn, gn
 rulenum("nap", r"with the (\d+) Tasks", len(_gnap["TASKS"]), "the Task count")
-rulenum("nap", r"Separate the (\d+) Final Exams", len(_gnap["EXAMS"]),
+rulenum("nap", r"the (\d+) Final Exams\b", len(_gnap["EXAMS"]),
         "the Final Exam count")
 rulenum("nap", r"maximum of (\d+) Assignments", _nap["ROW_MAX"],
         "the row limit")
@@ -1058,9 +1059,11 @@ check("the Tier III claim cost is printed on all 12 BAT and AoS cards",
           "Claiming gives up the next Program Reward you would claim.") == 6)
 
 check("the campaign is Tier III only in all four books",
-      all("Tier III\nonly" in text(f) or "Tier III only" in text(f)
-          for f in ("rules/nrj.html", "rules/bat.html", "rules/nap.html",
-                    "rules/aos.html")))
+      ("Tier III\nonly" in text("rules/nrj.html")
+       or "Tier III only" in text("rules/nrj.html"))
+      and all(re.search(r"Tier III\s*(only|\))", text(f))
+              for f in ("rules/bat.html", "rules/nap.html",
+                        "rules/aos.html")))
 
 # HOW MANY CARDS ARE RETAINED, in the three places that say so. NAP 3, BAT 2,
 # AoS 2: with one card value the pool is just a count, and seven is the count
@@ -1731,6 +1734,41 @@ else:
     check("...and NAP buys its page with margin, not with smaller type",
           "font-size" not in text("rules/nap.html")
           and "margin: 11mm" in text("rules/nap.html"))
+
+# THE RULEBOOKS ARE WELL-FORMED WHERE IT SHOWS. Lists only: a nested
+# <li> or text loose inside a list silently renumbers a sequence, and
+# tag counts do not catch it because the nesting is balanced.
+class _ListShape(HTMLParser):
+    def __init__(self):
+        HTMLParser.__init__(self)
+        self.stack, self.bad = [], []
+
+    def handle_starttag(self, tag, attrs):
+        if tag == "li" and self.stack and self.stack[-1] == "li":
+            self.bad.append("<li> inside <li> at line %d" % self.getpos()[0])
+        if tag in ("ol", "ul", "li"):
+            self.stack.append(tag)
+
+    def handle_endtag(self, tag):
+        if tag in ("ol", "ul", "li") and tag in self.stack:
+            while self.stack.pop() != tag:
+                pass
+
+    def handle_data(self, data):
+        if (data.strip() and self.stack
+                and self.stack[-1] in ("ol", "ul")):
+            self.bad.append("loose text in <%s> at line %d: %r"
+                            % (self.stack[-1], self.getpos()[0],
+                               data.strip()[:40]))
+
+
+_shape = []
+for _g in ("bat", "nap", "aos", "nrj"):
+    _lp = _ListShape()
+    _lp.feed(text("rules/%s.html" % _g))
+    _shape += ["%s.html: %s" % (_g, b) for b in _lp.bad]
+check("no rulebook nests a list item or strands text in a list",
+      not _shape, "; ".join(_shape[:3]))
 
 check("the app serves the rulebooks that rules/ built",
       not _stale, "differ from rules/: %r" % (_stale,))
