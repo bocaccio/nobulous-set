@@ -3117,6 +3117,79 @@ check("the save names all eight dice, and all eight are in images/",
       _dice_have == _dice_want and _dice_png == _dice_want,
       "save %r, images/ %r" % (_dice_have, _dice_png))
 
+# AND EACH DIE SHOWS THE FACES IT IS ROLLED WITH.
+#
+# simulation/dice.py FACES is the project's canonical table - every
+# simulation run and both playtest engines roll against it - and the
+# colours are a ladder: red hits on five faces in six, purple four,
+# blue three, green two, yellow one, each with a single crit.
+#
+# THE FIRST GENERATED DICE GAVE EVERY COLOUR FIVE HITS AND A CRIT,
+# which is the red die drawn five times, so a yellow die hit on five
+# faces instead of one. Nothing caught it: the geometry was verified
+# to the pixel, the registration to a tenth of a degree, and the mod
+# harness counts cards rather than reading art. A playtest on those
+# dice would have produced numbers that meant nothing and no error
+# anywhere. This reads the ink off the drawing and holds it to the
+# table the model uses.
+_FACES_SRC = text("simulation/dice.py")
+_faces_m = re.search(r"^FACES = \{(.*?)^\}", _FACES_SRC, re.S | re.M)
+_faces = dict((k, [int(v) for v in re.findall(r"\d+", vals)])
+              for k, vals in re.findall(r'"(\w+)":\s*\[([^\]]*)\]',
+                                        _faces_m.group(1) if _faces_m else ""))
+check("simulation/dice.py still gives every colour six faces",
+      len(_faces) == 5 and all(len(v) == 6 for v in _faces.values()),
+      "got %r" % (dict((k, len(v)) for k, v in sorted(_faces.items())),))
+
+
+def _die_faces(path):
+    """The six faces of a die sheet as success values, read off the art.
+
+    BY LEVEL, NOT BY THRESHOLD. A blank is an empty face here and a
+    full gear ring on the components these replace, so no absolute
+    cut classifies both; the crit is the single highest ink level,
+    and if two levels remain below it the lower is the blank.
+    """
+    from PIL import Image, ImageChops
+    im = Image.open(path).convert("RGB")
+    side = im.size[0]
+    cell = side / 3.0
+    vals = []
+    for r in (1, 2):
+        for c in (0, 1, 2):
+            box = (int(cell * (c + 0.5) - cell / 2),
+                   int(cell * (r + 0.5) - cell / 2),
+                   int(cell * (c + 0.5) + cell / 2),
+                   int(cell * (r + 0.5) + cell / 2))
+            f = im.crop(box)
+            flat = Image.new("RGB", f.size, f.getpixel((3, 3)))
+            ch = ImageChops.difference(f, flat).split()
+            m = ImageChops.lighter(ImageChops.lighter(ch[0], ch[1]),
+                                   ch[2]).point(lambda v: 255 if v > 25 else 0)
+            vals.append(sum(1 for v in m.get_flattened_data() if v))
+    lv = sorted(set(int(round(v / 2000.0)) for v in vals))
+    out = []
+    for v in vals:
+        k = int(round(v / 2000.0))
+        out.append(2 if k == lv[-1] else (0 if len(lv) > 2 and k == lv[0]
+                                          else 1))
+    return out
+
+
+_face_bad = []
+for _c in sorted(_faces):
+    _png = [f for f in os.listdir(os.path.join(ROOT, "images"))
+            if f.startswith("Die_%s_" % _c.capitalize())]
+    if not _png:
+        _face_bad.append((_c, "no image"))
+        continue
+    _drawn = sorted(_die_faces(os.path.join(ROOT, "images", _png[0])))
+    if _drawn != sorted(_faces[_c]):
+        _face_bad.append((_c, _drawn, sorted(_faces[_c])))
+check("every die is drawn with the faces simulation/dice.py rolls",
+      not _face_bad, "drawn vs table: %r" % (_face_bad,))
+
+
 # THE COLOUR WHEEL IS HELD TO CHIP_SEGMENT, the way the dial is held
 # to CHIP_DIAL_MARK below. The script TURNS this face - CHIP_ANGLE is
 # derived from these numbers - so art a few degrees out of register

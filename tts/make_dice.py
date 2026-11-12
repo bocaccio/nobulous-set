@@ -69,6 +69,56 @@ LAYOUT = {(0, 0): (2, False), (1, 0): (4, False), (2, 0): (5, False),
 UNIT = [("Red", (193, 18, 86)), ("Purple", (119, 70, 210)),
         ("Blue", (57, 124, 233)), ("Green", (93, 146, 54)),
         ("Yellow", (233, 209, 55))]
+# WHICH CELL GETS A HIT FIRST, as the faces fill up.
+#
+# The colours are a ladder - red hits on five faces in six, yellow on
+# one - and this order reproduces the arrangement on the dice these
+# replace exactly: yellow's single hit lands where yellow's does,
+# green's two where green's are, and so on up to red. The crit sits
+# at CRIT_AT, which is where the original's swirl sits.
+FILL_ORDER = [(0, 0), (1, 1), (1, 0), (2, 0), (2, 1)]
+
+
+def unit_faces():
+    """Each colour's six faces as 'hit' / 'crit' / 'blank'.
+
+    READ OUT OF simulation/dice.py, which is the project's canonical
+    table and is what every simulation run and both playtest engines
+    roll against: purple [1,1,1,1,2,0], yellow [1,2,0,0,0,0], and so
+    on, where 2 is a crit, 1 a hit and 0 a blank.
+
+    THE FIRST VERSION OF THIS FILE GAVE EVERY DIE FIVE HITS AND A
+    CRIT, which is the red die, and shipped it as all five colours. A
+    yellow die hits on one face in six and was hitting on five. The
+    geometry was verified to the pixel and the registration to a
+    tenth of a degree, and none of that could see it, because none of
+    it asked what a face MEANT. Reading the table instead of drawing
+    from a photograph is what stops that returning.
+    """
+    src = io.open(os.path.join(ROOT, "simulation", "dice.py"),
+                  encoding="utf-8").read()
+    m = re.search(r"^FACES = \{(.*?)^\}", src, re.S | re.M)
+    if not m:
+        raise SystemExit("simulation/dice.py no longer defines FACES")
+    faces = dict((k, [int(v) for v in re.findall(r"\d+", vals)])
+                 for k, vals in re.findall(r'"(\w+)":\s*\[([^\]]*)\]',
+                                           m.group(1)))
+    out = {}
+    for name, _bg in UNIT:
+        vals = faces.get(name.lower())
+        if vals is None or len(vals) != 6:
+            raise SystemExit("simulation/dice.py has no six faces for %s"
+                             % name)
+        if vals.count(2) != 1:
+            raise SystemExit("%s has %d crit faces, the art draws one"
+                             % (name, vals.count(2)))
+        cell = dict((c, "blank") for r in range(2) for c in
+                    [(x, r) for x in range(3)])
+        cell[CRIT_AT] = "crit"
+        for i in range(vals.count(1)):
+            cell[FILL_ORDER[i]] = "hit"
+        out[name] = cell
+    return out
 STAT_BODY = (208, 199, 200)
 #  name        ink             w/CELL h/CELL numeral dy
 STAT = {
@@ -254,11 +304,19 @@ def fit(pts, cx, cy, w, h):
 
 
 # --------------------------------------------------------- the faces
-def unit_face(u, bg, crit):
-    """One unit-die face: a gear with an open bore, or the crit, whose
-    bore is filled and carries a thin ring of the die's own colour."""
+def unit_face(u, bg, kind):
+    """One unit-die face.
+
+    A hit is a gear with an open bore; a crit fills that bore and
+    cuts a thin ring of the die's own colour into it; a blank is
+    nothing at all. Jon chose the empty blank over a dimmed gear:
+    four of a yellow die's six faces are blank, and an empty face is
+    the fastest thing on a table to not-count.
+    """
     n = int(u * SS)
     im = Image.new("RGB", (n, n), bg)
+    if kind == "blank":
+        return im.resize((int(u), int(u)), Image.LANCZOS)
     d = ImageDraw.Draw(im)
     c = n / 2.0
     # 0.383, not 0.42, which is what the originals draw at: a glyph of
@@ -269,7 +327,7 @@ def unit_face(u, bg, crit):
     r_root = r_out - n * DEPTH
     r_in = r_root - n * 0.085
     d.polygon(gear(c, c, r_out, r_root, TEETH, tip=TIP), fill=INK)
-    if crit:
+    if kind == "crit":
         r = r_in * 0.74
         d.ellipse([c - r, c - r, c + r, c + r], outline=bg,
                   width=int(n * 0.030))
@@ -311,10 +369,11 @@ def sheet(name):
             im.paste(f, (int(CX[c] - CELL / 2), int(CY[r] - CELL / 2)))
         return im
     bg = dict(UNIT)[name]
+    kinds = unit_faces()[name]
     im = Image.new("RGB", (SIDE, SIDE), bg)
     for r in range(2):
         for c in range(3):
-            im.paste(unit_face(CELL, bg, (c, r) == CRIT_AT),
+            im.paste(unit_face(CELL, bg, kinds[(c, r)]),
                      (int(CX[c] - CELL / 2), int(CY[r] - CELL / 2)))
     return im
 
@@ -361,7 +420,13 @@ def main():
                 os.remove(os.path.join(IMAGES, old))
         io.open(os.path.join(IMAGES, out), "wb").write(raw)
         gw, gh = envelope(im)
-        print("  %-28s glyph %dw x %dh" % (out, gw, gh))
+        tally = ""
+        if name in dict(UNIT):
+            k = unit_faces()[name]
+            tally = "  %d hit, 1 crit, %d blank" % (
+                sum(1 for v in k.values() if v == "hit"),
+                sum(1 for v in k.values() if v == "blank"))
+        print("  %-28s glyph %dw x %dh%s" % (out, gw, gh, tally))
     print("%d dice written to images/" % len(names))
 
 
