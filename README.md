@@ -115,7 +115,17 @@ pip, and both fail in ways that do not name themselves.
 
 ## Print and play
 
-`print-and-play/` holds one PDF per game, Letter, poker size (63.5 × 88.9 mm),
+The four PDFs are **not in this repository** and are not published anywhere.
+They are 20.8 MB, and jsdelivr — which serves every image and rulebook the
+Tabletop Simulator mod loads — refuses a package over 50 MB, so keeping them
+here broke the mod's assets. Nothing in the mod or the lab loads them.
+
+`cd generator && python deploy.py` writes them into `print-and-play/`, so
+build them when you want them. The **rulebooks are a different matter** and
+are committed: `rules/*.pdf`, and the copies the lab links under
+`playtest/dist/assets/`.
+
+One PDF per game, Letter, poker size (63.5 × 88.9 mm),
 **9 cards to a page**. Pages of landscape cards are themselves landscape, so
 print at 100% with scale-to-fit **off** and let the printer auto-rotate. Faint
 ticks in the margins mark every cut line.
@@ -127,8 +137,9 @@ mirrored back for long-edge duplex printing:
 - NAP Apprentices and AoS Technicians — two characters per card
 - AoS Routine, Specialized, Unstable and Advanced Programs — Stable / Overheated
 
-`print-and-play/PNP_CONTENTS.txt` gives the page range of every section and
-flags the duplex runs. `CARD_MANIFEST.txt` lists every deck with its grid,
+`PNP_CONTENTS.txt`, written alongside them, gives the page range of every
+section and flags the duplex runs. `CARD_MANIFEST.txt` lists every deck with
+its grid,
 orientation and card back.
 
 ---
@@ -161,10 +172,9 @@ edits made in the .docx have to come back to it.
 ```
 images/          card sheets and backs — what the TTS mod points at
 rules/           four player rulebooks (PDF)
-print-and-play/  four PnP PDFs
 playtest/        local browser playtest interface and launch instructions
 tts/             mod generator, table script, dice objects
-generator/       the card generator that produces images/ and print-and-play/
+generator/       the card generator that produces images/ and the PnP PDFs
 CARD_MANIFEST.txt
 ```
 

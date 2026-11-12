@@ -6,7 +6,11 @@ Read `HANDOFF.md` and `README.md` before making changes.
 
 - Card text and card construction live in `generator/build_*.py`.
 - Player-facing rules live in `rules/*.html`; the PDFs are generated output.
-- Full print-and-play files live in `print-and-play/`.
+- Full print-and-play files are built into `print-and-play/` by `deploy.py`
+  and are gitignored and unpublished: Jon keeps them on his own machine.
+  They are 20.8 MB, jsdelivr refuses a package over 50 MB, and nothing in
+  the mod or the lab loads them. Rebuild them rather than looking for them;
+  do not add them back to the tree or publish them anywhere.
 - The browser playtest interface lives in `playtest/dist/`.
 - `images/` and the card/rule copies under `playtest/dist/assets/` are generated
   or deployment output. Do not treat copied assets as masters.

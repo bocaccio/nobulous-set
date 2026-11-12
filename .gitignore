@@ -5,3 +5,18 @@ tts/NobulousSet_LOCALTEST.json
 tts/REQUIRED_IMAGES.txt
 generator/out/
 release/
+
+# THE PRINT-AND-PLAY PDFS ARE A LOCAL BUILD, NOT A TREE FILE.
+#
+# jsdelivr serves every image and rulebook the TTS mod loads, and it
+# refuses a package over 50 MB. The committed tree reached 55.1 MB on
+# 2026-11-11 and jsdelivr began answering 403 to any path it had not
+# already fetched - which is how a newly rendered die face vanished
+# from the table while the old ones kept working. These four PDFs
+# were 20.8 MB of that, and nothing in the mod or the lab loads them.
+#
+# Jon's call, 2026-11-12: they stay on his machine and are not
+# published. deploy.py writes them here on every run, so a fresh
+# clone rebuilds them rather than downloading them. The RULE PDFs are
+# different and stay committed, in rules/ and playtest/dist/assets/.
+print-and-play/

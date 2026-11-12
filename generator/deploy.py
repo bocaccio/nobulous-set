@@ -16,7 +16,9 @@ What goes where:
   images/                 every deck sheet and card back, plus ControlPanel.
                           This is what the TTS mod's BASE_URL serves.
   playtest/dist/assets/   the same sheets, plus the rule PDFs the lab links.
-  print-and-play/         the four PnP PDFs and the contents file.
+  print-and-play/         the four PnP PDFs and the contents file. NOT
+                          committed and NOT published - see .gitignore.
+                          They live on Jon's machine and are rebuilt here.
 
 The set of sheets is not hardcoded: it is read out of the *_cards.json
 manifests that render_deck writes, so a deck that is renamed, added or
