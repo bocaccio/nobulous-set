@@ -193,6 +193,30 @@ ever revisited is the Setback count - about 5 points a card at the 2026-11-06
 measurement, so Standard 3 -> 2 would land near 48 - and the Credit goal is
 the other half of `LEVELS` if a finer step is wanted.
 
+**Reversed 2026-11-12, and `LEVELS` moved on both dials.** The Assignment
+revision took another 5 to 7 points off - almost all of it the new Final
+Exam pool, which replaced a Credit-weighted draw that two of the four owners
+had been building out of the *cheapest* exams in each subject - and that put
+Standard around 37%, too far under to leave. Both dials were then swept
+together for the first time (`nap_ladder.py`); each had only ever been moved
+against a column measured with the other held still, which is how the ladder
+briefly inverted when Standard alone went to 2 Setbacks.
+
+| difficulty | goal / Setbacks | solo | Tier I | Tier II | Tier III |
+| --- | --- | --- | --- | --- | --- |
+| Easy | 5 / 0 | 61.9% | 40.8% | 28.9% | 38.8% |
+| **Standard** | **6 / 1** | **52.1%** | 35.1% | 22.9% | 33.7% |
+| Hard | 7 / 2 | 38.6% | 29.3% | 19.5% | 30.2% |
+| Nobulous | 8 / 4 | 22.5% | 20.6% | 13.8% | 22.6% |
+
+Four thousand games a cell, six Apprentices averaged. **Standard is back in
+the band at 52.1%**, and the set reads BAT 52.8 / NAP 52.1 / AoS 51.7 at
+Standard on the solo axis. Easy having no Setbacks is forced rather than
+chosen - the derivation is beside `LEVELS` in `nap.py` and in
+`rules/RULES_CHANGELOG.txt` - and two things are left open there: Tier I
+costs Easy 21 points and Nobulous 2, and Nobulous at Tier III is level with
+its own solo cell.
+
 Do not retype these. `table.py` computes the calibration verdicts from the
 grids it just ran, and `RESULTS.txt` is its transcript; this paragraph is a
 summary that has gone stale twice, once in the figures and once in the

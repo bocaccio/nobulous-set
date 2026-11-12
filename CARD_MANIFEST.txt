@@ -465,19 +465,24 @@ NAP ASSIGNMENTS, CURRENT
   real difficulty rise and the measured cost is in rules/RULES_CHANGELOG.txt.
 
 NAP DIFFICULTY, CURRENT
-  Easy 5 Credits / 3 Setbacks, STANDARD 6 / 2, Hard 7 / 4, Nobulous 8 / 5.
-  Standard dropped to 2 on 2026-11-12, the first time the Setback count has
-  been used as a pitch lever rather than as a difficulty step: worth +7.1
-  points on the solo axis (37.2% -> 44.3%, six Apprentices, 8000 games), and
-  the per-Apprentice spread narrows 5.5 to 3.8.
-  THE COLUMN IS NOT MONOTONE ON PURPOSE.  Standard carries fewer Setbacks
-  than Easy and is held to the band by its Credit goal instead.  Do not tidy
-  it into an ascending column without re-measuring.
-  THREE THINGS ARE STILL OPEN, and rules/RULES_CHANGELOG.txt has the numbers:
-  it does not reach the 47% floor (44.3%); it is worth exactly +0.0 from
-  Tier I upward at Easy and Standard, because 3 Following Setbacks already
-  cover a count of 2 or 3; and the ladder INVERTS - Easy reads 44.4% against
-  Standard's 45.5% - which Easy 3 -> 2 would fix at a measured 49.0%.
+  Easy 5 Credits / 0 Setbacks, STANDARD 6 / 1, Hard 7 / 2, Nobulous 8 / 4.
+  Retuned on both dials 2026-11-12, the first time they had been swept
+  together: 61.9 / 52.1 / 38.6 / 22.5 solo, six Apprentices, 4000 games a
+  cell.  STANDARD IS INSIDE THE 47-57% BAND at 52.1%, and the set reads
+  BAT 52.8 / NAP 52.1 / AoS 51.7 at Standard.
+  EASY HAVING NO SETBACKS IS FORCED.  A Setback is worth 5 to 7 points and a
+  Credit about 4, so Standard only reaches the band at 1 Setback (6/1 = 53.0,
+  6/2 = 45.3); Easy cannot also be 1, because 5/1 = 55.1 is a 2.1-point step
+  and no rung at all.  Easy still meets Setbacks in the campaign - Tier I
+  deals 3 Following ones at every difficulty.
+  NOBULOUS SKIPS 3 FOR 4, the one place the column is not +1 a rung: 8/3 is
+  29.8 against BAT's pegged 25.8, and 4 is where Tier I's swap finally bites,
+  so Nobulous is the only rung whose campaign axis moves with the count.
+  TWO THINGS TO WATCH, both in rules/RULES_CHANGELOG.txt: Tier I costs Easy
+  21 points and Nobulous 2, because a rung with no Setbacks has none to swap
+  out; and Nobulous at Tier III is level with its solo cell, 22.6 against
+  22.5, which is within noise but is the cell to re-measure first.
+  simulation/nap_ladder.py prints the whole surface.
 
 NRJ'S NAP MODULE, CURRENT
   The 4 IMPOSTER TASKS pay a recovery on both faces.  They stay Mandatory and

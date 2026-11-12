@@ -258,7 +258,8 @@ for n, subj, dot, rt, dt, e, rrew, drew in IMPOSTER_TASKS:
 fol = [C(n, "NRJ &middot; Following Setback",
             successes_row(d, t, NAP_SETBACK) + T(e),
             'Mandatory. Follows into the next Time Slot if unresolved, including Evening to the next '
-            'Morning. 3 of these 4 replace 3 of your difficulty&rsquo;s Setbacks. '
+            'Morning. 3 of these 4 go in; one base Setback leaves for each, '
+            'as far as your difficulty has them. '
             'Tier I &mdash; Agenda.', warn=True, acc=NAP_SETBACK)
           for n, d, t, e in FOLLOWING]
 dev = [C(n, "NRJ &middot; Devious Opportunity",

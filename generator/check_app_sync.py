@@ -535,9 +535,18 @@ check("the lab's AoS difficulty labels name the mix it builds",
 
 _nap_wrong = []
 _nap_opts = dict(options("napCreditGoal"))
+# THE LABEL IS STILL DERIVED, PLURAL AND ALL. Easy dropped to 0 Setbacks and
+# Standard to 1 on 2026-11-12, so "%d Setbacks" would have asked the page for
+# "0 Setbacks" and "1 Setbacks" - and the honest way to keep a check honest
+# is to build the string the page should read, not to relax it.
+def _sb_phrase(n):
+    return "no Setbacks" if n == 0 else ("1 Setback" if n == 1
+                                         else "%d Setbacks" % n)
+
+
 for lvl in ("Easy", "Standard", "Hard", "Nobulous"):
     goal, sb = sn["LEVELS"][lvl]
-    want = "%s &middot; %d Cr, %d Setbacks" % (lvl, goal, sb)
+    want = "%s &middot; %d Cr, %s" % (lvl, goal, _sb_phrase(sb))
     got = _nap_opts.get(str(goal))
     if got != want:
         _nap_wrong.append("NAP %s: label %r, model wants %r"
@@ -594,6 +603,25 @@ check("rules/nap.html's setup step restates the same four counts",
 # no module at all on both rungs - Tier I 40.1% against a solo 38.6% at Hard.
 # The checks below are about the swap being one for one, which is the
 # property that was violated; the counts themselves are checked above.
+# AND THE PER-RUNG SPLIT IN PROSE, which nothing read until 2026-11-12. The
+# supplement names what each difficulty ends up with, and the retune to
+# 0/1/2/4 Setbacks made all four of those numbers wrong at once - Easy,
+# Standard and Hard now have nothing to give back, so Tier I RAISES their
+# count to 3 instead of swapping. Derived from nap.LEVELS, so the sentence
+# cannot drift from the table again.
+_t1 = ", ".join(
+    ("%s 3 Following and %d base" % (lvl, max(0, sn["LEVELS"][lvl][1] - 3)))
+    if lvl == "Easy" else
+    ("%s 3 and %d" % (lvl, max(0, sn["LEVELS"][lvl][1] - 3)))
+    for lvl in ("Easy", "Standard", "Hard", "Nobulous"))
+check("rules/nrj.html names the Tier I split each rung really gets",
+      _t1 in " ".join(text("rules/nrj.html").split()), _t1)
+# The printed card may no longer promise a 3-for-3 swap either: at three of
+# the four rungs there are not 3 base Setbacks to replace.
+check("the Following Setback footer does not promise 3 for 3",
+      "replace 3 of your" not in text("generator/build_nrj.py")
+      and "one base Setback leaves for each" in text("generator/build_nrj.py"))
+
 check("nap.py swaps Setbacks one for one at Tier I, not all for 3",
       sn["FOLLOWING_REPLACE_ALL"] is False,
       "FOLLOWING_REPLACE_ALL = %r sets EVERY base Setback aside, which makes "

@@ -1749,3 +1749,87 @@ the deck carries 3 where tier 0 carries 2.  That is a tier doing its job -
 what a tier must never do is hand one BACK, which is the 2026-11-07 fix -
 but it is the mechanism behind (2) above, and the harness's expectation is
 floored to match the model, the lab and the mod.
+
+
+2026-11-12  NAP — THE LADDER RETUNED ON BOTH DIALS
+============================================================================
+
+    Easy      5 Credits, 0 Setbacks
+    STANDARD  6 Credits, 1 Setback
+    Hard      7 Credits, 2 Setbacks
+    Nobulous  8 Credits, 4 Setbacks
+
+LEVELS has always had two dials and they had never been swept together.
+Each had only ever been moved on its own, against a column measured with
+the other held still - which is how the ladder came to invert earlier the
+same day, Standard at 2 Setbacks overtaking Easy at 3.  The surface is
+simulation/nap_ladder.py; 3000 games a cell, Prodigy, solo:
+
+    goal     0 sb    1 sb    2 sb    3 sb    4 sb    5 sb
+      4     64.3%   59.3%   53.5%   50.0%   44.1%   40.9%
+      5     62.2%   55.1%   49.0%   46.0%   39.5%   34.4%
+      6     59.8%   53.0%   45.3%   37.7%   33.6%   26.7%
+      7     58.6%   49.8%   38.6%   33.6%   26.8%   23.7%
+      8     55.3%   46.3%   36.1%   29.8%   23.7%   19.1%
+
+A SETBACK IS WORTH MORE THAN A CREDIT - about 5 to 7 points against about
+4 - and the gap is widest in the middle of the ladder, where there are
+enough dice to work a Setback but not enough to ignore one.
+
+EASY HAVING NO SETBACKS IS FORCED, not a flourish.  Standard can only
+reach the band at 1 Setback: 6/1 is 53.0% and 6/2 is 45.3%, below the 47%
+floor.  Easy then cannot also be 1, because 5/1 is 55.1% - a 2.1-point
+step, which is no rung at all.  So Easy is 0.  They still meet Setbacks in
+the campaign; Tier I deals 3 Following ones whatever the difficulty says.
+
+NOBULOUS SKIPS 3 FOR 4, the one place the column is not +1 a rung.  8/3
+reads 29.8% and 8/4 reads 23.7% against BAT's pegged 25.8%, so 4 is
+nearer - and 4 is where Tier I's swap finally bites, which makes Nobulous
+the only rung whose CAMPAIGN axis still moves with the Setback count.
+
+CONFIRMED, 4000 games a cell, six Apprentices averaged, all four tiers:
+
+    level      goal/sb    tier 0   tier I  tier II  tier III
+    Easy        5 / 0      61.9%    40.8%    28.9%     38.8%
+    Standard    6 / 1      52.1%    35.1%    22.9%     33.7%
+    Hard        7 / 2      38.6%    29.3%    19.5%     30.2%
+    Nobulous    8 / 4      22.5%    20.6%    13.8%     22.6%
+
+STANDARD IS IN THE 47-57% BAND at 52.1%, which it has not been since the
+Assignment revision, and the set now reads BAT 52.8 / NAP 52.1 / AoS 51.7
+at Standard on the solo axis.  The solo ladder steps 9.8, 13.5, 16.1 -
+monotone and widening at the hard end, which is the shape BAT has.  The
+campaign ladder is monotone too, 38.8 / 33.7 / 30.2 / 22.6, and narrower
+as it always is.  Tier II is the pressure peak at every rung.
+
+TWO THINGS TO KNOW ABOUT IT.
+
+    TIER I COSTS EASY 21 POINTS AND NOBULOUS 2.  Easy has no Setbacks to
+    swap out, so the three Following cards are added: 0 becomes 3.  At
+    Nobulous, 3 of its 4 are swapped and the count barely moves.  That is
+    the swap rule working as written rather than a fault, but it makes the
+    tier's cost very uneven across the ladder, and it is worth watching at
+    the table before it is called finished.
+
+    NOBULOUS AT TIER III IS LEVEL WITH ITS SOLO CELL, 22.6% against 22.5%.
+    Within noise at this sample size and the same property the previous
+    ladder had, but the rule a tier must never break is that it makes the
+    game EASIER, so this is the cell to re-measure first if the ladder
+    moves again.
+
+THREE OTHER SOURCES FOLLOWED THE NUMBERS.  The Tier I row in rules/nrj.html
+named a per-rung split - "Easy and Standard play 3 Following and no base;
+Hard 3 Following and 1 base; Nobulous 3 Following and 2 base" - and all
+four of those were wrong at once.  The printed Following Setback footer
+promised "3 of these 4 replace 3 of your difficulty's Setbacks", which
+three rungs no longer have.  Both now say what actually happens: one base
+Setback leaves for each Following card in, as far as the difficulty has
+them, and below 3 the tier RAISES the count.  The supplement's per-rung
+sentence is derived from nap.LEVELS by check_app_sync.py, so it cannot
+drift from the table again.
+
+AND THE LAB'S LABELS LEARNED TO COUNT.  They are built from the model and
+read "no Setbacks" and "1 Setback" rather than "0 Setbacks" and "1
+Setbacks"; the check builds the same string, because the honest way to
+keep a derived check honest is to make it produce what the page should
+read, not to relax it.

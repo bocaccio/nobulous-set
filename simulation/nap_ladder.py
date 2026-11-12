@@ -95,6 +95,12 @@ def confirm(ladder, games):
               + "".join("%9.1f%%" % v for v in cells))
 
 
+LADDER = [("Easy", (5, 0)), ("Standard", (6, 1)),
+          ("Hard", (7, 2)), ("Nobulous", (8, 4))]
+
 if __name__ == "__main__":
     _games = int(sys.argv[1]) if len(sys.argv) > 1 else 3000
-    _t = grid(_games)
+    if "confirm" in sys.argv:
+        confirm(LADDER, _games)
+    else:
+        grid(_games)

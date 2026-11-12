@@ -772,22 +772,30 @@ CREDITS_TO_LEAVE = 6      # Easy 5, Standard 6, Hard 7, Nobulous 8
 # End-of-Day burn sit unplayed in this file for weeks while the other two
 # sources played it.
 #
-# STANDARD WENT 3 -> 2 ON 2026-11-12, and it is the first time the Setback
-# count has been used as the pitch lever rather than as a difficulty step.
-# simulation/README.md recorded the decision of 2026-11-11 - "the new pitch
-# stands and LEVELS does not move", with NAP the one game in the set below
-# the 47-57% band on purpose - and then the Assignment revision took another
-# 5 to 7 points off, almost all of it the new Final Exam pool. The lever
-# named at the time was this one.
+# RETUNED ON BOTH DIALS, 2026-11-12, and this is the first time they have
+# been swept together. Each had only ever been moved on its own, against a
+# column measured with the other held still - which is how the ladder came to
+# invert earlier the same day, Standard at 2 Setbacks overtaking Easy at 3.
+# simulation/nap_ladder.py prints the surface.
 #
-# IT ALSO BREAKS THE LADDER'S ARITHMETIC, and that is deliberate rather than
-# an oversight: the four rungs read 5/3, 6/2, 7/4, 8/5, so Standard now
-# carries FEWER Setbacks than Easy and is held to the band by its Credit goal
-# instead. Easy stays at 3 because it is already the gentlest rung and does
-# not need the help; Hard and Nobulous keep theirs because the hard end is
-# meant to be out of band. Do not "tidy" this into a monotone column without
-# re-measuring - rules/RULES_CHANGELOG.txt has what each card is worth.
-LEVELS = {"Easy": (5, 3), "Standard": (6, 2), "Hard": (7, 4), "Nobulous": (8, 5)}
+# THE GOAL RISES BY ONE AND THE SETBACK COUNT RISES WITH IT: 5/0, 6/1, 7/2,
+# 8/4. Measured 62.2 / 53.0 / 38.6 / 23.7 (Prodigy, solo), against BAT's
+# pegged ladder of 63.7 / 52.8 / 37.8 / 25.8 - the one ladder in the set
+# deliberately pitched at the 20 Strong community band, with Standard inside
+# 47-57 and the hard end outside it on purpose.
+#
+# EASY HAS NO SETBACKS AND THAT IS FORCED, not a flourish. A Setback is worth
+# 5 to 7 points and a Credit about 4, so Standard can only reach 53% at 1
+# Setback (6/1 = 53.0; 6/2 = 45.3 is below the floor). Easy then cannot also
+# be 1 - 5/1 is 55.1, a 2.1-point step that is no rung at all - so Easy is 0.
+# They still meet Setbacks in the campaign: Tier I deals 3 Following ones
+# whatever the difficulty says.
+#
+# NOBULOUS SKIPS 3 FOR 4, which is the one place the column is not +1 a rung.
+# 8/3 reads 29.8 and 8/4 reads 23.7 against BAT's 25.8, so 4 is nearer - and
+# 4 is where Tier I's swap finally bites, so Nobulous is the only rung whose
+# CAMPAIGN axis still moves with the Setback count.
+LEVELS = {"Easy": (5, 0), "Standard": (6, 1), "Hard": (7, 2), "Nobulous": (8, 4)}
 # End of Day burns one card off the Assignment deck, text ignored.
 # rules/nap.html prints it under "End of Day" - "Reveal and discard the top
 # card of the Assignment deck. Ignore all of its text, effects and Skulls" -
