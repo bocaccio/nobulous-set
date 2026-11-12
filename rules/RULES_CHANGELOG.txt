@@ -1412,3 +1412,269 @@ STILL TO DO IF THE NUMBERS GO NON-ZERO: playtest/dist/bat.js has no
 layer. At 0 it is correct by construction, which is why nothing fails
 today, but the lab would need the same damage order before any rung
 ships a layer.
+
+
+2026-11-12  NAP — THE ASSIGNMENT REVISION
+============================================================================
+
+Every NAP Task, both faces; the six Opportunities; NRJ's fourteen NAP cards;
+and the Final Exam draw. The design brief is Jon's NAP assignment
+recommendations.
+
+
+NO REWARD ASKS A QUESTION ANY MORE
+    Fifteen of the 26 Request effects were conditioned on how the dice had
+    fallen - "If Exact", "If completed using exactly 3 dice", "If completed
+    with exactly 2 successes across all committed dice this strategy phase",
+    "If completed without using a Crit", "If completed using 4 or fewer
+    dice".  Every one of those asks the player to reconstruct, after the
+    dice have been swept, a fact about dice that are no longer on the table.
+    The model's record of what that cost to play is reward_fires() in
+    simulation/nap.py, which had to answer eleven separate questions; the
+    lab's was a single `eligible=` expression half of which was reachable
+    only by pressing Complete by hand.
+
+    They are gone.  A reward pays when the card is completed.
+
+    AND THE REWARD NAMES A COLOUR, where it used to say "1 committed die" -
+    whatever happened to be left after the card took its dice.  A named
+    colour is something you can plan a roll around.  Every fixed-colour
+    REQUEST recovery pays a colour OTHER than the card's own dot, because
+    the dot is what the Primary already queues for the next Time Slot and
+    recovering it twice is half a reward; check_app_sync.py enforces that,
+    both halves of the two-colour offers included.  A DEMAND recovery may
+    match its own dot on purpose - that is the die you just spent clearing
+    it.
+
+
+BOTH FACES PAY
+    A Demand side was pure downside: a harsher printed rule, a penalty one
+    slot later, and nothing at all for clearing it.  The only reason to let
+    a card flip was that you had run out of dice.  All 26 Demand faces print
+    a completion reward now, so a deliberate flip is a decision.
+
+    A Task pays AT MOST ONCE, on the face it was completed on.  A card
+    finished as a Request never pays its Demand reward, and the reverse.
+
+    SIX DEMAND TARGETS CAME DOWN FROM 9 TO 6 and Suture's Request rose 5 to
+    6: Align the Memory Probes, Recalibrate the Bone Saw, Prime the Synaptic
+    Pump, Verify the Identity Matrix, Suture the Donor Incision and Dispose
+    of Failed Samples.  Those six are the whole of the "4 x5, 3 x1" tail of
+    the Request-to-Demand gap census the 2026-10-28 Target rise left behind,
+    and a Demand Target four above the Request is not a Target, it is a card
+    you have written off.  A completion reward printed on a face nobody
+    clears is dead text, so the Targets had to come within reach for the
+    paragraph above to exist at all.  The widest gap in the deck is now 1,
+    on 10 of the 26; the other 16 print the same number on both faces, and
+    rules/nap.html prints that census where check_app_sync.py can read it
+    off the cards and compare.
+
+    THIS IS THE ONE PLACE THE REVISION MOVES A SIMULATION-CALIBRATED NUMBER.
+    It is worth +3.8 / +3.7 / +1.9 / +1.8 across the solo ladder.
+
+
+THE OPPORTUNITIES SAY WHEN THEY ARE SPENT
+    Four of the six printed an effect with no window - "add 1 success to a
+    roll", "reduce one Assignment's remaining need by 2" - and before or
+    after the dice are seen is the whole value of a coupon.  Each now prints
+    "Before rolling" or "After rolling", and the two that reach the Final
+    Exam say what they do there.
+
+    Two changed job, and both are the same correction: a coupon with no
+    window was being read as a flat bonus.
+      Raid the Supply Closet   was "one die counts as any color for one
+                               roll"; it is a recovery of up to 2 dice of
+                               one non-Red colour, before a roll.  Nothing
+                               in NAP now lets a coupon satisfy the colour
+                               rule - Prodigy is the one remaining
+                               relaxation of it.
+      Borrow Better Instruments  was "+1 success to a roll"; it is a reroll
+                               of 1 die after a roll, and it does not spend
+                               a Strategy roll.
+      Study Nobulous' Notes    was "-2 from one Assignment's need", which is
+                               Borrow Better Instruments with a bigger
+                               number.  It FLIPS A DEMAND BACK to its
+                               Request side, keeping stored dice and
+                               progress - the only effect in NAP that undoes
+                               a flip.  If the progress already on the card
+                               meets the lower Request Target it finishes at
+                               once and pays its REQUEST reward.  That is a
+                               deliberate power increase, paid for by having
+                               to complete the Opportunity first.
+
+
+THE FINAL EXAM POOL IS ONE CARD PER SUBJECT
+    "Randomly select 1 Final Exam card from each subject - Anatomy,
+    Engineering, Procedure and Theory.  Include each subject even if you
+    earned no Credits in it.  Shuffle the 4 and draw 3."  Every subject has
+    a 75% chance to appear and can appear at most once.  Credits no longer
+    decide WHICH exams you sit, only how far their Targets come down.
+
+    It replaced a Credit-weighted pool - 1 card of a subject at 0-1 Credits
+    in it, 2 at 2-3, 3 at 4+ - which stacked the pool with the subjects you
+    had already studied, so the Credit ladder paid out twice: once in
+    Targets and once in which cards you faced.  The old rationale, kept in
+    CARD_MANIFEST, read "a lopsided transcript is not safe, it is just
+    differently exposed", and it was the wrong way round.  A lopsided
+    transcript made you SAFER, because it kept the subjects you had
+    neglected out of the pool.
+
+    AND TWO OF THE FOUR OWNERS TOOK THE CHEAPEST CARDS.  simulation/nap.py
+    and playtest/dist/suite.js both built the pool with subject_exams[:n],
+    the first cards of each subject in table order - which happen to be
+    Targets 6, 6, 5 and 7 against subject means of 6.7, 7.0, 6.3 and 7.7.
+    So the old rule sat three of the four cheapest exams in the box in front
+    of you, and EIGHT OF THE TWELVE PRINTED EXAMS could not be drawn at all
+    on an empty transcript.  Those eight carry eight of the twelve printed
+    restrictions, which is part of why eleven of them could go unmodelled
+    for weeks without the ladder noticing.  tts/lua.lua was already drawing
+    at random within a subject and was the only owner that was not doing
+    this.
+
+    THE NEW POOL IS A REAL DIFFICULTY RISE and it is the whole of what this
+    revision costs: -14.0 / -12.0 / -10.8 / -10.6 across the solo ladder.
+
+
+WHAT THE WHOLE REVISION MEASURES
+    6000 games a cell, Prodigy, FINF -1, each column the shipping game with
+    one piece dialled back to how it printed before.  "all old" reproduces
+    the game at HEAD exactly on the solo axis.
+
+    no tier       shipping  rewards old  targets old  pool old   all old
+      Easy           45.1%        39.6%        41.3%     59.1%     51.9%
+      Standard       39.1%        34.1%        35.4%     51.1%     44.8%
+      Hard           27.8%        24.1%        25.9%     38.6%     32.8%
+      Nobulous       19.2%        17.3%        17.4%     29.8%     24.7%
+
+    Tier III      shipping  rewards old  targets old  pool old   all old
+      Easy           38.9%        31.9%        36.9%     48.5%     41.4%
+      Standard       34.8%        28.8%        32.8%     45.2%     37.2%
+      Hard           25.3%        20.8%        24.7%     37.0%     28.5%
+      Nobulous       19.4%        15.5%        18.1%     29.4%     23.0%
+
+    Per piece, on the solo axis: the rewards are worth +5.5 / +5.0 / +3.7 /
+    +1.9, the Targets +3.8 / +3.7 / +1.9 / +1.8, and the exam pool -14.0 /
+    -12.0 / -10.8 / -10.6.  NET: -6.8 / -5.7 / -5.0 / -5.5.
+
+    NAP WAS ALREADY BELOW THE 47-57% BAND and this takes it further down.
+    simulation/README.md recorded the decision of 2026-11-11 - "the new
+    pitch stands and LEVELS does not move", with NAP the one game in the set
+    pitched below the band on purpose - at Standard 43.0% over six
+    Apprentices.  It is about 37% now.  THAT IS A DIFFICULTY DECISION AND IT
+    IS NOT TAKEN HERE.  The lever named at the time is the Setback count,
+    about 5 points a card: Standard 3 -> 2 would land near 42, and the
+    Credit goal is the other half of LEVELS if a finer step is wanted.  The
+    exam Targets are the other candidate, because the pool change is what
+    moved, and the twelve base Targets have never been re-read against a
+    draw that can reach all of them.
+
+    EVERY PIECE CARRIES A DIAL that restores the behaviour the published
+    figures were measured through: TASK_REWARDS_2026_11_12 (with
+    REQUEST_REWARD_PRE_2026_11_12 and its conditions, and
+    REWARD_WORTH_PRE_2026_11_12 - the policy that read the old table is part
+    of reproducing it, and without it "all old" measured 2 points off),
+    DEMAND_TARGETS_9 with PRE_2026_11_12_TARGETS, and EXAM_POOL_BY_CREDITS.
+    simulation/price_nap_revision.py prints the table above.
+
+
+NRJ'S NAP MODULE
+    THE FOUR IMPOSTER TASKS PAY A RECOVERY ON BOTH FACES.  They stay
+    Mandatory and worth no Credit - that is the point of them, and they
+    already displace four Credit Tasks - but a mandatory card that pays
+    nothing on either face is upkeep wearing a name.  Their Demand side no
+    longer repeats "If unresolved, flip to Demand", which it printed on the
+    face where it is either already done or nonsense; rules/nrj.html carries
+    one rule for all four - flip once, keep stored progress, discard if
+    still unresolved at the end of the Demand visit, and there is no Demand
+    penalty because these four print none.
+
+    TWO FOLLOWING SETBACKS REWORDED.
+      Where Did I Put That?       printed "one die committed here cannot be
+                                  recovered by Special Recovery", and a die
+                                  committed there is STORED on the card,
+                                  where Special Recovery cannot reach it
+                                  anyway - it takes from the exhausted pool.
+                                  The clause named a die that was already
+                                  ineligible.  It now leaves 1 die of the
+                                  queued colour behind at the sweep, which
+                                  is what the model had been guessing at -
+                                  but conditioned on the card holding stored
+                                  dice, a premise the card no longer has.
+      Unscheduled Demonstration   went from once a Time Slot to once a ROLL.
+                                  "At least one die here before committing
+                                  dice to another Assignment in this Time
+                                  Slot" is paid off by a single die in the
+                                  slot's first roll and is then free.
+
+    THREE DEVIOUS WORDINGS TIGHTENED, no Target moved.  Raid the Supply
+    Cabinet gained the choice that makes it a different card from the base
+    Raid the Supply Closet rather than a bigger one - 3 dice of different
+    colours, or ALL the exhausted dice of one non-Red colour, which is worth
+    up to 4 and is the branch an exam's colour restriction wants.  Extra
+    Credit? names the subject of the most recently completed CREDIT Task,
+    because the six unmarked Tasks carry no subject and the card could name
+    one out of nothing; its second clause adds the top Assignment to the
+    active slot rather than "revealing" one, which is reveal-two-take-one
+    language and implies a discard.  Borrow the Master's Notes says
+    OPTIONAL, which rules out the four Mandatory Imposter Tasks a Tier II
+    deck is carrying.
+
+
+RULEBOOKS
+    NAP went from three pages to FOUR, and that is a budget rise rather than
+    a leak: a Demand-reward rule, a completion-reward timing box, a Setback
+    box, an added-die box, a six-row rulings table and a rewritten coupon
+    table went into a book with about 10mm of blank paper left.  Its style
+    block is unchanged and still earns its keep - it is buying the fourth
+    page now instead of the third, and loosening it costs a fifth.
+    check_app_sync.py holds the new budget.
+
+    The six rulings the brief asked for are in the book as a table: the
+    extra Strategy roll raising the slot's allowance even when STR is spent,
+    the Transplant Rig's colour override carrying into Preparation, the
+    Coupler needing two exhausted dice of the chosen colour before it is
+    paid, what a moved Setback does in its new row, what Dispose of Failed
+    Samples may discard, and what Update Nobulous' Lab Notes may retrieve.
+
+
+CHECKS
+    Nine new checks, every one mutation-tested, and one of them could not
+    fail when it was written: the rule that no Request recovery pays the
+    card's own dot used the pattern "dice?", which matches "dic" and "dice"
+    and never "die" - so it saw nothing on any single-die reward and passed
+    vacuously on 21 of the 26 cards.  A card edited to pay its own dot
+    stayed green.  Found by mutation, not by reading it.
+
+    Seventeen mutations in all, each restored afterwards: the lab keeping
+    either face's old text, a Demand face with no reward, a Request paying
+    its own dot, each of the four exam-pool owners left behind, the model
+    and the lab re-gating the reward on the Request side, a Demand Target
+    moving without the book, a reward listed in the model and never paid,
+    the AoS top row back in its old order and its discard back in the top
+    row.  None of them got past.
+
+
+2026-11-12  AoS — THE TABLE OVERLAY, TOP ROW AND DISCARD
+============================================================================
+
+Not a rules change: where the spaces are printed on the Tabletop Simulator
+felt.
+
+THE TOP ROW IS NOW PROGRAM DECK, LIMITATION DECK, PROGRAM, LIMITATION, left
+to right.  It was deck / card / deck / card.  You draw from both decks in one
+step - "Reveal the Program, then reveal exactly 1 Limitation" - so the two
+decks are one reach, and the two face-up cards are read together as the thing
+you are about to allocate against.
+
+THE DISCARD LEFT THAT ROW for the right-hand column, directly above the
+banished dice.  That column now reads TIER CARD / DISCARD / BANISHED DICE
+from the back of the table forward, and the top row is the four spaces of a
+turn and nothing else.  aosCol(5) is free.
+
+tts/lua.lua owns both - AOS_PROGRAMS / AOS_LIMITS / AOS_PROGRAM / AOS_LIMIT
+and AOS_DISCARD_X / AOS_DISCARD_Z - and make_template.py now labels the row
+from those constants rather than from literal column numbers, so a reordered
+row relabels itself.  tts/test_setup.py checks the order as POSITIONS rather
+than as index numbers, which is what makes renaming a constant unable to
+satisfy it; it also checks that nothing else sits on the discard's space and
+that the fifth top-row column is empty.

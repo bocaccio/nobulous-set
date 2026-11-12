@@ -739,7 +739,7 @@
     const specimen=card.type==="s",cols=specimen?8:10,rows=specimen?1:2;
     const col=card.i%cols,row=Math.floor(card.i/cols);
     el.classList.remove("placeholder-card");el.innerHTML="";
-    el.style.backgroundImage=`url('assets/${specimen?"BAT_Specimens_TTS.png":"BAT_Upgrades_TTS.png"}?v=aoslabel1')`;
+    el.style.backgroundImage=`url('assets/${specimen?"BAT_Specimens_TTS.png":"BAT_Upgrades_TTS.png"}?v=napdemand1')`;
     el.style.backgroundSize=`${cols*100}% ${rows*100}%`;
     el.style.backgroundPosition=`${cols===1?0:col/(cols-1)*100}% ${rows===1?0:row/(rows-1)*100}%`;
   }
@@ -802,7 +802,7 @@
         return `<div class="bat-borrow-row"><button data-bat-borrow="${i}" ${blocked?"disabled":""}>Lend selected die to ${active().name}</button>${blocked?`<span class="bat-borrow-note">${blocked}</span>`:""}</div>`;
       })()}`;
       const sprite=box.querySelector(".bat-rat-card"),col=i;
-      sprite.style.backgroundImage=`url('assets/${rat.side==="front"?"BAT_Rats_TTS.png":"BAT_Rats_TTS_back.png"}?v=aoslabel1')`;
+      sprite.style.backgroundImage=`url('assets/${rat.side==="front"?"BAT_Rats_TTS.png":"BAT_Rats_TTS_back.png"}?v=napdemand1')`;
       sprite.style.backgroundSize="400% 100%";sprite.style.backgroundPosition=`${col/3*100}% 0`;
       
       host.appendChild(box);
@@ -1165,7 +1165,7 @@
       const i=art.dataset.attackArt;
       if(i===""){art.classList.add("placeholder-card");art.innerHTML="<span>Tyrant Attack</span>";return;}
       art.classList.remove("placeholder-card");art.innerHTML="";
-      art.style.backgroundImage="url('assets/BAT_TyrantAttacks_TTS.png?v=aoslabel1')";
+      art.style.backgroundImage="url('assets/BAT_TyrantAttacks_TTS.png?v=napdemand1')";
       art.style.backgroundSize=`${ATTACK_NAMES.length*100}% 100%`;
       art.style.backgroundPosition=`${Number(i)/(ATTACK_NAMES.length-1)*100}% 0%`;
     });

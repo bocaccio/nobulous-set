@@ -9,11 +9,64 @@
     green:["✦","✦","✷","","",""], yellow:["✦","✷","","","",""], red:["✦","✦","✦","✦","✦","✷"]
   };
   const NAP_TASKS = [
-    ["Organize the Specimen Cabinet",3,3,"Y",0],["Prepare the Tissue Samples",4,5,"G",1],["Calibrate the Neural Imager",5,5,"B",1],["Stabilize the Prototype Brain",6,7,"P",2],["Sterilize the Surgical Tools",4,4,"Y",0],["Label the Neural Samples",4,4,"G",0],["Monitor the Growth Vats",4,5,"B",0],["Tune the Cranial Resonator",6,6,"P",0],["Prepare the Transplant Rig",5,5,"G",1],["Align the Memory Probes",5,9,"B",1],["Test the Cerebral Coupler",5,5,"B",1],["Recalibrate the Bone Saw",5,9,"P",1],["Prime the Synaptic Pump",6,9,"P",1],["Map the Council Brain",7,7,"P",1],["Condition the Donor Tissue",4,5,"Y",1],["Verify the Identity Matrix",5,9,"B",2],["Complete the Splice Protocol",6,7,"P",2],["Document the Procedure",4,4,"G",0],["Suture the Donor Incision",5,9,"Y",1],["Decode Nobulous' Lecture Notes",5,5,"G",0],["Update Nobulous' Lab Notes",4,4,"Y",0],["Inventory the Spare Organs",4,4,"G",0],["Clean the Restraint Table",5,5,"B",0],["Reassemble the Automaton Hand",7,8,"P",1],["Dispose of Failed Samples",5,9,"B",1],["Sharpen the Surgical Implements",5,5,"P",0]
+    ["Organize the Specimen Cabinet",3,3,"Y",0],["Prepare the Tissue Samples",4,5,"G",1],["Calibrate the Neural Imager",5,5,"B",1],["Stabilize the Prototype Brain",6,7,"P",2],["Sterilize the Surgical Tools",4,4,"Y",0],["Label the Neural Samples",4,4,"G",0],["Monitor the Growth Vats",4,5,"B",0],["Tune the Cranial Resonator",6,6,"P",0],["Prepare the Transplant Rig",5,5,"G",1],["Align the Memory Probes",5,6,"B",1],["Test the Cerebral Coupler",5,5,"B",1],["Recalibrate the Bone Saw",5,6,"P",1],["Prime the Synaptic Pump",6,6,"P",1],["Map the Council Brain",7,7,"P",1],["Condition the Donor Tissue",4,5,"Y",1],["Verify the Identity Matrix",5,6,"B",2],["Complete the Splice Protocol",6,7,"P",2],["Document the Procedure",4,4,"G",0],["Suture the Donor Incision",6,6,"Y",1],["Decode Nobulous' Lecture Notes",5,5,"G",0],["Update Nobulous' Lab Notes",4,4,"Y",0],["Inventory the Spare Organs",4,4,"G",0],["Clean the Restraint Table",5,5,"B",0],["Reassemble the Automaton Hand",7,8,"P",1],["Dispose of Failed Samples",5,6,"B",1],["Sharpen the Surgical Implements",5,5,"P",0]
   ];
   const NAP_OPPS = ["Take an Unauthorized Break","Raid the Supply Closet","Borrow Better Instruments","Study Nobulous' Notes","Salvage Useful Components","Practice on a Spare Brain"];
+  // The printed Request and Demand text of the 26 Tasks, VERBATIM from the
+  // TASKS table in generator/build_nap.py - check_app_sync.py compares them
+  // string for string, so a card reworded there has to be reworded here.
+  //
+  // THE 2026-11-12 REVISION is why both tables exist. Every exact-success and
+  // exact-dice-count condition is gone from the Request side, the reward names
+  // a COLOUR instead of "1 committed die", and the DEMAND side gained a
+  // completion reward of its own - so the lab needs the Demand copy too, and
+  // a completed card now pays on whichever face it was completed.
   const NAP_REQUEST_EFFECTS = [
-    "If completed with exactly 2 successes across all committed dice this strategy phase, recover 1 committed die.","If completed using 3 or fewer dice, recover 1 committed die.","One Blue Crit counts as 3 successes here.","If dice of 3+ colors contribute, add 1 success.","If completed without using a Crit, recover 1 committed die.","If this is the Primary, add 1 success after rolling.","If Exact, gain 1 Health.","Purple Crits count as 3 successes here.","If Exact, recover 1 committed die.","If you exactly meet the target, recover 1 committed die.","If Exact, recover 1 committed die.","One Purple Crit counts as 3 successes here.","If completed using exactly 3 dice, recover 1 committed die.","If completed as a Request, permanently increase REC by 1.","If completed in one attempt, recover 1 committed die.","If dice of 3+ colors contribute, add 1 success.","If completed with no stored dice, recover 1 committed die.","If completed as Primary, recover 1 committed die.","If completed using exactly 4 dice, recover 1 committed die.","Look at the next 3 Assignment cards and return them in any order.","Look at the next Assignment; return it to the top or bottom.","If completed, recover 1 exhausted Yellow or Green die.","If completed using 4 or fewer dice, recover 1 committed die.","If completed as a Request, permanently increase STR by 1.","If completed in one attempt, recover 1 exhausted die.","If completed using a Crit, recover 1 committed die."
+    "Recover 1 Green die.","Clean Cuts: Recover 1 Yellow die.","Fine Calibration: One Blue Crit counts as 3 successes here.","Stable Pattern: If dice of at least 3 colors contribute, add 1 success.","Efficient Routine: Recover 1 Blue die.","Good Records: If this is the Primary, add 1 success after rolling.","Healthy Growth: If this is the Primary, gain 1 Health.","Harmonic Match: Purple Crits count as 3 successes here.","Organized Setup: Choose the next Special Recovery color (not Red).","Precise Alignment: You may take 1 additional Strategy roll this Time Slot.","Bench Test: Exchange 1 available die for 2 exhausted dice of its color.","Sharp Enough: One Purple Crit counts as 3 successes here.","Steady Pressure: Recover up to 2 Blue dice.","Breakthrough: +1 REC permanently.","Fresh Tissue: Recover 1 Green die.","Cross-check: If dice of at least 3 colors contribute, add 1 success.","Clean Splice: Recover 1 Green and 1 Blue die.","Clear Notes: You may move a Setback to a different Time Slot with room.","Steady Hands: Recover 1 Green die.","Insight: Reorder the top 3 Assignments.","Useful Margin Note: Return 1 discarded, uncompleted Assignment to the top of the deck.","Found Something Useful: Recover 1 Yellow or Blue die.","Quick Cleanup: Recover 1 Purple die.","Masterwork: +1 STR permanently.","Efficient Disposal: You may discard another unresolved Demand here without penalty.","Razor Edge: Add 1 Yellow die as a hit to another Task here with stored progress."
+  ];
+  const NAP_DEMAND_EFFECTS = [
+    "Nobulous Can't Find Anything: One Crit rolled here counts as 1 success. <b>Reward:</b> recover 1 Yellow die.","Samples Are Degrading: Lose 1 stored success at the end of the Time Slot. <b>Reward:</b> recover 1 Green die.","Emergency Calibration: Blue Crits count as 1 success here. <b>Reward:</b> recover 1 Blue die.","Neural Cascade: No more than 2 dice may be stored here. <b>Reward:</b> recover 1 Purple die.","Contamination: One successful die rolled here each attempt cannot be stored. <b>Reward:</b> recover 1 Yellow die.","Mislabeling: +1 Target for each other unresolved Assignment here. <b>Reward:</b> recover 1 Yellow die.","Unstable Growth: Commit at least 2 dice per attempt. <b>Reward:</b> recover 1 Green die.","Resonance Drift: One Crit rolled here counts as 1 success. <b>Reward:</b> recover 1 Purple die.","Rush Setup: Commit at least 3 dice per attempt. <b>Reward:</b> recover 1 Blue die.","Signal Loss: You may store at most 2 dice here. <b>Reward:</b> recover 1 Blue die.","Live Test: Requires at least 2 Blue dice. <b>Reward:</b> recover 1 Blue die.","It's Binding: One Purple Crit counts as 1 success here. <b>Reward:</b> recover 1 Purple die.","Pressure Drop: Each attempt must commit at least 2 dice. <b>Reward:</b> recover 1 Blue die.","Incomplete Map: Stored progress here is capped at 4 successes. <b>Reward:</b> recover 1 Purple die.","Tissue Is Failing: After a failed attempt, exhaust 1 die stored here. <b>Reward:</b> recover 1 Green die.","Identity Conflict: One Crit rolled here counts as 1 success. <b>Reward:</b> recover 1 Purple die.","Emergency Splice: No more than 3 dice may be stored here. <b>Reward:</b> recover 1 Green die.","Rewrite It: Requires at least 2 Green dice. <b>Reward:</b> recover 1 Yellow die.","Torn Suture: One Crit rolled here counts as 1 success. <b>Reward:</b> recover 1 Green die.","Contradictions Everywhere: Requires at least 3 different die colors. <b>Reward:</b> peek at the top Assignment; you may put it on the bottom.","Nobulous Wants Details: You may store no more than 1 die here. <b>Reward:</b> recover 1 Yellow die.","Where Is the Spleen?: +1 Target if another Assignment here is unresolved. <b>Reward:</b> recover 1 Yellow die.","Scrub It Again: Stored dice here cannot be recovered by other effects. <b>Reward:</b> recover 1 Blue die.","It Keeps Twitching: One Crit rolled here counts as 1 success. <b>Reward:</b> recover 1 Blue die.","They're Leaking: If unresolved after an attempt, exhaust 1 additional available die. <b>Reward:</b> recover 1 Green die.","Dull Again: Crits count as 1 success here. <b>Reward:</b> recover 1 Purple die."
+  ];
+  // The machine-readable form of the reward clause in each string above, one
+  // entry per Task in deck order: `req` is the Request face, `dem` the Demand.
+  //   colors    recover 1 exhausted die of any of these colors
+  //   n         how many (default 1); distinct: each color at most once
+  //   hp/rec/str/roll   +1 Health / REC / STR / Strategy roll this slot
+  //   primary   only if the card came in as the Primary
+  //   peek      look at this many off the top; bottom: may send one under
+  //   pickDot   choose the color the next Special Recovery queues
+  //   manual    the lab states it and the table carries it out, because the
+  //             reward moves CARDS rather than dice
+  //   null      no completion reward on that face - the printed clause is a
+  //             Crit repricing or a +1 success, which applies while you work
+  //             the card rather than when it finishes
+  const NAP_TASK_REWARDS = [
+    {req:{colors:["green"]},dem:{colors:["yellow"]}},
+    {req:{colors:["yellow"]},dem:{colors:["green"]}},
+    {req:null,dem:{colors:["blue"]}},
+    {req:null,dem:{colors:["purple"]}},
+    {req:{colors:["blue"]},dem:{colors:["yellow"]}},
+    {req:null,dem:{colors:["yellow"]}},
+    {req:{hp:1,primary:true},dem:{colors:["green"]}},
+    {req:null,dem:{colors:["purple"]}},
+    {req:{pickDot:true},dem:{colors:["blue"]}},
+    {req:{roll:1},dem:{colors:["blue"]}},
+    {req:{manual:"exchange 1 available die for 2 exhausted dice of its color"},dem:{colors:["blue"]}},
+    {req:null,dem:{colors:["purple"]}},
+    {req:{colors:["blue"],n:2},dem:{colors:["blue"]}},
+    {req:{rec:1},dem:{colors:["purple"]}},
+    {req:{colors:["green"]},dem:{colors:["green"]}},
+    {req:null,dem:{colors:["purple"]}},
+    {req:{colors:["green","blue"],n:2,distinct:true},dem:{colors:["green"]}},
+    {req:{manual:"move a Setback to a different Time Slot with room"},dem:{colors:["yellow"]}},
+    {req:{colors:["green"]},dem:{colors:["green"]}},
+    {req:{peek:3},dem:{peek:1,bottom:true}},
+    {req:{manual:"return 1 discarded, uncompleted Assignment to the top of the deck"},dem:{colors:["yellow"]}},
+    {req:{colors:["yellow","blue"]},dem:{colors:["yellow"]}},
+    {req:{colors:["purple"]},dem:{colors:["blue"]}},
+    {req:{str:1},dem:{colors:["blue"]}},
+    {req:{manual:"discard another unresolved Demand in this Time Slot without penalty"},dem:{colors:["green"]}},
+    {req:{manual:"add 1 Yellow die as a hit to another Task here with stored progress"},dem:{colors:["purple"]}},
   ];
   // A completed Opportunity is kept as a coupon. `progress` is the number of
   // successes it is worth when spent on an Assignment; untargeted coupons
@@ -47,42 +100,78 @@
   // --- NRJ module cards for NAP -------------------------------------
   // Carried on an Assignment as {type, i, nrj:true}: a module card keeps the
   // base type so every Setback/Task/Opportunity rule still applies to it.
+  // Two of the four were reworded 2026-11-12. Where Did I Put That? named a
+  // die that Special Recovery could not reach anyway - a die committed here
+  // is STORED, and Special Recovery takes from the exhausted pool - so it now
+  // bites the sweep itself. Unscheduled Demonstration went from once a Time
+  // Slot, which one die pays off for good, to once a ROLL.
   const NAP_FOLLOWING = [
     ["Nobulous Needs This Now","Y",7,"While unresolved, the first die you commit to another Assignment each Time Slot must match that Assignment's recovery-color dot."],
-    ["Unscheduled Demonstration","G",7,"While unresolved, you must commit at least one die here before committing dice to another Assignment in this Time Slot."],
+    ["Unscheduled Demonstration","G",7,"While unresolved, commit at least one die here before committing dice elsewhere on each roll."],
     ["Minor Laboratory Fire","B",8,"At the end of each Time Slot this remains unresolved, exhaust 1 available die."],
-    ["Where Did I Put That?","P",8,"While unresolved, one die committed here cannot be recovered by Special Recovery."],
+    ["Where Did I Put That?","P",8,"While unresolved, Special Recovery at the start of each Time Slot leaves 1 die of the queued color exhausted."],
   ];
-  // name, subject, recovery-color dot, Request, Demand, effect. The dot is
-  // printed on the card; this used to fall back to "P" when it found none.
+  // name, subject, recovery-color dot, Request, Demand, effect, Request
+  // reward, Demand reward. The dot is printed on the card; this used to fall
+  // back to "P" when it found none. The two rewards went on 2026-11-12, when
+  // the base Tasks gained Demand rewards: these four stay Mandatory and worth
+  // no Credit, but a mandatory card that pays nothing on either face is
+  // upkeep wearing a name.
   const NAP_IMPOSTER_TASKS = [
-    ["Neural Extraction Practicum","Anatomy","P",5,6,"One die committed here remains locked until the end of the Day even if completed."],
-    ["Load-Bearing Prosthetics","Engineering","B",4,5,"At least 2 applied successes must come from the same color."],
-    ["Emergency Specimen Handling","Procedure","Y",4,5,"Before rolling, commit at least 2 dice initially."],
-    ["Containment Drill","Theory","G",4,5,"If unresolved, exhaust 1 available die before flipping it to Demand."],
+    ["Neural Extraction Practicum","Anatomy","P",5,6,"On completion, hold 1 contributing die here until End of Day.","recover 1 Green or Blue die","recover 1 Green die"],
+    ["Load-Bearing Prosthetics","Engineering","B",4,5,"At least 2 applied successes must come from the same color.","recover 1 Purple or Green die","recover 1 Blue die"],
+    ["Emergency Specimen Handling","Procedure","Y",4,5,"Commit at least 2 dice on your first attempt.","recover 1 Green or Blue die","recover 1 Green die"],
+    ["Containment Drill","Theory","G",4,5,"If unresolved, exhaust 1 available die before flipping.","recover 1 Purple or Yellow die","recover 1 Yellow die"],
+  ];
+  // The machine-readable form of the two reward columns above.
+  const NAP_IMPOSTER_REWARDS = [
+    {req:{colors:["green","blue"]},dem:{colors:["green"]}},
+    {req:{colors:["purple","green"]},dem:{colors:["blue"]}},
+    {req:{colors:["green","blue"]},dem:{colors:["green"]}},
+    {req:{colors:["purple","yellow"]},dem:{colors:["yellow"]}},
   ];
   // Devious Opportunities. "exam" cards are kept and spent during the Final
   // Exam; "now" cards resolve on completion. Targets raised 2026-11-06 to
   // 4/4/5/5/4/5, which is what the six base Opportunities these replace
   // cost; see DEVIOUS in generator/build_nrj.py.
   const NAP_DEVIOUS = [
-    ["Borrow the Master's Notes","G",4,"Exhaust 2 available dice to immediately complete one Request-side non-Credit Task with printed Target 4 or less.","now"],
-    ["Raid the Supply Cabinet","Y",4,"Final Exam: recover 3 exhausted dice of different colors before any one exam.","exam"],
-    ["Extra Credit?","G",5,"Gain 1 Credit in the subject of the most recently completed Task; then reveal an additional Assignment.","now"],
-    ["Helpful Test Subject","B",5,"Final Exam: after rolling one exam, reroll any number of failed dice.","exam"],
-    ["Nobulous Owes You One","P",4,"Final Exam: reduce one exam's Target by 3.","exam"],
+    ["Borrow the Master's Notes","G",4,"Exhaust 2 available dice to complete an optional, non-Credit Request here with printed Target 4 or less.","now"],
+    ["Raid the Supply Cabinet","Y",4,"Final Exam: before an exam roll, recover up to 3 dice of different colors or all dice of one non-Red color.","exam"],
+    ["Extra Credit?","G",5,"Gain 1 Credit in your last Credit Task's subject. Add the top Assignment here if there is room, ignoring its Skulls.","now"],
+    ["Helpful Test Subject","B",5,"Final Exam: after an exam roll, reroll any number of misses.","exam"],
+    ["Nobulous Owes You One","P",4,"Final Exam: before an exam roll, reduce its Target by 3.","exam"],
     ["Definitely Curriculum-Approved","Y",5,"Final Exam: ignore one exam's printed restriction.","exam"],
   ];
   function napTier(){return window.NOBULOUS_TIER?window.NOBULOUS_TIER.forGame("nap"):"0";}
   function napExamCard(i){const e=NAP_EXAMS[i];return{name:e[0],file:"NAP_FinalExams_TTS.png",i,cols:10,rows:2,target:e[3],demand:e[3],dot:e[2],skulls:0};}
+  // EVERY COUPON PRINTS ITS WINDOW as of 2026-11-12: four of the six used to
+  // print an effect with no "before" or "after", and before or after the dice
+  // are seen is the whole value of a coupon. `progress` is the number of
+  // successes it is worth when spent on an Assignment; untargeted coupons
+  // instead set a flag the dice rules read. Study Nobulous' Notes changed job
+  // entirely - it flips a Demand back to its Request side now, which is the
+  // only effect in NAP that undoes a flip.
   const NAP_COUPONS = [
     {effect:"Cancel 1 Health loss.",progress:0},
-    {effect:"One die counts as any color for one roll.",progress:0},
-    {effect:"Add 1 success to a roll.",progress:1},
-    {effect:"Reduce one Assignment's remaining need by 2.",progress:2},
-    {effect:"Add 2 successes to an Assignment, without rolling.",progress:2},
-    {effect:"One Crit counts as 3 successes.",progress:0}];
+    {effect:"Before rolling: recover up to 2 dice of one non-Red color.",progress:0},
+    {effect:"After rolling: reroll 1 die.",progress:0},
+    {effect:"Before rolling: flip a Demand here to its Request side. In an exam, reduce its Target by 2 instead.",progress:0},
+    {effect:"After rolling: add 1 Green die as a Crit to an Assignment here or to this exam.",progress:2},
+    {effect:"After rolling: count 1 Crit as 3 successes.",progress:0}];
   const NAP_OPPORTUNITY_EFFECTS = NAP_COUPONS.map(c=>`Spend: ${c.effect}`);
+  // Which coupons need an Assignment picked for them, and what the button
+  // says. Study Nobulous' Notes (3) joined the targeted coupons on
+  // 2026-11-12 without being worth successes - it flips a Demand - so the
+  // old test, `NAP_COUPONS[ci].progress`, would have hidden its only button.
+  function napCouponWantsCard(ci,a){
+    if(ci===3)return a.type==="t"&&a.demandSide;
+    return NAP_COUPONS[ci].progress>0;
+  }
+  function napCouponLabel(ci){
+    if(ci===3)return "flip back to Request";
+    const p=NAP_COUPONS[ci].progress;
+    return `+${p} ${p===1?"success":"successes"}`;
+  }
   const NAP_TASK_SUBJECTS = ["Theory","Anatomy","Engineering","Anatomy","Procedure","Theory","Anatomy","Engineering","Engineering","Engineering","Engineering","Procedure","Procedure","Anatomy","Anatomy","Theory","Procedure","Theory","Procedure","Theory",null,null,null,null,null,null];
   const NAP_SUBJECTS = ["Anatomy","Engineering","Procedure","Theory"];
   const NAP_SUBJECT_ICONS = {
@@ -100,7 +189,7 @@
   const freshDice = () => COLORS.map((color,id)=>({id,color,zone:"available",selected:false,face:""}));
   const fresh = () => ({
     config:{mode:"standalone",tier:"0",finale:"sample",tierOverride:{bat:"",nap:"",aos:""}},
-    nap:{day:1,slot:0,hp:2,str:2,rec:2,credits:0,creditGoal:6,coupons:[],deviousCoupons:[],couponWild:false,distinctRecover:false,phase:"apprenticeship",exam:null,outcome:null,completedCredits:[],apprentice:"Prodigy",deck:[],discard:[],rows:[[],[],[]],recoveryDots:[null,null,null],primaryDot:null,choice:null,finf:{mode:"reduce",level:1,cards:[0],spent:[],drawn:[],pendingCurrent:[]},pendingReward:null,nextSlotBonus:{str:0,rec:0,crit:0},activeSlotBonus:{str:0,rec:0,crit:0},notice:"",dice:freshDice(),rollsUsed:0,phaseCommittedSuccesses:0,recovering:false,rollResult:""},
+    nap:{day:1,slot:0,hp:2,str:2,rec:2,credits:0,creditGoal:6,coupons:[],deviousCoupons:[],distinctRecover:false,phase:"apprenticeship",exam:null,outcome:null,completedCredits:[],apprentice:"Prodigy",deck:[],discard:[],rows:[[],[],[]],recoveryDots:[null,null,null],primaryDot:null,choice:null,finf:{mode:"reduce",level:1,cards:[0],spent:[],drawn:[],pendingCurrent:[]},pendingReward:null,nextSlotBonus:{str:0,rec:0,crit:0},activeSlotBonus:{str:0,rec:0,crit:0},notice:"",dice:freshDice(),rollsUsed:0,recovering:false,rollResult:""},
     nrj:{hp:5,str:2,rec:3,session:0,dossier:[],active:[],buried:[],key:0,recCredit:0,
       rollsUsed:0,rollResult:"",outcome:null,recovering:false,pool:18,cards:null,dice:freshDice(),
       imp:"",impCount:0,impSession:-1,armed:null,wide:-1,extraRolls:0}
@@ -119,10 +208,10 @@
   if(!Array.isArray(state.nap.rows)){state.nap.rows=[[],[],[]];if(Array.isArray(state.nap.row))state.nap.rows[state.nap.slot||0]=state.nap.row;delete state.nap.row;}
   state.nap.rows=state.nap.rows.map(row=>row.map(a=>({...a,storedDice:a.storedDice||[]})));
   state.nap.completedCredits??=state.nap.rows.flat().filter(a=>a.completed&&a.type==="t").map(a=>({type:"t",i:a.i}));
-  state.nap.rollsUsed??=0;state.nap.phaseCommittedSuccesses??=0;state.nap.recovering??=false;state.nap.rollResult??="";
+  state.nap.rollsUsed??=0;state.nap.recovering??=false;state.nap.rollResult??="";
   state.nap.recoveryDots??=[null,null,null];
   state.nap.primaryDot??=null;
-  state.nap.discard??=[];state.nap.pendingReward??=null;if(state.nap.pendingReward&&!state.nap.pendingReward.cardType)state.nap.pendingReward={...state.nap.pendingReward,cardType:"o",cardIndex:state.nap.pendingReward.kind==="distinct"?1:4,text:state.nap.pendingReward.kind==="distinct"?NAP_OPPORTUNITY_EFFECTS[1]:NAP_OPPORTUNITY_EFFECTS[4]};state.nap.creditGoal??=6;state.nap.coupons??=[];state.nap.deviousCoupons??=[];state.nap.distinctRecover??=false;state.nap.couponWild??=false;state.nap.phase??="apprenticeship";state.nap.exam??=null;state.nap.outcome??=null;state.nap.recoverOverride??=null;state.nap.nextSlotBonus??={str:0,rec:0,crit:0};state.nap.activeSlotBonus??={str:0,rec:0,crit:0};state.nrj.discard??=[];state.nrj.cards??=null;
+  state.nap.discard??=[];state.nap.pendingReward??=null;if(state.nap.pendingReward&&!state.nap.pendingReward.cardType)state.nap.pendingReward={...state.nap.pendingReward,cardType:"o",cardIndex:state.nap.pendingReward.kind==="distinct"?1:4,text:state.nap.pendingReward.kind==="distinct"?NAP_OPPORTUNITY_EFFECTS[1]:NAP_OPPORTUNITY_EFFECTS[4]};state.nap.creditGoal??=6;state.nap.coupons??=[];state.nap.deviousCoupons??=[];state.nap.distinctRecover??=false;state.nap.phase??="apprenticeship";state.nap.exam??=null;state.nap.outcome??=null;state.nap.recoverOverride??=null;state.nap.nextSlotBonus??={str:0,rec:0,crit:0};state.nap.activeSlotBonus??={str:0,rec:0,crit:0};state.nrj.discard??=[];state.nrj.cards??=null;
   // A finale in progress from before 2026-10-31 has no Imposter fields, and
   // nrjImpLeft would read NaN uses off undefined. It keeps its dice.
   state.nrj.imp??="";state.nrj.impCount??=0;state.nrj.impSession??=-1;
@@ -187,9 +276,20 @@
       body.append(name,text);
       const usable=n.phase==="exam"&&n.exam&&n.exam.stage==="exam";
       if(usable){
-        const spend=document.createElement("button");
-        spend.dataset.napDevious=String(slot);spend.textContent="Spend";
-        body.append(spend);
+        // RAID THE SUPPLY CABINET PRINTS A CHOICE as of 2026-11-12 - "up to 3
+        // dice of different colors OR all dice of one non-Red color" - and
+        // that is what makes it a different card from the base Raid the
+        // Supply Closet rather than a bigger one. It is the player's choice,
+        // so it is two buttons.
+        const ways=index===1
+          ? [["distinct","Spend: 3 different colors"],["sweep","Spend: all of one color"]]
+          : [["","Spend"]];
+        ways.forEach(([way,label])=>{
+          const spend=document.createElement("button");
+          spend.dataset.napDevious=way?`${slot},${way}`:String(slot);
+          spend.textContent=label;
+          body.append(spend);
+        });
       }else{
         const hint=document.createElement("small");hint.className="hint";
         hint.textContent="Spendable during the Final Exam.";
@@ -210,10 +310,17 @@
       const name=document.createElement("strong");name.textContent=NAP_OPPS[index];
       const text=document.createElement("small");text.textContent=meta.effect;
       body.append(name,text);
-      if(meta.progress&&!(n.phase==="exam"&&n.exam.stage==="exam")){
+      // index 3 joined the targeted coupons on 2026-11-12 without being
+      // worth successes: Study Nobulous' Notes flips a Demand, so it needs a
+      // card picked for it and `meta.progress` alone no longer answers that.
+      const needsCard=(meta.progress>0||index===3)
+        &&!(n.phase==="exam"&&n.exam.stage==="exam");
+      if(needsCard){
         const hint=document.createElement("small");
         hint.className="hint";
-        hint.textContent="Spend from the Assignment you want it on.";
+        hint.textContent=index===3
+          ?"Spend from the Demand you want flipped back."
+          :"Spend from the Assignment you want it on.";
         body.append(hint);
       }else{
         const spend=document.createElement("button");
@@ -235,16 +342,22 @@
     n.notice=`${NAP_DEVIOUS[spent][0]} discarded: ${napCard(a.type,a.i,a.nrj,a.dot).name} no longer restricts you or charges upkeep. It still has to be resolved.`;
     save();renderNAP();
   }
-  function spendDeviousCoupon(slot){
+  function spendDeviousCoupon(slot,way){
     const n=state.nap,held=n.deviousCoupons||[],index=held[slot];
     if(index===undefined||n.phase!=="exam"||n.exam.stage!=="exam")return;
     const card=NAP_DEVIOUS[index];
     if(index===1){
-      // Recover 3 exhausted dice of different colors.
-      n.recoverOverride=3;n.distinctRecover=true;
+      // "Up to 3 dice of different colors OR all dice of one non-Red color."
+      // The sweep branch is worth up to 4 and is the one an exam's color
+      // restriction actually wants; the lab caps it at 4 and states the
+      // restriction rather than policing which colors you tap.
+      const sweep=way==="sweep";
+      n.recoverOverride=sweep?4:3;n.distinctRecover=!sweep;
       n.recovering=n.dice.some(d=>d.zone==="exhausted");
       n.dice.forEach(d=>d.selected=false);
-      n.rollResult=`${card[0]} spent: recover 3 exhausted dice of different colors.`;
+      n.rollResult=sweep
+        ? `${card[0]} spent: recover every exhausted die of ONE non-Red color.`
+        : `${card[0]} spent: recover up to 3 exhausted dice of different colors.`;
     }else if(index===3){
       n.rollsUsed=Math.max(0,n.rollsUsed-1);
       n.rollResult=`${card[0]} spent: select the failed dice and roll again.`;
@@ -262,16 +375,45 @@
     const n=state.nap,held=n.coupons||[],index=held[slot];
     if(index===undefined||n.pendingReward)return;
     const meta=NAP_COUPONS[index];
+    // THE SIX COUPONS AS THEY PRINT SINCE 2026-11-12. Two changed job, and
+    // both are the same correction: a coupon with no window was being read as
+    // a flat bonus.
+    //   1 Raid the Supply Closet was "one die counts as any color" and is now
+    //     a recovery of up to 2 dice of one non-Red color, before a roll.
+    //   2 Borrow Better Instruments was "+1 success to a roll" and is now a
+    //     free reroll of 1 die, after a roll - and it does not spend a
+    //     Strategy roll, which is what n.rollsUsed-- buys back.
+    //   3 Study Nobulous' Notes was "-2 from one Assignment's need" and now
+    //     FLIPS A DEMAND BACK to its Request side, keeping stored dice and
+    //     progress. In an exam it reduces that exam's Target by 2 instead,
+    //     which is what it already did there.
     if(n.phase==="exam"&&n.exam.stage==="exam"){
       // In an exam there is no Assignment row: the coupon acts on the exam.
       if(index===0){n.hp++;n.rollResult=`${NAP_OPPS[index]} spent: 1 Health loss cancelled.`;}
-      else if(index===1){n.exam.wild=true;n.rollResult=`${NAP_OPPS[index]} spent: a color requirement is satisfied.`;}
+      else if(index===1){
+        n.recoverOverride=2;n.distinctRecover=false;
+        n.recovering=n.dice.some(d=>d.zone==="exhausted");n.dice.forEach(d=>d.selected=false);
+        n.rollResult=`${NAP_OPPS[index]} spent: recover up to 2 exhausted dice of one non-Red color.`;
+      }
+      else if(index===2){n.rollsUsed=Math.max(0,n.rollsUsed-1);n.rollResult=`${NAP_OPPS[index]} spent: select 1 die and roll it again.`;}
       else if(index===3){n.exam.reduce=(n.exam.reduce||0)+2;n.rollResult=`${NAP_OPPS[index]} spent: this exam's Target drops by 2.`;}
       else if(index===5){n.activeSlotBonus.crit++;n.rollResult=`${NAP_OPPS[index]} spent: one Crit counts as 3 successes.`;}
       else {n.exam.bonus=(n.exam.bonus||0)+meta.progress;n.rollResult=`${NAP_OPPS[index]} spent: +${meta.progress} to this exam.`;}
       n.coupons=held.filter((_,at)=>at!==slot);save();renderNAP();return;
     }
-    if(meta.progress){
+    if(index===3){
+      // "Flip one unresolved Demand in your active Time Slot back to its
+      // Request side. Keep its stored dice and progress." If the progress
+      // already on the card meets the lower Request Target, it finishes at
+      // once and pays its REQUEST reward - which is the deliberate power
+      // increase this card is paid for with, see rules/nap.html.
+      const row=napRow(),a=row.find(x=>x.id==assignmentId);
+      if(!a||a.completed||!a.demandSide||a.type!=="t")return;
+      a.demandSide=false;
+      const card=napCard(a.type,a.i,a.nrj,a.dot);
+      n.rollResult=`${NAP_OPPS[index]} spent on ${card.name}: back to its Request side, progress kept.`;
+      if((a.progress||0)>=card.target)completeNAPAssignment(a,{priorStored:(a.storedDice||[]).length});
+    }else if(meta.progress){
       // Targeted: it is worth successes on one Assignment, no roll needed.
       const row=napRow(),a=row.find(x=>x.id==assignmentId);
       if(!a||a.completed||a.type==="o")return;
@@ -282,7 +424,12 @@
     }else if(index===0){
       n.hp++;n.rollResult=`${NAP_OPPS[index]} spent: 1 Health loss cancelled.`;
     }else if(index===1){
-      n.couponWild=true;n.rollResult=`${NAP_OPPS[index]} spent: one die counts as any color for your next application.`;
+      n.recoverOverride=2;n.distinctRecover=false;
+      n.recovering=n.dice.some(d=>d.zone==="exhausted");n.dice.forEach(d=>d.selected=false);
+      n.rollResult=`${NAP_OPPS[index]} spent: recover up to 2 exhausted dice of one non-Red color.`;
+    }else if(index===2){
+      n.rollsUsed=Math.max(0,n.rollsUsed-1);
+      n.rollResult=`${NAP_OPPS[index]} spent: select 1 die and roll it again - this does not use a Strategy roll.`;
     }else{
       n.activeSlotBonus.crit++;n.rollResult=`${NAP_OPPS[index]} spent: one Crit counts as 3 successes.`;
     }
@@ -353,21 +500,33 @@
     const n=state.nap;
     n.recoverOverride=null;
     const note=napSpecialRecovery({P:"purple",B:"blue",G:"green",Y:"yellow"}[n.recoveryDots[n.slot]]);
-    // Build the exam pool: 1 card per subject at 0-1 Credits, 2 at 2-3, 3 at 4+.
+    // THE EXAM POOL IS ONE CARD PER SUBJECT AS OF 2026-11-12, and Credits no
+    // longer decide which exams you sit. The old rule added 1 card per
+    // subject at 0-1 Credits, 2 at 2-3 and 3 at 4+, which stacked the pool
+    // with the subjects you had already studied - so the exams you were best
+    // prepared for were also the ones most likely to come up, and a subject
+    // you had neglected could be kept out of the pool almost entirely.
+    // Now: 1 card chosen at random from each of the 4 subjects, shuffled,
+    // and 3 drawn. Every subject has a 75% chance to appear and can appear at
+    // most once. Credits only reduce Targets, which examTarget() still does.
+    //
+    // It also fixes a second thing nobody had noticed: `.slice(0,take)` took
+    // the FIRST cards of each subject in deck order, so of the twelve printed
+    // exams EIGHT could never be drawn at 0-1 Credits in that subject.
     const per={};
     n.completedCredits.forEach(c=>{const sub=NAP_TASK_SUBJECTS[c.i];if(sub)per[sub]=(per[sub]||0)+1;});
     n.exam.credits=per;
     const pool=[];
     NAP_SUBJECTS.forEach(sub=>{
-      const held=per[sub]||0,take=held<=1?1:(held<=3?2:3);
-      NAP_EXAMS.map((e,i)=>[e,i]).filter(([e])=>e[1]===sub).slice(0,take).forEach(([,i])=>pool.push(i));
+      const ofSubject=NAP_EXAMS.map((e,i)=>[e,i]).filter(([e])=>e[1]===sub).map(([,i])=>i);
+      if(ofSubject.length)pool.push(shuffle(ofSubject)[0]);
     });
     n.exam.pool=pool;
     n.exam.drawn=shuffle(pool.slice()).slice(0,3);
     n.exam.stage="exam";
     n.exam.index=0;
     n.rollsUsed=0;
-    n.notice=`${note?note.trim()+" ":""}Exam pool: ${pool.length} cards; three drawn. FINF is not used during the Final Exam.`;
+    n.notice=`${note?note.trim()+" ":""}Exam pool: 1 card from each of the ${pool.length} subjects; three drawn. FINF is not used during the Final Exam.`;
   }
   function examTarget(){
     const n=state.nap,e=NAP_EXAMS[n.exam.drawn[n.exam.index]];
@@ -384,10 +543,10 @@
     if(rule.noRed&&committed.some(d=>d.color==="red"))fails.push("Red cannot be committed.");
     if(rule.minColors&&colors.size<rule.minColors)fails.push(`Needs ${rule.minColors} different colors; you have ${colors.size}.`);
     if(rule.minDice&&committed.length<rule.minDice)fails.push(`Needs at least ${rule.minDice} dice; you committed ${committed.length}.`);
-    if(rule.contribute&&!n.exam.wild)Object.entries(rule.contribute).forEach(([color,count])=>{
+    if(rule.contribute)Object.entries(rule.contribute).forEach(([color,count])=>{
       if(successful.filter(d=>d.color===color).length<count)fails.push(`Needs ${count} successful ${color} ${count===1?"die":"dice"}.`);
     });
-    if(rule.contributeAny&&!n.exam.wild){
+    if(rule.contributeAny){
       const want=rule.contributeAny[0],count=rule.contributeAny[1];
       if(successful.filter(d=>want.includes(d.color)).length<count)
         fails.push(`Needs ${count} successful dice among ${want.join("/")}.`);
@@ -420,7 +579,7 @@
     if(n.activeSlotBonus.crit)n.activeSlotBonus.crit=0;
     n.hp=Math.max(0,n.hp-shortfall);
     examCommitted().forEach(die=>{die.zone="exhausted";die.face="";die.selected=false;});
-    n.exam.bonus=0;n.exam.reduce=0;n.exam.wild=false;n.exam.ignoreRule=false;
+    n.exam.bonus=0;n.exam.reduce=0;n.exam.ignoreRule=false;
     n.exam.log.push({name:e[0],target,got,shortfall});
     n.discard.push({type:"e",i});
     if(n.hp<=0){
@@ -594,7 +753,7 @@
     return `NRJ Tier ${tierName(tier)} active${over?" (table override)":""} \u00b7 module cards are mixed in.`;
   }
 
-  const ruleFiles={bat:["assets/BAT_Rulebook.pdf?v=aoslabel1","BAT rules PDF"],nap:["assets/NAP_Rulebook.pdf?v=aoslabel1","NAP rules PDF"],aos:["assets/AoS_Rulebook.pdf?v=aoslabel1","AoS rules PDF"],nrj:["assets/NRJ_Campaign_Supplement.pdf?v=aoslabel1","NRJ rules PDF"]};
+  const ruleFiles={bat:["assets/BAT_Rulebook.pdf?v=napdemand1","BAT rules PDF"],nap:["assets/NAP_Rulebook.pdf?v=napdemand1","NAP rules PDF"],aos:["assets/AoS_Rulebook.pdf?v=napdemand1","AoS rules PDF"],nrj:["assets/NRJ_Campaign_Supplement.pdf?v=napdemand1","NRJ rules PDF"]};
   function updateTopbar(){const game=$("gameNav")?.value||"home",link=$("rulesLink"),resetBtn=$("resetBtn"),record=$("recordBtn");
     const rules=ruleFiles[game];if(rules){link.href=rules[0];link.textContent=rules[1];link.hidden=false}else link.hidden=true;
     resetBtn.hidden=game==="home";resetBtn.textContent=game==="nrj"?"New finale":"New test";
@@ -635,7 +794,7 @@
     return {w:c[0],h:c[1]};
   };
   // Every card image carries this tag; bump it whenever the sheets are rebuilt.
-  const ART_VERSION="?v=aoslabel1";
+  const ART_VERSION="?v=napdemand1";
   function peekStyle(deck,index,side,boxW){
     const back=side==="back"&&deck.back;
     // A deck may name one back for all its cards, or one per card.
@@ -789,7 +948,7 @@
   // Difficulty is (Credit goal, Setbacks in the deck); see rules/nap.html.
   const NAP_SETBACK_COUNT={5:3,6:3,7:4,8:5};
   function buildNAP(){const goal=state.nap.creditGoal||6;
-    const setback=shuffle([...Array(6).keys()]).slice(0,NAP_SETBACK_COUNT[goal]??3).map(i=>({type:"s",i}));const apprentice=state.nap.apprentice||"Prodigy",creditGoal=state.nap.creditGoal||4;state.nap={day:1,slot:0,hp:2,str:2,rec:2,credits:0,creditGoal,coupons:[],deviousCoupons:[],couponWild:false,distinctRecover:false,phase:"apprenticeship",exam:null,outcome:null,completedCredits:[],apprentice,deck:shuffle(buildNAPDeck(setback)),discard:[],rows:[[],[],[]],recoveryDots:[null,null,null],primaryDot:null,choice:null,finf:{mode:"reduce",level:1,cards:[0],spent:[],drawn:[],pendingCurrent:[]},pendingReward:null,nextSlotBonus:{str:0,rec:0,crit:0},activeSlotBonus:{str:0,rec:0,crit:0},notice:"",dice:freshDice(),rollsUsed:0,phaseCommittedSuccesses:0,recovering:false,rollResult:""};save();renderNAP();}
+    const setback=shuffle([...Array(6).keys()]).slice(0,NAP_SETBACK_COUNT[goal]??3).map(i=>({type:"s",i}));const apprentice=state.nap.apprentice||"Prodigy",creditGoal=state.nap.creditGoal||4;state.nap={day:1,slot:0,hp:2,str:2,rec:2,credits:0,creditGoal,coupons:[],deviousCoupons:[],distinctRecover:false,phase:"apprenticeship",exam:null,outcome:null,completedCredits:[],apprentice,deck:shuffle(buildNAPDeck(setback)),discard:[],rows:[[],[],[]],recoveryDots:[null,null,null],primaryDot:null,choice:null,finf:{mode:"reduce",level:1,cards:[0],spent:[],drawn:[],pendingCurrent:[]},pendingReward:null,nextSlotBonus:{str:0,rec:0,crit:0},activeSlotBonus:{str:0,rec:0,crit:0},notice:"",dice:freshDice(),rollsUsed:0,recovering:false,rollResult:""};save();renderNAP();}
   function drawNAPAssignment(){
     const card=state.nap.deck.pop();
     if(card?.type!=="f")return card;
@@ -865,7 +1024,7 @@
     n.notice=expired.length?`Last chance expired: ${expired.join(", ")} discarded.`:"";
     if(followed.length)n.notice=(n.notice?n.notice+" ":"")+`${followed.join(", ")} follows you into the next Time Slot.`;
     n.rollResult="";
-    n.rollsUsed=0;n.phaseCommittedSuccesses=0;if(n.choice)n.discard.push(...n.choice);n.choice=null;
+    n.rollsUsed=0;if(n.choice)n.discard.push(...n.choice);n.choice=null;
     const uses=napUses();uses.prodigySlot=false;uses.needsFirstDone=false;
     const nextDot=n.primaryDot??queuedDot;n.primaryDot=null;const dayBefore=n.day;n.slot++;if(n.slot>2){n.slot=0;n.day++;n.rows.forEach(cards=>{for(let i=cards.length-1;i>=0;i--)if(cards[i].completed){const [a]=cards.splice(i,1);n.discard.push({type:a.type,i:a.i});}});if(n.deck.length)n.discard.push(n.deck.pop());}
     if(n.day!==dayBefore){uses.labRatDay=false;}
@@ -934,17 +1093,23 @@
       state.nap.rows[i].forEach(a=>{
         const c=napCard(a.type,a.i,a.nrj,a.dot),card=document.createElement("article");card.className=`assignment ${a.completed?"nap-completed-assignment":""}`;
         // Module cards carry their printed text on the card record itself.
+        // Both faces print text worth reading now, so the Demand side gets
+        // its own table instead of showing nothing.
         const effect=a.nrj?(napCard(a.type,a.i,a.nrj,a.dot).text||"")
-          :a.type==="t"&&!a.demandSide?NAP_REQUEST_EFFECTS[a.i]
+          :a.type==="t"?(a.demandSide?NAP_DEMAND_EFFECTS:NAP_REQUEST_EFFECTS)[a.i]
           :a.type==="o"?NAP_OPPORTUNITY_EFFECTS[a.i]:"";
-        card.innerHTML=`<div class="suite-card landscape ${a.completed?"nap-completed":a.demandSide&&a.type==="t"?"nap-demand":""}"></div>${a.completed?`<span>Completed${a.rewardClaimed===false?" · reward available":""}</span>`:a.type==="o"?(a.demandSide?`<span class="nap-last-chance">Last chance</span>`:""):`<span>Stored ${a.progress}</span>${storedDiceRow(a)}`}${a.ignored?`<span>Restrictions ignored</span>`:""}${a.source==="finf"||a.source==="skull"?`<span>Added by ${a.source==="finf"?"FINF":"Skull"} · its Skulls ignored</span>`:""}${a.completed&&effect?`<small class="nap-completed-effect">${effect}</small>`:""}<div class="assignment-actions">${i===state.nap.slot&&!a.completed?`<button data-nap-assign="${a.id}">Apply selected dice</button><button data-complete="${a.id}" class="primary">Complete</button>`:""}${i===state.nap.slot&&!a.completed&&a.type==="s"&&!a.ignored&&(state.nap.deviousCoupons||[]).length&&!state.nap.pendingReward?`<button data-nap-dev-ignore="${a.id}">Discard a Devious card: ignore this Setback</button>`:""}${i===state.nap.slot&&!a.completed&&finfHeldFor(i)&&a.type!=="e"&&!state.nap.pendingReward?`<button data-nap-reduce="${a.id}">Use FINF ${i+1} (${FINF_SLOTS[i]}) to remove this card</button>`:""}${i===state.nap.slot&&!a.completed&&a.type!=="o"&&!state.nap.pendingReward?(state.nap.coupons||[]).map((ci,slot)=>NAP_COUPONS[ci].progress?`<button data-nap-coupon-use="${slot},${a.id}">${NAP_OPPS[ci]}: +${NAP_COUPONS[ci].progress} ${NAP_COUPONS[ci].progress===1?"success":"successes"}</button>`:"").join(""):""}</div>`;
+        card.innerHTML=`<div class="suite-card landscape ${a.completed?"nap-completed":a.demandSide&&a.type==="t"?"nap-demand":""}"></div>${a.completed?`<span>Completed${a.rewardClaimed===false?" · reward available":""}</span>`:a.type==="o"?(a.demandSide?`<span class="nap-last-chance">Last chance</span>`:""):`<span>Stored ${a.progress}</span>${storedDiceRow(a)}`}${a.ignored?`<span>Restrictions ignored</span>`:""}${a.source==="finf"||a.source==="skull"?`<span>Added by ${a.source==="finf"?"FINF":"Skull"} · its Skulls ignored</span>`:""}${a.completed&&effect?`<small class="nap-completed-effect">${effect}</small>`:""}<div class="assignment-actions">${i===state.nap.slot&&!a.completed?`<button data-nap-assign="${a.id}">Apply selected dice</button><button data-complete="${a.id}" class="primary">Complete</button>`:""}${i===state.nap.slot&&!a.completed&&a.type==="s"&&!a.ignored&&(state.nap.deviousCoupons||[]).length&&!state.nap.pendingReward?`<button data-nap-dev-ignore="${a.id}">Discard a Devious card: ignore this Setback</button>`:""}${i===state.nap.slot&&!a.completed&&finfHeldFor(i)&&a.type!=="e"&&!state.nap.pendingReward?`<button data-nap-reduce="${a.id}">Use FINF ${i+1} (${FINF_SLOTS[i]}) to remove this card</button>`:""}${i===state.nap.slot&&!a.completed&&a.type!=="o"&&!state.nap.pendingReward?(state.nap.coupons||[]).map((ci,slot)=>napCouponWantsCard(ci,a)?`<button data-nap-coupon-use="${slot},${a.id}">${NAP_OPPS[ci]}: ${napCouponLabel(ci)}</button>`:"").join(""):""}</div>`;
         setSprite(card.querySelector(".suite-card"),c.file,c.i,c.cols,c.rows);row.appendChild(card);
       });
       if(i===state.nap.slot){box.querySelector(".nap-slot-left").insertBefore(actions,box.querySelector(".nap-recovery"));const bottom=document.createElement("div");bottom.className="nap-active-bottom";bottom.append(roller);box.append(choice,reward,bottom);}
       host.appendChild(box);
     });
   }
-  function eligibleNAPReward(){const p=state.nap.pendingReward;if(!p||p.kind==="peek")return[];return state.nap.dice.filter(d=>d.zone==="exhausted"&&(p.kind==="committed"?p.eligibleIds.includes(d.id):p.kind==="distinct"?!p.usedColors.includes(d.color):p.kind==="restricted"?!["red","purple"].includes(d.color):p.kind==="yellowGreen"?["yellow","green"].includes(d.color):true));}
+  // "color" is the kind the 2026-11-12 Assignment revision put on nearly every
+  // Task: a named colour, taken from the exhausted pool, including a die the
+  // card itself just exhausted. `distinctColors` is the "1 Green and 1 Blue"
+  // form - one of each, not two of either.
+  function eligibleNAPReward(){const p=state.nap.pendingReward;if(!p||p.kind==="peek"||p.kind==="dot")return[];return state.nap.dice.filter(d=>d.zone==="exhausted"&&(p.kind==="color"?p.colors.includes(d.color)&&(!p.distinctColors||!p.usedColors.includes(d.color)):p.kind==="committed"?p.eligibleIds.includes(d.id):p.kind==="distinct"?!p.usedColors.includes(d.color):p.kind==="restricted"?!["red","purple"].includes(d.color):p.kind==="yellowGreen"?["yellow","green"].includes(d.color):true));}
   function finishNAPReward(){const p=state.nap.pendingReward;if(p){const a=state.nap.rows.flat().find(x=>x.id===p.cardId);if(a)a.rewardClaimed=true;}state.nap.pendingReward=null;}
   function renderNAPReward(){
     const p=state.nap.pendingReward,host=$("napReward");
@@ -966,13 +1131,26 @@
         list.append(line);
       });
       host.append(list);
-      if(p.cardIndex===20){const bottom=document.createElement("button");bottom.textContent=p.toBottom?"Return to top":"Put card on bottom";bottom.dataset.napPeekBottom="";host.append(bottom);}
+      // Flagged by the reward, not by the card index: peek-with-bottom moved
+      // from Update Nobulous' Lab Notes' Request to Decode Nobulous' Lecture
+      // Notes' DEMAND on 2026-11-12, and `p.cardIndex===20` would have
+      // followed the old card silently.
+      if(p.bottomOption){const bottom=document.createElement("button");bottom.textContent=p.toBottom?"Return to top":"Put card on bottom";bottom.dataset.napPeekBottom="";host.append(bottom);}
+    }else if(p.kind==="dot"){
+      // "Choose the next Special Recovery color (not Red)." The chosen dot
+      // overrides the Primary's, which is what sets the next slot's queue.
+      const buttons=document.createElement("div");buttons.className="nap-reward-dice";
+      [["P","purple"],["B","blue"],["G","green"],["Y","yellow"]].forEach(([dot,color])=>{
+        const b=document.createElement("button");b.className=`roll-die ${color}`;
+        b.textContent=color;b.dataset.napRewardDot=dot;buttons.appendChild(b);
+      });
+      host.append(buttons);
     }else{
       const buttons=document.createElement("div");buttons.className="nap-reward-dice";
       eligibleNAPReward().forEach(d=>{const b=document.createElement("button");b.className=`roll-die ${d.color} exhausted`;b.textContent=d.color;b.dataset.napRewardDie=d.id;buttons.appendChild(b);});
       host.append(buttons);
     }
-    const done=document.createElement("button");done.textContent=p.kind==="peek"?"Return cards to deck":"Done with reward";done.dataset.napRewardDone="";host.append(done);
+    if(p.kind!=="dot"){const done=document.createElement("button");done.textContent=p.kind==="peek"?"Return cards to deck":"Done with reward";done.dataset.napRewardDone="";host.append(done);}
   }
   // The four things you do in a Time Slot. Each step points at the control
   // that already exists for it; step 3 belongs to whichever Assignment you
@@ -1512,7 +1690,7 @@
     host.querySelector(".roll-result").textContent=n.rollResult;
   }
   function renderRoller(game){const host=$(`${game}Roller`),dice=state[game].dice;if(game==="nap"){renderNAPRoller(host,dice);return;}const rec=!!state[game].recovering;host.classList.toggle("recovering",rec);host.innerHTML=`<div class="roller-head"><div><p class="kicker">20 Strong dice</p><h2>${rec?`Tap exhausted dice to recover (up to ${recoverCap(game)})`:"Tap available dice to commit"}</h2></div><div class="compact-actions"><button data-roll="${game}" class="primary" ${rec?"disabled":""}>Roll selected</button><button data-recover="${game}"${rec?' class="primary"':""}>${rec?`Confirm recovery (${recoverPicked(game).length} / ${recoverCap(game)})`:"Recover up to REC"}</button><button data-ready="${game}" ${rec?"disabled":""}>Ready all</button>${rec?`<button data-recover-cancel="${game}">Cancel recovery</button>`:""}</div></div><div class="roller-dice"></div><div class="roll-result"></div>`;const row=host.querySelector(".roller-dice");[...dice].sort(byColor).forEach(d=>{const b=document.createElement("button");b.className=`roll-die ${d.color} ${d.zone} ${d.selected?"selected":""}`;const face=document.createElement("span");face.className="face";face.textContent=d.face||"";b.appendChild(face);const tiny=document.createElement("span");tiny.className="tiny";tiny.textContent=d.color[0].toUpperCase();b.appendChild(tiny);b.title=`${d.color} · ${d.zone}${d.zone==="rolled"||d.face?` · ${faceLabel(d.face)}`:""}`;b.onclick=()=>{if(rec){toggleRecoverDie(game,d);return;}if(game==="nrj"&&state.nrj.armed==="sleight"&&d.zone==="locked"){nrjSleight(d);return;}if(game==="nrj"&&state.nrj.armed==="requisition"&&d.zone==="exhausted"){nrjRequisition(d);return;}if(d.zone!=="available"&&!(game==="nrj"&&d.zone==="rolled"))return;d.selected=!d.selected;save();renderRoller(game);};row.appendChild(b);});if(game==="nrj")host.querySelector(".roll-result").textContent=state.nrj.rollResult||"";}
-  function rollSelected(game){const n=state[game],held=game==="nap"||game==="nrj",dice=n.dice.filter(d=>d.selected&&(d.zone==="available"||held&&d.zone==="rolled"));if(!dice.length||game==="nap"&&(n.rollsUsed>=n.str||n.pendingReward))return;if(game==="nrj"&&(n.outcome||n.rollsUsed>=nrjStr()))return;let successes=0;dice.forEach(d=>{d.face=FACE[d.color][Math.floor(Math.random()*6)];successes+=d.face==="✷"?2:d.face==="✦"?1:0;d.zone=held?"rolled":"exhausted";d.selected=false;});if(game==="nrj"){n.rollsUsed++;n.rollResult=`Strategy roll ${n.rollsUsed} of ${nrjStr()}: ${tallyText(rollTally(dice))} from ${dice.length} ${dice.length===1?"die":"dice"}. Select rolled dice, then Apply them to an Exhibit.`;save();renderNRJ();return;}if(game==="nap"){n.rollsUsed++;n.phaseCommittedSuccesses=0;n.rollResult=`Strategy roll ${n.rollsUsed} of ${n.str}: ${tallyText(rollTally(dice))} from ${dice.length} ${dice.length===1?"die":"dice"}. ${n.rollsUsed<n.str?"Select unassigned rolled dice to apply or reroll.":"No Strategy rolls remain; apply any unassigned rolled dice."}`;save();renderNAP();return;}save();renderRoller(game);$(`${game}Roller`).querySelector(".roll-result").textContent=`${tallyText(rollTally(dice))} from ${dice.length} ${dice.length===1?"die":"dice"}.`;}
+  function rollSelected(game){const n=state[game],held=game==="nap"||game==="nrj",dice=n.dice.filter(d=>d.selected&&(d.zone==="available"||held&&d.zone==="rolled"));if(!dice.length||game==="nap"&&(n.rollsUsed>=n.str||n.pendingReward))return;if(game==="nrj"&&(n.outcome||n.rollsUsed>=nrjStr()))return;let successes=0;dice.forEach(d=>{d.face=FACE[d.color][Math.floor(Math.random()*6)];successes+=d.face==="✷"?2:d.face==="✦"?1:0;d.zone=held?"rolled":"exhausted";d.selected=false;});if(game==="nrj"){n.rollsUsed++;n.rollResult=`Strategy roll ${n.rollsUsed} of ${nrjStr()}: ${tallyText(rollTally(dice))} from ${dice.length} ${dice.length===1?"die":"dice"}. Select rolled dice, then Apply them to an Exhibit.`;save();renderNRJ();return;}if(game==="nap"){n.rollsUsed++;n.rollResult=`Strategy roll ${n.rollsUsed} of ${n.str}: ${tallyText(rollTally(dice))} from ${dice.length} ${dice.length===1?"die":"dice"}. ${n.rollsUsed<n.str?"Select unassigned rolled dice to apply or reroll.":"No Strategy rolls remain; apply any unassigned rolled dice."}`;save();renderNAP();return;}save();renderRoller(game);$(`${game}Roller`).querySelector(".roll-result").textContent=`${tallyText(rollTally(dice))} from ${dice.length} ${dice.length===1?"die":"dice"}.`;}
   function completeNAPAssignment(a,context={}){
     const n=state.nap;if(n.pendingReward||a.completed)return;
     const committed=[...new Set([...(a.committedDice||[]),...(a.storedDice||[])])],committedDice=committed.map(id=>n.dice.find(d=>d.id===id)).filter(Boolean);
@@ -1543,17 +1721,56 @@
         n.notice=`${card[0]} completed. Resolve now: ${card[3]}`;
       }
     }
-    if(a.type!=="t"||a.demandSide)return;
-    const i=a.i,target=napCard("t",i).target,total=a.progress||context.successes||0,used=a.diceUsed||committedDice.length,crits=a.critUsed?1:0;
-    if(i===6&&total===target)n.hp++;
-    if(i===13)n.rec++;
-    if(i===23)n.str++;
-    if(i===19||i===20){const count=Math.min(i===19?3:1,n.deck.length),order=[];for(let j=0;j<count;j++)order.push(n.deck.pop());if(count)reward("peek",0,NAP_REQUEST_EFFECTS[i],{order});return;}
-    if(i===21){reward("yellowGreen",1,NAP_REQUEST_EFFECTS[i]);return;}
-    if(i===24&&(context.manual||a.attempts===1)){reward("any",1,NAP_REQUEST_EFFECTS[i]);return;}
-    const eligible=(i===0&&n.phaseCommittedSuccesses===2)||(i===1&&used<=3)||(i===4&&!crits)||([8,9,10].includes(i)&&total===target)||(i===12&&used===3)||(i===14&&a.attempts===1)||(i===16&&context.priorStored===0)||(i===17&&a.source==="primary")||(i===18&&used===4)||(i===22&&used<=4)||(i===25&&crits>0);
-    const unassignedHits=i===0&&n.dice.some(d=>d.zone==="rolled"&&(d.face==="✦"||d.face==="✷"));
-    if(!unassignedHits&&((eligible&&committed.length)||context.manual&&[0,1,4,8,9,10,12,14,16,17,18,22,25].includes(i)))reward(context.manual&&!committed.length?"any":"committed",1,NAP_REQUEST_EFFECTS[i],{eligibleIds:committed});
+    if(a.type!=="t")return;
+    payNAPTaskReward(a,reward);
+  }
+  // THE 2026-11-12 REVISION, AND THE WHOLE OF WHAT IT CHANGED HERE. This
+  // used to be one `eligible=` expression reconstructing conditions - exactly
+  // 2 successes this phase, 3 or fewer dice, exactly 4 dice, no Crit, hit the
+  // Target on the nose - from state the sweep had already destroyed, which is
+  // why half of it was reachable only through context.manual. None of those
+  // conditions exists any more: a Task pays when it is completed, on
+  // whichever face it was completed, and the reward names a colour.
+  function payNAPTaskReward(a,reward){
+    const n=state.nap,face=a.demandSide?"dem":"req";
+    const table=a.nrj?NAP_IMPOSTER_REWARDS:NAP_TASK_REWARDS;
+    const spec=(table[a.i]||{})[face];
+    const name=napCard(a.type,a.i,a.nrj,a.dot).name;
+    const text=a.nrj
+      ? `${a.demandSide?"Demand":"Request"} reward: ${NAP_IMPOSTER_TASKS[a.i][a.demandSide?7:6]}.`
+      : (a.demandSide?NAP_DEMAND_EFFECTS:NAP_REQUEST_EFFECTS)[a.i];
+    if(!spec)return;
+    if(spec.manual){n.notice=`${name} completed. Resolve at the table: ${spec.manual}.`;return;}
+    if(spec.hp){
+      if(spec.primary&&a.source!=="primary")return;
+      n.hp++;n.notice=`${name}: +1 Health.`;return;
+    }
+    if(spec.rec){n.rec++;n.notice=`${name}: +1 REC, permanently.`;return;}
+    if(spec.str){n.str++;n.notice=`${name}: +1 STR, permanently.`;return;}
+    if(spec.roll){
+      // "1 additional Strategy roll this Time Slot" raises the allowance even
+      // if STR is already spent, so it is a slot bonus and not a stat.
+      n.activeSlotBonus.str+=spec.roll;n.str+=spec.roll;
+      n.notice=`${name}: 1 additional Strategy roll this Time Slot.`;return;
+    }
+    if(spec.pickDot){reward("dot",1,text);return;}
+    if(spec.peek){
+      const count=Math.min(spec.peek,n.deck.length),order=[];
+      for(let j=0;j<count;j++)order.push(n.deck.pop());
+      if(count)reward("peek",0,text,{order,bottomOption:!!spec.bottom});
+      else n.notice=`${name} completed, but the Assignment deck is empty.`;
+      return;
+    }
+    if(spec.colors){
+      // "If no die of that color is exhausted, skip that recovery" - the book
+      // says nothing is substituted, so say so rather than opening an empty
+      // picker the player cannot dismiss meaningfully.
+      if(!n.dice.some(d=>d.zone==="exhausted"&&spec.colors.includes(d.color))){
+        n.notice=`${name} completed. No ${spec.colors.join(" or ")} die is exhausted, so that recovery is skipped.`;
+        return;
+      }
+      reward("color",spec.n||1,text,{colors:spec.colors,distinctColors:!!spec.distinct});
+    }
   }
   // Printed effects on the NRJ module cards that the lab can check. The rest
   // stay table-judged; each is named here so it is clear which is which.
@@ -1607,11 +1824,12 @@
       prodigy=Object.entries(all).some(([color,count])=>count>=2&&dice.some(d=>d.color===color&&d.face));
       if(prodigy)uses.prodigySlot=true;
     }
-    let wild=false;
-    if(!valid&&!prodigy&&n.couponWild&&successful.length){
-      wild=true;n.couponWild=false;      // "Raid the Supply Closet"
-    }
-    if(!valid&&!prodigy&&!wild){n.rollResult="Select a successful die matching this card's dot, Red, or two successful dice of another color.";save();renderRoller("nap");return;}
+    // NO COUPON SATISFIES THE COLOUR RULE ANY MORE. Raid the Supply Closet
+    // printed "one die counts as any color for one roll" until 2026-11-12,
+    // which is the only thing that ever set n.couponWild; the card is a
+    // recovery now, so the wild is gone from here, from the exam checks and
+    // from the saved state. Prodigy is the one remaining relaxation.
+    if(!valid&&!prodigy){n.rollResult="Select a successful die matching this card's dot, Red, or two successful dice of another color.";save();renderRoller("nap");return;}
     const blocked=moduleBlock(a,dice,successful);
     if(blocked){n.rollResult=blocked;save();renderNAP();return;}
     if(a.type!=="s"||!a.nrj){
@@ -1626,7 +1844,6 @@
     else a.progress+=gained;
     a.attempts=(a.attempts||0)+1;
     a.diceUsed=(a.diceUsed||0)+dice.length;a.critUsed=!!a.critUsed||dice.some(d=>d.face==="✷");a.committedDice=[...new Set([...(a.committedDice||[]),...dice.map(d=>d.id)])];
-    n.phaseCommittedSuccesses+=successful.reduce((sum,d)=>sum+(d.face==="✷"?2:1),0);
     dice.forEach(d=>{d.zone=opportunity||!d.face?"exhausted":"stored";d.selected=false;if(!opportunity&&d.face)a.storedDice.push(d.id);});
     const completed=(opportunity?gained:a.progress)>=(a.demandSide?napCard(a.type,a.i,a.nrj,a.dot).demand:napCard(a.type,a.i,a.nrj,a.dot).target);
     if(completed)completeNAPAssignment(a,{successes:gained,priorStored});
@@ -1679,12 +1896,13 @@
     const devIgnore=e.target.closest("[data-nap-dev-ignore]");
     if(devIgnore){useDeviousIgnore(devIgnore.dataset.napDevIgnore);return;}
     const dev=e.target.closest("[data-nap-devious]");
-    if(dev){spendDeviousCoupon(Number(dev.dataset.napDevious));return;}
+    if(dev){const [at,way]=dev.dataset.napDevious.split(",");spendDeviousCoupon(Number(at),way||"distinct");return;}
     const couponSpend=e.target.closest("[data-nap-coupon]");
     if(couponSpend){spendNAPCoupon(Number(couponSpend.dataset.napCoupon));return;}
     const couponUse=e.target.closest("[data-nap-coupon-use]");
     if(couponUse){const [slot,id]=couponUse.dataset.napCouponUse.split(",");spendNAPCoupon(Number(slot),id);return;}
     const rewardDie=e.target.closest("[data-nap-reward-die]");if(rewardDie){const p=state.nap.pendingReward,d=state.nap.dice.find(x=>x.id==rewardDie.dataset.napRewardDie);if(p&&d&&eligibleNAPReward().includes(d)){d.zone="available";d.face="";d.selected=false;p.remaining--;p.usedColors.push(d.color);if(!p.remaining||!eligibleNAPReward().length)finishNAPReward();state.nap.rollResult=`Recovered ${d.color} die from ${napCard(p.cardType,p.cardIndex).name}.`;save();renderNAP();}}
+    const rewardDot=e.target.closest("[data-nap-reward-dot]");if(rewardDot&&state.nap.pendingReward?.kind==="dot"){const dot=rewardDot.dataset.napRewardDot;state.nap.primaryDot=dot;state.nap.rollResult=`Next Special Recovery set to ${{P:"purple",B:"blue",G:"green",Y:"yellow"}[dot]}.`;finishNAPReward();save();renderNAP();return;}
     const peekMove=e.target.closest("[data-nap-peek-move]");if(peekMove&&state.nap.pendingReward?.kind==="peek"){const [i,delta]=peekMove.dataset.napPeekMove.split(",").map(Number),order=state.nap.pendingReward.order,j=i+delta;if(j>=0&&j<order.length){[order[i],order[j]]=[order[j],order[i]];save();renderNAP();}}
     if(e.target.closest("[data-nap-peek-bottom]")&&state.nap.pendingReward?.kind==="peek"){state.nap.pendingReward.toBottom=!state.nap.pendingReward.toBottom;save();renderNAP();}
     if(e.target.closest("[data-nap-reward-done]")){const p=state.nap.pendingReward;if(p?.kind==="peek"){if(p.toBottom)state.nap.deck.unshift(p.order[0]);else p.order.slice().reverse().forEach(card=>state.nap.deck.push(card));}finishNAPReward();save();renderNAP();}

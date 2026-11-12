@@ -1789,6 +1789,38 @@ def aos_assertions():
           at("Limitations", float(g.aosCol(int(g.AOS_LIMITS))),
              float(g.AOS_ROW1))),
          (True, True))
+    # THE TOP ROW READS DECK, DECK, CARD, CARD as of 2026-11-12, left to
+    # right, and the two orders are not interchangeable: you draw from
+    # both decks in one step and then read both face-up cards together.
+    # Compared as POSITIONS rather than as index numbers, so renaming the
+    # constants cannot satisfy it and swapping two of them cannot hide.
+    want("the top row is Program Deck, Limitation Deck, Program, Limitation",
+         [round(float(g.aosCol(int(k))), 2)
+          for k in (g.AOS_PROGRAMS, g.AOS_LIMITS, g.AOS_PROGRAM, g.AOS_LIMIT)],
+         sorted(round(float(g.aosCol(k)), 2) for k in range(1, 5)))
+
+    # AND THE DISCARD LEFT THAT ROW for the right-hand column, directly
+    # above the banished dice, so the top row is the four spaces of a turn
+    # and nothing else.
+    _disc = (round(float(g.AOS_DISCARD_X), 2), round(float(g.AOS_DISCARD_Z), 2))
+    _right = round(float(g.AOS_RIGHT), 2)
+    want("the discard sits above the banished dice, not in the top row",
+         (_disc[0] == _right,
+          _disc[1] > round(float(g.AOS_ROW3), 2),
+          _disc[1] != round(float(g.AOS_ROW1), 2),
+          any(abs(float(b.x) - _right) < 0.05
+              and abs(float(b.z) - float(g.AOS_ROW3)) < 0.05
+              for b in g.aosBoxes().values())),
+         (True, True, True, True))
+    want("...and nothing else is on the discard's space",
+         len([b for b in g.aosBoxes().values()
+              if abs(float(b.x) - _disc[0]) < 0.05
+              and abs(float(b.z) - _disc[1]) < 0.05]), 1)
+    want("...leaving the fifth top-row column empty",
+         [b for b in g.aosBoxes().values()
+          if abs(float(b.x) - float(g.aosCol(5))) < 0.05
+          and abs(float(b.z) - float(g.AOS_ROW1)) < 0.05], [])
+
     # THE ADVANCED PROGRAMS STAY IN THE BAG - they are the endgame -
     # but their space is still drawn, because they come out onto it.
     want("the Advanced Programs are not on the table",
@@ -2680,10 +2712,13 @@ def exam_pool_assertions():
     want("every Final Exam belongs to exactly one subject",
          sorted(n for s in exam for n in exam[s]), list(range(1, 13)))
 
-    # THE TABLE, AS A FUNCTION, at both edges of all three bands.
-    want("the pool table reads 1 card at 0-1 Credits, 2 at 2-3, 3 at 4+",
-         [int(g.examPoolSize(n)) for n in range(0, 8)],
-         [1, 1, 2, 2, 3, 3, 3, 3])
+    # ONE CARD PER SUBJECT, WHATEVER THE TRANSCRIPT SAYS, as of
+    # 2026-11-12. It used to read 1 at 0-1 Credits, 2 at 2-3 and 3 at
+    # 4+, which put the subjects you had studied into the pool more
+    # often than the ones you had not - so the Credit ladder was paying
+    # out twice, once in Targets and once in which cards you faced.
+    want("the pool puts in 1 card per subject at every Credit count",
+         [int(g.examPoolSize(n)) for n in range(0, 8)], [1] * 8)
 
     # AND THE POOL IT BUILDS, for four transcripts: nothing studied, a
     # subject filled, two filled while one is empty, and one Credit
@@ -2711,9 +2746,8 @@ def exam_pool_assertions():
         by = {}
         for nm in names:
             by[whose(nm)] = by.get(whose(nm), 0) + 1
-        want("%s: each subject puts in what its Credits bought" % label,
-             by, dict((s, int(g.examPoolSize(have.get(s, 0))))
-                      for s in sorted(exam)))
+        want("%s: every subject puts in exactly one card" % label,
+             by, dict((s, 1) for s in sorted(exam)))
         want("%s: and no exam is in the pool twice" % label,
              len(set(names)), len(names))
         drawn = sorted(str(k) for k in draw.keys())
@@ -2722,27 +2756,47 @@ def exam_pool_assertions():
         want("%s: ...and every one of them was in the pool" % label,
              [nm for nm in drawn if nm not in names], [])
         # THE LINE THE BRIEFING PRINTS, which is the only way a player
-        # at the table can tell what the pool was built from.
+        # at the table can tell what the pool was built from. It still
+        # reports the Credits, which now decide Targets rather than
+        # which cards come up - so the number is worth printing and is
+        # no longer the number that sized the pool.
         want("%s: the briefing reports each subject's Credits" % label,
-             sorted(re.findall(r"(\w+) (\d+)->(\d+)", str(line))),
-             sorted((subject[s], str(have.get(s, 0)),
-                     str(int(g.examPoolSize(have.get(s, 0)))))
+             sorted(re.findall(r"(\w+) (\d+) Credits, (\d+) card",
+                               str(line))),
+             sorted((subject[s], str(have.get(s, 0)), "1")
                     for s in sorted(exam)))
 
-    # EVERY EXAM OF A FILLED SUBJECT, AND ONLY THOSE. 4+ Credits takes
-    # all three cards that subject has, so this pool is knowable
-    # exactly and no shuffle can change it - the one case the check
-    # does not have to go through examPoolSize to say what it wants.
+    # FILLING A SUBJECT NO LONGER BUYS ITS WHOLE SHELF. 4 Credits in
+    # Theory used to put all three Theory exams in the pool; it puts in
+    # one, like every other subject, and the pool is 4 cards whatever
+    # the transcript looks like. That is the whole of the 2026-11-12
+    # change and it is worth stating on the transcript that used to be
+    # the exception.
     w, g = start("Standard", 0, Panel())
     for i in range(4):
         o = Obj(w, "th%d" % i, "Task %d" % cred["THE"][i])
         o.pos = (float(g.PILE_X), 1.0, pz)
         w.table[o.guid] = o
     _, pool, _ = g.examDraw()
-    want("4 Credits in Theory puts all three Theory exams in the pool",
-         sorted(nm for nm in (str(v) for v in pool.values())
-                if whose(nm) == "THE"),
-         sorted("%s %d" % (one, n) for n in exam["THE"]))
+    _filled = [str(v) for v in pool.values()]
+    want("4 Credits in Theory still puts exactly one Theory exam in",
+         len([nm for nm in _filled if whose(nm) == "THE"]), 1)
+    want("...and the pool is still one card from each of the 4 subjects",
+         sorted(whose(nm) for nm in _filled), sorted(exam))
+
+    # AND EVERY ONE OF THE TWELVE CAN COME UP, which is the half of this
+    # that a count cannot see. The old pool took the FIRST cards of each
+    # subject in table order, so a check on sizes passed while eight of
+    # the twelve printed exams were unreachable on an empty transcript -
+    # and those eight carry eight of the twelve printed restrictions.
+    # Nothing short of drawing repeatedly notices that.
+    w, g = start("Standard", 0, Panel())
+    _seen = set()
+    for _ in range(400):
+        _, _pool, _ = g.examDraw()
+        _seen.update(int(str(v).rsplit(" ", 1)[-1]) for v in _pool.values())
+    want("every one of the 12 Final Exams can reach the pool",
+         sorted(_seen), list(range(1, 13)))
     # AND NOTHING FROM A SUBJECT'S OWN CARDS ANYWHERE ELSE. The pool
     # is named by index, so an off-by-one in NAP_EXAM would hand
     # Theory an Engineering exam and every count above would still

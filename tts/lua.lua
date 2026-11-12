@@ -423,13 +423,26 @@ function aosCol(k) return AOS_DECK1 + (k - 1) * AOS_COL end
 -- rather than as a list, so they sit about the middle of the felt.
 function aosMid(k, n) return (k - (n + 1) / 2) * AOS_COL end
 
--- WHICH SPACE IS WHICH along the top.
-AOS_PROGRAMS, AOS_PROGRAM = 1, 2       -- the deck, then the card it reveals
-AOS_LIMITS, AOS_LIMIT = 3, 4
--- AND THE PROGRAMS FINISHED WITH THIS CYCLE, next along the same row.
--- Not SET ASIDE, which is the pile a Program leaves the game by: this
--- is the one it comes back from when the deck is rebuilt.
-AOS_DISCARD = 5
+-- WHICH SPACE IS WHICH along the top: THE TWO DECKS TOGETHER, then
+-- the two cards they reveal. Reordered 2026-11-12, from deck / card /
+-- deck / card. You draw from both decks in the same step - "reveal the
+-- Program, then reveal exactly 1 Limitation" - so the two decks are
+-- one reach, and the two face-up cards are read together as the thing
+-- you are about to allocate against.
+AOS_PROGRAMS, AOS_LIMITS = 1, 2        -- the two decks, side by side
+AOS_PROGRAM, AOS_LIMIT = 3, 4          -- and what each has revealed
+
+-- AND THE PROGRAMS FINISHED WITH THIS CYCLE. Not SET ASIDE, which is
+-- the pile a Program leaves the game by: this is the one it comes back
+-- from when the deck is rebuilt.
+--
+-- IT LEFT THE TOP ROW on 2026-11-12 and now sits in the right-hand
+-- column, directly above the banished dice - so that column reads
+-- TIER CARD / DISCARD / BANISHED DICE from the back of the table
+-- forward, and the top row is the four spaces of a turn and nothing
+-- else. aosCol(5) is free.
+AOS_DISCARD_X = AOS_RIGHT
+AOS_DISCARD_Z = AOS_ROW2
 AOS_MATS = 5
 AOS_BACKDOORS = 6
 
@@ -1413,7 +1426,7 @@ function aosBoxes()
   end
   box(AOS_TECH_X, AOS_ROW1 + AOS_WIDE_LIFT, AOS_WIDE_HW, AOS_WIDE_HD)
   for k = 1, 4 do box(aosCol(k), AOS_ROW1) end
-  box(aosCol(AOS_DISCARD), AOS_ROW1)
+  box(AOS_DISCARD_X, AOS_DISCARD_Z)      -- above the banished dice
   box(AOS_RIGHT - AOS_COL, AOS_ROW1)     -- Advanced Programs, for the finale
   box(AOS_RIGHT, AOS_ROW1)               -- what a tier deals face-up
   for k = 1, AOS_MATS do box(aosMid(k, AOS_MATS), AOS_ROW2) end
@@ -2240,14 +2253,26 @@ function napExamBoxes()
   return out
 end
 
--- "For each subject independently, randomly add the following number
--- of Final Exam cards from that subject to the pool" - 1 card at 0-1
--- Credits in that subject, 2 at 2-3, 3 at 4+. There are only three
--- exams per subject, so 4+ Credits puts the whole subject in.
-function examPoolSize(credits)
-  if credits >= 4 then return 3 end
-  if credits >= 2 then return 2 end
-  return 1
+-- "Randomly select 1 Final Exam card from each subject. Include each
+-- subject even if you earned no Credits in it." ONE CARD PER SUBJECT
+-- AS OF 2026-11-12, whatever the transcript looks like.
+--
+-- It used to be 1 card at 0-1 Credits in that subject, 2 at 2-3 and 3
+-- at 4+, which stacked the pool with the subjects you had already
+-- studied: the exams you were best prepared for were also the
+-- likeliest to come up, and the Credit ladder pulled in the same
+-- direction as the Target reduction it already pays for. The argument
+-- for the old shape was that "a lopsided transcript is not safe, it is
+-- just differently exposed", and it was the wrong way round - a
+-- lopsided transcript made you SAFER, because it kept the subjects you
+-- had neglected out of the pool.
+--
+-- The size is now a constant rather than a function of Credits, and
+-- EXAM_POOL_PER_SUBJECT is the whole of it.
+EXAM_POOL_PER_SUBJECT = 1
+
+function examPoolSize(_credits)
+  return EXAM_POOL_PER_SUBJECT
 end
 
 -- WHICH EXAMS YOU SIT, OUT OF WHAT YOU ACTUALLY STUDIED.
@@ -2258,10 +2283,10 @@ end
 -- the cards those four rolls produced. Doing it by hand means doing
 -- it after a day that has already gone badly.
 --
--- A subject you never studied still puts one card in, so it can still
--- come up; a subject you filled puts all three of its own in. That is
--- the shape of the thing - a lopsided transcript is not safe, it is
--- just differently exposed.
+-- Every subject puts in exactly one card, studied or not, so the pool
+-- is 4 and you sit 3 of them: each subject has a 75% chance to appear
+-- and can appear at most once. Credits do not decide WHICH exams you
+-- sit any more, only how far their Targets come down.
 --
 -- It hands back the three nicknames, the pool size and the line that
 -- explains them, because a pool built behind your back is a pool you
@@ -2281,7 +2306,8 @@ function examDraw()
       table.insert(pool, (CARD_NAME['Final Exams'] or 'Final Exam')
                    .. ' ' .. pick[i])
     end
-    table.insert(lines, (NAP_SUBJECT[s] or s) .. ' ' .. have .. '->' .. n)
+    table.insert(lines, (NAP_SUBJECT[s] or s) .. ' ' .. have
+                 .. ' Credits, ' .. n .. ' card')
   end
   local draw = {}
   for i, nm in ipairs(shuffled(pool)) do
@@ -2519,7 +2545,7 @@ function aosAdvancedBoxes()
   end
   box(aosCol(AOS_PROGRAMS), AOS_ROW1)    -- whatever is left of the deck
   box(aosCol(AOS_PROGRAM), AOS_ROW1)     -- the Program it last revealed
-  box(aosCol(AOS_DISCARD), AOS_ROW1)     -- and the pile they go to
+  box(AOS_DISCARD_X, AOS_DISCARD_Z)      -- and the pile they go to
   box(AOS_TECH_X, AOS_ROW3)              -- Programs set aside for good
   return out
 end

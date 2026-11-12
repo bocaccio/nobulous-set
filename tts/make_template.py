@@ -329,15 +329,18 @@ def draw_aos(d, lua):
     col = lambda k: float(g.aosCol(k))
     r1, r3 = float(g.AOS_ROW1), float(g.AOS_ROW3)
     fit = float(g.AOS_BOX_HW) * 1.8
-    label(d, "PROGRAM\nDECK", col(1), r1, fit=fit)
-    label(d, "PROGRAM", col(2), r1, fit=fit)
-    label(d, "LIMITATION\nDECK", col(3), r1, fit=fit)
-    label(d, "LIMITATION", col(4), r1, fit=fit)
+    # The two decks first, then the two cards they reveal - the order
+    # the constants give, so a reordered row relabels itself.
+    label(d, "PROGRAM\nDECK", col(int(g.AOS_PROGRAMS)), r1, fit=fit)
+    label(d, "LIMITATION\nDECK", col(int(g.AOS_LIMITS)), r1, fit=fit)
+    label(d, "PROGRAM", col(int(g.AOS_PROGRAM)), r1, fit=fit)
+    label(d, "LIMITATION", col(int(g.AOS_LIMIT)), r1, fit=fit)
     label(d, "ADVANCED", float(g.AOS_RIGHT) - float(g.AOS_COL), r1, fit=fit)
     # The space a tier lays its one face-up card on, which is empty
     # and unexplained at tier 0.
     label(d, "TIER CARD", float(g.AOS_RIGHT), r1, fit=fit)
-    label(d, "DISCARD", col(int(g.AOS_DISCARD)), r1, fit=fit)
+    label(d, "DISCARD", float(g.AOS_DISCARD_X), float(g.AOS_DISCARD_Z),
+          fit=fit)
     label(d, "SET ASIDE", float(g.AOS_TECH_X), r3, fit=fit)
     label(d, "BANISHED\nDICE", float(g.AOS_RIGHT), r3, fit=fit)
 

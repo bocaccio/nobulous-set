@@ -28,14 +28,16 @@ WHAT IS NOT MODELED
     Response Screening, was reworded on 2026-11-08 out of Assignment
     language into the exam's own idiom and went in with the rewording; see
     the note on EXAMS.
-  * The 4 IMPOSTER TASK effects and the 4 FOLLOWING SETBACK effects.
-    IMPOSTER_TASKS and FOLLOWING carry Targets and a flat upkeep, so the
-    four Following cards are interchangeable in the model.
-  * Two of the 26 Request effects - Decode Nobulous' Lecture Notes and
-    Update Nobulous' Lab Notes. The other 24 carry a CRIT_COLOR or a
-    REQUEST_REWARD entry.
   * The six Setbacks' individual text. The one printed rule they share -
     the row locks until the Setback is resolved - IS modeled.
+  * 24 of the 26 DEMAND-side restrictions - the store caps, the per-attempt
+    commit minimums, the "+1 Target per other unresolved Assignment" clauses
+    and the Crit repricings. Two are modelled, as TASK_EFFECT. This is not
+    new: those clauses have been printed and unmodelled throughout, and the
+    2026-11-12 revision reworded only two of them. What that revision DID
+    put in the model is the Demand COMPLETION REWARD, all 26 of them - see
+    DEMAND_REWARD - which is the half that changes whether a flip is a
+    decision.
   * Prodigy's ability, alone of the six: ABILITIES maps it to None. Prodigy
     is also the default in run() and in audit.py.
   * Separate rows per Time Slot. One row is modeled, so a FINF card naming
@@ -76,14 +78,23 @@ from dice import COLORS, EV, policy_value, roll
 # figure written here, and distrust the date first.
 #
 # TARGET_DELTA below is still a dial on top of these numbers, and still 0.
+#
+# SIX DEMAND TARGETS CAME DOWN FROM 9 TO 6 ON 2026-11-12, and Suture's Request
+# rose 5 to 6. Those six - indices 9, 11, 12, 15, 18, 24 - are the whole of
+# the "4 x5 and 3 x1" tail of the Request-to-Demand gap census the 2026-10-28
+# Target rise left behind, and a Demand Target 4 above the Request is not a
+# Target, it is a card you have written off. The same revision printed a
+# COMPLETION REWARD on every Demand face, and a reward on a face nobody clears
+# is dead text; DEMAND_REWARD below is what required these six to come within
+# reach. The widest gap in the deck is now 1.
 TASKS = [
     (3, 3, "Y", 0), (4, 5, "G", 1), (5, 5, "B", 1), (6, 7, "P", 2),
     (4, 4, "Y", 0), (4, 4, "G", 0), (4, 5, "B", 0), (6, 6, "P", 0),
-    (5, 5, "G", 1), (5, 9, "B", 1), (5, 5, "B", 1), (5, 9, "P", 1),
-    (6, 9, "P", 1), (7, 7, "P", 1), (4, 5, "Y", 1), (5, 9, "B", 2),
-    (6, 7, "P", 2), (4, 4, "G", 0), (5, 9, "Y", 1), (5, 5, "G", 0),
+    (5, 5, "G", 1), (5, 6, "B", 1), (5, 5, "B", 1), (5, 6, "P", 1),
+    (6, 6, "P", 1), (7, 7, "P", 1), (4, 5, "Y", 1), (5, 6, "B", 2),
+    (6, 7, "P", 2), (4, 4, "G", 0), (6, 6, "Y", 1), (5, 5, "G", 0),
     (4, 4, "Y", 0), (4, 4, "G", 0), (5, 5, "B", 0), (7, 8, "P", 1),
-    (5, 9, "B", 1), (5, 5, "P", 0),
+    (5, 6, "B", 1), (5, 5, "P", 0),
 ]
 
 # Subject per Task; the last six are unmarked and earn no Credit.
@@ -195,6 +206,19 @@ EXAMS = [
 # the card marked "crit" scores nothing without one, and its own scoring
 # clause does not apply. False is the card as it prints now.
 EXAM_CRIT_GATE = False
+# THE EXAM POOL, 2026-11-12: False is one card per subject chosen at random,
+# shuffled, three of the four drawn. True restores the Credit-weighted pool -
+# 1 card of a subject at 0-1 Credits, 2 at 2-3, 3 at 4+ - and is the dial that
+# reproduces every NAP figure published before that date.
+#
+# THE OLD POOL WAS NOT JUST WEIGHTED, IT WAS SORTED. It took
+# `subject_exams[:n]`, the first cards of each subject in EXAMS order, and
+# those happen to be the cheapest: Targets 6, 6, 5 and 7 at one card each
+# against subject means of 6.7, 7.0, 6.3 and 7.7. So the old rule sat three
+# of the four EASIEST exams in front of you, and the new one is a real
+# difficulty rise on top of being a fairer draw. That is most of the
+# difference the revision measures; see rules/RULES_CHANGELOG.txt.
+EXAM_POOL_BY_CREDITS = False
 # Switch the whole restriction column off to reproduce the pre-2026-11-06
 # model, which is also the control the restrictions are priced against.
 EXAM_RESTRICTIONS = True
@@ -239,9 +263,15 @@ FINF_SETTINGS = ["+3", "+2", "+1", "-1", "-2", "-3"]
 #
 #   dot_first    the first die committed to ANOTHER Assignment each Time
 #                Slot must match that Assignment's own dot
-#   work_first   one die must go here before any other Assignment this slot
+#   work_first   one die must go here before any other Assignment on each
+#                ROLL - per Time Slot until 2026-11-12, which one die paid
+#                off for good
 #   upkeep       1 available die at the end of every slot it survives
-#   no_special   one die committed here is not returned by Special Recovery
+#   no_special   Special Recovery leaves 1 die of the queued colour behind.
+#                It printed "one die committed here cannot be recovered by
+#                Special Recovery" until 2026-11-12, which named a die that
+#                was already ineligible: a die committed here is STORED on
+#                the card, and Special Recovery takes from the exhausted pool
 FOLLOWING = [(7, 'Y', "dot_first"), (7, 'G', "work_first"),
              (8, 'B', "upkeep"), (8, 'P', "no_special")]
 # Switch the four printed effects off and restore the flat upkeep every
@@ -526,14 +556,114 @@ OPP_COUPONS = True        # a finished Opportunity is KEPT and spent later on an
 #   crit3     one Crit counts as 3              Practice on a Spare Brain
 COUPON = ["soak", "wild", "boost", "shortcut", "assist", "crit3"]
 
-# Request-side reward per Task, by deck order. The condition is what the model
-# can actually check; effects that only reorder the deck are left out.
-#   recover_committed  take one of the dice just committed back
-#   recover_any        take one exhausted die back
-#   recover_dot        take back an exhausted die of the card's dot color
-#   hp / rec / str     +1, permanently for rec and str
-#   bonus              counts as +1 success while resolving (applied at roll)
+# Request-side reward per Task, by deck order.
+#
+# REWRITTEN 2026-11-12, AND THE CONDITIONS ARE WHAT WENT. Fifteen of these
+# entries carried a second field - "exact", "few_dice", "three_dice",
+# "four_dice", "one_attempt", "no_stored", "no_crit", "crit" - because the
+# cards printed "If Exact", "If completed using exactly 3 dice", "If
+# completed with exactly 2 successes across all committed dice this strategy
+# phase". A reward conditioned on how the dice fell is a reward the player
+# reconstructs after the dice are swept, and reward_fires() below is the
+# model's record of how much machinery that took. Every surviving entry now
+# fires on completion.
+#
+# AND THE PAYOUT NAMES A COLOUR. "recover_committed" took one of the dice
+# just committed, which is whatever happened to be left; the cards name a
+# colour, and name one OTHER than the card's own dot, because the dot is what
+# the Primary already queues for the next slot. That is a real change in the
+# model, not a rewording: recovering a named colour is worth more than
+# recovering an arbitrary one and strictly more than recovering the colour the
+# next Special Recovery was going to sweep anyway.
+#
+#   colors      recover 1 exhausted die of any of these colors
+#   colors2     recover 2, one of EACH listed color
+#   colors_n    recover up to n of one named color
+#   hp_primary  +1 Health if the card came in as the Primary
+#   rec / str   +1, permanently
+#   roll        +1 Strategy roll this Time Slot
+#   pick_dot    choose the color the next Special Recovery queues
+#   peek3       look at the top 3 and reorder them
+#   bonus       counts as +1 success while resolving (applied at roll)
+#   None/absent no completion reward on this face
+#
+# SIX ENTRIES ARE GONE RATHER THAN CHANGED, and they are the six whose printed
+# Request clause is not a completion reward at all: 2, 7 and 11 reprice a
+# Crit (CRIT_COLOR below), and 3, 5 and 15 add a success while you work the
+# card ("bonus"). Those apply during the attempt, so they stay where the
+# attempt can see them.
 REQUEST_REWARD = {
+    0: ("colors", ("green",)),
+    1: ("colors", ("yellow",)),
+    3: ("bonus", "three_colors"),
+    4: ("colors", ("blue",)),
+    5: ("bonus", "primary"),
+    6: ("hp_primary", None),
+    8: ("pick_dot", None),
+    9: ("roll", None),
+    10: ("exchange", "blue"),
+    12: ("colors_n", ("blue", 2)),
+    13: ("rec", None),
+    14: ("colors", ("green",)),
+    15: ("bonus", "three_colors"),
+    16: ("colors2", ("green", "blue")),
+    17: ("move_setback", None),
+    18: ("colors", ("green",)),
+    19: ("peek3", None),
+    20: ("from_discard", None),
+    21: ("colors", ("yellow", "blue")),
+    22: ("colors", ("purple",)),
+    23: ("str", None),
+    24: ("drop_demand", None),
+    25: ("add_die", "yellow"),
+}
+# Demand-side reward per Task, by deck order - ALL 26, which is the point of
+# it. Until 2026-11-12 a Demand face was pure downside: a harsher printed
+# rule, a penalty one slot later, and nothing at all for clearing it, so the
+# model's only reason to let a card flip was that it had run out of dice.
+# Now clearing a Demand pays, which makes a deliberate flip a decision. Some
+# of these match the card's own dot on purpose: that is the die you just spent
+# clearing it.
+#
+# ONE ENTRY IS NOT A DIE. Decode Nobulous' Lecture Notes pays in deck order on
+# both faces - the top 3 reordered on its Request, one card peeked and
+# optionally buried on its Demand.
+DEMAND_REWARD = {
+    0: ("colors", ("yellow",)), 1: ("colors", ("green",)),
+    2: ("colors", ("blue",)), 3: ("colors", ("purple",)),
+    4: ("colors", ("yellow",)), 5: ("colors", ("yellow",)),
+    6: ("colors", ("green",)), 7: ("colors", ("purple",)),
+    8: ("colors", ("blue",)), 9: ("colors", ("blue",)),
+    10: ("colors", ("blue",)), 11: ("colors", ("purple",)),
+    12: ("colors", ("blue",)), 13: ("colors", ("purple",)),
+    14: ("colors", ("green",)), 15: ("colors", ("purple",)),
+    16: ("colors", ("green",)), 17: ("colors", ("yellow",)),
+    18: ("colors", ("green",)), 19: ("peek1", None),
+    20: ("colors", ("yellow",)), 21: ("colors", ("yellow",)),
+    22: ("colors", ("blue",)), 23: ("colors", ("blue",)),
+    24: ("colors", ("green",)), 25: ("colors", ("purple",)),
+}
+# The four Imposter Tasks' rewards, (Request, Demand), in IMPOSTER_TASKS
+# order. Mandatory and worth no Credit is the whole point of these cards, but
+# a mandatory card that pays nothing on either face is upkeep wearing a name.
+IMPOSTER_REWARD = [
+    (("green", "blue"), ("green",)),
+    (("purple", "green"), ("blue",)),
+    (("green", "blue"), ("green",)),
+    (("purple", "yellow"), ("yellow",)),
+]
+# THE TABLE AS IT PRINTED BEFORE 2026-11-12, kept because a dial that only
+# switches rewards OFF prices the wrong thing - it measures no rewards at all
+# against the new ones, and the question is what the revision changed.
+# Setting TASK_REWARDS_2026_11_12 False restores these entries, their
+# conditions in reward_fires and the old payout kinds, pays nothing on a
+# Demand face and nothing on an Imposter Task: together, the game every NAP
+# figure published before that date was measured through.
+#   recover_committed  take one of the dice just committed back
+#   recover_any        take one exhausted die back, any colour
+#   hp                 +1 Health
+#   peek1              look at the top card, bury it if it is a Setback
+REQUEST_REWARD_PRE_2026_11_12 = {
     0: ("recover_committed", "exact"), 1: ("recover_committed", "few_dice"),
     3: ("bonus", "three_colors"), 4: ("recover_committed", "no_crit"),
     5: ("bonus", "primary"), 6: ("hp", "exact"),
@@ -547,18 +677,25 @@ REQUEST_REWARD = {
     23: ("str", "always"), 24: ("recover_any", "one_attempt"),
     25: ("recover_committed", "crit"),
 }
-# 19 and 20 went in on 2026-11-06 and were the last two Tasks with no
-# modelled text. Both pay in DECK ORDER rather than in dice, which is why
-# they sat out: the model draws with deck.pop(), so the next card is the end
-# of the list, and ordering it is a real decision once there is a preference
-# to order by. Decode Nobulous' Lecture Notes looks at the next three and
-# returns them in any order; Update Nobulous' Lab Notes looks at one and
-# sends it to the top or the bottom.
+TASK_REWARDS_2026_11_12 = True
+# The six Demand Targets the same revision brought down from 9 to 6, as they
+# printed before it, with Suture's Request still at 5. Setting DEMAND_TARGETS_9
+# True restores them, which is the other half of reproducing an old figure.
+PRE_2026_11_12_TARGETS = {9: (5, 9), 11: (5, 9), 12: (6, 9),
+                          15: (5, 9), 18: (5, 9), 24: (5, 9)}
+DEMAND_TARGETS_9 = False
+# The two Tasks that pay in DECK ORDER rather than in dice. The model draws
+# with deck.pop(), so the end of the list is the top of the deck and ordering
+# it is a real decision once there is a preference to order by.
 #
-# THE DEMAND SIDES of the same two cards are the other half, and they are
-# the only two Demand clauses in the deck that are not a penalty - they are
-# restrictions on how the card may be worked, so they go on the card as
-# TASK_EFFECT rather than in this table.
+# THEY SWAPPED FACES ON 2026-11-12. Decode Nobulous' Lecture Notes reorders
+# the top 3 on its REQUEST and peeks at one on its DEMAND; Update Nobulous'
+# Lab Notes now reaches into the DISCARD on its Request instead of peeking at
+# the deck. So peek3 and peek1 are both Decode's, and from_discard is Update's.
+#
+# TASK_EFFECT is the Demand clauses that RESTRICT how the card may be worked
+# rather than penalise you for leaving it - the only two of the 26 that do,
+# and still the only two.
 #   three_colors  Decode, on Demand: at least 3 different die colours
 #   store_one     Update, on Demand: no more than 1 die may be stored here
 TASK_EFFECT = {19: "three_colors", 20: "store_one"}
@@ -817,10 +954,17 @@ class Game(object):
         self.dot_first_used = False  # Nobulous Needs This Now, this slot
         self.locked_day = []        # Neural Extraction Practicum: off the
         #                             table until the Day turns over
+        # THE DISCARD PILE, added 2026-11-12 for Update Nobulous' Lab Notes:
+        # "Return 1 discarded, uncompleted Assignment to the top of the deck."
+        # Only uncompleted cards are put here - the card cannot take a
+        # completed one, and that holds by construction rather than by a flag.
+        self.discard = []
 
         # Assignment deck: 26 Tasks + 6 Opportunities + 3 of the 6 Setbacks.
         deck = []
         for i, (t, d, dot, sk) in enumerate(TASKS):
+            if DEMAND_TARGETS_9 and i in PRE_2026_11_12_TARGETS:
+                t, d = PRE_2026_11_12_TARGETS[i]
             t, d = t + TARGET_DELTA, d + TARGET_DELTA
             card = Card("task", t, d, dot, sk, SUBJECTS[i], DEMAND_PENALTY[i])
             card.effect = TASK_EFFECT.get(i)
@@ -925,14 +1069,20 @@ class Game(object):
 
     def recover_color(self, color):
         """Special Recovery: recover ALL exhausted dice of one color."""
-        # WHERE DID I PUT THAT?: "While unresolved, one die committed here
-        # cannot be recovered by Special Recovery." Its stored dice are
-        # locked to the card and so are not in `exhausted` to begin with;
-        # what the card really costs is one die of this colour held back when
-        # the Special Recovery lands, which is where it bites.
+        # WHERE DID I PUT THAT?, as reworded 2026-11-12: "While unresolved,
+        # Special Recovery at the start of each Time Slot leaves 1 die of the
+        # queued color exhausted."
+        #
+        # It used to print "one die committed here cannot be recovered by
+        # Special Recovery", and that named a die that was already ineligible:
+        # a die committed here is STORED on the card, locked to it, and so is
+        # not in `exhausted` for Special Recovery to reach. The model guessed
+        # at the intent and charged one die of the queued colour - but only
+        # while the card held stored dice, which is the premise the card no
+        # longer has. The clause is unconditional now, so the test is.
         held = None
         if any(c.kind == "setback" and c.effect == "no_special"
-               and not c.ignored and c.stored_dice for c in self.row):
+               and not c.ignored for c in self.row):
             if color in self.exhausted:
                 self.exhausted.remove(color)
                 held = color
@@ -1062,9 +1212,29 @@ class Game(object):
     # against the win condition. Weighting permanent upgrades heavily made
     # the model play WORSE at Hard and Nobulous, where a failed expensive
     # Task costs more than the bonus returns.
-    REWARD_WORTH = {"str": 0.5, "rec": 0.5, "hp": 0.3, "recover_any": 0.3,
-                    "recover_dot": 0.3, "recover_committed": 0.25,
+    # RE-KEYED 2026-11-12 to the reward kinds the cards now print. The old
+    # keys - recover_any, recover_dot, recover_committed - no longer exist, so
+    # every entry in this table was dead and card_worth added 0.0 for every
+    # reward in the deck. A NAMED COLOUR IS WORTH MORE THAN AN ARBITRARY ONE,
+    # which is why "colors" is above the 0.25 the old committed-die reward
+    # carried, and the two-dice forms are worth about double.
+    REWARD_WORTH = {"str": 0.5, "rec": 0.5, "roll": 0.4, "hp_primary": 0.3,
+                    "colors": 0.3, "colors2": 0.6, "colors_n": 0.5,
+                    "pick_dot": 0.4, "exchange": 0.3, "add_die": 0.3,
+                    "drop_demand": 0.4, "move_setback": 0.1,
+                    "from_discard": 0.3, "peek3": 0.2, "peek1": 0.1,
                     "bonus": 0.25}
+
+    # AND THE TABLE THAT WENT WITH THE OLD CARDS, exactly as it was - the two
+    # peek kinds are absent from it, which is not an oversight to tidy up but
+    # the policy the published figures were measured through. A dial that
+    # restores a card table and not the policy that reads it does not
+    # reproduce anything: with the new weights in place, "all old" measured
+    # 2 points off the game at HEAD, and a baseline that is not the baseline
+    # is worse than no baseline at all.
+    REWARD_WORTH_PRE_2026_11_12 = {
+        "str": 0.5, "rec": 0.5, "hp": 0.3, "recover_any": 0.3,
+        "recover_dot": 0.3, "recover_committed": 0.25, "bonus": 0.25}
 
     def card_worth(self, card):
         """Higher is better: what it pays, less what it costs."""
@@ -1073,9 +1243,13 @@ class Game(object):
             worth += 2.0                      # a Credit is the win condition
         if card.kind == "opportunity":
             worth += 1.0                      # coupons are banked for later
-        entry = REQUEST_REWARD.get(getattr(card, "index", None))
+        table, worths = ((REQUEST_REWARD, self.REWARD_WORTH)
+                         if TASK_REWARDS_2026_11_12
+                         else (REQUEST_REWARD_PRE_2026_11_12,
+                               self.REWARD_WORTH_PRE_2026_11_12))
+        entry = table.get(getattr(card, "index", None))
         if entry and card.kind == "task":
-            worth += self.REWARD_WORTH.get(entry[0], 0.0)
+            worth += worths.get(entry[0], 0.0)
         worth -= 0.6 * getattr(card, "skulls", 0)
         return worth
 
@@ -1085,6 +1259,7 @@ class Game(object):
         if self.unresolved() >= row_max:
             # "if the row is already full when you reveal, discard both
             # revealed cards and take nothing"
+            self.discard += self.deck[-2:]
             del self.deck[-2:]
             return None
         drawn = []
@@ -1123,6 +1298,8 @@ class Game(object):
         else:
             primary = max(drawn, key=self.card_worth)
         self.row.append(primary)
+        # "Discard the other Assignment." It is retrievable: see from_discard.
+        self.discard += [c for c in drawn if c is not primary]
         self.queued = primary.dot
         # Skulls resolve only on the Assignment you chose.
         for _ in range(primary.skulls):
@@ -1148,6 +1325,13 @@ class Game(object):
 
         False when the slot cannot continue (no dice, nothing workable).
         """
+        # UNSCHEDULED DEMONSTRATION IS PER ROLL as of 2026-11-12: "commit at
+        # least one die here before committing dice elsewhere on each roll".
+        # It printed "in this Time Slot", which one die paid off for the whole
+        # slot and which made it the mildest of the four Following Setbacks by
+        # a wide margin. `fed` exists only for this clause, so clearing it
+        # here is the whole of the change.
+        self.fed = set()
         for _ in range(CARDS_PER_ROLL if SPLIT_ROLLS else 1):
             if self.capped():
                 return True
@@ -1361,10 +1545,18 @@ class Game(object):
                 if self.ability == "repair_reward" and card.kind == "setback":
                     self.recover(2)
                 if PLAY_THE_CARDS:
-                    if card.kind in ("task", "impostor") and not card.on_demand:
+                    if card.kind in ("task", "impostor"):
+                        # BOTH FACES PAY. This was gated on
+                        # `not card.on_demand` until 2026-11-12, when the
+                        # Demand side gained a completion reward of its own.
                         if card.kind == "task":
-                            self.apply_request_reward(card.index, card, take, got, crit)
-                        if self.ability == "dot_recovery":      # Opportunist
+                            self.apply_task_reward(card.index, card, take,
+                                                   got, crit)
+                        else:
+                            self.apply_imposter_reward(card.index, card)
+                        # The Opportunist's card says "on its Request side",
+                        # so that one keeps the gate.
+                        if not card.on_demand and self.ability == "dot_recovery":
                             self.recover_one(DOT_COLOR[card.dot])
                     elif card.kind == "opportunity":
                         self.apply_opportunity(card.index)
@@ -1410,8 +1602,25 @@ class Game(object):
     # printed card text
     # ------------------------------------------------------------------
     def reward_fires(self, cond, card, take, got, crit):
+        """Does the printed condition on a Request effect hold?
+
+        TWO OF THESE ARE LIVE AND SEVEN ARE HISTORY. Fifteen Request effects
+        used to be conditioned on how the dice happened to fall - "If Exact",
+        "If completed using exactly 3 dice", "If completed with exactly 2
+        successes across all committed dice this strategy phase" - and the
+        2026-11-12 revision removed every one of those conditions from the
+        cards. What a shipping card still asks is the two clauses that add a
+        success WHILE you work it: 3 colours contributing, and the card being
+        your Primary. The rest are reached only through
+        REQUEST_REWARD_PRE_2026_11_12, and the length of this list is the
+        model's record of what those conditions cost to play.
+        """
         if cond == "always":
             return True
+        if cond == "primary":
+            return not card.free
+        if cond == "three_colors":
+            return len(set(take + card.stored_dice)) >= 3
         if cond == "exact":
             return got == card.remaining()
         if cond == "few_dice":
@@ -1420,58 +1629,194 @@ class Game(object):
             return len(take) == 3
         if cond == "four_dice":
             return len(take) == 4
-        if cond == "one_attempt":
-            return not card.stored_dice
-        if cond == "no_stored":
+        if cond in ("one_attempt", "no_stored"):
             return not card.stored_dice
         if cond == "no_crit":
             return not crit
         if cond == "crit":
             return crit
-        if cond == "primary":
-            return not card.free
-        if cond == "three_colors":
-            return len(set(take + card.stored_dice)) >= 3
         return False
 
-    def apply_request_reward(self, index, card, take, got, crit):
-        """The Request effect printed on a Task, when its condition holds."""
-        entry = REQUEST_REWARD.get(index)
+    def pay_colors(self, colors, count=1, distinct=False):
+        """Recover `count` exhausted dice from among `colors`.
+
+        The printed form of nearly every reward in the deck as of 2026-11-12.
+        rules/nap.html: it takes any exhausted die of that colour, including
+        one the card has just exhausted - which is why this is called after
+        the card's dice have gone to the pile - and "if no die of that color
+        is exhausted, skip that recovery", so a miss pays nothing rather than
+        substituting something else.
+        """
+        taken = 0
+        used = set()
+        for _ in range(count):
+            for c in colors:
+                if distinct and c in used:
+                    continue
+                if self.recover_one(c):
+                    used.add(c)
+                    taken += 1
+                    break
+        return taken
+
+    def apply_task_reward(self, index, card, take, got, crit):
+        """The completion reward printed on the face a Task was finished on.
+
+        BOTH FACES PAY AS OF 2026-11-12. This was apply_request_reward and the
+        call site was gated on `not card.on_demand`, because a Demand face
+        printed no reward at all - it was a harsher rule, a penalty one slot
+        later, and nothing for clearing it. The model's only reason to let a
+        card flip was running out of dice.
+        """
+        if TASK_REWARDS_2026_11_12:
+            table = DEMAND_REWARD if card.on_demand else REQUEST_REWARD
+        elif card.on_demand:
+            return          # a Demand face printed no reward before 11-12
+        else:
+            table = REQUEST_REWARD_PRE_2026_11_12
+        entry = table.get(index)
         if not entry:
             return
-        kind, cond = entry
-        if not self.reward_fires(cond, card, take, got, crit):
+        kind, arg = entry
+        if kind == "bonus":
+            return          # applied at the roll, not on completion
+        if not TASK_REWARDS_2026_11_12:
+            # The old table's second field is a CONDITION, and seven of the
+            # nine in reward_fires exist only for this branch.
+            if not self.reward_fires(arg, card, take, got, crit):
+                return
+            if kind == "recover_committed":
+                if take:
+                    self.available.append(take[0])
+                    if take[0] in self.exhausted:
+                        self.exhausted.remove(take[0])
+            elif kind == "recover_any":
+                self.recover(1)
+            elif kind == "hp":
+                self.hp = min(3, self.hp + 1)
+            elif kind == "rec":
+                self.rec += 1
+            elif kind == "str":
+                self.str_ += 1
+            elif kind in ("peek3", "peek1"):
+                self.reorder_top(kind)
             return
-        if kind == "recover_committed":
-            if take:
-                self.available.append(take[0])
-                if take[0] in self.exhausted:
-                    self.exhausted.remove(take[0])
-        elif kind == "recover_any":
-            self.recover(1)
-        elif kind == "recover_dot":
-            self.recover_one(DOT_COLOR[card.dot])
-        elif kind == "hp":
-            self.hp = min(3, self.hp + 1)
+        if kind == "colors":
+            self.pay_colors(arg)
+        elif kind == "colors2":
+            self.pay_colors(arg, count=2, distinct=True)
+        elif kind == "colors_n":
+            color, count = arg
+            self.pay_colors((color,), count=count)
+        elif kind == "hp_primary":
+            # "If this is the Primary, gain 1 Health." `free` is set on a card
+            # that arrived by Skull or FINF rather than being chosen.
+            if not card.free:
+                self.hp = min(3, self.hp + 1)
         elif kind == "rec":
             self.rec += 1
         elif kind == "str":
             self.str_ += 1
+        elif kind == "roll":
+            # "You may take 1 additional Strategy roll this Time Slot." The
+            # allowance rises even if STR is already spent, so it is added to
+            # the rolls left in the slot and not to the stat.
+            self.rolls_left += 1
+        elif kind == "pick_dot":
+            # "Choose the next Special Recovery color (not Red)." The colour
+            # the Primary queued is overridden; take the colour that has the
+            # most dice in the pile, which is what the sweep is worth.
+            if self.exhausted:
+                self.queued = max(
+                    "PBGY", key=lambda d: self.exhausted.count(DOT_COLOR[d]))
+        elif kind == "exchange":
+            # THE CEREBRAL COUPLER: "Exchange 1 available die for 2 exhausted
+            # dice of its color." Optional, and it needs two of that colour
+            # already in the pile before the available die is paid - so it is
+            # a net gain of one die, never a loss.
+            for c in (arg,) + tuple(DOT_COLOR[d] for d in "PBGY"):
+                if c in self.available and self.exhausted.count(c) >= 2:
+                    self.available.remove(c)
+                    self.exhausted.append(c)
+                    self.pay_colors((c,), count=2)
+                    break
+        elif kind == "add_die":
+            # SHARPEN THE SURGICAL IMPLEMENTS: "Add 1 Yellow die as a hit to
+            # another Task here with stored progress." It needs a Task already
+            # holding progress, because that is what satisfies the colour rule.
+            others = [c for c in self.row
+                      if c is not card and c.kind in ("task", "impostor")
+                      and c.stored_dice]
+            if others and arg in self.available:
+                self.available.remove(arg)
+                best = min(others, key=lambda c: c.remaining())
+                best.stored += 1
+                self.exhausted.append(arg)
+        elif kind == "drop_demand":
+            # DISPOSE OF FAILED SAMPLES: "You may discard another unresolved
+            # Demand here without penalty." Its stored dice exhaust; it pays
+            # no penalty and earns no Credit.
+            victims = [c for c in self.row
+                       if c is not card and c.on_demand
+                       and c.kind in ("task", "impostor")]
+            if victims:
+                worst = max(victims, key=lambda c: (c.remaining(), -c.penalty))
+                self.exhausted += worst.stored_dice
+                self.row.remove(worst)
+                self.discard.append(worst)
+        elif kind == "move_setback":
+            # DOCUMENT THE PROCEDURE: "You may move a Setback to a different
+            # Time Slot with room." The model has one row, so a move is
+            # `away` slots spent elsewhere, the same convention the Devious
+            # move uses. IT RARELY FIRES, and that is the card: a base Setback
+            # locks the row, so you cannot work this Task while one is on it,
+            # and what is left to move is a Following Setback or nothing.
+            live = [c for c in self.row if c.kind == "setback"
+                    and not c.away and not c.ignored]
+            if live:
+                max(live, key=lambda c: (c.upkeep, c.remaining())).away = 1
+        elif kind == "from_discard":
+            # UPDATE NOBULOUS' LAB NOTES: "Return 1 discarded, uncompleted
+            # Assignment to the top of the deck." A retrieved Task comes back
+            # as a fresh Request, so its rotation and progress reset. Completed
+            # cards never enter self.discard, so they cannot be taken.
+            if self.discard:
+                best = max(self.discard, key=self.card_worth)
+                self.discard.remove(best)
+                best.on_demand = False
+                best.rotated = False
+                best.stored = 0
+                best.stored_dice = []
+                self.deck.append(best)
         elif kind in ("peek3", "peek1"):
-            # deck.pop() draws from the END, so the end of the list is the
-            # top of the deck. A Setback is the card worth moving; after
-            # that, a Task with a subject is a Credit and the rest is not.
-            def welcome(c):
-                if c.kind == "setback":
-                    return -1
-                return 1 if c.subject else 0
-            if kind == "peek3":
-                top = self.deck[-3:]
-                if len(top) > 1:
-                    del self.deck[-len(top):]
-                    self.deck += sorted(top, key=welcome)
-            elif self.deck and welcome(self.deck[-1]) < 0:
-                self.deck.insert(0, self.deck.pop())
+            self.reorder_top(kind)
+
+    def reorder_top(self, kind):
+        """Decode Nobulous' Lecture Notes, on either face.
+
+        deck.pop() draws from the END, so the end of the list is the top of
+        the deck. A Setback is the card worth moving; after that, a Task with
+        a subject is a Credit and the rest is not.
+        """
+        def welcome(c):
+            if c.kind == "setback":
+                return -1
+            return 1 if c.subject else 0
+        if kind == "peek3":
+            top = self.deck[-3:]
+            if len(top) > 1:
+                del self.deck[-len(top):]
+                self.deck += sorted(top, key=welcome)
+        elif self.deck and welcome(self.deck[-1]) < 0:
+            self.deck.insert(0, self.deck.pop())
+
+    def apply_imposter_reward(self, index, card):
+        """An Imposter Task's recovery, on whichever face cleared it."""
+        if not TASK_REWARDS_2026_11_12:
+            return
+        if index is None or index >= len(IMPOSTER_REWARD):
+            return
+        self.pay_colors(IMPOSTER_REWARD[index][1 if card.on_demand else 0])
 
     def spend_coupon(self, kind):
         """Cash in a held Opportunity. One use, then it is discarded."""
@@ -1640,7 +1985,8 @@ class Game(object):
         for card in self.row:
             if card.kind == "opportunity":
                 if card.rotated:
-                    continue            # discarded, no penalty
+                    self.discard.append(card)   # discarded, no penalty
+                    continue
                 card.rotated = True
                 survivors.append(card)
             elif card.kind == "setback":
@@ -1652,6 +1998,7 @@ class Game(object):
                     # locked to it, so they exhaust as the card leaves,
                     # the same way final_exam releases them.
                     self.exhausted += card.stored_dice
+                    self.discard.append(card)
                     continue
                 survivors.append(card)
             else:
@@ -1666,7 +2013,7 @@ class Game(object):
 
     def time_slot(self):
         self.slot = (self.slot + 1) % 3     # Morning, Afternoon, Evening
-        self.fed = set()
+        self.fed = set()                    # spend_roll clears it per roll
         self.dot_first_used = False
         if self.slot == 0:
             self.day += 1
@@ -1784,13 +2131,31 @@ class Game(object):
         if self.queued:
             self.recover_color(DOT_COLOR[self.queued])
 
-        # Build the exam pool: per subject, 1 card at 0-1 Credits, 2 at 2-3,
-        # 3 at 4+. Then draw three.
+        # BUILD THE EXAM POOL: 1 card chosen at random from EACH of the four
+        # subjects, shuffled, three drawn. Every subject has a 75% chance to
+        # appear and can appear at most once; Credits only reduce Targets.
+        #
+        # REPLACED 2026-11-12. The old rule put 1 card of a subject in the
+        # pool at 0-1 Credits, 2 at 2-3 and 3 at 4+, which stacked the pool
+        # with the subjects you had already studied - so the exams you were
+        # best prepared for were the likeliest to come up, and the Credit
+        # ladder was pulling in the same direction as the Target reduction it
+        # already pays for. It also took `subject_exams[:n]`, the FIRST cards
+        # of each subject in table order, so eight of the twelve printed exams
+        # could not be drawn at all at 0-1 Credits in their subject - which is
+        # why eleven printed restrictions could go unmodelled for weeks
+        # without the ladder noticing.
         pool = []
         for s in SUBJECT_LIST:
-            n = 1 if self.credits[s] <= 1 else (2 if self.credits[s] <= 3 else 3)
             subject_exams = [e for e in EXAMS if e[0] == s]
-            pool += subject_exams[:n]
+            if not subject_exams:
+                continue
+            if EXAM_POOL_BY_CREDITS:
+                n = (1 if self.credits[s] <= 1
+                     else (2 if self.credits[s] <= 3 else 3))
+                pool += subject_exams[:n]
+            else:
+                pool.append(self.rng.choice(subject_exams))
         self.rng.shuffle(pool)
         for subject, dot, base, printed in pool[:3]:
             target = max(1, base - self.credits[subject])

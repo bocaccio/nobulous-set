@@ -7,47 +7,94 @@ CARD_SIZE = LANDSCAPE
 ANA, ENG, PRO, THE = 'Anatomy', 'Engineering', 'Procedure', 'Theory'
 
 # name, subject, dot, skulls, ReqTarget, req effect, DemTarget, dem effect, penalty
+#
+# THE DEMAND SIDE PAYS NOW, AND NO REWARD ASKS A QUESTION - the 2026-11-12
+# revision. Three things changed together and none of them works alone:
+#
+#   1. EVERY EXACT-SUCCESS AND EXACT-DICE-COUNT CONDITION IS GONE. Fifteen of
+#      the 26 Request effects read "If Exact", "If completed using exactly 3
+#      dice", "If completed with exactly 2 successes across all committed
+#      dice this strategy phase" - conditions a player has to reconstruct
+#      after the fact from dice that have already been swept. They are
+#      replaced by rewards that pay when the card is completed, full stop.
+#   2. THE REWARD NAMES A COLOUR instead of "1 committed die". A named colour
+#      is something you can plan a roll around; "one of the dice you just
+#      used" is whatever happens to be left. Every fixed-colour REQUEST
+#      recovery pays a colour OTHER than the card's own dot, because the dot
+#      is what the Primary already queues for the next slot - recovering it
+#      twice is half a reward. check_app_sync.py enforces that, including
+#      both halves of the two-colour offers.
+#   3. THE DEMAND SIDE GAINED A COMPLETION REWARD. A Demand was pure
+#      downside: a harsher rule, a penalty one slot later, and nothing at all
+#      for clearing it. Now clearing a Demand pays a die too, so a deliberate
+#      flip is a decision rather than a failure. Some Demand rewards pay the
+#      card's own dot on purpose - that is the die you just spent clearing it.
+#
+# AND SIX DEMAND TARGETS CAME DOWN FROM 9 TO 6: Align the Memory Probes,
+# Recalibrate the Bone Saw, Prime the Synaptic Pump, Verify the Identity
+# Matrix, Suture the Donor Incision and Dispose of Failed Samples, with
+# Suture's Request rising 5 to 6. Those six are the Request-to-Demand gaps of
+# 4 and 3 that the 2026-10-28 Target rise left behind - rules/RULES_CHANGELOG
+# records the gap census, "0 x14, 1 x6, 3 x1, 4 x5" - and a 9 is not a Target,
+# it is a card you have written off. A completion reward printed on a face
+# nobody can clear is dead text, so (3) does not exist on those six until the
+# Targets come within reach. This is the one place the revision moves a
+# simulation-calibrated number; the measured cost is in RULES_CHANGELOG.
 TASKS = [
- ("Organize the Specimen Cabinet", THE,'Y',0,3,"If completed with exactly 2 successes across all committed dice this strategy phase, recover 1 committed die.",3,"Nobulous Can't Find Anything: One Crit rolled here counts as 1 success.","Exhaust 1 available die."),
- ("Prepare the Tissue Samples", ANA,'G',1,4,"Clean Cuts: If completed using 3 or fewer dice, recover 1 committed die.",5,"Samples Are Degrading: Stored progress here loses 1 success at the end of the Time Slot.","Lose 1 Health."),
- ("Calibrate the Neural Imager", ENG,'B',1,5,"Fine Calibration: One Blue Crit counts as 3 successes here.",5,"Emergency Calibration: Blue Crits count as 1 success here.","Exhaust 2 available dice."),
- ("Stabilize the Prototype Brain", ANA,'P',2,6,"Stable Pattern: If dice of 3+ colors contribute, add 1 success.",7,"Neural Cascade: No more than 2 dice may be stored here.","Lose 1 Health."),
- ("Sterilize the Surgical Tools", PRO,'Y',0,4,"Efficient Routine: If completed without using a Crit, recover 1 committed die.",4,"Contamination: One successful die rolled here each attempt cannot be stored.","Exhaust 1 available die."),
- ("Label the Neural Samples", THE,'G',0,4,"Good Records: If this is the Primary, add 1 success after rolling.",4,"Mislabeling: Requires +1 success for each other unresolved Assignment in this row.","Exhaust 1 available die."),
- ("Monitor the Growth Vats", ANA,'B',0,4,"Healthy Growth: If Exact, gain 1 Health.",5,"Unstable Growth: If completed with excess successes, exhaust 1 additional available die.","Lose 1 Health."),
- ("Tune the Cranial Resonator", ENG,'P',0,6,"Harmonic Match: Purple Crits count as 3 successes here.",6,"Resonance Drift: One Crit rolled here counts as 1 success.","Exhaust 1 available die."),
- ("Prepare the Transplant Rig", ENG,'G',1,5,"Organized Setup: If Exact, recover 1 committed die.",5,"Rush Setup: At least 3 dice must be committed whenever you work this Assignment.","Lose 1 Health."),
- ("Align the Memory Probes", ENG,'B',1,5,"Precise Alignment: If you exactly meet the target, recover 1 committed die.",9,"Signal Loss: Excess successes cannot be shifted elsewhere.","Exhaust 1 available die."),
- ("Test the Cerebral Coupler", ENG,'B',1,5,"Bench Test: If Exact, recover 1 committed die.",5,"Live Test: Requires at least 2 Blue dice.","Exhaust 2 available dice."),
- ("Recalibrate the Bone Saw", PRO,'P',1,5,"Sharp Enough: One Purple Crit counts as 3 successes here.",9,"It's Binding: One Purple Crit counts as 1 success here.","Lose 1 Health."),
- ("Prime the Synaptic Pump", PRO,'P',1,6,"Steady Pressure: If completed using exactly 3 dice, recover 1 committed die.",9,"Pressure Drop: Each attempt must commit at least 2 dice.","Exhaust 1 available die."),
- ("Map the Council Brain", ANA,'P',1,7,"Breakthrough: If completed as a Request, permanently increase REC by 1.",7,"Incomplete Map: Stored progress on this Assignment is capped at 4 successes.","Lose 1 Health."),
- ("Condition the Donor Tissue", ANA,'Y',1,4,"Fresh Tissue: If completed in one attempt, recover 1 committed die.",5,"Tissue Is Failing: At the end of an unsuccessful attempt, exhaust 1 stored die from this card.","Lose 1 Health."),
- ("Verify the Identity Matrix", THE,'B',2,5,"Cross-check: If dice of 3+ colors contribute, add 1 success.",9,"Identity Conflict: One Crit rolled here counts as 1 success.","Exhaust 2 available dice."),
- ("Complete the Splice Protocol", PRO,'P',2,6,"Clean Splice: If completed with no stored dice, recover 1 committed die.",7,"Emergency Splice: No more than 3 dice may be stored here.","Lose 1 Health."),
- ("Document the Procedure", THE,'G',0,4,"Clear Notes: If completed as Primary, recover 1 committed die.",4,"Rewrite It: Requires at least 2 Green dice.","Exhaust 1 available die."),
- ("Suture the Donor Incision", PRO,'Y',1,5,"Steady Hands: If completed using exactly 4 dice, recover 1 committed die.",9,"Torn Suture: One Crit rolled here counts as 1 success.","Lose 1 Health."),
- ("Decode Nobulous' Lecture Notes", THE,'G',0,5,"Insight: Look at the next 3 Assignment cards and return them in any order.",5,"Contradictions Everywhere: Requires at least 3 different die colors.","Exhaust 1 available die."),
- ("Update Nobulous' Lab Notes", None,'Y',0,4,"Useful Margin Note: Look at the next Assignment; return it to the top or bottom.",4,"Nobulous Wants Details: You may store no more than 1 die here.","Exhaust 1 available die."),
- ("Inventory the Spare Organs", None,'G',0,4,"Found Something Useful: If completed, recover 1 exhausted Yellow or Green die.",4,"Where Is the Spleen?: If another Assignment in this row is unresolved, this requires +1 success.","Exhaust 1 available die."),
- ("Clean the Restraint Table", None,'B',0,5,"Quick Cleanup: If completed using 4 or fewer dice, recover 1 committed die.",5,"Scrub It Again: Stored dice here cannot be recovered by other effects.","Exhaust 1 available die."),
- ("Reassemble the Automaton Hand", None,'P',1,7,"Masterwork: If completed as a Request, permanently increase STR by 1.",8,"It Keeps Twitching: One Crit rolled here counts as 1 success.","Lose 1 Health."),
- ("Dispose of Failed Samples", None,'B',1,5,"Efficient Disposal: If completed in one attempt, recover 1 exhausted die.",9,"They're Leaking: If unresolved after an attempt, exhaust 1 additional available die.","Lose 1 Health."),
- ("Sharpen the Surgical Implements", None,'P',0,5,"Razor Edge: If completed using a Crit, recover 1 committed die.",5,"Dull Again: Crits count as 1 success here.","Exhaust 2 available dice."),
+ ("Organize the Specimen Cabinet", THE,'Y',0,3,"Recover 1 Green die.",3,"Nobulous Can't Find Anything: One Crit rolled here counts as 1 success. <b>Reward:</b> recover 1 Yellow die.","Exhaust 1 available die."),
+ ("Prepare the Tissue Samples", ANA,'G',1,4,"Clean Cuts: Recover 1 Yellow die.",5,"Samples Are Degrading: Lose 1 stored success at the end of the Time Slot. <b>Reward:</b> recover 1 Green die.","Lose 1 Health."),
+ ("Calibrate the Neural Imager", ENG,'B',1,5,"Fine Calibration: One Blue Crit counts as 3 successes here.",5,"Emergency Calibration: Blue Crits count as 1 success here. <b>Reward:</b> recover 1 Blue die.","Exhaust 2 available dice."),
+ ("Stabilize the Prototype Brain", ANA,'P',2,6,"Stable Pattern: If dice of at least 3 colors contribute, add 1 success.",7,"Neural Cascade: No more than 2 dice may be stored here. <b>Reward:</b> recover 1 Purple die.","Lose 1 Health."),
+ ("Sterilize the Surgical Tools", PRO,'Y',0,4,"Efficient Routine: Recover 1 Blue die.",4,"Contamination: One successful die rolled here each attempt cannot be stored. <b>Reward:</b> recover 1 Yellow die.","Exhaust 1 available die."),
+ ("Label the Neural Samples", THE,'G',0,4,"Good Records: If this is the Primary, add 1 success after rolling.",4,"Mislabeling: +1 Target for each other unresolved Assignment here. <b>Reward:</b> recover 1 Yellow die.","Exhaust 1 available die."),
+ ("Monitor the Growth Vats", ANA,'B',0,4,"Healthy Growth: If this is the Primary, gain 1 Health.",5,"Unstable Growth: Commit at least 2 dice per attempt. <b>Reward:</b> recover 1 Green die.","Lose 1 Health."),
+ ("Tune the Cranial Resonator", ENG,'P',0,6,"Harmonic Match: Purple Crits count as 3 successes here.",6,"Resonance Drift: One Crit rolled here counts as 1 success. <b>Reward:</b> recover 1 Purple die.","Exhaust 1 available die."),
+ ("Prepare the Transplant Rig", ENG,'G',1,5,"Organized Setup: Choose the next Special Recovery color (not Red).",5,"Rush Setup: Commit at least 3 dice per attempt. <b>Reward:</b> recover 1 Blue die.","Lose 1 Health."),
+ ("Align the Memory Probes", ENG,'B',1,5,"Precise Alignment: You may take 1 additional Strategy roll this Time Slot.",6,"Signal Loss: You may store at most 2 dice here. <b>Reward:</b> recover 1 Blue die.","Exhaust 1 available die."),
+ ("Test the Cerebral Coupler", ENG,'B',1,5,"Bench Test: Exchange 1 available die for 2 exhausted dice of its color.",5,"Live Test: Requires at least 2 Blue dice. <b>Reward:</b> recover 1 Blue die.","Exhaust 2 available dice."),
+ ("Recalibrate the Bone Saw", PRO,'P',1,5,"Sharp Enough: One Purple Crit counts as 3 successes here.",6,"It's Binding: One Purple Crit counts as 1 success here. <b>Reward:</b> recover 1 Purple die.","Lose 1 Health."),
+ ("Prime the Synaptic Pump", PRO,'P',1,6,"Steady Pressure: Recover up to 2 Blue dice.",6,"Pressure Drop: Each attempt must commit at least 2 dice. <b>Reward:</b> recover 1 Blue die.","Exhaust 1 available die."),
+ ("Map the Council Brain", ANA,'P',1,7,"Breakthrough: +1 REC permanently.",7,"Incomplete Map: Stored progress here is capped at 4 successes. <b>Reward:</b> recover 1 Purple die.","Lose 1 Health."),
+ ("Condition the Donor Tissue", ANA,'Y',1,4,"Fresh Tissue: Recover 1 Green die.",5,"Tissue Is Failing: After a failed attempt, exhaust 1 die stored here. <b>Reward:</b> recover 1 Green die.","Lose 1 Health."),
+ ("Verify the Identity Matrix", THE,'B',2,5,"Cross-check: If dice of at least 3 colors contribute, add 1 success.",6,"Identity Conflict: One Crit rolled here counts as 1 success. <b>Reward:</b> recover 1 Purple die.","Exhaust 2 available dice."),
+ ("Complete the Splice Protocol", PRO,'P',2,6,"Clean Splice: Recover 1 Green and 1 Blue die.",7,"Emergency Splice: No more than 3 dice may be stored here. <b>Reward:</b> recover 1 Green die.","Lose 1 Health."),
+ ("Document the Procedure", THE,'G',0,4,"Clear Notes: You may move a Setback to a different Time Slot with room.",4,"Rewrite It: Requires at least 2 Green dice. <b>Reward:</b> recover 1 Yellow die.","Exhaust 1 available die."),
+ ("Suture the Donor Incision", PRO,'Y',1,6,"Steady Hands: Recover 1 Green die.",6,"Torn Suture: One Crit rolled here counts as 1 success. <b>Reward:</b> recover 1 Green die.","Lose 1 Health."),
+ ("Decode Nobulous' Lecture Notes", THE,'G',0,5,"Insight: Reorder the top 3 Assignments.",5,"Contradictions Everywhere: Requires at least 3 different die colors. <b>Reward:</b> peek at the top Assignment; you may put it on the bottom.","Exhaust 1 available die."),
+ ("Update Nobulous' Lab Notes", None,'Y',0,4,"Useful Margin Note: Return 1 discarded, uncompleted Assignment to the top of the deck.",4,"Nobulous Wants Details: You may store no more than 1 die here. <b>Reward:</b> recover 1 Yellow die.","Exhaust 1 available die."),
+ ("Inventory the Spare Organs", None,'G',0,4,"Found Something Useful: Recover 1 Yellow or Blue die.",4,"Where Is the Spleen?: +1 Target if another Assignment here is unresolved. <b>Reward:</b> recover 1 Yellow die.","Exhaust 1 available die."),
+ ("Clean the Restraint Table", None,'B',0,5,"Quick Cleanup: Recover 1 Purple die.",5,"Scrub It Again: Stored dice here cannot be recovered by other effects. <b>Reward:</b> recover 1 Blue die.","Exhaust 1 available die."),
+ ("Reassemble the Automaton Hand", None,'P',1,7,"Masterwork: +1 STR permanently.",8,"It Keeps Twitching: One Crit rolled here counts as 1 success. <b>Reward:</b> recover 1 Blue die.","Exhaust 1 available die."),
+ ("Dispose of Failed Samples", None,'B',1,5,"Efficient Disposal: You may discard another unresolved Demand here without penalty.",6,"They're Leaking: If unresolved after an attempt, exhaust 1 additional available die. <b>Reward:</b> recover 1 Green die.","Lose 1 Health."),
+ ("Sharpen the Surgical Implements", None,'P',0,5,"Razor Edge: Add 1 Yellow die as a hit to another Task here with stored progress.",5,"Dull Again: Crits count as 1 success here. <b>Reward:</b> recover 1 Purple die.","Exhaust 2 available dice."),
 ]
 
 # name, dot, successes, effect, flavor
+#
+# THE COUPONS SAY WHEN THEY ARE SPENT, 2026-11-12. Four of the six printed an
+# effect with no window - "add 1 success to a roll", "reduce one Assignment's
+# remaining need by 2" - and a coupon with no window is a coupon the table
+# argues about: before or after the dice are seen is the whole value of it.
+# Each now prints "Before rolling" or "After rolling", and the two that reach
+# the Final Exam say what they do there.
+#
+# Study Nobulous' Notes is the one that changed job. "Reduce one Assignment's
+# remaining need by 2" is Borrow Better Instruments with a bigger number; it
+# now FLIPS A DEMAND BACK TO ITS REQUEST SIDE, keeping the stored dice and
+# progress, which is the only effect in NAP that undoes a flip. That is a
+# genuine power increase and it is paid for by having to complete the
+# Opportunity first - see rules/nap.html, Completed Opportunities.
 OPPS = [("Take an Unauthorized Break",'Y',4,"Spend: cancel 1 Health loss.",
          "Nobulous noticed. It has been added to your file."),
-        ("Raid the Supply Closet",'Y',4,"Spend: one die counts as any color for one roll.",
+        ("Raid the Supply Closet",'Y',4,"Spend before rolling: recover up to 2 dice of one non-Red color.",
          "Most of it is labeled. Very little of it is labeled correctly."),
-        ("Borrow Better Instruments",'Y',5,"Spend: add 1 success to a roll.",
+        ("Borrow Better Instruments",'Y',5,"Spend after rolling: reroll 1 die.",
          "Return them before Nobulous notices. Nobulous always notices."),
-        ("Study Nobulous' Notes",'Y',5,"Spend: reduce one Assignment's remaining need by 2.",
+        ("Study Nobulous' Notes",'Y',5,"Spend before rolling: flip a Demand here to its Request side. In an exam, reduce its Target by 2 instead.",
          "Half the margins are equations. The other half are grudges."),
-        ("Salvage Useful Components",'G',4,"Spend: add 2 successes to an Assignment, without rolling.",
+        ("Salvage Useful Components",'G',4,"Spend after rolling: add 1 Green die as a Crit to an Assignment here or to this exam.",
          "One apprentice's scrap is another apprentice's promotion."),
-        ("Practice on a Spare Brain",'G',5,"Spend: one Crit counts as 3 successes.",
+        ("Practice on a Spare Brain",'G',5,"Spend after rolling: count 1 Crit as 3 successes.",
          "It was a spare. Nobody asked the brain.")]
 
 # name, dot, successes, flavor

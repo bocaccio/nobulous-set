@@ -2,7 +2,20 @@
 <link rel="stylesheet" href="style.css">
 <style>
 :root { --accent: #6b3f8c; }
-/* THREE PAGES, NOT FOUR.
+/* FOUR PAGES, NOT FIVE - as of 2026-11-12. It was three until the
+   Assignment revision, which put a Demand-reward rule, a
+   completion-reward timing box, a Setback box, an added-die box, a
+   six-row rulings table and a rewritten coupon table into a book
+   that had about 10mm of blank paper left. Four is the budget now,
+   and check_app_sync.py holds it there: a book that grows again is a
+   section somebody added without reading this note, and a book that
+   shrinks back to three is a section that went missing.
+
+   EVERYTHING BELOW STAYS, which is the part that is easy to get
+   wrong. These settings are no longer buying the third page; they
+   are buying the FOURTH, and loosening them costs a fifth.
+
+   The original note, kept because the reasoning still holds:
    NAP ran half a page over - the whole Final Exam section and
    Carrying NAP forward - which is about five times BAT's spill, and
    BAT's setting does nothing here: tried at leading 1.26, still four
@@ -17,8 +30,7 @@
    the same page and nobody reads a margin.
 
    11mm is still comfortably inside what a home printer will take
-   (most manage 6.5mm), and it leaves ~10.2mm of blank paper under
-   the last line - about the same headroom BAT has.
+   (most manage 6.5mm).
 
    NAP ONLY, in its own style block: style.css is shared and the
    other three are 3, 3 and 6 pages with nobody asking for those to
@@ -192,9 +204,11 @@ Clearing more Assignments than you have Strategy rolls is normal &mdash; it is w
 <ul>
   <li>Successful dice on an unresolved Assignment may be <b>stored as progress</b> instead of being exhausted.</li>
   <li><b>At the end of the Time Slot</b>, every unresolved Task flips to its
-      <b>Demand</b> side &mdash; a harsher printed effect, and often a higher Target.
-      Flipping costs nothing by itself.</li>
-  <li>An unresolved Opportunity rotates <b>180 degrees</b> for one final chance (during that Time Slot on the following day).
+      <b>Demand</b> side &mdash; a harsher printed effect, and sometimes a higher Target.
+      <b>10 of the 26 Tasks</b> print a Demand Target 1 above their Request; the other 16 print
+      the same number on both faces. Flipping costs nothing by itself.</li>
+  <li>An unresolved Opportunity rotates <b>180 degrees</b> for one final chance. It <b>survives the End of
+      Day in between</b> and gets that chance in the same Time Slot on the following day.
       <b>You cannot store progress on Opportunities</b>. If the rotated Opportunity is still incomplete at the end of the day,
       discard it without applying an effect or penalty.</li>
   <li>An Assignment that is <em>already</em> on its Demand side and still unresolved at the end of a Time Slot
@@ -205,11 +219,26 @@ Clearing more Assignments than you have Strategy rolls is normal &mdash; it is w
       exhausted.</li>
   <li>When an Assignment finally resolves, its committed and stored dice exhaust unless the card says otherwise.
       A Credit Task completed on its <b>Demand</b> side still counts as a completed Credit.</li>
+  <li><b>Both faces pay.</b> A Task completed on either side resolves the completion reward printed
+      on <em>that</em> face. Each Task pays <b>at most once</b> &mdash; a card finished as a Request
+      never pays its Demand reward, and the reverse.</li>
   <li>Rotate every completed Task, Opportunity, or Setback <b>90 degrees</b> and leave it in its
       Time Slot until End of Day. Resolve its completion reward before continuing.</li>
   <li>Completing an Opportunity never pays out on the spot: you <b>keep the card as a coupon</b>
       (see <em>Completed Opportunities</em>).</li>
 </ul>
+
+<div class="box">
+  <span class="lbl">Resolving a completion reward</span>
+  <b>Exhaust the completed Assignment&rsquo;s dice first, then resolve its reward</b> &mdash; before your
+  next Strategy roll.
+  <p>A reward that names a color (&ldquo;recover 1 Green die&rdquo;) takes <b>any</b> exhausted die of
+  that color, including one the card has just exhausted. If no die of that color is exhausted, skip
+  that recovery; nothing is substituted. A reward that names two colors pays both independently.</p>
+  <p>Resolve a card&rsquo;s reward <b>once</b>. If the reward manipulates the Assignment deck, use the
+  cards that remain. Finish resolving a reward before checking whether an empty deck has ended the
+  apprenticeship.</p>
+</div>
 
 <h3>Assignment types</h3>
 <table>
@@ -220,21 +249,76 @@ Clearing more Assignments than you have Strategy rolls is normal &mdash; it is w
       earns a coupon.</td></tr>
 </table>
 
+<div class="box warn">
+  <span class="lbl">Setbacks</span>
+  All six print the same two rules and differ only in Target:
+  <b>clear this before working other Assignments here</b>, and <b>at the start of this Time Slot, if this
+  Setback has no stored dice, exhaust 1 available die</b>. Clearing one reopens the row.
+  <p>The exhaustion check happens at the <b>start of a slot</b> with the Setback already present and no
+  dice stored on it. A Setback revealed after that check has passed makes its first check on a later visit
+  to its slot.</p>
+</div>
+
 <h3>Completed Opportunities</h3>
 <p>An Opportunity pays nothing when you complete it. Instead you <b>keep the card in front of you as a
 coupon</b>. It has no expiration: spend it whenever you like, on any Day, including during the Final Exam.
-Each is a <b>one-time use</b> &mdash; spend it, apply the effect, then discard the card.</p>
+Each is a <b>one-time use</b> &mdash; spend it, apply the effect, then discard the card. Every coupon
+prints <b>when</b> it may be spent, before or after a roll; that window is part of the card.</p>
 <table>
   <tr><th>Opportunity</th><th>Spend it to&hellip;</th></tr>
-  <tr><td>Take an Unauthorized Break</td><td>Cancel 1 Health loss.</td></tr>
-  <tr><td>Raid the Supply Closet</td><td>Count one die as any color for one roll.</td></tr>
-  <tr><td>Borrow Better Instruments</td><td>Add 1 success to a roll.</td></tr>
-  <tr><td>Study Nobulous&rsquo; Notes</td><td>Reduce one Assignment&rsquo;s remaining need by 2.</td></tr>
-  <tr><td>Salvage Useful Components</td><td>Add 2 successes to an Assignment, without rolling.</td></tr>
-  <tr><td>Practice on a Spare Brain</td><td>Count one Crit as 3 successes.</td></tr>
+  <tr><td>Take an Unauthorized Break</td><td>Cancel 1 Health loss, whenever one would happen.</td></tr>
+  <tr><td>Raid the Supply Closet</td><td><em>Before rolling:</em> recover up to 2 dice of one non&#8209;Red color.</td></tr>
+  <tr><td>Borrow Better Instruments</td><td><em>After rolling:</em> reroll 1 die and keep the new result.</td></tr>
+  <tr><td>Study Nobulous&rsquo; Notes</td><td><em>Before rolling:</em> flip one unresolved Demand in this Time Slot
+      back to its Request side. In an exam, reduce that exam&rsquo;s Target by 2 instead.</td></tr>
+  <tr><td>Salvage Useful Components</td><td><em>After rolling:</em> add 1 Green die as a Crit to an Assignment
+      here or to this exam.</td></tr>
+  <tr><td>Practice on a Spare Brain</td><td><em>After rolling:</em> count one rolled Crit as 3 successes.</td></tr>
 </table>
-<p>Completed opportunity rewards that add successes still obey the color rule: they can be added to a Task or Setback that already includes a
-legal die. You may hold any number of completed opportunities; unspent rewards score nothing at the end of the game.</p>
+<p>Rerolling with Borrow Better Instruments <b>does not use a Strategy roll</b>. Practice on a Spare Brain
+needs a Crit that is still a Crit: apply any printed restriction that reprices it first, and a Crit a card
+has reduced to a single hit is not eligible. Rewards that add a die still obey the color rule &mdash; the
+Assignment must already hold a legal die. You may hold any number of coupons; unspent ones score nothing.</p>
+<p><b>Study Nobulous&rsquo; Notes is a genuine reset.</b> The Demand keeps its stored dice and progress and
+follows the normal flip rule again at the end of the slot. If the progress already on the card meets the
+lower Request Target, the Task completes at once: exhaust its dice and pay its <b>Request</b> reward.</p>
+
+<div class="box">
+  <span class="lbl">Adding a die through a reward</span>
+  Two effects put a die onto a card without rolling it &mdash; <b>Sharpen the Surgical Implements</b>
+  (1 Yellow die as a hit) and <b>Salvage Useful Components</b> (1 Green die as a Crit).
+  <p>Use an <b>available</b> die, or one committed on the current roll whose result you have not yet
+  applied or exhausted. Set it to the stated result and place it on the receiving card: it supplies its
+  printed color and counts once. A die already applied, stored or exhausted is not eligible.</p>
+  <p>Sharpen&rsquo;s receiving Task must already hold stored progress that satisfies the color rule.
+  Salvage obeys the receiving card&rsquo;s printed restrictions, including any that reprice a Crit. Store
+  the added die if the Assignment is still unresolved and allows storage; if the Assignment completes,
+  exhaust it with the rest before taking the reward. Resolve both effects before exhausting the
+  roll&rsquo;s unused dice.</p>
+</div>
+
+<h3>Six rewards that need a ruling</h3>
+<table>
+  <tr><th>Card</th><th>How it resolves</th></tr>
+  <tr><td>Align the Memory Probes</td><td>The additional Strategy roll <b>raises this slot&rsquo;s roll
+      allowance by one</b>, even if STR is already spent. Pay out every card the current roll completed
+      before taking it.</td></tr>
+  <tr><td>Prepare the Transplant Rig</td><td>The chosen color <b>overrides the Primary&rsquo;s dot</b> for
+      the next Special Recovery, and carries into <em>Preparation</em> if that recovery is the next one.</td></tr>
+  <tr><td>Test the Cerebral Coupler</td><td>Optional, and you must have <b>2 exhausted dice of the chosen
+      die&rsquo;s color</b> before you pay the available die.</td></tr>
+  <tr><td>Document the Procedure</td><td>Move one Setback to a slot with room. It counts toward that
+      row&rsquo;s 4&#8209;card limit, its restriction applies there, and the move triggers no start&#8209;of&#8209;slot
+      effect. It may be moved into the active row, where it restricts your later rolls. A Setback locking the
+      active row must be cleared before you can work this Task at all &mdash; so this plans around a
+      <em>future</em> Setback.</td></tr>
+  <tr><td>Dispose of Failed Samples</td><td>Discard one <b>other</b> unresolved Demand Task in the active
+      slot. Exhaust its stored dice; it pays no penalty and earns no Credit.</td></tr>
+  <tr><td>Update Nobulous&rsquo; Lab Notes</td><td>Take any Assignment that was passed over at a reveal or
+      discarded unresolved. A retrieved Task returns as a <b>fresh Request</b> &mdash; reset any rotation or
+      last&#8209;chance status &mdash; and the normal reveal, Setback and Skull rules apply when it comes up
+      again. Completed cards stay in the discard and cannot be taken, including spent Opportunities.</td></tr>
+</table>
 
 <div class="box warn">
   <span class="lbl">Skulls</span>
@@ -263,14 +347,11 @@ equal to your <b>REC</b>.</p>
 </ul>
 
 <h3>Building the Final Exam pool</h3>
-<p>For each subject independently, randomly add the following number of Final Exam cards from that subject to the pool:</p>
-<table>
-  <tr><th>Credits in subject</th><th>Cards added to pool</th></tr>
-  <tr><td>0&ndash;1</td><td>1</td></tr>
-  <tr><td>2&ndash;3</td><td>2</td></tr>
-  <tr><td>4+</td><td>3</td></tr>
-</table>
-<p>Shuffle the pool and draw <b>3</b> Final Exams.</p>
+<p>Randomly select <b>1 Final Exam card from each subject</b> &mdash; Anatomy, Engineering, Procedure and
+Theory. Include every subject, even one you earned no Credits in. Shuffle the 4 selected cards and draw
+<b>3</b> Final Exams to sit; set the unused card aside.</p>
+<p>Each subject therefore has a <b>75% chance</b> to appear and can appear at most once. Credits no longer
+decide which exams you sit &mdash; they only reduce Targets, below. Use this same draw in the NRJ campaign.</p>
 
 <h3>Resolving the exams</h3>
 <ol class="seq">

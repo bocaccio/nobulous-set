@@ -425,6 +425,63 @@ THE TYRANT, CURRENT
   can and stops, and only a blow that finishes the layer in the same attack
   reaches a Splice.  A Splice never chips.
 
+NAP ASSIGNMENTS, CURRENT
+  Revised 2026-11-12.  Three changes to all 26 Tasks at once, and none of them
+  works alone.
+    1. NO REWARD ASKS A QUESTION.  Fifteen Request effects were conditioned on
+       how the dice fell - "If Exact", "If completed using exactly 3 dice", "If
+       completed with exactly 2 successes across all committed dice this
+       strategy phase" - which a player has to reconstruct after the dice are
+       swept.  Every reward now pays on completion.
+    2. THE REWARD NAMES A COLOUR, not "1 committed die".  Every fixed-colour
+       REQUEST recovery pays a colour OTHER than the card's own dot, because
+       the dot is what the Primary already queues for the next slot;
+       check_app_sync.py enforces that, both halves of a two-colour offer
+       included.  A DEMAND recovery may match its own dot on purpose - that is
+       the die you just spent clearing it.
+    3. BOTH FACES PAY.  A Demand was a harsher rule, a penalty one slot later
+       and nothing for clearing it.  All 26 Demand faces print a completion
+       reward now, so a deliberate flip is a decision rather than a failure.
+       A Task pays at most once, on the face it was completed on.
+  SIX DEMAND TARGETS CAME DOWN FROM 9 TO 6 - Align the Memory Probes,
+  Recalibrate the Bone Saw, Prime the Synaptic Pump, Verify the Identity
+  Matrix, Suture the Donor Incision, Dispose of Failed Samples - and Suture's
+  Request rose 5 to 6.  Those six were the whole of the gap-4 and gap-3 tail
+  the 2026-10-28 Target rise left behind, and a reward printed on a face
+  nobody clears is dead text.  The widest Request-to-Demand gap is now 1, on
+  10 of the 26; the other 16 print the same number on both faces.
+  THE SIX OPPORTUNITIES EACH PRINT A WINDOW, before or after a roll, which is
+  most of what a coupon is worth.  Study Nobulous' Notes changed job: it flips
+  a Demand back to its Request side, keeping stored dice and progress, which
+  is the only effect in NAP that undoes a flip.  Raid the Supply Closet is a
+  recovery rather than a wild, and Borrow Better Instruments is a free reroll
+  that does not spend a Strategy roll.
+  THE FINAL EXAM POOL IS 1 CARD PER SUBJECT, chosen at random from each of the
+  four, shuffled, three of the four drawn.  Every subject has a 75% chance to
+  appear and can appear at most once; Credits only reduce Targets now.  It
+  replaced a Credit-weighted pool that two of the four owners implemented by
+  taking the FIRST cards of each subject in table order, so eight of the twelve
+  printed exams could not come up at all on an empty transcript.  That is a
+  real difficulty rise and the measured cost is in rules/RULES_CHANGELOG.txt.
+
+NRJ'S NAP MODULE, CURRENT
+  The 4 IMPOSTER TASKS pay a recovery on both faces.  They stay Mandatory and
+  worth no Credit - that is the point of them - but a mandatory card that pays
+  nothing on either face is upkeep wearing a name.  The Demand face no longer
+  repeats "If unresolved, flip to Demand"; one rule in rules/nrj.html covers
+  all four: flip once, keep stored progress, discard if still unresolved at
+  the end of the Demand visit.
+  TWO FOLLOWING SETBACKS WERE REWORDED.  Where Did I Put That? named a die
+  that was already ineligible - a die committed there is STORED on the card,
+  and Special Recovery takes from the exhausted pool - so it now leaves 1 die
+  of the queued colour behind at the sweep.  Unscheduled Demonstration bills
+  per ROLL instead of per Time Slot, which one die used to pay off for good.
+  THREE DEVIOUS WORDINGS TIGHTENED, no Target moved.  Raid the Supply Cabinet
+  gained the choice that makes it a different card from the base Raid the
+  Supply Closet rather than a bigger one; Extra Credit? names a CREDIT Task,
+  because the six unmarked Tasks have no subject to name; Borrow the Master's
+  Notes says OPTIONAL, which rules out the Mandatory Imposter Tasks.
+
 DICE
   Use the 20 Strong Dice and Chip saved object: 4 Purple, 4 Blue, 4 Green,
   4 Yellow, 1 Red, plus the Health, Strategy and Recovery stat dice.

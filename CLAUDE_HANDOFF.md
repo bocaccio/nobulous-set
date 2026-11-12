@@ -4,7 +4,9 @@
 
 Repository: `C:\Users\weeks\Documents\BoardGame\20 Strong\NobulousSet_repo`
 
-Read `AGENTS.md`, `HANDOFF.md`, and `README.md` before editing. The authoritative sources are:
+Read `AGENTS.md`, `HANDOFF.md`, and `README.md` before editing. `AGENTS.md` is
+the operating manual and wins where this file disagrees with it. The
+authoritative sources are:
 
 - Card definitions: `generator/build_*.py`
 - Rules: `rules/*.html`
@@ -13,61 +15,64 @@ Read `AGENTS.md`, `HANDOFF.md`, and `README.md` before editing. The authoritativ
 
 ## User preferences and constraints
 
-- The user wants to make several changes before committing.
-- Do **not** commit or push to GitHub until the user explicitly says to push.
-- Preserve the existing dirty working tree. It contains many intentional changes from earlier UI and rules work.
 - Keep BAT, NAP, AoS, and NRJ data synchronized when changing shared behavior.
+- Preserve unrelated edits in the working tree, and make a Git checkpoint
+  before substantial work.
+- Do not change card text, Targets, or rules wording casually — the numbers
+  are simulation-calibrated. Raise a suspected design error first.
 
-## Current request and latest change
+## Latest change — the NAP Assignment revision, 2026-11-12
 
-The user changed the NAP Task card **Organize the Specimen Cabinet** effect to:
+All 26 Tasks, the 6 Opportunities and NRJ's 14 NAP cards were revised. The
+short version, with the long version in `CARD_MANIFEST.txt` under
+*NAP ASSIGNMENTS, CURRENT* and the measurements in `rules/RULES_CHANGELOG.txt`:
 
-> If completed with exactly 2 successes across all committed dice this strategy phase, recover 1 committed die.
+- Every exact-success and exact-dice-count condition is gone from the Request
+  effects; a reward pays on completion and names a **colour**.
+- All 26 **Demand** faces gained a completion reward. A Task pays at most once,
+  on the face it was completed on.
+- Six Demand Targets came down from 9 to 6, and Suture's Request rose 5 to 6.
+- The Final Exam pool is **1 card per subject**, chosen at random, three of the
+  four drawn — it was weighted by Credits.
+- Each Opportunity prints *when* it is spent; Study Nobulous' Notes now flips a
+  Demand back to its Request side.
 
-Updated files:
-
-- `generator/build_nap.py` — authoritative task text.
-- `playtest/dist/suite.js` — playtest effect text and NAP reward logic.
-- `playtest/dist/index.html` — bumped the suite cache query to `nap-cabinet-phase-1`.
-
-The playtest now tracks `state.nap.phaseCommittedSuccesses` and uses it for Organize's exact-two-success reward. It also suppresses the reward when an unassigned rolled hit remains, per the immediately preceding user request.
-
-## Important follow-up to verify
-
-The current implementation resets `phaseCommittedSuccesses` when a new Strategy roll is made and at the end of a Time Slot. If “across all committed dice this strategy phase” means the whole Time Slot, it should **not** reset between rolls. Decide whether the intended scope is the complete Strategy phase (all rolls in the active Time Slot) and adjust accordingly. Also ensure successes committed to other Assignments in that phase are included, while stored dice from prior phases are not double-counted.
-
-The generated NAP card sheets/PnP PDFs have not been rebuilt after this wording change because the available Python environment lacks `weasyprint`. If the printed card must reflect the new text, use an environment with the generator dependencies, then run:
-
-```powershell
-cd generator
-python build_nap.py
-python pack.py
-```
-
-Copy/update the resulting NAP assets according to the existing project workflow.
-
-## Verification already performed
-
-- `node --check playtest/dist/suite.js` passed.
-- `python -m py_compile generator/build_nap.py` passed.
-- Browser-style behavior was tested with a temporary Playwright fixture against a local server:
-  - Organize completed with an extra unassigned hit: no reward shown.
-  - Organize completed with an extra unassigned miss: reward shown.
-
-The temporary fixture was not kept in the repository.
+**`phaseCommittedSuccesses` is gone from `playtest/dist/suite.js`.** It existed
+only for Organize the Specimen Cabinet's "exactly 2 successes across all
+committed dice this strategy phase", and this revision deleted that condition
+along with the other fourteen like it. An earlier copy of this file asked
+whether that counter should reset between rolls or span the whole Time Slot;
+that question no longer has a card attached to it.
 
 ## Running the playtest
 
 From the repository root:
 
-```powershell
-python -m http.server 8000 -d playtest/dist
+```bash
+python playtest/serve.py
 ```
 
-Open `http://localhost:8000/`. The app stores state in browser localStorage under `nobulous-suite-v1`; use the “New NAP test” button when a clean state is needed.
+**Not `python -m http.server`.** It sends no cache headers, so the browser
+caches `index.html` — and since that file names every `?v=` token, a cached
+copy pins you to an old build however often you bump them. The symptom is a
+feature that is simply absent with no error, which reads exactly like code
+that was never written.
 
-## Recent NAP interface work already present
+Open `http://localhost:8000/`. State lives in browser localStorage under
+`nobulous-suite-v1`; use the "New NAP test" button for a clean state. When you
+change a file under `playtest/dist/`, bump the shared `?v=` token in
+`index.html` — one token, used by every script and stylesheet.
 
-The working tree includes earlier requested changes: card-sized time-slot cards with color bands, horizontal dice area, assignment/discard pile switcher and subject counts, apprentice and FINF cards in the top row, discard-card viewing/hover previews, completed-card rotation and delayed discard, multi-roll selection/rerolling, FINF assignment removal, and recovery-dot handling.
+## Before you call anything done
 
-Review the diff before touching these areas; do not overwrite unrelated user edits.
+```bash
+cd generator && python check_app_sync.py && python check_cards.py
+cd ../simulation && python coverage.py
+cd ../tts && python test_setup.py
+```
+
+`coverage.py` is the only thing that can be trusted about what is and is not
+modelled; a win rate written in a comment has no predicate at all. And
+mutation-test any check you add — a check that cannot fail is worse than none,
+and this repo has caught four of them that way, including one added during the
+2026-11-12 revision whose regex matched `dic` and `dice` but never `die`.

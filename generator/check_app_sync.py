@@ -285,6 +285,51 @@ js = js_literal("playtest/dist/suite.js", "NAP_SETBACKS")
 rows("build_nap SETBACKS vs NAP_SETBACKS", gn["SETBACKS"], js,
      {"name": (G(0), G(0)), "color": (G(1), G(2)), "target": (G(2), G(1))})
 
+# -----------------------------------------------------------------------
+# THE 2026-11-12 ASSIGNMENT REVISION. Three things changed on all 26 Tasks
+# at once - the Request conditions went, the reward names a colour, and the
+# Demand side gained a reward of its own - and the lab prints that text to
+# the player. Nothing compared the EFFECT STRINGS until now: the tables
+# above compare names, Targets, dots and Skulls, so a card could be
+# reworded in the generator and the lab could go on teaching the old rule
+# indefinitely. Both faces, string for string.
+# -----------------------------------------------------------------------
+_req_js = js_literal("playtest/dist/suite.js", "NAP_REQUEST_EFFECTS")
+_dem_js = js_literal("playtest/dist/suite.js", "NAP_DEMAND_EFFECTS")
+for _face, _at, _lab, _name in ((("Request"), 5, _req_js, "NAP_REQUEST_EFFECTS"),
+                                (("Demand"), 7, _dem_js, "NAP_DEMAND_EFFECTS")):
+    _bad = [(r[0], r[_at], l) for r, l in zip(gn["TASKS"], _lab) if r[_at] != l]
+    check("build_nap %s text vs %s - all 26" % (_face, _name),
+          len(_lab) == len(gn["TASKS"]) and not _bad, "%r" % (_bad[:2],))
+
+# EVERY DEMAND FACE PAYS. That is the whole of the revision's second half,
+# and it is the kind of thing that is true on 25 of 26 cards for a week.
+_norew = [r[0] for r in gn["TASKS"] if "<b>Reward:</b>" not in r[7]]
+check("every one of the 26 Demand faces prints a Reward", not _norew,
+      "%r" % (_norew[:3],))
+
+# AND A FIXED-COLOUR REQUEST RECOVERY NEVER PAYS THE CARD'S OWN DOT. The dot
+# is what the Primary queues for the next Time Slot, so recovering it twice
+# is half a reward - the design rule behind the whole colour column. Read
+# off the printed text, both halves of a two-colour offer, so a card
+# reworded to pay its own dot fails here rather than at the table.
+_DOTNAME = {"Y": "Yellow", "B": "Blue", "G": "Green", "P": "Purple"}
+_selfpay = []
+for _r in gn["TASKS"]:
+    # (?:die|dice), NOT dice? - which matches "dic" and "dice" and never
+    # "die", so this check saw nothing on any single-die reward and
+    # passed vacuously on 21 of the 26 cards. Found by mutation, not by
+    # reading it: a card edited to pay its own dot stayed green.
+    _m = re.search(r"[Rr]ecover (?:up to \d+ )?(.+?) (?:die|dice)\.", _r[5])
+    if not _m:
+        continue
+    _named = [c for c in _DOTNAME.values() if c in _m.group(1)]
+    if _DOTNAME[_r[2]] in _named:
+        _selfpay.append((_r[0], _r[2], _m.group(1)))
+check("no Request recovery pays the colour the card's own dot queues",
+      not _selfpay, "%r" % (_selfpay[:3],))
+
+
 print()
 print("AoS - generator/aos.py and simulation/aos.py vs playtest")
 ga = py_tables("generator/aos.py")
@@ -1005,9 +1050,70 @@ check("rules/aos.html states the negate rule",
       "exhaust 2 misses" in text("rules/aos.html").lower())
 check("build_aos.py footers state the negate rule",
       text("generator/build_aos.py").count("exhaust 2 misses on them") >= 3)
-check("rules/nap.html does not promise a higher Demand Target",
-      "higher Target" in text("rules/nap.html")
-      and "often a higher Target" in text("rules/nap.html"))
+# THE FINAL EXAM POOL, IN ALL FOUR OWNERS. "Randomly select 1 Final Exam
+# card from each subject... shuffle the 4 selected cards and draw 3", as of
+# 2026-11-12. It replaced a Credit-weighted pool - 1 card at 0-1 Credits in
+# that subject, 2 at 2-3, 3 at 4+ - which two of the four owners implemented
+# by taking the FIRST cards of each subject in table order, so eight of the
+# twelve printed exams could not come up at all on an empty transcript.
+#
+# Four owners have to agree: the book, the model, the lab and the mod. Each
+# is read for the thing it actually does, not for a phrase - a dial's VALUE
+# in nap.py, the per-subject pick in suite.js, the constant in lua.lua - so
+# an owner left behind on the old rule fails here.
+_pool_say = _says("Randomly select <b>1 Final Exam card from each subject</b>")
+_pool_sim = sn.get("EXAM_POOL_BY_CREDITS") is False
+_pool_lab = "pool.push(shuffle(ofSubject)[0])" in text("playtest/dist/suite.js")
+_pool_mod = "EXAM_POOL_PER_SUBJECT = 1" in text("tts/lua.lua")
+check("the exam pool is 1 card per subject in the book, model, lab and mod",
+      _pool_say and _pool_sim and _pool_lab and _pool_mod,
+      "book=%s model=%s lab=%s mod=%s"
+      % (_pool_say, _pool_sim, _pool_lab, _pool_mod))
+check("...and the book states the 75% a four-card pool drawing 3 gives",
+      _says("<b>75% chance</b> to appear and can appear at most once"))
+
+# BOTH FACES PAY, in the model and in the lab. The model's call site was
+# gated on `not card.on_demand` and the lab's on `a.demandSide`, because a
+# Demand face printed no reward at all until 2026-11-12. A reward table with
+# 26 entries proves nothing on its own - AGENTS.md's warning - so this reads
+# the branch that pays, and the absence of the gate that used to stop it.
+_nap_src = text("simulation/nap.py")
+_lab_src = text("playtest/dist/suite.js")
+check("the model pays a Task reward on whichever face completed it",
+      "table = DEMAND_REWARD if card.on_demand else REQUEST_REWARD" in _nap_src
+      and "self.apply_task_reward(card.index, card, take," in _nap_src
+      and 'if card.kind in ("task", "impostor") and not card.on_demand:'
+      not in _nap_src,
+      "simulation/nap.py still gates the reward on the Request side")
+check("the lab pays a Task reward on whichever face completed it",
+      'face=a.demandSide?"dem":"req";' in _lab_src
+      and "payNAPTaskReward(a,reward);" in _lab_src
+      and 'if(a.type!=="t"||a.demandSide)return;' not in _lab_src,
+      "playtest/dist/suite.js still gates the reward on the Request side")
+# AND AN IMPOSTER TASK PAYS TOO, which is its own branch in both.
+check("an Imposter Task's recovery is paid in the model and the lab",
+      "self.apply_imposter_reward(card.index, card)" in _nap_src
+      and "IMPOSTER_REWARD[index][1 if card.on_demand else 0]" in _nap_src
+      and "a.nrj?NAP_IMPOSTER_REWARDS:NAP_TASK_REWARDS" in _lab_src)
+
+# THE DEMAND-TARGET CENSUS, READ OFF THE CARDS. rules/nap.html used to say an
+# unresolved Task flips to "a harsher printed effect, and often a higher
+# Target", and this check only looked for that phrase - so it could not tell
+# whether "often" was true. It was not: the 2026-10-28 Target rise left 14 of
+# 26 printing the same number on both faces. The 2026-11-12 revision brought
+# the six Demands of 9 down to 6, which moved the census again.
+#
+# So count the gaps instead of matching a word. The book now prints both
+# numbers, and a Target that moves on a card has to move in the book.
+_gaps = [r[6] - r[4] for r in gn["TASKS"]]
+_up = sum(1 for _g in _gaps if _g > 0)
+_same = sum(1 for _g in _gaps if _g == 0)
+check("rules/nap.html prints the Demand-Target census the cards print",
+      _up + _same == len(_gaps) and max(_gaps) == 1
+      and ("<b>%d of the 26 Tasks</b>" % _up) in _nap_rules
+      and ("the other %d print" % _same) in _nap_rules
+      and "sometimes a higher Target" in _nap_rules,
+      "cards: %d up by 1, %d level, widest gap %d" % (_up, _same, max(_gaps)))
 
 print()
 print("NRJ - generator/build_nrj.py vs playtest")
@@ -1053,7 +1159,9 @@ js_imp = {r[0]: r[2] for r in js_literal("playtest/dist/suite.js",
 # 2026-11-06 when the four printed effects were modelled.
 sim_imp = dict((r[0], r[1])
                for r in py_tables("simulation/nap.py")["IMPOSTER_TASKS"])
-sim_subj = {n: s for (n, s, _d, _r, _t, _e) in gr["IMPOSTER_TASKS"]}
+# Indexed, not unpacked: the table grew a Request reward and a Demand
+# reward on 2026-11-12 and would have grown this line a TypeError.
+sim_subj = {r[0]: r[1] for r in gr["IMPOSTER_TASKS"]}
 bad = [n for n, d in IMP_DOTS
        if gen_imp.get(n) != d or js_imp.get(n) != d
        or sim_imp.get(sim_subj.get(n)) != d]
@@ -1801,7 +1909,13 @@ check("...and BAT no longer prints a reroll rule of its own",
 # a book that grows fails and a book that shrinks fails too - the
 # second because a page that disappeared is a section that went
 # missing, which is worth hearing about.
-_PAGES = {"BAT_Rulebook.pdf": 3, "NAP_Rulebook.pdf": 3,
+# NAP WENT TO FOUR ON 2026-11-12 and that is a budget rise, not a leak.
+# The Assignment revision added a Demand-reward rule, a reward-timing box, a
+# Setback box, an added-die box, a six-row rulings table and a rewritten
+# coupon table to a book with about 10mm of blank paper left. Its style block
+# is unchanged and still earns its keep - it is buying the fourth page now
+# instead of the third, and loosening it costs a fifth.
+_PAGES = {"BAT_Rulebook.pdf": 3, "NAP_Rulebook.pdf": 4,
           "AoS_Rulebook.pdf": 3, "NRJ_Campaign_Supplement.pdf": 6}
 try:
     import pypdf
@@ -1823,9 +1937,9 @@ else:
     # BOTH FITS ARE RECORDED WHERE THEY LIVE, because each is a few
     # lines of CSS in one book's own style block and nothing else
     # says why the book is set differently from its neighbours.
-    check("...and each three-page fit is recorded where it lives",
-          all("THREE PAGES, NOT FOUR" in text("rules/%s.html" % g)
-              for g in ("bat", "nap"))
+    check("...and each squeezed fit is recorded where it lives",
+          "THREE PAGES, NOT FOUR" in text("rules/bat.html")
+          and "FOUR PAGES, NOT FIVE" in text("rules/nap.html")
           and "line-height: 1.34" in text("rules/bat.html")
           and "line-height: 1.30" in text("rules/nap.html"))
     # ...AND NAP KEEPS THE SET'S TYPE SIZE. It fits at 8.3pt too, with
@@ -2115,26 +2229,28 @@ check("every Exhibit domain is one contiguous block of at least 5",
 # what they say, rather than both being typed here: a check that
 # names "4" on both sides of itself cannot tell you the book still
 # says 4.
+# THE THREE CREDIT BANDS ARE GONE, 2026-11-12, and their absence is
+# what this checks now. The pool was 1 card of a subject at 0-1
+# Credits in it, 2 at 2-3 and 3 at 4+; it is 1 card from every
+# subject, whatever the transcript says. A book that still prints a
+# band table, or a script that still has a threshold in it, is an
+# owner left behind - and a leftover band in lua.lua would be
+# invisible, because examPoolSize would still answer 1 for most
+# transcripts and only diverge for a player who had studied.
 _pool_tbl = _nap_rules[_nap_rules.find("Building the Final Exam pool"):]
-_pool_tbl = _pool_tbl[:_pool_tbl.find("</table>")]
-_bands = [(a.replace("&ndash;", "-"), int(b)) for a, b in
-          re.findall(r"<tr><td>([^<]+)</td><td>(\d+)</td></tr>", _pool_tbl)]
-check("rules/nap.html still prints the three Final Exam pool bands",
-      [b for _, b in _bands] == [1, 2, 3]
-      and [a for a, _ in _bands] == ["0-1", "2-3", "4+"],
-      "bands: %r" % (_bands,))
-# Top band down to the bottom, because that is the order the ifs have
-# to run in: the lowest floor tested last.
-_want_lua = ["if credits >= %d then return %d end"
-             % (int(re.match(r"(\d+)", a).group(1)), n)
-             for a, n in reversed(_bands[1:])]
-_missing = [l for l in _want_lua if l not in _lua]
-check("tts/lua.lua's examPoolSize implements those bands",
-      not _missing and "function examPoolSize" in _lua
-      and re.search(r"function examPoolSize.*?\n  return %d\n"
-                    % _bands[0][1], _lua, re.S),
-      "missing: %r" % (_missing,))
-_draw = re.search(r"draw <b>(\d+)</b> Final Exams", _nap_rules)
+_pool_tbl = _pool_tbl[:_pool_tbl.find("<h3>Resolving")]
+_bands = re.findall(r"<tr><td>([^<]+)</td><td>(\d+)</td></tr>", _pool_tbl)
+check("rules/nap.html prints no Credit bands for the exam pool",
+      not _bands, "bands: %r" % (_bands,))
+check("tts/lua.lua's examPoolSize answers 1 at every Credit count",
+      "if credits >=" not in _lua
+      and "function examPoolSize" in _lua
+      and re.search(r"function examPoolSize\(_?\w*\)\n"
+                    r"  return EXAM_POOL_PER_SUBJECT\nend", _lua),
+      "examPoolSize still reads the Credit count")
+# \s+ because this sentence wraps, and a rewrap is not a rules change -
+# the lesson the _napflat block further up already paid for twice.
+_draw = re.search(r"draw\s+<b>(\d+)</b> Final Exams", _nap_rules)
 check("...and draws as many Final Exams as the book says",
       _draw is not None
       and ("EXAM_DRAW = %s" % _draw.group(1)) in _lua,

@@ -116,18 +116,31 @@ print("Modifications", render_deck('NRJ_BAT_Modifications', mods, 'NRJ', back='C
 print("Research Notes", render_deck('NRJ_BAT_ResearchNotes', notes, 'NRJ', back='CardBack_NRJ_ResearchNote'))
 
 
-# name, subject, recovery-color dot, ReqTarget, DemTarget, effect.
+# name, subject, recovery-color dot, ReqTarget, DemTarget, effect,
+# Request reward, Demand reward.
 # The dot is not decoration: Required Effort, completing, storing progress
 # and the next slot's queued colour all read "that Assignment's color dot",
 # so an Assignment without one is under-specified. One of each colour, each
 # matching a colour its own subject already uses.
 # Not IMPOSTERS, which is the five hero cards further down. These are
 # NAP's four Tier II Assignments.
+#
+# THE LAST TWO COLUMNS WENT ON 2026-11-12, when the base Tasks gained Demand
+# rewards. These four stay Mandatory and worth no Credit - that is the whole
+# point of them, and they already displace four Credit Tasks - but a
+# mandatory card that pays nothing on either face is upkeep wearing a name.
+# A modest recovery on both sides lets clearing one help the next roll. The
+# REQUEST recovery pays a colour other than the card's own dot, the same rule
+# the base Tasks follow; a Demand recovery may match it.
+#
+# THE DEMAND SIDE NO LONGER REPEATS "If unresolved, flip to Demand". It
+# printed that on the Demand face, where it is either already done or
+# nonsense, and the flip is now one rule in rules/nrj.html for all four.
 IMPOSTER_TASKS = [
- ("Neural Extraction Practicum", "Anatomy", 'P', 5, 6, "One die committed here remains locked until the end of the Day even if completed."),
- ("Load-Bearing Prosthetics", "Engineering", 'B', 4, 5, "At least 2 applied successes must come from the same color."),
- ("Emergency Specimen Handling", "Procedure", 'Y', 4, 5, "Before rolling, commit at least 2 dice initially."),
- ("Containment Drill", "Theory", 'G', 4, 5, "If unresolved, exhaust 1 available die before flipping it to Demand."),
+ ("Neural Extraction Practicum", "Anatomy", 'P', 5, 6, "On completion, hold 1 contributing die here until End of Day.", "recover 1 Green or Blue die", "recover 1 Green die"),
+ ("Load-Bearing Prosthetics", "Engineering", 'B', 4, 5, "At least 2 applied successes must come from the same color.", "recover 1 Purple or Green die", "recover 1 Blue die"),
+ ("Emergency Specimen Handling", "Procedure", 'Y', 4, 5, "Commit at least 2 dice on your first attempt.", "recover 1 Green or Blue die", "recover 1 Green die"),
+ ("Containment Drill", "Theory", 'G', 4, 5, "If unresolved, exhaust 1 available die before flipping.", "recover 1 Purple or Yellow die", "recover 1 Yellow die"),
 ]
 # name, recovery-color dot, successes, effect
 #
@@ -139,11 +152,26 @@ IMPOSTER_TASKS = [
 # everywhere.  Once Hard and Nobulous carried 4 and 5 Setbacks, TURNING TIER I
 # ON MADE THEM EASIER - the overlay was handing back a Setback, or two, in
 # exchange for making three of them nastier.  See rules/RULES_CHANGELOG.txt.
+#
+# TWO OF THE FOUR WERE REWORDED 2026-11-12.
+#
+# WHERE DID I PUT THAT? printed "one die committed here cannot be recovered
+# by Special Recovery", and a die committed here is normally STORED on the
+# card - where Special Recovery cannot reach it anyway, because Special
+# Recovery takes from the exhausted pool. So the clause named a die that was
+# already ineligible and cost nothing in the common case. It now bites the
+# recovery itself: the queued sweep leaves one die of that colour behind.
+#
+# UNSCHEDULED DEMONSTRATION went from once a Time Slot to once a ROLL. "At
+# least one die here before committing dice to another Assignment in this
+# Time Slot" is paid off by a single die in the slot's first roll and is
+# then free; per roll, it is a tax on every roll the card survives, which is
+# what the other three are.
 FOLLOWING = [
  ("Nobulous Needs This Now", 'Y', 7, "While unresolved, the first die you commit to another Assignment each Time Slot must match that Assignment's recovery-color dot."),
- ("Unscheduled Demonstration", 'G', 7, "While unresolved, you must commit at least one die here before committing dice to another Assignment in this Time Slot."),
+ ("Unscheduled Demonstration", 'G', 7, "While unresolved, commit at least one die here before committing dice elsewhere on each roll."),
  ("Minor Laboratory Fire", 'B', 8, "At the end of each Time Slot this remains unresolved, exhaust 1 available die."),
- ("Where Did I Put That?", 'P', 8, "While unresolved, one die committed here cannot be recovered by Special Recovery."),
+ ("Where Did I Put That?", 'P', 8, "While unresolved, Special Recovery at the start of each Time Slot leaves 1 die of the queued color exhausted."),
 ]
 # name, recovery-color dot, successes, effect
 # name, dot, successes, effect, when: "exam" keeps the card for the Final Exam,
@@ -156,12 +184,30 @@ FOLLOWING = [
 # own note already states the principle: the Following Setbacks "displace base
 # Setbacks of similar weight". This is the same rule applied to Tier III, and
 # it is a cost correction, not a re-pitch - see simulation/RESULTS.txt.
+#
+# THREE WORDINGS TIGHTENED 2026-11-12, no Target moved.
+#
+# RAID THE SUPPLY CABINET gained the choice that makes it a different card
+# from the base Raid the Supply Closet rather than a bigger one: 3 dice of
+# DIFFERENT colours, or ALL the exhausted dice of one non-Red colour. The
+# second branch is worth up to 4 and is the one an exam's colour restriction
+# actually wants.
+#
+# EXTRA CREDIT? said "the most recently completed Task", which includes the
+# six unmarked Tasks that carry no subject at all - so the card could name a
+# subject out of nothing. It reads CREDIT Task now. Its second clause said
+# "reveal an additional Assignment", which is the reveal-two-take-one
+# language and implies a discard; it adds the top card to the active slot.
+#
+# BORROW THE MASTER'S NOTES says OPTIONAL, which rules out the four
+# Mandatory Imposter Tasks a Tier II deck is carrying. "Non-Credit" alone
+# would have let it clear one of those for free.
 DEVIOUS = [
- ("Borrow the Master's Notes", 'G', 4, "Exhaust 2 available dice to immediately complete one Request-side non-Credit Task with printed Target 4 or less.", "now"),
- ("Raid the Supply Cabinet", 'Y', 4, "Final Exam: recover 3 exhausted dice of different colors before any one exam.", "exam"),
- ("Extra Credit?", 'G', 5, "Gain 1 Credit in the subject of the most recently completed Task; then reveal an additional Assignment.", "now"),
- ("Helpful Test Subject", 'B', 5, "Final Exam: after rolling one exam, reroll any number of failed dice.", "exam"),
- ("Nobulous Owes You One", 'P', 4, "Final Exam: reduce one exam's Target by 3.", "exam"),
+ ("Borrow the Master's Notes", 'G', 4, "Exhaust 2 available dice to complete an optional, non-Credit Request here with printed Target 4 or less.", "now"),
+ ("Raid the Supply Cabinet", 'Y', 4, "Final Exam: before an exam roll, recover up to 3 dice of different colors or all dice of one non-Red color.", "exam"),
+ ("Extra Credit?", 'G', 5, "Gain 1 Credit in your last Credit Task's subject. Add the top Assignment here if there is room, ignoring its Skulls.", "now"),
+ ("Helpful Test Subject", 'B', 5, "Final Exam: after an exam roll, reroll any number of misses.", "exam"),
+ ("Nobulous Owes You One", 'P', 4, "Final Exam: before an exam roll, reduce its Target by 3.", "exam"),
  ("Definitely Curriculum-Approved", 'Y', 5, "Final Exam: ignore one exam's printed restriction.", "exam"),
 ]
 DEV_FOOTER = {
@@ -174,7 +220,7 @@ DEV_FOOTER = {
 # Demand band bottom, key rule on the right spine.
 CARD_SIZE = LANDSCAPE
 imp = []
-for n, subj, dot, rt, dt, e in IMPOSTER_TASKS:
+for n, subj, dot, rt, dt, e, rrew, drew in IMPOSTER_TASKS:
     # Same marks block as a base Task: subject icon, then the colour dot.
     marks = ('<div class="marks">%s<div class="dt" style="background:%s">'
              '</div></div>' % (subj_icon(subj), DOT[dot]))
@@ -199,14 +245,14 @@ for n, subj, dot, rt, dt, e in IMPOSTER_TASKS:
            '<div class="band" style="background:#3f7a4e">Request</div>'
            '<div class="half"><div class="row" style="gap:2.8mm;align-items:center">'
            '<div style="font-size:23pt;font-weight:bold;color:#3f7a4e;line-height:1">%d</div>'
-           '<div style="font-size:9pt;line-height:1.26">%s</div></div></div>'
+           '<div style="font-size:9pt;line-height:1.26">%s <b>Reward:</b> %s.</div></div></div>'
            '<div class="rule"></div>'
            '<div class="half d"><div class="row" style="gap:2.8mm;align-items:center">'
            '<div style="font-size:23pt;font-weight:bold;color:#a8332c;line-height:1">%d</div>'
-           '<div style="font-size:8.4pt;line-height:1.26">Mandatory. If unresolved, flip to Demand. '
-           'Tier II &mdash; Contamination.</div></div></div>'
+           '<div style="font-size:8.4pt;line-height:1.26">Mandatory. '
+           'Tier II &mdash; Contamination. <b>Reward:</b> %s.</div></div></div>'
            '<div class="band d180" style="background:#a8332c">Demand</div>'
-           '</div>' % (rt, e, dt))
+           '</div>' % (rt, e, rrew, dt, drew))
     imp.append('<div class="card nrj">%s%s%s'
                  '<div class="nrjtag">Nobulous Research Journal</div></div>' % (left, mid, right))
 fol = [C(n, "NRJ &middot; Following Setback",

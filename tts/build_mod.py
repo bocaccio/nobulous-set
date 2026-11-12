@@ -287,10 +287,11 @@ def nap_credit_tasks():
 def nap_exam_subjects():
     """1-based Final Exam indices per subject, READ OUT OF build_nap.py.
 
-    The exam pool is built per subject - 1 card at 0-1 Credits in it,
-    2 at 2-3, 3 at 4+ - so the script has to know which of the twelve
-    belong to which. The cards are nicknamed "Final Exam N" in EXAMS
-    order, so the index is the whole of the answer and a reordered
+    The exam pool is 1 card chosen at random from EACH subject as of
+    2026-11-12 - it used to be 1 card at 0-1 Credits in that subject,
+    2 at 2-3 and 3 at 4+ - so the script still has to know which of the
+    twelve belong to which. The cards are nicknamed "Final Exam N" in
+    EXAMS order, so the index is the whole of the answer and a reordered
     EXAMS table cannot leave a stale one behind.
     """
     out = {}
@@ -1391,18 +1392,50 @@ def notebook():
          "dial does not change, so the next slot recovers the same color\n"
          "again. Assignments stay in their own slot and never follow you into\n"
          "the next one.\n\n"
-         "UNRESOLVED at the end of a slot: a Task flips to its Demand side,\n"
-         "harsher and often a higher Target, which costs nothing by itself.\n"
+         "UNRESOLVED at the end of a slot: a Task flips to its Demand side -\n"
+         "a harsher printed effect, and sometimes a Target 1 higher. 10 of the\n"
+         "26 print a higher Demand Target; the other 16 print the same number\n"
+         "on both faces. Flipping costs nothing by itself.\n"
          "An Opportunity instead rotates 180 for one last chance in that slot\n"
-         "the following day, and can never hold stored progress. A card\n"
-         "ALREADY on Demand inflicts its printed penalty and is discarded.\n"
+         "the following day, surviving the End of Day in between, and can\n"
+         "never hold stored progress. A card ALREADY on Demand inflicts its\n"
+         "printed penalty and is discarded.\n"
          "Successful dice may be stored on an unresolved card rather than\n"
          "exhausted, and once the next slot begins they are locked to it.\n\n"
+         "BOTH FACES PAY. A Task resolves the completion reward printed on\n"
+         "the face it was completed on, and pays at most ONCE - a card\n"
+         "finished as a Request never pays its Demand reward, or the reverse.\n"
+         "Exhaust the card's dice FIRST, then take the reward, before your\n"
+         "next Strategy roll. A reward naming a color takes any exhausted die\n"
+         "of it, including one that card just exhausted; if none of that color\n"
+         "is exhausted, skip it - nothing is substituted.\n\n"
          "Completed cards rotate 90 and stay in their slot until End of Day.\n"
          "Tasks are the only source of Credits, and a Credit Task completed\n"
          "on its Demand side still counts. An Opportunity pays nothing on the\n"
          "spot: keep the card in front of you as a coupon and spend it\n"
-         "whenever you like, on any Day, the Final Exam included.\n\n"
+         "whenever you like, on any Day, the Final Exam included. Each prints\n"
+         "WHEN it is spent and that window is part of the card:\n"
+         "  Unauthorized Break   cancel 1 Health loss, whenever one happens\n"
+         "  Raid the Supply Closet   before rolling: recover up to 2 dice of\n"
+         "    one non-Red color\n"
+         "  Borrow Better Instruments   after rolling: reroll 1 die, and this\n"
+         "    does NOT use a Strategy roll\n"
+         "  Study Nobulous' Notes   before rolling: flip one unresolved Demand\n"
+         "    here back to its Request side, keeping its stored dice and\n"
+         "    progress. If the progress already meets the lower Request\n"
+         "    Target it finishes at once and pays its REQUEST reward. In an\n"
+         "    exam, reduce that exam's Target by 2 instead\n"
+         "  Salvage Useful Components   after rolling: add 1 Green die as a\n"
+         "    Crit to an Assignment here or to this exam\n"
+         "  Practice on a Spare Brain   after rolling: count one rolled Crit\n"
+         "    as 3 successes. A Crit a card has repriced to a single hit is\n"
+         "    not eligible - apply the restriction first\n\n"
+         "ADDING A DIE WITHOUT ROLLING IT - Salvage above, and Sharpen the\n"
+         "Surgical Implements. Use an available die, or one committed on this\n"
+         "roll whose result you have not applied or exhausted; set it to the\n"
+         "stated result and place it on the card. A die already applied,\n"
+         "stored or exhausted is not eligible. Sharpen's receiving Task must\n"
+         "already hold progress satisfying the color rule.\n\n"
          "END OF DAY: clear the completed cards to the discard, reveal and\n"
          "discard the top Assignment card ignoring all of its text, effects\n"
          "and Skulls, then recover exhausted dice equal to your REC.\n\n"
@@ -1435,9 +1468,12 @@ def notebook():
          "PREPARATION: recover 1 exhausted die, then 1 more per Credit above\n"
          "the goal, never the same color twice, then perform the queued\n"
          "Morning Special Recovery.\n\n"
-         "FINAL EXAM. Place cards into the pool per subject by the Credits you\n"
-         "hold in it - 0-1 Credits 1 card, 2-3 two, 4+ three - then shuffle\n"
-         "and draw 3. Each exam's base Target drops by 1 per Credit in its\n"
+         "FINAL EXAM. Select 1 card AT RANDOM FROM EACH SUBJECT - Anatomy,\n"
+         "Engineering, Procedure, Theory - including subjects you earned no\n"
+         "Credits in. Shuffle those 4 and draw 3; set the rest aside. Every\n"
+         "subject has a 75% chance to appear and appears at most once, and\n"
+         "Credits no longer decide WHICH exams you sit, only their Targets:\n"
+         "each exam's base Target drops by 1 per Credit in its\n"
          "subject, and you lose 1 Health per success short. Honor the printed\n"
          "restriction, then Special Recover on that exam card's own color dot\n"
          "before the next one. All three are mandatory; survive all three\n"

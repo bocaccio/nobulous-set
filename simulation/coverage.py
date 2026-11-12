@@ -95,6 +95,43 @@ def reads(module, text):
     return 1 if text in inspect.getsource(module) else 0
 
 
+def task_faces(face):
+    """NAP Tasks whose printed face has a branch that acts on it.
+
+    `face` is "req" or "dem". A card counts when the reward kind its entry
+    names is reached by a branch in Game.apply_task_reward - a call site in
+    the source, not a key in a table - or, on the Request side, when the
+    card reprices a Crit through CRIT_COLOR instead of paying on completion.
+
+    THE "bonus" KIND IS THE ONE THAT DOES NOT PAY HERE. Three Request
+    clauses add a success while you WORK the card, so they are applied at
+    the roll; the site that applies them is in spend_roll and is checked
+    for separately rather than assumed.
+    """
+    src = inspect.getsource(nap.Game)
+    table = nap.REQUEST_REWARD if face == "req" else nap.DEMAND_REWARD
+    if 'table = DEMAND_REWARD if card.on_demand else REQUEST_REWARD' not in src:
+        return 0
+    bonus_site = 'entry[0] == "bonus" and not card.on_demand' in inspect.getsource(nap)
+
+    def acted(kind):
+        if kind == "bonus":
+            return bonus_site
+        if kind in ("peek3", "peek1"):
+            return 'kind in ("peek3", "peek1")' in src
+        return ('kind == "%s"' % kind) in src
+
+    n = 0
+    for i in range(len(nap.TASKS)):
+        entry = table.get(i)
+        if entry and acted(entry[0]):
+            n += 1
+        elif face == "req" and i in nap.CRIT_COLOR and reads(
+                nap, "colour = CRIT_COLOR.get(index)"):
+            n += 1
+    return n
+
+
 def paid(deck):
     """Programs in `deck` whose printed Reward has a branch that acts on it.
 
@@ -228,17 +265,27 @@ CLAIMS = [
     # Devious Opportunities claim below.
     # -----------------------------------------------------------------------
     Claim("NAP", "Assignments", 26,
-          lambda: len(set(nap.CRIT_COLOR) | set(nap.REQUEST_REWARD)
-                      | set(nap.TASK_EFFECT)),
-          note="each carries a CRIT_COLOR, a REQUEST_REWARD or a "
-               "TASK_EFFECT entry. The last two went in on 2026-11-06 and "
-               "both pay in DECK ORDER rather than in dice, which is why "
-               "they sat out: Decode Nobulous' Lecture Notes reorders the "
-               "next three and Update Nobulous' Lab Notes sends one to the "
-               "top or the bottom, worth +1.2 points between them. Their "
-               "Demand sides - 3 colours, and store at most 1 die - are "
-               "the only two Demand clauses in the deck that restrict "
-               "rather than penalise, and are on the card as TASK_EFFECT"),
+          lambda: min(task_faces("req"), task_faces("dem")),
+          note="REWRITTEN AS A PREDICATE 2026-11-12. This claim used to be "
+               "len() of three tables unioned, which is the exact shape "
+               "AGENTS.md warns about: a NAME in REQUEST_REWARD satisfied "
+               "it whether or not anything paid the reward out. It now "
+               "asks, per card, whether the kind that card's entry names "
+               "has a BRANCH in Game.apply_task_reward - so a reward "
+               "listed and never paid fails here. Three of the 26 carry a "
+               "CRIT_COLOR instead, which is a repricing applied while you "
+               "work the card rather than a completion reward. "
+               "AND IT COUNTS BOTH FACES, min() of the two, which is new on "
+               "the same day. The 26 Demand faces were not merely unmodelled "
+               "before 2026-11-12 - they printed no reward at all. A Demand "
+               "was a harsher rule, a penalty one slot later and nothing for "
+               "clearing it, so the model's only reason to let a card flip "
+               "was running out of dice. DEMAND_REWARD pays all 26 now and "
+               "apply_task_reward picks the table by the face the card was "
+               "completed on. The 24 Demand RESTRICTIONS - store caps, "
+               "per-attempt commit minimums, +1 Target clauses, Crit "
+               "repricings - remain unmodelled; two are, as TASK_EFFECT, and "
+               "this revision did not change that"),
     Claim("NAP", "Opportunities", 6,
           lambda: len(nap.COUPON),
           note="one coupon each under OPP_COUPONS, or one reward each under "
