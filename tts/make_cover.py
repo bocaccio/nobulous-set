@@ -39,6 +39,7 @@ FONT = os.path.join(ROOT, "fonts", "DejaVuSans-Bold.ttf")
 DARK = (36, 31, 26)              # #241f1a, the Final Exam card back
 CREAM = (245, 242, 232)          # the card stock
 MUTED = (150, 142, 126)
+FAINT = (104, 97, 85)            # a step below MUTED, for the subtitle
 SAVES = os.path.join(os.path.expanduser("~"), "Documents", "My Games",
                      "Tabletop Simulator", "Saves")
 
@@ -171,15 +172,18 @@ def cover():
     # Strong to play, and a cover in a list of mods is the one place
     # that is worth saying before anything is opened.
     #
-    # FITTED RATHER THAN SIZED BY EYE: the line is 25 characters and
-    # the two vertical names eat into both margins, so the size is
-    # whatever gets it inside them.
+    # SMALLER THAN THE GAME NAMES, AND DIMMER. Fitted to the width,
+    # it came out at 9.5 against their 8.75 - bigger than the four
+    # names, centred, and in the same tone, so it read as a fifth
+    # game rather than as a subtitle. It has to be plainly under
+    # them: below their size, and a step down in colour.
     tag = "A 20 STRONG FAN EXPANSION"
     run = SIDE - 2 * (EDGE_INSET + 16)
-    tpx, ttrack = 11.0, 1.8
-    while tpx > 5.0 and line_px(tag, tpx, ttrack)[0] > run:
+    ttrack = 1.5
+    tpx = min(7.0, edge_size(1.4) - 1.0)
+    while tpx > 4.0 and line_px(tag, tpx, ttrack)[0] > run:
         tpx -= 0.25
-    spaced(im, tag, 212, tpx, MUTED, ttrack)
+    spaced(im, tag, 210, tpx, FAINT, ttrack)
 
     # THE FOUR GAMES AROUND THE EDGE, spelled out. The three-letter
     # codes are what the set calls them everywhere else, and they
