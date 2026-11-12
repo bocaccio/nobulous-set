@@ -267,6 +267,30 @@ BAT_READOUT_Z = BAT_CHIP_Z
 BAT_EXHAUST_X0 = BAT_RIGHT1 + BAT_COL - BAT_BOX_HW
 BAT_EXHAUST_X1 = BAT_READOUT_X - BAT_READOUT_HW - 0.6
 
+-- THE BUFF HP TRACK'S FIFTEEN SPACES. The card is a 5x3 grid of
+-- 11mm squares 0.6mm apart, numbered 15 down to 1 left to right and
+-- top to bottom (generator/build_bat.py), and the battle stands the
+-- Health die on this difficulty's number.
+--
+-- The PITCH is those two numbers: 11.6mm of a 63.5mm card is 0.1827
+-- of its width. The OFFSET is measured, because where the grid
+-- starts depends on how deep the heading and the tip text above it
+-- come out, which only the rendered card knows - the grid's centre
+-- sits one pitch below the card's. check_app_sync re-measures the
+-- art and holds both numbers to it.
+BUFF_PITCH = CARD_W * (11.6 / 63.5)
+BUFF_GRID_DZ = -BUFF_PITCH
+BUFF_SPACES = 15
+
+function buffSpace(v)
+  if not v or v < 1 or v > BUFF_SPACES then return nil end
+  local i = BUFF_SPACES - v
+  local row = math.floor(i / 3)
+  local col = i % 3
+  return batRightX(BAT_BUFF) + (col - 1) * BUFF_PITCH,
+         batRowZ(3) + BUFF_GRID_DZ + (2 - row) * BUFF_PITCH
+end
+
 -- BAT'S HEALTH AND REC DICE, in a column off the exhausted corner's
 -- left edge. Jon's placing: they were left in the shared dice band at
 -- the bottom of the table with everything else, where in a game whose
@@ -426,15 +450,18 @@ ASSIGN_X = -19.5
 -- pushing it off the edge.
 ASSIGN_SLOTS = 4
 
--- DEALT BY NOTHING, DELIBERATELY. Three decks belong to a part of a
--- game the setup does not reach:
+-- NOT DEALT BY A SETUP, DELIBERATELY. These decks belong to a part
+-- of a game the setup does not reach - each is dealt by the finale
+-- button of the game it belongs to, not by the setup:
 --
---   Final Exams     you reach them; a later script option starts the exam
+--   Final Exams     you reach them; the exam button starts them
 --   Tyrant Attacks  nothing draws one until the Tyrant is awake, which is
 --                   five Splices away
---   Buff HP Track   optional (rules/bat.html, Fine-tuning), and it holds
---                   part of the Tyrant's Health - so it belongs to the
---                   battle too
+--   Buff HP Track   it holds part of the Tyrant's Health, so the battle
+--                   deals it and stands the Health die on the
+--                   difficulty's number. rules/bat.html still calls the
+--                   card optional - a player who does not want it can
+--                   push the whole Health onto the dial and ignore it
 --
 -- Named here so that "every deck a setup can reach" stays a real check
 -- rather than one that quietly stopped covering a deck.
@@ -2315,6 +2342,32 @@ function startBattle()
   end)
   step(function() spliced = shuffleSplices() end)
   step(function()
+    -- THE BUFF HP CARD COMES OUT, with the Health die standing on
+    -- this difficulty's number. It used to stay in the box and the
+    -- briefing called it optional; Jon wants the battle to set it
+    -- up, so the Tyrant's Health is a thing on the table rather
+    -- than a number in a sentence.
+    --
+    -- LOCKED. The card is furniture once it is down - a die is
+    -- pushed along it - and a card that slides when you nudge the
+    -- die is worse than no card. onObjectDrop locks it when a
+    -- player puts it down, and nothing drops when the script deals
+    -- it, so it is locked here.
+    local card = deckOut('Buff HP Track',
+                         {batRightX(BAT_BUFF), 3, batRowZ(3)}, FACEUP)
+    if card then card.setLock(true) end
+    local bx, bz = buffSpace(hp)
+    if bx then setMarker('Health', bx, bz) end
+    -- AND THE DIAL, again. setupBAT turned it to the same number,
+    -- but a Splice phase is long and the dial is a thing players
+    -- turn; the battle is where the Health starts counting down, so
+    -- it starts the battle reading what it should.
+    setMarker('Dial', BAT_CHIP_X, BAT_CHIP_Z, nil,
+              {CHIP_DIAL[hp] or CHIP_DIAL[0], 0})
+    STATE.dial = hp
+    readoutOut(hp)
+  end)
+  step(function()
     say('TYRANT BATTLE. Tyrant Health ' .. hp .. ' on the dial. Both' ..
         ' decks, the three cards they reveal and both discards are back' ..
         ' in the box; the Rats keep their own Upgrades and their own' ..
@@ -2330,8 +2383,10 @@ function startBattle()
         ' stay gone and Red is not in the pool. Rat abilities are' ..
         ' silent in the battle. A Splice never chips: meet its printed' ..
         ' Value in ONE attack or the whole attack bounces. Eight rounds' ..
-        ' to break five walls. The Buff HP card is optional and still' ..
-        ' in the box.')
+        ' to break five walls. The Buff HP card is out with the' ..
+        ' Health die standing on ' .. hp .. ', and the dial reads' ..
+        ' the same: hold part of the Health on the track and spend' ..
+        ' that before the dial.')
   end)
   run()
 end
