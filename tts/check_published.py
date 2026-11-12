@@ -10,11 +10,20 @@ GIVE THE PUSH A MINUTE. jsdelivr caches 404s too, so a file asked for
 seconds after the push can report missing and be fine on the next pass.
 
 AND THE ?v= TOKEN DOES NOT REACH jsdelivr. It defeats TTS's cache, which is
-what it is for; jsdelivr keys on the PATH and serves its cached copy of
-@main for hours whatever the query says. So a file that keeps its name -
+what it is for; jsdelivr keys on the PATH. So a file that keeps its name -
 every card sheet, every rulebook - can be pushed and still arrive as last
-build's bytes. That is what --purge is for, and it is why this script
-compares Content-Length rather than settling for a 200.
+build's bytes, which is why this script compares Content-Length rather than
+settling for a 200.
+
+--purge CLEARS A FILE AND CANNOT FIX A STALE BRANCH. jsdelivr resolves @main
+to a commit and caches THAT for hours; purging the file re-fetches from the
+commit it still thinks main is. Measured 2026-11-12: @main served a rulebook
+two commits old while @<sha> served the right bytes. The cure is not to use
+a branch at all -
+
+    git push && python build_mod.py --ref "$(git rev-parse HEAD)"
+
+- which bakes immutable @<sha> URLs, served at once and cached for good.
 
 WHY THIS EXISTS. On 2026-11-12 the AoS table overlay was regenerated. It is
 named by content hash, so regenerating it renamed AoS_Table_8c12fa89.jpg to

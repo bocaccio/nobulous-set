@@ -36,14 +36,27 @@ Read `HANDOFF.md` and `README.md` before making changes.
   `main` yet - TTS answers a 404 by opening the Custom Tile dialog over a
   blank face, which reads as a broken object and not as a missing file.
   `check_app_sync.py` cannot see this: it is offline, and every local
-  invariant holds. Push, give it a minute, then run
-  `tts/check_published.py --purge`, then load the mod.
-- THE `?v=` TOKEN ON A MOD URL DOES NOT REACH jsdelivr. It defeats TTS's own
-  cache, which is what it is for; jsdelivr keys on the PATH and goes on
-  serving its cached copy of `@main` for hours whatever the query says. So a
-  file that keeps its name - every card sheet, every rulebook - can be pushed
-  and still arrive as last build's bytes. `check_published.py` compares
-  Content-Length rather than settling for a 200, and `--purge` clears them.
+  invariant holds.
+- SO BUILD THE MOD PINNED TO THE COMMIT, after pushing, and the whole class
+  of problem goes away:
+
+  ```bash
+  git push && cd tts && python build_mod.py --ref "$(git rev-parse HEAD)"
+  python check_published.py        # 0 missing, 0 serving older bytes
+  ```
+
+  A `@<sha>` URL is immutable, so jsdelivr serves it at once and caches it
+  for good; `NobulousSet.json` is gitignored, so rebuilding after the commit
+  does not dirty the tree, and a save built against an older commit goes on
+  working.
+- WHY NOT `@main`: jsdelivr resolves a BRANCH to a commit and caches that
+  resolution for hours, and the purge API clears the FILE, not the mapping.
+  Measured 2026-11-12: `@main` served a rulebook two commits old while
+  `@<sha>` served the right bytes and `raw.githubusercontent` agreed with
+  the tree. `?v=` does not help either - it defeats TTS's own cache, which
+  is what it is for, and jsdelivr keys on the path. `check_published.py`
+  compares Content-Length rather than settling for a 200 for exactly this
+  reason; `--purge` clears a file but cannot fix a stale branch.
 
 ## Useful commands
 
