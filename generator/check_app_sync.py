@@ -3748,7 +3748,7 @@ check("...and every game that has a character places all three of them",
       _mark_die in _mk
       and _mk == {"Health": 5, "Strategy": 4, "Recovery": 4}
       and "setMarker('Health', BAT_STAT_X, BAT_STAT_Z[1])" in _lua
-      and "if bx then setMarker('Health', bx, bz) end" in _lua
+      and "if bx then setMarker('Health', bx, bz, 1) end" in _lua
       and "setMarker('Recovery', BAT_STAT_X, BAT_STAT_Z[2])" in _lua
       and "BAT_STAT_X = BAT_EXHAUST_X0 -" in _lua
       and "EXHAUST_Z[1]" in _lua

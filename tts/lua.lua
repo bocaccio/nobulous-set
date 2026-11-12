@@ -2328,6 +2328,7 @@ end
 function startBattle()
   local hp = BAT_DIFF[STATE.difficulty][2]
   local spliced = 0
+  local buffCard = nil
   step(function() clearBoxes(batBattleBoxes()) end)
   step(function()
     -- "Shuffle the 7 Tyrant Attack cards face-down, then flip the top
@@ -2353,11 +2354,11 @@ function startBattle()
     -- die is worse than no card. onObjectDrop locks it when a
     -- player puts it down, and nothing drops when the script deals
     -- it, so it is locked here.
-    local card = deckOut('Buff HP Track',
-                         {batRightX(BAT_BUFF), 3, batRowZ(3)}, FACEUP)
-    if card then card.setLock(true) end
-    local bx, bz = buffSpace(hp)
-    if bx then setMarker('Health', bx, bz) end
+    -- DEALT LOW, so there is barely any fall to wait out. Every
+    -- other deal drops from y 3 and lets physics find the table,
+    -- which is fine for a card nothing is about to be stood on.
+    buffCard = deckOut('Buff HP Track',
+                       {batRightX(BAT_BUFF), 1.2, batRowZ(3)}, FACEUP)
     -- AND THE DIAL, again. setupBAT turned it to the same number,
     -- but a Splice phase is long and the dial is a thing players
     -- turn; the battle is where the Health starts counting down, so
@@ -2366,6 +2367,20 @@ function startBattle()
               {CHIP_DIAL[hp] or CHIP_DIAL[0], 0})
     STATE.dial = hp
     readoutOut(hp)
+  end)
+  step(function()
+    -- LOCKED ONLY ONCE IT HAS LANDED. Locking it in the step that
+    -- dealt it froze it wherever it happened to be at that instant,
+    -- which was still in the air - so the card hung above the table
+    -- and the Health die went underneath it.
+    if buffCard then buffCard.setLock(true) end
+  end)
+  step(function()
+    -- THE DIE LAST, onto a card that has settled and been locked.
+    -- Set to 1: the number that counts is the space it stands on,
+    -- and a die showing anything else reads as a second number.
+    local bx, bz = buffSpace(hp)
+    if bx then setMarker('Health', bx, bz, 1) end
   end)
   step(function()
     say('TYRANT BATTLE. Tyrant Health ' .. hp .. ' on the dial. Both' ..
@@ -2384,7 +2399,7 @@ function startBattle()
         ' silent in the battle. A Splice never chips: meet its printed' ..
         ' Value in ONE attack or the whole attack bounces. Eight rounds' ..
         ' to break five walls. The Buff HP card is out with the' ..
-        ' Health die standing on ' .. hp .. ', and the dial reads' ..
+        ' Health die on space ' .. hp .. ', and the dial reads' ..
         ' the same: hold part of the Health on the track and spend' ..
         ' that before the dial.')
   end)
