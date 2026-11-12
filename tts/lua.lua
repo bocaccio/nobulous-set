@@ -1889,7 +1889,17 @@ function setupNAP()
   -- out, so the deck still holds the number the difficulty asks for. The
   -- 4-for-3 swap it used to do HANDED a Setback back at Hard and Nobulous,
   -- which made the tier easier than no module at all (fixed 2026-11-07).
-  local base = (STATE.tier >= 1) and (sb - 3) or sb
+  -- FLOORED AT NONE, which started mattering on 2026-11-12 when Standard
+  -- went to 2 Setbacks: sb - 3 is -1 there, and this line had no floor. The
+  -- deck came out right because moveN(-1) moves nothing, so the only thing
+  -- that showed was the setup message in chat announcing "-1 base". The
+  -- model (max(0, ...)) and the lab (slice(3) on a list of 2) have always
+  -- floored it.
+  local base = (STATE.tier >= 1) and math.max(0, sb - 3) or sb
+  -- AND THE DECK CAN HOLD MORE SETBACKS THAN THE DIFFICULTY ASKS FOR. Three
+  -- Following cards arrive and only `sb` base ones can leave, so at sb < 3
+  -- Tier I ADDS one. Report what is in the deck, not what was asked for.
+  local held = (STATE.tier >= 1) and (base + 3) or sb
   local asg
 
   -- The table overlay first, so everything else lands on top of it.
@@ -1983,7 +1993,7 @@ function setupNAP()
     refreshPanel()
     say('NAP ready -- ' .. STATE.difficulty .. '. ' .. goal ..
         ' Credits reaches the Final Exam. The Assignment deck is built and' ..
-        ' shuffled: 26 Tasks + 6 Opportunities + ' .. sb .. ' Setbacks' ..
+        ' shuffled: 26 Tasks + 6 Opportunities + ' .. held .. ' Setbacks' ..
         (STATE.tier >= 1 and (' (3 Following and ' .. base .. ' base)') or '') ..
         '. ' .. charOf('NAP').name ..
         ' is out at 2 HP / 2 STR / 2 REC -- press Apprentice for another.' ..

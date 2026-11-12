@@ -3321,6 +3321,19 @@ def main():
                  "Encounters" in w.shuffled, True)
 
             n = run(lvl, tier, "NAP")
+            # WHAT THE SETUP SAYS IN CHAT, which is the only account of the
+            # deck a player at the table gets - and the one thing the
+            # 2026-11-12 Setback change actually broke. At Standard the mod
+            # computed `sb - 3` with no floor, so Tier I announced "-1 base";
+            # the DECK was right, because moveN(-1) moves nothing, so every
+            # assertion below this one passed while the message was wrong.
+            # It also under-reported the total: three Following cards arrive
+            # and only `sb` base ones can leave, so at sb < 3 the deck holds
+            # MORE Setbacks than the difficulty asks for.
+            _msg = " ".join(str(m) for m in n.said)
+            want(t + " NAP's setup message counts no negative cards",
+                 [frag for frag in _msg.split() if frag.startswith("-")
+                  and frag[1:2].isdigit()], [])
             # ONE BASE SETBACK OUT PER FOLLOWING SETBACK IN, FLOORED AT NONE.
             # The 4-for-3 swap handed a Setback back at Hard and Nobulous;
             # the floor is the other end of the same rule and it started
@@ -3336,6 +3349,11 @@ def main():
                  26 + 6 + base + following)
             want(t + " NAP base Setbacks", inside(n, "Assignment", "Setback"),
                  base)
+            want(t + " ...and the message names the Setbacks really dealt",
+                 ("+ %d Setbacks" % (base + following)) in _msg, True)
+            if tier >= 1:
+                want(t + " ...and names the split it dealt",
+                     ("(3 Following and %d base)" % base) in _msg, True)
             want(t + " NAP Following Setbacks",
                  inside(n, "Assignment", "Following Setback"), following)
             want(t + " NAP Imposter Tasks",
