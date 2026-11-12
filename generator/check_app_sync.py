@@ -3126,11 +3126,40 @@ check("the script names a rulebook for all four games",
 check("...and every name it uses is a book that is really there",
       sorted(_want.values()) == sorted(_books),
       "script %r vs save %r" % (sorted(_want.values()), sorted(_books)))
+def _bookfile(u):
+    """The PDF a book's URL names, token and all stripped off."""
+    return os.path.join(ROOT, "rules", u.rsplit("/", 1)[-1].split("?")[0])
+
+
 _norules = [n for n, u in sorted(_books.items())
-            if not os.path.exists(os.path.join(ROOT, "rules",
-                                               u.rsplit("/", 1)[-1]))]
+            if not os.path.exists(_bookfile(u))]
 check("every rulebook the script can deal is a file in rules/",
       not _norules, "no such PDF: %r" % (_norules,))
+# ...AND ITS URL MOVES WHEN THE BOOK DOES.
+#
+# The books keep fixed FILENAMES, unlike every image in the mod,
+# because they are published deliverables that the README and the
+# print-and-play both link by name. That makes their URLs stable,
+# and a stable URL is one TTS answers out of its own asset cache for
+# as long as the cache lives: Jon re-read a three-revision-old NAP
+# book on 2026-11-11 while jsdelivr was serving the current file
+# byte for byte. Nothing was broken. The fetch never happened.
+#
+# So build_mod hangs the file's own content hash off the URL as ?v=,
+# which jsdelivr ignores and TTS keys its cache on. This checks the
+# token against the bytes on disk, so a rebuilt book whose URL did
+# not move fails here rather than at the table.
+_stale = []
+for _n, _u in sorted(_books.items()):
+    _f = _bookfile(_u)
+    if not os.path.exists(_f):
+        continue
+    _h = hashlib.md5(io.open(_f, "rb").read()).hexdigest()[:8]
+    if _u.split("?")[-1] != "v=" + _h:
+        _stale.append((_n, _u.split("?")[-1], "v=" + _h))
+check("...and its URL carries that file's content hash, so no cache"
+      " can pin an old one",
+      not _stale, "%r" % (_stale,))
 check("the rulebooks are served from rules/, not images/",
       all("/rules/" in u for u in _books.values()), "%r" % (_books,))
 # EACH BOOK GOES HOME TO ITS OWN GAME'S BOX, which is what lets

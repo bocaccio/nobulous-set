@@ -26,6 +26,7 @@ arithmetic is right, not that TTS will spawn the objects on time. The
 sequencer's frame delays are exactly what a stub cannot test, so HANDOFF
 step 6 still wants a human at the table.
 """
+import hashlib
 import io
 import json
 import os
@@ -2418,6 +2419,15 @@ def landing_assertions():
           if abs(float(g.pad(i)[1]) - off[0]) < float(g.CARD_W)], [])
 
 
+RULES_DIR = os.path.join(os.path.dirname(os.path.dirname(
+    os.path.abspath(__file__))), "rules")
+
+
+def md5(path):
+    """Eight hex of a file's md5 - what build_mod puts in the URL."""
+    return hashlib.md5(io.open(path, "rb").read()).hexdigest()[:8]
+
+
 def rules_assertions():
     """The book on the rail is the one for the game on the table.
 
@@ -2454,9 +2464,19 @@ def rules_assertions():
         books = out(w)
         want("setting up %s leaves one book on the rail" % which,
              [o.name for o in books], [nick[which]])
+        u = books[0].custom.get("PDFUrl", "")
         want("...and it is that game's rulebook",
-             books[0].custom.get("PDFUrl", "").rsplit("/", 1)[-1],
-             pdf[nick[which]])
+             u.rsplit("/", 1)[-1].split("?")[0], pdf[nick[which]])
+        # AND IT IS THE BOOK AS IT IS ON DISK RIGHT NOW. Jon re-read a
+        # three-revision-old NAP book on 2026-11-11 off a stable URL
+        # that TTS had cached weeks earlier. The push was fine, the
+        # CDN was serving the current file byte for byte, and nothing
+        # in this harness could tell: it checked the NAME, which had
+        # not changed and was never going to. This checks the content
+        # hash, so a rebuilt book whose URL did not move fails here.
+        want("...carrying the content hash of the book on disk",
+             u.split("?")[-1],
+             "v=" + md5(os.path.join(RULES_DIR, pdf[nick[which]])))
         want("...standing where the rail is",
              (round(books[0].pos[0], 2), round(books[0].pos[2], 2)),
              (round(float(g.RULES_POS[1]), 2),

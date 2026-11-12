@@ -7,7 +7,7 @@ Set BASE_URL below to the folder that will contain them, keeping the filenames.
     python3 build_mod.py                 -> NobulousSet.json using BASE_URL
     python3 build_mod.py --local /path   -> file:/// URLs, for solo testing only
 """
-import ast, io, json, os, sys, random
+import ast, hashlib, io, json, os, sys, random
 
 sys.path.insert(0, os.path.dirname(__file__))
 from decks import DECKS, GAME_COLOR
@@ -705,8 +705,40 @@ RULES_ROT = (0, 180, 0)
 RULES_SCALE = 1.25
 
 
+def rules_hash(game):
+    """The md5 of the book as it is on disk, eight hex, as the sheets use."""
+    p = os.path.join(RULEBOOK_DIR, RULEBOOK[game])
+    if not os.path.exists(p):
+        raise SystemExit('%s is missing - run rules/build.py' % p)
+    return hashlib.md5(io.open(p, 'rb').read()).hexdigest()[:8]
+
+
 def rules_url(game):
-    return "%s/%s" % (RULES_URL.rstrip('/'), RULEBOOK[game])
+    """One game's book, with its content hash carried as ?v=.
+
+    THE PICTURE PROBLEM AGAIN, AND THIS WAS THE HALF LEFT UNDONE.
+    Every image in this mod is named for its own content hash
+    because a stable URL means both jsdelivr and TTS's own asset
+    cache will go on serving a superseded copy - see table_image,
+    where both of them did exactly that.
+
+    The four books cannot take the same medicine: they are published
+    deliverables, linked from the README and shipped inside
+    print-and-play, so their FILENAMES have to stay put. A query
+    token does the same work from the other end. jsdelivr resolves
+    the file and ignores the token; TTS keys its cache on the whole
+    URL string, so a revised book arrives as a URL nothing has ever
+    fetched and cannot be answered from a cache.
+
+    Jon read a NAP book on 2026-11-11 that was three revisions old
+    while the CDN was serving the current one byte for byte. Nothing
+    was wrong with the push, the file or the URL - the fetch simply
+    never happened.
+    """
+    u = "%s/%s" % (RULES_URL.rstrip('/'), RULEBOOK[game])
+    if not RULES_URL.startswith('http'):
+        return u      # file:// - a '?' there is part of the filename
+    return "%s?v=%s" % (u, rules_hash(game))
 
 
 def rulebook(game, on_rail=False):
