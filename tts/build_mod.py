@@ -532,6 +532,13 @@ def lua_header(box_guids):
         # its size is settled here and the script is told; lua.lua
         # works out where it goes from this and the space it has.
         'BAT_READOUT_HW = %.2f' % READOUT_HW,
+        # THE EXHAUSTED CORNER'S BAND, so the Lua can place things
+        # against it without re-deriving it from ROW_TIER and the
+        # felt. BAT stands its Health and REC dice in a column off
+        # its left edge, and a band that moved while the column did
+        # not would put two dice inside the corner they are meant to
+        # sit beside.
+        'EXHAUST_Z = {%.3f, %.3f}' % (EXHAUSTED[2], EXHAUSTED[3]),
         # BAT's dial: the angle that brings each number to the player's
         # edge. The object carries these as RotationValues too, so TTS
         # turns it when you type a number; the script needs them to set

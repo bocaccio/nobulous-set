@@ -266,8 +266,14 @@ def draw_bat(d, lua):
     half = float(g.BAT_BOX_HW)
     # The three rows on the right hold things you cannot tell apart by
     # looking at an empty space.
-    label(d, "TYRANT\nATTACK", rx(1), rz(3), fit=half * 1.8)
-    label(d, "ATTACK\nDECK", rx(2), rz(3), fit=half * 1.8)
+    # BY THE SCRIPT'S OWN COLUMNS, not by 1 and 2. These were
+    # literals, so swapping the two in lua.lua moved the cards and
+    # left the felt labelling the places they had come from. A mat
+    # that lies is worse than a mat with no labels on it.
+    label(d, "ATTACK\nDECK", rx(int(g.BAT_ATTACK_DECK)), rz(3),
+          fit=half * 1.8)
+    label(d, "TYRANT\nATTACK", rx(int(g.BAT_ATTACK_UP)), rz(3),
+          fit=half * 1.8)
     label(d, "BUFF HP", rx(3), rz(3), fit=half * 1.8)
     label(d, "TYRANT\nSPLICES", rx(1), rz(4), fit=half * 1.8)
     # What the NRJ tiers put out and you keep in front of you: the

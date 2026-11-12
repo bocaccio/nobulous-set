@@ -231,7 +231,11 @@ BAT_REVEALED = 1                       -- revealed Experiment, then 2 Upgrades
 -- revealed for every one taken, so both piles fill every turn and
 -- neither had anywhere to be.
 BAT_EXP_DISCARD, BAT_UPG_DISCARD = 4, 5
-BAT_ATTACK_UP, BAT_ATTACK_DECK, BAT_BUFF = 1, 2, 3
+-- THE DECK FIRST, THEN WHAT IT REVEALS. It was the other way round
+-- and read backwards against row 2, where the Experiment and Upgrade
+-- decks sit left of the cards they turn over. Jon's call: a row
+-- should run in the direction you deal it.
+BAT_ATTACK_DECK, BAT_ATTACK_UP, BAT_BUFF = 1, 2, 3
 -- THE TYRANT'S OWN DICE, over the two Splices at the right-hand end:
 -- one space two columns wide, because a handful of dice is not a card
 -- and reads better in a wide tray than in a card-shaped box.
@@ -262,6 +266,27 @@ BAT_READOUT_Z = BAT_CHIP_Z
 -- stops short of the readout, which stands between it and the Dial.
 BAT_EXHAUST_X0 = BAT_RIGHT1 + BAT_COL - BAT_BOX_HW
 BAT_EXHAUST_X1 = BAT_READOUT_X - BAT_READOUT_HW - 0.6
+
+-- BAT'S HEALTH AND REC DICE, in a column off the exhausted corner's
+-- left edge. Jon's placing: they were left in the shared dice band at
+-- the bottom of the table with everything else, where in a game whose
+-- whole bottom row is Rats and unit dice they were just two more dice
+-- in a crowd.
+--
+-- The band comes from build_mod (EXHAUST_Z) rather than being derived
+-- here a second time from ROW_TIER and the felt, so a band that moves
+-- takes the column with it instead of leaving two dice sitting inside
+-- the corner they are meant to stand beside.
+--
+-- CENTRED ON A 2.0 PITCH, not spread over thirds of the band. The
+-- band is 4.03 deep, so thirds put the two dice 1.34 apart and a
+-- die is 1.8 across - the harness caught them overlapping each
+-- other. 2.0 clears a die's width and still leaves both wholly
+-- inside the band.
+BAT_STAT_X = BAT_EXHAUST_X0 - 1.6
+BAT_STAT_GAP = 2.0
+BAT_STAT_Z = {(EXHAUST_Z[1] + EXHAUST_Z[2]) / 2.0 + BAT_STAT_GAP / 2.0,
+              (EXHAUST_Z[1] + EXHAUST_Z[2]) / 2.0 - BAT_STAT_GAP / 2.0}
 
 -- The active Rat is marked at the top right corner of its card, far
 -- enough in that the die sits ON the card rather than over its edge.
@@ -1702,6 +1727,12 @@ function setupBAT()
     -- "...and the Red die on a random Rat" - rules/bat.html's setup,
     -- which until now the script only said in words.
     setMarker('Red', batMarkX(), batRedZ(math.random(BAT_ROWS)))
+    -- AND THE HEALTH AND REC DICE IN THEIR OWN COLUMN, beside the
+    -- exhausted corner. No value is set on either: a Rat's Health is
+    -- its own and the Tyrant's is on the dial, so a die turned to a
+    -- number here would be claiming to track something.
+    setMarker('Health', BAT_STAT_X, BAT_STAT_Z[1])
+    setMarker('Recovery', BAT_STAT_X, BAT_STAT_Z[2])
     batRatDice()
   end)
 

@@ -891,13 +891,30 @@ def layout_assertions():
                 # pushed the back row over the edge and still passed.
                 home = sorted((round(float(v[1]), 3), round(float(v[2]), 3))
                               for v in g.DICE_HOME.values())
-                blocks = sorted(set(w.dice) | set(home))
-                piled = [(a, b2) for i, a in enumerate(blocks)
-                         for b2 in blocks[i + 1:]
-                         if abs(a[0] - b2[0]) < 2 * w.die_half - 0.02
-                         and abs(a[1] - b2[1]) < 2 * w.die_half - 0.02]
+
+                def _piled(pts):
+                    pts = sorted(set(pts))
+                    return [(a, b2) for i, a in enumerate(pts)
+                            for b2 in pts[i + 1:]
+                            if abs(a[0] - b2[0]) < 2 * w.die_half - 0.02
+                            and abs(a[1] - b2[1]) < 2 * w.die_half - 0.02]
+                # EACH LAYOUT AGAINST ITSELF, not the two mixed. This
+                # unioned where the dice ARE with where they LIVE, and
+                # a setup that moves a marker off its home slot was
+                # then compared against the empty slot it had just
+                # left: BAT standing its Health and REC dice beside
+                # the exhausted corner reported them piled on
+                # Recovery's own vacant home, 1.2 away. Nothing is
+                # ever at both at once. Checked separately, the live
+                # table still cannot pile two dice and the idle
+                # layout still cannot overlap two homes.
+                piled = _piled(w.dice) + _piled(home)
                 want(t + " no two dice sit on each other", piled[:2], [])
-                off = [p for p in blocks
+                # THE UNION IS RIGHT HERE, where it was wrong above:
+                # every point is tested on its own, so a live
+                # position and an idle home can be asked the same
+                # question without being compared to each other.
+                off = [p for p in sorted(set(w.dice) | set(home))
                        if abs(p[0]) + w.die_half > FELT_X
                        or p[1] - w.die_half < FELT_ZMIN - 0.6]
                 want(t + " no die hangs off the felt", off[:2], [])
