@@ -50,7 +50,7 @@ GAMES = [("BAT", "Build-a-Tyrant", "left"),
          ("NAP", "Nobulous Apprenticeship Program", "top"),
          ("AoS", "Automaton of Shale", "right"),
          ("NRJ", "Nobulous Research Journal", "bottom")]
-EDGE_INSET = 13          # how far the names sit in from the border
+EDGE_INSET = 7           # border to ink, once the tile is cropped
 EDGE_MARGIN = 20         # clear of the corners, so four lines do not meet
 
 
@@ -112,6 +112,15 @@ def edge(im, text, side, px, track, fill):
     # THE BOTTOM READS THE RIGHT WAY UP. Running the frame strictly
     # clockwise turns it through 180 and nobody reads a cover upside
     # down; the two verticals turn, the two horizontals do not.
+    # CROPPED TO THE INK FIRST. The tile is built with a baseline a
+    # third of its height down and slack above and below, so placing
+    # the TILE at the inset left the TEXT a good deal further in -
+    # and by different amounts on the horizontals and the verticals,
+    # which is why the frame looked loose and uneven. Cropped, the
+    # inset is the real distance from the border to the letters.
+    hit = tile.getbbox()
+    if hit:
+        tile = tile.crop(hit)
     tile = tile.rotate({"top": 0, "right": -90, "bottom": 0,
                         "left": 90}[side], expand=True)
     tw, th = tile.size
