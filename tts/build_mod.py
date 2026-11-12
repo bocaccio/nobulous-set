@@ -221,6 +221,22 @@ def chip_dial_angles():
     return out
 
 
+def die_image(nick):
+    """A die's face filename, which carries its content hash.
+
+    THE DICE ARE OURS NOW. dice_objects.json still holds the
+    positions, scales and rotation values lifted from the official
+    mod's dice, but every one of its CustomImage URLs pointed at a
+    Steam upload of Chip Theory Games' art. tts/make_dice.py draws
+    replacements; this finds them, and dice_objects() swaps the URL.
+    """
+    for f in sorted(os.listdir(SHEETS)):
+        if f.startswith('Die_%s_' % nick) and f.endswith('.png'):
+            return f
+    raise SystemExit('no Die_%s image in images/ - run tts/make_dice.py'
+                     % nick)
+
+
 def chip_image(which):
     """The chip face's filename, which carries its content hash."""
     for f in sorted(os.listdir(SHEETS)):
@@ -1135,6 +1151,11 @@ def dice_objects():
              "CustomImage": o['CustomImage']}
         if o['Name'] == 'Custom_Dice':
             d["RotationValues"] = [dict(v) for v in D6]
+            # OUR FACE, NOT THE ONE THE FILE CAME WITH. Keyed on the
+            # nickname the object ends up with, so the one Pink die
+            # in dice_objects.json looks up Die_Red like the rest.
+            d['CustomImage'] = dict(
+                o['CustomImage'], ImageURL=url(die_image(d['Nickname'])))
         if nick == 'Chip':
             # OUR OWN COPY OF THE FACE, so the pair of scans that the
             # dial's angles were measured from is the pair that ships.

@@ -3080,11 +3080,123 @@ check("nothing turns the Chip to a face it does not have",
       and bool(re.search(r'^CHIP_DIAL = ', _sv['LuaScript'], re.M)),
       'CHIP_NUM is back, or CHIP_DIAL is not generated')
 
-# THE DIAL IS HELD TO ITS OWN SCAN. CHIP_DIAL is generated from where
-# the numbers sit in the picture, so the picture is what can say the
-# table is wrong: find the olive moon marker again and check it is
-# where build_mod.py says it is, and that the numbers come out one
-# slot apart all the way round.
+# ---------------------------------------------------------------------
+# EVERY ASSET THE MOD LOADS COMES OUT OF THIS REPOSITORY.
+#
+# The dice were the official 20 Strong mod's, served from Steam, and
+# both Chip faces were photographs of the physical component sitting
+# in images/ - which made CONTENT_NOTICE.md false where it says no
+# Chip Theory Games artwork is reproduced here. tts/make_dice.py and
+# tts/make_chip.py draw replacements. This is the check that keeps
+# the notice honest: anything loaded from a host that is not the
+# repo's own CDN is a dependency on art the set does not own.
+_hosts = set()
+for _m in re.finditer(r'"(?:FaceURL|BackURL|ImageURL|ImageSecondaryURL'
+                      r'|DiffuseURL|PDFUrl|URL)": "([^"]+)"',
+                      json.dumps(_sv)):
+    _u = _m.group(1)
+    if _u:
+        _hosts.add(re.sub(r'^(https?://[^/]+).*', r'\1', _u))
+check("every image and book the mod loads comes from this repository",
+      _hosts <= set(["https://cdn.jsdelivr.net",
+                     "https://raw.githubusercontent.com"]),
+      "also loads from %r" % (sorted(_hosts - set([
+          "https://cdn.jsdelivr.net",
+          "https://raw.githubusercontent.com"])),))
+# AND THE EIGHT DICE ARE REALLY THERE. A die whose URL 404s shows as
+# a blank white cube with no error anywhere, which is the same way a
+# missing card sheet failed for a month.
+_dice_want = ["Blue", "Green", "Health", "Purple", "Recovery", "Red",
+              "Strategy", "Yellow"]
+_dice_have = sorted(set(re.findall(r'Die_(\w+)_[0-9a-f]{8}\.png',
+                                   json.dumps(_sv))))
+_dice_png = sorted(set(re.findall(r'^Die_(\w+)_[0-9a-f]{8}\.png$', f)[0]
+                       for f in os.listdir(os.path.join(ROOT, "images"))
+                       if re.match(r'^Die_\w+_[0-9a-f]{8}\.png$', f)))
+check("the save names all eight dice, and all eight are in images/",
+      _dice_have == _dice_want and _dice_png == _dice_want,
+      "save %r, images/ %r" % (_dice_have, _dice_png))
+
+# THE COLOUR WHEEL IS HELD TO CHIP_SEGMENT, the way the dial is held
+# to CHIP_DIAL_MARK below. The script TURNS this face - CHIP_ANGLE is
+# derived from these numbers - so art a few degrees out of register
+# sends every turn to the wrong colour, and nothing about the picture
+# looks wrong. make_chip.py draws the wedges FROM these angles; this
+# measures the drawing and says so independently.
+#
+# ART_OFFSET is build_mod.py's own 197: its comment records the
+# wedges at Red 233, Yellow 305, Green 17, Blue 89, Purple 161 and
+# every CHIP_SEGMENT number as that less 197, the difference absorbed
+# by CHIP_TRIM. CHIP_TRIM itself is not held here and cannot be - it
+# is the nudge that lands a colour where a player reads it, and only
+# the table can say what that is.
+_ART_OFFSET = 197
+_WEDGE_RGB = {"Red": (193, 18, 86), "Yellow": (233, 209, 55),
+              "Green": (93, 146, 54), "Blue": (57, 124, 233),
+              "Purple": (119, 70, 210)}
+
+
+def _wedge_angles(path):
+    import math
+    from PIL import Image
+    im = Image.open(path).convert("RGBA")
+    w, h = im.size
+    px = im.load()
+    cx, cy = (w - 1) / 2.0, (h - 1) / 2.0
+    acc = {}
+    for deg in range(1440):
+        a = deg / 4.0
+        t = math.radians(a)
+        for rf in (0.33, 0.36, 0.39, 0.42):
+            x, y = cx + (w * rf) * math.sin(t), cy - (h * rf) * math.cos(t)
+            if not (0 <= x < w and 0 <= y < h):
+                continue
+            r, g, b, al = px[int(x), int(y)]
+            if al < 200:
+                continue
+            best, bd = None, 1e9
+            for nm, (R, G, B) in _WEDGE_RGB.items():
+                dd = (r - R) ** 2 + (g - G) ** 2 + (b - B) ** 2
+                if dd < bd:
+                    best, bd = nm, dd
+            if bd < 2500:
+                acc.setdefault(best, []).append(a)
+    out = {}
+    for nm, angs in acc.items():
+        sx = sum(math.sin(math.radians(x)) for x in angs)
+        sy = sum(math.cos(math.radians(x)) for x in angs)
+        out[nm] = math.degrees(math.atan2(sx, sy)) % 360.0
+    return out
+
+
+_seg_said = dict((k, int(v)) for k, v in re.findall(
+    r"'(\w+)': (\d+)",
+    re.search(r"CHIP_SEGMENT = \{(.*?)\}", _mod, re.S).group(1)))
+_colour_png = [f for f in os.listdir(os.path.join(ROOT, "images"))
+               if f.startswith("Chip_Colour")]
+_got_wedge = (_wedge_angles(os.path.join(ROOT, "images", _colour_png[0]))
+              if _colour_png else {})
+_off = []
+for _c, _a in sorted(_seg_said.items()):
+    _want = (_a + _ART_OFFSET) % 360
+    _have = _got_wedge.get(_c)
+    if _have is None or min((_have - _want) % 360,
+                            (_want - _have) % 360) > 1.5:
+        _off.append((_c, None if _have is None else round(_have, 1), _want))
+check("every colour wedge is where CHIP_SEGMENT says it is",
+      not _off, "off register: %r" % (_off,))
+
+# ---------------------------------------------------------------------
+
+# THE DIAL IS HELD TO ITS OWN PICTURE. CHIP_DIAL is generated from
+# where the numbers sit, so the picture is what can say the table is
+# wrong: find the olive marker again and check it is where
+# build_mod.py says it is, and that the numbers come out one slot
+# apart all the way round.
+#
+# This outlived the scan it was written for. make_chip.py now draws
+# the dial FROM CHIP_DIAL_MARK, and the check reads the same 327.8
+# off the drawing that it read off the photograph.
 #
 # CHIP_DIAL_TRIM is NOT held here and cannot be: it is the nudge that
 # lands the numbers where a player reads them, and only the table can

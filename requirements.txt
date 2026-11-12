@@ -17,6 +17,9 @@
 #                              reportlab, pypdf, pillow
 #   rules/build.py             weasyprint
 #   rules/make_editable.py     beautifulsoup4
+#   tts/make_template.py       pillow, fonttools  (via tts/glyphs.py)
+#   tts/make_dice.py           pillow, fonttools  (via tts/glyphs.py)
+#   tts/make_chip.py           pillow, fonttools  (via tts/glyphs.py)
 #   tts/test_setup.py          lupa  (its Lua 5.4 binding - see the file)
 #
 # tts/build_mod.py needs NOTHING - json, os, sys, random and ast only - so
@@ -53,3 +56,8 @@ reportlab
 pypdf
 beautifulsoup4
 lupa
+# Imported directly by tts/glyphs.py, which draws text with polygons
+# because Smart App Control blocks Pillow's font DLL. It has always
+# arrived here as a dependency of weasyprint, which is not a promise:
+# the three tts/make_*.py scripts fail without it.
+fonttools
