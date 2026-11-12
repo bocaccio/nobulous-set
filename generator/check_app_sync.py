@@ -3799,8 +3799,8 @@ check("...and every name it uses is a book that is really there",
 # THE CARRY-FORWARD BAG, and the two things about it that matter.
 #
 # Jon asked for somewhere to keep the cards he is carrying into the next
-# game of the campaign (2026-11-12). It is a fifth bag on the rail, to
-# the right of the NRJ box - and it is NOT one of BOX, which is the
+# game of the campaign (2026-11-12). It is a fifth bag on the rail, off
+# the left end outside BAT - and it is NOT one of BOX, which is the
 # whole point: BOX is what deckOut searches, putHome files into and
 # packUp sweeps towards, so a fifth entry there would have the next
 # setup deal the carried cards straight back out again.
@@ -3821,15 +3821,31 @@ if len(_carry) == 1:
     # ON THE RAIL WITH THE OTHERS, at the pitch the pair it joins uses,
     # rather than at a number typed in here.
     _xs = dict((n, _bags[n]["Transform"]["posX"]) for n in _bags)
-    _nrj = [n for n in _bags if n.startswith("NRJ")]
-    _aos = [n for n in _bags if n.startswith("AoS")]
-    _pitch = (round(_xs[_nrj[0]] - _xs[_aos[0]], 2)
-              if _nrj and _aos else None)
-    check("...to the right of the NRJ box, at the same pitch",
+    _bat = [n for n in _bags if n.startswith("BAT")]
+    _nap = [n for n in _bags if n.startswith("NAP")]
+    _pitch = (round(_xs[_nap[0]] - _xs[_bat[0]], 2)
+              if _bat and _nap else None)
+    check("...to the left of the BAT box, at the same pitch",
           _pitch is not None
-          and round(_ct["posX"] - _xs[_nrj[0]], 2) == _pitch,
-          "carry at %r, NRJ at %r, pitch %r"
-          % (_ct.get("posX"), _xs.get(_nrj[0] if _nrj else ""), _pitch))
+          and round(_xs[_bat[0]] - _ct["posX"], 2) == _pitch,
+          "carry at %r, BAT at %r, pitch %r"
+          % (_ct.get("posX"), _xs.get(_bat[0] if _bat else ""), _pitch))
+    # AND CLEAR OF EVERYTHING ELSE ON THAT RAIL, which is the check
+    # that was missing. The bag went to the right end first and landed
+    # on BAT's rulebook, 2.6 away on the same z - the position checks
+    # above all passed, because every one of them only compared the bag
+    # with the other bags. One pitch of room is what the rail already
+    # proves is enough for an object this size, so ask for that from
+    # every neighbour rather than for a measured width.
+    _rail = [o for o in _sv["ObjectStates"]
+             if abs(o["Transform"]["posZ"] - _ct["posZ"]) < 2.5
+             and o["GUID"] != _cb["GUID"]]
+    _near = [((o.get("Nickname") or o["Name"]),
+              round(o["Transform"]["posX"] - _ct["posX"], 2)) for o in _rail
+             if _pitch is not None
+             and abs(o["Transform"]["posX"] - _ct["posX"]) < _pitch - 0.01]
+    check("...and a clear pitch from everything else on the rail",
+          _pitch is not None and not _near, "%r" % (_near,))
     check("...and on the same rail, not in front of it",
           sorted(set(round(_bags[n]["Transform"]["posZ"], 2)
                      for n in _bags)) == [round(_ct["posZ"], 2)],

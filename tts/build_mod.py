@@ -609,10 +609,17 @@ def lua_header(box_guids):
 # A BAG THE SCRIPT NEVER LOOKS IN.
 #
 # Jon's ask, 2026-11-12: somewhere to put the cards you are carrying
-# forward to the next game of the campaign. Yellow, on the rail to the
-# right of the NRJ box at the same 6.5 pitch as the other four, and it
-# ships EMPTY - it is a place the player puts things, not a box a setup
-# deals from.
+# forward to the next game of the campaign. Yellow, on the rail at the
+# same 6.5 pitch as the other four, and it ships EMPTY - it is a place
+# the player puts things, not a box a setup deals from.
+#
+# AT THE LEFT END, OUTSIDE BAT, AND NOT THE RIGHT. The right end is
+# where BAT's rulebook starts - RULES_POS, x 30.10, on this same rail -
+# so the first placement put the bag 2.6 from it and it sat on the
+# book. The left end is empty out to the edge of the table. Anything
+# else that wants the rail from now on has the same 6.5 of room to
+# find: check_app_sync.py measures it against every other rail object
+# rather than against the number below.
 #
 # DELIBERATELY NOT IN BOX, and that is the whole design. BOX is the
 # table of bags deckOut searches, putHome files into and packUp sweeps
@@ -629,7 +636,7 @@ def lua_header(box_guids):
 # other line in the script, may know this GUID.
 CARRY_TITLE = 'CARRY  Kept for the next game'
 CARRY_COLOR = (0.78, 0.63, 0.16)
-CARRY_X = 27.5
+CARRY_X = -27.5
 
 
 def carry_box():
