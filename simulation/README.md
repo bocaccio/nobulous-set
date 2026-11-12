@@ -208,20 +208,21 @@ diagonal, shifted, so each dial still moves one step a rung:
 
 | difficulty | goal / Setbacks | solo | Tier I | Tier II | Tier III |
 | --- | --- | --- | --- | --- | --- |
-| Easy | 4 / 1 | 58.2% | 47.5% | 35.1% | 43.8% |
-| **Standard** | **5 / 2** | **49.3%** | 40.8% | 28.9% | 38.8% |
-| Hard | 6 / 3 | 36.9% | 35.1% | 22.9% | 33.7% |
+| Easy | 4 / 1 | 58.1% | 47.6% | 34.9% | 43.9% |
+| **Standard** | **5 / 2** | **49.0%** | 41.1% | 29.0% | 38.8% |
+| Hard | 6 / 3 | 37.0% | 35.1% | 22.9% | 33.7% |
 | Nobulous | 7 / 4 | 26.3% | 24.5% | 16.8% | 25.7% |
 
-Four thousand games a cell, six Apprentices averaged. **Standard is 49.3%** -
-inside the 47-57% band but near the floor, and the hardest Standard in the
-set (BAT 52.8, AoS 51.7). What the step buys is the hard end and the
-campaign: Hard and Nobulous land closer to BAT's pegged 37.8 / 25.8 than they
-ever have, Tier I costs 10.7 / 8.5 / 1.8 / 1.8 instead of 21 and 2, and Tier
-III is below its own solo cell at every rung rather than level with it at
-Nobulous. Both of the things the previous ladder left open came from Easy
-having no Setbacks for Tier I to swap out, and every rung now carries one.
-The derivation is beside `LEVELS` in `nap.py` and in
+Twenty thousand games a cell, six Apprentices averaged, straight off
+`RESULTS.txt`. **Standard is 49.0%** - inside the 47-57% band but near the
+floor, and the hardest Standard in the set (BAT 53.2, AoS 50.7 on the same
+run). What the step buys is Nobulous and the campaign: 26.3% against BAT's
+pegged 25.8 is half a point out where 8/4 was 3.3 out, Tier I costs 10.5 /
+7.9 / 1.9 / 1.8 instead of 21 and 2, and Tier III is below its own solo cell
+at every rung rather than level with it at Nobulous. Hard is 37.0 against the
+pegged 37.8, the 0.8 it already was. Both of the things the previous ladder
+left open came from Easy having no Setbacks for Tier I to swap out, and every
+rung now carries one. The derivation is beside `LEVELS` in `nap.py` and in
 `rules/RULES_CHANGELOG.txt`.
 
 Do not retype these. `table.py` computes the calibration verdicts from the

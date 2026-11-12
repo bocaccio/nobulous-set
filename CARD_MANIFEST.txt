@@ -469,22 +469,23 @@ NAP DIFFICULTY, CURRENT
   Both dials were swept together for the first time on 2026-11-12, landing on
   5/0, 6/1, 7/2, 8/4; the ladder was then STEPPED ONE CREDIT DOWN AND ONE
   SETBACK UP the same day.  It is the same diagonal, shifted, so each dial
-  still moves one step a rung.  Measured 58.2 / 49.3 / 36.9 / 26.3 solo, six
-  Apprentices, 4000 games a cell.
-  STANDARD IS 49.3%, inside the 47-57% band but near the floor, and the
-  hardest Standard in the set: BAT 52.8, AoS 51.7, NAP 49.3.  Its own Setback
+  still moves one step a rung.  Measured 58.1 / 49.0 / 37.0 / 26.3 solo, six
+  Apprentices, 20,000 games a cell - simulation/RESULTS.txt is the run.
+  STANDARD IS 49.0%, inside the 47-57% band but near the floor, and the
+  hardest Standard in the set: BAT 53.2, AoS 50.7, NAP 49.0.  Its own Setback
   count is the dial that would move it and there is no cell between the two -
-  5/1 is 55.1 and 5/2 is 49.3 - and raising Standard alone is what inverted
+  5/1 is 55.1 and 5/2 is 49.0 - and raising Standard alone is what inverted
   the ladder against Easy earlier the same day.
-  WHAT THE STEP BUYS IS THE HARD END AND THE CAMPAIGN.  Hard 36.9 and
-  Nobulous 26.3 against BAT's pegged 37.8 and 25.8 are the closest those two
-  rungs have come to the house style.  Tier I now costs 10.7 / 8.5 / 1.8 /
+  WHAT THE STEP BUYS IS NOBULOUS AND THE CAMPAIGN.  Against the pegged ladder
+  in rules/bat.html - 63.7 / 52.8 / 37.8 / 25.8 - Nobulous reads 26.3 against
+  25.8, half a point out, where 8/4 read 22.5 and was 3.3 out; Hard is 37.0
+  against 37.8, the 0.8 it already was.  Tier I now costs 10.5 / 7.9 / 1.9 /
   1.8 instead of 21 and 2, and Tier III sits below its own solo cell at every
   rung instead of level with it at Nobulous.  Both of those followed from
   EVERY RUNG CARRYING AT LEAST ONE SETBACK: Tier I swaps one base Setback out
   per Following card in, floored at none, so a rung with none simply gained
   three cards.
-  THE SOLO STEPS ARE 8.9, 12.4, 10.6, so the ladder no longer widens all the
+  THE SOLO STEPS ARE 9.1, 12.0, 10.7, so the ladder no longer widens all the
   way up - the top two rungs are closer than the middle pair.
   simulation/nap_ladder.py prints the whole surface.
 

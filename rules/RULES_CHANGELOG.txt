@@ -1839,7 +1839,11 @@ replacing the 5/0, 6/1, 7/2, 8/4 measured earlier the same day.  Both dials
 still move one step a rung, so this is the same diagonal shifted, not a new
 shape.  Nothing else moves: no card text, no Target, no Tier rule.
 
-MEASURED, 4000 games a cell, six Apprentices averaged.
+MEASURED, 4000 games a cell, six Apprentices averaged.  RE-RUN AT THE FULL
+20,000 LATER THE SAME DAY and it moved by at most 0.4 in any cell: 58.1 /
+49.0 / 37.0 / 26.3 solo.  simulation/RESULTS.txt is that run, and the whole
+file is one run again - it had carried NAP from 2026-11-11 and the other
+three games from 2026-11-06.
 
     level      goal/sb    tier 0   tier I  tier II  tier III
     Easy        4 / 1      58.2%    47.5%    35.1%     43.8%
@@ -1847,31 +1851,35 @@ MEASURED, 4000 games a cell, six Apprentices averaged.
     Hard        6 / 3      36.9%    35.1%    22.9%     33.7%
     Nobulous    7 / 4      26.3%    24.5%    16.8%     25.7%
 
-THE HARD END IS THE CLOSEST IT HAS BEEN TO THE HOUSE STYLE.  BAT's pegged
-ladder is 63.7 / 52.8 / 37.8 / 25.8, and Hard 36.9 and Nobulous 26.3 sit
-within 0.9 and 0.5 of it, where 7/2 and 8/4 read 38.6 and 22.5.
+NOBULOUS IS WHERE IT PAID, not the whole hard end.  BAT's pegged ladder is
+63.7 / 52.8 / 37.8 / 25.8; Nobulous reads 26.3 against 25.8, half a point
+out, where 8/4 read 22.5 and was 3.3 out.  HARD DID NOT MOVE RELATIVE TO IT -
+37.0 against 37.8 is the 0.8 that 7/2's 38.6 already was - so the claim to
+make for this step is Nobulous and the campaign axis, not the hard end as a
+whole.
 
 AND EVERY RUNG NOW PLAYS WITH AT LEAST ONE SETBACK, which closes both of the
 things the previous ladder left open.  Tier I swaps one base Setback out per
 Following card in, floored at none, so a rung with none did not swap at all -
 it simply gained three cards.  That is why the tier cost Easy 21 points and
-Nobulous 2.  It now costs 10.7 / 8.5 / 1.8 / 1.8.  And Tier III, which was
+Nobulous 2.  It now costs 10.5 / 7.9 / 1.9 / 1.8.  And Tier III, which was
 level with its own solo cell at Nobulous (22.6 against 22.5), is below the
-solo cell at every rung: 43.8 / 38.8 / 33.7 / 25.7 against 58.2 / 49.3 /
-36.9 / 26.3.  A tier may make the game harder or may cost less than another
+solo cell at every rung: 43.9 / 38.8 / 33.7 / 25.7 against 58.1 / 49.0 /
+37.0 / 26.3.  A tier may make the game harder or may cost less than another
 tier; it may not make it easier than no campaign at all.
 
-WHAT IT COSTS IS STANDARD, AND THAT IS WORTH SAYING PLAINLY.  49.3% is
+WHAT IT COSTS IS STANDARD, AND THAT IS WORTH SAYING PLAINLY.  49.0% is
 inside the 47-57% band but near the floor, and it leaves NAP the hardest
-Standard in the set - BAT 52.8, AoS 51.7, NAP 49.3 - where the three sat
-within 1.1 of each other this morning.  The solo steps are 8.9, 12.4, 10.6,
+Standard in the set - BAT 53.2, AoS 50.7, NAP 49.0 on the 20,000-game run -
+where the three sat within 1.1 of each other this morning.  The solo steps
+are 9.1, 12.0, 10.7,
 so the ladder no longer widens all the way up either: the top two rungs are
 closer together than the middle pair.  Both follow from starting the goals a
 Credit lower while the Setbacks start a Setback higher, because a Setback is
 worth more than a Credit - 4.2 to 6.3 points against 4.2 to 5.2.
 
 THE DIAL THAT WOULD MOVE STANDARD BACK IS ITS OWN SETBACK COUNT, and there
-is no cell between the two: 5/1 reads 55.1 and 5/2 reads 49.3.  Raising
+is no cell between the two: 5/1 reads 55.1 and 5/2 reads 49.0.  Raising
 Standard alone is what inverted the ladder against Easy earlier the same
 day, so it is not a change to make on the solo column by itself.
 

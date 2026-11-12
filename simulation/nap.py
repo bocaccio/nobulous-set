@@ -781,43 +781,46 @@ CREDITS_TO_LEAVE = 5      # Easy 4, Standard 5, Hard 6, Nobulous 7
 #
 # STEPPED ONE CREDIT DOWN AND ONE SETBACK UP, later the same day, at Jon's
 # ask: 4/1, 5/2, 6/3, 7/4. Both dials still move one step a rung, so the
-# ladder keeps its shape; it is the same diagonal, shifted. Measured 4000
-# games a cell, six Apprentices averaged:
+# ladder keeps its shape; it is the same diagonal, shifted. Measured at
+# 20,000 games a cell, six Apprentices averaged - simulation/RESULTS.txt is
+# the run:
 #
 #     level        goal/sb   solo   tier I  tier II  tier III
-#     Easy          4 / 1    58.2    47.5     35.1     43.8
-#     Standard      5 / 2    49.3    40.8     28.9     38.8
-#     Hard          6 / 3    36.9    35.1     22.9     33.7
+#     Easy          4 / 1    58.1    47.6     34.9     43.9
+#     Standard      5 / 2    49.0    41.1     29.0     38.8
+#     Hard          6 / 3    37.0    35.1     22.9     33.7
 #     Nobulous      7 / 4    26.3    24.5     16.8     25.7
 #
-# WHAT IT BUYS, against BAT's pegged 63.7 / 52.8 / 37.8 / 25.8. Hard and
-# Nobulous land closer to the house style than they ever have - 36.9 against
-# 37.8 and 26.3 against 25.8, where 5/0..8/4 read 38.6 and 22.5 - so the hard
-# end of the set now agrees across three games. EVERY RUNG ALSO PLAYS WITH AT
+# WHAT IT BUYS AT THE HARD END, against the pegged ladder in rules/bat.html -
+# 63.7 / 52.8 / 37.8 / 25.8, the one in the set aimed at the community band on
+# purpose. NOBULOUS IS HALF A POINT OUT at 26.3 against 25.8, where 8/4 read
+# 22.5 and was 3.3 out; Hard is 37.0 against 37.8, the 0.8 it already was. So
+# the step bought Nobulous and left Hard alone. EVERY RUNG ALSO PLAYS WITH AT
 # LEAST ONE SETBACK, which is what fixes the two things the previous ladder
 # left open:
 #
 #   TIER I IS NO LONGER LOPSIDED. It cost Easy 21 points and Nobulous 2 when
-#   Easy had nothing to swap out; it now costs 10.7 / 8.5 / 1.8 / 1.8. The
+#   Easy had nothing to swap out; it now costs 10.5 / 7.9 / 1.9 / 1.8. The
 #   swap rule is unchanged - one base Setback leaves per Following card in,
 #   floored at none - it is just no longer being asked to take cards off a
 #   rung that has none.
 #
-#   AND TIER III IS BELOW ITS SOLO CELL AT EVERY RUNG, 43.8 / 38.8 / 33.7 /
-#   25.7 against 58.2 / 49.3 / 36.9 / 26.3. Nobulous was level with its own
+#   AND TIER III IS BELOW ITS SOLO CELL AT EVERY RUNG, 43.9 / 38.8 / 33.7 /
+#   25.7 against 58.1 / 49.0 / 37.0 / 26.3. Nobulous was level with its own
 #   solo cell before (22.6 against 22.5), and the one rule a tier must never
 #   break is that it makes the game easier.
 #
-# WHAT IT COSTS, and it is one thing: STANDARD IS 49.3%. That is inside the
+# WHAT IT COSTS, and it is one thing: STANDARD IS 49.0%. That is inside the
 # 47-57% band but near the floor, and it leaves NAP the hardest Standard in
-# the set - BAT 52.8, AoS 51.7, NAP 49.3 - where the three sat within 1.1 of
-# each other this morning. The solo steps are also 8.9, 12.4, 10.6, so the
+# the set - BAT 53.2, AoS 50.7, NAP 49.0 on the same run - where the three sat
+# within 1.1 of each other this morning. The solo steps are 9.1, 12.0, 10.7,
+# so the
 # ladder no longer widens all the way up: the top two rungs are closer
 # together than the middle pair. Both are consequences of asking the goals to
 # start a Credit lower while the Setbacks start a Setback higher, and a
 # Setback is worth more than a Credit (4.2-6.3 against 4.2-5.2). THE DIAL
 # THAT WOULD MOVE STANDARD BACK is its own Setback count: 5/1 reads 55.1 and
-# 5/2 reads 49.3, so there is no cell between them. Raising Standard alone
+# 5/2 reads 49.0, so there is no cell between them. Raising Standard alone
 # would invert it against Easy, which is the mistake of this morning.
 LEVELS = {"Easy": (4, 1), "Standard": (5, 2), "Hard": (6, 3), "Nobulous": (7, 4)}
 # End of Day burns one card off the Assignment deck, text ignored.

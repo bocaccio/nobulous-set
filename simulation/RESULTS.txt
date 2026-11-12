@@ -2,12 +2,16 @@
 THE NOBULOUS SET - results by difficulty and NRJ tier
 20000 games per cell
 
-Figures: python table.py 20000, run 2026-11-06.
-The GRIDS below are that run's output.  The notes indented under
-them, and everything after the CALIBRATION block, are written by
-hand - so where prose disagrees with a grid, the grid wins and the
-prose is what went stale.  Re-run rather than retyping: table.py
-computes its own calibration verdicts from the cells it measured.
+Figures: python table.py 20000, run 2026-11-12.
+EVERY GRID BELOW IS THAT ONE RUN.  The file had carried NAP from
+2026-11-11 and the other three from 2026-11-06, each labelled; the
+ladder stepped on 2026-11-12 and the whole set was re-run, so the
+labels are gone and the grids are comparable again.
+The notes indented under them, and everything after the CALIBRATION
+block, are written by hand - so where prose disagrees with a grid,
+the grid wins and the prose is what went stale.  Re-run rather than
+retyping: table.py computes its own calibration verdicts from the
+cells it measured.
 
 ==================================================================
 NAP  Nobulous Apprenticeship Program
@@ -15,29 +19,52 @@ NAP  Nobulous Apprenticeship Program
   difficulty = Credit goal / Setbacks in the deck; FINF at Reduce 1
 
                             no NRJ    Tier I   Tier II  Tier III
-  Easy (5 Cr, 3 Sb)          50.5%     47.7%     33.1%     40.3%
-  Standard (6 Cr, 3 Sb) *     43.0%     40.2%     27.7%     35.6%
-  Hard (7 Cr, 4 Sb)          31.8%     29.6%     21.5%     28.9%
-  Nobulous (8 Cr, 5 Sb)      24.8%     23.3%     15.8%     22.8%
+  Easy (4 Cr, 1 Sb)          58.1%     47.6%     34.9%     43.9%
+  Standard (5 Cr, 2 Sb) *     49.0%     41.1%     29.0%     38.8%
+  Hard (6 Cr, 3 Sb)          37.0%     35.1%     22.9%     33.7%
+  Nobulous (7 Cr, 4 Sb)      26.3%     24.5%     16.8%     25.7%
   
     * Standard difficulty. Mean of the six Apprentices.
-    RE-MEASURED 2026-11-11 at the full 20,000 games a cell,
-    after the rules revision in rules/nap.html.  NAP's block alone
-    was re-run: no other game's rules moved, so the BAT, AoS and
-    finale grids below are still the 2026-11-06 figures and are
-    labelled as such.  The grid it replaced read 56.3 / 48.6 /
-    38.4 / 29.4 solo.
+    THE LADDER STEPPED A CREDIT DOWN AND A SETBACK UP on
+    2026-11-12: Easy 4 Cr / 1 Sb, Standard 5 / 2, Hard 6 / 3,
+    Nobulous 7 / 4, replacing 5/0, 6/1, 7/2, 8/4 from earlier the
+    same day and 6/3, 7/3, 8/4, 9/5 before that.  Both dials still
+    move one step a rung, so it is the same diagonal shifted.
+    rules/RULES_CHANGELOG.txt carries the decision.
 
-    THE LADDER DROPPED ABOUT SIX POINTS AND KEPT ITS SHAPE on the
-    solo column, and LEVELS was deliberately not re-pegged to
-    chase it back - see simulation/README.md.  Standard is 43.0%
-    against a 47% floor and that is now a decision on the record.
+    STANDARD IS BACK IN THE BAND at 49.0%, near the floor rather
+    than centred, and it is the hardest Standard in the set: BAT
+    53.2, AoS 50.7, NAP 49.0.  There is no cell between 5 Cr / 1 Sb
+    (55.1 at 4000 games) and 5 / 2, so its own Setback count cannot
+    move it a little.
 
-    TIER II TOOK THE WORST OF IT, which the solo column hides:
-    -9.8 / -8.7 / -7.0 / -6.8 against solo's -5.8 / -5.6 / -6.6 /
-    -4.6.  The campaign's pressure peak was already the weakest
-    cell on the board and Nobulous Tier II now reads 15.8%.  That
-    one has NOT been looked at.
+    NOBULOUS IS WHERE THE STEP PAID, against the pegged ladder in
+    rules/bat.html - 63.7 / 52.8 / 37.8 / 25.8, the one ladder in
+    the set aimed at the community band on purpose.  7 Cr / 4 Sb
+    reads 26.3 against that 25.8, half a point out, where 8 / 4
+    read 22.5 and was 3.3 out.  Hard is 37.0 against 37.8, which is
+    the 0.8 it already was.  Note BAT MEASURES 40.1 AND 28.1 ON THE
+    GRID ABOVE rather than its own pegged 37.8 and 25.8: that gap
+    is BAT's and predates this, and the peg is what the set has
+    always been compared with.
+
+    AND TIER III IS BELOW ITS OWN SOLO CELL AT EVERY RUNG now -
+    43.9 / 38.8 / 33.7 / 25.7 against 58.1 / 49.0 / 37.0 / 26.3.
+    Nobulous was level with its solo cell under the old ladder,
+    and a tier may not make the game easier than no campaign.
+
+    TIER II IS STILL THE WEAKEST CELL ON THE BOARD, 34.9 / 29.0 /
+    22.9 / 16.8, and the previous edition of this file flagged it
+    as not looked at.  It still has not been.  It moved with the
+    ladder rather than for any reason of its own.
+
+    WHAT THE 2026-11-11 RUN SAID.  The rules revision in
+    rules/nap.html cost about six points and the ladder was not
+    re-pegged to chase it back: on 6/3, 7/3, 8/4, 9/5 Standard read
+    43.0% against a 47% floor, and the grid before the revision had
+    read 56.3 / 48.6 / 38.4 / 29.4 solo.  Tier II took the worst of
+    it, -9.8 / -8.7 / -7.0 / -6.8 against solo's -5.8 / -5.6 / -6.6
+    / -4.6.  The two re-pegs since are what put Standard back.
     WHAT THE 2026-11-06 RUN SAID, kept because it explains how
     the grid this one replaced got where it was.  "Now" below
     means that morning, not the grid above.
@@ -211,7 +238,7 @@ AoS  Automaton of Shale
   Standard  2/3/3            50.7%     39.8%     34.4%     38.7%
   Hard  1/3/4                42.5%     31.6%     27.2%     30.7%
   Nobulous  0/3/5            34.9%     24.4%     20.8%     23.1%
-
+  
     20,000 games a cell.  The solo and Tier I columns are the
     same measurement they always were - nothing that changed on
     2026-11-06 touches those two tiers, which is the check.
@@ -759,8 +786,22 @@ NRJ  Imposter Scenario (the campaign finale)
   "THE LADDER IS CUT WITH DICE, not with a dial".  The old
   sentence described nrj.py, whose variable really was the pool,
   and it survived the switch to reporting the finale that ships.)
+  The NRJ tiers apply to the three games above, NOT to the
+  finale, which has a ladder of its own - cut with dice rather
+  than with a dial. START_TIRED is how many you begin with
+  exhausted: 0/0/0/0, 3/2/2/2, 3/3/3/2, 3/3/4/4 across Easy to
+  Nobulous, aiming at 50/40/30/20 rather than at the 47-57%
+  band. The figure below is the EASY rung, which is the pitch.
+  The ten Imposter sides went INTO finale.py on 2026-11-06,
+  ported from simulation/proto/imposters.py, which had them
+  implemented and calibrated while the shipping module had no
+  hero code at all. HERO = None is still the pitch - a side is
+  a DELTA against it - and it still reproduces the figure
+  below to the decimal. finale.py section 7 prints the roster;
+  do not retype its numbers here.
 
   as it SHIPS      50.5%   finale.py, 6000 finales x 5 seeds
+  as it SHIPS          50.5%   finale.py, 6000 finales x 5 seeds
 
   SUPERSEDED - the nine-attempt Suspicion scenario the Dossier
   finale replaced on 2026-10-29. Kept because nrj.py is still
@@ -950,23 +991,20 @@ CALIBRATION - published 20 Strong titles, community-recorded
   all titles                   955       53%
 
   Source: 20 Strong Community Game Stats, read 2026-09-20.
-  A finished game in this system sits near 50%.  table.py COMPUTES
-  these four verdicts from the grids above, so they cannot drift
-  from them; what follows is a transcription of that output.
+  A finished game in this system sits near 50%. These four
+  lines are COMPUTED from the grids above - 20000 games a cell -
+  so they cannot drift from them:
     BAT  Standard in band (53.2% solo), Easy above the band.
-    NAP  Standard BELOW the band (43.0% solo, 35.6% at Tier III)
-         since the 2026-11-11 rules revision, and accepted there
-         rather than re-pegged; Easy (50.5%) is the only rung in
-         band, and Tier II is below it at every rung.
-    AoS  Standard in band on its OWN column (52.0%) since the
-         2026-11-05 re-pitch onto the strongest allocation line
-         the printed rules allow (ALLOC_MODE = sacrifice_short);
-         Standard at Tier III below the band (46.6%).
-    NRJ  the finale that SHIPS is in band (50.5%), computed from
-         finale.py over 6000 finales x 5 seeds; finale.txt is its
-         full report.  The superseded nine-attempt scenario is
-         printed above it, labelled, because nrj.py still models
-         it - it is not what ships.
+    NAP  Standard in band (49.0% solo, 38.8% at Tier III)
+         since every Target rose by 1; Hard below the band.
+    AoS  Standard in band on its OWN column (50.7%) since the
+         2026-11-05 re-pitch onto the strongest allocation
+         line the printed rules allow (ALLOC_MODE = sacrifice_short);
+         Standard at Tier III below the band (38.7%).
+    NRJ  the finale that SHIPS in band (50.5%), computed from
+         finale.py over 6000 finales x 5 seeds; finale.txt is
+         its full report. This line used to be a hardcoded
+         50.5% printed under a grid of the WRONG finale.
 
   WHAT THIS FOOTER USED TO SAY, and why it is generated now.  It
   claimed "BAT in band at Standard (53.9%)" directly above a grid
@@ -986,6 +1024,13 @@ CALIBRATION - published 20 Strong titles, community-recorded
   arguing with is the OTHER end of it - see THE CAMPAIGN AXIS
   above, where AoS reaches 89.6% of its own solo cell and BAT,
   re-measured the same day, reaches 90.0%.
+  THIS FOOTER USED TO CONTRADICT THE GRID ABOVE IT, on three of
+  the four games, and an audit on 2026-11-04 is what caught it:
+  it claimed BAT 53.9, NAP 49.2/51.4, AoS 53.5 on the campaign
+  axis and 70.8 solo, and the finale at 53.1. The AoS pair was
+  the giveaway - 70.8% is a number from before required colours
+  existed, printed directly beneath a grid reading 52.9%. Figures
+  here are now dated, and the dates are what to distrust first.
 
   THE RETUNE IS WHY, AND IT INVALIDATES EVERY DIFFICULTY DIAL.
   These models used to play one fixed policy that was 6 to 34
@@ -1128,6 +1173,9 @@ CAVEATS
   the trough as intended. Tier III gained only +4.7 back at Standard until
   the reward side was fixed on 2026-11-06; it gains +9.2 now, against NAP's
   +3.9 and AoS's +13.0. The first diagnosis was the claim side:
+  BAT'S TIER III RECOVERS WEAKLY, AND THE REASON MOVED. Tier II is the
+  trough as intended and Tier III gains +4.7 back at Standard, against
+  NAP's +5.4 and AoS's +11.0. The first diagnosis was the claim side:
   two of the six Research Notes were nearly dead paper, and the rest
   averaged 2.0 claims a game. Loosening two conditions and rewriting the
   dead one - Cross-Species Compatibility now claims on completing an
@@ -1142,6 +1190,13 @@ CAVEATS
   spent it on two of the six printed rewards. The other four did nothing at
   all. Six separate once-per-game cards were one fungible token spent on
   two of them - the same defect AoS's Backdoor Routines had.
+  IT BARELY MOVED THE COLUMN, BECAUSE THE LIMIT WAS THE REWARD SIDE - and
+  that was fixed on 2026-11-06. bat.py pooled every claim into one counter,
+  `self.notes`, and spent it on two of the six printed rewards; of those
+  two, one never fired, so the published Tier III column was measuring a
+  single card. Each Note is now its own named card with its own printed
+  reward, which took the column up 4.5 points. NOTE_REWARDS = False
+  restores the pooled token and reproduces the old figure exactly.
 
   FIXED 2026-11-06, AND IT WAS WORSE THAN THE COUNT SUGGESTS. Of the two
   rewards the pooled model implemented, ONE NEVER FIRED: Unexpected
@@ -1210,6 +1265,11 @@ CAVEATS
   harmless only because the branch never fired.  Corrected; it
   moves no published figure, because under the shipped trigger
   the branch still never fires.
+  THIS PARAGRAPH SAID THE OPPOSITE UNTIL THEN, which is the running fault
+  in this file: it is prose about coverage, and prose about coverage goes
+  stale. simulation/coverage.py holds the same claims as predicates over
+  the live modules and fails when one stops being true. Run it rather than
+  reading this.
 
   INDEPENDENT FUNDING NEEDED A NEW TRIGGER, not a new number. The old card
   paid the LENDER a die, and the lender's dice are not the binding resource,
@@ -1248,6 +1308,17 @@ CAVEATS
               well-made deck should do. NRJ now omits 1 of its 24
               Scenario effects, down from 18: see the Imposter section
               below, and imposter.py.
+              well-made deck should do. Diagnostic Trial is still the
+              exception, and the reason is now exact rather than vague:
+              the card says "return it to the TOP", so it reorders
+              nothing, and the Experiment policy already commits the
+              MINIMUM expected to reach the Target, so there is nothing
+              to hold back on the strength of knowing what is next.
+              On 2026-11-06 everything else in this line was closed -
+              the 19 "omitted" Council Test effects turned out not to be
+              printed on the shipping Exhibit face at all, and the ten
+              Imposter sides went into finale.py. coverage.py reads 3 of
+              255 unmodelled; run it rather than reading this.
     desync    the model carried its own table of Experiment Targets and added
               TARGET_DELTA = 1 on top. That +1 was adopted and PRINTED onto
               the cards at commit b57eedd, so seven of the twenty Experiments
@@ -1308,6 +1379,13 @@ CAVEATS
   payout does not depend on having missed, and it now reads 54.6% on a
   24.0-point slope. See the DEBUG note in aos.py and the
   hero tables below.
+  from the abilities, which are now modeled: about 17 points between the
+  best and worst Technician (43.4% to 26.0% at Standard), about 7 between
+  Apprentices (80.8% to 73.5%) and under 4 across BAT's eight Rat sides
+  (53.2% to 49.6%). AoS's spread is untouched by the retune and is more
+  than twice either of the others. This cross-tab
+  reports their mean; the per-hero tables are in RESULTS.txt, and cards.py
+  lists all twenty.
 
   Policy sensitivity is large. NRJ moved from 3.4% to 9.2% on how it spends
   the Research Pool, and from 12.6% to 33.1% on which exhausted dice REC
@@ -1470,7 +1548,7 @@ THE RULE WAS RIGHT IN ONE PLACE AND STALE IN TWO. bat.html was rewritten so
   three games, but a ladder where there was none. Not applied: H ships at
   5 Health, which is the Standard rung.
 
-finished in 564.8s
+finished in 1868.5s
 
 ==================================================================
 THE FULL AUDIT, 2026-11-04

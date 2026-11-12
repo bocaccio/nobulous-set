@@ -498,6 +498,8 @@ def lua_header(box_guids):
         'CARD_W = %.3f' % CARD_W,
         'CARD_L = %.3f' % CARD_L,
         'BOX = { %s }' % j("%s = '%s'" % (g, box_guids[g]) for g in BOX_ORDER),
+        # NOT a fifth BOX entry - see carry_box() for why it must not be.
+        "CARRY = '%s'" % box_guids['CARRY'],
         'HOME = { %s }' % j("['%s'] = '%s'" % (k, v) for k, v in sorted(home.items())),
         'CARD_NAME = { %s }' % j("['%s'] = '%s'" % (d['label'], d['card'])
                                  for d in DECKS if d.get('card')),
@@ -602,6 +604,50 @@ def lua_header(box_guids):
                                      for k, v in sorted(exhibit_blocks().items())),
         '-- ======================= end generated =======================',
         '', ''])
+
+
+# A BAG THE SCRIPT NEVER LOOKS IN.
+#
+# Jon's ask, 2026-11-12: somewhere to put the cards you are carrying
+# forward to the next game of the campaign. Yellow, on the rail to the
+# right of the NRJ box at the same 6.5 pitch as the other four, and it
+# ships EMPTY - it is a place the player puts things, not a box a setup
+# deals from.
+#
+# DELIBERATELY NOT IN BOX, and that is the whole design. BOX is the
+# table of bags deckOut searches, putHome files into and packUp sweeps
+# towards, all by the name of the card; a fifth entry there would have
+# the next setup deal the carried cards straight back out, which is the
+# opposite of carrying them forward. boxFor() finds no home for this
+# bag either, so packable() answers nil for it and Pack up neither
+# stows it nor reports it as something left on the table.
+#
+# ITS GUID GOES TO THE SCRIPT ALL THE SAME, for one reason: settle().
+# The mat and the four boxes are unlocked on load and dropped onto the
+# rail to find their own resting height, and a bag left out of that
+# list hangs at the y the save gives it. One line in settle(), and no
+# other line in the script, may know this GUID.
+CARRY_TITLE = 'CARRY  Kept for the next game'
+CARRY_COLOR = (0.78, 0.63, 0.16)
+CARRY_X = 27.5
+
+
+def carry_box():
+    r, g, b = CARRY_COLOR
+    return {"GUID": guid(), "Name": "Bag",
+            "Transform": xf(CARRY_X, 5.20, 20.5, (0, 0, 0), 1.6),
+            "Nickname": CARRY_TITLE,
+            "Description": "Cards you are carrying forward to the next game"
+                           " of the campaign. The setup buttons do not look"
+                           " in this bag, so whatever is in it stays out of"
+                           " play until you take it out yourself.",
+            "ColorDiffuse": {"r": r, "g": g, "b": b},
+            # Locked for the same reason the others are: a bag resting
+            # on the rail rolls off it otherwise, and a locked bag still
+            # opens and still takes putObject.
+            "Locked": True, "Grid": True, "Snap": True, "Autoraise": True,
+            "Sticky": True, "MaterialIndex": -1, "MeshIndex": -1,
+            "ContainedObjects": []}
 
 
 def box(game, contained, x):
@@ -1687,6 +1733,9 @@ def main():
         bx = box(game, grouped[game], (-21.0, -14.5, 14.5, 21.0)[n])
         box_guids[game] = bx['GUID']
         objects.append(bx)
+    carry = carry_box()
+    box_guids['CARRY'] = carry['GUID']
+    objects.append(carry)
     objects.append(panel())
     objects.append(rail)
     objects += dice_objects()

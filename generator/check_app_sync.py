@@ -3796,6 +3796,64 @@ check("the script names a rulebook for all four games",
 check("...and every name it uses is a book that is really there",
       sorted(_want.values()) == sorted(_books),
       "script %r vs save %r" % (sorted(_want.values()), sorted(_books)))
+# THE CARRY-FORWARD BAG, and the two things about it that matter.
+#
+# Jon asked for somewhere to keep the cards he is carrying into the next
+# game of the campaign (2026-11-12). It is a fifth bag on the rail, to
+# the right of the NRJ box - and it is NOT one of BOX, which is the
+# whole point: BOX is what deckOut searches, putHome files into and
+# packUp sweeps towards, so a fifth entry there would have the next
+# setup deal the carried cards straight back out again.
+_bags = dict((o.get("Nickname") or "", o) for o in _sv["ObjectStates"]
+             if o["Name"] == "Bag")
+_carry = [n for n in _bags if n.startswith("CARRY")]
+check("there is one carry-forward bag on the rail",
+      len(_carry) == 1, "%r" % (sorted(_bags),))
+if len(_carry) == 1:
+    _cb = _bags[_carry[0]]
+    _ct = _cb["Transform"]
+    # EMPTY IN THE SAVE. It is a place the player puts things; a bag
+    # that shipped with cards in it would be holding them out of a game
+    # nobody has played yet.
+    check("...and it ships empty",
+          not _cb.get("ContainedObjects"),
+          "%d object(s) inside" % len(_cb.get("ContainedObjects") or []))
+    # ON THE RAIL WITH THE OTHERS, at the pitch the pair it joins uses,
+    # rather than at a number typed in here.
+    _xs = dict((n, _bags[n]["Transform"]["posX"]) for n in _bags)
+    _nrj = [n for n in _bags if n.startswith("NRJ")]
+    _aos = [n for n in _bags if n.startswith("AoS")]
+    _pitch = (round(_xs[_nrj[0]] - _xs[_aos[0]], 2)
+              if _nrj and _aos else None)
+    check("...to the right of the NRJ box, at the same pitch",
+          _pitch is not None
+          and round(_ct["posX"] - _xs[_nrj[0]], 2) == _pitch,
+          "carry at %r, NRJ at %r, pitch %r"
+          % (_ct.get("posX"), _xs.get(_nrj[0] if _nrj else ""), _pitch))
+    check("...and on the same rail, not in front of it",
+          sorted(set(round(_bags[n]["Transform"]["posZ"], 2)
+                     for n in _bags)) == [round(_ct["posZ"], 2)],
+          "z values %r" % (sorted(set(round(_bags[n]["Transform"]["posZ"], 2)
+                                      for n in _bags)),))
+    # YELLOW, which is what was asked for and what tells it from the
+    # four game boxes at a glance. Red and green high, blue low.
+    _c = _cb["ColorDiffuse"]
+    check("...and it is yellow",
+          _c["r"] > 0.6 and _c["g"] > 0.5 and _c["b"] < 0.3
+          and _c["r"] >= _c["g"] > _c["b"], "%r" % (_c,))
+    # AND NOTHING AUTOMATED KNOWS IT. One line of the script may hold
+    # this GUID - settle(), which drops the bags onto the rail - and
+    # BOX may not.
+    _lua_all = _sv["LuaScript"]
+    _boxtab = re.search(r"\nBOX = \{([^}]*)\}", _lua_all)
+    check("...and its GUID is not one of BOX",
+          _boxtab is not None and _cb["GUID"] not in _boxtab.group(1),
+          "BOX = %r" % (_boxtab and _boxtab.group(1),))
+    check("...but the script is given it, for settle() alone",
+          ("CARRY = '%s'" % _cb["GUID"]) in _lua_all
+          and _lua_all.count("CARRY)") == 1
+          and "getObjectFromGUID(CARRY)" in _lua_all)
+
 def _bookfile(u):
     """The PDF a book's URL names, token and all stripped off."""
     return os.path.join(ROOT, "rules", u.rsplit("/", 1)[-1].split("?")[0])

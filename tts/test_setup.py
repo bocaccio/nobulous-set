@@ -415,14 +415,35 @@ class Obj(object):
     def putObject(self, other):
         if other is None:
             raise RuntimeError("putObject(nil) into %r" % self.name)
-        if self.bag and self.world.lossy:
-            # TTS DROPS OBJECTS FED TO A BAG FASTER THAN IT ANIMATES THEM.
-            # One pass of pack-up over twenty cards left exactly one on
-            # the table every time, and the stub could not see it because
-            # a Python list never refuses an append. Refusing one in N
-            # reproduces the bug, so the fix for it stays tested.
+        if self.world.lossy if self.bag else self.world.lossy_decks:
+            # TTS DROPS OBJECTS FED TO A CONTAINER FASTER THAN IT ANIMATES
+            # THEM. One pass of pack-up over twenty cards left exactly one
+            # on the table every time, and the stub could not see it
+            # because a Python list never refuses an append. Refusing one
+            # in N reproduces the bug, so the fix for it stays tested.
+            #
+            # A DECK REFUSES TOO, AND THE STUB ONLY SAID BAGS. deckOut
+            # gathers a loose card by putting it into the deck it is
+            # rebuilding, and the refused one is left lying where
+            # takeObject dropped it: OFF, the staging band at dead centre
+            # of the bottom edge. That is the blank card the character
+            # button left behind, one per press, in the three games that
+            # have a character to cycle - and with the refusal modelled
+            # for bags only, every assertion about that cycle passed.
+            #
+            # ITS OWN DIAL, lossy_decks, AND IT IS OFF BY DEFAULT - which
+            # is not timidity about the truth. Turned on for the whole
+            # suite it fails nine more assertions that have nothing to do
+            # with the character button: AoS t3 leaves Programs in the
+            # band and builds unnamed decks over three setups, the FINF
+            # button deals the wrong count and strands Setbacks, and a
+            # pile of four comes back three. Those are real and they are
+            # NOT this bug; they want measuring and fixing on their own,
+            # and a suite left red says nothing about any of them. See
+            # gather_assertions.
+            every = self.world.lossy if self.bag else self.world.lossy_decks
             self.world.puts += 1
-            if self.world.puts % self.world.lossy == 0:
+            if self.world.puts % every == 0:
                 return other
         self.world.table.pop(other.guid, None)
         other.bagged = True
@@ -488,6 +509,8 @@ class World(object):
         self.landings = []
         self.card_half = 0.0
         self.lossy = 0          # refuse one bag put in N, like TTS does
+        # ...and one DECK put in N, which is its own dial - see putObject.
+        self.lossy_decks = 0
         self.puts = 0
         self.rng = random.Random(7)
 
@@ -1976,6 +1999,53 @@ def on_card_assertions():
          named, [True, True])
     want("...and both are let go above its face, not inside it",
          clears, [True, True])
+    # BY A REAL CLEARANCE, NOT BY A HAIR. 0.05 passed the assertion
+    # above and lost at the table anyway: the Rat is dealt from y = 3
+    # and is still settling when the die is let go, so the pair
+    # interpenetrate and Unity picks a side. This pins the gap.
+    # A NUMBER, NOT gl.ONTO_LIFT. Reading the constant out of the Lua
+    # and comparing the gap with it is a predicate the script satisfies
+    # whatever it is set to - 0.05 passed that version of this check.
+    # 0.3 is the floor with a reason behind it: a die is 1.62 across at
+    # DIE_SCALE, so a third of its own width is a real fall and well
+    # clear of the bounce a card dealt from y = 3 is still finishing.
+    lifts = [o.pos[1] - half - card_top_under(o.pos[0], o.pos[2])[0]
+             for o in (by["Recovery"], by["Red"])]
+    want("...by a third of a die at least, not by a hair",
+         [round(v, 3) >= 0.3 for v in lifts], [True, True])
+
+    # AND moveMarker ASKS IT, for the dice that stand on a card and for
+    # no others. There is no physics here to lose the race for us, so
+    # the backstop firing cannot be observed through a die's position -
+    # but whether the move calls it at all can be, and a backstop
+    # nothing calls is the whole bug back again.
+    w2, g2 = start("Standard", 0)
+    asked = []
+    g2.liftIfUnder = lambda o, x, z: asked.append(
+        (o.getName(), round(float(x), 2), round(float(z), 2))) or False
+    g2.setupBAT()
+    drain(w2)
+    want("moveMarker asks the backstop for the two dice on a Rat",
+         sorted(n for n, _x, _z in asked), ["Recovery", "Red"])
+
+    # AND THE BACKSTOP PUTS BACK A DIE THAT LOST THE RACE ANYWAY.
+    # Asked directly, with the die moved under its Rat by hand, because
+    # there is no physics here to lose the race for us.
+    red = by["Red"]
+    rx, rz = red.pos[0], red.pos[2]
+    top = card_top_under(rx, rz)[0]
+    red.pos = (rx, top - 0.20, rz)
+    want("the backstop sees a die that ended up under the card",
+         bool(g.liftIfUnder(red, rx, rz)), True)
+    want("...and puts it back above that card's face",
+         red.pos[1] - half >= top, True)
+    # ...AND LEAVES ALONE A DIE THAT IS SITTING ON IT. A backstop that
+    # fires every time would lift every die ONTO_LIFT into the air on
+    # every setup, which is the same bug the other way up.
+    red.pos = (rx, top + half, rz)
+    want("...and leaves a die that is already on the card where it is",
+         (bool(g.liftIfUnder(red, rx, rz)), round(red.pos[1], 3)),
+         (False, round(top + half, 3)))
     # AND THE OTHER TWO ARE UNCHANGED. The Health and REC dice go to
     # bare felt beside the exhausted corner, so they must still be let
     # go at the one height - a fix that lifted every marker would put
@@ -3269,6 +3339,119 @@ def dial_assertions():
          int(chip.rot[1]) != int(gen[cols[2]]), True)
 
 
+def carry_assertions():
+    """The carry-forward bag is furniture, not a box.
+
+    Jon asked for a yellow bag to keep the cards he is carrying into
+    the next game of the campaign (2026-11-12). Where it sits and what
+    colour it is are checked in generator/check_app_sync.py, which
+    reads the save; what matters HERE is the two behaviours:
+
+      PACK UP MUST NOT TOUCH IT. packable() answers with the box an
+      object belongs in, and this bag belongs in none - so Pack up
+      neither stows it nor lists it among the things left on the table.
+      A bag that got itself reported every single time would train the
+      player to ignore that message, which is the one message Pack up
+      has.
+
+      AND settle() MUST. The mat and the four boxes are unlocked on
+      load and dropped onto the rail to find their resting height; a
+      bag left out of that list hangs above it. This is the one line of
+      the script that is allowed to know the bag's GUID.
+    """
+    w, g = start("Standard", 0, Panel())
+    carry = [o for o in w.byguid.values()
+             if (o.name or "").startswith("CARRY")]
+    want("the carry-forward bag is in the world", len(carry), 1)
+    if not carry:
+        return
+    bag = carry[0]
+    want("...and Pack up has no home for it", g.packable(bag), None)
+    want("...and it holds nothing to start with", len(bag.kids), 0)
+    # SETTLE TOUCHES IT. Unlocked by hand first, because the save ships
+    # it locked: settle unlocks every object in its list and locks them
+    # again two seconds later, so a bag it skipped stays unlocked.
+    bag.locked = False
+    g.settle()
+    drain(w)
+    want("...and settle() drops it onto the rail with the others",
+         bag.locked, True)
+    # AND IT IS NOT ONE OF BOX. deckOut, putHome and packUp all work
+    # through that table, so this is the line that keeps the carried
+    # cards carried.
+    want("...and it is not one of the four boxes",
+         bag.guid in [str(v) for v in g.BOX.values()], False)
+
+
+def gather_assertions():
+    """A refused merge must not leave a card lying in the band.
+
+    THE BUG, AT THE TABLE (Jon, 2026-11-12): cycling the hero card in
+    NAP, AoS or the Imposter scenario left blank cards at the bottom
+    edge, one more for every press. showChar files the card that is out
+    and then has deckOut gather it straight back, and deckOut's two
+    gather loops put ONCE and never looked - so a put TTS dropped left
+    the card at OFF, face down and wearing a back.
+
+    REFUSED EVERY TIME, and it has to be every time. At one in two the
+    stub never happens to refuse the single put deckOut makes per press,
+    so the test passes against the old code as well - three mutations
+    proved exactly that. Refusing all of them also drives the deck down
+    to a single card in the bag, which is the stale-handle case moveN
+    has been bitten by twice, so the fix has to answer for that too:
+    one try at a card, eight at a deck, then home to its own bag.
+
+    THE TWO GATHER LOOPS COVER FOR EACH OTHER HERE, which is worth
+    knowing before a green run is read as proof of either. Mutating one
+    call site back to a bare putObject leaves the band clean, because
+    the OTHER loop collects the straggler off the table at the next
+    press; mutating both fails all three assertions below, and dropping
+    putHome(c) from gatherInto fails them too.
+    """
+    for which, setup, deck_name in (("NAP", "setupNAP", "Apprentices"),
+                                    ("AoS", "setupAoS", "Technicians"),
+                                    ("IMP", "setupImposter",
+                                     "Imposters (A / B)")):
+        w, g = start("Standard", 0, Panel())
+        {"NAP": g.setupNAP, "AoS": g.setupAoS,
+         "IMP": g.setupImposter}[which]()
+        drain(w)
+        base = sorted(o.name for o in w.table.values())
+        one = str(g.CARD_NAME[deck_name]) if g.CARD_NAME[deck_name] \
+            else deck_name
+        n = len(list(g.CHAR_LIST[which].values()))
+        # EVERY container put refused, for the whole cycle.
+        w.lossy_decks = 1
+        for _ in range(n + 2):
+            g.btnChar()
+            drain(w)
+        w.lossy_decks = 0
+        drain(w)
+        offz = float(g.OFF_Z)
+        band = sorted(o.name for o in w.table.values()
+                      if abs(o.pos[2] - offz) < 3.0)
+        want("%s leaves nothing in the staging band when a merge is"
+             " refused" % which, band, [])
+        # AND THE CARDS ARE STILL ALL THERE. A fix that swept the band by
+        # deleting what it found would pass the one above. Note that it is
+        # the DECK that cannot be rebuilt while every put is refused, so
+        # the cards are counted wherever they are - on the table or in
+        # their bag - rather than expected back in one stack.
+        box = {"NAP": "NAP", "AoS": "AoS", "IMP": "NRJ"}[which]
+        want("...and %s still has every character card" % which,
+             out(w, deck_name) + inbag(w, box, one, deck_name),
+             {"NAP": 3, "AoS": 3, "IMP": 5}[which])
+        # ...AND NOTHING LANDED SOMEWHERE NEW. Every object out is one
+        # the setup had out or a character card; the band check above
+        # only looks at one strip of felt.
+        extra = sorted(o.name for o in w.table.values()
+                       if o.name not in base
+                       and not of_family(o.name, one)
+                       and o.name != deck_name)
+        want("...and %s leaves nothing else lying about" % which,
+             extra, [])
+
+
 def main():
     layout_assertions()
     panel_assertions()
@@ -3294,6 +3477,8 @@ def main():
     covered_assertions()
     rules_assertions()
     panel_game_assertions()
+    gather_assertions()
+    carry_assertions()
     for lvl in ("Easy", "Standard", "Hard", "Nobulous"):
         spec, sb = BAT_SPECIMENS[lvl], NAP_SETBACKS[lvl]
         for tier in (0, 1, 2, 3):

@@ -54,8 +54,9 @@ LEVELS = { 'Easy', 'Standard', 'Hard', 'Nobulous' }
 BAT_DIFF = { Easy = {5, 9, 0}, Standard = {6, 10, 0}, Hard = {7, 12, 0}, Nobulous = {8, 14, 0} }
 -- NAP: the Credit goal, and how many Setbacks are in the Assignment deck.
 -- (Credit goal, Setbacks shuffled in).  Stepped one Credit down and one
--- Setback up 2026-11-12: 58.2 / 49.3 / 36.9 / 26.3 solo, six Apprentices,
--- against BAT's pegged 63.7 / 52.8 / 37.8 / 25.8.  EVERY RUNG CARRIES AT
+-- Setback up 2026-11-12: 58.1 / 49.0 / 37.0 / 26.3 solo, six Apprentices,
+-- 20,000 games a cell, against BAT's pegged 63.7 / 52.8 / 37.8 / 25.8.
+-- EVERY RUNG CARRIES AT
 -- LEAST ONE SETBACK, which is what keeps Tier I's one-for-one swap from
 -- simply adding three cards to a rung that had none - see LEVELS in
 -- simulation/nap.py for the measurement and for what Standard pays for it.
@@ -705,15 +706,26 @@ DROP_Y = 1.6
 -- What the three on-card calls pass, so a call site says which it
 -- means instead of ending in a bare true.
 ONTO = true
+-- How far above the card a die is let go - see dropOnto.
+ONTO_LIFT = 0.5
 
 -- SO ASK THE TABLE RATHER THAN WORKING IT OUT. How thick a card is,
 -- how thick the overlay is and where the felt's surface really sits
 -- are Unity's numbers, not this script's, and every attempt to derive
 -- them here would be a guess that goes stale the day a scale changes.
 -- getBounds is a world-space box: this finds the tallest thing already
--- standing at the destination and puts the die on top of it, by 0.05 -
--- near enough to no fall at all, so the die cannot bounce off a corner
--- it was placed on.
+-- standing at the destination and puts the die on top of it.
+--
+-- BY ONTO_LIFT, NOT BY 0.05. A hair of clearance was chosen so the die
+-- could not bounce off a corner it was placed on, and that is the bug
+-- it left: the Rat it stands on was DEALT, from y = 3 by column(), and
+-- is still settling five steps later. A die let go 0.05 above where
+-- that card was measured is INSIDE it by the time it arrives, and
+-- which way Unity pushes the pair apart is not ours to choose - so the
+-- Red die went under its Rat again (Jon, 2026-11-12) after the
+-- measurement itself had been fixed. A real drop cannot lose, and
+-- 0.5 over the middle of a card is not a corner to bounce off: the two
+-- BAT markers are inset BAT_MARK_IN = 1.25 from the edges.
 --
 -- IT NEVER GOES LOWER THAN DROP_Y, so a destination with nothing at it
 -- behaves exactly as it did before.
@@ -736,7 +748,32 @@ function dropOnto(o, x, z)
     end
   end
   if not top then return DROP_Y end
-  return math.max(DROP_Y, top + half + 0.05)
+  return math.max(DROP_Y, top + half + ONTO_LIFT)
+end
+
+-- AND A DIE THAT LOST THE RACE ANYWAY IS PUT BACK ON TOP.
+--
+-- The drop above clears a card that is lying still. A card that is
+-- still settling can come to rest OVER the die regardless, and the die
+-- is then under it with nothing on the table to say so - which is how
+-- this was reported twice, once for the Health die under the Buff card
+-- and once for the Red die under its Rat.
+--
+-- ASKED AFTER EVERYTHING HAS LANDED, so the measurement is of a table
+-- at rest. The predicate is not "is the die high enough" - a die
+-- resting ON the card sits ONTO_LIFT lower than dropOnto would place
+-- it, and lifting that one would leave it hanging in the air. It is
+-- "is the die lower than it would be if it were sitting on the card",
+-- which only a die inside or under the card can be.
+function liftIfUnder(o, x, z)
+  if not o then return false end
+  local y = dropOnto(o, x, z)
+  if y <= DROP_Y then return false end
+  local ok, p = pcall(function() return o.getPosition() end)
+  if not ok or not p then return false end
+  if p.y >= y - ONTO_LIFT - 0.02 then return false end
+  o.setPosition({x, y, z})
+  return true
 end
 
 -- THE SAME MOVE, GIVEN THE OBJECT. BAT's dice rows cannot go through
@@ -772,6 +809,10 @@ function moveMarker(o, x, z, value, face, onto)
         local r = o.getRotation()
         o.setRotation({r.x, face[1], face[2]})
       end
+      -- AND LAST OF ALL, THE ONE THAT CANNOT BE GOT RIGHT IN ADVANCE.
+      -- Everything at the destination has stopped moving by now, so
+      -- this is the first moment the question can be answered.
+      if onto then liftIfUnder(o, x, z) end
     end, 30)
   end, 2)
   return o
@@ -1018,6 +1059,59 @@ function nameIt(obj)
   if lab and lab ~= '' then obj.setName(lab) end
 end
 
+-- A MERGE CAN BE REFUSED, EXACTLY AS A BAG PUT CAN.
+--
+-- TTS drops objects fed to a container faster than it can animate
+-- them. putHome retries by GUID for that reason and packUp sweeps
+-- repeatedly for the same one - but deckOut's two gather loops put
+-- ONCE and never looked, and a refused card is left lying where
+-- takeObject dropped it, which is OFF: the staging band at dead
+-- centre of the bottom edge, face down and wearing a back.
+--
+-- ONE PER PRESS OF THE CHARACTER BUTTON (Jon, 2026-11-12), in NAP, AoS
+-- and the Imposter scenario and in no other game - because those three
+-- are the ones with a character to cycle, and showChar files the card
+-- that is out and then has deckOut gather it straight back. Press it
+-- six times and six blank cards are stacked in the band.
+--
+-- SO ASK THE DECK WHETHER IT TOOK THE CARD, AND PUT IT AGAIN IF NOT.
+-- Counting the deck is the test, not scanning the table: a card is on
+-- the table for a frame or two after a put that DID take, and a card
+-- in transit to OFF is on the table legitimately. The first version of
+-- this retried from a Wait a few frames later and compared positions,
+-- and it filed away cards AoS had put at OFF on purpose - every setup
+-- after the first dealt a different deck.
+--
+-- AND HOME AFTER EIGHT. A container that goes on refusing is not going
+-- to start; a card in its own bag is gathered by the next deckOut, and
+-- a card in the band is the blank one at the bottom edge.
+function stillOut(gid)
+  for _, o in ipairs(getAllObjects()) do
+    if o.getGUID() == gid then return true end
+  end
+  return false
+end
+
+function gatherInto(d, c)
+  if not d or not c then return end
+  local cid = c.getGUID()
+  -- ONE ATTEMPT WHEN d IS A SINGLE CARD, eight when it is a deck.
+  -- putObject on a CARD destroys the card and builds a deck, so the
+  -- handle we hold is a corpse and count() reads the corpse - and
+  -- eight puts at a corpse is eight red lines in the chat. One try
+  -- and then the bag is the honest answer there.
+  local tries = (count(d) > 1) and 8 or 1
+  for _ = 1, tries do
+    local before = count(d)
+    d.putObject(c)
+    -- IT TOOK if the deck grew, or if the card is no longer out at
+    -- all - the second is what answers for the corpse, and for the
+    -- frame or two a card lingers after a put that did take.
+    if count(d) > before or not stillOut(cid) then return end
+  end
+  putHome(c)
+end
+
 function putHome(obj, tries)
   if not obj then return end
   local b = boxFor(obj)
@@ -1098,7 +1192,7 @@ function deckOut(label, pos, rot)
       for _, gid in ipairs(want) do
         local c = box.takeObject({guid = gid, position = OFF, smooth = false})
         if c then
-          if d then d.putObject(c) else d = c end
+          if d then gatherInto(d, c) else d = c end
         end
       end
     end
@@ -1117,7 +1211,7 @@ function deckOut(label, pos, rot)
     if isCardOf(o.getName(), one)
         and (d == nil or o.getGUID() ~= d.getGUID()) then
       o.setLock(false)
-      if d then d.putObject(o) else d = o end
+      if d then gatherInto(d, o) else d = o end
     end
   end
   if not d then
@@ -2808,6 +2902,11 @@ function settle()
     local o = getObjectFromGUID(g)
     if o then table.insert(t, o) end
   end
+  -- AND THE CARRY-FORWARD BAG, which is not one of BOX on purpose - see
+  -- carry_box() in build_mod.py. It still has to find the rail, or it
+  -- hangs above it while the other four settle.
+  local carry = CARRY and getObjectFromGUID(CARRY)
+  if carry then table.insert(t, carry) end
   -- THE RULEBOOK IS NOT SETTLED. It sits where Jon put it, in the
   -- corner off the felt, and dropping it to find a resting height
   -- would move it off that spot.
