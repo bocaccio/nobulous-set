@@ -119,6 +119,23 @@ def unit_faces():
             cell[FILL_ORDER[i]] = "hit"
         out[name] = cell
     return out
+
+
+def unit_teeth():
+    """How many teeth each colour's gear carries: its scoring faces.
+
+    THE COMPONENTS ENCODE THE LADDER IN THE GEAR. Counted off the
+    real dice - centred on the ink centroid, because centring on the
+    cell merges peaks on the two whose glyph sits off centre and
+    reads 2/2/4/4/6 - they run yellow 2, green 3, blue 4, purple 5,
+    red 6. That is exactly each die's number of non-blank faces, so
+    a die tells you what it is worth before you roll it.
+
+    Derived from the same FACES table the faces are, so the gear and
+    the faces cannot disagree.
+    """
+    return dict((name, sum(1 for k in cells.values() if k != "blank"))
+                for name, cells in unit_faces().items())
 STAT_BODY = (208, 199, 200)
 #  name        ink             w/CELL h/CELL numeral dy
 STAT = {
@@ -126,12 +143,18 @@ STAT = {
     "Strategy": ((47, 107, 168), 0.762, 0.763, 0.330, 0.0),
     "Health": ((168, 51, 44), 0.770, 0.678, 0.300, -0.030),
 }
-TEETH, TIP, DEPTH = 8, 0.28, 0.095
+DEPTH = 0.095
+# The tooth the eight-toothed gear drew: 0.28 of a 45 degree pitch,
+# and 0.16 of it per flank. Held in degrees now so every die's teeth
+# are the same size whatever the count.
+TIP_DEG = 0.28 * 45.0
+FLANK_DEG = 0.16 * 45.0
 NUMPAT = r"[-+]?(?:\d*\.\d+|\d+)(?:[eE][-+]?\d+)?"
 
 
 # ------------------------------------------------------------- shapes
-def gear(cx, cy, r_out, r_root, teeth, tip=0.40, root=0.40, arc=9):
+def gear(cx, cy, r_out, r_root, teeth, tip_deg=TIP_DEG,
+         flank_deg=FLANK_DEG, arc=9):
     """A gear outline, built the way a gear is: an arc at each tooth
     tip, an arc at the root between them, straight flanks joining.
 
@@ -139,12 +162,31 @@ def gear(cx, cy, r_out, r_root, teeth, tip=0.40, root=0.40, arc=9):
     drew a splat - teeth of uneven width with ragged edges, from a
     phase test that was wrong in a way only the picture showed. Arcs
     cannot go uneven: every tooth is the same four spans of one pitch.
+
+    THE TOOTH IS AN ABSOLUTE ANGLE, NOT A SHARE OF THE PITCH, because
+    the count now varies from two to six. As a share, a yellow die's
+    two teeth would each be three times the width of a red die's six
+    and the set would not look like one set. The components do the
+    same thing: measured across all five, their tips each span 20.5
+    degrees and their root and tip radii sit within 2px of each
+    other, so only the COUNT changes. These are narrower and deeper
+    than theirs, which is the gear that was picked.
     """
     pitch = 2 * math.pi / teeth
-    flank = (1.0 - tip - root) / 2.0
+    tip = math.radians(tip_deg) / pitch
+    flank = math.radians(flank_deg) / pitch
+    if tip + 2 * flank >= 1.0:
+        raise SystemExit("%d teeth will not fit a %.1f degree tip"
+                         % (teeth, tip_deg))
+    root = 1.0 - tip - 2 * flank
+    # A TOOTH AT TWELVE O'CLOCK. The teeth used to start at the
+    # positive x axis, which is three o'clock, and with only two of
+    # them a yellow die came out 524 wide by 390 tall - a gear lying
+    # on its side. Starting at the top keeps every count looking
+    # deliberate and upright.
     pts = []
     for i in range(teeth):
-        c = i * pitch
+        c = i * pitch - math.pi / 2.0
         a0, a1 = c - tip * pitch / 2.0, c + tip * pitch / 2.0
         for k in range(arc + 1):
             a = a0 + (a1 - a0) * k / arc
@@ -304,7 +346,7 @@ def fit(pts, cx, cy, w, h):
 
 
 # --------------------------------------------------------- the faces
-def unit_face(u, bg, kind):
+def unit_face(u, bg, kind, teeth):
     """One unit-die face.
 
     A hit is a gear with an open bore; a crit fills that bore and
@@ -326,9 +368,13 @@ def unit_face(u, bg, kind):
     r_out = n * 0.383
     r_root = r_out - n * DEPTH
     r_in = r_root - n * 0.085
-    d.polygon(gear(c, c, r_out, r_root, TEETH, tip=TIP), fill=INK)
+    d.polygon(gear(c, c, r_out, r_root, teeth), fill=INK)
     if kind == "crit":
-        r = r_in * 0.74
+        # 0.92 OF THE BORE, not 0.74. Small, the ring read as a dot
+        # with a halo and sat too close to the hit face's open bore;
+        # out near the edge it leaves a clean white rim and the two
+        # faces cannot be confused across a table.
+        r = r_in * 0.92
         d.ellipse([c - r, c - r, c + r, c + r], outline=bg,
                   width=int(n * 0.030))
     else:
@@ -370,10 +416,11 @@ def sheet(name):
         return im
     bg = dict(UNIT)[name]
     kinds = unit_faces()[name]
+    teeth = unit_teeth()[name]
     im = Image.new("RGB", (SIDE, SIDE), bg)
     for r in range(2):
         for c in range(3):
-            im.paste(unit_face(CELL, bg, kinds[(c, r)]),
+            im.paste(unit_face(CELL, bg, kinds[(c, r)], teeth),
                      (int(CX[c] - CELL / 2), int(CY[r] - CELL / 2)))
     return im
 
@@ -423,9 +470,10 @@ def main():
         tally = ""
         if name in dict(UNIT):
             k = unit_faces()[name]
-            tally = "  %d hit, 1 crit, %d blank" % (
+            tally = "  %d hit, 1 crit, %d blank, %d teeth" % (
                 sum(1 for v in k.values() if v == "hit"),
-                sum(1 for v in k.values() if v == "blank"))
+                sum(1 for v in k.values() if v == "blank"),
+                unit_teeth()[name])
         print("  %-28s glyph %dw x %dh%s" % (out, gw, gh, tally))
     print("%d dice written to images/" % len(names))
 

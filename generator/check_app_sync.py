@@ -20,6 +20,7 @@ import ast
 import hashlib
 import io
 import json
+import math
 import os
 import re
 import sys
@@ -3188,6 +3189,80 @@ for _c in sorted(_faces):
         _face_bad.append((_c, _drawn, sorted(_faces[_c])))
 check("every die is drawn with the faces simulation/dice.py rolls",
       not _face_bad, "drawn vs table: %r" % (_face_bad,))
+
+
+# AND THE GEAR COUNTS THEM TOO.
+#
+# The components encode the ladder in the teeth: counted off the real
+# dice, yellow has 2, green 3, blue 4, purple 5, red 6 - each one its
+# number of non-blank faces, so a die says what it is worth before it
+# is rolled. Ours do the same, from the same FACES table, which means
+# a die now carries the claim twice and the two must agree.
+#
+# COUNTED OFF THE DRAWING, not off the constant that drew it. The
+# radial profile has to be centred on the INK, not on the cell: two
+# of the real dice have a glyph a few pixels off centre, and centring
+# on the cell adds a one-cycle wobble that merges peaks and reads
+# 2/2/4/4/6 instead of 2/3/4/5/6.
+
+
+def _tooth_count(path, cell_col=0, cell_row=0):
+    from PIL import Image
+    im = Image.open(path).convert("RGB")
+    side = im.size[0]
+    cell = side / 3.0
+    box = (int(cell * (cell_col + 0.5) - cell / 2),
+           int(cell * (cell_row + 1.5) - cell / 2),
+           int(cell * (cell_col + 0.5) + cell / 2),
+           int(cell * (cell_row + 1.5) + cell / 2))
+    f = im.crop(box)
+    w, h = f.size
+    px = f.load()
+    bg = px[3, 3]
+
+    def ink(x, y):
+        p = px[int(x), int(y)]
+        return (abs(p[0] - bg[0]) + abs(p[1] - bg[1])
+                + abs(p[2] - bg[2]) > 60)
+
+    sx = sy = n = 0
+    for y in range(0, h, 3):
+        for x in range(0, w, 3):
+            if ink(x, y):
+                sx += x
+                sy += y
+                n += 1
+    if not n:
+        return 0
+    cx, cy = sx / float(n), sy / float(n)
+    prof = []
+    for d in range(360):
+        t = math.radians(d)
+        got = 0
+        for rr in range(int(w * 0.49), 10, -2):
+            x, y = cx + rr * math.sin(t), cy - rr * math.cos(t)
+            if 0 <= x < w and 0 <= y < h and ink(x, y):
+                got = rr
+                break
+        prof.append(got)
+    sm = [sum(prof[(i + k) % 360] for k in (-1, 0, 1)) / 3.0
+          for i in range(360)]
+    mean = sum(sm) / 360.0
+    return sum(1 for i in range(360) if sm[i] > mean and sm[i - 1] <= mean)
+
+
+_teeth_bad = []
+for _c in sorted(_faces):
+    _png = [f for f in os.listdir(os.path.join(ROOT, "images"))
+            if f.startswith("Die_%s_" % _c.capitalize())]
+    if not _png:
+        continue
+    _want = sum(1 for v in _faces[_c] if v)
+    _got = _tooth_count(os.path.join(ROOT, "images", _png[0]))
+    if _got != _want:
+        _teeth_bad.append((_c, _got, _want))
+check("each gear has one tooth per scoring face",
+      not _teeth_bad, "drawn vs table: %r" % (_teeth_bad,))
 
 
 # THE COLOUR WHEEL IS HELD TO CHIP_SEGMENT, the way the dial is held
