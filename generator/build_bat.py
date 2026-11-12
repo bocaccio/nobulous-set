@@ -185,9 +185,21 @@ print("Rats", render_duplex('BAT_Rats', sides_a, sides_b, 'BAT', LANDSCAPE), 'tw
 CARD_SIZE = PORTRAIT
 
 
-# ---- Buff HP dial: 1-4 on one face, 5-8 on the other -----------------------
-# ---- Buff HP: a 15-space track. Put the Health die on the difficulty's number
-#      and step it down one space per point of damage.
+# ---- Buff HP: a 15-space track, and the OUTER LAYER of the Tyrant.
+#      Put the Health die on its value and step it down one space per point
+#      of damage.
+#
+#      THE TYRANT HAS TWO SEPARATE QUANTITIES, not one that gets divided:
+#      an outer defensive layer and a core Health, with the five Splices
+#      between them. Damage runs outer layer, Splices, core. Jon's framing,
+#      2026-11-12, and it replaces two earlier descriptions that were both
+#      wrong in the same way - the card said "hold part of the Tyrant's
+#      Health here" and the rulebook set the dial to "Tyrant Health less
+#      whatever is on the Buff track", so both read the layer as a slice of
+#      one omnibus total. It is not: you must get past the layer AND every
+#      Splice to reach the core at all.
+#
+#      The card prints no value, because the difficulty table owns it.
 BUFF_GREEN = '#2c5f4a'
 # A die is placed on the track, so the spaces are square and as large as the
 # card allows: 5 rows of 3 at 11mm leaves just enough room once the heading
@@ -205,9 +217,9 @@ TRACK_CSS = ('.trk{display:flex;flex-direction:column;gap:.6mm;margin-top:1mm}'
 
 
 def track():
-    # No gold spaces any more: difficulty is Tyrant Health, read off the dial.
-    # The card is optional, for players who would rather push a die along a
-    # track than read a dial, and any space is a legal start.
+    # No gold spaces: the difficulty table names the outer layer's value, so
+    # nothing on the card can mark one space as the start without going stale
+    # the moment that table moves.
     marks = set()
     cells = ['<div class="sp%s">%d</div>' % (' mark' if v in marks else '', v)
              for v in range(15, 0, -1)]
@@ -216,10 +228,20 @@ def track():
     return '<div class="trk">%s</div>' % ''.join(rows)
 
 
-buff = [C('Buff HP', 'Tyrant · remove before Health',
-          '<div class="bufftip">Optional. Hold part of the Tyrant’s Health here: '
-          'put the die on that many and spend it before the dial.</div>' + track(),
-          'Removed before the Tyrant’s Health can be damaged.',
+buff = [C('Buff HP', 'Tyrant · outer layer',
+          # KEEP THIS THE DEPTH IT IS: THREE LINES, so about 105 to 125
+          # characters at 6.2pt. The tip sits above the grid, so a line
+          # more or less moves the fifteen spaces and the Lua's snap
+          # points no longer line up with them - BUFF_GRID_DZ is one
+          # pitch below the card's centre and check_app_sync measures the
+          # rendered card against it. A two-line tip raised the grid by
+          # 0.234 units, which is exactly one line of this text, and a
+          # six-line one pushed it off the bottom.
+          '<div class="bufftip">The Tyrant’s outer layer: strip it before '
+          'any Splice can be damaged. Put the die on its value and step it '
+          'down.</div>'
+          + track(),
+          'Damage reaches no Splice until this layer is gone.',
           acc=BUFF_GREEN)]
 print("Buff HP track", render_deck('BAT_BuffHP', buff, 'BAT', PORTRAIT, TRACK_CSS, back='CardBack_BAT_BuffHP'))
 

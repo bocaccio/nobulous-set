@@ -1343,3 +1343,72 @@ Phase against the components. Mutated - the book put back to Strategy
 with the mod left on Recovery - both fail and name both sides. That
 pair was written on 2026-11-10 for the previous wrong answer and is the
 reason this one took one edit to the book and not a search.
+
+
+2026-11-12  THE TYRANT IS AN OUTER LAYER, FIVE SPLICES AND A CORE
+Jon's framing, and it replaces two descriptions of Buff HP that were
+both wrong in the same way. The card said "Optional. Hold part of the
+Tyrant's Health here ... spend it before the dial"; the rulebook's
+track ran "the five shuffled Splices, then Health" and never mentioned
+the layer at all. Between them they read the Buff track as a slice of
+one omnibus Health that got spent late. It is not: the Tyrant has an
+outer defensive layer and a core Health, they are independent stats,
+and damage has to get past the layer AND every Splice before the core
+can be touched.
+
+WHAT MOVED. Damage order is layer, Splices, core, said in rules/bat.html
+in the two places that describe the track and on the card itself. The
+difficulty table's second column is now "Core Health" rather than
+"Tyrant Health", because the name mattered: it is not a total. The card
+no longer prints a value, since the layer's size is not the card's to
+own. The mod's battle stands the Health die on the LAYER and sets the
+dial to the CORE; it used to stand the die on the core number with the
+dial reading the same, which printed the Tyrant's Health twice and gave
+it twice what the table says.
+
+THE LAYER IS MODELLED NOW, and it chips. A Splice must be met in one
+blow or it bounces; the layer takes what a blow can give it and stops
+there, and only a blow that finishes it in the same attack reaches a
+Splice. simulation/bat.py's damage_tyrant is the one place that
+decides, and BUFF_LAYER turns it off.
+
+AND IT SHIPS AT 0 ON EVERY RUNG, which is the whole reason this entry
+can exist without a balance pass: 0 reproduces every published figure
+to the decimal (Easy 63.7, Standard 52.8, Hard 37.8, Nobulous 25.8 at
+3000 games, no tier). A layer is a fine-tuning dial the player raises.
+
+BECAUSE A POINT OF LAYER IS EXPENSIVE, and simulation/price_buff.py now
+says how expensive. At 2500 games a cell, no tier:
+
+    core+layer     L0      L1      L2      L3      L4      L6
+    Easy        64.0%   55.5%   48.3%   41.4%   35.4%   28.4%
+    Standard    52.4%   45.7%   38.5%   30.8%   27.4%   20.6%
+    Hard        37.9%   36.0%   26.3%   18.3%   15.4%   10.8%
+    Nobulous    25.8%   21.9%   15.5%   10.0%    7.5%    5.2%
+
+One point costs Standard 6.7 points of win rate and takes it out of the
+49-54% band that CARD_MANIFEST rev 28 deliberately pegged it into, so a
+layer cannot simply be added on top of the core ladder as it stands.
+Measured against spending the same points on core Health instead, a
+point of layer is worth about 1.0 of core at one point and about 1.45 at
+three - the Splices shelter behind the layer at full strength, keeping
+their Values and the dice those Values draw for the whole time it
+stands.
+
+MOVING ONE POINT FROM CORE TO LAYER holds the ladder and gives the
+Tyrant a real layer, measured directly rather than composed:
+
+    Easy      8+1  59.8%   (9+0 was 64.0%)
+    Standard  9+1  50.3%   (10+0 was 52.4%)
+    Hard     11+1  38.3%   (12+0 was 37.9%)
+    Nobulous 13+1  26.3%   (14+0 was 25.8%)
+
+Three of the four rungs hold within half a point and Easy comes down
+four, from well above the band. That is the pair set to reach for if the
+layer should be part of the Tyrant at every difficulty rather than a
+dial; it is not applied here, because it is a difficulty decision.
+
+STILL TO DO IF THE NUMBERS GO NON-ZERO: playtest/dist/bat.js has no
+layer. At 0 it is correct by construction, which is why nothing fails
+today, but the lab would need the same damage order before any rung
+ships a layer.

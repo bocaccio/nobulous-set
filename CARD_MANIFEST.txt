@@ -399,13 +399,31 @@ CARD BACKS
   NOBULOUS RESEARCH JOURNAL.
 
 BUFF HP AND DIFFICULTY
-  Difficulty is one number, used twice: that many Specimens in the Upgrade deck
-  and that much Buff HP on the Tyrant.  Easy 4, Standard 5, Hard 6, Brutal 7,
-  Nobulous 8, for 70 / 63 / 56 / 49 / 42 percent.
-  Buff HP sits at the FRONT of the Tyrant's damage row, ahead of its Splices.
-  BAT_BuffHP is a single one-sided track card with 12 spaces, gold at 4-8.  Put
-  the Health die on the difficulty number when the battle starts; it steps one
-  space per point of damage, then walks down the Splice row and onto Health.
+  Superseded 2026-11-12; kept because the percentages were measured.  It read:
+    "Difficulty is one number, used twice: that many Specimens in the Upgrade
+    deck and that much Buff HP on the Tyrant.  Easy 4, Standard 5, Hard 6,
+    Brutal 7, Nobulous 8, for 70 / 63 / 56 / 49 / 42 percent.  Buff HP sits at
+    the FRONT of the Tyrant's damage row, ahead of its Splices.  BAT_BuffHP is
+    a single one-sided track card with 12 spaces, gold at 4-8."
+
+THE TYRANT, CURRENT
+  Three things, in the order damage chews through them: an OUTER LAYER, the
+  five SPLICES, and a CORE HEALTH.  The core cannot be touched until the layer
+  and every Splice are gone.  The layer and the core are independent stats and
+  neither is a slice of the other; rules/bat.html is the owner.
+  Difficulty sets Specimens and core Health - Easy 5/9, Standard 6/10, Hard
+  7/12, Nobulous 8/14, for 63.7 / 52.8 / 37.8 / 25.8 percent at 3000 games,
+  no tier.  Standard is inside the 20 Strong community band on purpose.
+  The OUTER LAYER IS 0 AT EVERY RUNG and is a fine-tuning dial the player
+  raises; one point of it costs the Rats 4 to 8 points of win rate, so it is
+  not a number to set casually.  simulation/price_buff.py prints the price
+  list, and simulation/bat.py's damage_tyrant is the only place that decides
+  the order.
+  BAT_BuffHP is a single one-sided 15-space track card with no gold spaces -
+  the difficulty table owns the value, so nothing on the card can mark a
+  starting space without going stale.  The layer CHIPS: a blow takes what it
+  can and stops, and only a blow that finishes the layer in the same attack
+  reaches a Splice.  A Splice never chips.
 
 DICE
   Use the 20 Strong Dice and Chip saved object: 4 Purple, 4 Blue, 4 Green,

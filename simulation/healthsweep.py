@@ -41,7 +41,10 @@ def main(games=4000):
     for name in ("Easy", "Standard", "Hard", "Nobulous"):
         row = []
         for hp in TRACK:
-            bat.DIFFICULTY[name] = (SPEC[name], hp)
+            # The third field is the Tyrant's outer layer, which this sweep
+            # holds at 0: it is sweeping CORE Health, and a layer in front
+            # of it would price the two together. See price_buff.py.
+            bat.DIFFICULTY[name] = (SPEC[name], hp, 0)
             row.append(100 * bat.run(name, games, card_effects=True,
                                      sides="random"))
         rows[name] = row

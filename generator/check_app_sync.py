@@ -1363,12 +1363,64 @@ check("rules/bat.html: Splice met in one attack",
       "one attack" in hb.lower())
 check("rules/bat.html: no commit cap left",
       "up to 6 dice" not in hb.lower())
-# Buff HP is no longer the difficulty dial, but the card survives in the PnP
-# as an optional tracker - so the test is that it is marked optional, not
-# that the words are absent.
-check("rules/bat.html: Buff HP demoted to an optional tracker",
-      "Buff HP" in hb and "optional" in hb.lower()
-      and "Tyrant Health" in hb)
+# BUFF HP IS THE TYRANT'S OUTER LAYER, and the book has to say the ORDER.
+#
+# It said "optional, hold part of the Health on it and spend that first",
+# which with a track of Splices THEN Health put the layer last but one - and
+# the layer's whole purpose is that the Splices shelter behind it. Jon's
+# framing, 2026-11-12: an outer layer and a core Health are two independent
+# stats, and damage has to get past the layer AND every Splice to reach the
+# core. Three things have to hold together, so three things are checked.
+check("rules/bat.html: Buff HP is the Tyrant's outer layer",
+      "outer layer" in hb.lower() and "core Health" in hb
+      and "Buff HP" in hb
+      # ...and the superseded framing is gone, both halves of it.
+      and "part of the Health" not in hb
+      and "Tyrant Health</th>" not in hb)
+# AND THE ORDER IS PRINTED, in the sentence that lists the track. Read out of
+# the sentence rather than matched as a phrase, so saying it differently
+# still passes and saying it backwards does not.
+# BY POSITION IN THE SENTENCE, NOT BY MEMBERSHIP. The first version of
+# this read `[w for w in ("outer layer", "Splices", "core Health") if w in
+# sentence]`, which sorts by the TUPLE's order and not the text's - so it
+# passed with the sentence printed backwards. Mutation-tested both ways now.
+_track = re.search(r"The <b>Tyrant track</b> runs(.{0,200}?)&mdash;", hb, re.S)
+_where = [(_track.group(1).find(w), w)
+          for w in ("outer layer", "Splices", "core Health")] if _track else []
+check("...and prints the damage order: layer, Splices, core",
+      bool(_where) and all(i >= 0 for i, _w in _where)
+      and [w for _i, w in sorted(_where)]
+      == ["outer layer", "Splices", "core Health"],
+      "found %r in %r" % (sorted(_where), _track and _track.group(1)[:70]))
+# AND THE MODEL RUNS THAT ORDER. The book could say it while damage_tyrant
+# went straight to the Splices; this is the call site, not a table entry.
+
+
+def _method(rel, name):
+    """One method's source, from its def to the next def at that indent.
+
+    A CALL SITE, NOT A TABLE ENTRY. AGENTS.md is explicit about this trap:
+    three coverage claims have passed while the card did nothing because the
+    predicate counted entries in a table. A layer value in DIFFICULTY proves
+    nothing about whether damage ever touches it, so the claim below is
+    about the inside of the function that would have to.
+    """
+    src = text(rel)
+    m = re.search(r"^(\s*)def %s\(" % re.escape(name), src, re.M)
+    if not m:
+        return ""
+    indent = m.group(1)
+    rest = src[m.end():]
+    nxt = re.search(r"^%sdef " % re.escape(indent), rest, re.M)
+    return rest[:nxt.start()] if nxt else rest
+
+
+_dmg = _method("simulation/bat.py", "damage_tyrant")
+check("...and simulation/bat.py damages the layer before any Splice",
+      "self.buff -= take" in _dmg
+      and "if self.buff > 0 or dmg <= 0:" in _dmg
+      and _dmg.index("self.buff") < _dmg.index("for s in self.track()"),
+      "damage_tyrant does not strip the layer before the Splices")
 
 print()
 print("NRJ - the five Imposters")
@@ -2439,6 +2491,15 @@ check("tts/lua.lua offers all four difficulties",
 check("tts/lua.lua BAT_DIFF matches bat.DIFFICULTY",
       _lua_rows("BAT_DIFF", _lvl) == dict(
           (k, tuple(v)) for k, v in sb_["DIFFICULTY"].items()))
+# ...AND THE OUTER LAYER SHIPS AT 0 ON EVERY RUNG, which is what makes the
+# layer a mechanism rather than a difficulty change. One point of it costs
+# the Rats 4 to 8 points of win rate - simulation/price_buff.py, measured
+# 2026-11-12 - and the core ladder is pegged to the 20 Strong community band
+# at Standard, so a non-zero value here has to be a decision somebody made
+# and not a number a test left behind.
+_lay = dict((k, v[2]) for k, v in sb_["DIFFICULTY"].items())
+check("...and the Tyrant's outer layer is 0 on every rung",
+      set(_lay.values()) == {0}, "%r" % (_lay,))
 check("tts/lua.lua NAP_DIFF matches nap.LEVELS",
       _lua_rows("NAP_DIFF", _lvl) == dict(
           (k, tuple(v)) for k, v in sn["LEVELS"].items()))
@@ -3808,7 +3869,8 @@ check("...and every game that has a character places all three of them",
       _mark_die in _mk
       and _mk == {"Health": 5, "Strategy": 4, "Recovery": 4}
       and "setMarker('Health', BAT_STAT_X, BAT_STAT_Z[1])" in _lua
-      and "if bx then setMarker('Health', bx, bz, 1, nil, ONTO) end" in _lua
+      and ("if layer > 0 and bx then"
+           " setMarker('Health', bx, bz, 1, nil, ONTO) end") in _lua
       and "setMarker('Strategy', BAT_STAT_X, BAT_STAT_Z[2])" in _lua
       and "BAT_STAT_X = BAT_EXHAUST_X0 -" in _lua
       and "EXHAUST_Z[1]" in _lua

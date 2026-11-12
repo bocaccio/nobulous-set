@@ -1942,18 +1942,44 @@ def on_card_assertions():
     # Buff HP track's printed grid. This is the one Jon saw first: the
     # card was being locked while still in the air and the die went
     # under it. The lock was fixed; the drop height was not.
-    w, g = start("Standard", 0)
-    g.setupBAT()
-    drain(w)
-    g.btnFinale()
-    drain(w)
-    gl = w.lua.globals()
-    hd = [o for o in w.markers.values() if o.name == "Health"][0]
+    #
+    # AND THE DIE GOES ON THE LAYER, NOT ON THE CORE HEALTH. It used to
+    # stand on the core number while the dial read the same, which
+    # printed the Tyrant's Health twice. The two are independent stats,
+    # so this needs a difficulty that HAS a layer - every shipping rung
+    # is 0 - and the 0 case is checked underneath it.
+    def battle(layer):
+        w, g = start("Standard", 0)
+        w.lua.execute("BAT_DIFF.Standard[3] = %d" % layer)
+        g.setupBAT()
+        drain(w)
+        g.btnFinale()
+        drain(w)
+        hd = [o for o in w.markers.values() if o.name == "Health"][0]
+        return w, g, hd
+
+    w, g, hd = battle(3)
     under = card_top_under(hd.pos[0], hd.pos[2])
-    want("the battle stands the Health die on the Buff HP card",
+    want("a layer puts the Health die on the Buff HP card",
          under and under[1], "Buff HP Track")
     want("...and lets it go above that card's face",
          bool(under) and hd.pos[1] - w.die_half >= under[0], True)
+    # ON THE LAYER'S OWN SPACE. buffSpace(3) and buffSpace(10) are
+    # different cells, so standing it on the core Health would land it
+    # somewhere else on the same card and still pass the two above.
+    bx, bz = (float(v) for v in g.buffSpace(3))
+    want("...on the space for the LAYER, not for the core Health",
+         (round(hd.pos[0] - bx, 3), round(hd.pos[2] - bz, 3)), (0.0, 0.0))
+
+    # AND AT LAYER 0 THERE IS NOTHING TO STAND ON. The card still comes
+    # out - it is part of the Tyrant's track either way - but a die on
+    # it would be claiming a layer the difficulty does not give.
+    w0, g0, hd0 = battle(0)
+    want("layer 0 leaves the Health die off the Buff card",
+         card_top_under(hd0.pos[0], hd0.pos[2]), None)
+    want("...and the card is still dealt",
+         sorted(o.name for o in w0.table.values()
+                if o.name == "Buff HP Track"), ["Buff HP Track"])
 
     # A DESTINATION WITH NOTHING AT IT BEHAVES AS IT DID. dropOnto
     # never goes below DROP_Y, so an empty patch of felt is still the

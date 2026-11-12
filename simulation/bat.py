@@ -166,16 +166,42 @@ EXPERIMENT_TARGETS = [3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5
 # whole ladder up by roughly 13 points. The dial is exhausted at Nobulous:
 # there are only 8 Specimen cards; the Buff HP track was extended to 15
 # spaces so the bottom two rungs could separate.
-# (Specimens shuffled into the Upgrade deck, the Tyrant's Health).
-# The second number used to be Buff HP on its own card, back when Health was
-# a flat 20 and the chip could not read higher; the Splices carry the fight
-# now, so those points live on the dial and difficulty is one number again.
+# (Specimens shuffled into the Upgrade deck, the Tyrant's CORE Health, its
+# outer layer).
+#
+# THE TYRANT IS AN OUTER LAYER, FIVE SPLICES AND A CORE - three things, and
+# the third number is the first of them. Jon's framing, 2026-11-12: the two
+# health quantities are independent stats rather than one total that gets
+# divided, and damage has to get past the layer AND every Splice before the
+# core can be touched at all. The card and rules/bat.html say the same.
+#
+# THE LAYER IS 0 AT EVERY RUNG UNTIL SOMEONE PICKS THE NUMBERS, and that is
+# deliberate: 0 is exactly today's game, so this commit adds the mechanism
+# without moving a single measured figure. Every point of layer is expensive
+# - see BUFF_PRICE below, measured - and the core numbers here are pegged to
+# the 20 Strong community band (Standard 52.8%), so the four values are a
+# design decision and not a default to be guessed at.
 DIFFICULTY = {
-    "Easy": (5, 9),
-    "Standard": (6, 10),
-    "Hard": (7, 12),
-    "Nobulous": (8, 14),
+    "Easy": (5, 9, 0),
+    "Standard": (6, 10, 0),
+    "Hard": (7, 12, 0),
+    "Nobulous": (8, 14, 0),
 }
+
+# What a point of outer layer costs the Rats, measured on 2026-11-12 at 3000
+# games a cell with every other dial at its shipping value. Run
+# simulation/price_buff.py to reproduce it; quoted here because the four
+# numbers above cannot be chosen responsibly without it.
+#
+# A point of LAYER is worth much more than a point of CORE, which is the
+# whole reason the layer exists: while it stands, the five Splices shelter
+# behind it at full strength, so the Tyrant keeps its largest Splice Value
+# and the dice that Value draws for the entire time you spend stripping it.
+BUFF_PRICE = {}
+
+# Set False to reproduce a figure measured before the layer existed even with
+# a non-zero layer in DIFFICULTY above.
+BUFF_LAYER = True
 
 TYRANT_NEED = [("purple", 2), ("blue", 2), ("green", 1), ("yellow", 1)]
 
@@ -881,7 +907,10 @@ class Game(object):
                  color_rule="attack_only", commit_policy="threshold",
                  sides=None):
         self.rng = rng or random.Random()
-        self.specimens, self.start_health = DIFFICULTY[difficulty]
+        self.specimens, self.start_health, self.start_buff = \
+            DIFFICULTY[difficulty]
+        if not BUFF_LAYER:
+            self.start_buff = 0
         self.tier = tier
         # The printed tap effects on Upgrades and Specimens: the Tyrant's
         # frontmost Splice firing free on every attack, and the Rats tapping
@@ -1020,6 +1049,7 @@ class Game(object):
         self.last_destroyed = ()
         self.attack_color = None
         self.health = self.start_health
+        self.buff = self.start_buff
         self.experiments = 0
         self.last_active = None
         self.tyrant_dice = []
@@ -1753,8 +1783,23 @@ class Game(object):
         This is the rule a Rat's Upgrades already used, applied to the
         Tyrant: no card is ever left part-damaged. Overflow from a broken
         Splice carries on and may break the next one too; whatever survives
-        all five comes off Health, which is the only thing here that chips.
+        all five comes off the core Health.
+
+        THE OUTER LAYER COMES FIRST AND IT CHIPS. It is not a Splice: the
+        card says to step the die down one space per point of damage, so a
+        blow smaller than what is left takes what it can and stops there
+        rather than bouncing. Only once the layer is gone in the same attack
+        does the remainder reach a Splice - which is the point of it, and
+        why a point of layer is worth more than a point of core: the five
+        Splices keep their full Values, and the dice those Values draw, for
+        the whole time it stands.
         """
+        if self.buff > 0:
+            take = min(self.buff, dmg)
+            self.buff -= take
+            dmg -= take
+            if self.buff > 0 or dmg <= 0:
+                return
         for s in self.track():
             if dmg < s.value:
                 return                      # bounced: the attack is wasted

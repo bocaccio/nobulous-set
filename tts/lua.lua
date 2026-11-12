@@ -46,7 +46,12 @@ STATE = { game = nil, difficulty = 'Standard', tier = 0,
 -- nap.LEVELS, aos.LEVELS and the finale table in rules/nrj.html.
 LEVELS = { 'Easy', 'Standard', 'Hard', 'Nobulous' }
 -- BAT: Specimens shuffled into the Upgrade deck, and the Tyrant's Health.
-BAT_DIFF = { Easy = {5, 9}, Standard = {6, 10}, Hard = {7, 12}, Nobulous = {8, 14} }
+-- Specimens, the Tyrant's CORE Health, its OUTER LAYER. The layer is 0
+-- at every rung: the Tyrant is Splices and a core, and a layer is a
+-- fine-tuning dial the player raises. One point of it costs the Rats
+-- 4 to 8 points of win rate - simulation/price_buff.py - so it is not
+-- a number to set lightly.
+BAT_DIFF = { Easy = {5, 9, 0}, Standard = {6, 10, 0}, Hard = {7, 12, 0}, Nobulous = {8, 14, 0} }
 -- NAP: the Credit goal, and how many Setbacks are in the Assignment deck.
 NAP_DIFF = { Easy = {5, 3}, Standard = {6, 3}, Hard = {7, 4}, Nobulous = {8, 5} }
 -- NAP's second dial, from rules/nap.html: Increase 1-3 shuffles that
@@ -465,7 +470,7 @@ ASSIGN_SLOTS = 4
 --   Final Exams     you reach them; the exam button starts them
 --   Tyrant Attacks  nothing draws one until the Tyrant is awake, which is
 --                   five Splices away
---   Buff HP Track   it holds part of the Tyrant's Health, so the battle
+--   Buff HP Track   the front layer of the Tyrant track, so the battle
 --                   deals it and stands the Health die on the
 --                   difficulty's number. rules/bat.html still calls the
 --                   card optional - a player who does not want it can
@@ -1853,7 +1858,8 @@ function setupBAT()
          ' stack on their space -- spread it to read them.') or '') ..
         ' The Tyrant Attacks and the Buff HP card stay in the bag until' ..
         ' the Tyrant wakes; the Buff HP card is optional, and holds part' ..
-        ' of the Health to be spent first.')
+        ' of the Health at the FRONT of the Tyrant track, ahead of the' ..
+        ' Splices, so it has to come off before any of them.')
   end)
   run()
 end
@@ -2418,11 +2424,20 @@ function startBattle()
   end)
   step(function() spliced = shuffleSplices() end)
   step(function()
-    -- THE BUFF HP CARD COMES OUT, with the Health die standing on
-    -- this difficulty's number. It used to stay in the box and the
-    -- briefing called it optional; Jon wants the battle to set it
-    -- up, so the Tyrant's Health is a thing on the table rather
-    -- than a number in a sentence.
+    -- THE BUFF HP CARD COMES OUT, because it is the Tyrant's outer
+    -- layer and the layer is part of the track whether or not this
+    -- difficulty gives it a value. It used to stay in the box and
+    -- the briefing called it optional; Jon wants the battle to set
+    -- it up, so the Tyrant is a thing on the table rather than a
+    -- number in a sentence.
+    --
+    -- THE DIE GOES ON THE LAYER, NOT ON THE CORE HEALTH. It used to
+    -- stand on the core number with the dial reading the same, which
+    -- printed the Tyrant's Health twice and gave it twice as much as
+    -- the table says. The two are independent stats - an outer layer
+    -- and a core, with the five Splices between them - so the die
+    -- shows the layer and the dial shows the core. At layer 0 there
+    -- is nothing to stand on and the die stays where it is.
     --
     -- LOCKED. The card is furniture once it is down - a die is
     -- pushed along it - and a card that slides when you nudge the
@@ -2454,8 +2469,9 @@ function startBattle()
     -- THE DIE LAST, onto a card that has settled and been locked.
     -- Set to 1: the number that counts is the space it stands on,
     -- and a die showing anything else reads as a second number.
-    local bx, bz = buffSpace(hp)
-    if bx then setMarker('Health', bx, bz, 1, nil, ONTO) end
+    local layer = BAT_DIFF[STATE.difficulty][3] or 0
+    local bx, bz = buffSpace(layer)
+    if layer > 0 and bx then setMarker('Health', bx, bz, 1, nil, ONTO) end
   end)
   step(function()
     say('TYRANT BATTLE. Tyrant Health ' .. hp .. ' on the dial. Both' ..
@@ -2473,10 +2489,15 @@ function startBattle()
         ' stay gone and Red is not in the pool. Rat abilities are' ..
         ' silent in the battle. A Splice never chips: meet its printed' ..
         ' Value in ONE attack or the whole attack bounces. Eight rounds' ..
-        ' to break five walls. The Buff HP card is out with the' ..
-        ' Health die on space ' .. hp .. ', and the dial reads' ..
-        ' the same: hold part of the Health on the track and spend' ..
-        ' that before the dial.')
+        ' to break five walls. The dial reads the Tyrant CORE Health,' ..
+        ' ' .. hp .. ', which nothing can touch until the outer layer' ..
+        ' and all five Splices are gone. The Buff HP card is out as' ..
+        ' that outer layer, at ' ..
+        ((BAT_DIFF[STATE.difficulty][3] or 0) > 0
+          and ('' .. BAT_DIFF[STATE.difficulty][3] ..
+               ' -- the Health die is standing on it.')
+          or '0 at this difficulty -- put the Health die on the track' ..
+             ' to give the Tyrant one.'))
   end)
   run()
 end
