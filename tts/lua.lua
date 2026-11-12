@@ -472,6 +472,15 @@ REVEAL_SLOTS = 2
 -- the record of what you finished.
 NAP_DISCARD_X = DECK_X + (REVEAL_SLOTS + 1) * ASSIGN_PITCH
 
+-- "Shuffle the pool and draw 3 Final Exams" (rules/nap.html). They go
+-- on the three spaces this row already has - the two the deck revealed
+-- into and the discard beside them - because the day is over and all
+-- three are empty. The third one IS NAP_DISCARD_X, which is why the
+-- draw is laid out as DECK_X + k * ASSIGN_PITCH rather than from a
+-- list: the spaces are printed on the mat at that pitch and a draw
+-- that does not use it lands between boxes.
+EXAM_DRAW = 3
+
 -- THE APPRENTICE IN THE TOP LEFT CORNER, with its three stat dice in
 -- the band under it. It stood at the head of the right-hand column
 -- over the FINF card; the corner is where the other three games put
@@ -2092,36 +2101,114 @@ function napExamBoxes()
   return out
 end
 
+-- "For each subject independently, randomly add the following number
+-- of Final Exam cards from that subject to the pool" - 1 card at 0-1
+-- Credits in that subject, 2 at 2-3, 3 at 4+. There are only three
+-- exams per subject, so 4+ Credits puts the whole subject in.
+function examPoolSize(credits)
+  if credits >= 4 then return 3 end
+  if credits >= 2 then return 2 end
+  return 1
+end
+
+-- WHICH EXAMS YOU SIT, OUT OF WHAT YOU ACTUALLY STUDIED.
+--
+-- This was the player's job and it is the one piece of NAP setup that
+-- cannot be done by eye: it needs the Credit pile counted by subject,
+-- a per-subject roll against the table above, and then a draw out of
+-- the cards those four rolls produced. Doing it by hand means doing
+-- it after a day that has already gone badly.
+--
+-- A subject you never studied still puts one card in, so it can still
+-- come up; a subject you filled puts all three of its own in. That is
+-- the shape of the thing - a lopsided transcript is not safe, it is
+-- just differently exposed.
+--
+-- It hands back the three nicknames, the pool size and the line that
+-- explains them, because a pool built behind your back is a pool you
+-- cannot check. The say() prints what each subject had and what it
+-- bought.
+function examDraw()
+  local c = marker(CREDIT_PILE)
+  local _, subj = creditTally(c and c.getGUID())
+  local keys, pool, lines = {}, {}, {}
+  for s in pairs(NAP_EXAM) do table.insert(keys, s) end
+  table.sort(keys)
+  for _, s in ipairs(keys) do
+    local have = subj[s] or 0
+    local n = examPoolSize(have)
+    local pick = shuffled(NAP_EXAM[s])
+    for i = 1, math.min(n, #pick) do
+      table.insert(pool, (CARD_NAME['Final Exams'] or 'Final Exam')
+                   .. ' ' .. pick[i])
+    end
+    table.insert(lines, (NAP_SUBJECT[s] or s) .. ' ' .. have .. '->' .. n)
+  end
+  local draw = {}
+  for i, nm in ipairs(shuffled(pool)) do
+    if i <= EXAM_DRAW then draw[nm] = true end
+  end
+  return draw, pool, table.concat(lines, ', ')
+end
+
 function startExam()
   local goal = NAP_DIFF[STATE.difficulty][1]
+  local exams, pool, line = nil, 0, ''
   step(function() clearBoxes(napExamBoxes()) end)
   step(function()
-    -- ONE FACE-UP STACK, on the space the Assignment deck has just
-    -- left. Twelve landscape cards laid out is wider than the felt and
-    -- the pool you build from them is three, so this is the same call
-    -- Jon made for the Research Notes: a stack you spread to read.
-    -- The three spaces beside it are where the three you draw go -
-    -- they are the deck's own reveal spaces, which the day has
-    -- finished with.
-    if not deckOut('Final Exams', {DECK_X, 3, ROW_CHAR}, FACEUP) then
+    local draw, cards
+    draw, cards, line = examDraw()
+    pool = #cards
+    exams = deckOut('Final Exams', OFF, FACEDOWN)
+    if not exams then
       say('No Final Exams in the NAP box.')
+      return
     end
+    -- THE DRAW IS WHAT IS LEFT IN THE DECK. Everything outside it goes
+    -- home, which is nine cards however the pool came out, and leaves
+    -- exactly EXAM_DRAW standing. Nothing is cut to one card on the
+    -- way: the shortest this gets is four down to three.
+    --
+    -- The names are read off first and dropped afterwards, because
+    -- dropCard takes a card OUT of the deck and getObjects() is a
+    -- snapshot of what was in it.
+    local gone = {}
+    for _, e in ipairs(exams.getObjects()) do
+      if not draw[e.nickname] then table.insert(gone, e.nickname) end
+    end
+    for _, nm in ipairs(gone) do dropCard(exams, nm) end
+  end)
+  step(function()
+    if not exams then return end
+    -- FROM THE LAST SPACE BACK TO THE SECOND, which leaves the deck's
+    -- own final card standing on the first - the shape column() uses,
+    -- and snapFirst is here for the same reason it is there: taking
+    -- the second-to-last card destroys the deck and TTS respawns the
+    -- last one near where the deck was rather than on it.
+    exams.shuffle()
+    local x1 = DECK_X + ASSIGN_PITCH
+    exams.setPosition({x1, 3, ROW_CHAR})
+    exams.setRotation(FACEUP)
+    for k = EXAM_DRAW, 2, -1 do
+      exams.takeObject({position = {DECK_X + k * ASSIGN_PITCH, 3, ROW_CHAR},
+                        rotation = FACEUP, smooth = false})
+    end
+    snapFirst(CARD_NAME['Final Exams'] or 'Final Exam', x1, ROW_CHAR, FACEUP)
   end)
   step(function()
     say('FINAL EXAM. The Assignment deck, the Time Slots and FINF are' ..
         ' back in the box -- FINF is not used in the exam, in either' ..
         ' direction. The Completed Credits pile stays out: it is the' ..
-        ' record of what you studied and the pool is built from it, and' ..
-        ' so do your unspent coupons. The 12 Final Exams are a face-up' ..
-        ' stack on the old deck space -- spread it to read them.' ..
-        ' BY HAND: discard unresolved Assignments and exhaust their' ..
+        ' record of what you studied and the pool was built from it,' ..
+        ' and so do your unspent coupons.' ..
+        ' POOL, Credits->cards by subject: ' .. line .. ' = ' .. pool ..
+        ' cards, of which ' .. EXAM_DRAW .. ' are drawn face-up on the' ..
+        ' row above. BY HAND: discard unresolved Assignments and exhaust their' ..
         ' stored dice; short of ' .. goal .. ' Credits, exhaust 1' ..
         ' available die per missing Credit in the order Red, Purple,' ..
         ' Blue, Green, Yellow, looping as needed. Then recover 1 die,' ..
         ' 1 more per Credit ABOVE ' .. goal .. ' (never the same colour' ..
-        ' twice), and the queued Morning recovery. Build the pool per' ..
-        ' subject -- 1 card at 0-1 Credits in it, 2 at 2-3, 3 at 4+ --' ..
-        ' shuffle it, draw 3 onto the three spaces beside the stack.' ..
+        ' twice), and the queued Morning recovery.' ..
         ' Each exam Target drops by 1 per Credit you hold in its' ..
         ' subject; lose 1 Health per success short; Special Recovery' ..
         ' uses that card own colour dot. All three are mandatory, and' ..

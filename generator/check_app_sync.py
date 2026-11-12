@@ -2054,6 +2054,47 @@ check("every Exhibit domain is one contiguous block of at least 5",
                              for v in _dom.values()),
       "domains: %r" % (dict((k, (v[0], v[-1])) for k, v in _dom.items()),))
 
+# THE FINAL EXAM POOL, which the script now builds instead of asking
+# for it by hand - so the book's table and the script's thresholds are
+# two copies of one rule and will drift the first time either moves.
+#
+# The bands are READ OUT OF THE BOOK and the Lua is checked against
+# what they say, rather than both being typed here: a check that
+# names "4" on both sides of itself cannot tell you the book still
+# says 4.
+_pool_tbl = _nap_rules[_nap_rules.find("Building the Final Exam pool"):]
+_pool_tbl = _pool_tbl[:_pool_tbl.find("</table>")]
+_bands = [(a.replace("&ndash;", "-"), int(b)) for a, b in
+          re.findall(r"<tr><td>([^<]+)</td><td>(\d+)</td></tr>", _pool_tbl)]
+check("rules/nap.html still prints the three Final Exam pool bands",
+      [b for _, b in _bands] == [1, 2, 3]
+      and [a for a, _ in _bands] == ["0-1", "2-3", "4+"],
+      "bands: %r" % (_bands,))
+# Top band down to the bottom, because that is the order the ifs have
+# to run in: the lowest floor tested last.
+_want_lua = ["if credits >= %d then return %d end"
+             % (int(re.match(r"(\d+)", a).group(1)), n)
+             for a, n in reversed(_bands[1:])]
+_missing = [l for l in _want_lua if l not in _lua]
+check("tts/lua.lua's examPoolSize implements those bands",
+      not _missing and "function examPoolSize" in _lua
+      and re.search(r"function examPoolSize.*?\n  return %d\n"
+                    % _bands[0][1], _lua, re.S),
+      "missing: %r" % (_missing,))
+_draw = re.search(r"draw <b>(\d+)</b> Final Exams", _nap_rules)
+check("...and draws as many Final Exams as the book says",
+      _draw is not None
+      and ("EXAM_DRAW = %s" % _draw.group(1)) in _lua,
+      "book %r" % (_draw and _draw.group(1),))
+# AND THE POOL IS BUILT FROM THE PILE, not from a count the script
+# kept for itself. STATE.credits is a total and the pool is per
+# subject, so reading it would quietly build the same pool for a
+# transcript of four Anatomy Credits and one of four different ones.
+check("examDraw builds the pool from the Credit pile, by subject",
+      "function examDraw" in _lua
+      and "creditTally(" in _lua[_lua.find("function examDraw"):
+                                 _lua.find("function startExam")]
+      and "NAP_EXAM[s]" in _lua)
 # ---------------------------------------------------------------------
 # THE CONTROL PANEL HAS TO FIT ON THE CONTROL PANEL. ControlPanel.png is
 # 1473x520 and the tile is "Stretch": true, so the tile's local space is
@@ -2443,6 +2484,25 @@ check("the TTS notebook prints the AoS allocation floor and the Reward brake",
 # build_mod.py; these read what it produced, because the bugs they are
 # here for were in the output of code that looked right.
 _sv = json.loads(text("tts/NobulousSet.json"))
+
+# THE INDEX TABLE, derived here a second time and independently of
+# build_mod's own function. An off-by-one in it would hand Theory an
+# Engineering exam, and every count on either side would still come
+# out right - the harness checks the pool against the same NAP_EXAM
+# the script built it from, so it cannot see this at all.
+_exsub = {}
+for _i, _e in enumerate(_elts("generator/build_nap.py", "EXAMS"), 1):
+    _exsub.setdefault(getattr(_e.elts[1], "id", "?"), []).append(_i)
+# The whole header line: [^}] cannot cross the nested braces, and
+# stopping at the first one read Anatomy and called it the table.
+_navx = re.search(r"^NAP_EXAM = \{(.*)\}\s*$", _sv["LuaScript"],
+                  re.M)
+_lua_ex = dict((k, [int(i) for i in v.split(",")]) for k, v in
+               re.findall(r"(\w+) = \{([^}]*)\}",
+                          _navx.group(1) if _navx else ""))
+check("NAP_EXAM in the save is build_nap.py's own EXAMS table",
+      _lua_ex == _exsub and len(_exsub) == 4,
+      "save %r vs build_nap.py %r" % (_lua_ex, _exsub))
 
 
 def _decks_in(objs):

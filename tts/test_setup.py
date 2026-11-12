@@ -2086,7 +2086,7 @@ def alt_view_assertions():
                  % game, ang, down if back else up)
 
 
-def take_from(w, g, deckname, x, z):
+def take_from(w, g, deckname, x, z, nick=None):
     """Deal one card off a deck onto (x, z), the way the script would.
 
     NOT BY REACHING INTO .kids. A card inside a deck carries the same
@@ -2100,8 +2100,13 @@ def take_from(w, g, deckname, x, z):
     d = deck(w, deckname)
     if d is None or not d.kids:
         return None
-    c = d.takeObject(w.lua.table_from(
-        {"position": w.lua.table_from([x, 1.6, z]), "smooth": False}))
+    arg = {"position": w.lua.table_from([x, 1.6, z]), "smooth": False}
+    if nick is not None:
+        got = [k for k in d.kids if k.name == nick]
+        if not got:
+            return None
+        arg["guid"] = got[0].guid
+    c = d.takeObject(w.lua.table_from(arg))
     drain(w)
     return c
 
@@ -2157,7 +2162,7 @@ def finale_assertions():
         # in btnFinale passed it: the button is gone from the panel
         # either way, and a second press deals a second set of Final
         # Exams onto the first.
-        dealt = {"NAP": ("Final Exams", 12), "BAT": ("Tyrant Attacks", 7),
+        dealt = {"NAP": ("Final Exams", 3), "BAT": ("Tyrant Attacks", 7),
                  "AoS": ("Advanced Programs", 3)}[game]
         want("%s: the finale deals %d %s" % (game, dealt[1], dealt[0]),
              out(w, dealt[0]), dealt[1])
@@ -2250,10 +2255,25 @@ def finale_assertions():
          done is not None and done.guid in w.table, True)
     want("...and so do the Banked Opportunities under it",
          coupon is not None and coupon.guid in w.table, True)
-    want("the Final Exam deals all 12 exams", out(w, "Final Exams"), 12)
-    want("...face up, as one stack to spread",
-         [o.is_face_down for o in w.table.values()
-          if o.name.startswith(names_of("Final Exams"))], [False])
+    want("the Final Exam draws 3 exams and no more",
+         out(w, "Final Exams"), 3)
+    want("...all three face up", sorted(o.is_face_down
+         for o in w.table.values()
+         if o.name.startswith(names_of("Final Exams"))),
+         [False, False, False])
+    # ON THE THREE PRINTED SPACES, which is the part a count cannot
+    # see. The row the day revealed into is where they go, and the
+    # third of them is the old discard space - the draw is laid out at
+    # ASSIGN_PITCH precisely so it lands in boxes the mat has drawn.
+    want("...one on each of the three spaces beside the old deck space",
+         sorted(round(o.pos[0], 2) for o in w.table.values()
+                if o.name.startswith(names_of("Final Exams"))),
+         sorted(round(float(g.DECK_X) + k * float(g.ASSIGN_PITCH), 2)
+                for k in (1, 2, 3)))
+    want("...and all three on the row the Assignments used",
+         sorted(set(round(o.pos[2], 2) for o in w.table.values()
+                    if o.name.startswith(names_of("Final Exams")))),
+         [round(float(g.ROW_CHAR), 2)])
     for gone in ("Assignment", "Time Slot", "FINF"):
         want("...and the %s cards are back in the box" % gone,
              [o.name for o in w.table.values()
@@ -2426,6 +2446,117 @@ RULES_DIR = os.path.join(os.path.dirname(os.path.dirname(
 def md5(path):
     """Eight hex of a file's md5 - what build_mod puts in the URL."""
     return hashlib.md5(io.open(path, "rb").read()).hexdigest()[:8]
+
+
+def exam_pool_assertions():
+    """The Final Exam pool, built from the Credits actually earned.
+
+    "For each subject independently, randomly add the following number
+    of Final Exam cards from that subject to the pool" - 1 card at 0-1
+    Credits in it, 2 at 2-3, 3 at 4+ - then shuffle and draw 3. It was
+    the player's job and it is the one piece of NAP that cannot be
+    done by eye: the pile counted by subject, four lookups, then a
+    draw out of what those four produced.
+
+    THE EASY HALF IS THE SIZE, AND IT IS NOT THE RULE. A pool of the
+    right length that took every card out of Anatomy would satisfy any
+    check a count can carry, and so would one that never read the
+    Credit pile at all. So the pool is grouped BY SUBJECT here and
+    each group is checked against what that subject's Credits bought.
+
+    THROUGH THE PILE, NOT THROUGH A STUBBED TALLY. creditTally reads
+    nicknames off the Completed Credits space and maps them through
+    NAP_CREDIT; handing examDraw a tally directly would pass with
+    nothing on the table reaching it, which is most of what there is
+    to get wrong.
+    """
+    w, g = start("Standard", 0, Panel())
+    exam = dict((str(s), sorted(int(i) for i in v.values()))
+                for s, v in g.NAP_EXAM.items())
+    cred = dict((str(s), sorted(int(i) for i in v.values()))
+                for s, v in g.NAP_CREDIT.items())
+    subject = dict((str(s), str(n)) for s, n in g.NAP_SUBJECT.items())
+    one = str(g.CARD_NAME["Final Exams"])
+    pz = float(g.ROW_CHAR) - 2 * float(g.NAP_GAP)
+
+    def whose(nick):
+        """Which subject a 'Final Exam N' belongs to."""
+        n = int(nick.rsplit(" ", 1)[-1])
+        return [s for s in sorted(exam) if n in exam[s]][0]
+
+    want("every Final Exam belongs to exactly one subject",
+         sorted(n for s in exam for n in exam[s]), list(range(1, 13)))
+
+    # THE TABLE, AS A FUNCTION, at both edges of all three bands.
+    want("the pool table reads 1 card at 0-1 Credits, 2 at 2-3, 3 at 4+",
+         [int(g.examPoolSize(n)) for n in range(0, 8)],
+         [1, 1, 2, 2, 3, 3, 3, 3])
+
+    # AND THE POOL IT BUILDS, for four transcripts: nothing studied, a
+    # subject filled, two filled while one is empty, and one Credit
+    # short of a threshold everywhere.
+    for label, have in (("an empty transcript", {}),
+                        ("Anatomy filled", {"ANA": 4}),
+                        ("Anatomy and Procedure filled, Theory empty",
+                         {"ANA": 5, "ENG": 2, "PRO": 4}),
+                        ("one short of every threshold",
+                         {"ANA": 1, "ENG": 3, "PRO": 1, "THE": 3})):
+        w, g = start("Standard", 0, Panel())
+        put = 0
+        for s in sorted(have):
+            for i in range(have[s]):
+                o = Obj(w, "cr%d" % put, "Task %d" % cred[s][i])
+                o.pos = (float(g.PILE_X), 1.0, pz)
+                w.table[o.guid] = o
+                put += 1
+        n, subj = g.creditTally(None)
+        want("%s: the Credit pile reads back what was put on it" % label,
+             (int(n), dict((str(s), int(c)) for s, c in subj.items())),
+             (put, dict((s, c) for s, c in have.items() if c)))
+        draw, pool, line = g.examDraw()
+        names = [str(v) for v in pool.values()]
+        by = {}
+        for nm in names:
+            by[whose(nm)] = by.get(whose(nm), 0) + 1
+        want("%s: each subject puts in what its Credits bought" % label,
+             by, dict((s, int(g.examPoolSize(have.get(s, 0))))
+                      for s in sorted(exam)))
+        want("%s: and no exam is in the pool twice" % label,
+             len(set(names)), len(names))
+        drawn = sorted(str(k) for k in draw.keys())
+        want("%s: three are drawn out of it" % label,
+             len(drawn), int(g.EXAM_DRAW))
+        want("%s: ...and every one of them was in the pool" % label,
+             [nm for nm in drawn if nm not in names], [])
+        # THE LINE THE BRIEFING PRINTS, which is the only way a player
+        # at the table can tell what the pool was built from.
+        want("%s: the briefing reports each subject's Credits" % label,
+             sorted(re.findall(r"(\w+) (\d+)->(\d+)", str(line))),
+             sorted((subject[s], str(have.get(s, 0)),
+                     str(int(g.examPoolSize(have.get(s, 0)))))
+                    for s in sorted(exam)))
+
+    # EVERY EXAM OF A FILLED SUBJECT, AND ONLY THOSE. 4+ Credits takes
+    # all three cards that subject has, so this pool is knowable
+    # exactly and no shuffle can change it - the one case the check
+    # does not have to go through examPoolSize to say what it wants.
+    w, g = start("Standard", 0, Panel())
+    for i in range(4):
+        o = Obj(w, "th%d" % i, "Task %d" % cred["THE"][i])
+        o.pos = (float(g.PILE_X), 1.0, pz)
+        w.table[o.guid] = o
+    _, pool, _ = g.examDraw()
+    want("4 Credits in Theory puts all three Theory exams in the pool",
+         sorted(nm for nm in (str(v) for v in pool.values())
+                if whose(nm) == "THE"),
+         sorted("%s %d" % (one, n) for n in exam["THE"]))
+    # AND NOTHING FROM A SUBJECT'S OWN CARDS ANYWHERE ELSE. The pool
+    # is named by index, so an off-by-one in NAP_EXAM would hand
+    # Theory an Engineering exam and every count above would still
+    # come out right.
+    want("...and the other nine stay out of Theory's share",
+         sorted(whose("%s %d" % (one, n)) for n in exam["THE"]),
+         ["THE", "THE", "THE"])
 
 
 def rules_assertions():
@@ -2894,6 +3025,7 @@ def main():
     markers_home_assertions()
     alt_view_assertions()
     finale_assertions()
+    exam_pool_assertions()
     covered_assertions()
     rules_assertions()
     panel_game_assertions()
