@@ -36,7 +36,14 @@ Read `HANDOFF.md` and `README.md` before making changes.
   `main` yet - TTS answers a 404 by opening the Custom Tile dialog over a
   blank face, which reads as a broken object and not as a missing file.
   `check_app_sync.py` cannot see this: it is offline, and every local
-  invariant holds. Push, then run `tts/check_published.py`, then load the mod.
+  invariant holds. Push, give it a minute, then run
+  `tts/check_published.py --purge`, then load the mod.
+- THE `?v=` TOKEN ON A MOD URL DOES NOT REACH jsdelivr. It defeats TTS's own
+  cache, which is what it is for; jsdelivr keys on the PATH and goes on
+  serving its cached copy of `@main` for hours whatever the query says. So a
+  file that keeps its name - every card sheet, every rulebook - can be pushed
+  and still arrive as last build's bytes. `check_published.py` compares
+  Content-Length rather than settling for a 200, and `--purge` clears them.
 
 ## Useful commands
 
