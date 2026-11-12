@@ -603,7 +603,11 @@ def make_back(fname, title, sub, color, size=PORTRAIT):
     inner = ('<div class="back" style="background:%s">'
              '<div class="bt">%s</div><div class="bs">%s</div>'
              '<div style="width:22mm;height:.6pt;background:#ffffff55;margin:2.6mm 0"></div>'
-             '<div style="color:#ffffff88;font-size:5pt;letter-spacing:.28em;text-transform:uppercase">'
+             # ffffffcc, NOT ffffff88. At 53% white over a dark back
+             # the set line was barely there, and lightening the
+             # Tyrant Attack maroon took what was left of it. Every
+             # back shares this line, so every back gains it.
+             '<div style="color:#ffffffcc;font-size:5.2pt;letter-spacing:.28em;text-transform:uppercase">'
              'The Nobulous Set</div></div>' % (color, title, sub))
     doc = page(inner, color, size)
     p = os.path.join(OUT, '_b.pdf')

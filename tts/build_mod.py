@@ -693,8 +693,40 @@ def xf(x, y, z, rot=(0, 180, 0), s=1.0):
             "scaleX": s, "scaleY": s, "scaleZ": s}
 
 
+_URL_HASH = {}
+
+
 def url(name):
-    return "%s/%s" % (BASE_URL.rstrip('/'), name)
+    """An image's URL, carrying its content hash as ?v=.
+
+    MOST SHEETS DO NOT CARRY A HASH IN THEIR NAME. The table
+    overlays and the eight dice do - make_template and make_dice
+    rename them whenever the picture changes - but every card sheet
+    and every card back is a fixed filename, so a re-rendered deck
+    arrives at a URL TTS already holds in its cache and the old art
+    goes on showing. The Tyrant Attack cards were lightened on
+    2026-11-12 and would not have changed on the table.
+
+    The rulebooks were given this token first, for the same reason
+    and after the same symptom. jsdelivr resolves the file and
+    ignores the token; TTS keys its cache on the whole string.
+
+    Memoised, because url() is called once per card and some of
+    these sheets are several megabytes.
+    """
+    u = "%s/%s" % (BASE_URL.rstrip('/'), name)
+    if not BASE_URL.startswith('http'):
+        return u          # file:// - a '?' there is part of the name
+    if name not in _URL_HASH:
+        p = os.path.join(SHEETS, name)
+        _URL_HASH[name] = (hashlib.md5(io.open(p, 'rb').read()).hexdigest()[:8]
+                           if os.path.exists(p) else None)
+    # A missing file keeps its bare URL; REQUIRED_IMAGES.txt is what
+    # reports it, and a token on a name that resolves to nothing
+    # would only make the 404 harder to read.
+    if not _URL_HASH[name]:
+        return u
+    return "%s?v=%s" % (u, _URL_HASH[name])
 
 
 # THE FOUR RULEBOOKS, by the game key the script uses. IMP is not a
@@ -1479,7 +1511,16 @@ def main():
         raise SystemExit('the save references no images under BASE_URL')
     with open(os.path.join(os.path.dirname(OUT), 'REQUIRED_IMAGES.txt'), 'w') as f:
         f.write("Upload these to BASE_URL, keeping the filenames:\n\n")
-        for n in sorted(need):
+        # WITHOUT THE CACHE TOKEN. These names are harvested out of
+        # the save's URLs, which now carry ?v=<hash>, and this list
+        # is not decoration: deploy.py reads it to learn which
+        # images the mod needs and protects exactly those from
+        # --prune. A token on the end makes its regex miss the line,
+        # so every tokened image reads as unreferenced - which is
+        # 67 of them, and deploy refused to run at all rather than
+        # prune them, which is the only reason this was caught here
+        # instead of by a missing images/ folder.
+        for n in sorted(set(x.split('?')[0] for x in need)):
             p = os.path.join(SHEETS, n)
             f.write("  %-38s %s\n" % (n, 'ok' if os.path.exists(p) else 'MISSING'))
         # THE RULEBOOKS ARE FETCHED BY THE MOD TOO, from rules/ rather

@@ -3549,6 +3549,42 @@ for _n, _u in sorted(_books.items()):
 check("...and its URL carries that file's content hash, so no cache"
       " can pin an old one",
       not _stale, "%r" % (_stale,))
+
+# ...AND SO DOES EVERY IMAGE THE MOD LOADS.
+#
+# The overlays and the eight dice carry their hash in the FILENAME,
+# because make_template and make_dice rename them when the picture
+# changes. Every card sheet and card back does not: those names are
+# fixed, so a re-rendered deck arrives at a URL TTS already holds and
+# the old art goes on showing. The Tyrant Attack cards were lightened
+# on 2026-11-12 and would not have changed on the table.
+_img_stale = []
+for _m in re.finditer(r'"(?:FaceURL|BackURL|ImageURL|ImageSecondaryURL)":'
+                      r' "([^"]+\.(?:png|jpg))(\?v=([0-9a-f]+))?"',
+                      json.dumps(_sv)):
+    _nm = _m.group(1).rsplit("/", 1)[-1]
+    _f = os.path.join(ROOT, "images", _nm)
+    if not os.path.exists(_f):
+        _img_stale.append((_nm, "no such file"))
+        continue
+    _h = hashlib.md5(io.open(_f, "rb").read()).hexdigest()[:8]
+    if _m.group(3) != _h:
+        _img_stale.append((_nm, _m.group(3), _h))
+check("every image URL carries its own file's content hash",
+      not _img_stale, "%r" % (_img_stale[:3],))
+
+# AND THE MANIFEST DOES NOT CARRY IT. REQUIRED_IMAGES.txt is not
+# decoration: deploy.py reads it to learn which images the mod needs
+# and protects exactly those from --prune. Its regex wants a filename
+# followed by whitespace, so a ?v= on the end makes every line miss
+# and every image read as unreferenced. deploy refused to run rather
+# than delete 67 files, which is the only reason that was caught at
+# the desk.
+_manifest = text("tts/REQUIRED_IMAGES.txt")
+check("...and tts/REQUIRED_IMAGES.txt lists bare filenames, for deploy",
+      "?v=" not in _manifest and "MISSING" not in _manifest,
+      "tokens in the manifest: %s, missing files: %s"
+      % ("?v=" in _manifest, "MISSING" in _manifest))
 check("the rulebooks are served from rules/, not images/",
       all("/rules/" in u for u in _books.values()), "%r" % (_books,))
 # EACH BOOK GOES HOME TO ITS OWN GAME'S BOX, which is what lets

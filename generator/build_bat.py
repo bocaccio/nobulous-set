@@ -98,7 +98,11 @@ RATS = [
 
 
 CAT = {'Power': '#8a3d2e', 'Mobility': '#2c6e63', 'Defense': '#3c5a8a', 'Senses': '#6b4a8a'}
-ATTACK_ACC = '#4a1f1f'
+# LIGHTER THAN THE #4a1f1f THIS REPLACES. Jon's call: the old
+# maroon was nearly black on the band and on the back. Not lighter
+# still - at #7c3636 the muted THE NOBULOUS SET line on the back
+# stops holding against it.
+ATTACK_ACC = '#6e3030'
 SPEC_GOLD = '#b08a2e'
 
 
@@ -128,7 +132,7 @@ def C(title, sub, body, ftr='', warn=False, acc=None, tint=None, flavor='', dot=
 make_back('CardBack_BAT_BuffHP', 'BAT', 'Buff HP', '#2c5f4a')
 make_back('CardBack_BAT_Encounter', 'BAT', 'Experiment', '#2c5f4a')
 make_back('CardBack_BAT_Upgrade', 'BAT', 'Upgrade &middot; Specimen', '#2c5f4a')
-make_back('CardBack_BAT_TyrantAttack', 'BAT', 'Tyrant Attack', '#4a1f1f')
+make_back('CardBack_BAT_TyrantAttack', 'BAT', 'Tyrant Attack', ATTACK_ACC)
 print("card backs done")
 
 cards = []
