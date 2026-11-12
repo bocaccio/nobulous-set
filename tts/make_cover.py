@@ -166,6 +166,21 @@ def cover():
     spaced(im, "NOBULOUS", 107, 27, CREAM, 2.0)
     spaced(im, "SET", 134, 15, MUTED, 5.0)
 
+    # WHAT IT IS, under the gears. CONTENT_NOTICE.md's first line in
+    # five words: the set is unofficial and needs a copy of 20
+    # Strong to play, and a cover in a list of mods is the one place
+    # that is worth saying before anything is opened.
+    #
+    # FITTED RATHER THAN SIZED BY EYE: the line is 25 characters and
+    # the two vertical names eat into both margins, so the size is
+    # whatever gets it inside them.
+    tag = "A 20 STRONG FAN EXPANSION"
+    run = SIDE - 2 * (EDGE_INSET + 16)
+    tpx, ttrack = 11.0, 1.8
+    while tpx > 5.0 and line_px(tag, tpx, ttrack)[0] > run:
+        tpx -= 0.25
+    spaced(im, tag, 212, tpx, MUTED, ttrack)
+
     # THE FOUR GAMES AROUND THE EDGE, spelled out. The three-letter
     # codes are what the set calls them everywhere else, and they
     # tell a stranger nothing; a cover has room to say them once.
