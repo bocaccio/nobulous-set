@@ -2826,7 +2826,7 @@ check("the readout's width has one owner",
 _bat_html = text("rules/bat.html")
 _marks = re.search(r"the <b>(\w+) die</b>, which marks the active Lab Rat",
                    _bat_html)
-_mark_src = re.search(r"setMarker\('(\w+)', batMarkX\(\), batMarkZ\(1\)\)",
+_mark_src = re.search(r"setMarker\('(\w+)', batMarkX\(\), batMarkZ\(1\)[,)]",
                       _lua)
 check("the mod marks the active Rat with the die rules/bat.html names",
       _marks and _mark_src and _marks.group(1) == _mark_src.group(1),
@@ -3732,8 +3732,31 @@ check("the rulebook is not settled onto anything",
 check("the setup turns the Chip after it lands, not while it moves",
       re.search(r"setMarker\('Chip'[^;]*CHIP_FACE\[ATTENTION\[1\]\],"
                 r"\s*CHIP_FACE_Z\}", _lua)
-      and "function setMarker(name, x, z, value, face)" in _lua
+      and "function setMarker(name, x, z, value, face, onto)" in _lua
       and "o.setRotation({r.x, face[1], face[2]})" in _lua)
+
+# AND A DIE THAT STANDS ON A CARD IS LET GO ABOVE IT. moveMarker used
+# one height for every marker, 1.6, which is a height for bare felt: a
+# die is 1.62 across, so its underside arrives below the face of a card
+# lying on the table, and the move is made with collide off so nothing
+# stops it. Three dice in this mod stand on a card, and two of the
+# three were seen to end up under it - the Red die on its Rat (Jon,
+# 2026-11-12) and the Health die on the Buff HP track before that.
+#
+# NAMED, NOT COUNTED. "three calls pass ONTO" would pass with the wrong
+# three; these are the three, and a fourth on-card die that forgot the
+# flag is the failure this is for. The behaviour - that the height
+# really does clear the card - is tts/test_setup.py's on_card
+# assertions; this is only that each call asks for it.
+_onto = ["setMarker('Strategy', batMarkX(), batMarkZ(1), nil, nil, ONTO)",
+         "setMarker('Red', batMarkX(), batRedZ(math.random(BAT_ROWS)), nil,"
+         " nil,\n              ONTO)",
+         "setMarker('Health', bx, bz, 1, nil, ONTO)"]
+check("every die a setup stands on a card is dropped onto it",
+      all(s in _lua for s in _onto)
+      and _lua.count("ONTO)") == len(_onto)
+      and "function dropOnto(o, x, z)" in _lua,
+      "missing: %r" % ([s[:34] for s in _onto if s not in _lua],))
 
 # The three dice say what the card says. One literal prints all six
 # Apprentice sides, so there is nothing to average over.
@@ -3784,7 +3807,7 @@ check("...and every game that has a character places all three of them",
       _mark_die in _mk
       and _mk == {"Health": 5, "Strategy": 4, "Recovery": 4}
       and "setMarker('Health', BAT_STAT_X, BAT_STAT_Z[1])" in _lua
-      and "if bx then setMarker('Health', bx, bz, 1) end" in _lua
+      and "if bx then setMarker('Health', bx, bz, 1, nil, ONTO) end" in _lua
       and "setMarker('Recovery', BAT_STAT_X, BAT_STAT_Z[2])" in _lua
       and "BAT_STAT_X = BAT_EXHAUST_X0 -" in _lua
       and "EXHAUST_Z[1]" in _lua

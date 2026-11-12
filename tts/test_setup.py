@@ -108,6 +108,11 @@ class Obj(object):
         self.text = ""
         self.desc = ""
         self.scale = (1.0, 1.0, 1.0)
+        # A DIE IS A BLOCK; EVERYTHING ELSE HERE LIES FLAT. Set from the
+        # save for the dice, so getBounds below can tell the one kind of
+        # object that is as tall as it is wide from the cards, the Chip,
+        # the Dial and the table overlays, which are all plates.
+        self.solid = False
         self.locked = False
         self.TextTool = TextTool(self)
         self.custom = {}
@@ -170,6 +175,49 @@ class Obj(object):
     def getScale(self):
         return self.world.lua.table_from(
             {"x": self.scale[0], "y": self.scale[1], "z": self.scale[2]})
+
+    # How tall a thing is, for getBounds. A die is 0.9 across at scale 1
+    # - the figure w.die_half is built from - and a card, a tile and a
+    # token are all plates.
+    DIE_EDGE = 0.9
+    FLAT_THICK = 0.08
+
+    def getBounds(self):
+        """The world-space box TTS answers. dropOnto reads this.
+
+        THERE IS NO GRAVITY IN THIS HARNESS. A dealt card keeps the y
+        the script let it go at - 3, or 1.2 for the Buff HP card -
+        where TTS would have it resting on the felt a unit lower. So
+        no height that comes out of here is TTS's height and none of
+        them may be read as one.
+
+        What it is good for is the RELATION dropOnto exists to get
+        right: a die sent onto a card has to be let go above that
+        card's top face rather than at the height of bare felt, and
+        that comparison comes out the same way here as it does on the
+        table. FLAT_THICK only has to be more than nothing, or a die
+        let go at the card's own centre would read as clearing it.
+        """
+        g = self.world.lua.globals()
+        base = self.name.rstrip("0123456789").strip()
+        land = LAND.get(base, LAND.get(self.name))
+        if self.solid:
+            sx = sz = sy = self.DIE_EDGE * float(self.scale[0])
+        elif land is not None:
+            cw, cl = float(g.CARD_W), float(g.CARD_L)
+            sx, sz = (cl, cw) if land else (cw, cl)
+            sy = self.FLAT_THICK
+        else:
+            # A tile or a token: the overlays, the Chip, the Dial, the
+            # readout, the panel. Square at twice its scale, which is
+            # what TTS's unit tile measures, and flat.
+            sx = sz = 2.0 * float(self.scale[0])
+            sy = self.FLAT_THICK
+        return self.world.lua.table_from(
+            {"center": self.world.lua.table_from(
+                {"x": self.pos[0], "y": self.pos[1], "z": self.pos[2]}),
+             "size": self.world.lua.table_from(
+                {"x": sx, "y": sy, "z": sz})})
 
     def setScale(self, s):
         self.scale = tuple(s.values()) if hasattr(s, "values") else tuple(s)
@@ -556,6 +604,14 @@ def build(lua):
             m = Obj(w, o["GUID"], o["Nickname"])
             m.pos = (o["Transform"]["posX"], o["Transform"]["posY"],
                      o["Transform"]["posZ"])
+            # ITS REAL SCALE, AND WHETHER IT IS A BLOCK. getBounds
+            # needs both: the dice are the only things on this table
+            # that are as tall as they are wide, and how tall decides
+            # how high a die standing on a card has to be let go.
+            m.scale = (o["Transform"].get("scaleX", 1.0),
+                       o["Transform"].get("scaleY", 1.0),
+                       o["Transform"].get("scaleZ", 1.0))
+            m.solid = o["Name"] == "Custom_Dice"
             w.markers[o["GUID"]] = m
             w.byguid[o["GUID"]] = m
     if not w.table and not w.byguid:
@@ -936,13 +992,13 @@ def layout_assertions():
                     # Twelve Upgrade spaces beside the Rats, three
                     # revealed, the Tyrant's three, the Splices; then
                     # the places with no box of their own - a Rat, its
-                    # active-Rat mark and its row of dice on each row,
-                    # the two decks, and one per cell of the Buff HP
-                    # track.
+                    # active-Rat mark, the opposite corner the Red die
+                    # marks and its row of dice on each row, the two
+                    # decks, and one per cell of the Buff HP track.
                     rows, ups = int(g.BAT_ROWS), int(g.BAT_UPGRADES)
                     cols = len(list(g.BAT_RAT_DICE.values()))
                     exp = (rows * ups + 2 + 3 + 2 + 3 + 1
-                           + int(g.BAT_SPLICES) + (2 + cols) * rows + 2
+                           + int(g.BAT_SPLICES) + (3 + cols) * rows + 2
                            + len(list(g.BUFF_CELL.values())))
                 elif which == "AoS":
                     # The Technician, the two decks and the two
@@ -1812,6 +1868,99 @@ def dial_values():
             walk(o.get("ContainedObjects", []))
     walk(save["ObjectStates"])
     return out
+
+
+def on_card_assertions():
+    """A die that stands on a card is let go above it, not inside it.
+
+    moveMarker let every marker go at one height, 1.6, which is a
+    height for bare felt. A die is 1.62 across at DIE_SCALE, so its
+    underside is 0.81 lower than that - below the face of a card lying
+    on the table - and the move is made with collide off, so nothing
+    stops the die arriving inside the card. Which way Unity then
+    pushes the two apart is not the script's to choose, and three
+    dice in this mod stand on a card: the Strategy die on the active
+    Rat, the Red die on the Rat that drew it, and the Health die on
+    the Buff HP track. Two of the three have been seen to lose.
+
+    WHAT IS CHECKED IS THE RELATION, NOT THE HEIGHT. There is no
+    gravity here, so the cards are still at the y the script let them
+    go at and no number below is TTS's (see Obj.getBounds). The
+    predicate is the one that was false: does the die's underside
+    clear the top of the card it is standing on.
+    """
+    w, g = start("Standard", 0)
+    g.setupBAT()
+    drain(w)
+    gl = w.lua.globals()
+    half = w.die_half
+
+    def card_top_under(x, z):
+        """The top of the tallest card the point (x, z) is over."""
+        top = None
+        for o in w.table.values():
+            base = o.name.rstrip("0123456789").strip()
+            land = LAND.get(base, LAND.get(o.name))
+            if land is None:
+                continue
+            cw, cl = float(gl.CARD_W), float(gl.CARD_L)
+            hw, hd = (cl / 2, cw / 2) if land else (cw / 2, cl / 2)
+            if abs(o.pos[0] - x) <= hw and abs(o.pos[2] - z) <= hd:
+                t = o.pos[1] + Obj.FLAT_THICK / 2
+                if top is None or t > top:
+                    top = (t, o.name)
+        return top
+
+    by = dict((o.name, o) for o in w.markers.values() if o.name in
+              ("Strategy", "Red", "Health", "Recovery"))
+    clears, named = [], []
+    for name in ("Strategy", "Red"):
+        o = by[name]
+        under = card_top_under(o.pos[0], o.pos[2])
+        # BY PREFIX. column() leaves card one IN the deck, so the thing
+        # under a die on the top Rat is the object still called
+        # "Lab Rats (A / B)" rather than "Lab Rat 1".
+        named.append(bool(under) and under[1].startswith("Lab Rat"))
+        clears.append(bool(under) and o.pos[1] - half >= under[0])
+    want("the two dice BAT stands on a Rat are standing on a Rat",
+         named, [True, True])
+    want("...and both are let go above its face, not inside it",
+         clears, [True, True])
+    # AND THE OTHER TWO ARE UNCHANGED. The Health and REC dice go to
+    # bare felt beside the exhausted corner, so they must still be let
+    # go at the one height - a fix that lifted every marker would put
+    # these two in the air.
+    want("...while a die going to bare felt is still let go at DROP_Y",
+         [round(by[n].pos[1], 3) for n in ("Health", "Recovery")],
+         [round(float(gl.DROP_Y), 3)] * 2)
+    want("...and nothing is standing on those two",
+         [card_top_under(by[n].pos[0], by[n].pos[2])
+          for n in ("Health", "Recovery")], [None, None])
+
+    # THE SAME THING IN THE BATTLE, where the Health die stands on the
+    # Buff HP track's printed grid. This is the one Jon saw first: the
+    # card was being locked while still in the air and the die went
+    # under it. The lock was fixed; the drop height was not.
+    w, g = start("Standard", 0)
+    g.setupBAT()
+    drain(w)
+    g.btnFinale()
+    drain(w)
+    gl = w.lua.globals()
+    hd = [o for o in w.markers.values() if o.name == "Health"][0]
+    under = card_top_under(hd.pos[0], hd.pos[2])
+    want("the battle stands the Health die on the Buff HP card",
+         under and under[1], "Buff HP Track")
+    want("...and lets it go above that card's face",
+         bool(under) and hd.pos[1] - w.die_half >= under[0], True)
+
+    # A DESTINATION WITH NOTHING AT IT BEHAVES AS IT DID. dropOnto
+    # never goes below DROP_Y, so an empty patch of felt is still the
+    # same drop - asked of the function directly, because every marker
+    # a setup moves has something under it somewhere.
+    want("dropOnto over empty felt is DROP_Y",
+         round(float(g.dropOnto(hd, 26.0, -17.5)), 3),
+         round(float(gl.DROP_Y), 3))
 
 
 def buff_lock_assertions():
@@ -3037,6 +3186,7 @@ def main():
     aos_assertions()
     chip_face_assertions()
     buff_lock_assertions()
+    on_card_assertions()
     pile_assertions()
     landing_assertions()
     markers_home_assertions()

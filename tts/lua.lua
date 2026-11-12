@@ -651,28 +651,84 @@ end
 -- from the table. Half a second later, a die that is still not where it
 -- was sent is put there outright: setPosition is instant, so there is
 -- no tween for anything to interrupt.
-function setMarker(name, x, z, value, face)
-  return moveMarker(marker(name), x, z, value, face)
+function setMarker(name, x, z, value, face, onto)
+  return moveMarker(marker(name), x, z, value, face, onto)
+end
+
+-- WHERE A MARKER IS LET GO. 1.6 is a height for bare felt, and every
+-- marker move in the mod used it whatever was already lying at the
+-- destination.
+--
+-- THAT IS A BUG WHEREVER A DIE STANDS ON A CARD. A die is 1.62 across
+-- at DIE_SCALE, so its own bottom is 0.81 below its centre: let go at
+-- 1.6 its underside is at 0.79, which is below the face of a card
+-- lying on the felt. The move is made with collide off - that is what
+-- lets it cross the table without shoving cards about - so nothing
+-- stops the die arriving INSIDE the card, and which way Unity then
+-- pushes the pair apart is not ours to choose. BAT stands two dice on
+-- a Lab Rat and one on the Buff HP track, and all three have now been
+-- seen to lose: the Red die started under its Rat (Jon, 2026-11-12)
+-- and the Health die under the Buff card before that.
+DROP_Y = 1.6
+-- What the three on-card calls pass, so a call site says which it
+-- means instead of ending in a bare true.
+ONTO = true
+
+-- SO ASK THE TABLE RATHER THAN WORKING IT OUT. How thick a card is,
+-- how thick the overlay is and where the felt's surface really sits
+-- are Unity's numbers, not this script's, and every attempt to derive
+-- them here would be a guess that goes stale the day a scale changes.
+-- getBounds is a world-space box: this finds the tallest thing already
+-- standing at the destination and puts the die on top of it, by 0.05 -
+-- near enough to no fall at all, so the die cannot bounce off a corner
+-- it was placed on.
+--
+-- IT NEVER GOES LOWER THAN DROP_Y, so a destination with nothing at it
+-- behaves exactly as it did before.
+function dropOnto(o, x, z)
+  local half
+  if not pcall(function() half = o.getBounds().size.y / 2 end) then
+    return DROP_Y
+  end
+  local top
+  for _, c in ipairs(getAllObjects()) do
+    if c ~= o then
+      pcall(function()
+        local b = c.getBounds()
+        if math.abs(b.center.x - x) <= b.size.x / 2
+           and math.abs(b.center.z - z) <= b.size.z / 2 then
+          local t = b.center.y + b.size.y / 2
+          if not top or t > top then top = t end
+        end
+      end)
+    end
+  end
+  if not top then return DROP_Y end
+  return math.max(DROP_Y, top + half + 0.05)
 end
 
 -- THE SAME MOVE, GIVEN THE OBJECT. BAT's dice rows cannot go through
 -- setMarker - there are four dice to one name - and the tween, the
 -- backstop and the ordering below are the part that was hard to get
 -- right, so they are not written twice.
-function moveMarker(o, x, z, value, face)
+function moveMarker(o, x, z, value, face, onto)
   if not o then return nil end
   local name = o.getName() or 'that die'
+  -- ONTO WHATEVER IS THERE, for the three dice that stand on a card.
+  -- Measured before the move, because the die is still at its old
+  -- position and so is not its own answer.
+  local y = onto and dropOnto(o, x, z) or DROP_Y
   o.setLock(false)
   if value then
     local ok = pcall(function() o.setRotationValue(value) end)
     if not ok then say(name .. ' has no numbered faces to set.') end
   end
   Wait.frames(function()
-    o.setPositionSmooth({x, 1.6, z}, false, true)
+    o.setPositionSmooth({x, y, z}, false, true)
     Wait.frames(function()
       local p = o.getPosition()
       if math.abs(p.x - x) > 1.0 or math.abs(p.z - z) > 1.0 then
-        o.setPosition({x, 1.6, z})
+        o.setPosition({x, y, z})
       end
       -- THE TURN GOES LAST, AND IT IS NOT A TWEEN. The Chip was turned
       -- with setRotationSmooth at the top of this step and the move
@@ -1309,6 +1365,12 @@ function batSnaps()
   for r = 1, BAT_ROWS do
     at(BAT_RAT_X, batRatZ(r))
     at(batMarkX(), batMarkZ(r))
+    -- AND THE OPPOSITE CORNER, which is the Red die's. The active-Rat
+    -- mark has had a snap point since the mark existed and this one
+    -- had none, so the one die that moves between Rats every turn -
+    -- Red is passed to a non-active Rat at the start of the next one -
+    -- was the only marking with nowhere to land square.
+    at(batMarkX(), batRedZ(r))
     -- A PLACE TO PUT A DIE BACK. The active-Rat mark has had one all
     -- along; a row of four spent dice under the card is the same kind
     -- of place, and without snap points the row drifts apart over a
@@ -1750,10 +1812,13 @@ function setupBAT()
     -- THE STRATEGY DIE MARKS THE ACTIVE RAT, and the first Rat is
     -- the one that starts. No value is set: it is a marker here, not
     -- a number, and a die turned to a face would read as one.
-    setMarker('Strategy', batMarkX(), batMarkZ(1))
+    -- ONTO THE CARD, not to the height of bare felt. Both of these
+    -- stand on a Lab Rat; see dropOnto.
+    setMarker('Strategy', batMarkX(), batMarkZ(1), nil, nil, ONTO)
     -- "...and the Red die on a random Rat" - rules/bat.html's setup,
     -- which until now the script only said in words.
-    setMarker('Red', batMarkX(), batRedZ(math.random(BAT_ROWS)))
+    setMarker('Red', batMarkX(), batRedZ(math.random(BAT_ROWS)), nil, nil,
+              ONTO)
     -- AND THE HEALTH AND REC DICE IN THEIR OWN COLUMN, beside the
     -- exhausted corner. No value is set on either: a Rat's Health is
     -- its own and the Tyrant's is on the dial, so a die turned to a
@@ -2380,7 +2445,7 @@ function startBattle()
     -- Set to 1: the number that counts is the space it stands on,
     -- and a die showing anything else reads as a second number.
     local bx, bz = buffSpace(hp)
-    if bx then setMarker('Health', bx, bz, 1) end
+    if bx then setMarker('Health', bx, bz, 1, nil, ONTO) end
   end)
   step(function()
     say('TYRANT BATTLE. Tyrant Health ' .. hp .. ' on the dial. Both' ..
