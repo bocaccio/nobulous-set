@@ -764,12 +764,30 @@ CREDITS_TO_LEAVE = 6      # Easy 5, Standard 6, Hard 7, Nobulous 8
 # against the old 55.5 / 48.8 / 37.5 / 29.7 - and NAP is pitched against the
 # printed game for the first time.
 #
-# THE COUNT IS PRINTED, so three sources carry it and all three had to move:
-# this table, the difficulty table in rules/nap.html, and NAP_SETBACK_COUNT
-# in playtest/dist/suite.js. check_app_sync.py now compares them, which
-# nothing did before - the same gap that let the End-of-Day burn sit unplayed
-# in this file for weeks while the other two sources played it.
-LEVELS = {"Easy": (5, 3), "Standard": (6, 3), "Hard": (7, 4), "Nobulous": (8, 5)}
+# THE COUNT IS PRINTED, so FIVE sources carry it and all five have to move:
+# this table, the difficulty table in rules/nap.html and the setup step above
+# it, NAP_SETBACK_COUNT in playtest/dist/suite.js, NAP_DIFF in tts/lua.lua and
+# the NAP quick reference in tts/build_mod.py. check_app_sync.py compares the
+# first three, which nothing did before - the same gap that let the
+# End-of-Day burn sit unplayed in this file for weeks while the other two
+# sources played it.
+#
+# STANDARD WENT 3 -> 2 ON 2026-11-12, and it is the first time the Setback
+# count has been used as the pitch lever rather than as a difficulty step.
+# simulation/README.md recorded the decision of 2026-11-11 - "the new pitch
+# stands and LEVELS does not move", with NAP the one game in the set below
+# the 47-57% band on purpose - and then the Assignment revision took another
+# 5 to 7 points off, almost all of it the new Final Exam pool. The lever
+# named at the time was this one.
+#
+# IT ALSO BREAKS THE LADDER'S ARITHMETIC, and that is deliberate rather than
+# an oversight: the four rungs read 5/3, 6/2, 7/4, 8/5, so Standard now
+# carries FEWER Setbacks than Easy and is held to the band by its Credit goal
+# instead. Easy stays at 3 because it is already the gentlest rung and does
+# not need the help; Hard and Nobulous keep theirs because the hard end is
+# meant to be out of band. Do not "tidy" this into a monotone column without
+# re-measuring - rules/RULES_CHANGELOG.txt has what each card is worth.
+LEVELS = {"Easy": (5, 3), "Standard": (6, 2), "Hard": (7, 4), "Nobulous": (8, 5)}
 # End of Day burns one card off the Assignment deck, text ignored.
 # rules/nap.html prints it under "End of Day" - "Reveal and discard the top
 # card of the Assignment deck. Ignore all of its text, effects and Skulls" -

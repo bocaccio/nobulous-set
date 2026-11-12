@@ -464,6 +464,21 @@ NAP ASSIGNMENTS, CURRENT
   printed exams could not come up at all on an empty transcript.  That is a
   real difficulty rise and the measured cost is in rules/RULES_CHANGELOG.txt.
 
+NAP DIFFICULTY, CURRENT
+  Easy 5 Credits / 3 Setbacks, STANDARD 6 / 2, Hard 7 / 4, Nobulous 8 / 5.
+  Standard dropped to 2 on 2026-11-12, the first time the Setback count has
+  been used as a pitch lever rather than as a difficulty step: worth +7.1
+  points on the solo axis (37.2% -> 44.3%, six Apprentices, 8000 games), and
+  the per-Apprentice spread narrows 5.5 to 3.8.
+  THE COLUMN IS NOT MONOTONE ON PURPOSE.  Standard carries fewer Setbacks
+  than Easy and is held to the band by its Credit goal instead.  Do not tidy
+  it into an ascending column without re-measuring.
+  THREE THINGS ARE STILL OPEN, and rules/RULES_CHANGELOG.txt has the numbers:
+  it does not reach the 47% floor (44.3%); it is worth exactly +0.0 from
+  Tier I upward at Easy and Standard, because 3 Following Setbacks already
+  cover a count of 2 or 3; and the ladder INVERTS - Easy reads 44.4% against
+  Standard's 45.5% - which Easy 3 -> 2 would fix at a measured 49.0%.
+
 NRJ'S NAP MODULE, CURRENT
   The 4 IMPOSTER TASKS pay a recovery on both faces.  They stay Mandatory and
   worth no Credit - that is the point of them - but a mandatory card that pays

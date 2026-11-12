@@ -946,7 +946,9 @@
     return tasks.concat(opps,sb);
   }
   // Difficulty is (Credit goal, Setbacks in the deck); see rules/nap.html.
-  const NAP_SETBACK_COUNT={5:3,6:3,7:4,8:5};
+  // Keyed by Credit goal. Standard went 3 -> 2 on 2026-11-12 as NAP's pitch
+  // lever, so the column is not monotone: 5/3, 6/2, 7/4, 8/5.
+  const NAP_SETBACK_COUNT={5:3,6:2,7:4,8:5};
   function buildNAP(){const goal=state.nap.creditGoal||6;
     const setback=shuffle([...Array(6).keys()]).slice(0,NAP_SETBACK_COUNT[goal]??3).map(i=>({type:"s",i}));const apprentice=state.nap.apprentice||"Prodigy",creditGoal=state.nap.creditGoal||4;state.nap={day:1,slot:0,hp:2,str:2,rec:2,credits:0,creditGoal,coupons:[],deviousCoupons:[],distinctRecover:false,phase:"apprenticeship",exam:null,outcome:null,completedCredits:[],apprentice,deck:shuffle(buildNAPDeck(setback)),discard:[],rows:[[],[],[]],recoveryDots:[null,null,null],primaryDot:null,choice:null,finf:{mode:"reduce",level:1,cards:[0],spent:[],drawn:[],pendingCurrent:[]},pendingReward:null,nextSlotBonus:{str:0,rec:0,crit:0},activeSlotBonus:{str:0,rec:0,crit:0},notice:"",dice:freshDice(),rollsUsed:0,recovering:false,rollResult:""};save();renderNAP();}
   function drawNAPAssignment(){

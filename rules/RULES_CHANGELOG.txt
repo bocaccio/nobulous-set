@@ -1678,3 +1678,74 @@ row relabels itself.  tts/test_setup.py checks the order as POSITIONS rather
 than as index numbers, which is what makes renaming a constant unable to
 satisfy it; it also checks that nothing else sits on the discard's space and
 that the fifth top-row column is empty.
+
+
+2026-11-12  NAP — STANDARD DROPS TO 2 SETBACKS
+============================================================================
+
+The pitch lever simulation/README.md named on 2026-11-11, pulled for the
+first time.  Easy 5/3, STANDARD 6/2, Hard 7/4, Nobulous 8/5.
+
+WHAT IT IS WORTH, 8000 games a cell, FINF -1:
+
+    Standard, 6 Credits      solo 3   solo 2  delta |  III 3  III 2  delta
+      Prodigy                 39.2%    45.5%   +6.3 |  34.8%  34.8%   +0.0
+      Slacker                 33.9%    41.7%   +7.8 |  31.2%  31.2%   +0.0
+      Technician              39.4%    44.3%   +4.9 |  34.7%  34.7%   +0.0
+      Savant                  37.3%    44.6%   +7.3 |  30.4%  30.4%   +0.0
+      Opportunist             36.5%    44.8%   +8.3 |  34.6%  34.6%   +0.0
+      Lab Rat                 37.1%    44.9%   +7.8 |  35.1%  35.1%   +0.0
+      mean                    37.2%    44.3%   +7.1 |  33.5%  33.5%   +0.0
+      spread                   5.5      3.8        |   4.7    4.7
+
+    And what a Setback is worth at each rung, Prodigy solo:
+      Easy      3 -> 2:  44.4% -> 49.0%   +4.6
+      Standard  3 -> 2:  39.2% -> 45.5%   +6.3
+      Hard      4 -> 3:  27.7% -> 33.1%   +5.4
+      Nobulous  5 -> 4:  19.3% -> 23.5%   +4.2
+
++7.1 on the solo axis and the per-Apprentice spread narrows 5.5 to 3.8, so
+the rung came up as a whole rather than coming apart.  THREE THINGS CAME
+WITH IT AND ALL THREE ARE OPEN.
+
+    1. IT DOES NOT REACH THE BAND.  44.3% against a 47% floor, and 0 of 6
+       Apprentices inside it.  Closer than the 37.2% the Assignment revision
+       left, but still short.
+
+    2. IT IS WORTH EXACTLY NOTHING FROM TIER I UPWARD, at Easy and Standard.
+       Not approximately nothing - +0.0 on all six Apprentices, because the
+       deck is identical.  Tier I swaps one base Setback out for each
+       Following Setback in, floored at none: at 3 base it is 3 Following
+       and 0 base, and at 2 base it is 3 Following and 0 base.  Standard's
+       campaign axis is still 33.5%.  Anything that moves Tier III has to be
+       a different lever - the Credit goal, or the exam Targets.
+
+    3. THE LADDER INVERTS.  Easy 44.4% against Standard 45.5%, Prodigy solo:
+       one fewer Setback is worth more than one more Credit, so Standard is
+       now the easier rung.  The measured fix is in the table above - EASY
+       3 -> 2 READS 49.0%, which restores the order and puts Easy in band -
+       but that is a second difficulty decision and it is not taken here.
+
+THE COLUMN IS DELIBERATELY NOT MONOTONE: 3, 2, 4, 5.  Standard carries fewer
+Setbacks than Easy and is held to the band by its Credit goal instead.  Do
+not tidy it into an ascending column without re-measuring; every owner's
+comment says so.
+
+SIX OWNERS CARRY THE COUNT and all six moved: simulation/nap.py LEVELS, the
+difficulty table in rules/nap.html AND the setup step that restates it,
+NAP_SETBACK_COUNT in playtest/dist/suite.js, the difficulty labels in
+playtest/dist/index.html, NAP_DIFF in tts/lua.lua, and the NAP quick
+reference in tts/build_mod.py.  Each was mutated back to 3 on its own and
+each was caught.
+
+AND A SEVENTH WAS A HAND-COPY.  tts/test_setup.py carried its own
+BAT_SPECIMENS and NAP_SETBACKS tables, so the first run after the change
+reported the MOD wrong - "got 2, want 3" - when the only thing that had
+changed was the copy going stale.  Both are read out of lua.lua now.
+
+ONE REAL BEHAVIOUR CHANGE FELL OUT OF IT.  At Standard, Tier I now ADDS a
+Setback: three Following cards arrive and only two base ones can leave, so
+the deck carries 3 where tier 0 carries 2.  That is a tier doing its job -
+what a tier must never do is hand one BACK, which is the 2026-11-07 fix -
+but it is the mechanism behind (2) above, and the harness's expectation is
+floored to match the model, the lab and the mod.

@@ -53,7 +53,10 @@ LEVELS = { 'Easy', 'Standard', 'Hard', 'Nobulous' }
 -- a number to set lightly.
 BAT_DIFF = { Easy = {5, 9, 0}, Standard = {6, 10, 0}, Hard = {7, 12, 0}, Nobulous = {8, 14, 0} }
 -- NAP: the Credit goal, and how many Setbacks are in the Assignment deck.
-NAP_DIFF = { Easy = {5, 3}, Standard = {6, 3}, Hard = {7, 4}, Nobulous = {8, 5} }
+-- (Credit goal, Setbacks shuffled in).  Standard carries 2 as of
+-- 2026-11-12 and the column is deliberately not monotone - it is fewer than
+-- Easy's 3, and Standard is held to the band by its Credit goal instead.
+NAP_DIFF = { Easy = {5, 3}, Standard = {6, 2}, Hard = {7, 4}, Nobulous = {8, 5} }
 -- NAP's second dial, from rules/nap.html: Increase 1-3 shuffles that
 -- many of the 3 FINF cards INTO the Assignment deck, Reduce 1-3 lays
 -- them out face-up to spend. Standard is Reduce 1. The two directions

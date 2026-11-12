@@ -72,8 +72,25 @@ def is_card(o):
 # Which markers a setup deliberately stands on a card.
 ON_CARD = {"BAT": ("Recovery", "Red")}
 
-BAT_SPECIMENS = {"Easy": 5, "Standard": 6, "Hard": 7, "Nobulous": 8}
-NAP_SETBACKS = {"Easy": 3, "Standard": 3, "Hard": 4, "Nobulous": 5}
+# READ OUT OF THE LUA, NOT TYPED HERE. These were a hand-copy of
+# BAT_DIFF and NAP_DIFF until 2026-11-12, when Standard's Setback count
+# went 3 -> 2 and the harness reported the MOD wrong - "got 2, want 3" -
+# because the only thing that had changed was the copy going stale. A
+# second table of the same numbers is not a check, it is a second thing
+# to update.
+def _diff_column(name, at):
+    src = io.open(os.path.join(HERE, "lua.lua"), encoding="utf-8").read()
+    row = re.search(r"^%s = \{(.+?)\}\s*$" % name, src, re.M)
+    if not row:
+        raise SystemExit("no %s table in lua.lua" % name)
+    out = {}
+    for lvl, nums in re.findall(r"(\w+) = \{([^}]*)\}", row.group(1)):
+        out[lvl] = int(nums.split(",")[at])
+    return out
+
+
+BAT_SPECIMENS = _diff_column("BAT_DIFF", 0)
+NAP_SETBACKS = _diff_column("NAP_DIFF", 1)
 
 
 class TextTool(object):
@@ -3304,14 +3321,23 @@ def main():
                  "Encounters" in w.shuffled, True)
 
             n = run(lvl, tier, "NAP")
+            # ONE BASE SETBACK OUT PER FOLLOWING SETBACK IN, FLOORED AT NONE.
+            # The 4-for-3 swap handed a Setback back at Hard and Nobulous;
+            # the floor is the other end of the same rule and it started
+            # mattering on 2026-11-12, when Standard went to 2 Setbacks.
+            # Three Following cards arrive and only two base ones can
+            # leave, so Tier I ADDS a Setback at Standard: 2 becomes 3.
+            # That is the tier doing its job - what a tier must never do is
+            # hand one back - but it is why the Setback lever is worth
+            # nothing from Tier I upward at Easy and Standard.
+            base = max(0, sb - 3) if tier >= 1 else sb
+            following = 3 if tier >= 1 else 0
             want(t + " NAP Assignment deck", len(deck(n, "Assignment").kids),
-                 26 + 6 + sb)
-            # One base Setback out per Following Setback in - the 4-for-3
-            # swap handed a Setback back at Hard and Nobulous.
+                 26 + 6 + base + following)
             want(t + " NAP base Setbacks", inside(n, "Assignment", "Setback"),
-                 sb - 3 if tier >= 1 else sb)
+                 base)
             want(t + " NAP Following Setbacks",
-                 inside(n, "Assignment", "Following Setback"), 3 if tier >= 1 else 0)
+                 inside(n, "Assignment", "Following Setback"), following)
             want(t + " NAP Imposter Tasks",
                  inside(n, "Assignment", "Imposter Task"), 4 if tier >= 2 else 0)
             want(t + " NAP base Tasks", inside(n, "Assignment", "Task "),
