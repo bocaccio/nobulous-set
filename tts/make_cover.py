@@ -43,6 +43,17 @@ SAVES = os.path.join(os.path.expanduser("~"), "Documents", "My Games",
                      "Tabletop Simulator", "Saves")
 
 
+# WHICH NAME SITS ON WHICH EDGE, Jon's placing rather than the order
+# the boxes sit in. Named here instead of zipped against a tuple of
+# sides, so moving one is moving one.
+GAMES = [("BAT", "Build-a-Tyrant", "left"),
+         ("NAP", "Nobulous Apprenticeship Program", "top"),
+         ("AoS", "Automaton of Shale", "right"),
+         ("NRJ", "Nobulous Research Journal", "bottom")]
+EDGE_INSET = 13          # how far the names sit in from the border
+EDGE_MARGIN = 20         # clear of the corners, so four lines do not meet
+
+
 def spaced(d, text, y, px, fill, track):
     """One centred line, letterspaced, the way the card backs set it.
 
@@ -58,6 +69,57 @@ def spaced(d, text, y, px, fill, track):
         if ch != " ":
             glyphs.draw_text(d, (x, y), ch, px, fill, FONT)
         x += w + track
+
+
+def line_px(text, px, track):
+    """Width of one letterspaced line."""
+    w = [glyphs.text_size(ch, px, FONT)[0] for ch in text]
+    return sum(w) + track * (len(text) - 1), w
+
+
+def edge_size(track):
+    """One type size for all four names, set by the longest.
+
+    Fitting each name to its own edge would give four sizes - a
+    fourteen-character edge in large caps opposite a thirty-one
+    character one in small - and a frame of four names has to read
+    as one frame.
+    """
+    run = SIDE - 2 * EDGE_MARGIN
+    px = 12.0
+    while px > 4.0:
+        if max(line_px(n, px, track)[0] for _, n, _s in GAMES) <= run:
+            return px
+        px -= 0.25
+    return px
+
+
+def edge(im, text, side, px, track, fill):
+    """One name along one edge, reading clockwise from the top.
+
+    Drawn flat into its own tile and turned, because a letterspaced
+    line is laid out a character at a time and rotating each glyph
+    would scatter them.
+    """
+    w, widths = line_px(text, px, track)
+    tile = Image.new("RGBA", (int(w) + 8, int(px * 1.9) + 8), (0, 0, 0, 0))
+    x = 4.0
+    base = px * 1.35
+    for ch, cw in zip(text, widths):
+        if ch != " ":
+            glyphs.draw_text(tile, (x, base), ch, px, fill, FONT)
+        x += cw + track
+    # THE BOTTOM READS THE RIGHT WAY UP. Running the frame strictly
+    # clockwise turns it through 180 and nobody reads a cover upside
+    # down; the two verticals turn, the two horizontals do not.
+    tile = tile.rotate({"top": 0, "right": -90, "bottom": 0,
+                        "left": 90}[side], expand=True)
+    tw, th = tile.size
+    pos = {"top": ((SIDE - tw) // 2, EDGE_INSET),
+           "bottom": ((SIDE - tw) // 2, SIDE - EDGE_INSET - th),
+           "left": (EDGE_INSET, (SIDE - th) // 2),
+           "right": (SIDE - EDGE_INSET - tw, (SIDE - th) // 2)}[side]
+    im.alpha_composite(tile, pos)
 
 
 def cover():
@@ -85,12 +147,21 @@ def cover():
                    fill=DARK + (255,))
     im.alpha_composite(big.resize((SIDE, SIDE), Image.LANCZOS))
 
-    spaced(im, "THE", 58, 15, MUTED, 5.0)
-    spaced(im, "NOBULOUS", 95, 30, CREAM, 2.0)
-    spaced(im, "SET", 122, 15, MUTED, 5.0)
-    d = ImageDraw.Draw(im)
-    d.line([64, 190, SIDE - 64, 190], fill=MUTED, width=1)
-    spaced(im, "BAT  NAP  AoS  NRJ", 215, 13, CREAM, 1.5)
+    spaced(im, "THE", 70, 15, MUTED, 5.0)
+    # 27, not 30: at 30 the word runs within a few pixels of the two
+    # vertical names and the frame closes in on the title.
+    spaced(im, "NOBULOUS", 107, 27, CREAM, 2.0)
+    spaced(im, "SET", 134, 15, MUTED, 5.0)
+
+    # THE FOUR GAMES AROUND THE EDGE, spelled out. The three-letter
+    # codes are what the set calls them everywhere else, and they
+    # tell a stranger nothing; a cover has room to say them once.
+    # Clockwise from the top, in the order the boxes sit on the
+    # table.
+    track = 1.4
+    px = edge_size(track)
+    for _code, name, side in GAMES:
+        edge(im, name.upper(), side, px, track, MUTED)
     return im.convert("RGB")
 
 
