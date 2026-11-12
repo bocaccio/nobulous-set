@@ -30,6 +30,13 @@ Read `HANDOFF.md` and `README.md` before making changes.
   that was never written.
 - Keep BAT, NAP, AoS and NRJ card data synchronized with the authoritative
   generator and rule sources.
+- THE MOD LOADS ITS ART FROM jsdelivr, so a rebuilt asset is broken for the
+  table until it is pushed. The table overlays are named by content hash, so
+  regenerating one RENAMES it and the mod then asks for a file that is not on
+  `main` yet - TTS answers a 404 by opening the Custom Tile dialog over a
+  blank face, which reads as a broken object and not as a missing file.
+  `check_app_sync.py` cannot see this: it is offline, and every local
+  invariant holds. Push, then run `tts/check_published.py`, then load the mod.
 
 ## Useful commands
 
@@ -53,6 +60,9 @@ python deploy.py --prune --release
 # Check the playtest lab still matches the generators (exit code = failures)
 cd generator && python check_app_sync.py
 python check_cards.py
+
+# Check the mod's baked URLs resolve - AFTER pushing, BEFORE loading in TTS
+cd tts && python check_published.py
 
 # Check the MODELS still match the cards (exit code = stale claims)
 cd simulation && python coverage.py   # is every printed effect implemented?
