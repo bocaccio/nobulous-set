@@ -139,7 +139,11 @@ def cover():
     teeth = make_dice.unit_teeth()
     order = [n for n, _ in make_dice.UNIT][::-1]      # yellow .. red
     cell = 44
-    y = 150
+    # 172, not 150. The gears are 17 in radius, so at 150 their tops
+    # reached 133 and SET's baseline is 134 - the row was sitting on
+    # the word. 172 leaves a clear gap under it and still keeps the
+    # row above the name along the bottom edge.
+    y = 172
     x0 = SIDE / 2.0 - (len(order) * cell) / 2.0 + cell / 2.0
     big = Image.new("RGBA", (SIDE * SS, SIDE * SS), (0, 0, 0, 0))
     gd = ImageDraw.Draw(big)
