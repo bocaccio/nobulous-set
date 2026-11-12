@@ -70,7 +70,7 @@ def is_card(o):
 
 
 # Which markers a setup deliberately stands on a card.
-ON_CARD = {"BAT": ("Strategy", "Red")}
+ON_CARD = {"BAT": ("Recovery", "Red")}
 
 BAT_SPECIMENS = {"Easy": 5, "Standard": 6, "Hard": 7, "Nobulous": 8}
 NAP_SETBACKS = {"Easy": 3, "Standard": 3, "Hard": 4, "Nobulous": 5}
@@ -930,7 +930,7 @@ def layout_assertions():
                 want(t + " nothing dealt off the felt", off[:3], [])
                 # MARKERS THAT ARE MEANT TO BE ON A CARD are not part
                 # of the pool this is about. BAT's setup puts the
-                # Strategy die on the active Rat's corner and the Red
+                # Recovery die on the active Rat's corner and the Red
                 # die on whichever Rat drew it, which is a marking,
                 # not a die left lying where a card was dealt.
                 pool = [(o.pos[0], o.pos[2]) for o in w.markers.values()
@@ -1624,16 +1624,17 @@ def bat_assertions():
     want("each Rat has a mark on it for being the active one",
          marks, [True] * 4)
 
-    # AND IT IS THE STRATEGY DIE ON IT. This asked only whether the
+    # AND IT IS THE RECOVERY DIE ON IT. This asked only whether the
     # corner was a snap point, so the setup could have put any die
-    # there - and it put the Health die, against three separate
-    # statements in rules/bat.html that the Strategy die is what marks
-    # the active Rat. A snap point is a place; this is what is on it.
+    # there - and it has put two different wrong ones, the Health die
+    # and then the Strategy die, against the three statements in
+    # rules/bat.html that name the marker. A snap point is a place;
+    # this is what is on it. Jon's call, 2026-11-12: Recovery.
     mx, mz = float(g.batMarkX()), float(g.batMarkZ(1))
     on_top = sorted(o.name for o in w.markers.values()
                     if abs(o.pos[0] - mx) < 0.05 and abs(o.pos[2] - mz) < 0.05)
-    want("...and the Strategy die is the one on the top Rat", on_top,
-         ["Strategy"])
+    want("...and the Recovery die is the one on the top Rat", on_top,
+         ["Recovery"])
     # The Health die has no job in BAT at all: the Tyrant's Health is
     # the dial, and a Rat's is written on its card.
     rat_z = [float(g.batRatZ(r)) for r in range(1, 5)]
@@ -1879,7 +1880,7 @@ def on_card_assertions():
     on the table - and the move is made with collide off, so nothing
     stops the die arriving inside the card. Which way Unity then
     pushes the two apart is not the script's to choose, and three
-    dice in this mod stand on a card: the Strategy die on the active
+    dice in this mod stand on a card: the Recovery die on the active
     Rat, the Red die on the Rat that drew it, and the Health die on
     the Buff HP track. Two of the three have been seen to lose.
 
@@ -1914,7 +1915,7 @@ def on_card_assertions():
     by = dict((o.name, o) for o in w.markers.values() if o.name in
               ("Strategy", "Red", "Health", "Recovery"))
     clears, named = [], []
-    for name in ("Strategy", "Red"):
+    for name in ("Recovery", "Red"):
         o = by[name]
         under = card_top_under(o.pos[0], o.pos[2])
         # BY PREFIX. column() leaves card one IN the deck, so the thing
@@ -1931,11 +1932,11 @@ def on_card_assertions():
     # go at the one height - a fix that lifted every marker would put
     # these two in the air.
     want("...while a die going to bare felt is still let go at DROP_Y",
-         [round(by[n].pos[1], 3) for n in ("Health", "Recovery")],
+         [round(by[n].pos[1], 3) for n in ("Health", "Strategy")],
          [round(float(gl.DROP_Y), 3)] * 2)
     want("...and nothing is standing on those two",
          [card_top_under(by[n].pos[0], by[n].pos[2])
-          for n in ("Health", "Recovery")], [None, None])
+          for n in ("Health", "Strategy")], [None, None])
 
     # THE SAME THING IN THE BATTLE, where the Health die stands on the
     # Buff HP track's printed grid. This is the one Jon saw first: the

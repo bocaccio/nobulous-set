@@ -291,7 +291,7 @@ function buffSpace(v)
          batRowZ(3) + BUFF_GRID_DZ + (2 - row) * BUFF_PITCH
 end
 
--- BAT'S HEALTH AND REC DICE, in a column off the exhausted corner's
+-- BAT'S TWO SPARE STAT DICE, in a column off the exhausted corner's
 -- left edge. Jon's placing: they were left in the shared dice band at
 -- the bottom of the table with everything else, where in a game whose
 -- whole bottom row is Rats and unit dice they were just two more dice
@@ -315,13 +315,21 @@ BAT_STAT_Z = {(EXHAUST_Z[1] + EXHAUST_Z[2]) / 2.0 + BAT_STAT_GAP / 2.0,
 -- The active Rat is marked at the top right corner of its card, far
 -- enough in that the die sits ON the card rather than over its edge.
 --
--- THE STRATEGY DIE IS WHAT MARKS IT. This laid the Health die there,
--- against the rulebook's own component list - "the Strategy die,
--- which marks the active Lab Rat all game" - and against the Splice
--- Phase, which says to "put the Strategy die on it after seeing the
--- Experiment and the two Upgrades", and against the battle, which
--- moves the Strategy die to the attacking Rat. Three statements of
--- the same thing in rules/bat.html and the mod did the other one.
+-- THE RECOVERY DIE IS WHAT MARKS IT, and it is the rulebook that says
+-- so rather than this file: the component list calls it "the Recovery
+-- die, which marks the active Lab Rat all game", the Splice Phase
+-- says to "put the Recovery die on it after seeing the Experiment and
+-- the two Upgrades", and the battle moves the Recovery die to the
+-- attacking Rat. check_app_sync reads the die's name OUT of those
+-- sentences and compares it with the call below, so the two cannot
+-- drift - which is the whole reason this is worth a comment. The mod
+-- has had the Health die here and then the Strategy die, each time
+-- because somebody picked one instead of reading the book. Jon's
+-- call, 2026-11-12: it is Recovery, and the Strategy die is unused.
+--
+-- A RAT'S OWN STATS ARE PRINTED ON ITS CARD, which is why any of the
+-- three could do this job and none of them is tracking a number.
+-- There are four Rats and one of each die.
 --
 -- The setup starts it on the top Rat; the Red die - the one die a Rat
 -- is given at random - sits in the opposite corner of whichever Rat
@@ -1809,22 +1817,24 @@ function setupBAT()
   end)
 
   step(function()
-    -- THE STRATEGY DIE MARKS THE ACTIVE RAT, and the first Rat is
+    -- THE RECOVERY DIE MARKS THE ACTIVE RAT, and the first Rat is
     -- the one that starts. No value is set: it is a marker here, not
     -- a number, and a die turned to a face would read as one.
     -- ONTO THE CARD, not to the height of bare felt. Both of these
     -- stand on a Lab Rat; see dropOnto.
-    setMarker('Strategy', batMarkX(), batMarkZ(1), nil, nil, ONTO)
+    setMarker('Recovery', batMarkX(), batMarkZ(1), nil, nil, ONTO)
     -- "...and the Red die on a random Rat" - rules/bat.html's setup,
     -- which until now the script only said in words.
     setMarker('Red', batMarkX(), batRedZ(math.random(BAT_ROWS)), nil, nil,
               ONTO)
-    -- AND THE HEALTH AND REC DICE IN THEIR OWN COLUMN, beside the
-    -- exhausted corner. No value is set on either: a Rat's Health is
-    -- its own and the Tyrant's is on the dial, so a die turned to a
-    -- number here would be claiming to track something.
+    -- AND THE TWO DICE WITH NO JOB IN THEIR OWN COLUMN, beside the
+    -- exhausted corner: Health and Strategy, now that Recovery is the
+    -- active-Rat mark. No value is set on either, because a Rat's
+    -- Health and STR are printed on its own card and the Tyrant's
+    -- Health is on the dial - a die turned to a number here would be
+    -- claiming to track something.
     setMarker('Health', BAT_STAT_X, BAT_STAT_Z[1])
-    setMarker('Recovery', BAT_STAT_X, BAT_STAT_Z[2])
+    setMarker('Strategy', BAT_STAT_X, BAT_STAT_Z[2])
     batRatDice()
   end)
 

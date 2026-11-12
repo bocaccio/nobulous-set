@@ -71,6 +71,8 @@ EARLIER (rev 25)
     Eight is the ceiling - there are only eight Specimen cards.
   - STAT DICE ASSIGNED.  The Strategy die marks the active Lab Rat in both
     phases.  The Health die runs the Tyrant track.  The Recovery die is not used.
+    (Superseded 2026-11-12: it is the RECOVERY die that marks the active Rat.
+    See DICE below for the current assignment; rules/bat.html is the owner.)
   - Tier III campaign: 73.8% with BAT at Standard, 68.8% at Brutal-ish (N=6).
 
 EARLIER (rev 24)
@@ -408,6 +410,20 @@ BUFF HP AND DIFFICULTY
 DICE
   Use the 20 Strong Dice and Chip saved object: 4 Purple, 4 Blue, 4 Green,
   4 Yellow, 1 Red, plus the Health, Strategy and Recovery stat dice.
+
+  WHAT EACH STAT DIE DOES IN BAT, which rules/bat.html owns and states three
+  times - the components, the Splice Phase and the battle round:
+    Recovery  marks the active Lab Rat all game, and moves to the attacking
+              Rat in the battle.
+    Health    spare.  A Rat's own Health is printed on its card and the
+              Tyrant's is on the Health dial.
+    Strategy  not used.  A Rat's STR is printed on its card.
+  There are four Rats and one of each die, so none of the three can track a
+  number here; whichever marks the Rat is a marker and nothing more.
+  check_app_sync.py reads the die's NAME out of rules/bat.html and compares it
+  with the setMarker call in tts/lua.lua, so the book and the mod cannot
+  drift.  The mod has had the Health die on that corner and then the Strategy
+  die, each time because someone picked one instead of reading the book.
 
 NOTES
   NAP Tasks carry Request and Demand on one landscape card; rotate 180 degrees

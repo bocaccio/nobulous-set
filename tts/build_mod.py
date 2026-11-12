@@ -1276,7 +1276,7 @@ def notebook():
         ("BAT quick reference",
          "SPLICE PHASE, a turn: reveal the next Experiment; reveal 2 Upgrades\n"
          "(+1 Target if either is a Specimen, once only even for two); choose\n"
-         "the active Rat and put the Strategy die on it; place the set-aside\n"
+         "the active Rat and put the Recovery die on it; place the set-aside\n"
          "Red on a NON-active Rat; commit, roll, resolve; exhaust the dice you\n"
          "committed and recover that Rat's REC.\n\n"
          "Success: successes at or over the Target, and the printed\n"
@@ -1310,7 +1310,7 @@ def notebook():
          "THE BATTLE, a round:\n"
          "1 Untap every Upgrade tapped last round.\n"
          "2 Choose the attacking Rat from those still standing and move the\n"
-         "  Strategy die to it. Rat abilities are silent in the battle.\n"
+         "  Recovery die to it. Rat abilities are silent in the battle.\n"
          "3 Commit as many dice from the shared pool as you like, honoring the\n"
          "  commit color, and roll - no limit, but you only get REC + 2 back.\n"
          "  A hit is 1 damage, a Crit 2; STR 2 gives a second Strategy roll.\n"
@@ -1348,8 +1348,10 @@ def notebook():
          "holds, 2 if it holds none. In the BATTLE Red is not in the shared\n"
          "pool and is not passed around: the attacking Rat may commit it, but\n"
          "only if they do not tap an Upgrade as part of that attack.\n\n"
-         "Strategy die marks the active Rat. The Health DIAL runs the Tyrant\n"
-         "track. The Recovery die is not used."),
+         "The RECOVERY die marks the active Rat all game, and moves to the\n"
+         "attacking Rat in the battle. The Health DIAL runs the Tyrant track.\n"
+         "A Rat's own Health, STR and REC are printed on its card, so the\n"
+         "Strategy die is not used."),
         ("NAP quick reference",
          "Three Time Slots a day, Morning / Afternoon / Evening, then End of\n"
          "Day. A SLOT:\n"

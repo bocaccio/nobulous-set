@@ -2837,7 +2837,7 @@ check("...and the Splice Phase names the same die as the components",
       in _bat_html,
       "components say %r" % (_marks and _marks.group(1),))
 check("...and the harness checks which die is really on the card",
-      "and the Strategy die is the one on the top Rat" in _ts
+      "and the Recovery die is the one on the top Rat" in _ts
       and "and no Health die is sitting on any Rat" in _ts)
 
 # EVERY DECK THAT WAITS IN A BOX HAS SOMETHING THAT TAKES IT OUT.
@@ -3748,7 +3748,7 @@ check("the setup turns the Chip after it lands, not while it moves",
 # flag is the failure this is for. The behaviour - that the height
 # really does clear the card - is tts/test_setup.py's on_card
 # assertions; this is only that each call asks for it.
-_onto = ["setMarker('Strategy', batMarkX(), batMarkZ(1), nil, nil, ONTO)",
+_onto = ["setMarker('Recovery', batMarkX(), batMarkZ(1), nil, nil, ONTO)",
          "setMarker('Red', batMarkX(), batRedZ(math.random(BAT_ROWS)), nil,"
          " nil,\n              ONTO)",
          "setMarker('Health', bx, bz, 1, nil, ONTO)"]
@@ -3782,7 +3782,8 @@ check("the stat dice are a row under the character card, measured from it",
 #
 # NOT [4, 3, 3]. Those were the counts the day it was written and the
 # extra one was the Health die, which was the bug: the moment the
-# marker became the Strategy die the numbers moved and a check about
+# marker became the Strategy die, and then the Recovery die, the
+# numbers moved and a check about
 # stat rows failed for a reason that had nothing to do with stat rows.
 # What has to hold is that the three rows are complete and exactly one
 # game marks a card as well.
@@ -3808,7 +3809,7 @@ check("...and every game that has a character places all three of them",
       and _mk == {"Health": 5, "Strategy": 4, "Recovery": 4}
       and "setMarker('Health', BAT_STAT_X, BAT_STAT_Z[1])" in _lua
       and "if bx then setMarker('Health', bx, bz, 1, nil, ONTO) end" in _lua
-      and "setMarker('Recovery', BAT_STAT_X, BAT_STAT_Z[2])" in _lua
+      and "setMarker('Strategy', BAT_STAT_X, BAT_STAT_Z[2])" in _lua
       and "BAT_STAT_X = BAT_EXHAUST_X0 -" in _lua
       and "EXHAUST_Z[1]" in _lua
       and re.search(r"^EXHAUST_Z = \{", _sv["LuaScript"], re.M),

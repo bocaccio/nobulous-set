@@ -1304,3 +1304,42 @@ Assignment spaces beside each Time Slot" matched the literal string
 "one row" failed a check about how many spaces the lab draws.  It reads
 the cap out of the sentence now and compares it with ASSIGN_SLOTS, and
 both sides of that were mutation-tested.
+
+
+2026-11-12  THE RECOVERY DIE MARKS THE ACTIVE LAB RAT
+Jon's call, answering a question this repository had been asking itself
+for two days. BAT's components list had read "the Strategy die, which
+marks the active Lab Rat all game" and ended "The Recovery die is not
+used"; the two are now the other way round.
+
+WHY IT WAS ASKED AT ALL. The mod was asked to stand the Health and REC
+dice in a column beside the exhausted corner, which put a die on the
+table that the same book called unused - so either the book or the
+table was wrong, and both had a claim. Three dice, four Rats: none of
+the three can track a number in BAT, because a Rat's Health and STR are
+printed on its own card and the Tyrant's Health is on the dial. Any of
+them could be the marker, which is exactly why the book has to say
+which, and the mod has now had two different wrong answers on that
+corner - the Health die, then the Strategy die - each time because
+somebody picked one instead of reading the page.
+
+WHAT MOVED. rules/bat.html in three places: the components, the Splice
+Phase step that puts the die on the chosen Rat, and the battle round
+that moves it to the attacker. The mod's setup now stands Recovery on
+the Rat and leaves Health and Strategy in the spare column. The BAT
+quick reference in the TTS notebook says the same, and CARD_MANIFEST's
+DICE section now carries the assignment as current state rather than
+leaving it in a revision note.
+
+NOTHING IN THE MODEL MOVED, because nothing in the model ever read it:
+simulation/bat.py has no notion of which physical die sits on a card,
+and "Strategy roll" - which is a roll, not the die - is untouched
+throughout.
+
+THE CROSS-CHECK WAS ALREADY THERE and did its job. check_app_sync reads
+the die's NAME out of the components sentence and compares it with the
+setMarker call in tts/lua.lua, and a second check holds the Splice
+Phase against the components. Mutated - the book put back to Strategy
+with the mod left on Recovery - both fail and name both sides. That
+pair was written on 2026-11-10 for the previous wrong answer and is the
+reason this one took one edit to the book and not a search.
