@@ -554,6 +554,34 @@ for lvl in ("Easy", "Standard", "Hard", "Nobulous"):
 check("the lab's NAP difficulty labels name the goal it plays",
       len(_nap_opts) == 4 and not _nap_wrong, "; ".join(_nap_wrong[:4]))
 
+# AND A SEVENTH OWNER, found when the ladder stepped to 4/1, 5/2, 6/3, 7/4 on
+# 2026-11-12: the notice the lab prints when you pick a level carried its own
+# goal -> name map, hand-typed inside the onchange handler. Nothing compared
+# it with anything, so after the step it would have called 5 Credits "Easy"
+# and left Nobulous reading "undefined" - the same shape of bug as the
+# difficulty labels above, in the one sentence that tells a playtester which
+# rung they just chose.
+_notice_map = dict(
+    (int(g), n) for g, n in re.findall(
+        r'(\d+):"(Easy|Standard|Hard|Nobulous)"',
+        text("playtest/dist/suite.js")))
+check("the lab's difficulty notice names the level the model plays",
+      _notice_map == dict((goal, lvl) for lvl, (goal, _sb)
+                          in sn["LEVELS"].items()),
+      "suite.js says %r" % (_notice_map,))
+
+# THE DEFAULTS WERE NOT ONE NUMBER. buildNAP read the Setback count with
+# `creditGoal||6` and then stored the goal with `creditGoal||4`, so a state
+# with no goal built Standard's deck and played a goal no level had. It was
+# invisible while 4 was not a goal; it became Easy on 2026-11-12. Every
+# fallback in the file is Standard's goal, and this counts them.
+_defaults = set(int(d) for d in re.findall(
+    r'creditGoal\s*(?::|\?\?=|\|\|)\s*(\d+)',
+    text("playtest/dist/suite.js")))
+check("the lab's Credit-goal fallbacks are all Standard's goal",
+      _defaults == {sn["LEVELS"]["Standard"][0]},
+      "suite.js falls back to %s" % (sorted(_defaults),))
+
 # THE SETBACK COUNT IS PRINTED, so three sources carry it: nap.LEVELS, the
 # difficulty table in rules/nap.html, and NAP_SETBACK_COUNT in suite.js - and
 # NOTHING COMPARED THEM until the 2026-11-06 re-peg had to change all three by
@@ -1978,6 +2006,54 @@ else:
     check("...and NAP buys its page with margin, not with smaller type",
           "font-size" not in text("rules/nap.html")
           and "margin: 11mm" in text("rules/nap.html"))
+
+    # AND THE SHIPPED PDF IS THE ONE ITS HTML BUILDS. Every check above
+    # this one reads the HTML; the PDF is what a player opens, and
+    # nothing compared the two. NRJ_Campaign_Supplement.pdf was
+    # committed stale on 2026-11-12 - the Tier I split sentence had been
+    # corrected in rules/nrj.html the same day and the book in the tree
+    # still printed the wrong four numbers. The page count passed,
+    # because a stale book is exactly as long as a fresh one.
+    #
+    # DERIVED FROM nap.LEVELS, both of them, so this cannot be satisfied
+    # by a book that prints any ladder but the current one. The strings
+    # are what pypdf really extracts from the two places the ladder is
+    # printed: NAP's difficulty table, and the Tier I row of the
+    # supplement that says what each rung ends up holding.
+    # ITS OWN NAME, NOT _stale: the copy check 60 lines below reads a
+    # _stale built at line 1894, and a second list by that name here
+    # emptied it and made that check pass with the lab's copies really
+    # out of date. A check that cannot fail is worse than no check.
+    _pdf_stale = []
+    _want_pdf = {
+        "NAP_Rulebook.pdf": [
+            " ".join("%s %d Credits %d" % (l, sn["LEVELS"][l][0],
+                                           sn["LEVELS"][l][1])
+                     for l in ("Easy", "Standard", "Hard", "Nobulous")),
+            "%d, %d, %d or %d of the 6" % tuple(
+                sn["LEVELS"][l][1]
+                for l in ("Easy", "Standard", "Hard", "Nobulous")),
+        ],
+        "NRJ_Campaign_Supplement.pdf": [
+            "Easy 3 Following and %d base, Standard 3 and %d, Hard 3 and "
+            "%d, Nobulous 3 and %d" % tuple(
+                max(0, sn["LEVELS"][l][1] - 3)
+                for l in ("Easy", "Standard", "Hard", "Nobulous")),
+        ],
+    }
+    for _b, _wants in sorted(_want_pdf.items()):
+        _f = os.path.join(ROOT, "rules", _b)
+        if not os.path.exists(_f):
+            _pdf_stale.append("%s is missing" % _b)
+            continue
+        _txt = re.sub(r"\s+", " ",
+                      " ".join(_p.extract_text()
+                               for _p in pypdf.PdfReader(_f).pages))
+        for _w in _wants:
+            if _w not in _txt:
+                _pdf_stale.append("%s does not print %r" % (_b, _w))
+    check("every shipped rulebook PDF prints the current ladder",
+          not _pdf_stale, "; ".join(_pdf_stale[:3]))
 
 # THE RULEBOOKS ARE WELL-FORMED WHERE IT SHOWS. Lists only: a nested
 # <li> or text loose inside a list silently renumbers a sequence, and

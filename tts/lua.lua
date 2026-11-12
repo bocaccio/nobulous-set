@@ -53,12 +53,13 @@ LEVELS = { 'Easy', 'Standard', 'Hard', 'Nobulous' }
 -- a number to set lightly.
 BAT_DIFF = { Easy = {5, 9, 0}, Standard = {6, 10, 0}, Hard = {7, 12, 0}, Nobulous = {8, 14, 0} }
 -- NAP: the Credit goal, and how many Setbacks are in the Assignment deck.
--- (Credit goal, Setbacks shuffled in).  Retuned on both dials 2026-11-12:
--- 62.2 / 53.0 / 38.6 / 23.7 solo, against BAT's pegged 63.7 / 52.8 / 37.8 /
--- 25.8.  Easy plays without Setbacks, which is forced rather than chosen -
--- see LEVELS in simulation/nap.py.  Tier I still deals 3 Following ones at
--- every difficulty, so Easy meets them in the campaign.
-NAP_DIFF = { Easy = {5, 0}, Standard = {6, 1}, Hard = {7, 2}, Nobulous = {8, 4} }
+-- (Credit goal, Setbacks shuffled in).  Stepped one Credit down and one
+-- Setback up 2026-11-12: 58.2 / 49.3 / 36.9 / 26.3 solo, six Apprentices,
+-- against BAT's pegged 63.7 / 52.8 / 37.8 / 25.8.  EVERY RUNG CARRIES AT
+-- LEAST ONE SETBACK, which is what keeps Tier I's one-for-one swap from
+-- simply adding three cards to a rung that had none - see LEVELS in
+-- simulation/nap.py for the measurement and for what Standard pays for it.
+NAP_DIFF = { Easy = {4, 1}, Standard = {5, 2}, Hard = {6, 3}, Nobulous = {7, 4} }
 -- NAP's second dial, from rules/nap.html: Increase 1-3 shuffles that
 -- many of the 3 FINF cards INTO the Assignment deck, Reduce 1-3 lays
 -- them out face-up to spend. Standard is Reduce 1. The two directions

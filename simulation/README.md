@@ -202,20 +202,27 @@ together for the first time (`nap_ladder.py`); each had only ever been moved
 against a column measured with the other held still, which is how the ladder
 briefly inverted when Standard alone went to 2 Setbacks.
 
+That sweep landed on 5/0, 6/1, 7/2, 8/4 and Standard at 52.1%. The ladder
+was then stepped one Credit down and one Setback up, at Jon's ask - the same
+diagonal, shifted, so each dial still moves one step a rung:
+
 | difficulty | goal / Setbacks | solo | Tier I | Tier II | Tier III |
 | --- | --- | --- | --- | --- | --- |
-| Easy | 5 / 0 | 61.9% | 40.8% | 28.9% | 38.8% |
-| **Standard** | **6 / 1** | **52.1%** | 35.1% | 22.9% | 33.7% |
-| Hard | 7 / 2 | 38.6% | 29.3% | 19.5% | 30.2% |
-| Nobulous | 8 / 4 | 22.5% | 20.6% | 13.8% | 22.6% |
+| Easy | 4 / 1 | 58.2% | 47.5% | 35.1% | 43.8% |
+| **Standard** | **5 / 2** | **49.3%** | 40.8% | 28.9% | 38.8% |
+| Hard | 6 / 3 | 36.9% | 35.1% | 22.9% | 33.7% |
+| Nobulous | 7 / 4 | 26.3% | 24.5% | 16.8% | 25.7% |
 
-Four thousand games a cell, six Apprentices averaged. **Standard is back in
-the band at 52.1%**, and the set reads BAT 52.8 / NAP 52.1 / AoS 51.7 at
-Standard on the solo axis. Easy having no Setbacks is forced rather than
-chosen - the derivation is beside `LEVELS` in `nap.py` and in
-`rules/RULES_CHANGELOG.txt` - and two things are left open there: Tier I
-costs Easy 21 points and Nobulous 2, and Nobulous at Tier III is level with
-its own solo cell.
+Four thousand games a cell, six Apprentices averaged. **Standard is 49.3%** -
+inside the 47-57% band but near the floor, and the hardest Standard in the
+set (BAT 52.8, AoS 51.7). What the step buys is the hard end and the
+campaign: Hard and Nobulous land closer to BAT's pegged 37.8 / 25.8 than they
+ever have, Tier I costs 10.7 / 8.5 / 1.8 / 1.8 instead of 21 and 2, and Tier
+III is below its own solo cell at every rung rather than level with it at
+Nobulous. Both of the things the previous ladder left open came from Easy
+having no Setbacks for Tier I to swap out, and every rung now carries one.
+The derivation is beside `LEVELS` in `nap.py` and in
+`rules/RULES_CHANGELOG.txt`.
 
 Do not retype these. `table.py` computes the calibration verdicts from the
 grids it just ran, and `RESULTS.txt` is its transcript; this paragraph is a

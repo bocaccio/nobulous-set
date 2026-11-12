@@ -502,8 +502,8 @@ FINF_REDUCE_ANY_CARD = False
 # one so demanding more refunds itself, and above about 8 the Credits earned
 # flatline because the deck runs out. The deck is the other half, which is
 # what BAT (Specimens added) and AoS (deck mix) already use.
-#   Easy 3, Standard 3, Hard 4, Nobulous 5 - see LEVELS below
-SETBACKS_IN_DECK = 3
+#   Easy 1, Standard 2, Hard 3, Nobulous 4 - see LEVELS below
+SETBACKS_IN_DECK = 2
 OPPORTUNITIES_IN_DECK = 6
 
 # Opportunity levers, all printed-card changes:
@@ -751,7 +751,7 @@ ABILITIES = {"Prodigy": "wild_one", "Slacker": "discard",
 # 2026-11-06 was measured through.
 COLOR_RULE_ON_SUCCESS = True
 
-CREDITS_TO_LEAVE = 6      # Easy 5, Standard 6, Hard 7, Nobulous 8
+CREDITS_TO_LEAVE = 5      # Easy 4, Standard 5, Hard 6, Nobulous 7
 # Difficulty is the pair (Credit goal, Setbacks in the deck).
 #
 # RE-PEGGED 2026-11-06, one Setback off every rung: 4/4/5/6 became 3/3/4/5.
@@ -772,30 +772,54 @@ CREDITS_TO_LEAVE = 6      # Easy 5, Standard 6, Hard 7, Nobulous 8
 # End-of-Day burn sit unplayed in this file for weeks while the other two
 # sources played it.
 #
-# RETUNED ON BOTH DIALS, 2026-11-12, and this is the first time they have
+# RETUNED ON BOTH DIALS, 2026-11-12, and that was the first time they had
 # been swept together. Each had only ever been moved on its own, against a
 # column measured with the other held still - which is how the ladder came to
 # invert earlier the same day, Standard at 2 Setbacks overtaking Easy at 3.
-# simulation/nap_ladder.py prints the surface.
+# simulation/nap_ladder.py prints the surface. That sweep landed on 5/0, 6/1,
+# 7/2, 8/4 and put Standard at 52.1%.
 #
-# THE GOAL RISES BY ONE AND THE SETBACK COUNT RISES WITH IT: 5/0, 6/1, 7/2,
-# 8/4. Measured 62.2 / 53.0 / 38.6 / 23.7 (Prodigy, solo), against BAT's
-# pegged ladder of 63.7 / 52.8 / 37.8 / 25.8 - the one ladder in the set
-# deliberately pitched at the 20 Strong community band, with Standard inside
-# 47-57 and the hard end outside it on purpose.
+# STEPPED ONE CREDIT DOWN AND ONE SETBACK UP, later the same day, at Jon's
+# ask: 4/1, 5/2, 6/3, 7/4. Both dials still move one step a rung, so the
+# ladder keeps its shape; it is the same diagonal, shifted. Measured 4000
+# games a cell, six Apprentices averaged:
 #
-# EASY HAS NO SETBACKS AND THAT IS FORCED, not a flourish. A Setback is worth
-# 5 to 7 points and a Credit about 4, so Standard can only reach 53% at 1
-# Setback (6/1 = 53.0; 6/2 = 45.3 is below the floor). Easy then cannot also
-# be 1 - 5/1 is 55.1, a 2.1-point step that is no rung at all - so Easy is 0.
-# They still meet Setbacks in the campaign: Tier I deals 3 Following ones
-# whatever the difficulty says.
+#     level        goal/sb   solo   tier I  tier II  tier III
+#     Easy          4 / 1    58.2    47.5     35.1     43.8
+#     Standard      5 / 2    49.3    40.8     28.9     38.8
+#     Hard          6 / 3    36.9    35.1     22.9     33.7
+#     Nobulous      7 / 4    26.3    24.5     16.8     25.7
 #
-# NOBULOUS SKIPS 3 FOR 4, which is the one place the column is not +1 a rung.
-# 8/3 reads 29.8 and 8/4 reads 23.7 against BAT's 25.8, so 4 is nearer - and
-# 4 is where Tier I's swap finally bites, so Nobulous is the only rung whose
-# CAMPAIGN axis still moves with the Setback count.
-LEVELS = {"Easy": (5, 0), "Standard": (6, 1), "Hard": (7, 2), "Nobulous": (8, 4)}
+# WHAT IT BUYS, against BAT's pegged 63.7 / 52.8 / 37.8 / 25.8. Hard and
+# Nobulous land closer to the house style than they ever have - 36.9 against
+# 37.8 and 26.3 against 25.8, where 5/0..8/4 read 38.6 and 22.5 - so the hard
+# end of the set now agrees across three games. EVERY RUNG ALSO PLAYS WITH AT
+# LEAST ONE SETBACK, which is what fixes the two things the previous ladder
+# left open:
+#
+#   TIER I IS NO LONGER LOPSIDED. It cost Easy 21 points and Nobulous 2 when
+#   Easy had nothing to swap out; it now costs 10.7 / 8.5 / 1.8 / 1.8. The
+#   swap rule is unchanged - one base Setback leaves per Following card in,
+#   floored at none - it is just no longer being asked to take cards off a
+#   rung that has none.
+#
+#   AND TIER III IS BELOW ITS SOLO CELL AT EVERY RUNG, 43.8 / 38.8 / 33.7 /
+#   25.7 against 58.2 / 49.3 / 36.9 / 26.3. Nobulous was level with its own
+#   solo cell before (22.6 against 22.5), and the one rule a tier must never
+#   break is that it makes the game easier.
+#
+# WHAT IT COSTS, and it is one thing: STANDARD IS 49.3%. That is inside the
+# 47-57% band but near the floor, and it leaves NAP the hardest Standard in
+# the set - BAT 52.8, AoS 51.7, NAP 49.3 - where the three sat within 1.1 of
+# each other this morning. The solo steps are also 8.9, 12.4, 10.6, so the
+# ladder no longer widens all the way up: the top two rungs are closer
+# together than the middle pair. Both are consequences of asking the goals to
+# start a Credit lower while the Setbacks start a Setback higher, and a
+# Setback is worth more than a Credit (4.2-6.3 against 4.2-5.2). THE DIAL
+# THAT WOULD MOVE STANDARD BACK is its own Setback count: 5/1 reads 55.1 and
+# 5/2 reads 49.3, so there is no cell between them. Raising Standard alone
+# would invert it against Easy, which is the mistake of this morning.
+LEVELS = {"Easy": (4, 1), "Standard": (5, 2), "Hard": (6, 3), "Nobulous": (7, 4)}
 # End of Day burns one card off the Assignment deck, text ignored.
 # rules/nap.html prints it under "End of Day" - "Reveal and discard the top
 # card of the Assignment deck. Ignore all of its text, effects and Skulls" -

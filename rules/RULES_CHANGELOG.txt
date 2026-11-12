@@ -1833,3 +1833,69 @@ read "no Setbacks" and "1 Setback" rather than "0 Setbacks" and "1
 Setbacks"; the check builds the same string, because the honest way to
 keep a derived check honest is to make it produce what the page should
 read, not to relax it.
+2026-11-12  THE LADDER STEPS A CREDIT DOWN AND A SETBACK UP
+Easy 4 Credits / 1 Setback, Standard 5 / 2, Hard 6 / 3, Nobulous 7 / 4,
+replacing the 5/0, 6/1, 7/2, 8/4 measured earlier the same day.  Both dials
+still move one step a rung, so this is the same diagonal shifted, not a new
+shape.  Nothing else moves: no card text, no Target, no Tier rule.
+
+MEASURED, 4000 games a cell, six Apprentices averaged.
+
+    level      goal/sb    tier 0   tier I  tier II  tier III
+    Easy        4 / 1      58.2%    47.5%    35.1%     43.8%
+    Standard    5 / 2      49.3%    40.8%    28.9%     38.8%
+    Hard        6 / 3      36.9%    35.1%    22.9%     33.7%
+    Nobulous    7 / 4      26.3%    24.5%    16.8%     25.7%
+
+THE HARD END IS THE CLOSEST IT HAS BEEN TO THE HOUSE STYLE.  BAT's pegged
+ladder is 63.7 / 52.8 / 37.8 / 25.8, and Hard 36.9 and Nobulous 26.3 sit
+within 0.9 and 0.5 of it, where 7/2 and 8/4 read 38.6 and 22.5.
+
+AND EVERY RUNG NOW PLAYS WITH AT LEAST ONE SETBACK, which closes both of the
+things the previous ladder left open.  Tier I swaps one base Setback out per
+Following card in, floored at none, so a rung with none did not swap at all -
+it simply gained three cards.  That is why the tier cost Easy 21 points and
+Nobulous 2.  It now costs 10.7 / 8.5 / 1.8 / 1.8.  And Tier III, which was
+level with its own solo cell at Nobulous (22.6 against 22.5), is below the
+solo cell at every rung: 43.8 / 38.8 / 33.7 / 25.7 against 58.2 / 49.3 /
+36.9 / 26.3.  A tier may make the game harder or may cost less than another
+tier; it may not make it easier than no campaign at all.
+
+WHAT IT COSTS IS STANDARD, AND THAT IS WORTH SAYING PLAINLY.  49.3% is
+inside the 47-57% band but near the floor, and it leaves NAP the hardest
+Standard in the set - BAT 52.8, AoS 51.7, NAP 49.3 - where the three sat
+within 1.1 of each other this morning.  The solo steps are 8.9, 12.4, 10.6,
+so the ladder no longer widens all the way up either: the top two rungs are
+closer together than the middle pair.  Both follow from starting the goals a
+Credit lower while the Setbacks start a Setback higher, because a Setback is
+worth more than a Credit - 4.2 to 6.3 points against 4.2 to 5.2.
+
+THE DIAL THAT WOULD MOVE STANDARD BACK IS ITS OWN SETBACK COUNT, and there
+is no cell between the two: 5/1 reads 55.1 and 5/2 reads 49.3.  Raising
+Standard alone is what inverted the ladder against Easy earlier the same
+day, so it is not a change to make on the solo column by itself.
+
+NINE OWNERS CARRIED THE NUMBERS AND TWO OF THEM WERE NOT BEING READ.
+
+    THE LAB'S DIFFICULTY NOTICE had its own goal -> name map, hand-typed
+    inside the onchange handler: {5:"Easy",6:"Standard",7:"Hard",
+    8:"Nobulous"}.  Nothing compared it with nap.LEVELS, so after the step
+    it would have called 5 Credits "Easy" and left Nobulous reading
+    "undefined" - in the one sentence that tells a playtester which rung
+    they just chose.
+
+    AND buildNAP'S DEFAULTS WERE NOT ONE NUMBER.  It read the Setback count
+    with `creditGoal||6` and then stored the goal with `creditGoal||4`, so a
+    state with no goal built one difficulty's deck and played another's
+    goal.  It was invisible while 4 was not a goal at all.  Every fallback
+    in the file is Standard's goal now, and check_app_sync.py counts them.
+
+A RULEBOOK IN THE TREE WAS NOT THE ONE ITS HTML BUILDS.  NRJ_Campaign_
+Supplement.pdf was committed stale earlier the same day: the Tier I split
+sentence had been corrected in rules/nrj.html and the book a player opens
+still printed the four wrong numbers.  Every check in the suite read the
+HTML; the page-count check passed, because a stale book is exactly as long
+as a fresh one.  check_app_sync.py now extracts the text of each shipped PDF
+and asks it for the ladder derived from nap.LEVELS - the difficulty table in
+NAP's book and the Tier I row in the supplement - so a book that was not
+rebuilt fails on the number it is missing.

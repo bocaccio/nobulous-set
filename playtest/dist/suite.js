@@ -189,7 +189,7 @@
   const freshDice = () => COLORS.map((color,id)=>({id,color,zone:"available",selected:false,face:""}));
   const fresh = () => ({
     config:{mode:"standalone",tier:"0",finale:"sample",tierOverride:{bat:"",nap:"",aos:""}},
-    nap:{day:1,slot:0,hp:2,str:2,rec:2,credits:0,creditGoal:6,coupons:[],deviousCoupons:[],distinctRecover:false,phase:"apprenticeship",exam:null,outcome:null,completedCredits:[],apprentice:"Prodigy",deck:[],discard:[],rows:[[],[],[]],recoveryDots:[null,null,null],primaryDot:null,choice:null,finf:{mode:"reduce",level:1,cards:[0],spent:[],drawn:[],pendingCurrent:[]},pendingReward:null,nextSlotBonus:{str:0,rec:0,crit:0},activeSlotBonus:{str:0,rec:0,crit:0},notice:"",dice:freshDice(),rollsUsed:0,recovering:false,rollResult:""},
+    nap:{day:1,slot:0,hp:2,str:2,rec:2,credits:0,creditGoal:5,coupons:[],deviousCoupons:[],distinctRecover:false,phase:"apprenticeship",exam:null,outcome:null,completedCredits:[],apprentice:"Prodigy",deck:[],discard:[],rows:[[],[],[]],recoveryDots:[null,null,null],primaryDot:null,choice:null,finf:{mode:"reduce",level:1,cards:[0],spent:[],drawn:[],pendingCurrent:[]},pendingReward:null,nextSlotBonus:{str:0,rec:0,crit:0},activeSlotBonus:{str:0,rec:0,crit:0},notice:"",dice:freshDice(),rollsUsed:0,recovering:false,rollResult:""},
     nrj:{hp:5,str:2,rec:3,session:0,dossier:[],active:[],buried:[],key:0,recCredit:0,
       rollsUsed:0,rollResult:"",outcome:null,recovering:false,pool:18,cards:null,dice:freshDice(),
       imp:"",impCount:0,impSession:-1,armed:null,wide:-1,extraRolls:0}
@@ -211,7 +211,7 @@
   state.nap.rollsUsed??=0;state.nap.recovering??=false;state.nap.rollResult??="";
   state.nap.recoveryDots??=[null,null,null];
   state.nap.primaryDot??=null;
-  state.nap.discard??=[];state.nap.pendingReward??=null;if(state.nap.pendingReward&&!state.nap.pendingReward.cardType)state.nap.pendingReward={...state.nap.pendingReward,cardType:"o",cardIndex:state.nap.pendingReward.kind==="distinct"?1:4,text:state.nap.pendingReward.kind==="distinct"?NAP_OPPORTUNITY_EFFECTS[1]:NAP_OPPORTUNITY_EFFECTS[4]};state.nap.creditGoal??=6;state.nap.coupons??=[];state.nap.deviousCoupons??=[];state.nap.distinctRecover??=false;state.nap.phase??="apprenticeship";state.nap.exam??=null;state.nap.outcome??=null;state.nap.recoverOverride??=null;state.nap.nextSlotBonus??={str:0,rec:0,crit:0};state.nap.activeSlotBonus??={str:0,rec:0,crit:0};state.nrj.discard??=[];state.nrj.cards??=null;
+  state.nap.discard??=[];state.nap.pendingReward??=null;if(state.nap.pendingReward&&!state.nap.pendingReward.cardType)state.nap.pendingReward={...state.nap.pendingReward,cardType:"o",cardIndex:state.nap.pendingReward.kind==="distinct"?1:4,text:state.nap.pendingReward.kind==="distinct"?NAP_OPPORTUNITY_EFFECTS[1]:NAP_OPPORTUNITY_EFFECTS[4]};state.nap.creditGoal??=5;state.nap.coupons??=[];state.nap.deviousCoupons??=[];state.nap.distinctRecover??=false;state.nap.phase??="apprenticeship";state.nap.exam??=null;state.nap.outcome??=null;state.nap.recoverOverride??=null;state.nap.nextSlotBonus??={str:0,rec:0,crit:0};state.nap.activeSlotBonus??={str:0,rec:0,crit:0};state.nrj.discard??=[];state.nrj.cards??=null;
   // A finale in progress from before 2026-10-31 has no Imposter fields, and
   // nrjImpLeft would read NaN uses off undefined. It keeps its dice.
   state.nrj.imp??="";state.nrj.impCount??=0;state.nrj.impSession??=-1;
@@ -947,11 +947,12 @@
   }
   // Difficulty is (Credit goal, Setbacks in the deck); see rules/nap.html.
   // Keyed by Credit goal, which is why the four goals have to stay distinct.
-  // Retuned on both dials 2026-11-12: 5/0, 6/1, 7/2, 8/4. Easy plays without
-  // Setbacks - see LEVELS in simulation/nap.py for why that is forced.
-  const NAP_SETBACK_COUNT={5:0,6:1,7:2,8:4};
-  function buildNAP(){const goal=state.nap.creditGoal||6;
-    const setback=shuffle([...Array(6).keys()]).slice(0,NAP_SETBACK_COUNT[goal]??3).map(i=>({type:"s",i}));const apprentice=state.nap.apprentice||"Prodigy",creditGoal=state.nap.creditGoal||4;state.nap={day:1,slot:0,hp:2,str:2,rec:2,credits:0,creditGoal,coupons:[],deviousCoupons:[],distinctRecover:false,phase:"apprenticeship",exam:null,outcome:null,completedCredits:[],apprentice,deck:shuffle(buildNAPDeck(setback)),discard:[],rows:[[],[],[]],recoveryDots:[null,null,null],primaryDot:null,choice:null,finf:{mode:"reduce",level:1,cards:[0],spent:[],drawn:[],pendingCurrent:[]},pendingReward:null,nextSlotBonus:{str:0,rec:0,crit:0},activeSlotBonus:{str:0,rec:0,crit:0},notice:"",dice:freshDice(),rollsUsed:0,recovering:false,rollResult:""};save();renderNAP();}
+  // Stepped down a Credit and up a Setback 2026-11-12: 4/1, 5/2, 6/3,
+  // 7/4. Every rung plays with at least one Setback and the goals stay
+  // one apart - see LEVELS in simulation/nap.py for the measurement.
+  const NAP_SETBACK_COUNT={4:1,5:2,6:3,7:4};
+  function buildNAP(){const goal=state.nap.creditGoal||5;
+    const setback=shuffle([...Array(6).keys()]).slice(0,NAP_SETBACK_COUNT[goal]??3).map(i=>({type:"s",i}));const apprentice=state.nap.apprentice||"Prodigy",creditGoal=state.nap.creditGoal||5;state.nap={day:1,slot:0,hp:2,str:2,rec:2,credits:0,creditGoal,coupons:[],deviousCoupons:[],distinctRecover:false,phase:"apprenticeship",exam:null,outcome:null,completedCredits:[],apprentice,deck:shuffle(buildNAPDeck(setback)),discard:[],rows:[[],[],[]],recoveryDots:[null,null,null],primaryDot:null,choice:null,finf:{mode:"reduce",level:1,cards:[0],spent:[],drawn:[],pendingCurrent:[]},pendingReward:null,nextSlotBonus:{str:0,rec:0,crit:0},activeSlotBonus:{str:0,rec:0,crit:0},notice:"",dice:freshDice(),rollsUsed:0,recovering:false,rollResult:""};save();renderNAP();}
   function drawNAPAssignment(){
     const card=state.nap.deck.pop();
     if(card?.type!=="f")return card;
@@ -1930,11 +1931,11 @@
   });
   window.addEventListener("nobulous-tier",()=>{renderTierPickers();window.AOS_LAB?.render?.();if(!$("screen-nap").classList.contains("hidden"))renderNAP();window.BAT_LAB?.render?.();});
   $("napReveal").onclick=revealNAP;$("napAdvance").onclick=advanceNAP;document.querySelectorAll("[data-nap-choice]").forEach(b=>b.onclick=()=>chooseNAP(Number(b.dataset.napChoice)));document.querySelectorAll("[data-nap-turn]").forEach(b=>b.onclick=()=>{const i=Number(b.dataset.napTurn);napTurned[i]=!napTurned[i];renderNAP();});
-  $("napCreditGoal").value=String(state.nap.creditGoal||6);
+  $("napCreditGoal").value=String(state.nap.creditGoal||5);
   $("napCreditGoal").onchange=e=>{
     const n=state.nap,goal=Number(e.target.value);
     n.creditGoal=goal;
-    n.notice=`Difficulty set: ${({5:"Easy",6:"Standard",7:"Hard",8:"Nobulous"})[goal]} - earn ${goal} Credits to reach the Final Exam.`;
+    n.notice=`Difficulty set: ${({4:"Easy",5:"Standard",6:"Hard",7:"Nobulous"})[goal]} - earn ${goal} Credits to reach the Final Exam.`;
     save();renderNAP();
   };
   $("napDifficulty").onchange=e=>{
