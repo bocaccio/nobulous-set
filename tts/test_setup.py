@@ -3339,6 +3339,85 @@ def dial_assertions():
          int(chip.rot[1]) != int(gen[cols[2]]), True)
 
 
+def char_bag_assertions():
+    """Cycling characters with the BAG refusing puts, which lost half.
+
+    Jon, 2026-11-12: "when cycling heroes, sometime the card stays on
+    the table. Other times it goes back to the bag." It did, and
+    putHome was the one doing it - it always scheduled a look six
+    frames after posting a card, and re-posted whatever was out under
+    that GUID. showChar files the character that is out and then deals
+    from the same stack, so a refused put left a chain alive across the
+    deal and the chain filed the card the player had just asked for.
+
+    SOMETIMES, because six characters live on three cards: every other
+    press is a flip of the card already out, and only those presses
+    re-deal the GUID a chain is holding. NAP and AoS lost 3 of 8
+    presses here, the finale 5 of 12.
+
+    WHY NEITHER OF THE TWO BLOCKS ABOVE SAW IT. choice_assertions
+    walks this same cycle and does assert one character card is out
+    after every press - with no refusal modelled at all, so no chain
+    ever outlives anything. gather_assertions walks it with every
+    container put refused, and counts the character cards wherever
+    they are, on the table OR in the bag, because with the deck
+    unbuildable that is the only honest count. A card filed instead of
+    dealt passes both.
+
+    SO THIS ONE ASKS WHERE THE CARD IS, at the position CHAR_HOME
+    gives for that game, and it asks it after every single press
+    rather than at the end of the walk.
+    """
+    for which, deck_name in (("NAP", "Apprentices"),
+                             ("AoS", "Technicians"),
+                             ("IMP", "Imposters (A / B)")):
+        for lossy in (3, 2):
+            w, g = start("Standard", 0, Panel())
+            {"NAP": g.setupNAP, "AoS": g.setupAoS,
+             "IMP": g.setupImposter}[which]()
+            drain(w)
+            one = str(g.CARD_NAME[deck_name]) if g.CARD_NAME[deck_name] \
+                else deck_name
+            n = len(list(g.CHAR_LIST[which].values()))
+            hx, hz = [float(v) for v in g.CHAR_HOME[which].values()]
+            w.lossy = lossy
+            at_home, named, dealt = [], [], []
+            for _ in range(n + 2):
+                g.btnChar()
+                drain(w)
+                # The button names the character it has just dealt, so
+                # the card that should be out is read off the script's
+                # own table rather than written down here.
+                a = g.charOf(which)
+                want_card = "%s %d" % (one, int(a.card))
+                home = [o.name for o in w.table.values()
+                        if of_family(o.name, one)
+                        and abs(o.pos[0] - hx) < 1.0
+                        and abs(o.pos[2] - hz) < 1.0]
+                at_home.append(len(home))
+                named.append(home == [want_card])
+                dealt.append(want_card)
+            w.lossy = 0
+            drain(w)
+            tag = "%s, bag dropping 1 put in %d" % (which, lossy)
+            want("%s: a character is on the table after every press"
+                 % tag, sorted(set(at_home)), [1])
+            want("...and %s it is the one the button names" % tag,
+                 sorted(set(named)), [True])
+            # AND THE WALK STILL GOES ROUND. A fix that stopped filing
+            # anything would pass both of the above and leave the cycle
+            # stuck on one card.
+            want("...and %s the walk still reaches every character"
+                 % tag, len(set(dealt)), n // 2)
+            # AND NOTHING IS LOST OR DUPLICATED. The cards are counted
+            # wherever they are: the deck is whole in the bag by now,
+            # bar the one on the table.
+            box = {"NAP": "NAP", "AoS": "AoS", "IMP": "NRJ"}[which]
+            want("...and %s still has every character card" % tag,
+                 out(w, deck_name) + inbag(w, box, one, deck_name),
+                 {"NAP": 3, "AoS": 3, "IMP": 5}[which])
+
+
 def carry_assertions():
     """The carry-forward bag is furniture, not a box.
 
@@ -3478,6 +3557,7 @@ def main():
     rules_assertions()
     panel_game_assertions()
     gather_assertions()
+    char_bag_assertions()
     carry_assertions()
     for lvl in ("Easy", "Standard", "Hard", "Nobulous"):
         spec, sb = BAT_SPECIMENS[lvl], NAP_SETBACKS[lvl]

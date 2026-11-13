@@ -1112,6 +1112,50 @@ function gatherInto(d, c)
   putHome(c)
 end
 
+-- IS IT IN THERE? ASK THE BAG. Used to decide whether a put was
+-- taken, which is the same question gatherInto asks of a deck and for
+-- the same reason - and the reason it is asked of the CONTAINER rather
+-- than of the table is below.
+function inBox(b, gid)
+  if not b or not gid then return false end
+  for _, e in ipairs(b.getObjects()) do
+    if e.guid == gid then return true end
+  end
+  return false
+end
+
+-- A RETRY THAT OUTLIVES ITS CARD FILES SOMEBODY ELSE'S.
+--
+-- This used to post the card to its bag, always schedule a look six
+-- frames later, and re-post whatever was out under that GUID. Read it
+-- against showChar, which files the character that is out and then has
+-- deckOut deal from the same stack: a refused put leaves a chain alive
+-- across the deal, and six frames after the deal the chain looks, sees
+-- that GUID out on the table - because it has just been dealt there -
+-- and files the card the player asked for.
+--
+-- WHICH IS WHY HALF THE PRESSES WORKED (Jon, 2026-11-12: "sometime the
+-- card stays on the table. Other times it goes back to the bag"). Six
+-- characters live on three cards, so every other press is a FLIP: the
+-- same card comes back out, under the same GUID, and only those
+-- presses can be caught. NAP and AoS lost 3 of 8 presses with the bag
+-- refusing one put in three, the finale 5 of 12.
+--
+-- NO POSITION TEST CAN FIX IT, which is worth writing down because it
+-- is the obvious next idea: the card is re-dealt to the very spot
+-- putHome found it, so "has it moved" is false there. Nor can
+-- the chain ask the bag at retry time - by then deckOut has taken the
+-- card back OUT of the bag, legitimately, and the answer is no.
+--
+-- SO TEST THE PUT WHEN IT HAPPENS, AND ONLY WAIT IF IT WAS REFUSED.
+-- The bag either has the card or it does not, and it knows at once; a
+-- chain then exists only while there is really something to retry, and
+-- cannot be alive at all once the card is where it belongs.
+--
+-- STILL DEFERRED RATHER THAN LOOPED, unlike gatherInto: what TTS
+-- refuses is a container put in a frame, so a second attempt in the
+-- same frame is the attempt that was already turned down. Six frames
+-- is what packUp's sweep found it needed.
 function putHome(obj, tries)
   if not obj then return end
   local b = boxFor(obj)
@@ -1119,15 +1163,16 @@ function putHome(obj, tries)
   local gid = obj.getGUID()
   obj.setLock(false)
   b.putObject(obj)
+  if inBox(b, gid) then return end
   tries = (tries or 0) + 1
   if tries >= 8 then return end
+  -- getObjectFromGUID ANSWERS NIL FOR A CARD IN A CONTAINER, so this is
+  -- the old scan of getAllObjects without the scan: gone from the table
+  -- means in the bag, in the deck deckOut just gathered it into, or
+  -- genuinely gone - and none of those wants posting again.
   Wait.frames(function()
-    for _, o in ipairs(getAllObjects()) do
-      if o.getGUID() == gid then
-        putHome(o, tries)
-        return
-      end
-    end
+    local o = getObjectFromGUID(gid)
+    if o then putHome(o, tries) end
   end, 6)
 end
 
@@ -1720,9 +1765,28 @@ function showChar(game)
   local label = CHAR_DECK[game]
   if not a or not label or STATE.game ~= game then return end
   local one = CARD_NAME[label] or label
+  -- AND NOT THE CARD WE ARE ABOUT TO DEAL. Six characters live on
+  -- three cards, so every other press is a flip: the same card goes
+  -- home and comes straight back out. Filing it was how the putHome
+  -- bug above could be reached at all - a refused put leaves a retry
+  -- waiting, the retry wakes up after the deal and sees that GUID out
+  -- on the table, and files the card the player just asked for.
+  --
+  -- NOTHING IS LOST BY LEAVING IT THERE: deckOut sweeps the table for
+  -- loose cards of the deck it is rebuilding and gathers this one off
+  -- the felt instead of out of the bag, which is one round trip fewer.
+  --
+  -- BOTH HALVES OF THIS FIX ARE KEPT ON PURPOSE, and they cover for
+  -- each other in the harness - see char_bag_assertions. putHome no
+  -- longer waits on a put the bag took, which needs the bag to answer
+  -- getObjects truthfully in the frame of the put; this line needs
+  -- nothing of the sort, because no retry is ever started for the card
+  -- in question. They fail under different assumptions, so the one
+  -- that is cheap stays even though the test cannot tell them apart.
+  local keep = one .. ' ' .. a.card
   for _, o in ipairs(getAllObjects()) do
     local n = o.getName() or ''
-    if n == label or isCardOf(n, one) then putHome(o) end
+    if (n == label or isCardOf(n, one)) and n ~= keep then putHome(o) end
   end
   Wait.frames(function()
     local d = deckOut(label, OFF, FACEUP)
