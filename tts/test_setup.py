@@ -1043,6 +1043,16 @@ def footprints(w, lua):
     for o in w.table.values():
         base = o.name.rstrip("0123456789").strip()
         land = LAND.get(base, LAND.get(o.name))
+        # AND A STACK IS AS WIDE AS THE CARDS IN IT. The Imposter's two
+        # Candidate stacks are both called Candidates and are not the
+        # same shape - that is the whole reason there are two of them -
+        # so a name cannot answer for either. Nothing else on any table
+        # holds cards of a shape its own name disagrees with, so this
+        # changes no other measurement.
+        if o.kids:
+            kid = o.kids[0].name.rstrip("0123456789").strip()
+            if LAND.get(kid) is not None:
+                land = LAND[kid]
         if land is None:
             continue                      # not a card: leave it alone
         yaw = round((o.rot or (0.0, 0.0, 0.0))[1]) % 180
@@ -3829,8 +3839,15 @@ def pool_assertions():
         for p in g.IMP_POOL.values():
             one = str(g.CARD_NAME[str(p[1])]) or str(p[1])
             shape[one] = bool(p[3])
-        place = {False: round(float(g.IMP_CAND_X), 2),
-                 True: round(float(g.IMP_CANDW_X), 2)}
+        # THE PLACE FOR A SHAPE IS A PLACE AND A ROTATION, and the
+        # rotation is "not turned" for both. A landscape card is flush
+        # on ROW_CHAR; a portrait one is dropped to share the same
+        # back edge, which only fits past the end of ROW_MAIN. Turning
+        # either of them is what Jon saw the build before this one.
+        place = {False: (round(float(g.IMP_CAND_X), 2),
+                         round(float(g.IMP_CORNER_Z), 2)),
+                 True: (round(float(g.IMP_CANDW_X), 2),
+                        round(float(g.ROW_CHAR), 2))}
         wrong = []
         for o in deck:
             kinds = set()
@@ -3844,11 +3861,12 @@ def pool_assertions():
             got = (round(o.pos[0], 2), round(o.pos[2], 2),
                    round((o.rot or (0, 0, 0))[1]) % 180,
                    round((o.rot or (0, 0, 0))[2]) % 360)
-            exp = (place[kinds.pop()], round(float(g.ROW_CHAR), 2), 90, 180)
+            x, z = place[kinds.pop()]
+            exp = (x, z, 0, 180)
             if got != exp:
                 wrong.append((o.name, got, exp))
-        want("%s: each Candidate stack is one card shape, turned in the "
-             "place for that shape" % tag, wrong, [])
+        want("%s: each Candidate stack is one card shape, face down and "
+             "square in the place for that shape" % tag, wrong, [])
         if deck:
             # AND SHUFFLED UNDER ITS OWN NAME, which is the shuffle
             # that matters: the families are shuffled on the way out

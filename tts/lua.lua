@@ -656,21 +656,25 @@ IMP_BOX_HD = (CARD_L - 0.30) / 2
 IMP_WIDE_HW = (CARD_L - 0.30) / 2
 IMP_WIDE_HD = (CARD_W - 0.30) / 2
 
--- THE BACK RIGHT CORNER, AND THE PILES THERE LIE TURNED.
+-- THE BACK RIGHT CORNER, AND NOTHING IN IT LIES TURNED.
 --
--- NOT A FLOURISH - ROW_CHAR IS A LANDSCAPE ROW. The comment at the top
--- of this file says it: "characters, flush with the back edge
--- (landscape there)". A landscape card at ROW_CHAR reaches z 17.89,
--- which is FELT.z1 exactly; a PORTRAIT one reaches 19.05 and hangs
--- 1.16 over the back edge of the felt. Dropping it to share the top
--- edge, which is what BAT_BOX_DROP does for BAT's Upgrade spaces, puts
--- its bottom edge 1.07 INTO ROW_MAIN instead - the two rows are 8.308
--- apart and a portrait card is 8.208 deep, so they clear each other
--- only with both at their own row's centre. There is no third place.
+-- IT DID, FOR ONE BUILD, AND JON SAW IT: "Two piles is fine.
+-- Rotatation issue." Turning everything was the wrong half of the fix.
+-- The Devious Opportunities are LANDSCAPE cards, so turning THEM is
+-- what stood that pile on end and hung it over the back edge; and the
+-- Notes and Routines, turned, fitted their box and read sideways.
 --
--- AND NO PILE HERE HAS A RIGHT WAY UP ANYWAY: one is face-down and the
--- other is cards you are finished with.
-IMP_CAND_ROT = {0, 90, 180}
+-- ROW_CHAR IS A LANDSCAPE ROW - the comment at the top of this file
+-- says so: "characters, flush with the back edge (landscape there)". A
+-- landscape card there reaches z 17.89, which is FELT.z1 exactly. A
+-- portrait one reaches 19.05 and hangs 1.16 over the edge, so the
+-- portrait stack drops by half the difference between the two card
+-- dimensions and shares the back edge instead - which is BAT_BOX_DROP's
+-- trick, and it costs what that comment used to say it cost: a portrait
+-- card dropped that far reaches 1.07 INTO ROW_MAIN. So it stands past
+-- the right-hand END of ROW_MAIN, and the deployed spaces go from five
+-- to four to leave it the room.
+IMP_CORNER_Z = ROW_CHAR + (CARD_W - CARD_L) / 2
 
 function impCorner(k)
   return FELT.x1 - IMP_EDGE - CARD_L / 2 - (k - 1) * (CARD_L + IMP_GAP)
@@ -694,9 +698,11 @@ end
 -- there is: two stacks instead of three, split by the one thing TTS
 -- cannot mix, and neither of them sorted by anything the finale reads.
 -- Draw from whichever you like; they are the same cards.
-IMP_CDIS_X = impCorner(1)
-IMP_CAND_X = impCorner(2)
+-- LEFT TO RIGHT: the landscape candidates, the discard both stacks
+-- feed, and the portrait candidates past the end of ROW_MAIN. The
+-- discard in the middle because either stack discards into it.
 IMP_CANDW_X = impCorner(3)
+IMP_CDIS_X = impCorner(2)
 
 -- ONE ROW FOR THE WHOLE OF A SESSION, left to right along ROW_MAIN:
 -- the Dossier you deploy from, the Exhibits standing in front of you,
@@ -709,7 +715,7 @@ IMP_CANDW_X = impCorner(3)
 -- and a card on ROW_MAIN reaches 10.75, so a Dossier at the left edge
 -- is dealt ON TOP OF the Health die - which is exactly what the
 -- harness caught.
-IMP_MAIN_N = 7
+IMP_MAIN_N = 6
 IMP_MAIN_X0 = CHAR_X + CARD_L / 2 + IMP_GAP + CARD_W / 2
 
 function impMainX(k)
@@ -719,18 +725,25 @@ end
 IMP_DOSSIER_X = impMainX(1)
 IMP_DONE_X = impMainX(IMP_MAIN_N)
 
--- FIVE DEPLOYED SPACES, BECAUSE OF WHAT THE MODEL DOES, not because
--- five fit. Peak Exhibits standing at once across 20,000 modelled
--- games: 1 in 58% of them, 2 in 25%, 3 in 6%, 4 in 0.2% and never
--- more. Five is the measured ceiling with one to spare - and the rules
--- let you deploy the whole Dossier if you like, so these are spaces to
--- line cards up against and not a limit: a sixth Exhibit stands beside
--- them.
+-- FOUR DEPLOYED SPACES, WHICH IS THE MEASURED CEILING. Peak Exhibits
+-- standing at once across 20,000 modelled games: 1 in 58% of them, 2
+-- in 25%, 3 in 6%, 4 in 0.2% and never more. It was five until the
+-- portrait Candidate stack needed the seventh place on this row to
+-- stand clear above - and the rules let you deploy the whole Dossier
+-- if you like, so these are spaces to line cards up against and not a
+-- limit: a fifth Exhibit stands beside them.
 IMP_DEPLOYED = IMP_MAIN_N - 2
 
 function impDeployX(k)
   return impMainX(1 + k)
 end
+
+-- THE PORTRAIT CANDIDATES, in the place ROW_MAIN's seventh would have
+-- been. One pitch past COMPLETED and a row up: the only spot on this
+-- table where a portrait card stands clear of both the back edge of
+-- the felt and the row below it. Measured off impMainX rather than
+-- typed, so the two cannot drift into each other.
+IMP_CAND_X = impMainX(IMP_MAIN_N + 1)
 
 
 function attentionNow()
@@ -2701,8 +2714,8 @@ function impBoxes()
                        hd = hd or IMP_BOX_HD})
   end
   box(IMP_CANDW_X, ROW_CHAR, IMP_WIDE_HW, IMP_WIDE_HD)
-  box(IMP_CAND_X, ROW_CHAR, IMP_WIDE_HW, IMP_WIDE_HD)
   box(IMP_CDIS_X, ROW_CHAR, IMP_WIDE_HW, IMP_WIDE_HD)
+  box(IMP_CAND_X, IMP_CORNER_Z)         -- portrait, so portrait-shaped
   box(IMP_DOSSIER_X, ROW_MAIN)           -- the Dossier
   for k = 1, IMP_DEPLOYED do
     box(impDeployX(k), ROW_MAIN)         -- Exhibits standing in front of you
@@ -2894,7 +2907,10 @@ function setupImposter()
   -- once more four frames after that - the same belt the three decks
   -- that are spread or columned already wear.
   step(function()
-    local where = {IMP_CAND_X, IMP_CANDW_X}
+    -- [1] the portrait families, dropped to share the back edge; [2]
+    -- the landscape one, flush on ROW_CHAR. Neither is turned: see
+    -- IMP_CORNER_Z above.
+    local where = {{IMP_CAND_X, IMP_CORNER_Z}, {IMP_CANDW_X, ROW_CHAR}}
     for k = 1, 2 do
       local cand = liveDeck(candSeed[k])
       if cand then
@@ -2906,14 +2922,14 @@ function setupImposter()
         -- the same thing; snapFirst below looks within 6.0 of a given
         -- place and they stand 8.8 apart, so neither finds the other.
         cand.setName('Candidates')
-        cand.setPosition({where[k], 3, ROW_CHAR})
-        cand.setRotation(IMP_CAND_ROT)
+        cand.setPosition({where[k][1], 3, where[k][2]})
+        cand.setRotation(FACEDOWN)
         -- AND SHUFFLED ONLY IF IT IS A DECK. An over-claimed bag
         -- holding 17 of the 18 leaves one card as the whole of a
         -- stack, and a card has no shuffle() - which is a red line in
         -- chat for a deck of one that is already in random order.
         if count(cand) > 1 then cand.shuffle() end
-        snapFirst('Candidates', where[k], ROW_CHAR, IMP_CAND_ROT)
+        snapFirst('Candidates', where[k][1], where[k][2], FACEDOWN)
       end
     end
   end)
@@ -2953,10 +2969,10 @@ function setupImposter()
         ' then gone. Everything you did not retain is shuffled face-down' ..
         ' into the two Candidate stacks in the back right corner --' ..
         ' two because a deck here holds one card shape and the' ..
-        ' Opportunities are printed the other way; they are one pool' ..
-        ' and you may draw from either. A candidate answers nothing at' ..
-        ' all, and the Understudy is the only Imposter that spends' ..
-        ' them.')
+        ' Opportunities are printed the other way round; they are one' ..
+        ' pool and you may draw from either. A candidate answers' ..
+        ' nothing at all, and the Understudy is the only Imposter that' ..
+        ' spends them.')
   end)
   run()
 end

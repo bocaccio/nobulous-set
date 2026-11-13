@@ -4022,7 +4022,16 @@ _boxes = re.search(r"\nfunction impBoxes\(\)(.*?)\nend\n",
 check("...and the mod builds those stacks and names them",
       "grp[k] = gatherInto(grp[k], d)" in _sv["LuaScript"]
       and "cand.setName('Candidates')" in _sv["LuaScript"]
-      and "cand.setRotation(IMP_CAND_ROT)" in _sv["LuaScript"])
+      and "cand.setRotation(FACEDOWN)" in _sv["LuaScript"])
+# AND NOTHING IN THAT CORNER IS TURNED. One build had both stacks laid
+# on their side so a portrait card would fit a landscape row; the
+# Opportunities ARE landscape, so that stood them on end and hung them
+# over the back edge. Each stack keeps the shape of the card in it now,
+# and the portrait one drops to share the back edge.
+check("...and sets both of them down square, not on their side",
+      "IMP_CAND_ROT" not in _sv["LuaScript"]
+      and "IMP_CORNER_Z = ROW_CHAR + (CARD_W - CARD_L) / 2"
+      in _sv["LuaScript"])
 # AND IT MAKES TWO OF THEM, SPLIT BY CARD SHAPE - which is the one
 # place the mod cannot do what the book says, and the reason is the
 # tool rather than the game.

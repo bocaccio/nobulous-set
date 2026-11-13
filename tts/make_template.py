@@ -375,9 +375,13 @@ def draw_imp(d, lua):
     # IMP_CANDW_X in lua.lua. Neither stack is sorted by anything the
     # finale reads, and you may draw from either.
     label(d, "CANDIDATES", float(g.IMP_CANDW_X), float(g.ROW_CHAR), fit=wide)
-    label(d, "CANDIDATES", float(g.IMP_CAND_X), float(g.ROW_CHAR), fit=wide)
     label(d, "CANDIDATE\nDISCARD", float(g.IMP_CDIS_X), float(g.ROW_CHAR),
           fit=wide)
+    # The portrait stack stands a row lower and past the end of
+    # ROW_MAIN, which is the one place on this table a portrait card
+    # clears both the back edge of the felt and the row below it.
+    label(d, "CANDIDATES", float(g.IMP_CAND_X), float(g.IMP_CORNER_Z),
+          fit=fit)
     # The row a session is played along, labelled at both ends.
     label(d, "DOSSIER", float(g.IMP_DOSSIER_X), float(g.ROW_MAIN), fit=fit)
     label(d, "COMPLETED", float(g.IMP_DONE_X), float(g.ROW_MAIN), fit=fit)
