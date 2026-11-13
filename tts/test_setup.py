@@ -3830,6 +3830,15 @@ def pool_assertions():
              ("one Note, two Routines, no Opportunity",
               {"Research Note": 1, "Backdoor Routine": 2}),
              ("a whole deck in the bag", {"Research Note": 6}),
+             # THE CASE JON CARRIED, and the one every other case
+             # here misses: an UNEVEN campaign, under the cap in two
+             # families and not symmetric about them. A row centred
+             # on the count lands on its own printed boxes at 2/3/2
+             # and at 1/3/1, which is every case this block had, and
+             # between them at 1/2/1.
+             ("an uneven campaign", {"Research Note": 1,
+                                     "Devious Opportunity": 2,
+                                     "Backdoor Routine": 1}),
              ("over the cap", {"Devious Opportunity": 5}))
     for tag, cards in cases:
         w, g = start("Standard", 3, Panel())
@@ -3920,6 +3929,29 @@ def pool_assertions():
         # bag, and no assertion anywhere could see it.
         want("%s: nothing was merged into or out of a falling deck" % tag,
              w.midair[:3], [])
+        # AND EVERY RETAINED CARD IS IN A BOX THE FELT PRINTS.
+        #
+        # make_template.py paints the row from poolSlots() with no
+        # argument, which is the caps' row and the only row it can
+        # paint. poolSlots used to take the count the bag happened to
+        # hold and centre a row of that many, so the cards landed on
+        # their own boxes only when the count was symmetric about the
+        # caps - 2/3/2 and 1/3/1 both are, and they were the only
+        # shapes this block tested. Jon carried 1/2/1.
+        printed = set()
+        for g_i in g.poolSlots().values():
+            for v in g_i.values():
+                printed.add(round(float(v), 2))
+        stray = sorted(round(o.pos[0], 2) for o in w.table.values()
+                       if abs(o.pos[2] - side) < 0.1
+                       and round(o.pos[0], 2) not in printed)
+        # UNLESS THE BAG IS OVER A CAP, which has more cards than the
+        # felt has boxes: those fan past the last one on purpose.
+        over = any(len(was.get(str(g.CARD_NAME[str(p[1])]) or str(p[1]), []))
+                   > int(p[2]) for p in g.IMP_POOL.values())
+        if not over:
+            want("%s: every retained card is in a box the felt prints"
+                 % tag, stray, [])
         # AND EACH STACK IS ONE CARD SHAPE, IN THE PLACE FOR THAT SHAPE.
         #
         # THE BUG IN JON'S SCREENSHOT, 2026-11-13, and no count above

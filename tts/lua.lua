@@ -2631,34 +2631,47 @@ POOL_GAP = 0.6
 -- three landscape at a 0.6 gap is 51.7 of the felt's 56.5, which is
 -- the whole reason the landscape deck has to be the middle one of the
 -- three. A change of card scale moves the row rather than breaking it.
-function poolSlots(counts)
-  local wide, total = {}, -POOL_GAP
-  for i, p in ipairs(IMP_POOL) do
-    local n = (counts and counts[i]) or p[2]
-    wide[i] = {}
-    for _ = 1, n do
-      local cw = p[3] and CARD_L or CARD_W
-      table.insert(wide[i], cw)
-      total = total + cw + POOL_GAP
-    end
+-- ONE ROW, AND IT IS ALWAYS THE CAPS': 2 Notes, 3 Opportunities, 2
+-- Routines, left to right in IMP_POOL's order.
+--
+-- IT TOOK A COUNT UNTIL 2026-11-13, so a campaign that carried fewer
+-- got a row of that many CENTRED - which only lands on its own
+-- printed boxes when the count happens to be symmetric about the
+-- caps. Jon carried 1 Note, 2 Opportunities and 1 Routine and got
+-- four cards sitting between the boxes with the first and last box
+-- empty. The felt is painted from this function with no argument and
+-- there is no second row it could paint, so there is no second row
+-- the cards can go in: carry fewer and the later box of a family is
+-- simply empty, which is what an empty box is for.
+function poolSlots()
+  local out, x = {}, nil
+  local total = -POOL_GAP
+  for _, p in ipairs(IMP_POOL) do
+    total = total + p[2] * ((p[3] and CARD_L or CARD_W) + POOL_GAP)
   end
-  -- A ROW THAT CANNOT LEAVE THE FELT. The caps' row fits with 2.4 to
-  -- spare at each end, but a bag holding MORE than its cap makes a
-  -- longer one and over-claiming is a thing a player can do - all 18
-  -- in a row is half as wide again as the table. So squeeze the pitch
-  -- and let the cards overlap, rather than deal them onto the floor;
-  -- the setup says in chat that the bag is over its cap either way.
-  local room = FELT.x1 - FELT.x0 - 1.0
-  local squeeze = (total > room) and (room / total) or 1.0
-  local out, x = {}, -total / 2
-  for i in ipairs(IMP_POOL) do
+  x = -total / 2
+  for i, p in ipairs(IMP_POOL) do
+    local cw = p[3] and CARD_L or CARD_W
     out[i] = {}
-    for _, cw in ipairs(wide[i]) do
-      table.insert(out[i], (x + cw / 2) * squeeze)
+    for _ = 1, p[2] do
+      table.insert(out[i], x + cw / 2)
       x = x + cw + POOL_GAP
     end
   end
   return out
+end
+
+-- WHERE THE kTH RETAINED CARD OF A FAMILY GOES. Inside the cap that is
+-- its own printed box. PAST the cap it fans out to the right of the
+-- last one, because an over-claimed campaign really does have more
+-- cards than the felt has boxes - and a card laid over its neighbour
+-- where you can see it beats one dropped silently or one dealt off
+-- the table. The setup says so in chat either way.
+function poolSlot(where, k)
+  local n = #where
+  if n == 0 then return 0 end
+  if k <= n then return where[k] end
+  return where[n] + (k - n) * 1.2
 end
 
 -- The middle of a family's slots. The candidate stacks that used to
@@ -2830,15 +2843,10 @@ function setupImposter()
   local pool, carried, slots, head = {}, nil, nil, {}
   step(function()
     carried = carriedPool()
-    local counts = {}
-    for i, p in ipairs(IMP_POOL) do
-      -- The bag's count if it has any, the cap if it has none - and
-      -- the bag's count even when that is OVER the cap, so an
-      -- over-claimed campaign lays every card it carried on the table
-      -- and gets told, rather than having one quietly dropped.
-      counts[i] = (#carried[i] > 0) and #carried[i] or p[2]
-    end
-    slots = poolSlots(counts)
+    -- THE CAPS' SLOTS, WHATEVER THE BAG HOLDS. A family the bag has
+    -- fewer of fills the first of its boxes and leaves the rest
+    -- empty; one it has more of fans past the last - see poolSlot.
+    slots = poolSlots()
     for i, p in ipairs(IMP_POOL) do
       -- NOT DEALT AT ALL IF THE BAG HOLDS THE WHOLE DECK. deckOut
       -- would find nothing in the box and say MISSING DECK out loud -
@@ -2878,7 +2886,8 @@ function setupImposter()
         -- unpick: no merge, no cut, no card going home on the way.
         for k, gid in ipairs(carried[i]) do
           if b then
-            b.takeObject({guid = gid, position = {slots[i][k], 3, ROW_SIDE},
+            b.takeObject({guid = gid,
+                          position = {poolSlot(slots[i], k), 3, ROW_SIDE},
                           rotation = FACEUP, smooth = false})
           end
         end

@@ -1,3 +1,27 @@
+2026-11-13  A RETAINED CARD GOES IN A PRINTED BOX
+Jon, carrying 1 Research Note, 2 Devious Opportunities and 1 Backdoor
+Routine out of a campaign: "the placed cards incorrect."  The four sat
+between the boxes with the first and last box of the row empty.
+
+poolSlots TOOK THE COUNT THE BAG HAPPENED TO HOLD and centred a row of
+that many.  The felt is painted from poolSlots() with NO argument -
+the caps' row, 2 Notes, 3 Opportunities, 2 Routines - and there is no
+second row it could paint, so a row centred on any other count lands
+on its own boxes only by luck.  2/3/2 is symmetric about the caps and
+so is 1/3/1, and those were the only shapes the harness tested.  1/2/1
+is not.
+
+THERE IS ONE ROW OF SLOTS NOW and it is always the caps'.  A family the
+bag has fewer of fills the first of its boxes and leaves the rest
+empty, which is what an empty box is for.  One it has MORE of fans past
+the last box rather than being dropped or squeezed, and the setup says
+so in chat as it always did.
+
+THE HARNESS TESTS AN UNEVEN CAMPAIGN NOW, and asserts that every
+retained card stands on one of the slots the felt actually prints -
+which is a question none of the counts could ask.  Centring the row on
+the carried count again fails 5 assertions.
+
 2026-11-13  THE CANDIDATE FAMILIES WERE DEALT INTO THE AIR
 Jon, with a screenshot of a campaign setup: "Issues with pulling cards
 out of yellow bag during setup."  The retained row was right.  The
