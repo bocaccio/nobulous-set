@@ -130,7 +130,8 @@ class Obj(object):
         self.world, self.guid, self.name = world, guid, name
         self.kids = list(kids or [])
         self.bag = bag
-        self.pos = (0.0, 0.0, 0.0)
+        self._pos = (0.0, 0.0, 0.0)
+        self.placed = None
         self.rot = None
         self.value = None
         self.text = ""
@@ -342,6 +343,22 @@ class Obj(object):
         self.buttons.append(
             dict(spec.items()) if hasattr(spec, "items") else dict(spec))
 
+    # WHEN THE OBJECT WAS PUT WHERE IT IS, recorded on every
+    # assignment rather than only in setPosition. takeObject writes
+    # .pos straight onto the object it creates, which is exactly how
+    # a deck comes to be sitting in the staging band - so a setter
+    # that only setPosition went through dated nothing that mattered.
+    # putObject reads this to tell a container that has had time to
+    # fall from one that was put there this frame.
+    @property
+    def pos(self):
+        return self._pos
+
+    @pos.setter
+    def pos(self, p):
+        self._pos = p
+        self.placed = self.world.frame
+
     def _live(self, call):
         """TTS logs and carries on when you touch a destroyed object."""
         if self.dead:
@@ -481,6 +498,27 @@ class Obj(object):
         # `lossy` down to 1 refuses the bag's puts too, so putHome
         # achieves nothing there and dropping it changed no assertion
         # at all - measured 2026-11-12, which is why this exists.
+        # AND ONLY WHEN IT HAS HAD TIME TO FALL. A deck created above
+        # the table and merged into in the SAME frame has not moved
+        # yet, which is what AoS does with the Specialized Programs -
+        # three deals and two merges in one step - and it works. The
+        # Imposter setup dealt in one step and merged two steps later,
+        # sixteen frames of falling, and that is the one that came out
+        # wrong. So the test is "above the table and placed there
+        # before this frame", not "above the table".
+        # EITHER SIDE OF THE MERGE WILL DO. The receiver falling is
+        # the obvious half; a DECK being put, left in the band a step
+        # ago and dropping, is the half that actually bit - the
+        # Imposter setup's second family of a shape. A single card in
+        # transit is not this: every takeObject in the mod drops its
+        # card at OFF on the way somewhere, and that is the staging
+        # band working as designed.
+        for who, n in ((self, len(self.kids)), (other, len(other.kids))):
+            if (n > 1 and who.pos[1] > 4.0
+                    and who.placed != self.world.frame):
+                self.world.midair.append(
+                    (self.name, round(who.pos[1], 2), other.name))
+                break
         jam = self.world.jam.get(self.name)
         if jam:
             self.world.jam[self.name] = jam - 1
@@ -606,6 +644,23 @@ class World(object):
         self.frame = 0          # frames since this world was built
         self.waits = 0          # tie-break, so two due together keep order
         self.snaps = []         # Assignment spaces laid by a setup
+        # PUTS MADE INTO A CONTAINER THAT WAS STILL IN THE AIR.
+        #
+        # pad() is the staging BAND at y 14 and a deck left there is a
+        # deck FALLING: TTS will not reliably take a put into one, and
+        # whatever the script thinks it merged is still lying where it
+        # was dealt. The campaign Imposter setup dealt all three Tier
+        # III families to pads and merged them a step later - at Jon's
+        # table the corner came out empty with two of them at the
+        # bottom edge, and every assertion passed, because this stub
+        # has no physics and a deck at y 14 takes a put as happily as
+        # one on the table.
+        #
+        # The standalone deal had been doing the same thing and got
+        # away with it: cutOut calls snapFirst, which sets its deck
+        # down at y 1.6 four frames in, so those decks were grounded
+        # by the time the merge ran.
+        self.midair = []
         # Every time a card was dealt onto something already standing
         # there. A card dropped on a deck joins it, so a deck parked
         # where cards are dropped eats them.
@@ -1121,6 +1176,33 @@ def layout_assertions():
                        if abs(f[1]) + f[3] > FELT_X
                        or f[2] - f[4] < FELT_ZMIN or f[2] + f[4] > FELT_ZMAX]
                 want(t + " nothing dealt off the felt", off[:3], [])
+                # AND NOTHING IS LEFT IN THE AIR (2026-11-13). pad()
+                # is the staging BAND at y 14, for an object in
+                # transit between containers, and a deck left there
+                # is a deck falling twelve units while the next step
+                # reaches for it. The campaign Imposter setup dealt
+                # all three Tier III families to pads and merged them
+                # a step later: at Jon's table the corner came out
+                # empty with two of them lying at the bottom edge,
+                # and every assertion here passed, because the stub
+                # has no physics and a deck at y 14 is a deck at the
+                # right x and z.
+                #
+                # 4.0, AND THE RULEBOOK IS THE ONLY THING NEAR IT.
+                # Every setup leaves its book on a stand at y 3.62
+                # and nothing else above 3.5, so this has a clear
+                # 10 units to the band it is watching for.
+                air = sorted((round(o.pos[1], 2), o.name)
+                             for o in w.table.values()
+                             if o.pos[1] > 4.0 and is_card(o))
+                want(t + " nothing is left in the air", air[:3], [])
+                # AND NOTHING WAS PUT INTO SOMETHING IN THE AIR, which
+                # is the half the resting place cannot show - see
+                # World.midair. A deck dealt to the band, merged while
+                # it falls and placed afterwards looks perfect here
+                # and comes out wrong at the table.
+                want(t + " nothing was merged into a falling deck",
+                     w.midair[:3], [])
                 # MARKERS THAT ARE MEANT TO BE ON A CARD are not part
                 # of the pool this is about. BAT's setup puts the
                 # Recovery die on the active Rat's corner and the Red
@@ -3824,6 +3906,20 @@ def pool_assertions():
                     and abs(o.pos[2] - side) < 0.1)
         want("%s: the Candidate stacks hold the 18 less the retained" % tag,
              held + stand, 18)
+        # AND NOTHING WAS MERGED INTO, OR OUT OF, A FALLING DECK.
+        #
+        # THIS BLOCK IS WHERE THE CHECK HAS TO LIVE, not with the
+        # layout assertions: those set up with an EMPTY bag, and the
+        # standalone deal cuts its retained cards out of every family,
+        # which calls snapFirst, which sets each deck down at y 1.6
+        # four frames later. A campaign deal has no cut to make - the
+        # retained cards come straight out of the bag - so the
+        # families were still twelve units up and dropping when the
+        # merge reached for them. That is the difference between the
+        # table Jon set up standalone and the one he set up out of the
+        # bag, and no assertion anywhere could see it.
+        want("%s: nothing was merged into or out of a falling deck" % tag,
+             w.midair[:3], [])
         # AND EACH STACK IS ONE CARD SHAPE, IN THE PLACE FOR THAT SHAPE.
         #
         # THE BUG IN JON'S SCREENSHOT, 2026-11-13, and no count above

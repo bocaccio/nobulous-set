@@ -745,6 +745,26 @@ end
 -- typed, so the two cannot drift into each other.
 IMP_CAND_X = impMainX(IMP_MAIN_N + 1)
 
+-- WHERE EACH SHAPE OF CANDIDATE STANDS: [1] portrait, [2] landscape.
+-- The families are dealt straight here rather than into the staging
+-- band, so the stack is on the table from the first frame it exists.
+IMP_CAND_HOME = { {IMP_CAND_X, IMP_CORNER_Z}, {IMP_CANDW_X, ROW_CHAR} }
+
+-- AND A GROUNDED STAGING SPOT for the second family of a shape, which
+-- has to wait somewhere to be folded into the first.
+--
+-- NOT pad(). pad() is the staging BAND at y 14, for an object in
+-- transit between containers, and a DECK left there is a deck falling
+-- twelve units while the next step tries to merge it. The standalone
+-- deal never noticed, because cutOut's snapFirst sets its deck down at
+-- y 1.6 four frames in; the campaign deal has no cut to make, so at
+-- Jon's table all three families were still in the air when the merge
+-- ran and two of them were lying in the band afterwards with the
+-- corner empty. Same x as pad(i), on the table instead of above it.
+function poolPad(i)
+  return {(i - BAND_PADS / 2) * BAND_PITCH, 3, OFF_Z}
+end
+
 
 function attentionNow()
   local s = math.max(1, STATE.session + 1)
@@ -2227,7 +2247,7 @@ function setupBAT()
   STATE.game = 'BAT'
   STATE.finale = false
   local spec, hp = BAT_DIFF[STATE.difficulty][1], BAT_DIFF[STATE.difficulty][2]
-  local upg, sp
+  local upg
 
   -- THE OVERLAY FIRST, so everything else lands on top of it.
   step(function() tableOut(BAT_TABLE) stowFaces('BAT') end)
@@ -2251,7 +2271,6 @@ function setupBAT()
     -- were taking up is the row the Splice Phase is played on.
     upg = deckOut('Upgrades',
                   {batRightX(BAT_UPGRADE_DECK), 3, batRowZ(1)})
-    sp = deckOut('Specimens', pad(4))
   end)
 
   -- TIER II REMOVES SIX **ORDINARY** UPGRADES, and says so by NAME.
@@ -2278,7 +2297,18 @@ function setupBAT()
     step(function() upg = merge(upg, deckOut('Unauthorized Modifications', pad(1))) end)
   end
 
-  step(function() moveN(sp, upg, spec) end)
+  -- DEALT AND MERGED IN THE SAME STEP, the way the Modifications
+  -- above are and AoS's Programs are.
+  --
+  -- The Specimens used to be dealt three steps earlier and left on a
+  -- pad, which is the staging band at y 14 - and a deck waiting there
+  -- is a deck FALLING. TTS does not reliably take a put of, or into,
+  -- an object twelve units up and dropping, and the script goes on as
+  -- though it had: at Jon's table the Imposter's candidate families
+  -- made the same journey and two of them were still lying in the
+  -- band with the corner empty. Dealt here, the deck has not moved
+  -- when moveN reaches for it.
+  step(function() moveN(deckOut('Specimens', pad(4)), upg, spec) end)
   step(function() if upg then upg.shuffle() end end)
 
   if STATE.tier >= 1 then
@@ -2795,7 +2825,9 @@ function setupImposter()
   -- candidates in a stack above the middle of its own slots. The three
   -- decks used to stand at -10, 0 and 10 with nothing to tell retained
   -- from candidate, which is a distinction the finale is built on.
-  local pool, carried, slots = {}, nil, nil
+  -- WHICH FAMILY IS STANDING IN EACH SHAPE'S PLACE, so the second
+  -- one of a shape knows to wait on a pad and be folded in.
+  local pool, carried, slots, head = {}, nil, nil, {}
   step(function()
     carried = carriedPool()
     local counts = {}
@@ -2813,14 +2845,26 @@ function setupImposter()
       -- a false alarm about the one case where every card of the
       -- family really is accounted for.
       --
-      -- ONTO A STAGING PAD, NOT ONTO THE TABLE. The family deck is
-      -- scaffolding now: the retained cards are cut out of it and
-      -- whatever is left goes into the one candidate deck, so it never
-      -- wants a place of its own on the felt. pad() rather than OFF,
-      -- because every takeObject in this script drops its card at OFF
-      -- on the way through.
+      -- STRAIGHT TO THE PLACE ITS CANDIDATES WILL STAND IN, which
+      -- is the corner box for its shape - and ON THE TABLE, at y 3
+      -- like every other deal in this file. The second family of a
+      -- shape has nowhere to stand yet, so it waits on a grounded
+      -- pad and is folded in a step later; see poolPad above for
+      -- what dealing it into the air cost.
+      --
+      -- The deck is still scaffolding - the retained cards are cut
+      -- out of it and the rest become the stack - but scaffolding
+      -- that is already where it is going cannot be left anywhere
+      -- surprising if a later step is refused.
       if #carried[i] < p[4] then
-        pool[i] = deckOut(p[1], pad(i))
+        local k = p[3] and 2 or 1
+        if head[k] then
+          pool[i] = deckOut(p[1], poolPad(i))
+        else
+          pool[i] = deckOut(p[1], {IMP_CAND_HOME[k][1], 3,
+                                   IMP_CAND_HOME[k][2]})
+          head[k] = i
+        end
       end
     end
   end)
@@ -2909,8 +2953,10 @@ function setupImposter()
   step(function()
     -- [1] the portrait families, dropped to share the back edge; [2]
     -- the landscape one, flush on ROW_CHAR. Neither is turned: see
-    -- IMP_CORNER_Z above.
-    local where = {{IMP_CAND_X, IMP_CORNER_Z}, {IMP_CANDW_X, ROW_CHAR}}
+    -- IMP_CORNER_Z above. This is the same table the deal above
+    -- reads, so a stack cannot be dealt to one place and squared up
+    -- at another.
+    local where = IMP_CAND_HOME
     for k = 1, 2 do
       local cand = liveDeck(candSeed[k])
       if cand then

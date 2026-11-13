@@ -1,3 +1,35 @@
+2026-11-13  THE CANDIDATE FAMILIES WERE DEALT INTO THE AIR
+Jon, with a screenshot of a campaign setup: "Issues with pulling cards
+out of yellow bag during setup."  The retained row was right.  The
+corner was empty and two family decks were lying in the staging band at
+the bottom edge.
+
+pad() IS THE STAGING BAND AT y 14 - a place for an object in TRANSIT
+between containers - and every other deal in the mod uses y 3.  A DECK
+left on a pad is a deck falling twelve units, and TTS does not reliably
+take a put of, or into, one; the script goes on as though it had.
+
+WHY STANDALONE WORKED AND THE CAMPAIGN DID NOT.  The standalone deal
+cuts the retained cards out of each family, and cutOut calls snapFirst,
+which sets its deck down at y 1.6 four frames later - so the decks were
+grounded before the merge ran.  A campaign deal has no cut to make: the
+retained cards come straight out of the yellow bag, so all three
+families were still in the air.  Both were "working" for exactly as
+long as nobody carried anything.
+
+THE CANDIDATE FAMILIES ARE NOW DEALT STRAIGHT TO THE CORNER BOX FOR
+THEIR SHAPE, on the table, and the second family of a shape waits on a
+grounded pad instead of a floating one.  BAT's Specimens made the same
+journey into the Upgrade deck and are now dealt in the step that merges
+them, which is what AoS already does with its Programs.
+
+AND THE HARNESS MODELS THE TRAP.  It records every put whose giver or
+receiver is a multi-card deck above the table that was put there in an
+earlier frame.  The check has to live in the carry-bag block rather
+than with the layout assertions, because those set up with an EMPTY bag
+- which is the one case the old code got right.  Dealing the families
+into the air again now fails 2 and 3 assertions, and BAT's Specimens 12.
+
 2026-11-13  NOTHING IN THE IMPOSTER'S BACK CORNER LIES TURNED
 Jon: "Two piles is fine.  Rotatation issue."
 
