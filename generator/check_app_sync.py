@@ -825,7 +825,7 @@ _fin = py_tables("simulation/finale.py")
 rulenum("nrj", r"Play (\d+) sessions", _fin["SESSIONS"], "the session count")
 rulenum("nrj", r"claim at most (\d+) per game", _aos["BACKDOOR_CLAIMS"],
         "the Backdoor claim cap")
-rulenum("nrj", r"reduces one Exhibit's Target by (\d+)",
+rulenum("nrj", r"takes (\d+) off the Target of one Exhibit",
         _fin["CARD_VALUE"], "what a retained card is worth")
 check("rules/nrj.html: the Imposter's 5 HP / 2 STR / 3 REC",
       "5 HP / 2 STR / 3 REC" in _RULES["nrj"]
@@ -1417,11 +1417,28 @@ check("the components list breaks the 17 dice down by color",
 _nrjtext = " ".join(re.sub(r"<[^>]+>", " ", text("rules/nrj.html")).split())
 _nrjtext = _nrjtext.replace("&#8209;", "-").replace("&mdash;", "--")
 check("rules/nrj.html shuffles the candidates into one face-down deck",
-      "Shuffle every card you did not retain into one face-down Candidate"
-      " deck" in _nrjtext)
-check("...and says a card you could not carry is a candidate like any other",
-      "one you claimed and could not carry is a candidate like any other"
-      in _nrjtext)
+      "Shuffle them into one face-down Candidate deck" in _nrjtext)
+check("...and counts a card you could not carry among them",
+      "a card you claimed and could not carry among them" in _nrjtext)
+
+# AND THE SECTION OPENS ON THE CAPS (Jon, 2026-11-13: "I don't care how
+# many cards can potentially go into the pool. I want to know how many
+# cards I can retain from each game"). It used to open on the 18, with
+# a four-column table about the 18, and put the caps in a SECOND table
+# below a paragraph of definitions - so the one number a player needs
+# was third in reading order behind two pieces of bookkeeping.
+#
+# THE ORDER IS THE CLAIM, which is why this measures a distance rather
+# than looking for the words somewhere in the file. The caps have to
+# come before the first mention of six-of-anything.
+_pool = _nrjtext[_nrjtext.index("The Research Pool --"):]
+_caps = _pool.index("At most 3 out of NAP, 2 out of BAT and 2 out of AoS")
+check("...and the Pool section opens on how many you carry out of each game",
+      _caps < 90, "%d characters in" % _caps)
+check("...before it mentions how many each game lays out",
+      _caps < _pool.index("6 Research Notes"),
+      "caps at %d, the six at %d"
+      % (_caps, _pool.index("6 Research Notes")))
 check("the Research Pool is the Tier III cards, not the games' own decks",
       "the Tier III cards you claimed" in text("rules/nrj.html")
       and "6 Research Notes" in text("rules/nrj.html")

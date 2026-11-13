@@ -1,3 +1,35 @@
+2026-11-13  THE POOL SECTION LEADS WITH THE CAPS
+Jon, reading it back: "The description of the NRJ research pool in the
+rules is confusing.  I don't care how many cards can potentially go into
+the pool.  I want to know how many cards I can retain from each game."
+
+HE IS RIGHT AND THE ENTRY ABOVE MADE IT WORSE.  The section opened on
+the 18, carried a four-column table ABOUT the 18, and put the caps in a
+SECOND table underneath a paragraph of definitions - so the one number a
+player needs was third in reading order, behind two pieces of
+bookkeeping.  Clarifying the bookkeeping was the wrong fix: the
+bookkeeping was the problem.
+
+ONE TABLE NOW, and the first line of the section is the answer: at most
+3 out of NAP, 2 out of BAT and 2 out of AoS.  The cap is the first
+column after the game, the "why that many" column is one sentence of
+prose underneath, and the "claimed by" column is another - the 18 is
+demoted to the sentence that explains where the Candidate deck comes
+from, which is the only place it does any work.
+
+AND THE TERM NOW MATCHES THE MODEL.  finale.py's g.pool IS the retained
+cards; g.candidates is a separate count.  Only the rulebook called all
+18 the Research Pool, which is what made "the Research Pool is the 18
+carried-forward cards" and "spend Research Pool cards on the Exhibits
+you just deployed" both true and in conflict.  The Research Pool is what
+you carried in; the Candidate deck is everything else.
+
+check_app_sync.py now measures the ORDER rather than the words: the caps
+have to be inside the first 90 characters of the section and before the
+first mention of six-of-anything.  A check for the right sentences
+somewhere in the file is exactly what would have passed on the version
+Jon could not read.
+
 2026-11-13  THE CANDIDATES BECOME A DECK, AND THE POOL SAYS WHAT IT IS
 Jon, reading the supplement: "'Each won game contributes its 6 Tier III
 cards to the Research Pool' - I thought the player had to select up to 3
