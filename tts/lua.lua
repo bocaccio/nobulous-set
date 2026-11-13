@@ -620,6 +620,103 @@ CHAR_HOME = { NAP = {NAP_CHAR_X, ROW_CHAR},
 
 function col(i) return (i - 2.5) * (CARD_W + 1.0) end
 
+-- ------------------------------------------------------------ the IMP table
+-- JON, 2026-11-13: "mix all 11 together, create a draw deck and a
+-- discard space for them (say in the top right corner). Label all the
+-- spaces and create snap points. Create blank spaces and a completed
+-- space for the Council Test cards."
+--
+-- WHY THE CANDIDATES BECOME ONE DECK. Nothing in the finale reads
+-- which candidate a candidate is. A retained card answers its own
+-- domain and every one is worth 2; a candidate answers nothing at all
+-- unless you took the Understudy, who discards them by the COUNT -
+-- "Discard 4 Candidates", "Discard 2 Candidates", and the card does
+-- not care which four. So the three face-up stacks sorted by family
+-- were three stacks of a distinction that does not exist, holding the
+-- middle row against the one distinction that does.
+--
+-- AND THEY SHUFFLE TOGETHER BECAUSE THE CARD IS THE SAME CARD. An
+-- Opportunity is 63.5 x 88.9 printed landscape, not a different size
+-- (generator/gen.py), so a mixed deck is one stack of one stock with
+-- its art turned - and a candidate is never looked at anyway.
+--
+-- ONE ROW PER STEP OF A SESSION, left to right along ROW_MAIN: the
+-- Dossier you deploy from, the Exhibits standing in front of you, the
+-- ones you have buried. The retained cards move UP to ROW_SIDE, which
+-- is the row the geometry comment at the top of this file has called
+-- the Research Pool's all along, and that hands the whole bottom band
+-- to the dice.
+IMP_GAP = 0.6
+IMP_EDGE = 0.30
+IMP_COL = CARD_W + IMP_GAP
+-- A SPACE JUST UNDER A CARD, the way BAT's and AoS's are: the card
+-- overhangs its box by a tenth rather than the boxes touching.
+IMP_BOX_HW = (IMP_COL - 0.25) / 2
+IMP_BOX_HD = (CARD_L - 0.30) / 2
+IMP_WIDE_HW = (CARD_L - 0.30) / 2
+IMP_WIDE_HD = (CARD_W - 0.30) / 2
+
+-- THE BACK RIGHT CORNER, AND THE TWO PILES THERE LIE TURNED.
+--
+-- NOT A FLOURISH - ROW_CHAR IS A LANDSCAPE ROW. The comment at the top
+-- of this file says it: "characters, flush with the back edge
+-- (landscape there)". A landscape card at ROW_CHAR reaches z 17.89,
+-- which is FELT.z1 exactly; a PORTRAIT one reaches 19.05 and hangs
+-- 1.16 over the back edge of the felt. Dropping it to share the top
+-- edge, which is what BAT_BOX_DROP does for BAT's Upgrade spaces, puts
+-- its bottom edge 1.07 INTO ROW_MAIN instead - the two rows are 8.308
+-- apart and a portrait card is 8.208 deep, so they clear each other
+-- only with both at their own row's centre. There is no third place.
+--
+-- AND NEITHER PILE HAS A RIGHT WAY UP ANYWAY. One is face-down and the
+-- other is cards you are finished with, and six of the eighteen are
+-- printed landscape to begin with, so a stack of them is turned for
+-- one third of its cards whichever way it lies.
+IMP_CAND_ROT = {0, 90, 180}
+
+function impCorner(k)
+  return FELT.x1 - IMP_EDGE - CARD_L / 2 - (k - 1) * (CARD_L + IMP_GAP)
+end
+
+-- The discard in the corner itself and the deck inboard of it, so the
+-- pile that grows grows into the corner.
+IMP_CDIS_X = impCorner(1)
+IMP_CAND_X = impCorner(2)
+
+-- ONE ROW FOR THE WHOLE OF A SESSION, left to right along ROW_MAIN:
+-- the Dossier you deploy from, the Exhibits standing in front of you,
+-- and the ones you have buried. The Exhibit deck used to stand at
+-- col(2), a card and a half left of centre, with nothing on the table
+-- to say where a deployed Exhibit went or where a fallen one ends up.
+--
+-- IT STARTS CLEAR OF THE IMPOSTER'S COLUMN, not at the left edge of
+-- the felt. The three stat dice sit under the Imposter card at z 10.71
+-- and a card on ROW_MAIN reaches 10.75, so a Dossier at the left edge
+-- is dealt ON TOP OF the Health die - which is exactly what the
+-- harness caught.
+IMP_MAIN_N = 7
+IMP_MAIN_X0 = CHAR_X + CARD_L / 2 + IMP_GAP + CARD_W / 2
+
+function impMainX(k)
+  return IMP_MAIN_X0 + (k - 1) * IMP_COL
+end
+
+IMP_DOSSIER_X = impMainX(1)
+IMP_DONE_X = impMainX(IMP_MAIN_N)
+
+-- FIVE DEPLOYED SPACES, BECAUSE OF WHAT THE MODEL DOES, not because
+-- five fit. Peak Exhibits standing at once across 20,000 modelled
+-- games: 1 in 58% of them, 2 in 25%, 3 in 6%, 4 in 0.2% and never
+-- more. Five is the measured ceiling with one to spare - and the rules
+-- let you deploy the whole Dossier if you like, so these are spaces to
+-- line cards up against and not a limit: a sixth Exhibit stands beside
+-- them.
+IMP_DEPLOYED = IMP_MAIN_N - 2
+
+function impDeployX(k)
+  return impMainX(1 + k)
+end
+
 
 function attentionNow()
   local s = math.max(1, STATE.session + 1)
@@ -1048,11 +1145,25 @@ end
 function unmix()
   for _, o in ipairs(getAllObjects()) do
     if boxFor(o) and count(o) > 1 then
-      -- A nameless pile is whatever is in it, not a deck of nothing:
-      -- without this every card in the Completed Credits pile counts
-      -- as a stranger and the pile is taken apart card by card.
+      -- A pile is whatever is in it, not a deck of nothing: without
+      -- this every card in the Completed Credits pile counts as a
+      -- stranger and the pile is taken apart card by card.
+      --
+      -- AND A NAME THIS MOD DOES NOT PRINT IS NO BETTER THAN NO NAME
+      -- (2026-11-13). This asked whether the name was EMPTY, which was
+      -- the same question until the Imposter setup began naming a deck
+      -- Candidates: nothing inside it had that label, so every one of
+      -- the 11 was a stranger, and the guard that spares the last card
+      -- left ONE of them inside an object called Candidates. A box
+      -- cannot see into a deck it holds, so that card was invisible to
+      -- the next deal - the Candidate deck came out 11, then 10, then
+      -- 9, and the census said every card still existed the whole
+      -- time. DECK_OF is the mod's own table of what it prints, which
+      -- makes this the right question rather than a luckier one.
       local mine = deckLabel(o.getName())
-      if mine == '' then mine = deckLabel(firstCard(o)) end
+      if mine == '' or DECK_OF[mine] == nil then
+        mine = deckLabel(firstCard(o))
+      end
       local strays = {}
       for _, e in ipairs(contents(o) or {}) do
         if deckLabel(e.nickname) ~= mine then
@@ -1095,7 +1206,14 @@ end
 function nameIt(obj)
   if not obj or count(obj) <= 1 then return end
   local n = obj.getName()
-  if n ~= nil and n ~= '' then return end
+  -- A NAME THE MOD PRINTS IS KEPT; ANYTHING ELSE IS RENAMED FOR WHAT
+  -- IS IN IT. Empty was the only case this had to answer for until the
+  -- Imposter setup named a deck Candidates - see unmix above. By the
+  -- time a pack-up reaches here unmix has taken the strangers out, so
+  -- what is left is one deck under the wrong name.
+  if n ~= nil and n ~= '' and DECK_OF[(n:gsub(' %d+$', ''))] ~= nil then
+    return
+  end
   local lab = deckLabel(firstCard(obj))
   if lab and lab ~= '' then obj.setName(lab) end
 end
@@ -2454,8 +2572,10 @@ function poolSlots(counts)
   return out
 end
 
--- The middle of a family's slots, which is where its own deck stands:
--- the candidates in a stack directly above the row they were cut from.
+-- The middle of a family's slots. The candidate stacks that used to
+-- stand above each group are one deck in the corner now, so what this
+-- is for is the felt: make_template.py labels each group of the
+-- retained row by its own domain, and the label goes here.
 function poolMid(where)
   if not where or #where == 0 then return 0 end
   return (where[1] + where[#where]) / 2
@@ -2492,12 +2612,14 @@ end
 -- back is TTS's business, and here every card of the deck is an equal
 -- candidate, so the shuffle is the whole of the randomness.
 --
--- AND THE DECK STAYS WHERE IT STANDS, which is what snapFirst is for
--- here as it is in spread(): a deck cut to one card IS a card, TTS
--- respawns it a couple of units off where the deck stood, and the
--- candidates would sit crooked beside their own row. 6 less 3 is 3, so
--- it cannot happen at the shipped caps - and the caps are a number that
--- moves, which is why the guard is not an assumption.
+-- AND THE DECK SURVIVES THE CUT, which is the whole point of the
+-- guard: a deck cut to one card IS a card, TTS destroys the deck and
+-- respawns it with a fresh GUID, and the handle this hands back to the
+-- merge below would be a corpse holding the last candidate of a
+-- family. 6 less 3 is 3, so it cannot happen at the shipped caps - and
+-- the caps are a number that moves, which is why the guard is not an
+-- assumption. snapFirst then sets the remainder down where the deck
+-- stood, which is a staging pad it leaves again a step later.
 function cutOut(d, n, where, z)
   if not d or n <= 0 then return end
   d.shuffle()
@@ -2509,6 +2631,55 @@ function cutOut(d, n, where, z)
                   smooth = false})
   end
   snapFirst(one, p.x, p.z, FACEUP)
+end
+
+-- EVERY SPACE THE IMPOSTER TABLE DRAWS, in table order. Like BAT's
+-- and AoS's, the overlay is painted from this list and the snap points
+-- are made from it, so a box on the felt and a space you can drop onto
+-- cannot disagree: there is one of them.
+--
+-- THE IMPOSTER'S OWN SPACE IS NOT HERE. Jon asked for no outline under
+-- BAT's Lab Rats and none under the Imposter - the card is the only
+-- thing that ever stands there - and the three stat dice below it are
+-- not card spaces.
+--
+-- THE RETAINED SLOTS COME FROM poolSlots() WITH NO ARGUMENT, which is
+-- the caps' own row: 2 Notes, 3 Opportunities and 2 Routines. An
+-- over-claimed bag lays a LONGER row that poolSlots squeezes to fit,
+-- and those cards land across the printed boxes rather than in them -
+-- which is the honest way round, because the campaign retains seven.
+function impBoxes()
+  local out = {}
+  local function box(x, z, hw, hd)
+    table.insert(out, {x = x, z = z, hw = hw or IMP_BOX_HW,
+                       hd = hd or IMP_BOX_HD})
+  end
+  box(IMP_CAND_X, ROW_CHAR, IMP_WIDE_HW, IMP_WIDE_HD)
+  box(IMP_CDIS_X, ROW_CHAR, IMP_WIDE_HW, IMP_WIDE_HD)
+  box(IMP_DOSSIER_X, ROW_MAIN)           -- the Dossier
+  for k = 1, IMP_DEPLOYED do
+    box(impDeployX(k), ROW_MAIN)         -- Exhibits standing in front of you
+  end
+  box(IMP_DONE_X, ROW_MAIN)              -- and the ones you have buried
+  local slots = poolSlots()
+  for i, p in ipairs(IMP_POOL) do
+    for _, x in ipairs(slots[i]) do
+      if p[3] then box(x, ROW_SIDE, IMP_WIDE_HW, IMP_WIDE_HD)
+      else box(x, ROW_SIDE) end
+    end
+  end
+  return out
+end
+
+function impSnaps()
+  local pts = {}
+  for _, b in ipairs(impBoxes()) do
+    table.insert(pts, {position = {b.x, 1.0, b.z},
+                       rotation = {0, 0, 0}, rotation_snap = false})
+  end
+  local ok = pcall(function() Global.setSnapPoints(pts) end)
+  if not ok then say('Snap points are not available in this build.') end
+  return pts
 end
 
 function setupImposter()
@@ -2535,7 +2706,7 @@ function setupImposter()
     setMarker('Health', sx[1], sz, 5)
     setMarker('Strategy', sx[2], sz, 2)
     setMarker('Recovery', sx[3], sz, 3)
-    ex = deckOut('Exhibits', {col(2), 3, ROW_MAIN})
+    ex = deckOut('Exhibits', {IMP_DOSSIER_X, 3, ROW_MAIN})
   end)
   -- THE DOSSIER IS 5 OF EACH DOMAIN, not 15 of 24 at large. EXHIBIT_BLOCK
   -- is generated from build_nrj.py's own SCEN table, so the index ranges
@@ -2581,8 +2752,15 @@ function setupImposter()
       -- would find nothing in the box and say MISSING DECK out loud -
       -- a false alarm about the one case where every card of the
       -- family really is accounted for.
+      --
+      -- ONTO A STAGING PAD, NOT ONTO THE TABLE. The family deck is
+      -- scaffolding now: the retained cards are cut out of it and
+      -- whatever is left goes into the one candidate deck, so it never
+      -- wants a place of its own on the felt. pad() rather than OFF,
+      -- because every takeObject in this script drops its card at OFF
+      -- on the way through.
       if #carried[i] < p[4] then
-        pool[i] = deckOut(p[1], {poolMid(slots[i]), 3, ROW_SIDE}, FACEUP)
+        pool[i] = deckOut(p[1], pad(i))
       end
     end
   end)
@@ -2596,7 +2774,7 @@ function setupImposter()
         -- unpick: no merge, no cut, no card going home on the way.
         for k, gid in ipairs(carried[i]) do
           if b then
-            b.takeObject({guid = gid, position = {slots[i][k], 3, ROW_TIER},
+            b.takeObject({guid = gid, position = {slots[i][k], 3, ROW_SIDE},
                           rotation = FACEUP, smooth = false})
           end
         end
@@ -2606,10 +2784,50 @@ function setupImposter()
               '. All of them are out; put the extra ones away.')
         end
       else
-        cutOut(pool[i], p[2], slots[i], ROW_TIER)
+        cutOut(pool[i], p[2], slots[i], ROW_SIDE)
       end
     end
   end)
+  -- EVERYTHING NOT RETAINED, SHUFFLED INTO ONE FACE-DOWN DECK.
+  --
+  -- What is left in each family deck at this point IS the candidates,
+  -- with no arithmetic: the deal took only what the NRJ box held - the
+  -- 6 less whatever you carried - and the retain step above cut the
+  -- rest of them out of it. So the three remainders merged are the 18
+  -- less the retained, whether that is 11 or 15.
+  --
+  -- THROUGH gatherInto RATHER THAN moveN, for two reasons. It hands
+  -- back the LIVE receiver - a card that receives a card is destroyed
+  -- and replaced by the deck TTS builds out of the two, and that trap
+  -- has been paid for twice already in this file - and it takes a
+  -- single CARD as happily as a deck, which moveN does not: moveN
+  -- shuffles its source first and a card has no shuffle(). A family
+  -- whose remainder is one card cannot happen at the shipped caps and
+  -- the caps are a number that moves.
+  step(function()
+    local cand = nil
+    for i in ipairs(IMP_POOL) do
+      local d = pool[i]
+      if d then
+        if cand then cand = gatherInto(cand, d) else cand = d end
+      end
+    end
+    if cand then
+      -- NAMED FOR WHAT IT IS. Merged, the deck answers to whichever
+      -- family happened to be first out of the box - a stack of all
+      -- three called "Research Notes" - and the one thing a player
+      -- needs to know about it is that nothing in it answers anything.
+      cand.setName('Candidates')
+      cand.setPosition({IMP_CAND_X, 3, ROW_CHAR})
+      cand.setRotation(IMP_CAND_ROT)
+      -- AND ONLY IF IT IS A DECK. An over-claimed bag holding 17 of
+      -- the 18 leaves one card as the whole of the candidates, and a
+      -- card has no shuffle() - which is a red line in chat for a
+      -- deck of one that is already in random order.
+      if count(cand) > 1 then cand.shuffle() end
+    end
+  end)
+  step(function() impSnaps() end)
 
   step(function() showChar('IMP') end)
   step(function()
@@ -2622,9 +2840,14 @@ function setupImposter()
     -- are identical either way.
     local retained = {}
     for i, p in ipairs(IMP_POOL) do
-      table.insert(retained, (#carried[i] > 0)
+      -- WITH THE DOMAIN IT ANSWERS, which is the one thing about a
+      -- retained card that decides where it can be spent. p[5] comes
+      -- from the model's own ANSWERS table through build_mod.py, not
+      -- from three words typed here.
+      table.insert(retained, ((#carried[i] > 0)
                    and (#carried[i] .. ' ' .. p[1] .. ' out of the carry bag')
                    or (p[2] .. ' ' .. p[1] .. ' at random'))
+                   .. ' (' .. p[5] .. ')')
     end
     say('Imposter Scenario -- ' .. STATE.difficulty ..
         '. The Dossier is dealt and shuffled face-down: 5 Knowledge,' ..
@@ -2634,9 +2857,13 @@ function setupImposter()
          or (t[1] .. ' Yellow, ' .. t[2] .. ' Green, ' .. t[3] .. ' Blue and ' ..
              t[4] .. ' Purple, which start exhausted (never Red).')) ..
         ' Nine sessions. Retained: ' .. table.concat(retained, ', ') ..
-        ', in the row below their own decks. Each RETAINED card reduces' ..
-        ' one Exhibit Target by 2; the cards left in the three decks are' ..
-        ' candidates and answer nothing. Keep all 18 face-up.')
+        ' -- face-up in the middle row, each in its own labelled space.' ..
+        ' A retained card answers only the domain in brackets, takes 2' ..
+        ' off the Target of one Exhibit you have just deployed, and is' ..
+        ' then gone. Everything you did not retain is shuffled face-down' ..
+        ' into the Candidate deck in the back right corner: it answers' ..
+        ' nothing at all, and the Understudy is the only Imposter that' ..
+        ' spends it.')
   end)
   run()
 end

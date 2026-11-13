@@ -1,3 +1,47 @@
+2026-11-13  THE CANDIDATES BECOME A DECK, AND THE POOL SAYS WHAT IT IS
+Jon, reading the supplement: "'Each won game contributes its 6 Tier III
+cards to the Research Pool' - I thought the player had to select up to 3
+cards of the respective type for each game."  Both are in the book and
+they are about different things, which is the whole problem.  Then, on
+being told that eleven of the eighteen do nothing for nine Imposters out
+of ten: "it makes more sense to just mix all 11 together, create a draw
+deck and a discard space for them."  No number moved and the finale is
+the game it was yesterday - 50.5% at the shipped caps, measured again
+while answering the question.
+
+THE SENTENCE WAS TRUE AND READ AS THE OPPOSITE.  All six cards of a won
+game go to the Pool; at most three of them are RETAINED and do anything.
+"Contributes its 6 Tier III cards" sounds like six working cards, and the
+cap is two sections further on.  Step 3 now carries both halves, and the
+definition is binary where it used to have a hole in it: a card you
+CLAIMED but could not carry was neither "claimed" nor "never claimed",
+and the model has always counted it a candidate.
+
+AND "CHOOSE WHICH TO CARRY" WAS NOT A CHOICE.  Finish five Opportunities
+in NAP, retain three - and every retained card of a game is worth 2 and
+answers the same domain, so the three are interchangeable.  That is
+fallout from the 2026-10-30 rework, which dropped the spent/unspent split
+that used to tell them apart.  The book now says to carry any that many
+and why there is nothing to weigh.
+
+ELEVEN FACE-UP CARDS THAT ANSWER NOTHING WERE THREE SORTED STACKS.  A
+candidate is worth nothing unless you took the Understudy, who discards
+them by the COUNT - "Discard 4 Candidates", and the card does not care
+which four.  So sorting them by game sorted by a difference that does not
+exist, in the middle row, against the one distinction the finale is built
+on.  They are one face-down deck now with a discard beside it, and the
+retained cards have the row to themselves.  They shuffle together because
+the card is the same card: an Opportunity is 63.5 x 88.9 printed
+landscape, not a different size.
+
+FOUR PAGES, STILL.  The rewrite spilled thirteen lines onto a fifth page,
+which is the thing Jon asked to be rid of the day before.  The new prose
+came in as far as it would go and the leading took the rest: 1.28 to
+1.25, margin 11mm to 10mm, type unchanged at the set's own 8.6pt.
+check_app_sync.py holds the book at four and reads the Chip Theory credit
+line out of all four PDFs, which is what caught that line vanishing the
+last time this book was squeezed.
+
 2026-11-13  THE NRJ SUPPLEMENT LOSES THE ABILITY TABLE AND TWO PAGES
 Jon asked for three things: take the Imposter abilities out, get rid of all
 the empty space, and show the dice colors in the components list.  No rule

@@ -487,14 +487,39 @@ def retain_caps():
     return dict(zip(('NAP', 'BAT', 'AoS'), caps))
 
 
+def answers():
+    """Which domain each game's retained cards answer, out of the model.
+
+    ANSWERS is {domain: game} in simulation/finale.py - "which game's
+    retained cards answer which domain" - and it is the only place in
+    the repo that says so in a form anything can read. The felt labels
+    the retained row with these three words and the setup says them out
+    loud, so a copy typed into either would be a fourth one.
+    """
+    src = io.open(os.path.join(_REPO, 'simulation', 'finale.py'),
+                  encoding='utf-8').read()
+    got = None
+    for node in ast.parse(src).body:
+        if (isinstance(node, ast.Assign)
+                and getattr(node.targets[0], 'id', '') == 'ANSWERS'):
+            got = {v.value: k.value
+                   for k, v in zip(node.value.keys, node.value.values)}
+    if not got or sorted(got) != ['AoS', 'BAT', 'NAP']:
+        raise SystemExit('simulation/finale.py has no ANSWERS over the '
+                         'three games: %r' % (got,))
+    return got
+
+
 def research_pool():
-    """(label, cap, landscape, laid out) per deck, in decks.py's order.
+    """(label, cap, landscape, laid out, domain) per deck, in decks.py's
+    order.
 
     Which is BAT, NAP, AoS - and that puts the one landscape deck in the
     middle of the row, which is the only reason the three fit the felt
     side by side at all.
     """
     caps = retain_caps()
+    dom = answers()
     laid = [d for d in DECKS if d['label'] in POOL_GAME]
     if len(laid) != len(POOL_GAME):
         raise SystemExit('decks.py has %d of the %d pool decks'
@@ -511,7 +536,8 @@ def research_pool():
         if caps[game] >= d['count']:
             raise SystemExit('%s retains %d of %d'
                              % (d['label'], caps[game], d['count']))
-        out.append((d['label'], caps[game], bool(d['land']), d['count']))
+        out.append((d['label'], caps[game], bool(d['land']), d['count'],
+                    dom[game]))
     return out
 
 
@@ -671,9 +697,9 @@ def lua_header(box_guids):
         # the card is landscape, and how many the game lays out - see
         # research_pool(). The last is what tells the Imposter setup
         # that the carry bag holds a whole deck and the box has none.
-        'IMP_POOL = { %s }' % j("{'%s', %d, %s, %d}"
-                                % (n, c, 'true' if l else 'false', k)
-                                for n, c, l, k in research_pool()),
+        'IMP_POOL = { %s }' % j("{'%s', %d, %s, %d, '%s'}"
+                                % (n, c, 'true' if l else 'false', k, d)
+                                for n, c, l, k, d in research_pool()),
         '-- ======================= end generated =======================',
         '', ''])
 

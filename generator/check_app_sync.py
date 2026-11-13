@@ -1407,6 +1407,21 @@ check("the components list breaks the 17 dice down by color",
                              ("R", 1, "Red"))),
       _comp[_comp.index("From 20 Strong"):][:220])
 
+# ONE FACE-DOWN CANDIDATE DECK, NOT THREE FACE-UP STACKS (Jon,
+# 2026-11-13: "it makes more sense to just mix all 11 together, create
+# a draw deck and a discard space for them"). Nothing in the finale
+# asks which candidate a candidate is, so the book says shuffle them
+# together and the mod does it - and the check is on BOTH ends,
+# because a rulebook that says deck while the table deals three stacks
+# is worse than either.
+_nrjtext = " ".join(re.sub(r"<[^>]+>", " ", text("rules/nrj.html")).split())
+_nrjtext = _nrjtext.replace("&#8209;", "-").replace("&mdash;", "--")
+check("rules/nrj.html shuffles the candidates into one face-down deck",
+      "Shuffle every card you did not retain into one face-down Candidate"
+      " deck" in _nrjtext)
+check("...and says a card you could not carry is a candidate like any other",
+      "one you claimed and could not carry is a candidate like any other"
+      in _nrjtext)
 check("the Research Pool is the Tier III cards, not the games' own decks",
       "the Tier III cards you claimed" in text("rules/nrj.html")
       and "6 Research Notes" in text("rules/nrj.html")
@@ -2033,7 +2048,7 @@ else:
           and "FOUR PAGES, NOT SIX" in text("rules/nrj.html")
           and "line-height: 1.34" in text("rules/bat.html")
           and "line-height: 1.30" in text("rules/nap.html")
-          and "line-height: 1.28" in text("rules/nrj.html"))
+          and "line-height: 1.25" in text("rules/nrj.html"))
     # AND THE CREDIT LINE IS IN THE BOOK ITSELF, which nothing had ever
     # asked. .foot spans both columns, and a full-width band needs room
     # under BOTH of them - so when NRJ was squeezed to four pages
@@ -3955,12 +3970,58 @@ if len(_carry) == 1:
 _impool = re.search(r"\nIMP_POOL = \{(.*?)\}\n", _sv["LuaScript"])
 check("the mod's IMP_POOL carries the same caps, in decks.py's order",
       _impool is not None
-      and re.findall(r"\{'([^']+)', (\d+), (true|false), (\d+)\}",
+      and re.findall(r"\{'([^']+)', (\d+), (true|false), (\d+), '([^']+)'\}",
                      _impool.group(1))
-      == [("Research Notes", "2", "false", "6"),
-          ("Devious Opportunities", "3", "true", "6"),
-          ("Backdoor Routines", "2", "false", "6")],
+      == [("Research Notes", "2", "false", "6", "Physical"),
+          ("Devious Opportunities", "3", "true", "6", "Knowledge"),
+          ("Backdoor Routines", "2", "false", "6", "Cover-Up")],
       "%r" % (_impool and _impool.group(1),))
+
+# AND THE DOMAIN IN IT IS THE MODEL'S OWN. A retained card answers one
+# domain and nothing printed on it says which, so the felt labels the
+# row and the setup says it out loud - two more places for
+# Knowledge/Physical/Cover-Up to drift from the three the simulation
+# scores. build_mod.py reads ANSWERS out of simulation/finale.py; this
+# is the other end of that wire.
+_answers = py_tables("simulation/finale.py").get("ANSWERS", {})
+check("...and the domains are simulation/finale.py's ANSWERS",
+      _impool is not None
+      and {g: d for d, g in _answers.items()}
+      == {{"Research Notes": "BAT", "Devious Opportunities": "NAP",
+           "Backdoor Routines": "AoS"}[n]: d
+          for n, _c, _l, _k, d in re.findall(
+              r"\{'([^']+)', (\d+), (true|false), (\d+), '([^']+)'\}",
+              _impool.group(1))},
+      "%r" % (_answers,))
+
+# EVERY PLACE THE IMPOSTER TABLE DEALS TO HAS A BOX AND A SNAP UNDER
+# IT (Jon, 2026-11-13: "label all the spaces and create snap points").
+# impBoxes() is the one list the felt is painted from and the snap
+# points are made from, so this counts the places rather than trusting
+# that the two agree: the two corner piles, the row a session is
+# played along, and one slot per card the caps allow.
+_boxes = re.search(r"\nfunction impBoxes\(\)(.*?)\nend\n",
+                   _sv["LuaScript"], re.S)
+check("...and the mod builds that deck and names it",
+      "cand = gatherInto(cand, d)" in _sv["LuaScript"]
+      and "cand.setName('Candidates')" in _sv["LuaScript"]
+      and "cand.setRotation(IMP_CAND_ROT)" in _sv["LuaScript"])
+# AND unmix CAN TAKE IT APART AGAIN, which is not the same claim. A
+# box cannot see into a deck it holds, so a Candidate deck stowed
+# whole is cards the next deal cannot find: it came out 11, then 10,
+# then 9, and every census said all 18 still existed.
+check("...and unmix reads a pile the mod does not print by its contents",
+      "if mine == '' or DECK_OF[mine] == nil then" in _sv["LuaScript"]
+      and "DECK_OF[(n:gsub(' %d+$', ''))] ~= nil then" in _sv["LuaScript"])
+
+check("the Imposter table paints its boxes from impBoxes()",
+      _boxes is not None
+      and "function impSnaps()" in _sv["LuaScript"]
+      and "for _, b in ipairs(impBoxes()) do" in _sv["LuaScript"]
+      and "step(function() impSnaps() end)" in _sv["LuaScript"])
+check("...and make_template.py draws that same list",
+      "for b in g.impBoxes().values():" in text("tts/make_template.py")
+      and "draw_imp(d, lua)" in text("tts/make_template.py"))
 
 
 def _bookfile(u):

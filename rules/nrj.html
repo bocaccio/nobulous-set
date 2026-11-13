@@ -3,7 +3,7 @@
 <style>
 :root { --accent: #1f4e6b; }
 
-/* FOUR PAGES, NOT SIX.
+/* FOUR PAGES, NOT SIX - AND STILL FOUR WITH THE CANDIDATE DECK IN IT.
    Jon, 2026-11-13: get rid of all the empty space. There was most of
    a page of it. The ten-row Imposter ability table came out of the
    text in the same pass - the cards print every word of it - and that
@@ -33,8 +33,8 @@ tr { break-inside: avoid; }
    line, call it four lines of room in one column. check_app_sync.py
    holds the book to four pages, so the next section anybody adds
    fails there rather than quietly buying a fifth page. */
-@page { margin: 11mm; }
-body { line-height: 1.28; }
+@page { margin: 10mm; }
+body { line-height: 1.25; }
 h2 { margin: 2.6mm 0 1.4mm; }
 h3 { margin: 2.4mm 0 .8mm; }
 p { margin: 0 0 1.6mm; }
@@ -186,7 +186,8 @@ cost rather than a hole in the rules.</p>
       Tier III cards themselves &mdash; see below. Tiers I and II are for playing the three games on their own.</li>
   <li>Win BAT, NAP and AoS in any order. <b>If you lose a game, replay that game only</b> &mdash; the campaign
       does not restart.</li>
-  <li>Each won game contributes its 6 Tier III cards to the <b>Research Pool</b>.</li>
+  <li>Each won game sends all 6 of its Tier III cards to the <b>Research Pool</b>: the ones you claimed
+      are <b>retained</b>, the rest are <b>candidates</b>, and at most 7 of the 18 are retained.</li>
   <li>Play the Imposter Scenario.</li>
 </ol>
 <p>No written bookkeeping is needed. Physical cards and their printed states carry the whole campaign history,
@@ -205,9 +206,10 @@ the favor is counted.</p>
   <tr><td>AoS</td><td>6 Backdoor Routines</td><td>Cover&#8209;Up</td><td>meeting the printed condition and
       giving up the next Program Reward</td></tr>
 </table>
-<p><b>A card you claimed is retained. A card you never claimed is a candidate.</b> That is the whole
-of it. Whether you went on to spend the card during its own game makes no difference &mdash; nothing on the
-table records that, and a campaign can sit for weeks between games.</p>
+<p><b>A card you carry is retained. Every other card in the Pool is a candidate.</b> You retain the cards
+you claimed, up to the cap below, so one you claimed and could not carry is a candidate like any other.
+Whether you <em>spent</em> it during its own game makes no difference &mdash; nothing on the table records
+that, and a campaign can sit for weeks between games.</p>
 <table>
   <tr><th>Game</th><th>Retain at most</th><th>Why that many</th></tr>
   <tr><td>NAP</td><td><b>3</b></td><td>an Opportunity is worked like an Assignment, and apprentices finish
@@ -217,8 +219,12 @@ table records that, and a campaign can sit for weeks between games.</p>
   <tr><td>AoS</td><td><b>2</b></td><td>AoS&rsquo;s own claim limit</td></tr>
 </table>
 <p>Every retained card reduces one Exhibit&rsquo;s Target by <b>2</b>. If you claimed more than you may
-retain, choose which to carry. Keep all 18 face&#8209;up and available; a card spent in the finale is gone
-for the rest of it.</p>
+retain, carry any that many &mdash; every retained card of a game is worth the same and answers the same
+domain. Lay them face&#8209;up, grouped by game; one you spend in the finale is gone for the rest of it.</p>
+<p><b>Shuffle every card you did not retain into one face&#8209;down Candidate deck</b>, with a discard pile
+beside it. Nothing in the finale asks which candidate a candidate is, and the Understudy &mdash; the only
+Imposter that uses them &mdash; discards them off the top, so sorting them by game sorts by a difference
+that does not exist.</p>
 <div class="box warn">
   <span class="lbl">Tier III is a loan and the finale is the reckoning</span>
   Every one of these cards exists to make its own game easier, and claiming one makes that game harder:
@@ -246,7 +252,8 @@ face at a time, and you have nine sessions before the Council rules.</p>
       Imposter begins at
       <b>5 HP / 2 STR / 3 REC</b> with all 17 dice, less however many the difficulty you chose starts
       exhausted.</li>
-  <li>Keep the Research Pool face&#8209;up near the table.</li>
+  <li>Keep the retained cards face&#8209;up near the table and the Candidate deck face&#8209;down beside
+      them, with room for a discard pile.</li>
   <li>Play <b>9 sessions</b>.</li>
 </ol>
 <div class="box warn">
@@ -369,7 +376,7 @@ the evidence that pays.</p>
 
 <h3>Answering an Exhibit</h3>
 <p>A <b>retained</b> card answers only its own domain, and reduces the Target of one Exhibit you have just
-deployed. A card you spend is gone. Candidates answer nothing at all &mdash; unless you took the Understudy, who is the one Imposter that spends them.</p>
+deployed. A card you spend is gone. Candidates answer nothing at all &mdash; unless you took the Understudy, who is the one Imposter that spends them, off the top of the Candidate deck.</p>
 <table>
   <tr><th>Retained card</th><th>Answers</th><th>Reduction</th></tr>
   <tr><td>BAT Research Note</td><td>Physical</td><td>&minus;2</td></tr>
@@ -386,14 +393,15 @@ below Target 1.</p>
 Deploying more than you can <em>bury</em> is how you bleed. Count the Exhibits left against the sessions left
 and do not fall behind that number &mdash; slowing down when Health is short feels prudent and loses games,
 because the clock kills more reliably than the Council does.</p>
-<p><em>Terminology:</em> the <b>Research Pool</b> is the 18 carried&#8209;forward cards. The
-<b>Dossier</b> is the 15 Exhibits. The <b>dice pool</b> is the Imposter&rsquo;s dice.</p>
+<p><em>Terminology:</em> the <b>Research Pool</b> is the 18 carried&#8209;forward cards &mdash; the retained
+ones and the <b>Candidate deck</b>. The <b>Dossier</b> is the 15 Exhibits. The <b>dice pool</b> is the
+Imposter&rsquo;s dice.</p>
 
 <h2>Standalone Imposter mode</h2>
 <p>You can play the finale without the campaign, and without opening another box: every card it needs is in
 this one. Take the 6 Research Notes, the 6 Devious Opportunities and the 6 Backdoor Routines. Draw at
 random <b>3 Opportunities, 2 Notes and 2 Routines</b> as retained &mdash; the campaign&rsquo;s own caps
-&mdash; and leave the other eleven as Candidates. Build the 15&#8209;card Dossier normally, pick a
+&mdash; and shuffle the other eleven into the Candidate deck. Build the 15&#8209;card Dossier normally, pick a
 difficulty, and play the nine&#8209;session finale.</p>
 
 <div class="foot">NRJ &middot; The Nobulous Set &middot; fan expansion for 20 Strong &middot; prototype rules,

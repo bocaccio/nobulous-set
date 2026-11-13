@@ -63,6 +63,16 @@ for _d in DECKS:
     LAND[_d.get("card", _d["label"])] = bool(_d.get("land"))
     ONE[_d["label"]] = _d.get("card", _d["label"])
 
+# A STACK THE SCRIPT BUILDS, WHICH decks.py CANNOT KNOW ABOUT. The
+# Imposter setup shuffles every Tier III card you did not retain into
+# one face-down deck and names it Candidates, so there is no printed
+# deck of that name to read an orientation off. Portrait here because
+# twelve of the eighteen are, and footprints() turns it by its own yaw.
+# Not registering it would have been worse than registering it wrong:
+# is_card() would call a deck of 11 cards "not a card" and drop it out
+# of the overlap and off-the-felt checks without saying so.
+LAND["Candidates"] = False
+
 
 def is_card(o):
     """A card or a deck of them - not the overlay, the panel or a die."""
@@ -976,6 +986,15 @@ def footprints(w, lua):
     A landscape deck is the same card turned, so its footprint is the
     portrait one swapped. CARD_W and CARD_L come from the Lua the build
     generated, so this measures what the mod will actually deal.
+
+    AND A DECK THE SETUP TURNS IS TURNED (2026-11-13). This read the
+    orientation off the card LIST and nowhere else, so a stack the
+    script lays on its side was still measured standing up - which is
+    the Imposter's Candidate deck, a pile of all three Tier III
+    families that lies turned in the back corner because ROW_CHAR is
+    flush for a landscape card and 1.16 short for a portrait one. The
+    yaw decides it when there is one; the card list is what answers for
+    everything the setup leaves at FACEUP or FACEDOWN.
     """
     g = lua.globals()
     cw, cl = float(g.CARD_W), float(g.CARD_L)
@@ -985,6 +1004,9 @@ def footprints(w, lua):
         land = LAND.get(base, LAND.get(o.name))
         if land is None:
             continue                      # not a card: leave it alone
+        yaw = round((o.rot or (0.0, 0.0, 0.0))[1]) % 180
+        if yaw == 90:
+            land = not land
         hw, hd = (cl / 2, cw / 2) if land else (cw / 2, cl / 2)
         out.append((o.name, o.pos[0], o.pos[2], hw, hd))
     return out
@@ -1129,6 +1151,13 @@ def layout_assertions():
                     # Routines and the banished dice.
                     exp = (1 + 4 + 1 + 2 + int(g.AOS_MATS)
                            + 1 + int(g.AOS_BACKDOORS) + 1)
+                elif which == "IMP":
+                    # The candidate deck and its discard in the back
+                    # corner; the Dossier, five deployed spaces and
+                    # what you have buried along ROW_MAIN; and the
+                    # retained row, one space per card the caps allow.
+                    exp = (2 + int(g.IMP_MAIN_N)
+                           + sum(int(p[2]) for p in g.IMP_POOL.values()))
                 else:
                     exp = 0
                 want(t + " spaces laid", len(w.snaps), exp)
@@ -3648,6 +3677,16 @@ def pool_assertions():
     count here passes on the old behaviour for the full-campaign case.
     What cannot pass is "the retained cards are the ones that were in
     the bag".
+
+    AND THE TABLE CHANGED UNDER IT ON 2026-11-13, when Jon asked for
+    the candidates to be mixed into one draw deck with a discard space
+    beside it. The retained cards moved up to ROW_SIDE - the row the
+    geometry comment has always called the Research Pool's - and the
+    three face-up stacks sorted by family became one face-down deck
+    named Candidates in the back right corner. So "the rest are
+    candidates" is now a claim about what is inside a deck, and there
+    is a new one worth more than any of them: that the deck holds
+    EVERY card that is not retained, 18 less however many that is.
     """
     cases = (("nothing carried", {}),
              ("two Notes carried", {"Research Note": 2}),
@@ -3666,18 +3705,21 @@ def pool_assertions():
             was.setdefault(c.name.rsplit(" ", 1)[0], []).append(c.name)
         g.setupImposter()
         drain(w)
-        tier, side = float(g.ROW_TIER), float(g.ROW_SIDE)
+        side = float(g.ROW_SIDE)
         pop = census(w)
+        deck = [o for o in w.table.values() if o.name == "Candidates"]
+        inside = {}
+        for o in deck:
+            for c in o.kids:
+                inside.setdefault(c.name.rsplit(" ", 1)[0], []).append(c.name)
         for p in g.IMP_POOL.values():
             lab, cap, laid = str(p[1]), int(p[2]), int(p[4])
             one = str(g.CARD_NAME[lab]) if g.CARD_NAME[lab] else lab
             mine = sorted(was.get(one, []))
             ret = sorted(o.name for o in w.table.values()
                          if of_family(o.name, one)
-                         and abs(o.pos[2] - tier) < 0.1)
-            cand = sum(len(o.kids) or 1 for o in w.table.values()
-                       if (o.name == lab or of_family(o.name, one))
-                       and abs(o.pos[2] - side) < 0.1)
+                         and abs(o.pos[2] - side) < 0.1)
+            cand = len(inside.get(one, []))
             left = sum(1 for c in bag.kids if of_family(c.name, one))
             if mine:
                 # THE CARDS THEMSELVES. This is the assertion the old
@@ -3691,6 +3733,14 @@ def pool_assertions():
                  cand, laid - len(ret))
             want("...and %s no %s is left in the carry bag" % (tag, lab),
                  left, 0)
+            # AND NOT ONE OF THEM IS STILL LOOSE ON THE TABLE. The
+            # family deck is scaffolding now - dealt to a staging pad,
+            # cut, and merged into the Candidate deck - so a card of
+            # this family is either retained on ROW_SIDE or inside that
+            # deck, and a deck of the family's own name standing
+            # anywhere is the merge having quietly not happened.
+            want("...and %s no %s deck is left on the table" % (tag, lab),
+                 [o.name for o in w.table.values() if o.name == lab], [])
             # AND ALL SIX EXIST, ONCE EACH, wherever they are. A setup
             # that dealt the deck AND emptied the bag would put eight
             # Research Notes on the table and pass every count above.
@@ -3705,8 +3755,37 @@ def pool_assertions():
         edge = float(g.FELT.x1) - 1.0
         want("%s: the retained row stays on the felt" % tag,
              sorted(round(o.pos[0], 2) for o in w.table.values()
-                    if abs(o.pos[2] - tier) < 0.1
+                    if abs(o.pos[2] - side) < 0.1
                     and abs(o.pos[0]) > edge), [])
+        # ONE DECK, IN THE CORNER, FACE DOWN AND TURNED, HOLDING
+        # EVERYTHING THAT IS NOT RETAINED.
+        #
+        # THIS IS THE ASSERTION THE WHOLE CHANGE RESTS ON. The three
+        # per-family counts above would all pass on three separate
+        # stacks; what they cannot tell you is that the 18 cards split
+        # in exactly two places - the retained row and this deck - with
+        # none of them anywhere else and none of them counted twice.
+        held = sum(len(o.kids) or 1 for o in deck)
+        stand = sum(1 for o in w.table.values()
+                    for p in g.IMP_POOL.values()
+                    if of_family(o.name, str(g.CARD_NAME[str(p[1])])
+                                 or str(p[1]))
+                    and abs(o.pos[2] - side) < 0.1)
+        want("%s: one Candidate deck holds the 18 less the retained" % tag,
+             (len(deck), held + stand), (1, 18))
+        if deck:
+            want("...and %s it is face down in the back right corner" % tag,
+                 (round(deck[0].pos[0], 2), round(deck[0].pos[2], 2),
+                  round((deck[0].rot or (0, 0, 0))[1]) % 180,
+                  round((deck[0].rot or (0, 0, 0))[2]) % 360),
+                 (round(float(g.IMP_CAND_X), 2), round(float(g.ROW_CHAR), 2),
+                  90, 180))
+            # AND SHUFFLED UNDER ITS OWN NAME, which is the shuffle
+            # that matters: the three families are shuffled on the way
+            # out of the box, and a deck built by stacking three
+            # shuffled decks end to end is not a shuffled deck.
+            want("...and %s it was shuffled as one deck" % tag,
+                 "Candidates" in w.shuffled or held <= 1, True)
 
     # THE SLOTS ARE FIXED AT THE CAPS, and this is why that matters:
     # make_template.py paints the felt from the footprints this setup
@@ -3722,7 +3801,7 @@ def pool_assertions():
         g.setupImposter()
         drain(w)
         rows.append(sorted(round(o.pos[0], 2) for o in w.table.values()
-                           if abs(o.pos[2] - float(g.ROW_TIER)) < 0.1))
+                           if abs(o.pos[2] - float(g.ROW_SIDE)) < 0.1))
     want("a full campaign fills the same slots a standalone deal does",
          rows[0], rows[1])
     want("...and there are as many of them as the caps allow",

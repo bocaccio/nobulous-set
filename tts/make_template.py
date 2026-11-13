@@ -345,6 +345,51 @@ def draw_aos(d, lua):
     label(d, "BANISHED\nDICE", float(g.AOS_RIGHT), r3, fit=fit)
 
 
+def draw_imp(d, lua):
+    """THE IMPOSTER'S SPACES COME FROM THE SCRIPT, like BAT's and AoS's.
+
+    impBoxes() is the list the setup makes its snap points from, so a
+    box on the felt and a space you can drop onto cannot disagree.
+    Until 2026-11-13 this table was drawn from where the setup HAPPENED
+    to put cards, because it was the one table with no places on it:
+    three decks, a row of cards, and bare felt everywhere a player
+    actually put something down.
+
+    EVERY LABEL EXCEPT THE DEPLOYED SPACES, which Jon asked for blank -
+    an Exhibit standing in front of you is a card you can read.
+    """
+    g = lua.globals()
+    for b in g.impBoxes().values():
+        card(d, float(b.x), float(b.z), float(b.hw), float(b.hd),
+             PEN["snap"], 4)
+    fit = float(g.IMP_BOX_HW) * 1.8
+    wide = float(g.IMP_WIDE_HW) * 1.8
+    # The two piles in the back corner, which are the only places on
+    # this table whose contents you cannot guess from what is in them:
+    # one is face-down and the other is cards you are finished with.
+    label(d, "CANDIDATE\nDECK", float(g.IMP_CAND_X), float(g.ROW_CHAR),
+          fit=wide)
+    label(d, "CANDIDATE\nDISCARD", float(g.IMP_CDIS_X), float(g.ROW_CHAR),
+          fit=wide)
+    # The row a session is played along, labelled at both ends.
+    label(d, "DOSSIER", float(g.IMP_DOSSIER_X), float(g.ROW_MAIN), fit=fit)
+    label(d, "COMPLETED", float(g.IMP_DONE_X), float(g.ROW_MAIN), fit=fit)
+    # THE RETAINED ROW, BY THE DOMAIN EACH GROUP ANSWERS. A retained
+    # card answers only its own domain, which is the one thing that
+    # decides whether it can be spent on the Exhibit in front of you -
+    # and nothing about the card itself says which domain that is.
+    #
+    # READ OUT OF IMP_POOL, which build_mod.py fills from the model's
+    # own ANSWERS table, so the three words here cannot drift from the
+    # three the simulation scores.
+    slots = g.poolSlots()
+    for i, p in enumerate(g.IMP_POOL.values(), 1):
+        where = [float(v) for v in slots[i].values()]
+        mid = (where[0] + where[-1]) / 2.0
+        label(d, "RETAINED\n%s" % str(p[5]).upper(), mid, float(g.ROW_SIDE),
+              fit=(wide if p[3] else fit))
+
+
 def draw_game(d, which, slots_out=None):
     fp, snaps, w, lua = places_for(which)
     if which == "BAT":
@@ -352,6 +397,9 @@ def draw_game(d, which, slots_out=None):
         return fp
     if which == "AoS":
         draw_aos(d, lua)
+        return fp
+    if which == "IMP":
+        draw_imp(d, lua)
         return fp
     # NAP OUTLINES WHERE YOU PUT THINGS, NOT WHERE THE GAME PUTS THEM.
     # A box under the Time Slot, the Assignment deck, the Apprentice or
@@ -362,10 +410,9 @@ def draw_game(d, which, slots_out=None):
     # Lab Rats and none under the Imposter; the card is the only thing
     # that ever stands there, so a box round it draws a line nobody
     # needs and the stat dice under it have nothing to do with it.
+    # The Imposter's own exemption lives in impBoxes() now, which is
+    # the list its table is painted from - see draw_imp above.
     bare = ()
-    if which == "IMP":
-        one = str(lua.globals().CARD_NAME["Imposters (A / B)"])
-        bare = (one, "Imposters (A / B)")
     if which != "NAP":
         for name, x, z, hw, hd in fp:
             if name.rstrip("0123456789").strip() in bare:
