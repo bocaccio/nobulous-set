@@ -364,11 +364,18 @@ def draw_imp(d, lua):
              PEN["snap"], 4)
     fit = float(g.IMP_BOX_HW) * 1.8
     wide = float(g.IMP_WIDE_HW) * 1.8
-    # The two piles in the back corner, which are the only places on
+    # The three piles in the back corner, which are the only places on
     # this table whose contents you cannot guess from what is in them:
-    # one is face-down and the other is cards you are finished with.
-    label(d, "CANDIDATE\nDECK", float(g.IMP_CAND_X), float(g.ROW_CHAR),
-          fit=wide)
+    # two are face-down and the third is cards you are finished with.
+    #
+    # TWO CANDIDATE STACKS UNDER ONE LABEL, because they are one pool.
+    # A Deck in TTS holds one card SHAPE and the Opportunities are
+    # printed the other way round from the Notes and the Routines, so
+    # the eighteen that shuffle together on a table cannot here - see
+    # IMP_CANDW_X in lua.lua. Neither stack is sorted by anything the
+    # finale reads, and you may draw from either.
+    label(d, "CANDIDATES", float(g.IMP_CANDW_X), float(g.ROW_CHAR), fit=wide)
+    label(d, "CANDIDATES", float(g.IMP_CAND_X), float(g.ROW_CHAR), fit=wide)
     label(d, "CANDIDATE\nDISCARD", float(g.IMP_CDIS_X), float(g.ROW_CHAR),
           fit=wide)
     # The row a session is played along, labelled at both ends.

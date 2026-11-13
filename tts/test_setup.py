@@ -305,6 +305,8 @@ class Obj(object):
         self.locked = bool(lock)
 
     def setName(self, n):
+        if self._unborn('setName'):
+            return
         self.name = n
 
     # ---------------------------------------------- the rulebook's corner
@@ -353,11 +355,41 @@ class Obj(object):
     def getDescription(self):
         return self.desc
 
+    def _unborn(self, call):
+        """A deck TTS has just built will not take a transform yet.
+
+        THE BUG AT JON'S TABLE, 2026-11-13. The Imposter's Candidate
+        deck is merged out of three family decks and then placed, and
+        it came out standing UPRIGHT in the back corner, over the edge
+        of the felt and covering its own printed label: the
+        setPosition had taken and the setRotation had not. Same frame,
+        same object, one call honoured and one dropped.
+
+        lua.lua has paid for this three times - a card that receives a
+        card is destroyed and replaced, a deck cut to one card
+        respawns a couple of units off its mark, and snapFirst exists
+        because a setPosition in the same step landed at x -21.72
+        instead of -19.50 - and every one of those was found at the
+        table, because the stub's objects took a transform the instant
+        they were given one. So now they do not: a deck born of a put
+        ignores position, rotation and name until the next frame, and
+        the fix is what lua.lua already does everywhere else, which is
+        to find the deck again a step later.
+
+        DROPPED SILENTLY, the way TTS drops it. Recording an error
+        would make this fail the "no red lines" assertions instead of
+        the ones about where the cards are, and where the cards are is
+        the thing that was wrong.
+        """
+        return getattr(self, "born", None) == self.world.frame
+
     def setPosition(self, p):
         # RECORDED, not thrown away. The stub ignored every position, so
         # each overlapping row this mod has had - the Lab Rat behind its
         # neighbours, the Time Slots stacked on each other - was invisible
         # to a harness that reported 0 failed.
+        if self._unborn("setPosition"):
+            return
         self.pos = tuple(p.values()) if hasattr(p, "values") else tuple(p)
 
     def setPositionSmooth(self, p, *a):
@@ -370,6 +402,11 @@ class Obj(object):
         # RECORDED. The Chip is turned rather than set to a value, so a
         # thrown-away rotation is a dial nobody can check: it was turned
         # to the wrong colour through two builds.
+        #
+        # AND NOT IN THE FRAME A MERGE BUILT THIS DECK - see _unborn,
+        # which is the trap that stood the Candidate deck on its edge.
+        if self._unborn('setRotation'):
+            return
         self.rot = tuple(r.values()) if hasattr(r, "values") else tuple(r)
 
     setRotationSmooth = setRotation
@@ -530,6 +567,10 @@ class Obj(object):
             # Assignment back.
             into = Obj(self.world, was + "#deck", "")
             into.pos, into.rot = self.pos, self.rot
+            # AND IT IS A FRAME OLD BEFORE IT WILL TAKE A TRANSFORM.
+            # See Obj.setRotation: this is the trap that stood the
+            # Imposter's Candidate deck on its edge.
+            into.born = self.world.frame
             inner = Obj(self.world, was, nick)
             inner.pos, inner.rot = self.pos, self.rot
             if self.world.table.get(was) is self:
@@ -1152,11 +1193,12 @@ def layout_assertions():
                     exp = (1 + 4 + 1 + 2 + int(g.AOS_MATS)
                            + 1 + int(g.AOS_BACKDOORS) + 1)
                 elif which == "IMP":
-                    # The candidate deck and its discard in the back
-                    # corner; the Dossier, five deployed spaces and
-                    # what you have buried along ROW_MAIN; and the
-                    # retained row, one space per card the caps allow.
-                    exp = (2 + int(g.IMP_MAIN_N)
+                    # The two candidate stacks and their discard in
+                    # the back corner; the Dossier, five deployed
+                    # spaces and what you have buried along ROW_MAIN;
+                    # and the retained row, one space per card the
+                    # caps allow.
+                    exp = (3 + int(g.IMP_MAIN_N)
                            + sum(int(p[2]) for p in g.IMP_POOL.values()))
                 else:
                     exp = 0
@@ -3757,34 +3799,62 @@ def pool_assertions():
              sorted(round(o.pos[0], 2) for o in w.table.values()
                     if abs(o.pos[2] - side) < 0.1
                     and abs(o.pos[0]) > edge), [])
-        # ONE DECK, IN THE CORNER, FACE DOWN AND TURNED, HOLDING
-        # EVERYTHING THAT IS NOT RETAINED.
+        # THE CANDIDATE STACKS HOLD EVERYTHING THAT IS NOT RETAINED.
         #
         # THIS IS THE ASSERTION THE WHOLE CHANGE RESTS ON. The three
         # per-family counts above would all pass on three separate
         # stacks; what they cannot tell you is that the 18 cards split
-        # in exactly two places - the retained row and this deck - with
-        # none of them anywhere else and none of them counted twice.
+        # in exactly two places - the retained row and the corner -
+        # with none anywhere else and none counted twice.
         held = sum(len(o.kids) or 1 for o in deck)
         stand = sum(1 for o in w.table.values()
                     for p in g.IMP_POOL.values()
                     if of_family(o.name, str(g.CARD_NAME[str(p[1])])
                                  or str(p[1]))
                     and abs(o.pos[2] - side) < 0.1)
-        want("%s: one Candidate deck holds the 18 less the retained" % tag,
-             (len(deck), held + stand), (1, 18))
+        want("%s: the Candidate stacks hold the 18 less the retained" % tag,
+             held + stand, 18)
+        # AND EACH STACK IS ONE CARD SHAPE, IN THE PLACE FOR THAT SHAPE.
+        #
+        # THE BUG IN JON'S SCREENSHOT, 2026-11-13, and no count above
+        # can see it: a Deck in TTS carries ONE card size, taken from
+        # the sheet its cards were cut from, and the three families
+        # are not cut the same - a Devious Opportunity is 1050x750 and
+        # a Research Note 750x1050. Merged into one deck the stack
+        # keeps one aspect and paints the other family's back into it,
+        # stretched, hanging out of the box it was dealt to. Eighteen
+        # cards, all present, all in the right pile, and the pile
+        # unusable. So the split is by SHAPE and this says so.
+        shape = {}
+        for p in g.IMP_POOL.values():
+            one = str(g.CARD_NAME[str(p[1])]) or str(p[1])
+            shape[one] = bool(p[3])
+        place = {False: round(float(g.IMP_CAND_X), 2),
+                 True: round(float(g.IMP_CANDW_X), 2)}
+        wrong = []
+        for o in deck:
+            kinds = set()
+            for c in o.kids:
+                for one, land in shape.items():
+                    if of_family(c.name, one):
+                        kinds.add(land)
+            if len(kinds) != 1:
+                wrong.append((o.name, "mixes shapes", sorted(kinds)))
+                continue
+            got = (round(o.pos[0], 2), round(o.pos[2], 2),
+                   round((o.rot or (0, 0, 0))[1]) % 180,
+                   round((o.rot or (0, 0, 0))[2]) % 360)
+            exp = (place[kinds.pop()], round(float(g.ROW_CHAR), 2), 90, 180)
+            if got != exp:
+                wrong.append((o.name, got, exp))
+        want("%s: each Candidate stack is one card shape, turned in the "
+             "place for that shape" % tag, wrong, [])
         if deck:
-            want("...and %s it is face down in the back right corner" % tag,
-                 (round(deck[0].pos[0], 2), round(deck[0].pos[2], 2),
-                  round((deck[0].rot or (0, 0, 0))[1]) % 180,
-                  round((deck[0].rot or (0, 0, 0))[2]) % 360),
-                 (round(float(g.IMP_CAND_X), 2), round(float(g.ROW_CHAR), 2),
-                  90, 180))
             # AND SHUFFLED UNDER ITS OWN NAME, which is the shuffle
-            # that matters: the three families are shuffled on the way
-            # out of the box, and a deck built by stacking three
-            # shuffled decks end to end is not a shuffled deck.
-            want("...and %s it was shuffled as one deck" % tag,
+            # that matters: the families are shuffled on the way out
+            # of the box, and a stack built by laying two shuffled
+            # decks end to end is not a shuffled stack.
+            want("...and %s they were shuffled as stacks" % tag,
                  "Candidates" in w.shuffled or held <= 1, True)
 
     # THE SLOTS ARE FIXED AT THE CAPS, and this is why that matters:

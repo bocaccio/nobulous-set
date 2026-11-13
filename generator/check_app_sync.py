@@ -4019,10 +4019,33 @@ check("...and the domains are simulation/finale.py's ANSWERS",
 # played along, and one slot per card the caps allow.
 _boxes = re.search(r"\nfunction impBoxes\(\)(.*?)\nend\n",
                    _sv["LuaScript"], re.S)
-check("...and the mod builds that deck and names it",
-      "cand = gatherInto(cand, d)" in _sv["LuaScript"]
+check("...and the mod builds those stacks and names them",
+      "grp[k] = gatherInto(grp[k], d)" in _sv["LuaScript"]
       and "cand.setName('Candidates')" in _sv["LuaScript"]
       and "cand.setRotation(IMP_CAND_ROT)" in _sv["LuaScript"])
+# AND IT MAKES TWO OF THEM, SPLIT BY CARD SHAPE - which is the one
+# place the mod cannot do what the book says, and the reason is the
+# tool rather than the game.
+#
+# A Deck in TTS carries ONE card size, taken from the sheet its cards
+# were cut from, and the three families are not cut the same: a
+# Devious Opportunity is 1050x750 per card and a Research Note
+# 750x1050. Merged into one deck the stack keeps one aspect and paints
+# the other family's back into it, stretched and hanging out of its
+# box - which is what came out at Jon's table on 2026-11-13 with all
+# eighteen cards correctly placed. On a table the eighteen really do
+# shuffle together, every card being the same 63.5 x 88.9 stock, so
+# rules/nrj.html is right and stays as it is.
+check("...and splits them by card shape, because a TTS deck is one size",
+      "local k = p[3] and 2 or 1" in _sv["LuaScript"]
+      and "IMP_CANDW_X = impCorner(3)" in _sv["LuaScript"])
+check("...and the sheets really are cut two ways",
+      "land=False, game='NRJ', label='Research Notes'"
+      in text("tts/decks.py")
+      and "land=False, game='NRJ', label='Backdoor Routines'"
+      in text("tts/decks.py")
+      and "land=True, game='NRJ', label='Devious Opportunities'"
+      in text("tts/decks.py"))
 # AND unmix CAN TAKE IT APART AGAIN, which is not the same claim. A
 # box cannot see into a deck it holds, so a Candidate deck stowed
 # whole is cards the next deal cannot find: it came out 11, then 10,

@@ -1,3 +1,37 @@
+2026-11-13  THE CANDIDATE DECK IS TWO STACKS IN THE MOD, AND ONE AT A TABLE
+Jon, with a screenshot: "Something is wrong with the candidate deck."  It
+came out of the back corner as a tall blue slab with the Research Note
+back stretched sideways across it, hanging out of the box it was dealt
+to.  Every card was present and in the right pile.
+
+A DECK IN TABLETOP SIMULATOR CARRIES ONE CARD SIZE, taken from the sheet
+its cards were cut from, and the three Tier III families are not cut the
+same: a Devious Opportunity is 1050x750 per card on its sheet and a
+Research Note 750x1050.  Merge them and the deck keeps one aspect and
+paints the other family's back into it.  The rotation was right the
+whole time.
+
+THE RULEBOOK IS UNCHANGED AND STILL RIGHT.  Every card in the set is the
+same 63.5 x 88.9 stock and only the printing is turned, so at a table
+the eighteen shuffle together exactly as the book says.  This is the mod
+paying for a limit of the tool, and it pays the smallest price there is:
+two stacks instead of three, split by the one thing TTS cannot mix, both
+labelled CANDIDATES, neither sorted by anything the finale reads.  Draw
+from whichever you like.
+
+AND THE HARNESS CAN SEE IT NOW, which it could not when the screenshot
+arrived: 2463 assertions passed on a table that was visibly wrong,
+because every one of them counted cards.  The new one asserts that each
+stack holds ONE card shape and stands in the place for that shape -
+merging them into one again fails six assertions.
+
+TWO OTHER THINGS FELL OUT OF CHASING IT.  The harness now models the
+trap that a deck TTS has just built will not take a transform in the
+same frame, which is the trap snapFirst was written for and which had
+only ever been found at the table; under it, putHome was filing decks
+into boxes before their names had taken, and a nameless deck in a box is
+cards nobody can get back.  Both are fixed.
+
 2026-11-13  THE POOL SECTION LEADS WITH THE CAPS
 Jon, reading it back: "The description of the NRJ research pool in the
 rules is confusing.  I don't care how many cards can potentially go into

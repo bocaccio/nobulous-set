@@ -656,7 +656,7 @@ IMP_BOX_HD = (CARD_L - 0.30) / 2
 IMP_WIDE_HW = (CARD_L - 0.30) / 2
 IMP_WIDE_HD = (CARD_W - 0.30) / 2
 
--- THE BACK RIGHT CORNER, AND THE TWO PILES THERE LIE TURNED.
+-- THE BACK RIGHT CORNER, AND THE PILES THERE LIE TURNED.
 --
 -- NOT A FLOURISH - ROW_CHAR IS A LANDSCAPE ROW. The comment at the top
 -- of this file says it: "characters, flush with the back edge
@@ -668,20 +668,35 @@ IMP_WIDE_HD = (CARD_W - 0.30) / 2
 -- apart and a portrait card is 8.208 deep, so they clear each other
 -- only with both at their own row's centre. There is no third place.
 --
--- AND NEITHER PILE HAS A RIGHT WAY UP ANYWAY. One is face-down and the
--- other is cards you are finished with, and six of the eighteen are
--- printed landscape to begin with, so a stack of them is turned for
--- one third of its cards whichever way it lies.
+-- AND NO PILE HERE HAS A RIGHT WAY UP ANYWAY: one is face-down and the
+-- other is cards you are finished with.
 IMP_CAND_ROT = {0, 90, 180}
 
 function impCorner(k)
   return FELT.x1 - IMP_EDGE - CARD_L / 2 - (k - 1) * (CARD_L + IMP_GAP)
 end
 
--- The discard in the corner itself and the deck inboard of it, so the
--- pile that grows grows into the corner.
+-- TWO CANDIDATE STACKS, BECAUSE A TTS DECK IS ONE CARD SHAPE.
+--
+-- THE BUG IN JON'S SCREENSHOT (2026-11-13): the Candidate deck came
+-- out a tall blue slab with the Research Note back stretched sideways
+-- across it, hanging out of its own box. The rotation was right. A
+-- Deck in TTS takes its card size from the sheet its cards were cut
+-- from, and the three families are not cut the same: a Devious
+-- Opportunity is 1050x750 on NRJ_NAP_DeviousOpportunities_TTS.png and
+-- a Research Note 750x1050. Merge them and the deck keeps ONE aspect
+-- and paints the other family's back into it, stretched.
+--
+-- AT A TABLE THE EIGHTEEN REALLY DO SHUFFLE TOGETHER - every card in
+-- the set is the same 63.5 x 88.9 stock and only the printing is
+-- turned - so rules/nrj.html is right and stays as it is. This is the
+-- mod paying for a limit of the tool, and it pays the smallest price
+-- there is: two stacks instead of three, split by the one thing TTS
+-- cannot mix, and neither of them sorted by anything the finale reads.
+-- Draw from whichever you like; they are the same cards.
 IMP_CDIS_X = impCorner(1)
 IMP_CAND_X = impCorner(2)
+IMP_CANDW_X = impCorner(3)
 
 -- ONE ROW FOR THE WHOLE OF A SESSION, left to right along ROW_MAIN:
 -- the Dossier you deploy from, the Exhibits standing in front of you,
@@ -1395,10 +1410,25 @@ function putHome(obj, tries)
   local b = boxFor(obj)
   if not b then return end
   local gid = obj.getGUID()
+  tries = tries or 0
+  -- NOT UNTIL IT HAS A NAME, for the reason post() gives: setName is
+  -- refused on a deck TTS built this frame - two cards dropped at OFF
+  -- landing on each other - and a nameless deck in a box is cards
+  -- nobody can get back. A few frames later it is old enough to take
+  -- one, and this already has a retry to wait in.
+  nameIt(obj)
+  if count(obj) > 1 and (obj.getName() or '') == '' then
+    if tries >= 8 then return end
+    Wait.frames(function()
+      local o = getObjectFromGUID(gid)
+      if o then putHome(o, tries + 1) end
+    end, 6)
+    return
+  end
   obj.setLock(false)
   b.putObject(obj)
   if inBox(b, gid) then return end
-  tries = (tries or 0) + 1
+  tries = tries + 1
   if tries >= 8 then return end
   -- getObjectFromGUID ANSWERS NIL FOR A CARD IN A CONTAINER, so this is
   -- the old scan of getAllObjects without the scan: gone from the table
@@ -2121,8 +2151,24 @@ function packUp(quiet)
       local o = t[i]
       o.setLock(false)
       nameIt(o)
-      local b = boxFor(o)
-      if b then b.putObject(o) end
+      -- AND NOT INTO A BOX UNTIL THE NAME HAS TAKEN.
+      --
+      -- nameIt can be refused the same way a put can: a deck TTS built
+      -- this frame - two cards unmix dropped at OFF landing on each
+      -- other - does not accept setName yet. A NAMELESS DECK IN A BOX
+      -- IS CARDS NOBODY CAN GET BACK: findDeck matches a nickname and
+      -- the gather loop reads the box's top level, so the next setup
+      -- deals without them and says nothing at all.
+      --
+      -- There are twenty of these passes and each takes a fresh look,
+      -- so skipping it here costs a few frames and the next pass finds
+      -- a deck a frame older. One that is never nameable is left on
+      -- the table, where the pack-up reports it - out and visible
+      -- beats buried and silent.
+      if count(o) <= 1 or (o.getName() or '') ~= '' then
+        local b = boxFor(o)
+        if b then b.putObject(o) end
+      end
     end
   end
   -- TWENTY PASSES, NOT TEN. With the bag refusing roughly one put in
@@ -2654,6 +2700,7 @@ function impBoxes()
     table.insert(out, {x = x, z = z, hw = hw or IMP_BOX_HW,
                        hd = hd or IMP_BOX_HD})
   end
+  box(IMP_CANDW_X, ROW_CHAR, IMP_WIDE_HW, IMP_WIDE_HD)
   box(IMP_CAND_X, ROW_CHAR, IMP_WIDE_HW, IMP_WIDE_HD)
   box(IMP_CDIS_X, ROW_CHAR, IMP_WIDE_HW, IMP_WIDE_HD)
   box(IMP_DOSSIER_X, ROW_MAIN)           -- the Dossier
@@ -2804,27 +2851,70 @@ function setupImposter()
   -- shuffles its source first and a card has no shuffle(). A family
   -- whose remainder is one card cannot happen at the shipped caps and
   -- the caps are a number that moves.
+  -- ONE STACK PER CARD SHAPE: [1] the portrait families, [2] the
+  -- landscape one. See IMP_CANDW_X above for why that is the split.
+  local candSeed = {}
   step(function()
-    local cand = nil
-    for i in ipairs(IMP_POOL) do
+    local grp = {}
+    for i, p in ipairs(IMP_POOL) do
       local d = pool[i]
       if d then
-        if cand then cand = gatherInto(cand, d) else cand = d end
+        local k = p[3] and 2 or 1
+        if grp[k] then grp[k] = gatherInto(grp[k], d) else grp[k] = d end
       end
     end
-    if cand then
-      -- NAMED FOR WHAT IT IS. Merged, the deck answers to whichever
-      -- family happened to be first out of the box - a stack of all
-      -- three called "Research Notes" - and the one thing a player
-      -- needs to know about it is that nothing in it answers anything.
-      cand.setName('Candidates')
-      cand.setPosition({IMP_CAND_X, 3, ROW_CHAR})
-      cand.setRotation(IMP_CAND_ROT)
-      -- AND ONLY IF IT IS A DECK. An over-claimed bag holding 17 of
-      -- the 18 leaves one card as the whole of the candidates, and a
-      -- card has no shuffle() - which is a red line in chat for a
-      -- deck of one that is already in random order.
-      if count(cand) > 1 then cand.shuffle() end
+    -- A CARD'S GUID, NOT THE DECK'S. liveDeck finds a deck by a card
+    -- it holds as readily as by its own GUID, and the deck TTS hands
+    -- back from the last merge is the one object here that may not
+    -- survive to the next step; the card inside it will.
+    for k = 1, 2 do
+      local c = grp[k]
+      if c then
+        local kids = contents(c)
+        candSeed[k] = (kids and kids[1] and kids[1].guid) or c.getGUID()
+      end
+    end
+  end)
+  -- AND PLACED A STEP LATER, WHICH IS EIGHT FRAMES.
+  --
+  -- THE BUG AT JON'S TABLE (2026-11-13): the deck came out standing
+  -- UPRIGHT in the back corner, overhanging the edge of the felt and
+  -- covering its own printed label. The position had taken and the
+  -- rotation had not - so the one call that would have been obvious if
+  -- it failed worked, and the one that reads as a cosmetic detail did
+  -- not. Setting a transform in the same frame as the put that built
+  -- the deck is the trap this file has paid for three times: a card
+  -- that receives a card is destroyed and replaced, a deck cut to one
+  -- card respawns a couple of units off, and snapFirst exists because
+  -- a setPosition in the same step landed at x -21.72 instead of
+  -- -19.50. The harness cannot see any of it: its objects take a
+  -- transform the instant they are given one.
+  --
+  -- SO THE DECK IS FOUND AGAIN AND THEN SET, and snapFirst sets it
+  -- once more four frames after that - the same belt the three decks
+  -- that are spread or columned already wear.
+  step(function()
+    local where = {IMP_CAND_X, IMP_CANDW_X}
+    for k = 1, 2 do
+      local cand = liveDeck(candSeed[k])
+      if cand then
+        -- NAMED FOR WHAT IT IS. Merged, a stack answers to whichever
+        -- family happened to be first out of the box - two Notes and
+        -- four Routines called "Research Notes" - and the one thing a
+        -- player needs to know is that nothing in it answers
+        -- anything. Both stacks take the same name because they are
+        -- the same thing; snapFirst below looks within 6.0 of a given
+        -- place and they stand 8.8 apart, so neither finds the other.
+        cand.setName('Candidates')
+        cand.setPosition({where[k], 3, ROW_CHAR})
+        cand.setRotation(IMP_CAND_ROT)
+        -- AND SHUFFLED ONLY IF IT IS A DECK. An over-claimed bag
+        -- holding 17 of the 18 leaves one card as the whole of a
+        -- stack, and a card has no shuffle() - which is a red line in
+        -- chat for a deck of one that is already in random order.
+        if count(cand) > 1 then cand.shuffle() end
+        snapFirst('Candidates', where[k], ROW_CHAR, IMP_CAND_ROT)
+      end
     end
   end)
   step(function() impSnaps() end)
@@ -2861,9 +2951,12 @@ function setupImposter()
         ' A retained card answers only the domain in brackets, takes 2' ..
         ' off the Target of one Exhibit you have just deployed, and is' ..
         ' then gone. Everything you did not retain is shuffled face-down' ..
-        ' into the Candidate deck in the back right corner: it answers' ..
-        ' nothing at all, and the Understudy is the only Imposter that' ..
-        ' spends it.')
+        ' into the two Candidate stacks in the back right corner --' ..
+        ' two because a deck here holds one card shape and the' ..
+        ' Opportunities are printed the other way; they are one pool' ..
+        ' and you may draw from either. A candidate answers nothing at' ..
+        ' all, and the Understudy is the only Imposter that spends' ..
+        ' them.')
   end)
   run()
 end
