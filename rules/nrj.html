@@ -1,6 +1,57 @@
 <!DOCTYPE html><html><head><meta charset="utf-8">
 <link rel="stylesheet" href="style.css">
-<style>:root { --accent: #1f4e6b; }</style>
+<style>
+:root { --accent: #1f4e6b; }
+
+/* FOUR PAGES, NOT SIX.
+   Jon, 2026-11-13: get rid of all the empty space. There was most of
+   a page of it. The ten-row Imposter ability table came out of the
+   text in the same pass - the cards print every word of it - and that
+   was two of the six pages; the rest is below, and the page count was
+   found by building the book and counting rather than by eye.
+
+   NRJ ONLY, and not in style.css, because the other three books are
+   laid out around their own page counts and none of them would
+   survive this untouched.
+
+   A TABLE MAY SPLIT BETWEEN ROWS. This is the book with the most
+   tables in it and every one of them was break-inside: avoid, which
+   also drags its heading along - a table that does not fit the rest
+   of a column moves the whole section to the next one. That alone was
+   the bottom third of page 1 and better than half of the last page.
+   A row still may not split down the middle. */
+table { break-inside: auto; }
+tr { break-inside: avoid; }
+
+/* AND THE AIR BETWEEN THINGS, not the type: this is the longest book
+   of the four and the one with the most headings, so a millimetre off
+   each gap is most of a column back and the text stays the set's own
+   8.6pt. Leading does the rest at 1.28 - BAT is at 1.34 and NAP at
+   1.30 - and the margin follows NAP's 11mm.
+
+   IT IS A TIGHT FIT, by about 19mm of blank paper under the last
+   line, call it four lines of room in one column. check_app_sync.py
+   holds the book to four pages, so the next section anybody adds
+   fails there rather than quietly buying a fifth page. */
+@page { margin: 11mm; }
+body { line-height: 1.28; }
+h2 { margin: 2.6mm 0 1.4mm; }
+h3 { margin: 2.4mm 0 .8mm; }
+p { margin: 0 0 1.6mm; }
+table { margin: 0 0 2.2mm; }
+.box { margin: 0 0 2.2mm; padding: 2mm 2.6mm; }
+ul, ol { margin: 0 0 1.8mm; }
+li { margin-bottom: .8mm; }
+
+/* AND THE CREDIT LINE STAYS IN ITS COLUMN. .foot spans both of them,
+   and a full-width band needs room under BOTH - so with the last page
+   filled to the bottom WeasyPrint had nowhere to put it and DROPPED
+   IT, silently: a four-page book with "not affiliated with Chip
+   Theory Games" nowhere on it. Nothing caught that, because nothing
+   had ever asked whether the credit was in the PDF. In one column it
+   wants two lines instead of a band, and it fits. */
+.foot { column-span: none; margin-top: 3mm; }
+</style>
 </head><body>
 
 <div class="cover">
@@ -25,8 +76,10 @@
   <li>18 NRJ cards for AoS &mdash; 6 Nobulous Interference, 6 Corrupted Limitations,
       6 Backdoor Routines</li>
   <li>24 Council Test cards, printed as <b>Exhibits</b></li>
-  <li><b>From 20 Strong:</b> the 17 unit dice, the 3 stat dice (Health, Strategy, Recovery)
-      and the Chip</li>
+  <li><b>From 20 Strong:</b> the 17 unit dice &mdash; <span class="sw Y"></span>4 Yellow,
+      <span class="sw G"></span>4 Green, <span class="sw B"></span>4 Blue,
+      <span class="sw P"></span>4 Purple and <span class="sw R"></span>1 Red &mdash; the 3 stat dice
+      (Health, Strategy, Recovery) and the Chip</li>
   <li>Plus the components of whichever games you are playing</li>
 </ul>
 
@@ -189,7 +242,8 @@ face at a time, and you have nine sessions before the Council rules.</p>
   <li>Each Exhibit prints its <b>Target</b>, its <b>Damage</b> and a <b>Reward</b>. Only
       <b>five</b> of the Rewards do anything, and those five are in <b>bold</b>; the rest are the Council
       being gracious, and are set in <em>italics</em> to say so. Nothing else on the card is used.</li>
-  <li>Choose one <b>Imposter</b> card and one of its two sides (below). The Imposter begins at
+  <li>Choose one <b>Imposter</b> card and one of its two sides; the ability is printed on the card. The
+      Imposter begins at
       <b>5 HP / 2 STR / 3 REC</b> with all 17 dice, less however many the difficulty you chose starts
       exhausted.</li>
   <li>Keep the Research Pool face&#8209;up near the table.</li>
@@ -235,36 +289,11 @@ Green costs twice what the same eight dice cost taken off the Purple end &mdash;
 wheel&rsquo;s phase the difficulty rather than the handicap.</p>
 
 <h3>The five Imposters</h3>
-<p>Choose one Imposter and one of its two sides. All five begin at <b>5 HP / 2 STR / 3 REC</b> and differ
-only in ability &mdash; which side you take is a decision about how you intend to play, not about how hard
-the Scenario is. Every ability was measured at Easy and at a hard setting, and in the model none is worth
-more than about four games in a hundred.</p>
-<table>
-  <tr><th>Imposter</th><th>Ability</th><th>When</th><th>What it does</th></tr>
-  <tr><td>The Archivist</td><td>Cross&#8209;Referenced</td><td>Passive</td>
-      <td>A retained card may answer an Exhibit at Target 5 of <em>any</em> domain, not only its own.</td></tr>
-  <tr><td>The Archivist</td><td>Precedent</td><td>Once per Scenario</td>
-      <td>Apply 1 die of <em>any</em> color, ignoring the attention entirely.</td></tr>
-  <tr><td>The Understudy</td><td>Open Audition</td><td>Once per Scenario</td>
-      <td>Discard 4 Candidates to reroll <em>every</em> committed die that applied nothing this Strategy
-      phase.</td></tr>
-  <tr><td>The Understudy</td><td>Second Chair</td><td>Twice per Scenario</td>
-      <td>Discard 2 Candidates to reroll one committed die that applied nothing.</td></tr>
-  <tr><td>The Usher</td><td>Early Admittance</td><td>Once per Scenario</td>
-      <td>Apply 1 die of the color one step beyond the attention&rsquo;s two.</td></tr>
-  <tr><td>The Usher</td><td>Double Doors</td><td>Once per Scenario</td>
-      <td>For one session, the attention covers a <em>third</em> color &mdash; one step beyond its usual
-      two.</td></tr>
-  <tr><td>The Porter</td><td>Sleight of Hand</td><td>Once per Session</td>
-      <td>Take 1 die lying on a standing Exhibit and exhaust it. That Exhibit keeps its successes.</td></tr>
-  <tr><td>The Porter</td><td>Heavy Lifting</td><td>Once per Scenario</td>
-      <td>Exhaust 1 available die, then recover 2 exhausted dice.</td></tr>
-  <tr><td>The Steward</td><td>Requisition</td><td>Once per Scenario</td>
-      <td>Commit 1 <em>exhausted</em> die of a color the attention allows. It remains exhausted
-      afterward.</td></tr>
-  <tr><td>The Steward</td><td>Standing Order</td><td>Once per Scenario</td>
-      <td>Take a third Strategy phase this session.</td></tr>
-</table>
+<p>Choose one Imposter &mdash; <b>The Archivist</b>, <b>The Understudy</b>, <b>The Usher</b>,
+<b>The Porter</b> or <b>The Steward</b> &mdash; and one of its two sides. All five begin at
+<b>5 HP / 2 STR / 3 REC</b> and differ only in the ability printed on the card, so which side you take is a
+decision about how you intend to play rather than about how hard the Scenario is. Every side was measured at
+Easy and at a hard setting, and in the model none is worth more than about four games in a hundred.</p>
 <p><b>The Understudy is the only one who spends Candidates.</b> The cards you never claimed come to the
 chamber and answer nothing &mdash; for every other Imposter they are a record of what you could not afford.
 Giving all of them a use was tried and rejected: any help available to everyone is worth almost nothing at

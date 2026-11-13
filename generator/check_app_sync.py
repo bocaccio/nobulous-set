@@ -1349,10 +1349,18 @@ check("and the rulebook no longer asks for the subtraction",
 # generator for the cue phrase, which also counted the comments that
 # explain the phrase.
 
-# THE FIVE IMPOSTERS. Ten sides, one statline, and every ability name has
-# to reach the rulebook - a side that only exists on the card is a side
-# nobody can look up. The abilities are read from the generator, so adding
-# one here fails this check until the rules carry it too.
+# THE FIVE IMPOSTERS, AND THEIR ABILITIES ARE NOT IN THE BOOK.
+#
+# Jon, 2026-11-13: take them out. They were a ten-row table of the card
+# text - a full column of the supplement and two of its six pages - and
+# the cards print every word of it, so the book names the five
+# Imposters, says the ability is printed on the card, and stops.
+#
+# INVERTED, NOT DELETED. It used to fail when an ability name was
+# MISSING from the rulebook; it fails now when one is back in it, which
+# is the thing that would quietly undo the change. The five Imposter
+# NAMES are still required, because you have to be able to look up
+# which five there are.
 imp = py_tables("generator/build_nrj.py").get("IMPOSTERS", [])
 # The rulebook wraps its lines and hyphenates with &#8209; so that a card
 # name does not break across a column. Compare against a flattened copy
@@ -1368,12 +1376,36 @@ check("every Imposter prints the finale's own 5 HP / 2 STR / 3 REC",
 # decision, so no ability may hand out either.
 check("no Imposter ability touches STR or REC",
       not any("STR" in r[5] or "REC" in r[5] for r in imp))
-for name in sorted(set(r[4] for r in imp)):
-    check("  %s is in the rulebook" % name, name in nrj_flat)
+check("the five Imposters are named in rules/nrj.html",
+      all(n in nrj_flat for n in sorted(set(r[0] for r in imp))),
+      "%r" % ([n for n in sorted(set(r[0] for r in imp))
+               if n not in nrj_flat],))
+check("...and not one of their ten abilities is duplicated in it",
+      not [n for n in sorted(set(r[4] for r in imp)) if n in nrj_flat],
+      "%r" % ([n for n in sorted(set(r[4] for r in imp))
+               if n in nrj_flat],))
+check("...and the book says where to read them instead",
+      "the ability is printed on the card" in nrj_flat
+      and "differ only in the ability printed on the card" in nrj_flat)
 check("the Imposter deck is registered for PnP, TTS and the lab",
       "'NRJ_Imposters'" in text("generator/pack.py")
       and "key='NRJ_Imposters'" in text("tts/decks.py")
       and "'NRJ_Imposters_TTS.png'" in text("generator/build_catalog.py"))
+
+# THE DICE, BY COLOR, IN THE COMPONENTS LIST (Jon, 2026-11-13). The
+# supplement asked for "the 17 unit dice" and left the player to find
+# out from the difficulty table that there is exactly one Red. The
+# counts are the set's own 4/4/4/4/1, and they are written with the
+# stylesheet's colored pip so the list shows the colors rather than
+# naming them.
+_comp = nrj_flat[nrj_flat.index("<h2>Components</h2>"):
+                 nrj_flat.index("<h2>What NRJ adds</h2>")]
+check("the components list breaks the 17 dice down by color",
+      all(('class="sw %s"></span>%d %s' % (_k, _n, _c)) in _comp
+          for _k, _n, _c in (("Y", 4, "Yellow"), ("G", 4, "Green"),
+                             ("B", 4, "Blue"), ("P", 4, "Purple"),
+                             ("R", 1, "Red"))),
+      _comp[_comp.index("From 20 Strong"):][:220])
 
 check("the Research Pool is the Tier III cards, not the games' own decks",
       "the Tier III cards you claimed" in text("rules/nrj.html")
@@ -1636,13 +1668,15 @@ check("each side's per/uses agrees with its printed timing", not bad,
 cost = [a["ability"] for a in js_imp if a.get("cost")]
 check("only the Understudy's two sides cost Candidates",
       cost == ["Open Audition", "Second Chair"], "%r" % (cost,))
-# The rules set the ability names with a non-breaking hyphen so they do not
-# break across a line in the roster table; the cards use a plain one. That
-# is typography rather than drift, so it is normalised away here.
+# THE SAME DEMAND, THE OTHER WAY ROUND, and from the lab's own table
+# rather than the generator's - see THE FIVE IMPOSTERS above. The
+# hyphen normalisation stays: the cards set an ability name with a
+# plain hyphen and the book used a non-breaking one, so a check that
+# did not normalise would pass on a name that really was still there.
 nrjh = text("rules/nrj.html").replace("&#8209;", "-").replace(u"‑", "-")
-missing = [a for (_n, _r, _s, _w, a, _t, _f) in gen_rows if a not in nrjh]
-check("rules/nrj.html lists all 10 abilities by name", not missing,
-      "%r" % (missing,))
+back = [a for (_n, _r, _s, _w, a, _t, _f) in gen_rows if a in nrjh]
+check("rules/nrj.html carries no ability text of its own", not back,
+      "%r" % (back,))
 
 print()
 print("Card geometry - gen.py vs catalog.json vs the lab")
@@ -1972,7 +2006,7 @@ check("...and BAT no longer prints a reroll rule of its own",
 # is unchanged and still earns its keep - it is buying the fourth page now
 # instead of the third, and loosening it costs a fifth.
 _PAGES = {"BAT_Rulebook.pdf": 3, "NAP_Rulebook.pdf": 4,
-          "AoS_Rulebook.pdf": 3, "NRJ_Campaign_Supplement.pdf": 6}
+          "AoS_Rulebook.pdf": 3, "NRJ_Campaign_Supplement.pdf": 4}
 try:
     import pypdf
 except ImportError:
@@ -1996,8 +2030,28 @@ else:
     check("...and each squeezed fit is recorded where it lives",
           "THREE PAGES, NOT FOUR" in text("rules/bat.html")
           and "FOUR PAGES, NOT FIVE" in text("rules/nap.html")
+          and "FOUR PAGES, NOT SIX" in text("rules/nrj.html")
           and "line-height: 1.34" in text("rules/bat.html")
-          and "line-height: 1.30" in text("rules/nap.html"))
+          and "line-height: 1.30" in text("rules/nap.html")
+          and "line-height: 1.28" in text("rules/nrj.html"))
+    # AND THE CREDIT LINE IS IN THE BOOK ITSELF, which nothing had ever
+    # asked. .foot spans both columns, and a full-width band needs room
+    # under BOTH of them - so when NRJ was squeezed to four pages
+    # WeasyPrint had nowhere to put it and dropped it, silently. The
+    # page count passed. The HTML still had the line in it, so every
+    # check that reads the HTML passed too. What shipped was a rulebook
+    # with "not affiliated with Chip Theory Games" nowhere on it.
+    _nocredit = []
+    for _b in sorted(_PAGES):
+        _f = os.path.join(ROOT, "rules", _b)
+        if not os.path.exists(_f):
+            continue
+        _txt = " ".join(" ".join(_p.extract_text()
+                                 for _p in pypdf.PdfReader(_f).pages).split())
+        if "not affiliated with Chip Theory Games" not in _txt:
+            _nocredit.append(_b)
+    check("every rulebook PDF carries the Chip Theory credit line",
+          not _nocredit, "%r" % (_nocredit,))
     # ...AND NAP KEEPS THE SET'S TYPE SIZE. It fits at 8.3pt too, with
     # the same room to spare, which would have made it the one book
     # set smaller than the other three. The margin does the work
@@ -3857,18 +3911,57 @@ if len(_carry) == 1:
     check("...and it is yellow",
           _c["r"] > 0.6 and _c["g"] > 0.5 and _c["b"] < 0.3
           and _c["r"] >= _c["g"] > _c["b"], "%r" % (_c,))
-    # AND NOTHING AUTOMATED KNOWS IT. One line of the script may hold
-    # this GUID - settle(), which drops the bags onto the rail - and
-    # BOX may not.
+    # AND ONE FUNCTION TURNS THE GUID INTO AN OBJECT. It was settle()
+    # alone until 2026-11-13, when Jon asked for the Imposter setup to
+    # read what the campaign carried forward - so there are callers
+    # now, and carryBag() is the single place that resolves it.
     _lua_all = _sv["LuaScript"]
     _boxtab = re.search(r"\nBOX = \{([^}]*)\}", _lua_all)
     check("...and its GUID is not one of BOX",
           _boxtab is not None and _cb["GUID"] not in _boxtab.group(1),
           "BOX = %r" % (_boxtab and _boxtab.group(1),))
-    check("...but the script is given it, for settle() alone",
+    check("...but the script is given it, resolved in carryBag() alone",
           ("CARRY = '%s'" % _cb["GUID"]) in _lua_all
-          and _lua_all.count("CARRY)") == 1
-          and "getObjectFromGUID(CARRY)" in _lua_all)
+          and _lua_all.count("getObjectFromGUID(CARRY)") == 1
+          and re.search(r"function carryBag\(\)[^}]*?"
+                        r"getObjectFromGUID\(CARRY\)", _lua_all) is not None)
+    # AND IT HAS NO HOME OF ITS OWN, which is NOT the same statement as
+    # "it is not one of BOX" and is where the hole was. boxFor() does
+    # not ask BOX; it asks what is INSIDE, so a bag holding a Research
+    # Note answered the NRJ box and Pack up had somewhere to put the
+    # carry bag. Two cards in, press a setup button, one card left.
+    check("...and boxFor() exempts it, so Pack up cannot file it",
+          "if isCarry(obj) then return nil end" in _lua_all
+          and "function isCarry(obj)" in _lua_all)
+    # AND EXACTLY ONE SETUP READS IT. A second one would be dealing
+    # somebody else's carried cards into its own game.
+    _reads = [_f for _f in re.findall(
+        r"\nfunction (\w+)\([^)]*\)(.*?)\nend\n", _lua_all, re.S)
+        if "carriedPool()" in _f[1]]
+    check("...and the Imposter setup is the only thing that reads it",
+          [_f[0] for _f in _reads] == ["setupImposter"],
+          "%r" % ([_f[0] for _f in _reads],))
+
+# THE RESEARCH POOL'S CAPS REACH THE MOD, out of the same tuple the
+# rulebook and the lab are measured against above - see "HOW MANY CARDS
+# ARE RETAINED". build_mod.research_pool() reads RETAIN out of
+# simulation/finale.py and writes IMP_POOL into the generated header, so
+# this compares the save with the file it was generated from rather than
+# with a fifth copy of 3/2/2 typed in here.
+#
+# AND THE ORDER IS decks.py'S OWN, which is not decoration: the three
+# sit side by side on the felt and only the landscape deck in the middle
+# makes them fit, so a reordered table is a row that runs off the table.
+_impool = re.search(r"\nIMP_POOL = \{(.*?)\}\n", _sv["LuaScript"])
+check("the mod's IMP_POOL carries the same caps, in decks.py's order",
+      _impool is not None
+      and re.findall(r"\{'([^']+)', (\d+), (true|false), (\d+)\}",
+                     _impool.group(1))
+      == [("Research Notes", "2", "false", "6"),
+          ("Devious Opportunities", "3", "true", "6"),
+          ("Backdoor Routines", "2", "false", "6")],
+      "%r" % (_impool and _impool.group(1),))
+
 
 def _bookfile(u):
     """The PDF a book's URL names, token and all stripped off."""

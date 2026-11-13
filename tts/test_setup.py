@@ -3567,6 +3567,175 @@ def carry_assertions():
     # cards carried.
     want("...and it is not one of the four boxes",
          bag.guid in [str(v) for v in g.BOX.values()], False)
+    # AND IT SURVIVES A SETUP WITH CARDS IN IT, which is not the same
+    # claim as any of the three above - and is the one that was false.
+    #
+    # packable() answers boxFor(), and boxFor does not ask BOX. It asks
+    # what is INSIDE the object, and homeBox(firstCard(bag)) is the NRJ
+    # box for a bag holding a Research Note. So unmix() called every
+    # carried card a stray and took all but the last one out onto the
+    # felt, where the pack-up passes filed them into the game boxes -
+    # and packable() handed Pack up the NRJ box for the CARRY BAG
+    # ITSELF.
+    #
+    # EVERY CHECK OF THIS PASSED, the three above included, because
+    # every one of them asked of an EMPTY bag: firstCard is nil then,
+    # so there was nothing to look up and no home to find. Empty is the
+    # one state this bag is never in when any of it matters.
+    w, g = start("Standard", 0, Panel())
+    bag = carry_stock(w, {"Research Note": 2, "Backdoor Routine": 1})
+    want("...and Pack up has no home for it with cards IN it",
+         g.packable(bag), None)
+    before = sorted(c.name for c in bag.kids)
+    g.packUp(False)
+    drain(w)
+    want("...and a Pack up leaves what is in it alone",
+         sorted(c.name for c in bag.kids), before)
+    want("...and does not report it as something left on the table",
+         [m for m in w.said if "CARRY" in m], [])
+
+
+def carry_bag(w):
+    """The carry-forward bag. It is furniture, so it is not on w.table."""
+    for o in w.byguid.values():
+        if (o.name or "").startswith("CARRY"):
+            return o
+    return None
+
+
+def carry_stock(w, cards):
+    """Carry cards forward: {card name: how many}, into the carry bag.
+
+    OUT OF THE DECK THEY SHIP IN, never spawned. A card the save does
+    not have is a card no census can balance, and balancing the census
+    over every family is most of what pool_assertions asserts.
+    """
+    bag = carry_bag(w)
+    for one, n in sorted(cards.items()):
+        moved = 0
+        for box in w.byguid.values():
+            if not box.bag or box is bag:
+                continue
+            for d in list(box.kids):
+                for c in list(d.kids):
+                    if moved < n and of_family(c.name, one):
+                        d.kids.remove(c)
+                        bag.kids.append(c)
+                        moved += 1
+        if moved != n:
+            raise RuntimeError("only %d of %d %s to carry" % (moved, n, one))
+    return bag
+
+
+def pool_assertions():
+    """What the Imposter setup retains, and where it reads it from.
+
+    Jon, 2026-11-13: "fix the imposter scenario so it checks for cards
+    in the yellow bag during setup. Otherwise, select the correct
+    number of cards from each missing deck."
+
+    A Tier III card you CLAIMED is retained and reduces an Exhibit's
+    Target by 2; one you never claimed is a candidate and answers
+    nothing. Nothing printed on a card says which it is, so the carry
+    bag says it - and a family the bag has nothing of is dealt its cap
+    at random, which is the rulebook's standalone mode. Before this the
+    setup dealt all three decks out of the NRJ box and never looked in
+    the bag at all: a carried card stayed in the bag and its deck came
+    to the table two cards short with nothing saying so.
+
+    BY NAME, NOT BY COUNT, and that is the point of this block. Three
+    Opportunities dealt at random are three Opportunities, so every
+    count here passes on the old behaviour for the full-campaign case.
+    What cannot pass is "the retained cards are the ones that were in
+    the bag".
+    """
+    cases = (("nothing carried", {}),
+             ("two Notes carried", {"Research Note": 2}),
+             ("a full campaign", {"Research Note": 2,
+                                  "Devious Opportunity": 3,
+                                  "Backdoor Routine": 2}),
+             ("one Note, two Routines, no Opportunity",
+              {"Research Note": 1, "Backdoor Routine": 2}),
+             ("a whole deck in the bag", {"Research Note": 6}),
+             ("over the cap", {"Devious Opportunity": 5}))
+    for tag, cards in cases:
+        w, g = start("Standard", 3, Panel())
+        bag = carry_stock(w, cards)
+        was = {}
+        for c in bag.kids:
+            was.setdefault(c.name.rsplit(" ", 1)[0], []).append(c.name)
+        g.setupImposter()
+        drain(w)
+        tier, side = float(g.ROW_TIER), float(g.ROW_SIDE)
+        pop = census(w)
+        for p in g.IMP_POOL.values():
+            lab, cap, laid = str(p[1]), int(p[2]), int(p[4])
+            one = str(g.CARD_NAME[lab]) if g.CARD_NAME[lab] else lab
+            mine = sorted(was.get(one, []))
+            ret = sorted(o.name for o in w.table.values()
+                         if of_family(o.name, one)
+                         and abs(o.pos[2] - tier) < 0.1)
+            cand = sum(len(o.kids) or 1 for o in w.table.values()
+                       if (o.name == lab or of_family(o.name, one))
+                       and abs(o.pos[2] - side) < 0.1)
+            left = sum(1 for c in bag.kids if of_family(c.name, one))
+            if mine:
+                # THE CARDS THEMSELVES. This is the assertion the old
+                # setup fails and no count does.
+                want("%s: %s retained are the ones out of the bag"
+                     % (tag, lab), ret, mine)
+            else:
+                want("%s: %s is dealt its cap of %d at random"
+                     % (tag, lab, cap), len(ret), cap)
+            want("...and %s the rest of %s are candidates" % (tag, lab),
+                 cand, laid - len(ret))
+            want("...and %s no %s is left in the carry bag" % (tag, lab),
+                 left, 0)
+            # AND ALL SIX EXIST, ONCE EACH, wherever they are. A setup
+            # that dealt the deck AND emptied the bag would put eight
+            # Research Notes on the table and pass every count above.
+            want("...and %s every one of the %d %s exists exactly once"
+                 % (tag, laid, lab),
+                 sorted((i, pop.get("%s %d" % (one, i), 0))
+                        for i in range(1, laid + 1)
+                        if pop.get("%s %d" % (one, i), 0) != 1), [])
+        # AND THE ROW IS ON THE TABLE. Over the cap the row is longer
+        # than the slots, and poolSlots squeezes the pitch rather than
+        # dealing cards over the edge of the felt.
+        edge = float(g.FELT.x1) - 1.0
+        want("%s: the retained row stays on the felt" % tag,
+             sorted(round(o.pos[0], 2) for o in w.table.values()
+                    if abs(o.pos[2] - tier) < 0.1
+                    and abs(o.pos[0]) > edge), [])
+
+    # THE SLOTS ARE FIXED AT THE CAPS, and this is why that matters:
+    # make_template.py paints the felt from the footprints this setup
+    # leaves, so a row centred on however many you happened to carry
+    # would land in its own printed boxes in the seven-card case and in
+    # no other. A full campaign and a standalone deal fill the same
+    # seven places.
+    rows = []
+    for cards in ({"Research Note": 2, "Devious Opportunity": 3,
+                   "Backdoor Routine": 2}, {}):
+        w, g = start("Standard", 3, Panel())
+        carry_stock(w, cards)
+        g.setupImposter()
+        drain(w)
+        rows.append(sorted(round(o.pos[0], 2) for o in w.table.values()
+                           if abs(o.pos[2] - float(g.ROW_TIER)) < 0.1))
+    want("a full campaign fills the same slots a standalone deal does",
+         rows[0], rows[1])
+    want("...and there are as many of them as the caps allow",
+         len(rows[0]), sum(int(p[2]) for p in g.IMP_POOL.values()))
+
+    # AND THE SETUP TAKES ONLY THE RESEARCH POOL OUT OF THE BAG.
+    # Whatever else you keep in there is none of its business.
+    w, g = start("Standard", 3, Panel())
+    bag = carry_stock(w, {"Experimental Protocol": 1, "Research Note": 2})
+    g.setupImposter()
+    drain(w)
+    want("the Imposter setup takes only the Research Pool out of the bag",
+         sorted(c.name for c in bag.kids), ["Experimental Protocol 1"])
 
 
 def gather_assertions():
@@ -3701,6 +3870,7 @@ def main():
     gather_assertions()
     char_bag_assertions()
     carry_assertions()
+    pool_assertions()
     for lvl in ("Easy", "Standard", "Hard", "Nobulous"):
         spec, sb = BAT_SPECIMENS[lvl], NAP_SETBACKS[lvl]
         for tier in (0, 1, 2, 3):

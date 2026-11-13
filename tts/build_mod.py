@@ -450,6 +450,71 @@ def exhibit_blocks():
     return out
 
 
+# THE RESEARCH POOL: which Tier III deck each game lays out, how many of
+# it the finale may retain, and which way round the card is.
+#
+# EVERY PART OF IT IS READ OUT OF A FILE THAT ALREADY OWNED IT. The cap
+# comes from simulation/finale.py's RETAIN, which check_app_sync.py
+# measures against the rulebook and the lab - one card of drift is about
+# eight points of win rate, so a fourth hand-kept copy in lua.lua is the
+# last thing this wants. The label and the orientation come from
+# decks.py, and the GAME each deck belongs to is spelled out by its own
+# key: NRJ_BAT_ResearchNotes is BAT's.
+POOL_GAME = {'Research Notes': 'BAT',
+             'Devious Opportunities': 'NAP',
+             'Backdoor Routines': 'AoS'}
+
+
+def retain_caps():
+    """How many cards each game may retain, out of simulation/finale.py.
+
+    RETAIN is a 3-tuple in (NAP, BAT, AoS) order - the order the model
+    zips it against in finale.py itself - and nothing else in that file
+    says which is which, so the order is asserted there rather than
+    assumed here.
+    """
+    src = io.open(os.path.join(_REPO, 'simulation', 'finale.py'),
+                  encoding='utf-8').read()
+    if 'zip(("NAP", "BAT", "AoS"), RETAIN)' not in src:
+        raise SystemExit('finale.py no longer zips RETAIN as NAP, BAT, AoS')
+    caps = None
+    for node in ast.parse(src).body:
+        if (isinstance(node, ast.Assign)
+                and getattr(node.targets[0], 'id', '') == 'RETAIN'):
+            caps = [e.value for e in node.value.elts]
+    if not caps or len(caps) != 3:
+        raise SystemExit('simulation/finale.py has no 3-tuple RETAIN')
+    return dict(zip(('NAP', 'BAT', 'AoS'), caps))
+
+
+def research_pool():
+    """(label, cap, landscape, laid out) per deck, in decks.py's order.
+
+    Which is BAT, NAP, AoS - and that puts the one landscape deck in the
+    middle of the row, which is the only reason the three fit the felt
+    side by side at all.
+    """
+    caps = retain_caps()
+    laid = [d for d in DECKS if d['label'] in POOL_GAME]
+    if len(laid) != len(POOL_GAME):
+        raise SystemExit('decks.py has %d of the %d pool decks'
+                         % (len(laid), len(POOL_GAME)))
+    out = []
+    for d in laid:
+        game = POOL_GAME[d['label']]
+        if d['key'].split('_')[1] != game:
+            raise SystemExit('%s is %s\'s by its key, %s by POOL_GAME'
+                             % (d['label'], d['key'].split('_')[1], game))
+        # SIX LAID OUT, which the model calls LAID_OUT and the deck
+        # calls count. A cap bigger than the deck would deal a hand
+        # that cannot be dealt.
+        if caps[game] >= d['count']:
+            raise SystemExit('%s retains %d of %d'
+                             % (d['label'], caps[game], d['count']))
+        out.append((d['label'], caps[game], bool(d['land']), d['count']))
+    return out
+
+
 def lua_header(box_guids):
     """The generated block prepended to lua.lua: GUIDs and card indices."""
     # Both names map home: a deck is found by its label, a card by its
@@ -602,16 +667,30 @@ def lua_header(box_guids):
                                     nap_exam_subjects().items())),
         'EXHIBIT_BLOCK = { %s }' % j("['%s'] = {%d, %d}" % (k, v[0], v[1])
                                      for k, v in sorted(exhibit_blocks().items())),
+        # The Research Pool, in table order: label, retain cap, whether
+        # the card is landscape, and how many the game lays out - see
+        # research_pool(). The last is what tells the Imposter setup
+        # that the carry bag holds a whole deck and the box has none.
+        'IMP_POOL = { %s }' % j("{'%s', %d, %s, %d}"
+                                % (n, c, 'true' if l else 'false', k)
+                                for n, c, l, k in research_pool()),
         '-- ======================= end generated =======================',
         '', ''])
 
 
-# A BAG THE SCRIPT NEVER LOOKS IN.
+# A BAG ONE SETUP LOOKS IN.
 #
 # Jon's ask, 2026-11-12: somewhere to put the cards you are carrying
 # forward to the next game of the campaign. Yellow, on the rail at the
 # same 6.5 pitch as the other four, and it ships EMPTY - it is a place
 # the player puts things, not a box a setup deals from.
+#
+# AND THE IMPOSTER SCENARIO IS WHAT THEY ARE CARRIED INTO (Jon,
+# 2026-11-13), so that setup, and only that setup, reads it: the cards
+# in here are the ones you CLAIMED, which is the whole definition of a
+# retained card. A family the bag has nothing of is dealt its cap at
+# random instead, which is the rulebook's own standalone mode. Nothing
+# else in the script reads the bag and nothing at all writes to it.
 #
 # AT THE LEFT END, OUTSIDE BAT, AND NOT THE RIGHT. The right end is
 # where BAT's rulebook starts - RULES_POS, x 30.10, on this same rail -
@@ -645,9 +724,11 @@ def carry_box():
             "Transform": xf(CARRY_X, 5.20, 20.5, (0, 0, 0), 1.6),
             "Nickname": CARRY_TITLE,
             "Description": "Cards you are carrying forward to the next game"
-                           " of the campaign. The setup buttons do not look"
-                           " in this bag, so whatever is in it stays out of"
-                           " play until you take it out yourself.",
+                           " of the campaign. Put the Tier III cards you"
+                           " CLAIMED in here: Set up Imposter takes them out"
+                           " as your retained Research Pool, and deals a deck"
+                           " this bag has none of at random instead. No other"
+                           " setup looks in here.",
             "ColorDiffuse": {"r": r, "g": g, "b": b},
             # Locked for the same reason the others are: a bag resting
             # on the rail rolls off it otherwise, and a locked bag still

@@ -1,3 +1,49 @@
+2026-11-13  THE NRJ SUPPLEMENT LOSES THE ABILITY TABLE AND TWO PAGES
+Jon asked for three things: take the Imposter abilities out, get rid of all
+the empty space, and show the dice colors in the components list.  No rule
+changed, no number moved, and the finale is the game it was yesterday.
+
+THE TABLE WAS THE CARDS, RETYPED.  Ten rows of ability name, timing and
+text, four columns wide in a two-column book - it filled the right-hand
+column of page 4 and ran onto page 5, and every word of it is printed on
+the five Imposter cards.  What the book keeps is the part the cards cannot
+tell you: that there are five of them, that both sides of each begin at
+5 HP / 2 STR / 3 REC, that no side is worth more than about four games in a
+hundred, and that the Understudy is the only one who spends Candidates -
+which the Candidates row of the retained table depends on.
+
+check_app_sync.py USED TO DEMAND THE OPPOSITE and now demands this.  It
+failed when an ability name was missing from the rulebook, on the rule that
+a side existing only on a card is a side nobody can look up; it fails now
+when one is BACK in the book, and still fails if an Imposter's own NAME
+goes missing.  Inverted rather than deleted, because a check that is
+deleted is a change nothing can notice being undone.
+
+THE EMPTY SPACE WAS MOSTLY ONE LINE OF CSS.  Every table in style.css is
+break-inside: avoid and h2 is break-after: avoid, so a table that does not
+fit the rest of a column takes its heading to the next one - which left the
+bottom third of page 1 blank and better than half of the last page.  NRJ is
+the book with the most tables in it.  A table may now split between rows
+(not through one), the leading goes to 1.28 and the margin to 11mm, the
+block gaps come in about a millimetre each, and the type stays the set's
+own 8.6pt.  Six pages to four, with about 19mm of blank paper under the
+last line.  check_app_sync.py holds the book at four.
+
+AND THE CREDIT LINE HAD VANISHED.  .foot spans both columns, and a
+full-width band needs room under BOTH of them: with the last page filled to
+the bottom WeasyPrint had nowhere to put it and dropped it silently.  The
+page count passed.  The HTML still said it, so every check that reads the
+HTML passed too.  What that would have shipped is a rulebook with "not
+affiliated with Chip Theory Games" nowhere on it.  The credit sits in its
+own column now, and check_app_sync.py reads it out of all four PDFs.
+
+THE DICE ARE 4 YELLOW, 4 GREEN, 4 BLUE, 4 PURPLE AND 1 RED.  The components
+list said "the 17 unit dice" and left the single Red to be inferred from
+the difficulty table three pages later - and the Red is the whole shape of
+session 5, which allows Red and Yellow and nothing else.  Written with the
+stylesheet's colored pip, so the list shows the colors rather than naming
+them.
+
 2026-11-08  NEURAL RESPONSE SCREENING DROPS TO A TARGET OF 5
 Base Target 6 becomes 5 on the one Final Exam whose clause reprices Crits.
 Nothing else moves: not the subject, not the Green dot, not the clause, and

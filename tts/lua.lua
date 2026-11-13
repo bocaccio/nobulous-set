@@ -9,11 +9,13 @@
 -- the random mixes AND the tier swaps -- and leaves everything else in
 -- the bag. Nothing is parked on the table "ready to be sorted by hand".
 --
--- BOX, HOME, NAP_CREDIT and EXHIBIT_BLOCK are GENERATED above this line
--- by build_mod.py and are not in this file: the box GUIDs come from the
--- save it is building, and the two card-index tables are read out of
+-- BOX, HOME, NAP_CREDIT, EXHIBIT_BLOCK and IMP_POOL are GENERATED above
+-- this line by build_mod.py and are not in this file: the box GUIDs come
+-- from the save it is building, the two card-index tables are read out of
 -- generator/build_nap.py and generator/build_nrj.py so that a reordered
--- card table cannot leave a stale index behind here.
+-- card table cannot leave a stale index behind here, and the Research
+-- Pool's retain caps out of simulation/finale.py, which is where the
+-- rulebook and the lab take theirs from too.
 --=====================================================================
 
 STATE = { game = nil, difficulty = 'Standard', tier = 0,
@@ -634,6 +636,28 @@ function say(msg) broadcastToAll(msg, {0.9, 0.86, 0.75}) end
 -- ------------------------------------------------------------- the boxes
 function boxOf(game) return getObjectFromGUID(BOX[game]) end
 
+-- THE CARRY-FORWARD BAG, TURNED INTO AN OBJECT HERE AND NOWHERE ELSE.
+--
+-- It is deliberately not one of BOX - carry_box() in build_mod.py says
+-- why at length - so nothing working through that table can reach it:
+-- deckOut does not deal from it, putHome does not file into it and Pack
+-- up does not sweep towards it. Two callers, and they are the whole
+-- list: settle() drops it onto the rail with the four boxes, and the
+-- Imposter setup reads what you carried forward. Nothing in the script
+-- ever puts a card IN - that is the player's hand, by design.
+function carryBag()
+  if not CARRY then return nil end
+  return getObjectFromGUID(CARRY)
+end
+
+-- IS THIS THAT BAG? Asked through carryBag so there is still one place
+-- that turns the GUID into an object.
+function isCarry(obj)
+  if not obj then return false end
+  local b = carryBag()
+  return b ~= nil and obj.getGUID() == b.getGUID()
+end
+
 -- The box a card or deck belongs to. Cards taken out of a deck are named
 -- "<deck label> <n>", so the trailing number comes off before the lookup.
 function homeBox(nick)
@@ -972,6 +996,23 @@ function boxFor(obj)
   -- not always compare equal, so the identity test quietly did
   -- nothing and the bag was still its own home.
   if b ~= nil and b.getGUID() == obj.getGUID() then return nil end
+  -- AND THE CARRY-FORWARD BAG HAS NO HOME EITHER, which is not the
+  -- same statement as "it is not one of BOX" and was the hole.
+  --
+  -- This function does not ask BOX. It asks what is INSIDE the object,
+  -- and a bag holding a Research Note answers NRJ through firstCard -
+  -- so a carry bag with cards in it was an object Pack up had a box
+  -- for. unmix() called every card in it a stray and took all but the
+  -- last one out onto the felt, where the pack-up passes filed them
+  -- into the game boxes; packable() handed back the NRJ box, so the
+  -- sweep would have put the CARRY BAG inside it. Two Research Notes
+  -- in, press any setup button, one Research Note left.
+  --
+  -- EVERY CHECK OF THIS PASSED, because every one of them asked of an
+  -- EMPTY bag: firstCard is nil then, so there was nothing to look up
+  -- and no home to find. Empty is the one state the bag is never in
+  -- when it matters.
+  if isCarry(obj) then return nil end
   return b
 end
 
@@ -2351,6 +2392,125 @@ function setupAoS()
   run()
 end
 
+-- ----------------------------------------------------- the Research Pool
+-- WHAT YOU CARRIED INTO THE FINALE, AND WHAT IT IS WORTH.
+--
+-- A Tier III card you CLAIMED in BAT, NAP or AoS is RETAINED and takes 2
+-- off one Exhibit's Target; one you never claimed is a CANDIDATE and
+-- answers nothing (rules/nrj.html). Nothing printed on a card records
+-- which it is, and a campaign can sit for weeks between games - so the
+-- carry bag records it, because holding the cards you claimed is the
+-- one thing that bag is for.
+--
+-- READ PER FAMILY, NOT AS A WHOLE. Claim two Research Notes in BAT and
+-- never work an Opportunity in NAP and you retain two Notes and no
+-- Opportunities; a family the bag has nothing of is dealt its cap off
+-- its own shuffled deck, which is the rulebook's standalone mode word
+-- for word - "draw 3 Opportunities, 2 Notes and 2 Routines at random as
+-- retained - the campaign's own caps". It is the bag or the cap and
+-- never both: topping a family the bag has one card of up to its cap
+-- would hand you a card you did not earn.
+POOL_GAP = 0.6
+
+-- ONE FIXED SLOT PER CARD THE CAPS ALLOW - 2 Notes, 3 Opportunities, 2
+-- Routines, left to right in IMP_POOL's order.
+--
+-- FIXED, BECAUSE THE FELT IS PRINTED FROM THEM. make_template.py draws
+-- the overlay from the footprints this setup leaves, so a row centred
+-- on however many you happened to carry would line up with its own
+-- printed boxes in the seven-card case and in no other.
+--
+-- AND MEASURED OUT OF THE CARD WIDTHS, not typed: four portrait and
+-- three landscape at a 0.6 gap is 51.7 of the felt's 56.5, which is
+-- the whole reason the landscape deck has to be the middle one of the
+-- three. A change of card scale moves the row rather than breaking it.
+function poolSlots(counts)
+  local wide, total = {}, -POOL_GAP
+  for i, p in ipairs(IMP_POOL) do
+    local n = (counts and counts[i]) or p[2]
+    wide[i] = {}
+    for _ = 1, n do
+      local cw = p[3] and CARD_L or CARD_W
+      table.insert(wide[i], cw)
+      total = total + cw + POOL_GAP
+    end
+  end
+  -- A ROW THAT CANNOT LEAVE THE FELT. The caps' row fits with 2.4 to
+  -- spare at each end, but a bag holding MORE than its cap makes a
+  -- longer one and over-claiming is a thing a player can do - all 18
+  -- in a row is half as wide again as the table. So squeeze the pitch
+  -- and let the cards overlap, rather than deal them onto the floor;
+  -- the setup says in chat that the bag is over its cap either way.
+  local room = FELT.x1 - FELT.x0 - 1.0
+  local squeeze = (total > room) and (room / total) or 1.0
+  local out, x = {}, -total / 2
+  for i in ipairs(IMP_POOL) do
+    out[i] = {}
+    for _, cw in ipairs(wide[i]) do
+      table.insert(out[i], (x + cw / 2) * squeeze)
+      x = x + cw + POOL_GAP
+    end
+  end
+  return out
+end
+
+-- The middle of a family's slots, which is where its own deck stands:
+-- the candidates in a stack directly above the row they were cut from.
+function poolMid(where)
+  if not where or #where == 0 then return 0 end
+  return (where[1] + where[#where]) / 2
+end
+
+-- WHAT IS IN THE BAG - READ, NOT TAKEN.
+--
+-- The cards stay in it until the retain step, which is what makes the
+-- deal in between come out right with no arithmetic: deckOut takes what
+-- the NRJ box holds, which is the 6 of each family LESS the ones you
+-- carried, and that remainder is precisely the candidates.
+--
+-- ONLY THE THREE POOL FAMILIES. Whatever else you are keeping in there
+-- - a Lab Rat, a Protocol, a reminder - is none of this setup's
+-- business and is left where it is.
+function carriedPool()
+  local out = {}
+  for i in ipairs(IMP_POOL) do out[i] = {} end
+  local b = carryBag()
+  if not b then return out end
+  for _, e in ipairs(b.getObjects()) do
+    for i, p in ipairs(IMP_POOL) do
+      if isCardOf(e.nickname, CARD_NAME[p[1]] or p[1]) then
+        table.insert(out[i], e.guid)
+      end
+    end
+  end
+  return out
+end
+
+-- Take n cards at random out of a deck to the places given.
+--
+-- SHUFFLED AND OFF THE TOP, never by index: which card takeObject hands
+-- back is TTS's business, and here every card of the deck is an equal
+-- candidate, so the shuffle is the whole of the randomness.
+--
+-- AND THE DECK STAYS WHERE IT STANDS, which is what snapFirst is for
+-- here as it is in spread(): a deck cut to one card IS a card, TTS
+-- respawns it a couple of units off where the deck stood, and the
+-- candidates would sit crooked beside their own row. 6 less 3 is 3, so
+-- it cannot happen at the shipped caps - and the caps are a number that
+-- moves, which is why the guard is not an assumption.
+function cutOut(d, n, where, z)
+  if not d or n <= 0 then return end
+  d.shuffle()
+  local one = CARD_NAME[d.getName()] or d.getName()
+  local p = d.getPosition()
+  for k = 1, math.min(n, #where) do
+    if count(d) <= 1 then break end
+    d.takeObject({position = {where[k], 3, z}, rotation = FACEUP,
+                  smooth = false})
+  end
+  snapFirst(one, p.x, p.z, FACEUP)
+end
+
 function setupImposter()
   packUp(true)
   STATE.game = 'IMP'
@@ -2399,20 +2559,73 @@ function setupImposter()
     end
   end)
   step(function() if ex then ex.shuffle() end end)
-  -- The Research Pool stays face-up beside the table, all 18 of them.
+  -- THE RESEARCH POOL, all 18 of them face-up beside the table: the
+  -- retained cards in a row of their own on ROW_TIER, and each family's
+  -- candidates in a stack above the middle of its own slots. The three
+  -- decks used to stand at -10, 0 and 10 with nothing to tell retained
+  -- from candidate, which is a distinction the finale is built on.
+  local pool, carried, slots = {}, nil, nil
   step(function()
-    -- 10 apart, not the four-column pitch: Devious Opportunities is
-    -- landscape and the other two are portrait, so the pitch that suits
-    -- four portrait decks has them touching.
-    deckOut('Research Notes', {-10.0, 3, ROW_SIDE}, FACEUP)
-    deckOut('Devious Opportunities', {0.0, 3, ROW_SIDE}, FACEUP)
-    deckOut('Backdoor Routines', {10.0, 3, ROW_SIDE}, FACEUP)
+    carried = carriedPool()
+    local counts = {}
+    for i, p in ipairs(IMP_POOL) do
+      -- The bag's count if it has any, the cap if it has none - and
+      -- the bag's count even when that is OVER the cap, so an
+      -- over-claimed campaign lays every card it carried on the table
+      -- and gets told, rather than having one quietly dropped.
+      counts[i] = (#carried[i] > 0) and #carried[i] or p[2]
+    end
+    slots = poolSlots(counts)
+    for i, p in ipairs(IMP_POOL) do
+      -- NOT DEALT AT ALL IF THE BAG HOLDS THE WHOLE DECK. deckOut
+      -- would find nothing in the box and say MISSING DECK out loud -
+      -- a false alarm about the one case where every card of the
+      -- family really is accounted for.
+      if #carried[i] < p[4] then
+        pool[i] = deckOut(p[1], {poolMid(slots[i]), 3, ROW_SIDE}, FACEUP)
+      end
+    end
+  end)
+  step(function()
+    local b = carryBag()
+    for i, p in ipairs(IMP_POOL) do
+      if #carried[i] > 0 then
+        -- STRAIGHT FROM THE BAG TO ITS SLOT, not through the deck. The
+        -- deal above took only what the box held, so these are the
+        -- last cards of the family anywhere and there is nothing to
+        -- unpick: no merge, no cut, no card going home on the way.
+        for k, gid in ipairs(carried[i]) do
+          if b then
+            b.takeObject({guid = gid, position = {slots[i][k], 3, ROW_TIER},
+                          rotation = FACEUP, smooth = false})
+          end
+        end
+        if #carried[i] > p[2] then
+          say('The carry bag holds ' .. #carried[i] .. ' ' .. p[1] ..
+              ' and the campaign retains at most ' .. p[2] ..
+              '. All of them are out; put the extra ones away.')
+        end
+      else
+        cutOut(pool[i], p[2], slots[i], ROW_TIER)
+      end
+    end
   end)
 
   step(function() showChar('IMP') end)
   step(function()
     STATE.session = 0
     refreshPanel()
+    -- WHERE EACH FAMILY'S RETAINED CARDS CAME FROM, said out loud,
+    -- because it is the one thing about this setup a player cannot see
+    -- by looking: three Opportunities in the row are three you claimed
+    -- in NAP or three the standalone rule drew for you, and the cards
+    -- are identical either way.
+    local retained = {}
+    for i, p in ipairs(IMP_POOL) do
+      table.insert(retained, (#carried[i] > 0)
+                   and (#carried[i] .. ' ' .. p[1] .. ' out of the carry bag')
+                   or (p[2] .. ' ' .. p[1] .. ' at random'))
+    end
     say('Imposter Scenario -- ' .. STATE.difficulty ..
         '. The Dossier is dealt and shuffled face-down: 5 Knowledge,' ..
         ' 5 Physical and 5 Cover-Up at random from the 24 Exhibits.' ..
@@ -2420,9 +2633,10 @@ function setupImposter()
         (t[1] + t[2] + t[3] + t[4] == 0 and 'none -- Easy exhausts nothing.'
          or (t[1] .. ' Yellow, ' .. t[2] .. ' Green, ' .. t[3] .. ' Blue and ' ..
              t[4] .. ' Purple, which start exhausted (never Red).')) ..
-        ' Nine sessions. Keep all 18 Research Pool cards face-up: a RETAINED' ..
-        ' card reduces one Exhibit Target by 2 -- retain at most 3 NAP,' ..
-        ' 2 BAT, 2 AoS.')
+        ' Nine sessions. Retained: ' .. table.concat(retained, ', ') ..
+        ', in the row below their own decks. Each RETAINED card reduces' ..
+        ' one Exhibit Target by 2; the cards left in the three decks are' ..
+        ' candidates and answer nothing. Keep all 18 face-up.')
   end)
   run()
 end
@@ -3064,7 +3278,7 @@ function settle()
   -- AND THE CARRY-FORWARD BAG, which is not one of BOX on purpose - see
   -- carry_box() in build_mod.py. It still has to find the rail, or it
   -- hangs above it while the other four settle.
-  local carry = CARRY and getObjectFromGUID(CARRY)
+  local carry = carryBag()
   if carry then table.insert(t, carry) end
   -- THE RULEBOOK IS NOT SETTLED. It sits where Jon put it, in the
   -- corner off the felt, and dropping it to find a resting height
