@@ -1084,7 +1084,20 @@ end
 --
 -- AND HOME AFTER EIGHT. A container that goes on refusing is not going
 -- to start; a card in its own bag is gathered by the next deckOut, and
--- a card in the band is the blank one at the bottom edge.
+-- a card in the band is the blank one at the bottom edge. Reaching
+-- this line takes a deck that refuses while the bag still works, which
+-- is what gather_assertions' jammed load is for: under a refusal that
+-- stops the bag too, dropping it changes nothing at all.
+--
+-- AND EVERY OTHER SCRIPTED PUT GOES THROUGH HERE NOW (2026-11-12).
+-- moveN and merge each made one attempt and walked away, and that was
+-- the whole of the second setup looking different from the first: the
+-- Opportunities and the Setbacks are MERGED into the Assignment deck,
+-- so a refused merge left them in the band and dealt a deck without
+-- them; BAT's Specimens and AoS's Routine and Unstable Programs are
+-- MOVED, so a refused move left those there instead; and FINF Increase
+-- 3 hid one or two of the three cards it says it hides. The harness
+-- could not see any of it, because the stub refused bag puts only.
 function stillOut(gid)
   for _, o in ipairs(getAllObjects()) do
     if o.getGUID() == gid then return true end
@@ -1092,24 +1105,86 @@ function stillOut(gid)
   return false
 end
 
+-- WHERE THE RECEIVER IS NOW, after a put that may have consumed it.
+--
+-- A CARD THAT RECEIVES A CARD IS DESTROYED. TTS builds a new deck out
+-- of the two and gives it a fresh GUID, so the handle the script holds
+-- is a corpse and every call on it afterwards is a red line in Jon's
+-- chat. The card is not lost, though: it is inside that new deck under
+-- its own GUID, so the live container is whatever holds it now.
+--
+-- TOP LEVEL FIRST, because that is the answer every time the receiver
+-- was already a deck and survived the put. A Deck's contents are read
+-- only when it was not, and a Bag's never: putHome sends refused cards
+-- into one, and a bag is not a receiver anything should go on putting
+-- into.
+function liveDeck(gid)
+  if gid == nil then return nil end
+  local all = getAllObjects()
+  for _, o in ipairs(all) do
+    if o.getGUID() == gid then return o end
+  end
+  for _, o in ipairs(all) do
+    local ok, kind = pcall(function() return o.type end)
+    if ok and kind == 'Deck' then
+      for _, e in ipairs(contents(o) or {}) do
+        if e.guid == gid then return o end
+      end
+    end
+  end
+  return nil
+end
+
+-- EIGHT ATTEMPTS AT A CARD AS WELL AS AT A DECK, and the live receiver
+-- handed back.
+--
+-- THIS USED TO MAKE EXACTLY ONE ATTEMPT AT A CARD, to keep from
+-- putting at the corpse described above, and the cost of that was
+-- cards. deckOut builds a deck out of whatever it finds lying loose
+-- and the FIRST card it finds IS the receiver, so every other card of
+-- that deck was a single-card put with one attempt behind it:
+-- rebuilding the Opportunities after a game sent five of the six
+-- straight back into the bag and the next NAP dealt a 29-card
+-- Assignment deck, and the Time Slots came out one card instead of
+-- three the same way. Both were silent.
+--
+-- THERE IS NO CORPSE TO PUT AT ANY MORE, because the receiver is
+-- re-acquired after every attempt: liveDeck answers with d itself when
+-- the put was refused and with the deck TTS has just built when it
+-- took. count() is only ever asked of an object liveDeck has just
+-- found among getAllObjects, never of the handle that went into the
+-- put. CALLERS MUST USE WHAT COMES BACK - the GUID they passed in can
+-- be inside it.
 function gatherInto(d, c)
-  if not d or not c then return end
+  if not d then return nil end
+  if not c then return d end
   local cid = c.getGUID()
-  -- ONE ATTEMPT WHEN d IS A SINGLE CARD, eight when it is a deck.
-  -- putObject on a CARD destroys the card and builds a deck, so the
-  -- handle we hold is a corpse and count() reads the corpse - and
-  -- eight puts at a corpse is eight red lines in the chat. One try
-  -- and then the bag is the honest answer there.
-  local tries = (count(d) > 1) and 8 or 1
-  for _ = 1, tries do
-    local before = count(d)
+  for _ = 1, 8 do
+    local was, before = d.getGUID(), count(d)
     d.putObject(c)
-    -- IT TOOK if the deck grew, or if the card is no longer out at
-    -- all - the second is what answers for the corpse, and for the
-    -- frame or two a card lingers after a put that did take.
-    if count(d) > before or not stillOut(cid) then return end
+    local live = liveDeck(was)
+    -- GONE ENTIRELY. Nothing here can have done that, and a second put
+    -- at a handle getAllObjects cannot find is the red line this
+    -- function exists to avoid.
+    if live == nil then return d end
+    -- DID IT TAKE? One question answers both receivers. A deck that
+    -- survived the put has grown by what went in; a single card has
+    -- been REPLACED by a deck of the two, which liveDeck hands back,
+    -- and that deck holds two where the card counted one - so either
+    -- way the count went up. `before` was read while d was alive and
+    -- `live` is an object getAllObjects has just listed, so neither
+    -- count is asked of a corpse.
+    --
+    -- OR THE CARD IS NOT OUT AT ALL, which is belt and braces for the
+    -- real table: a card lingers for a frame or two after a put that
+    -- did take. The harness cannot show that - dropping this half
+    -- changed no assertion, measured 2026-11-12 - so it is here on the
+    -- strength of the table, not of a test.
+    if count(live) > before or not stillOut(cid) then return live end
+    d = live
   end
   putHome(c)
+  return d
 end
 
 function putHome(obj, tries)
@@ -1192,7 +1267,7 @@ function deckOut(label, pos, rot)
       for _, gid in ipairs(want) do
         local c = box.takeObject({guid = gid, position = OFF, smooth = false})
         if c then
-          if d then gatherInto(d, c) else d = c end
+          if d then d = gatherInto(d, c) else d = c end
         end
       end
     end
@@ -1211,7 +1286,7 @@ function deckOut(label, pos, rot)
     if isCardOf(o.getName(), one)
         and (d == nil or o.getGUID() ~= d.getGUID()) then
       o.setLock(false)
-      if d then gatherInto(d, o) else d = o end
+      if d then d = gatherInto(d, o) else d = o end
     end
   end
   if not d then
@@ -1289,6 +1364,13 @@ end
 -- send the rest home: moveN moves them straight into the deck they are
 -- joining, drawOne deals a single card to where it belongs, and cutTo
 -- is only for a deck that cannot reach one card.
+--
+-- AND THE MOVE ITSELF CAN BE REFUSED, which is the third shape of the
+-- same trap: a put is not a put until the container says so. Both
+-- halves of this go through gatherInto, which retries and hands back
+-- the live receiver, so dst is REASSIGNED from it rather than assumed
+-- to have survived - give a single card the whole of src and the deck
+-- TTS builds is a different object from the one passed in.
 
 -- Move n random cards from src into dst, then send src home.
 function moveN(src, dst, n)
@@ -1300,12 +1382,12 @@ function moveN(src, dst, n)
   -- card. BAT at Nobulous shuffles in all 8 Specimens, so this was one
   -- difficulty away from throwing.
   if n >= count(src) then
-    if dst then dst.putObject(src) else dst = src end
+    if dst then dst = gatherInto(dst, src) else dst = src end
     return dst
   end
   for _ = 1, n do
     local c = src.takeObject({position = OFF, smooth = false})
-    if c and dst then dst.putObject(c) end
+    if c and dst then dst = gatherInto(dst, c) end
   end
   putHome(src)
   return dst
@@ -1346,8 +1428,21 @@ function dropCard(deck, nick)
   end
 end
 
+-- MERGE HANDS BACK THE LIVE DECK, which is not always the one it was
+-- given: a single card that receives a card is replaced by the deck
+-- TTS builds out of the two, so every caller that goes on using the
+-- receiver takes it from here.
+--
+-- NO ASSERTION CAN FAIL ON THAT TODAY and the handback is here on
+-- principle. Measured over all four games at every difficulty and
+-- tier, first setup and repeat, the smallest receiver any merge ever
+-- gets is AoS's Limitations at 6, then BAT's Upgrades at 10 and NAP's
+-- Assignment at 22 - never the single card that gets replaced. What
+-- keeps it that way is the difficulty tables, which is not a thing
+-- this function can see: AOS_MIX's Routine cut is to exactly one at
+-- Nobulous, and that is the kind of number that moves.
 function merge(a, b)
-  if a and b then a.putObject(b) end
+  if a and b then return gatherInto(a, b) end
   return a
 end
 
@@ -1898,7 +1993,7 @@ function setupBAT()
         end
       end
     end)
-    step(function() merge(upg, deckOut('Unauthorized Modifications', pad(1))) end)
+    step(function() upg = merge(upg, deckOut('Unauthorized Modifications', pad(1))) end)
   end
 
   step(function() moveN(sp, upg, spec) end)
@@ -2020,13 +2115,13 @@ function setupNAP()
         dropCard(asg, (CARD_NAME['Assignment'] or 'Assignment') .. ' ' .. pick)
       end
     end)
-    step(function() merge(asg, deckOut('Imposter Tasks', pad(2))) end)
+    step(function() asg = merge(asg, deckOut('Imposter Tasks', pad(2))) end)
   end
 
   step(function()
     -- TIER III replaces the base Opportunities outright.
     local opps = (STATE.tier >= 3) and 'Devious Opportunities' or 'Opportunities'
-    merge(asg, deckOut(opps, pad(1)))
+    asg = merge(asg, deckOut(opps, pad(1)))
   end)
   step(function() moveN(deckOut('Setbacks', pad(3)), asg, base) end)
   if STATE.tier >= 1 then
@@ -2155,7 +2250,7 @@ function setupAoS()
   end)
   step(function()
     lim = deckOut('Limitations', {aosCol(AOS_LIMITS), 3, AOS_ROW1})
-    if STATE.tier >= 2 then merge(lim, deckOut('Corrupted Limitations', pad(2))) end
+    if STATE.tier >= 2 then lim = merge(lim, deckOut('Corrupted Limitations', pad(2))) end
     if lim then lim.shuffle() end
     -- THE ADVANCED PROGRAMS STAY IN THE BAG. They are the endgame -
     -- three of the eight, after the third cycle - so nothing touches

@@ -172,6 +172,13 @@ class Obj(object):
     def getQuantity(self):
         # TTS answers -1 for a single card, which is why the Lua has its
         # own count() rather than trusting this.
+        #
+        # A CORPSE ANSWERS A RED LINE AND A CARD. count() is the first
+        # thing anything asks of a deck handle, so this is where a
+        # script that kept the wrong one gets found out.
+        if self.dead:
+            self._live("getQuantity")
+            return -1
         return len(self.kids) if self.kids else -1
 
     def getRotation(self):
@@ -361,6 +368,9 @@ class Obj(object):
 
     def takeObject(self, spec):
         keys = set(spec.keys())
+        if self.dead:
+            self._live("takeObject")
+            return None
         if not self.kids:
             raise RuntimeError("takeObject from an empty %r" % self.name)
         want = spec["guid"] if "guid" in keys else None
@@ -415,38 +425,58 @@ class Obj(object):
     def putObject(self, other):
         if other is None:
             raise RuntimeError("putObject(nil) into %r" % self.name)
-        if self.world.lossy if self.bag else self.world.lossy_decks:
+        # ONE CONTAINER REFUSING A RUN OF PUTS, which one-in-N cannot
+        # express. gatherInto's last resort is the bag: after eight
+        # refusals it stops asking and files the card instead, and
+        # reaching that needs ONE deck to refuse eight times running
+        # while the bag that takes the card still works. Turning
+        # `lossy` down to 1 refuses the bag's puts too, so putHome
+        # achieves nothing there and dropping it changed no assertion
+        # at all - measured 2026-11-12, which is why this exists.
+        jam = self.world.jam.get(self.name)
+        if jam:
+            self.world.jam[self.name] = jam - 1
+            return other
+        # A DESTROYED RECEIVER TAKES NOTHING. Without this the corpse a
+        # card-to-card put leaves behind builds a SECOND deck out of
+        # the next card handed to it, which is a card quietly leaving
+        # the deal and no red line to say so.
+        if self.dead:
+            self._live("putObject")
+            return other
+        if self.world.lossy:
             # TTS DROPS OBJECTS FED TO A CONTAINER FASTER THAN IT ANIMATES
             # THEM. One pass of pack-up over twenty cards left exactly one
             # on the table every time, and the stub could not see it
             # because a Python list never refuses an append. Refusing one
             # in N reproduces the bug, so the fix for it stays tested.
             #
-            # A DECK REFUSES TOO, AND THE STUB ONLY SAID BAGS. deckOut
-            # gathers a loose card by putting it into the deck it is
-            # rebuilding, and the refused one is left lying where
-            # takeObject dropped it: OFF, the staging band at dead centre
-            # of the bottom edge. That is the blank card the character
-            # button left behind, one per press, in the three games that
-            # have a character to cycle - and with the refusal modelled
-            # for bags only, every assertion about that cycle passed.
+            # A DECK REFUSES TOO, AND ONE DIAL SAYS SO FOR BOTH. This had
+            # a second dial for a day, lossy_decks, off by default,
+            # because turning deck refusal on for the whole suite failed
+            # nine assertions beyond the one it was added for. Every one
+            # of those nine was the same mod bug wearing a different
+            # hat - gatherInto made exactly ONE attempt when the receiver
+            # was a single card, and moveN and merge made one at
+            # anything - so the dial was measuring the fix's absence and
+            # calling it a different question. The nine were:
             #
-            # ITS OWN DIAL, lossy_decks, AND IT IS OFF BY DEFAULT - which
-            # is not timidity about the truth. Turned on for the whole
-            # suite it fails nine more assertions that have nothing to do
-            # with the character button: AoS t3 leaves Programs in the
-            # band and builds unnamed decks over three setups, the FINF
-            # button deals the wrong count and strands Setbacks, and a
-            # pile of four comes back three. Those are real and they are
-            # NOT this bug; they want measuring and fixing on their own,
-            # and a suite left red says nothing about any of them. See
-            # gather_assertions.
-            every = self.world.lossy if self.bag else self.world.lossy_decks
+            #   NAP/BAT/AoS t0 and t3 dealt a different table on the
+            #   second setup (29-card Assignment deck, one Time Slot of
+            #   three, Specimens and Programs left in the band);
+            #   AoS lost Element Mats until spread() took from an empty
+            #   deck; FINF Increase 3 hid one or two cards of the three;
+            #   and a pile of four came back three.
+            #
+            # With the fix in they pass with refusal on, so there is one
+            # dial again and a deck is as lossy as a bag. See
+            # gather_assertions and lua.lua's gatherInto.
             self.world.puts += 1
-            if self.world.puts % every == 0:
+            if self.world.puts % self.world.lossy == 0:
                 return other
         self.world.table.pop(other.guid, None)
         other.bagged = True
+        into = self
         if not self.kids and not self.bag:
             # A CARD THAT RECEIVES A CARD BECOMES A DECK OF BOTH. The
             # stub kept the receiver as the container and dropped its
@@ -462,10 +492,22 @@ class Obj(object):
             # the id left on the container a retry found the deck the
             # card had just been gathered into and put the whole deck
             # in the bag.
-            inner = Obj(self.world, self.guid, self.name)
-            inner.pos, inner.rot = self.pos, self.rot
-            was = self.guid
-            self.guid = was + "#deck"
+            # ...AND THE RECEIVER IS DESTROYED BY IT. This is the half
+            # the stub kept getting wrong in the caller's favour: it
+            # turned THIS object into the new deck, so the handle the
+            # script was holding went on working, and every line of
+            # lua.lua written to follow the deck instead was untestable
+            # here. Measured 2026-11-12, with the lenient stub put back
+            # and one line of the fix dropped at a time: deckOut's two
+            # gather loops losing the reassignment, and liveDeck losing
+            # the look inside decks, all three passed 0 failed. Against
+            # this version the same three fail 12, 8 and 22.
+            #
+            # TTS respawns the card inside the deck under its own GUID
+            # and leaves the old reference a corpse, so that is what
+            # happens here: a fresh object carries the card into the
+            # deck, another is the deck, and this one is marked dead.
+            was, nick = self.guid, self.name
             # ...AND IT HAS NO NAME. A deck TTS builds for you out of
             # loose cards carries no nickname at all - the cards keep
             # theirs inside it - and the stub gave the container the
@@ -475,18 +517,22 @@ class Obj(object):
             # the three unused Setbacks stayed in the staging band at
             # dead centre of the bottom edge, face down and wearing the
             # Assignment back.
-            self.name = ""
+            into = Obj(self.world, was + "#deck", "")
+            into.pos, into.rot = self.pos, self.rot
+            inner = Obj(self.world, was, nick)
+            inner.pos, inner.rot = self.pos, self.rot
             if self.world.table.get(was) is self:
                 del self.world.table[was]
-                self.world.table[self.guid] = self
-            self.world.byguid[self.guid] = self
+            self.world.table[into.guid] = into
+            self.world.byguid[into.guid] = into
             self.world.byguid[was] = inner
-            self.kids.append(inner)
-        if other.kids and not self.bag:
-            self.kids.extend(other.kids)     # deck into deck merges, as TTS does
+            into.kids.append(inner)
+            self.dead = True
+        if other.kids and not into.bag:
+            into.kids.extend(other.kids)     # deck into deck merges, as TTS does
             other.kids = []
         else:
-            self.kids.append(other)
+            into.kids.append(other)
         return other
 
 
@@ -508,10 +554,14 @@ class World(object):
         # where cards are dropped eats them.
         self.landings = []
         self.card_half = 0.0
-        self.lossy = 0          # refuse one bag put in N, like TTS does
-        # ...and one DECK put in N, which is its own dial - see putObject.
-        self.lossy_decks = 0
+        # Refuse one container put in N - bag or deck alike, like TTS
+        # does. ONE DIAL FOR BOTH: see putObject for the day there were
+        # two of them and why there is not any more.
+        self.lossy = 0
         self.puts = 0
+        # Container name -> puts it still has to refuse. See putObject:
+        # the limit case one-in-N cannot reach.
+        self.jam = {}
         self.rng = random.Random(7)
 
     @property
@@ -2139,6 +2189,21 @@ def buff_lock_assertions():
     want("...and not when it lands somewhere else", loose.locked, False)
 
 
+def live_pile(w, gid):
+    """The object that holds that GUID now.
+
+    A CARD THAT RECEIVES A CARD IS DESTROYED and TTS builds a new deck
+    out of the two, so a hand that goes on dropping onto a pile has to
+    follow it rather than keep aiming at the card it started from -
+    which is exactly what lua.lua's liveDeck does for the script, and
+    for the same reason.
+    """
+    for o in w.table.values():
+        if o.guid == gid or any(k.guid == gid for k in o.kids):
+            return o
+    return None
+
+
 def pile_assertions():
     """A pile the player built is the one thing on the table with no name.
 
@@ -2161,7 +2226,19 @@ def pile_assertions():
         c = Obj(w, "pile%d" % i, "Task %d" % i)
         c.pos = pile.pos
         w.table[c.guid] = c
-        pile.putObject(c)
+        # DROPPED AGAIN UNTIL IT LANDS. A container refuses a put
+        # whoever made it, and a player who sees a card fail to join
+        # the pile simply drops it again - that is the difference
+        # between a hand and a script, and every retry in lua.lua
+        # exists because the script cannot look. This pile is the
+        # player's, so it is built the player's way; left to one
+        # attempt each it is a pile of three, and the assertion below
+        # is then about nothing.
+        for _ in range(8):
+            if c in pile.kids:
+                break
+            pile.putObject(c)
+            pile = live_pile(w, pile.guid) or pile
     want("a pile of four cards has no name of its own",
          (pile.name, len(pile.kids)), ("", 4))
     g.btnPack()
@@ -3399,57 +3476,91 @@ def gather_assertions():
     proved exactly that. Refusing all of them also drives the deck down
     to a single card in the bag, which is the stale-handle case moveN
     has been bitten by twice, so the fix has to answer for that too:
-    one try at a card, eight at a deck, then home to its own bag.
+    eight tries at the receiver, re-acquiring it after each one, then
+    home to its own bag.
 
-    THE TWO GATHER LOOPS COVER FOR EACH OTHER HERE, which is worth
-    knowing before a green run is read as proof of either. Mutating one
-    call site back to a bare putObject leaves the band clean, because
-    the OTHER loop collects the straggler off the table at the next
-    press; mutating both fails all three assertions below, and dropping
-    putHome(c) from gatherInto fails them too.
+    EVERY ASSERTION IN THE SUITE NOW RUNS UNDER REFUSAL - the dial that
+    exempted decks is gone - so this is no longer the only place a
+    refused merge happens, and the three checks below are weak on their
+    own: only a mutation that stops gatherInto putting at all fails
+    them, and that one fails 355 others with it. What is still theirs
+    is the LIMIT CASE, and it took two loads to reach it:
+
+      ONE IN ONE refuses every put anywhere, which is what the button
+      met at the table. It does NOT reach putHome, because a bag that
+      refuses everything is no escape either - dropping putHome(c)
+      from gatherInto changed no assertion at all under this load, so
+      the claim that used to stand here was wrong.
+
+      JAMMED refuses every put into the one deck and leaves the bag
+      working, which is the only shape in which filing the card is
+      the answer. Under it, dropping putHome(c) fails exactly the two
+      assertions it should and nothing else.
+
+    THE TWO GATHER LOOPS STILL COVER FOR EACH OTHER HERE, which is
+    worth knowing before a green run is read as proof of either.
+    Mutating one call site back to a bare putObject leaves the band
+    clean under both loads, because the OTHER loop collects the
+    straggler off the table at the next press - what catches each of
+    them is repeat_assertions (12 failures) and finf_assertions (8),
+    not this function.
     """
     for which, setup, deck_name in (("NAP", "setupNAP", "Apprentices"),
                                     ("AoS", "setupAoS", "Technicians"),
                                     ("IMP", "setupImposter",
                                      "Imposters (A / B)")):
-        w, g = start("Standard", 0, Panel())
-        {"NAP": g.setupNAP, "AoS": g.setupAoS,
-         "IMP": g.setupImposter}[which]()
-        drain(w)
-        base = sorted(o.name for o in w.table.values())
-        one = str(g.CARD_NAME[deck_name]) if g.CARD_NAME[deck_name] \
-            else deck_name
-        n = len(list(g.CHAR_LIST[which].values()))
-        # EVERY container put refused, for the whole cycle.
-        w.lossy_decks = 1
-        for _ in range(n + 2):
-            g.btnChar()
+        # TWO LOADS, because they reach different lines. Under the
+        # first nothing anywhere takes a put, which is what the button
+        # met at the table; under the second ONE deck refuses
+        # everything and the bag still works, which is the only way to
+        # reach the line where gatherInto stops asking and files the
+        # card instead. See the jam in putObject.
+        for load, what in (("refused", "every put is refused"),
+                           ("jammed", "the deck itself never takes one")):
+            w, g = start("Standard", 0, Panel())
+            {"NAP": g.setupNAP, "AoS": g.setupAoS,
+             "IMP": g.setupImposter}[which]()
             drain(w)
-        w.lossy_decks = 0
-        drain(w)
-        offz = float(g.OFF_Z)
-        band = sorted(o.name for o in w.table.values()
-                      if abs(o.pos[2] - offz) < 3.0)
-        want("%s leaves nothing in the staging band when a merge is"
-             " refused" % which, band, [])
-        # AND THE CARDS ARE STILL ALL THERE. A fix that swept the band by
-        # deleting what it found would pass the one above. Note that it is
-        # the DECK that cannot be rebuilt while every put is refused, so
-        # the cards are counted wherever they are - on the table or in
-        # their bag - rather than expected back in one stack.
-        box = {"NAP": "NAP", "AoS": "AoS", "IMP": "NRJ"}[which]
-        want("...and %s still has every character card" % which,
-             out(w, deck_name) + inbag(w, box, one, deck_name),
-             {"NAP": 3, "AoS": 3, "IMP": 5}[which])
-        # ...AND NOTHING LANDED SOMEWHERE NEW. Every object out is one
-        # the setup had out or a character card; the band check above
-        # only looks at one strip of felt.
-        extra = sorted(o.name for o in w.table.values()
-                       if o.name not in base
-                       and not of_family(o.name, one)
-                       and o.name != deck_name)
-        want("...and %s leaves nothing else lying about" % which,
-             extra, [])
+            base = sorted(o.name for o in w.table.values())
+            one = str(g.CARD_NAME[deck_name]) if g.CARD_NAME[deck_name] \
+                else deck_name
+            n = len(list(g.CHAR_LIST[which].values()))
+            if load == "refused":
+                w.lossy = 1
+            else:
+                # More presses than the whole cycle can ask for, so the
+                # deck never relents.
+                w.jam[deck_name] = 500
+            for _ in range(n + 2):
+                g.btnChar()
+                drain(w)
+            w.lossy, w.jam = 0, {}
+            drain(w)
+            offz = float(g.OFF_Z)
+            band = sorted(o.name for o in w.table.values()
+                          if abs(o.pos[2] - offz) < 3.0)
+            want("%s leaves nothing in the staging band when %s"
+                 % (which, what), band, [])
+            # AND THE CARDS ARE STILL ALL THERE. A fix that swept the band by
+            # deleting what it found would pass the one above. Note that it is
+            # the DECK that cannot be rebuilt while every put is refused, so
+            # the cards are counted wherever they are - on the table or in
+            # their bag - rather than expected back in one stack.
+            box = {"NAP": "NAP", "AoS": "AoS", "IMP": "NRJ"}[which]
+            want("...and %s still has every character card (%s)"
+                     % (which, load),
+                 out(w, deck_name) + inbag(w, box, one, deck_name),
+                 {"NAP": 3, "AoS": 3, "IMP": 5}[which])
+            # ...AND NOTHING LANDED SOMEWHERE NEW. Every object out is one
+            # the setup had out or a character card; the band check above
+            # only looks at one strip of felt.
+            extra = sorted(o.name for o in w.table.values()
+                           if o.name not in base
+                           and not of_family(o.name, one)
+                           and o.name != deck_name)
+            want("...and %s leaves nothing else lying about (%s)"
+                     % (which, load),
+                 extra, [])
 
 
 def main():
