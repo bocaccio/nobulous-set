@@ -28,6 +28,7 @@ step 6 still wants a human at the table.
 """
 import hashlib
 import io
+import heapq
 import json
 import os
 import random
@@ -501,7 +502,12 @@ class World(object):
         self.errors = []
         self.shuffled = set()
         self.markers = {}      # the dice and the Chip, by GUID
-        self.pending = []       # Wait.frames callbacks, run by drain()
+        # A HEAP OF (due frame, order, fn), NOT A LIST. drain() runs
+        # them in time order, so a callback that asked for 6 frames
+        # really does run before one that asked for 10 - see install().
+        self.pending = []
+        self.frame = 0          # frames since this world was built
+        self.waits = 0          # tie-break, so two due together keep order
         self.snaps = []         # Assignment spaces laid by a setup
         # Every time a card was dealt onto something already standing
         # there. A card dropped on a deck joins it, so a deck parked
@@ -708,9 +714,26 @@ def install(lua, w):
     # deep and intermittently stopped partway, leaving cards on the table
     # in about half of all runs. It read exactly like a mod bug. The
     # callbacks go in a queue that drain() runs flat.
+    #
+    # AND THE DELAY IS NOT DECORATION. This used to append to a plain
+    # list, so every callback ran in the order it was CREATED and the
+    # number of frames it asked for was discarded - which makes the
+    # harness model one interleaving out of many, and not the one TTS
+    # produces. A putHome retry asking for 6 frames, created before a
+    # finfApply step asking for 10, ran BEFORE that step here and AFTER
+    # it at the table.
+    #
+    # Both of the bugs Jon reported on 2026-11-12 are orderings of a
+    # retry against a deal, so a model with no clock in it is a model
+    # that cannot fail on either. One of them it did not: the FINF
+    # cycle was green through the whole thing.
+    def later(fn, n):
+        w.waits += 1
+        heapq.heappush(w.pending, (w.frame + max(0, int(n)), w.waits, fn))
     wait = lua.eval("{}")
-    wait.frames = lambda fn, n=1: w.pending.append(fn)
-    wait.time = lambda fn, t=0: w.pending.append(fn)
+    wait.frames = lambda fn, n=1: later(fn, n or 1)
+    # Seconds, at the 60 fps TTS runs its own waits against.
+    wait.time = lambda fn, t=0: later(fn, round(float(t or 0) * 60))
     g.Wait = wait
     # VECTOR, TAGGED. Every published example of alt_view_angle uses
     # Vector() and the plain {x, y, z} table is reported to error from
@@ -820,11 +843,18 @@ def start(difficulty, tier, panel=None):
 
 
 def drain(w):
-    """Run every queued Wait callback to completion, flat."""
+    """Run every queued Wait callback to completion, in time order.
+
+    The clock only ever moves forward, and it moves to whatever is due
+    next rather than a frame at a time: nothing in the mod polls, so a
+    frame with no callback in it is a frame with nothing to model.
+    """
     for _ in range(20000):
         if not w.pending:
             return
-        w.pending.pop(0)()
+        due, _, fn = heapq.heappop(w.pending)
+        w.frame = max(w.frame, due)
+        fn()
     raise RuntimeError("the script's queue never settled")
 
 
