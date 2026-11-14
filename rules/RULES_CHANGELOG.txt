@@ -1,3 +1,50 @@
+2026-11-14  THE SIMULATION PLAYS THE EIGHTEEN CLAUSES NOW
+They were printed earlier the same day and finale.py played none of
+them: a retained card was Card(game, value), so the seven cards a
+campaign carries reached the chamber as three integers.  coverage.py
+reads 18 of 18 and finale.CLAUSES = False restores the flat pool every
+figure published before today was measured through.
+
+NO CARD TEXT CHANGES.  The model moved to the cards, not the cards to
+the model.  Five clauses needed a GATE before they stopped making the
+player worse - Controlled Failure measured -7.45 played unconditionally,
+because an Exhibit put back on the Dossier is not an Exhibit avoided,
+it is an Exhibit moved to the end of the clock - and a gate is the
+model's stand-in for judgement, which is how the Imposter sides are
+already handled.
+
+THE PITCH IS 54.8% AT EASY, up from 50.5%, and the ladder reads
+54.8 / 47.6 / 42.2 / 32.8 where it read 50.6 / 39.2 / 30.6 / 19.4.
+THE PRINTED RULES ARE UNCHANGED AND rules/nrj.html NOW PRINTS WIN RATES
+THE MODEL NO LONGER AGREES WITH - "about 1 game in 2, 2 in 5, 3 in 10,
+1 in 5" against about 5.5, 4.8, 4.2 and 3.3 in 10.  Three of the four
+rungs could be re-cut with the dice dial as it stands - Standard to
+3/3/3/3 at 39.1%, Nobulous to 4/4/4/4 at 21.7%, Hard between 3/3/4/4 at
+32.7% and 4/3/4/4 at 27.3% - but EASY CANNOT, because it is already zero
+dice exhausted and the only way down from 54.8% is to start it tired,
+which costs the rule that Easy means nothing starts exhausted.  So the
+counts are left exactly as printed and the re-cut is Jon's call.
+
+THE RULEBOOK PREDICTED THIS, in the paragraph beside the ladder, about
+Candidates rather than clauses: "any help available to everyone is worth
+almost nothing at Easy and a great deal once dice start exhausted, which
+quietly re-scales every rung of the ladder."  The clauses are the same
+shape of help and did the same thing - worth +5.0 at Easy and +16.7 at
+Nobulous.
+
+AND TWO FINDINGS THAT ARE NOT ABOUT THE CLAUSES.  Exhibit Damage was
+being read off the Exhibit's CURRENT Target, so answering a Target 5
+also halved the Damage printed beside it - worth +0.34, which is why no
+report ever showed it.  And the policy grid had no WHEN: every Research
+policy spent the Pool on the first Exhibits of the right domain, leaving
+it empty by session 4, and holding it for the second half instead is
+worth +12.9 on a pool of flat -2s.  Holding is legal - Deploy takes "any
+number, including none" and nothing makes answering compulsory - so by
+this file's own rule that it models the best policy a player would find,
+the finale is a good deal easier than it has ever been pitched.  Left as
+a measured policy and not made the default: that one re-pitches the
+scenario and it is a design call.
+
 2026-11-14  THE BUFF HP CARD STOPS ASKING FOR A LINE IT CANNOT PRINT
 Its footer read "Damage reaches no Splice until this layer is gone."
 and had never once appeared on the card.  The new ink pass in

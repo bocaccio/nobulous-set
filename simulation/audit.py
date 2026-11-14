@@ -103,6 +103,32 @@ GAMES = 1500
 # against Acceptable Losses at +12.7 and three others at +2.7 to +3.2.
 # Reaching the card would not change that, which is why this stays a
 # declared gap and not a policy to implement.
+# A clause that goes off in fewer than this share of the finales it was
+# SPENT in. Not a defect and not a PROBLEM: a card is spent once, so its
+# clause has one session of nine to matter, and the cards below this line
+# are the ones that also need something to be true in that session -
+# Unexpected Resilience needs you to be dying in it. The threshold only
+# decides which lines get a marker.
+CLAUSE_FAINT = 0.10
+
+# THE ONE CLAUSE THAT IS UNDERSTOOD TO BE NEARLY DEAD, declared here so it
+# does not fail this file at one sample size and pass it at another.
+# Unexpected Resilience bites in about 0.1% of the finales it is spent in,
+# so at 1500 games the count is a handful and at 500 it is often zero -
+# which would make the exit code a coin flip rather than a claim.
+#
+# WHY IT IS THIS LOW IS THE CARD, NOT THE MODEL. A card is spent once, so
+# its clause is live for ONE session of nine, and this one also needs that
+# to be the session the Imposter would otherwise have died in. You cannot
+# hold it for that session either, because a clause is only granted by
+# spending the card and a card can only be spent on an Exhibit of its own
+# domain deployed that session. Raised with Jon on 2026-11-14 as a design
+# reading; changing the card is his call and not this file's.
+CLAUSE_DECLARED = {
+    "Unexpected Resilience": "needs the session it is spent in to be the "
+                             "one you would have died in",
+}
+
 NOTE_DECLARED = {
     "controlled": "committing zero dice, which no policy here takes",
 }
@@ -653,6 +679,103 @@ def audit_protocols(games):
               % (key, pct(drawn[key], games), flag))
 
 
+def audit_clauses(games):
+    """NRJ Tier III: the eighteen Imposter clauses, in the finale.
+
+    A clause is granted by SPENDING the card, and a card answers only its
+    own domain and only an Exhibit deployed this session, so a clause can
+    be in the hand all nine sessions and never be granted at all. That is
+    what the three columns separate.
+    """
+    seen = collections.Counter()
+    spent = collections.Counter()
+    bit = collections.Counter()
+    held, hands = [], []
+    real_init = finale.Game.__init__
+
+    def grab(self, rng, _real=real_init):
+        _real(self, rng)
+        held.append(self)
+        # THE HAND AS IT WAS DEALT. Reading it off the pool at the end would
+        # count only the cards that were never spent, which is the opposite
+        # of the question.
+        hands.append([c.name for c in self.pool])
+
+    finale.Game.__init__ = grab
+    try:
+        rng = random.Random(7)
+        for _ in range(games):
+            del held[:]
+            del hands[:]
+            finale.play(rng)
+            g, hand = held[0], hands[0]
+            left = set(c.name for c in g.pool)
+            for name in hand:
+                seen[name] += 1
+                if name not in left:
+                    spent[name] += 1
+            for name in g.bit:
+                bit[name] += 1
+    finally:
+        finale.Game.__init__ = real_init
+
+    print()
+    print("  NRJ - Imposter clauses (18 cards, Tier III)")
+    print("    Implemented in finale.py on 2026-11-14. Per finale: SEEN is")
+    print("    the card in the retained hand, SPENT is it spent - the only")
+    print("    way a clause is ever granted - and BIT is the clause going")
+    print("    off. A card is one of six its game lays out and %d of them"
+          % sum(finale.RETAIN))
+    print("    are retained, so SEEN near %.0f%% is the deal, not a fault."
+          % (100.0 * finale.RETAIN[0] / finale.LAID_OUT))
+    print("    BIT is a share of the SPENDS, not of the finales: a card is")
+    print("    spent once, so its clause is live for ONE session of %d and"
+          % finale.SESSIONS)
+    print("    everything below is bounded by whatever has to be true that")
+    print("    session. A clause under %.0f%% is marked - that is not a bug"
+          % (100.0 * CLAUSE_FAINT))
+    print("    in the model, it is the card needing a coincidence.")
+    dead, faint = [], []
+    for game in ("NAP", "BAT", "AoS"):
+        for name in finale.TIER3[game]:
+            share = bit[name] / float(spent[name]) if spent[name] else 0.0
+            flag = ""
+            if not seen[name]:
+                flag = "   <-- never dealt"
+                dead.append(name)
+            elif not spent[name]:
+                flag = "   <-- never spent"
+                dead.append(name)
+            elif not bit[name]:
+                flag = "   <-- never bites"
+                if name in CLAUSE_DECLARED:
+                    flag = "   <-- declared: %s" % CLAUSE_DECLARED[name]
+                    faint.append(name)
+                else:
+                    dead.append(name)
+            elif share < CLAUSE_FAINT:
+                flag = "   <-- almost never"
+                if name in CLAUSE_DECLARED:
+                    flag = "   <-- declared: %s" % CLAUSE_DECLARED[name]
+                faint.append(name)
+            print("    %-4s %-32s seen %4.0f%%  spent %4.0f%%  bit %5.1f%%%s"
+                  % (game, name, pct(seen[name], games),
+                     pct(spent[name], games), 100.0 * share, flag))
+    if faint:
+        print()
+        print("    %d clause(s) that need a coincidence and rarely get it:"
+              % len(faint))
+        print("    %s." % ", ".join(faint))
+        print("    A DESIGN READING, NOT A DEFECT, so no PROBLEM is raised:")
+        print("    the model plays them where the card says they apply and")
+        print("    the situation does not arise. What to do about it is")
+        print("    Jon's call - see finale.py section 9 for what each is")
+        print("    worth in points.")
+    if dead:
+        problem("%d Imposter clause(s) that never do anything: %s",
+                len(dead), ", ".join(dead))
+
+
 def main(games=GAMES):
     global GAMES
     GAMES = games
@@ -669,6 +792,10 @@ def main(games=GAMES):
     audit_devious(games)
     audit_interference(games)
     audit_backdoor(games)
+    # The finale's own tier. Added 2026-11-14 with the clauses themselves:
+    # eighteen printed effects went into finale.py that day and nothing in
+    # this file would have noticed if one of them never fired.
+    audit_clauses(games)
     print()
     print("Printed-effect coverage is coverage.py, not this file. Run it too:")
     print("  python coverage.py")

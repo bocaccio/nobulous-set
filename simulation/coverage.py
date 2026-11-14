@@ -584,12 +584,11 @@ SECOND = [
     ("NRJ", "Imposter clauses", 'clause("%s")',
      "every retained card reduces an Exhibit's Target by 2 AND grants the "
      "clause printed along its foot, for the rest of that session. "
-     "finale.py stores a retained card as (game, value) and reads neither "
-     "the name nor the clause, so all 18 are printed and none is played. "
-     "Implementing them moves the pitch off 50.5% at Easy and the ladder's "
-     "dice counts have to be re-cut; until that is done every finale "
-     "figure in this repository is measured on a pool of flat -2s, which "
-     "is NOT the game the cards describe"),
+     "Implemented 2026-11-14; finale.CLAUSES = False restores the flat "
+     "pool every earlier figure was measured on. WHETHER A CLAUSE EVER "
+     "GOES OFF IS NOT THIS FILE'S QUESTION - a call site is all that is "
+     "counted here, and three of the eighteen need a coincidence they "
+     "rarely get. audit.py measures that and prints the share"),
 ]
 
 
@@ -656,6 +655,13 @@ def main(verbose=False):
         if done != len(names):
             gap_second.append((what, len(names) - done))
         print(wrap(why, "        "))
+        # The prose above is prose, so it cannot be checked the way the
+        # count can. It said "none is played" for the length of one
+        # commit while the count beside it read 18 of 18, which is the
+        # failure this whole file exists to prevent - so the line below
+        # is generated from the live numbers rather than typed.
+        print("        -> %d of %d, finale.CLAUSES = %s"
+              % (done, len(names), finale.CLAUSES))
 
     print()
     print("  SHARED-POOL REWARDS - cards that are not their own card")

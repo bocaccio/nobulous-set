@@ -139,9 +139,17 @@ rulebook that no longer publishes one, with five rungs where BAT has four.
 
 Against that band the three games read, re-measured 2026-11-05 at 20,000 games
 a cell, Easy 62.7 / 55.5 / 60.1% and Standard **53.2 / 48.8 / 51.7%**
-(BAT / NAP / AoS) on the no-NRJ axis, with the finale at **50.5%**
+(BAT / NAP / AoS) on the no-NRJ axis, with the finale at **54.8%**
 (`finale.py`; the nine-attempt version it replaced reads 61.6% in `nrj.py`,
-which still models it and is not what ships). All three games and the finale
+which still models it and is not what ships). The finale read 50.5% until
+2026-11-14, when the eighteen Imposter clauses printed on the Tier III cards
+were implemented; `finale.CLAUSES = False` restores the figure every earlier
+line here was measured through. Two further findings from that work are NOT
+folded into any number above, because both are design decisions rather than
+corrections: the ladder no longer spans 50/40/30/20 and the dice dial cannot
+be re-cut to make it, and a legal Research-Pool policy the grid never had -
+holding the cards for the second half of the scenario - is worth +12.9 on
+its own. `finale.py`'s header has both. All three games and the finale
 are in the band at Standard on their own column - AoS since the 2026-11-05
 re-pitch onto the strongest allocation line the printed rules allow, and NAP
 since the model started playing the printed End-of-Day burn.

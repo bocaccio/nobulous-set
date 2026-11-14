@@ -7,55 +7,55 @@ printed Targets: Knowledge ok; Physical ok; Cover-Up ok
 1. THE PITCH
    Five seeds, because one is not a pitch: a single 6000-game cell
    lands about a point either side of the mean.
-   as it ships                        50.5%*  [50.1 50.4 50.1 50.6 51.0]
-   without the five Reward cards      42.7%   [41.7 43.0 43.4 41.5 43.9]
-   without the Research Pool           8.6%   [8.7 8.3 8.7 8.4 8.7]
-   played blind                        0.5%   [0.6 0.3 0.5 0.5 0.6]
+   as it ships                        54.8%*  [54.4 55.3 54.6 54.3 55.1]
+   without the five Reward cards      48.9%*  [48.3 48.9 48.7 48.3 50.2]
+   without the Research Pool           8.5%   [8.7 8.7 8.8 7.8 8.6]
+   played blind                        0.4%   [0.6 0.3 0.3 0.4 0.5]
 
 2. THE SKILL LAYER - every input face-up, none of it remembered
    played as the old finale was         0.6% 
-   + spend the Research Pool           10.5%   +9.9
-   + keep pace with the clock          26.5%   +16.0
-   + recover the colour coming up      36.2%   +9.7
-   + commit only what you need         51.3%*  +15.0
+   + spend the Research Pool           12.0%   +11.4
+   + keep pace with the clock          32.4%   +20.4
+   + recover the colour coming up      41.7%   +9.3
+   + commit only what you need         54.0%*  +12.2
 
 3. IS THE PACE A LIVE DECISION? the replay question.
    A fixed pace is what a solved scenario looks like.
    pace: one                            0.0% 
-   pace: two                           31.9% 
-   pace: three                          1.2% 
+   pace: two                           29.6% 
+   pace: three                          2.9% 
    pace: all                            0.0% 
-   pace: clock                         50.1%*
-   pace: ceil                          46.2% 
-   pace: throttle                      47.4%*
+   pace: clock                         54.4%*
+   pace: ceil                          52.9%*
+   pace: throttle                      50.5%*
 
 4. THE OTHER THREE DECISIONS
-   recover   best 45.6%  now 8.4%  next 51.3%  horizon 50.1%   gap 42.8
-   commit    all 37.6%  adaptive 50.1%   gap 12.5
-   Research  none 8.7%  small 50.1%  big 42.1%  dump 37.5%   gap 41.4
+   recover   best 50.4%  now 10.5%  next 54.0%  horizon 54.4%   gap 43.9
+   commit    all 42.5%  adaptive 54.4%   gap 11.9
+   Research  none 8.6%  small 54.4%  big 48.4%  dump 41.7%  time 71.7%   gap 63.2
 
 5. THE DIALS - one step each
-   as it ships                         50.1%*
-   8 sessions (ends on blue)           23.5% 
-   10 sessions (ENDS ON RED)           22.1% 
-   12 Exhibits, 4 per domain           76.7% 
-   13 Exhibits (5/4/4)                 69.8% 
-   14 Exhibits (5/5/4)                 64.8% 
-   16 Exhibits (6/5/5)                 20.6% 
-   18 Exhibits, 6 per domain            0.2% 
-   3 Health                            43.5% 
-   4 Health                            50.3%*
-   6 Health                            50.0%*
-   REC 2                               28.3% 
-   REC 4                               53.9%*
-   REC 5                               53.4%*
-   STR 3                               86.3% 
+   as it ships                         54.4%*
+   8 sessions (ends on blue)           33.3% 
+   10 sessions (ENDS ON RED)           23.1% 
+   12 Exhibits, 4 per domain           78.5% 
+   13 Exhibits (5/4/4)                 71.9% 
+   14 Exhibits (5/5/4)                 64.9% 
+   16 Exhibits (6/5/5)                 29.8% 
+   18 Exhibits, 6 per domain            0.8% 
+   3 Health                            46.6% 
+   4 Health                            52.3%*
+   6 Health                            54.6%*
+   REC 2                               35.2% 
+   REC 4                               58.7% 
+   REC 5                               58.5% 
+   STR 3                               87.5% 
    one-colour attention                 0.0% 
-   three-colour attention              84.9% 
-   Targets 2/3/4                       92.0% 
-   Damage 2 at Target 4+               49.8%*
-   damage resets each session          31.1% 
-   no Reward cards                     41.7% 
+   three-colour attention              86.4% 
+   Targets 2/3/4                       93.1% 
+   Damage 2 at Target 4+               52.9%*
+   damage resets each session          36.3% 
+   no Reward cards                     48.3%*
 
 6. THE RESEARCH POOL
    A card is retained or it is not, and every retained card takes
@@ -64,13 +64,13 @@ printed Targets: Knowledge ok; Physical ok; Cover-Up ok
    and a campaign can sit for weeks between games. So the pool is
    now just a COUNT, and seven is the count that reads 50%.
    NAP/BAT/AoS retained        worth 1  worth 2
-   1/1/1                         15.7%    21.6%
-   2/2/1                         22.8%    34.8%
-   2/2/2                         26.6%    41.5%
-   3/2/2                         31.8%    50.5%   <- shipped
-   3/3/2                         37.4%    58.0%
-   3/3/3                         43.0%    65.6%
-   no retained cards                       8.6%
+   1/1/1                         17.8%    24.0%
+   2/2/1                         26.3%    38.3%
+   2/2/2                         31.9%    45.5%
+   3/2/2                         38.8%    54.8%   <- shipped
+   3/3/2                         44.1%    62.4%
+   3/3/3                         51.8%    69.2%
+   no retained cards                       8.5%
 
    Eight cards worth 1.5 each beat six worth 2, on the same total
    reduction: spreading across more Exhibits pays better than
@@ -78,17 +78,36 @@ printed Targets: Knowledge ok; Physical ok; Cover-Up ok
    That is why dropping to one value needed the COUNTS re-derived
    rather than the values doubled.
 
-7. THE DIFFICULTY LADDER - dice exhausted at setup
+7. THE FIVE IMPOSTERS - who you are pretending to be
+   Ported in from proto/imposters.py on 2026-11-06; before that
+   this module had no hero code, so every figure above was
+   measured with no Imposter chosen. HERO = None still is the
+   pitch - a side is quoted as a DELTA against it - but the ten
+   printed abilities are now in the shipping simulator.
+   Imposter     side               when               win   delta
+   -            no Imposter                         54.8%
+   Archivist    Cross-Referenced   passive          55.3%*  +0.5
+   Archivist    Precedent          once/Scenario    57.3%   +2.6
+   Understudy   Open Audition      once/Scenario    58.0%   +3.2
+   Understudy   Second Chair       twice/Scenario   57.1%   +2.3
+   Usher        Early Admittance   once/Scenario    58.6%   +3.8
+   Usher        Double Doors       once/Scenario    59.8%   +5.0
+   Porter       Sleight of Hand    once/session     57.0%   +2.3
+   Porter       Heavy Lifting      once/Scenario    55.1%*  +0.3
+   Steward      Requisition        once/Scenario    57.1%   +2.4
+   Steward      Standing Order     once/Scenario    58.2%   +3.5
+
+8. THE DIFFICULTY LADDER - dice exhausted at setup
    The rules name the dice, so there is no choice to model. The
    counts are spread across the colours on purpose: taking whole
    ones collides with the wheel, which opens Yellow+Green, and
    '4 yellow 4 green' reads 28.7% against 38.4% for the same
    eight dice taken off the purple end. The red is never taken.
    level      y  g  b  p        n      win     aim
-   Easy       0  0  0  0        0    50.5%*   50%  +0.5
-   Standard   3  2  2  2        9    39.2%    40%  -0.8
-   Hard       3  3  3  2       11    30.6%    30%  +0.6
-   Nobulous   3  3  4  4       14    19.4%    20%  -0.6
+   Easy       0  0  0  0        0    54.8%*   50%  +4.8
+   Standard   3  2  2  2        9    47.6%*   40%  +7.6
+   Hard       3  3  3  2       11    42.2%    30%  +12.2
+   Nobulous   3  3  4  4       14    32.8%    20%  +12.8
 
    AND WHETHER THE RUNGS ARE STILL GAMES OF SKILL. A tier where
    no policy beats another is not a harder puzzle, it is a worse
@@ -96,19 +115,56 @@ printed Targets: Knowledge ok; Physical ok; Cover-Up ok
    property that chose this dial: the RECOVERY decision, which is
    what the attention wheel exists to create, pays MORE as the
    ladder gets harder.
-   Easy        50.5%   pace +19.1   recover  +4.8   commit +12.3
-   Standard    39.2%   pace +19.0   recover +11.6   commit +18.4
-   Hard        30.6%   pace +16.0   recover +11.5   commit +14.0
-   Nobulous    19.4%   pace +11.3   recover +11.7   commit  +7.7
+   Easy        54.8%   pace +25.1   recover  +3.3   commit +12.5
+   Standard    47.6%   pace +25.7   recover  +7.0   commit +17.6
+   Hard        42.2%   pace +24.3   recover  +8.3   commit +16.2
+   Nobulous    32.8%   pace +21.1   recover +11.2   commit +13.5
 
    AND WHETHER COMMITTING IS STILL A DECISION. The pool lowers
    Targets, so it could have done what REC 4 does and made
    throwing every allowed die simply correct. It did the
    opposite - the gap is wider than it was on the old pool.
-   REC 2  adaptive  28.2%  all   4.5%   gap +23.8
-   REC 3  adaptive  50.5%  all  38.1%   gap +12.3   <- shipped
-   REC 4  adaptive  53.9%  all  65.9%   gap -12.0
-   REC 5  adaptive  54.1%  all  67.3%   gap -13.2
+   REC 2  adaptive  35.5%  all  10.7%   gap +24.8
+   REC 3  adaptive  54.8%  all  42.2%   gap +12.5   <- shipped
+   REC 4  adaptive  57.6%  all  62.8%   gap  -5.2
+   REC 5  adaptive  57.8%  all  66.8%   gap  -9.1
+
+9. THE EIGHTEEN IMPOSTER CLAUSES - and whether they are a choice
+   Implemented 2026-11-14. Each Tier III card prints a clause
+   used only here; you get it as well as the -2, from the moment
+   you spend the card to the end of that session.
+   the flat pool, CLAUSES = False       50.1%*  +0.0
+   clauses, spent in hand order         54.8%*  +4.6
+   clauses, hand scored                 55.2%*  +5.0
+   ...and held for its session          72.2%   +22.0
+   the flat pool, held                  63.4%   +13.2
+
+   ONE CLAUSE AT A TIME, forced into the hand in place of one of
+   its own game's picks, so the delta is a better card and not a
+   bigger pool. Five seeds a cell; a delta under about 0.4 is
+   inside the noise.
+   NAP  Borrow the Master's Notes          54.8%  +0.07
+   NAP  Raid the Supply Cabinet            54.4%  -0.39
+   NAP  Extra Credit?                      56.3%  +1.57
+   NAP  Helpful Test Subject               55.4%  +0.65
+   NAP  Nobulous Owes You One              53.7%  -1.02
+   NAP  Definitely Curriculum-Approved     54.9%  +0.14
+   BAT  Unexpected Resilience              55.0%  +0.24
+   BAT  Successful Integration             55.4%  +0.66
+   BAT  Acceptable Losses                  54.7%  -0.04
+   BAT  Cross-Species Compatibility        54.8%  +0.09
+   BAT  Controlled Failure                 54.0%  -0.75
+   BAT  Red Means Go                       54.8%  +0.05
+   AoS  Diagnostic Port                    55.2%  +0.40
+   AoS  Privilege Escalation               54.2%  -0.55
+   AoS  Resource Fork                      54.0%  -0.71
+   AoS  Packet Sniffer                     54.6%  -0.12
+   AoS  Garbage Collection                 54.8%  +0.03
+   AoS  Root Access                        55.6%  +0.82
+
+   WHICH CARD is not a decision this model can find, and WHEN is:
+   see THE EIGHTEEN CLAUSES in the header, and audit.py for how
+   often each one actually goes off.
 
 THE PROTOTYPE'S ERRATA - three finale10 claims that the real
 components did not support:
