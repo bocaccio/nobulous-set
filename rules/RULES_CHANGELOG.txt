@@ -1,3 +1,70 @@
+2026-11-14  EVERY TIER III CARD NOW DOES SOMETHING IN THE CHAMBER
+Jon: "if the specific cards don't matter, you may as well just play the
+standalone version...  you want to feel like you had agency in obtaining
+the specific cards that you carry into the imposter scenario and that
+these cards grant you some unique action."  He was right, and the cause
+was in the model: simulation/finale.py stores a retained card as
+Card.__slots__ = ("game", "value"), a domain and a flat 2.  Everything
+printed on the card you chose was discarded at the campaign boundary, so
+seven retained cards were three integers.
+
+ALL EIGHTEEN PRINT AN "IMPOSTER:" CLAUSE NOW, along the foot of the
+card.  You get it AS WELL AS the -2, in the moment you spend the card,
+and it lasts to the end of that session - so which card and which
+session is the decision, not merely whether the domain matches.  Each
+one is modelled on what the card already prints at home: Red Means Go
+is the card where Red keeps working when it should have been spent, in
+the laboratory and in the chamber, and Diagnostic Port and Resource
+Fork are their AoS Rewards word for word, because those were already
+written in the finale's vocabulary.
+
+NOTHING OUTSIDE THE FINALE MOVES.  The clause is dead in the game the
+card comes from, so BAT, NAP and AoS keep every number they were
+calibrated to.  A Candidate still answers nothing, which is the point:
+the eleven you did not claim print a clause they never get to use.
+Standalone deals seven at random - the same seven the campaign lets you
+choose - which is now a visible difference between the modes rather
+than a bookkeeping one.
+
+THE SPENT/UNSPENT SPLIT IS STILL GONE and this is not it coming back.
+It was dropped on 2026-10-30 because nothing on the table recorded
+which a card was; the yellow carry bag records which cards you carried,
+and that is a separate decision to take or leave on its own merits.
+
+2026-11-14  RED MEANS GO, ONE LINE SHORTER
+Its claim condition read "and at least one die belonging to another Rat
+also contributed" and now reads "and another Rat's die also
+contributed".  Same meaning, same trigger, one line less.
+
+IT HAD 0.4mm OF SLACK, the tightest card in the set, and a footer line
+costs 2.6mm - so it was the one card of the eighteen that could not
+carry an Imposter clause as it stood.  The alternative was the one card
+in the set that does nothing in the chamber.  Three clauses were
+trimmed to fit their own cards the same way: Raid the Supply Cabinet,
+Root Access, Cross-Species Compatibility.
+
+2026-11-14  check_cards.py COULD NOT SEE TEXT OVERFLOW
+The flow pass releases the card's height and asks where a marker lands,
+and that answers "is there another block here", not "does this block
+fit".  Measured on a Research Note: 199 characters of body wanted
+52.9mm, and 738 characters wanted the same 65.6mm as 278 did.  It
+passed all eighteen cards of the first Imposter-clause draft, which
+printed with the footer shoved off four Research Notes and, on Root
+Access, with "claim." on top of "REWARD".
+
+THERE IS AN INK PASS NOW, which the flow pass's own comment had been
+referring to for some time.  Each card is rendered at its printed
+height with the overflow released and the pixels are read.  Three
+things it has to get right, each of which gave a confident wrong answer
+first: the card stays position:relative, or the NRJ edge band anchors
+to the page and every card reads as spilling 179.6mm; the body stays a
+flex column with its children forbidden to shrink, because WeasyPrint
+squashes flex items instead of overflowing - which is why too much text
+prints ON TOP of its neighbour rather than below the card - and laying
+it out as blocks lets margins collapse, under-reading by about 2mm; and
+the floor is the edge band, not the card edge, because the band is
+painted opaque over the first 3.4mm of any overrun.
+
 2026-11-13  A RETAINED CARD GOES IN A PRINTED BOX
 Jon, carrying 1 Research Note, 2 Devious Opportunities and 1 Backdoor
 Routine out of a campaign: "the placed cards incorrect."  The four sat

@@ -5,6 +5,83 @@ from gen import render_deck, render_duplex, make_back, hdr_fit, title_cls, DOT, 
 # The shape of the cards being built, for header measurement.
 CARD_SIZE = PORTRAIT
 
+# THE IMPOSTER CLAUSE, one per Tier III card, used only in the Imposter
+# Scenario and dead in the game the card comes from - so BAT, NAP and
+# AoS keep every number they were calibrated to and only the finale has
+# to be re-measured.
+#
+# It fires when you spend the card to answer an Exhibit, alongside the
+# -2 rather than instead of it, and lasts that session only: nothing to
+# track between sessions and nothing to track between games. A Candidate
+# has no clause, which is what finally makes a retained card different
+# from a card you merely did not throw away.
+#
+# Each one is modelled on what the card already prints at home, because
+# that is the whole point - Red Means Go is the card where Red keeps
+# working when it should have been spent, in the laboratory and in the
+# chamber. Two of them (Diagnostic Port, Resource Fork) are their AoS
+# Rewards word for word, since those were already written in the
+# finale's own vocabulary.
+#
+# LENGTH IS A CONSTRAINT HERE, not a style note. The footer is the only
+# room left on these cards; check_cards.py's ink pass prints the slack
+# per card and three of these were trimmed to fit it.
+IMP = {
+ "Unexpected Resilience":
+   "The first time Damage would take you to 0 Health this session, you "
+   "remain at 1.",
+ "Successful Integration":
+   "Ignore the Damage of one standing Exhibit at this session's Resolve.",
+ "Acceptable Losses":
+   "Lose 1 Health to recover 2 exhausted dice.",
+ "Cross-Species Compatibility":
+   "Move the dice lying on one standing Exhibit to another standing "
+   "Exhibit, successes and all.",
+ "Controlled Failure":
+   "Place a different Exhibit you just deployed on the bottom of the "
+   "Dossier.",
+ "Red Means Go":
+   "Red does not exhaust this session.",
+ "Borrow the Master's Notes":
+   "Exhaust 2 available dice of any color to place 2 successes on an "
+   "Exhibit you just deployed.",
+ "Raid the Supply Cabinet":
+   "Before a Strategy roll, recover 3 dice, or all of one non-Red color.",
+ "Extra Credit?":
+   "Deploy 1 more Exhibit now, recovering 2 dice for it rather than 1. "
+   "You may answer it as well.",
+ "Helpful Test Subject":
+   "After a Strategy roll, reroll any number of misses.",
+ "Nobulous Owes You One":
+   "Spend this on an Exhibit of any domain.",
+ "Definitely Curriculum-Approved":
+   "Ignore the attention's color restriction for one Strategy roll this "
+   "session.",
+ "Diagnostic Port":
+   "Reroll one entire Strategy roll.",
+ "Privilege Escalation":
+   "Spend this on an Exhibit deployed in an earlier session.",
+ "Resource Fork":
+   "Recover 2 exhausted dice.",
+ "Packet Sniffer":
+   "Look at the top 3 cards of the Dossier and return them in any order.",
+ "Garbage Collection":
+   "At this session's Resolve, committed dice that applied nothing do "
+   "not exhaust.",
+ "Root Access":
+   "Treat one missed die as a Crit.",
+}
+
+
+def imp_ftr(n):
+    """The Imposter clause of card `n`, as a run-in footer lead.
+
+    NOT `imp`: that name is already the list of Imposter Task card HTML
+    further down this file, and shadowing it fails at import.
+    """
+    return '<b>Imposter:</b> %s ' % IMP[n]
+
+
 # Match each NRJ card to its base-game analog.
 BAT_H, NAP_H, AOS_H = '#2c5f4a', '#6b3f8c', '#8a3d2e'
 CAT = {'Power': '#8a3d2e', 'Mobility': '#2c6e63', 'Defense': '#3c5a8a', 'Senses': '#6b4a8a'}
@@ -89,7 +166,7 @@ NOTES = [
  ("Acceptable Losses", "Claim after failing 3 Experiments within the same four-Rat rotation. Claiming gives up the next Upgrade a completed Experiment earns.", "Once per game after another failure, choose which revealed Upgrade is Spliced."),
  ("Cross-Species Compatibility", "Claim after a Rat completes an Experiment using a borrowed die. Claiming gives up the next Upgrade a completed Experiment earns.", "Once during the Tyrant battle, the active Rat may tap an Upgrade held by another surviving Rat."),
  ("Controlled Failure", "Claim after deliberately committing zero dice to an Experiment. Claiming gives up the next Upgrade a completed Experiment earns.", "Once later, after revealing an Experiment, discard it and reveal the next one instead."),
- ("Red Means Go", "Claim after Red provides the success that completes an Experiment and at least one die belonging to another Rat also contributed. Claiming gives up the next Upgrade a completed Experiment earns.", "Once per game after using Red, place it directly on any non-active Rat rather than setting it aside."),
+ ("Red Means Go", "Claim after Red provides the success that completes an Experiment and another Rat's die also contributed. Claiming gives up the next Upgrade a completed Experiment earns.", "Once per game after using Red, place it directly on any non-active Rat rather than setting it aside."),
 ]
 NRJ_BLUE = '#1f4e6b'
 # Card backs first: the deck PnPs interleave them behind the fronts.
@@ -110,7 +187,8 @@ mods = [C(n, "NRJ &middot; " + s,
             flavor=fl, acc=CAT[s.split(' ')[0]], tint='#f6f2ea') for n, s, e, fl in MODS]
 notes = [C(n, "NRJ &middot; Research Note", '<div class="sub">Claim when earned</div>' + T(c) +
             '<div class="sub" style="margin-top:2.5mm">Reward</div>' + T(r),
-            'Tier III &mdash; Exploitation.', acc=BAT_H) for n, c, r in NOTES]
+            imp_ftr(n) + 'Tier III &mdash; Exploitation.',
+            acc=BAT_H) for n, c, r in NOTES]
 print("Protocols", render_deck('NRJ_BAT_Protocols', prot, 'NRJ', back='CardBack_NRJ_Protocol'))
 print("Modifications", render_deck('NRJ_BAT_Modifications', mods, 'NRJ', back='CardBack_NRJ_Protocol'))
 print("Research Notes", render_deck('NRJ_BAT_ResearchNotes', notes, 'NRJ', back='CardBack_NRJ_ResearchNote'))
@@ -264,7 +342,8 @@ fol = [C(n, "NRJ &middot; Following Setback",
           for n, d, t, e in FOLLOWING]
 dev = [C(n, "NRJ &middot; Devious Opportunity",
             successes_row(d, t, '#9a7410') + T(e),
-            DEV_FOOTER[w], acc=NAP_OPP) for n, d, t, e, w in DEVIOUS]
+            imp_ftr(n) + DEV_FOOTER[w],
+            acc=NAP_OPP) for n, d, t, e, w in DEVIOUS]
 print("Imposter Tasks", render_deck('NRJ_NAP_ImposterTasks', imp, 'NRJ', LANDSCAPE, back='CardBack_NAP_Assignment'))
 print("Following Setbacks", render_deck('NRJ_NAP_FollowingSetbacks', fol, 'NRJ', LANDSCAPE, back='CardBack_NAP_Assignment'))
 print("Devious Opportunities", render_deck('NRJ_NAP_DeviousOpportunities', dev, 'NRJ', LANDSCAPE, back='CardBack_NAP_Assignment'))
@@ -343,7 +422,7 @@ corr = [C(n, "NRJ &middot; Corrupted Limitation",
 bkd = [C(n, "NRJ &middot; Backdoor Routine",
             '<div class="sub">Maximum 2 Backdoor Routines claimed per game</div>' + T(c) +
             '<div class="sub" style="margin-top:2.5mm">Reward</div>' + T(r),
-            'Once you have claimed 2, you cannot claim more. Tier III &mdash; Exploitation.',
+            imp_ftr(n) + 'Once you have claimed 2, you cannot claim more. Tier III &mdash; Exploitation.',
             warn=True, acc=AOS_H) for n, c, r in BACKDOOR]
 print("Interference", render_deck('NRJ_AoS_Interference', intf, 'NRJ', back='CardBack_NRJ_Interference'))
 print("Corrupted Limitations", render_deck('NRJ_AoS_CorruptedLimitations', corr, 'NRJ', back='CardBack_AoS_Limitation'))

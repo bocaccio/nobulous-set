@@ -270,7 +270,7 @@
     ["Acceptable Losses","Claim after failing 3 Experiments within the same four-Rat rotation. Claiming gives up the next Upgrade a completed Experiment earns.","Once per game after another failure, choose which revealed Upgrade is Spliced."],
     ["Cross-Species Compatibility","Claim after a Rat completes an Experiment using a borrowed die. Claiming gives up the next Upgrade a completed Experiment earns.","Once during the Tyrant battle, the active Rat may tap an Upgrade held by another surviving Rat."],
     ["Controlled Failure","Claim after deliberately committing zero dice to an Experiment. Claiming gives up the next Upgrade a completed Experiment earns.","Once later, after revealing an Experiment, discard it and reveal the next one instead."],
-    ["Red Means Go","Claim after Red provides the success that completes an Experiment and at least one die belonging to another Rat also contributed. Claiming gives up the next Upgrade a completed Experiment earns.","Once per game after using Red, place it directly on any non-active Rat rather than setting it aside."],
+    ["Red Means Go","Claim after Red provides the success that completes an Experiment and another Rat's die also contributed. Claiming gives up the next Upgrade a completed Experiment earns.","Once per game after using Red, place it directly on any non-active Rat rather than setting it aside."],
   ];
   const batTier = () => window.NOBULOUS_TIER ? window.NOBULOUS_TIER.forGame("bat") : "0";
   const cardValue = card => card.type === "s" ? 5 : card.type === "u" ? upgrades[card.i][1] : card.type === "m" ? BAT_MODS[card.i][3] : 0;

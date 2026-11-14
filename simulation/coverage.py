@@ -563,6 +563,39 @@ FUNGIBLE = [
 ]
 
 
+# ---------------------------------------------------------------------------
+# SECOND CLAUSES - a printed effect for a game the card does not come from.
+#
+# Each of the 18 Tier III cards prints an "Imposter:" clause used only in
+# the Imposter Scenario (2026-11-14). These are NOT the home rewards the
+# three Claim rows above count: a Research Note's reward fires in BAT and
+# its clause fires in the finale, and modelling one says nothing about the
+# other. They need their own row because this file's denominator is cards
+# and these decks would otherwise read 6 of 6 while half of what is
+# printed on them does nothing.
+#
+# THE PREDICATE IS A CALL SITE, not a name. finale.py counts a clause as
+# modelled when it reaches for that card by its printed name - the same
+# rule that caught Packet Sniffer being in BACKDOOR_ORDER and nowhere
+# else. The names are read off build_nrj.IMP, so a clause that is added,
+# renamed or dropped on the card is reflected here with no edit.
+# ---------------------------------------------------------------------------
+SECOND = [
+    ("NRJ", "Imposter clauses", 'clause("%s")',
+     "every retained card reduces an Exhibit's Target by 2 AND grants the "
+     "clause printed along its foot, for the rest of that session. "
+     "finale.py stores a retained card as (game, value) and reads neither "
+     "the name nor the clause, so all 18 are printed and none is played. "
+     "Implementing them moves the pitch off 50.5% at Easy and the ladder's "
+     "dice counts have to be re-cut; until that is done every finale "
+     "figure in this repository is measured on a pool of flat -2s, which "
+     "is NOT the game the cards describe"),
+]
+
+
+gap_second = []                  # (what, how many clauses unplayed)
+
+
 def main(verbose=False):
     cards = catalog()
     total_cards = sum(len(v) for v in cards.values())
@@ -613,6 +646,18 @@ def main(verbose=False):
         print(wrap(why, "        "))
 
     print()
+    print("  SECOND CLAUSES - a printed effect for another game")
+    for game, what, template, why in SECOND:
+        names = _gen_dict("IMP")
+        done = fires(finale, template, names)
+        print("    %-4s %-24s %d of %d modelled%s"
+              % (game, what, done, len(names),
+                 "" if done == len(names) else "   <-- NOT PLAYED"))
+        if done != len(names):
+            gap_second.append((what, len(names) - done))
+        print(wrap(why, "        "))
+
+    print()
     print("  SHARED-POOL REWARDS - cards that are not their own card")
     for game, deck, state, pred, why in FUNGIBLE:
         try:
@@ -628,9 +673,17 @@ def main(verbose=False):
         print(wrap(why, "        "))
 
     gap_cards = sum(len(c.gaps) for c in missing)
+    second = sum(n for _w, n in gap_second)
     print()
     print("  TOTAL: %d of %d printed card effects are not modelled, in %d "
           "decks." % (gap_cards, total_cards, len(missing)))
+    if second:
+        # SAID SEPARATELY AND NOT FOLDED IN, because the figure above
+        # counts one effect per card and these are second clauses on
+        # cards already counted there. Adding them to that numerator
+        # would make a deck read 12 of 6.
+        print("  AND %d second clause(s) printed on cards counted above are "
+              "not played at all." % second)
     # DERIVED, not typed. The previous version of this footer was three
     # hardcoded sentences about the three largest gaps, and two of the three
     # were fixed within a day of being written - which is the exact failure
