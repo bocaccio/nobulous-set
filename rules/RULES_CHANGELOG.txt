@@ -1,3 +1,43 @@
+2026-11-14  THE BUFF HP CARD STOPS ASKING FOR A LINE IT CANNOT PRINT
+Its footer read "Damage reaches no Splice until this layer is gone."
+and had never once appeared on the card.  The new ink pass in
+check_cards.py found it the day it was written: the card's text ran
+5.2mm past the bottom of its own text area, and WeasyPrint squashes an
+overflowing flex item rather than spilling it, so the line and the rule
+above it were not clipped - they were rendered to nothing.
+
+THE SOURCE NOW MATCHES THE CARD.  The footer is gone from
+build_bat.py, which is a change to the file and not to the component:
+rendering the card with and without it moves the art by one pixel of
+rounding and nothing else.
+
+THE GRID COULD NOT MAKE ROOM.  The fifteenth space ends 84.24mm down
+an 88.9mm card, which is the bottom of the body's padding box, and a
+one-line footer wants 5.67mm.  Shrinking the spaces is not a layout
+tweak but an art change with a rule attached: tts/lua.lua sets
+BUFF_GRID_DZ = -BUFF_PITCH and check_app_sync measures both off the
+printed card, so the squares are where the die snaps.  Honour that and
+10mm squares free 3.07mm, 10.5mm free 1.32mm, and only 9mm squares fit
+a footer - under a die that already overhangs an 11mm one.
+
+AND THE CHECK THAT GUARDS THE GRID WAS MEASURING THE FRAME.
+check_app_sync derives the die's snap points from the printed card by
+boxing every pixel the colour of a space's border.  The card's own
+frame is that same colour - .5pt of it at gen.py's 2mm inset - and the
+window stopped 12px short of the image instead of inside the frame.
+The rebuilt sheet's bottom hairline came out one shade darker, joined
+the box, and the check reported a pitch of 1.6mm where the card prints
+11.6, with the grid unmoved at 403 x 677 pixels before and after.  The
+window is now that inset plus a millimetre, and a box that touches it
+is refused rather than reported: next time this happens the check says
+it could not measure the grid, instead of naming a number that is not
+one.
+
+NO RULE WAS LOST.  The tip above the grid already says it - "strip it
+before any Splice can be damaged" - and rules/bat.html says it again
+under The Tyrant track.  Nothing in the rulebooks, the lab or the mod
+changes.
+
 2026-11-14  EVERY TIER III CARD NOW DOES SOMETHING IN THE CHAMBER
 Jon: "if the specific cards don't matter, you may as well just play the
 standalone version...  you want to feel like you had agency in obtaining

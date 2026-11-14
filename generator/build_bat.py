@@ -241,7 +241,26 @@ buff = [C('Buff HP', 'Tyrant · outer layer',
           'any Splice can be damaged. Put the die on its value and step it '
           'down.</div>'
           + track(),
-          'Damage reaches no Splice until this layer is gone.',
+          # NO FOOTER, AND THERE IS NO ROOM FOR ONE. The fifteenth space ends
+          # 84.24mm down an 88.9mm card, which is the bottom of the body's
+          # padding box to within a tenth of a millimetre, and gen's `.ftr`
+          # wants 5.67mm of it (1.5 margin, a .4pt rule, 1.1 padding, one
+          # 6.8pt line). This card asked for 'Damage reaches no Splice until
+          # this layer is gone.' from the day it was written and NEVER
+          # PRINTED IT: an overflowing flex item is squashed, not spilled, so
+          # the line and its rule simply were not there, and nothing could
+          # say so until check_cards.py grew an ink pass on 2026-11-14.
+          #
+          # The grid cannot hand the room back. tts/lua.lua sets
+          # BUFF_PITCH = CARD_W * (11.6 / 63.5) and BUFF_GRID_DZ = -BUFF_PITCH,
+          # and check_app_sync measures both off this art, so the spaces and
+          # the grid's centre are where the die's snap points are. Honouring
+          # that pin, 10mm spaces free 3.07mm and 10.5mm free 1.32mm - still
+          # short of 5.67mm - and only 9mm spaces fit a footer, under a die
+          # that already overhangs an 11mm one.
+          #
+          # The rule survives: the tip above the grid says it in other words,
+          # and rules/bat.html says it under The Tyrant track.
           acc=BUFF_GREEN)]
 print("Buff HP track", render_deck('BAT_BuffHP', buff, 'BAT', PORTRAIT, TRACK_CSS, back='CardBack_BAT_BuffHP'))
 

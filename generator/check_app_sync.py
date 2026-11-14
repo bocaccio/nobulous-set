@@ -3241,6 +3241,17 @@ check("every deck that waits in a box is dealt by a finale",
 # tall, so its height less its width is exactly two pitches.
 
 
+# gen.py owns the card's geometry and this needs two of its numbers.
+# NOT `_g`, which holds them a thousand lines up: a loop at "for _g in
+# (\"bat\", \"nap\"..." rebinds that name to a string long before this
+# runs, so reaching for it here raises TypeError at import time.
+_cardgeo = {}
+for _line in text("generator/gen.py").splitlines():
+    for _k in ("PORTRAIT", "CARD_INSET_MM"):
+        if _line.startswith(_k + " = "):
+            _cardgeo[_k] = ast.literal_eval(_line.split(" = ", 1)[1].strip())
+
+
 def _buff_grid():
     from PIL import Image
     im = Image.open(os.path.join(ROOT, "images", "BAT_BuffHP_TTS.png"))
@@ -3249,10 +3260,20 @@ def _buff_grid():
     px = im.load()
     x0 = y0 = 10 ** 6
     x1 = y1 = -1
-    # Below the heading and inside the card's own frame, so neither
-    # the title band nor the border joins the measurement.
-    for y in range(int(h * 0.28), h - 12):
-        for x in range(40, w - 40):
+    # Below the heading and INSIDE THE CARD'S OWN FRAME - which the old
+    # window said it was and was not. That frame is .5pt of #b8b0a0 at
+    # gen.py's CARD_INSET_MM, the same colour as a space's border, and
+    # the window stopped 12px short of the image: on 2026-11-14 the
+    # bottom hairline came out one shade darker, joined the box, and the
+    # "pitch" became the card's own height less its width over two -
+    # 1.6mm where the card prints 11.6mm - while the grid had not moved
+    # a pixel (403 x 677 on the sheet before and after). 40px and 12px
+    # were both guesses; the inset is the number that means something.
+    edge = int(round((_cardgeo["CARD_INSET_MM"] + 1.0)
+                     * h / _cardgeo["PORTRAIT"][1]))
+    top = int(h * 0.28)
+    for y in range(top, h - edge):
+        for x in range(edge, w - edge):
             r, g, b = px[x, y]
             if abs(r - 184) < 30 and abs(g - 176) < 30 and abs(b - 160) < 30:
                 x0 = min(x0, x)
@@ -3260,6 +3281,13 @@ def _buff_grid():
                 y0 = min(y0, y)
                 y1 = max(y1, y)
     if x1 < 0:
+        return None
+    # A BOX THAT TOUCHES THE WINDOW IS NOT THE GRID. It is the frame
+    # again, or a grid that has grown or slid into the band the window
+    # excludes. Either way every number below it would be fiction, so
+    # refuse to produce one rather than print a confident 1.6mm.
+    if (x0 <= edge or x1 >= w - edge - 1
+            or y0 <= top or y1 >= h - edge - 1):
         return None
     return w, h, x0, x1, y0, y1
 
@@ -3291,7 +3319,8 @@ if _bg and _buff_said:
           % (_dz_art, _dx_art, _pitch_art))
 else:
     check("the Buff HP track's pitch is the one printed on the card",
-          False, "could not measure the card, or BUFF_PITCH is gone")
+          False, "could not measure the grid clear of the card's own "
+                 "frame, or BUFF_PITCH is gone")
 
 # ONE BUTTON PER GAME THAT HAS A FINALE, and none for the Imposter
 # scenario, which is itself NRJ's finale and has nothing after it.
