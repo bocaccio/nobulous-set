@@ -34,7 +34,9 @@ being retyped here.
 """
 import collections
 import inspect
+import os
 import random
+import subprocess
 import sys
 
 import aos
@@ -776,6 +778,45 @@ def audit_clauses(games):
                 len(dead), ", ".join(dead))
 
 
+def audit_reproducible():
+    """The same seed has to be the same sample, run to run.
+
+    finale.run shares ONE Random across every game of a cell, so a single
+    decision that depends on set or dict ORDER re-rolls the whole stream
+    after it. That is not a rounding difference - the cell stops being a
+    repeat and becomes a fresh sample, worth up to about 0.3 on a
+    five-seed mean, which is most of the way to the 0.4 this project
+    treats as the edge of the noise.
+
+    IT HAPPENED. The Vote broke a tie with max(set(self.exhausted), ...)
+    over colour NAMES until 2026-11-14, and CPython randomises string
+    hashing per process, so run(3000, seed=11) read 53.0333 in one process
+    and 53.0667 in another. Nothing in this repository would have caught
+    it: a figure that moves when you re-run it looks exactly like someone
+    having changed the model, which is how it survived being measured
+    twice on the same day the ladder was cut.
+    """
+    print()
+    print("  REPRODUCIBILITY - one seed, two processes that hash strings")
+    print("  differently. A difference here means some decision depends on")
+    print("  set or dict ORDER, and every figure in finale.txt stops being")
+    print("  a repeat of its seed and becomes a fresh sample.")
+    code = "import finale; print('%.6f' % finale.run(600, seed=11))"
+    here = os.path.dirname(os.path.abspath(__file__))
+    out = []
+    for h in ("0", "1"):
+        env = dict(os.environ, PYTHONHASHSEED=h)
+        p = subprocess.Popen([sys.executable, "-c", code], env=env, cwd=here,
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        so, se = p.communicate()
+        out.append(so.decode("utf-8", "replace").strip()
+                   or ("no output, rc=%d" % p.returncode))
+    print("    PYTHONHASHSEED 0 -> %s     1 -> %s" % (out[0], out[1]))
+    if out[0] != out[1]:
+        problem("finale.run is not reproducible across processes: "
+                "%s against %s" % (out[0], out[1]))
+
+
 def main(games=GAMES):
     global GAMES
     GAMES = games
@@ -796,6 +837,9 @@ def main(games=GAMES):
     # eighteen printed effects went into finale.py that day and nothing in
     # this file would have noticed if one of them never fired.
     audit_clauses(games)
+    # Not a deck. It is here because this is the file with an exit code
+    # that anything about the MODEL rather than the CARDS can fail.
+    audit_reproducible()
     print()
     print("Printed-effect coverage is coverage.py, not this file. Run it too:")
     print("  python coverage.py")

@@ -148,9 +148,13 @@ implemented, and `finale.CLAUSES = False` restores the figure every earlier
 line here was measured through. The policy grid turned out to have no WHEN
 on its Research axis - all four values spent the Pool the session it was
 dealt - so holding it for later was added and became the default, worth
-+13.3 even on a pool of flat -2s, and `res = "small"` restores the old one.
++13.3 on a pool of flat -2s with nothing exhausted, and `res = "small"`
+restores the old one. That +13.3 is a zero-dice reading and no rung sits
+at zero dice now: at the Easy rung that ships, holding a flat pool LOSES
+11.3 points and holding a pool of clauses gains 6.7, so reproducing the
+pre-2026-11-14 model takes both controls together.
 And the difficulty ladder was RE-CUT against that default the same day: it
-reads **51.6 / 39.4 / 27.9 / 20.4** against aims of 50/40/30/20 where this
+reads **51.6 / 39.4 / 27.7 / 20.4** against aims of 50/40/30/20 where this
 morning it read 54.8 / 47.6 / 42.2 / 32.8. The sentence that stood here -
 "the dice dial cannot be re-cut to make it" - was wrong: it can, because
 holding stops paying once the dice come off, so the handicap takes the

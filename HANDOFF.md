@@ -2432,7 +2432,7 @@ Not your job to fix, but worth knowing if Jon raises them:
   dial, and was **re-cut on 2026-11-14** when holding the Research Pool
   became the policy the model plays. Easy 3/3/2/2, Standard 3/3/3/4, Hard
   4/3/4/4, Nobulous 4/4/4/4 (yellow/green/blue/purple), measuring
-  51.6 / 39.4 / 27.9 / 20.4 against aims of 50/40/30/20. It was Easy none,
+  51.6 / 39.4 / 27.7 / 20.4 against aims of 50/40/30/20. It was Easy none,
   3/2/2/2, 3/3/3/2, 3/3/4/4 for 50.6 / 39.2 / 30.6 / 19.4 before that.
   Three things to know before touching it:
 
