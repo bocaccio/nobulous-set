@@ -775,23 +775,20 @@ AoS  Automaton of Shale
 ==================================================================
 NRJ  Imposter Scenario (the campaign finale)
 ==================================================================
-  The NRJ tiers apply to the three games above, NOT to the finale,
-  which has a ladder of its own - cut with dice rather than with a
-  dial.  START_TIRED is how many dice you begin with exhausted:
-  0/0/0/0, 3/2/2/2, 3/3/3/2, 3/3/4/4 across Easy to Nobulous,
-  aiming at 50/40/30/20 rather than at the 47-57% band.  The
-  figure below is the EASY rung, which is the pitch.
+  The NRJ tiers apply to the three games above, NOT to the
+  finale, which has a ladder of its own - cut with dice rather
+  than with a dial. START_TIRED is how many you begin with
+  exhausted: 3/3/2/2, 3/3/3/4, 4/3/4/4, 4/4/4/4 across Easy to
+  Nobulous, aiming at 50/40/30/20 rather than at the 47-57%
+  band. The figure below is the EASY rung, which is the pitch.
   ("The finale has no difficulty dial" stood here until
   2026-11-05 and was simply false - finale.py's docstring opens
   "THE LADDER IS CUT WITH DICE, not with a dial".  The old
   sentence described nrj.py, whose variable really was the pool,
-  and it survived the switch to reporting the finale that ships.)
-  The NRJ tiers apply to the three games above, NOT to the
-  finale, which has a ladder of its own - cut with dice rather
-  than with a dial. START_TIRED is how many you begin with
-  exhausted: 0/0/0/0, 3/2/2/2, 3/3/3/2, 3/3/4/4 across Easy to
-  Nobulous, aiming at 50/40/30/20 rather than at the 47-57%
-  band. The figure below is the EASY rung, which is the pitch.
+  and it survived the switch to reporting the finale that ships.
+  That same edit then left this paragraph standing TWICE, in two
+  wrappings, with two copies of the figure under it, and both
+  duplicates survived here until 2026-11-14.)
   The ten Imposter sides went INTO finale.py on 2026-11-06,
   ported from simulation/proto/imposters.py, which had them
   implemented and calibrated while the shipping module had no
@@ -800,8 +797,16 @@ NRJ  Imposter Scenario (the campaign finale)
   below to the decimal. finale.py section 7 prints the roster;
   do not retype its numbers here.
 
-  as it SHIPS      50.5%   finale.py, 6000 finales x 5 seeds
-  as it SHIPS          50.5%   finale.py, 6000 finales x 5 seeds
+  THESE NRJ ROWS WERE RE-MEASURED ON 2026-11-14 and the three
+  grids above are still the 2026-11-12 run, because the finale
+  moved that day and BAT, NAP and AoS did not. Holding the
+  Research Pool became the modelled policy, which took Easy to
+  74.6%, and the four difficulty rows were re-cut against it;
+  the counts above are the new ones. simulation/finale.txt is
+  the regenerated report and the authority for every finale
+  figure here.
+
+  as it SHIPS          51.6%   finale.py, 6000 finales x 5 seeds
 
   SUPERSEDED - the nine-attempt Suspicion scenario the Dossier
   finale replaced on 2026-10-29. Kept because nrj.py is still
@@ -1001,10 +1006,12 @@ CALIBRATION - published 20 Strong titles, community-recorded
          2026-11-05 re-pitch onto the strongest allocation
          line the printed rules allow (ALLOC_MODE = sacrifice_short);
          Standard at Tier III below the band (38.7%).
-    NRJ  the finale that SHIPS in band (50.5%), computed from
+    NRJ  the finale that SHIPS in band (51.6%), computed from
          finale.py over 6000 finales x 5 seeds; finale.txt is
          its full report. This line used to be a hardcoded
-         50.5% printed under a grid of the WRONG finale.
+         50.5% printed under a grid of the WRONG finale, and
+         read 50.5% from a pre-2026-11-14 ladder until the
+         re-cut.
 
   WHAT THIS FOOTER USED TO SAY, and why it is generated now.  It
   claimed "BAT in band at Standard (53.9%)" directly above a grid
