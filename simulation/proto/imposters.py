@@ -46,6 +46,10 @@ WHAT THE LADDER DOES with one chosen, 4000 x 5 seeds, against aims of
 Two to four points hot, five at worst, and still inside the 47-57% band.
 The ladder is NOT re-pegged for it: Easy is already zero dice exhausted, so
 pegging it back to 50 would cost "Easy means nothing starts exhausted",
+(WHICH IS NO LONGER A RULE - the shipping ladder was re-cut on 2026-11-14
+and Easy exhausts 3/3/2/2. This prototype's argument is kept as the record
+of why the sides were not priced into the rungs; finale.py has the live
+one.)
 which is worth more than three points.
 
 WHAT CANNOT BE ABILITY SPACE, measured rather than assumed:

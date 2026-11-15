@@ -75,8 +75,8 @@ FINF_SET = { {'Increase', 1}, {'Increase', 2}, {'Increase', 3},
 AOS_MIX = { Easy = {3, 3, 2}, Standard = {2, 3, 3}, Hard = {1, 3, 4}, Nobulous = {0, 3, 5} }
 -- The finale: dice that START exhausted, Yellow / Green / Blue / Purple.
 -- Red is never one of them - session 5 allows only Red and Yellow.
-IMP_TIRED = { Easy = {0, 0, 0, 0}, Standard = {3, 2, 2, 2},
-              Hard = {3, 3, 3, 2}, Nobulous = {3, 3, 4, 4} }
+IMP_TIRED = { Easy = {3, 3, 2, 2}, Standard = {3, 3, 3, 4},
+              Hard = {4, 3, 4, 4}, Nobulous = {4, 4, 4, 4} }
 -- The Council's attention advances one step at the end of every session, so
 -- it is derived from the clock rather than tracked by hand.
 ATTENTION = { 'Yellow', 'Green', 'Blue', 'Purple', 'Red' }

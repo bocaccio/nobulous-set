@@ -2429,9 +2429,12 @@ Not your job to fix, but worth knowing if Jon raises them:
   count - NAP 3, BAT 2, AoS 2, which is the seven that reads 50%.
 
   **THE DIFFICULTY LADDER SHIPPED**, cut with named dice rather than a
-  dial. Easy none, Standard 3/2/2/2, Hard 3/3/3/2, Nobulous 3/3/4/4
-  (yellow/green/blue/purple), measuring 50.6 / 39.2 / 30.6 / 19.4. Two
-  things to know before touching it:
+  dial, and was **re-cut on 2026-11-14** when holding the Research Pool
+  became the policy the model plays. Easy 3/3/2/2, Standard 3/3/3/4, Hard
+  4/3/4/4, Nobulous 4/4/4/4 (yellow/green/blue/purple), measuring
+  51.6 / 39.4 / 27.9 / 20.4 against aims of 50/40/30/20. It was Easy none,
+  3/2/2/2, 3/3/3/2, 3/3/4/4 for 50.6 / 39.2 / 30.6 / 19.4 before that.
+  Three things to know before touching it:
 
   1. **The dice are NAMED, not chosen.** An earlier version let the player
      pick and the model picked worse than random at the hard end, because
@@ -2445,8 +2448,20 @@ Not your job to fix, but worth knowing if Jon raises them:
      is already chosen for where sessions 5 and 9 land, so the ladder has
      to stay independent of it.
 
+  3. **EASY STARTS TIRED, since 2026-11-14.** "Easy means nothing starts
+     exhausted" was a rule of the scenario and is gone: pegging Easy to
+     50% against the strong Research policy takes ten of the sixteen
+     colour dice. If that reads wrong on the table the fix is not to hand
+     Easy its dice back - that puts it at 74.6% - it is to decide whether
+     the published rates should describe the best policy or a competent
+     one. `simulation/finale.py`, THE LADDER, argues both sides.
+
   The rungs still reward play, which is why this dial was chosen over REC
-  or Dossier size: recovery is worth +4.8 at Easy and +14.1 at Hard.
+  or Dossier size: recovery was worth +4.8 at Easy and +14.1 at Hard when
+  that was measured, before the re-cut. `finale.py` section 8 recomputes
+  every rung's pace, recovery, commit, research and clause gap on each run
+  rather than carrying a copy, so read `simulation/finale.txt` for the
+  live figures.
   Reprinting that deck as Exhibits — Target and Damage on the face, no
   Scenario clause — is the obvious follow-up, and it is a `build_nrj.py`
   and `pack.py` job, not a rules one.

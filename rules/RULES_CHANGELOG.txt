@@ -1,3 +1,65 @@
+2026-11-14  HOLDING THE RESEARCH POOL IS THE MODELLED POLICY NOW,
+            AND THE FOUR DIFFICULTY ROWS ARE RE-CUT
+The policy grid had no WHEN on its Research axis.  All four values spent
+a retained card the session its Exhibit was dealt, so the Pool was empty
+by about session 4 - the half of the scenario with the fewest Exhibits
+standing and the most dice to throw at them.  Holding it for later is
+legal (Deploy takes "any number, including none", and nothing makes
+answering an Exhibit compulsory), needs no memory because the Pool is
+face-up, and is worth +13.3 even on a pool of flat -2s.  It was measured
+and left as an option earlier today.  It is the default now.
+
+NO CARD TEXT CHANGED.  The only printed change anywhere is the four rows
+of dice counts in the difficulty table, because the old counts were
+pegged against the weaker policy and came off their pegs entirely once
+the stronger one was modelled - they read 74.6 / 57.7 / 47.7 / 33.7
+against aims of 50/40/30/20.
+
+                  was        is        reads   aim
+      Easy        -          3/3/2/2   51.6%    50
+      Standard    3/2/2/2    3/3/3/4   39.4%    40
+      Hard        3/3/3/2    4/3/4/4   27.9%    30
+      Nobulous    3/3/4/4    4/4/4/4   20.4%    20
+
+THE PRINTED WIN RATES ARE TRUE AGAIN, AND NOT ONE OF THEM CHANGED.  The
+table still says "about 1 game in 2, 2 in 5, 3 in 10, 1 in 5"; the model
+reads 5.2, 3.9, 2.8 and 2.0 in 10 against them, where it read 5.5, 4.8,
+4.2 and 3.3 this morning.
+
+EASY STARTS TIRED, AND THAT IS WHAT THIS COST.  "Easy means nothing
+starts exhausted" was a rule of the scenario this morning and it is
+gone: Easy exhausts 3 yellow, 3 green, 2 blue and 2 purple, leaving six
+colour dice and the single Red.  Handing those ten dice back puts Easy at
+74.6%.  The alternative was to leave the counts alone and let the printed
+rates go on describing a weaker policy than a player would find, which is
+what the "About the percentages" box already says they are: "a competent
+policy, but neither an optimal one nor a human one."
+
+ONE DIAL WAS STILL ENOUGH, which is why no second handicap appears in
+the table.  Holding the Pool is worth +17.3 with nothing exhausted and
+LESS THAN NOTHING past thirteen dice - -0.1, -1.2 and -2.4 at fourteen,
+fifteen and sixteen - so exhausting dice takes away the dice AND the
+value of banking help for a later session.  A second axis was measured
+in case it was needed: sixteen dice with 4 Health reads 14.3%, with REC
+2 reads 3.4%, with an eighteenth Exhibit 0.1%.  None of it was used.
+
+THE SPREAD STILL MATTERS, BUT BARELY, at the end of the dial where the
+rungs now sit.  The four ways to spread thirteen dice read 37.8, 38.1,
+38.6 and 39.4 and the four ways to spread fifteen read 24.9, 25.9, 27.1
+and 27.9 - against the 9.7-point gap the same choice makes at eight
+dice.  The ordering survives and is why Standard is 3/3/3/4 rather than
+4/3/3/3: Purple is the cheapest colour to lose and Yellow or Green the
+dearest, because the attention opens on Yellow+Green.
+
+AND THE TIMING POLICY'S OWN SHAPE WAS WRONG.  HOLD_LAST says when to
+stop banking and spend what is left; it was 3, and 1 is better at every
+rung - 74.6 / 51.5 / 34.3 / 20.5 against 71.7 / 50.1 / 32.5 / 19.6.  It
+is not a smooth dial, because it names a session rather than expressing
+a preference, and against a five-long attention wheel it has two local
+maxima: the last session, and session 5, the Red one.  Cutting four
+printed rows against the old value would have pegged them to a policy
+that is knowably beaten.
+
 2026-11-14  THE SIMULATION PLAYS THE EIGHTEEN CLAUSES NOW
 They were printed earlier the same day and finale.py played none of
 them: a retained card was Card(game, value), so the seven cards a
@@ -29,8 +91,9 @@ THE RULEBOOK PREDICTED THIS, in the paragraph beside the ladder, about
 Candidates rather than clauses: "any help available to everyone is worth
 almost nothing at Easy and a great deal once dice start exhausted, which
 quietly re-scales every rung of the ladder."  The clauses are the same
-shape of help and did the same thing - worth +5.0 at Easy and +16.7 at
-Nobulous.
+shape of help and did the same thing - worth +4.6 at Easy and +13.9 at
+Nobulous.  (+5.0 and +16.7 stood here until the afternoon of the same
+day, read through the same Damage bug.)
 
 AND TWO FINDINGS THAT ARE NOT ABOUT THE CLAUSES.  Exhibit Damage was
 being read off the Exhibit's CURRENT Target, so answering a Target 5
@@ -38,12 +101,18 @@ also halved the Damage printed beside it - worth +0.34, which is why no
 report ever showed it.  And the policy grid had no WHEN: every Research
 policy spent the Pool on the first Exhibits of the right domain, leaving
 it empty by session 4, and holding it for the second half instead is
-worth +12.9 on a pool of flat -2s.  Holding is legal - Deploy takes "any
+worth +13.3 on a pool of flat -2s.  (+12.9 stood here until the
+afternoon of the same day: it was read before Exhibit Damage stopped
+being recomputed from the Target.)  Holding is legal - Deploy takes "any
 number, including none" and nothing makes answering compulsory - so by
 this file's own rule that it models the best policy a player would find,
 the finale is a good deal easier than it has ever been pitched.  Left as
 a measured policy and not made the default: that one re-pitches the
 scenario and it is a design call.
+
+BOTH OF THE CALLS THIS ENTRY LEAVES OPEN WERE TAKEN THE SAME DAY - the
+policy is the default and the ladder is re-cut.  See the entry above;
+where the two disagree, this one is the older.
 
 2026-11-14  THE BUFF HP CARD STOPS ASKING FOR A LINE IT CANNOT PRINT
 Its footer read "Damage reaches no Splice until this layer is gone."

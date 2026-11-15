@@ -1241,7 +1241,7 @@
   // window the attention opens on and make the wheel's phase the
   // difficulty. Fitted to 50/40/30/20 in simulation/finale.txt section 7.
   const NRJ_TIRED_COLORS=["yellow","green","blue","purple"];
-  const NRJ_LADDER={easy:[0,0,0,0],standard:[3,2,2,2],hard:[3,3,3,2],nobulous:[3,3,4,4]};
+  const NRJ_LADDER={easy:[3,3,2,2],standard:[3,3,3,4],hard:[4,3,4,4],nobulous:[4,4,4,4]};
 
   // ---- The five Imposters, ten abilities -----------------------------
   // generator/build_nrj.py IMPOSTERS is the authority. The `when` and

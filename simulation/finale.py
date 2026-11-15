@@ -44,18 +44,29 @@ WHAT THE COMPONENTS SUPPLY
     Suspicion, the uncapped Target tax: standing Exhibits deal Damage every
     session, which is the same pressure paid in Health instead of arithmetic.
 
-THE PITCH: 54.8% at EASY. It was 50.5% until 2026-11-14, when the eighteen
-Imposter clauses printed along the foot of every Tier III card were finally
-played - see THE EIGHTEEN CLAUSES below. Measured over five seeds, because
-one is not a pitch: 54.4 55.3 54.6 54.3 55.1. That is still inside the old
-47-57% community band and it is no longer the 50 of the 50/40/30/20 ladder,
-which the clauses broke at both ends.
+THE PITCH: 51.6% at EASY, which is the Easy rung of the 50/40/30/20 ladder
+and sits inside the 47-57% community band. Measured over five seeds, because
+one is not a pitch: 52.3 51.1 51.5 51.3 51.7.
 
-EVERY POLICY FIGURE IN THE LISTS BELOW WAS MEASURED BEFORE THE CLAUSES and
-is left exactly as it stood, because each is the gap between two policies
-rather than a pitch, and re-stating them from memory is how this repository
-has gone stale before. `python finale.py` recomputes all of them; finale.txt
-is that output.
+IT IS ALMOST THE NUMBER IT WAS IN OCTOBER AND IT MEANS SOMETHING ELSE. Two
+things moved on 2026-11-14. The eighteen Imposter clauses printed along the
+foot of every Tier III card were played for the first time, and the policy
+grid turned out to have no WHEN on its Research axis - all four values spent
+the Pool the session it was dealt, and holding it for later is worth +13.3
+even on a pool of flat -2s. Together they took the old Easy rung from 50.5%
+to 72.1%, and the LADDER WAS RE-CUT THE SAME DAY to put the rungs back on
+their aims. So the pitch is a coincidence of two large moves and a re-cut,
+not a number that stood still: Easy is a tired rung now, and exhausts ten of
+the sixteen colour dice where it used to exhaust none.
+
+EVERY POLICY FIGURE IN THE LIST BELOW WAS MEASURED ON 2026-11-13 - before
+the clauses were played, before holding the Pool became the default, and
+against an Easy rung that exhausted no dice. All three moved on 2026-11-14.
+They are left exactly as they stood because each is the GAP between two
+policies rather than a pitch, and re-stating a gap from memory is how this
+repository has gone stale before. `python finale.py` recomputes every one of
+them against the model as it now is; finale.txt is that output, and where it
+disagrees with the list below it is the list that went stale.
 
   pace       clock 50.1   against every fixed pace: two 31.9, three 1.2,
              one and all 0.0, and the throttled variant 47.4
@@ -70,17 +81,23 @@ is that output.
              on WHICH Exhibit is the decision" is what this line used to
              say, and section 9 could not find it: choosing the card is
              worth +0.4 under this policy and -2.0 under the best one.
-             WHEN to spend is the decision - res = "time", +17.4
+             WHEN to spend is the decision - res = "time", +17.4, and
+             it is the DEFAULT since 2026-11-14
   Rewards    50.5 against 42.7 with the five Reward cards switched off
   carry-over 50.1 against 31.1 when progress resets, so the published rule
              that damage on a standing enemy persists is load-bearing
   blind play 0.5% - a player using none of the levers does not finish
 
-  Every figure above is the BEST cell of the 224-cell policy grid, and the
-  policy this module models IS that cell - clock / horizon / adaptive /
-  small. This project has mis-pitched a game once by measuring it against a
+  Every figure above is the BEST cell of the policy grid, and the policy
+  this module models IS that cell - clock / horizon / adaptive / TIME since
+  2026-11-14, where it was clock / horizon / adaptive / small before. The
+  grid is 280 cells rather than the 224 this paragraph used to claim,
+  because adding a WHEN to the Research axis took it from four values to
+  five. This project has mis-pitched a game once by measuring it against a
   weaker policy than the one a player would find; the grid search is the
-  guard against doing it twice.
+  guard against doing it twice, and on 2026-11-14 it caught it a second
+  time - the grid had no WHEN in it at all, so the best cell it could
+  report was the best of the wrong 224.
 
 THE FIVE IMPOSTERS ARE MODELLED HERE SINCE 2026-11-06, ported in from
 proto/imposters.py. Before that this module had no hero code and the ten
@@ -103,49 +120,91 @@ HERO = None:
   Steward      Standing Order       once/Scenario    +2.7
 
 Two to four points each, and the band still holds with one chosen. The ladder
-is NOT re-pegged for it: Easy is already zero dice exhausted, so pegging it
-back to 50 would cost "Easy means nothing starts exhausted", which is worth
-more than three points. proto/imposters.py carries the two tests each side
-had to pass - LEVEL and UNIFORM - and the sides that failed them.
+is NOT re-pegged for it, and the reason changed on 2026-11-14: this paragraph
+used to say Easy was already zero dice exhausted so there was nowhere to peg
+it down to. Easy exhausts ten now, so there is - but a side is quoted as a
+DELTA against HERO = None and the pitch is quoted heroless, so re-pegging for
+a side would price one of five choices into all four rungs.
+proto/imposters.py carries the two tests each side had to pass - LEVEL and
+UNIFORM - and the sides that failed them; its own header still argues from
+the zero-dice Easy rung and was written before this.
 
-THE LADDER IS CUT WITH DICE, not with a dial - see START_TIRED. Easy none,
-Standard 3/2/2/2, Hard 3/3/3/2, Nobulous 3/3/4/4 yellow/green/blue/purple.
-It read 50.6 / 39.2 / 30.6 / 19.4 against a pool of flat -2s and it reads
-54.8 / 47.6 / 42.2 / 32.8 now. The dial was chosen over REC or the Dossier
-because the rungs still reward play - the RECOVERY decision pays +4.8 at
-Easy and +14.1 at Hard - and that is still true; what is not true any more
-is the spacing.
+THE LADDER IS CUT WITH DICE, not with a dial - see START_TIRED. It was
+RE-CUT ON 2026-11-14 and every one of its four rows moved:
 
-THE CLAUSES ARE WORTH MORE THE HARDER THE RUNG - +4.6 at Easy, +9.2 at
-Standard, +12.2 at Hard, +13.9 at Nobulous, each against the same rung
-with CLAUSES = False - because four of the eighteen pay in DICE, and dice
-are precisely what this dial takes away.
-rules/nrj.html predicted exactly this in the paragraph beside the ladder,
-about Candidates rather than clauses: "any help available to everyone is
-worth almost nothing at Easy and a great deal once dice start exhausted,
-which quietly re-scales every rung of the ladder." It is the same shape of
-help and it did the same thing.
+                  was        is       reads   aim
+      Easy        -          3/3/2/2    51.6%   50
+      Standard    3/2/2/2    3/3/3/4    39.4%   40
+      Hard        3/3/3/2    4/3/4/4    27.9%   30
+      Nobulous    3/3/4/4    4/4/4/4    20.4%   20
 
-THREE RUNGS CAN BE RE-CUT AND EASY CANNOT. Swept at the shipped policy,
-five seeds a cell:
+  yellow/green/blue/purple, and the dial was chosen over REC or the
+  Dossier because the rungs still reward play - section 8 prints every
+  rung with its own pace, recovery, commit, research and clause gaps,
+  and the RECOVERY decision still pays more the harder the rung.
 
-      0 dice 54.8   8 dice 49.7  12 dice 39.1  15 dice 27.3
-      4 dice 54.1   9 dice 47.6  13 dice 35.5  16 dice 21.7
-      6 dice 52.3  11 dice 42.2  14 dice 32.7
+WHY IT HAD TO MOVE. The old counts were cut against a model that spent the
+Research Pool the session it was dealt. That is not the best cell of the
+grid and it is not what a player looking at a face-up Pool would do, and
+with the clauses played and the Pool held the old counts read
+74.6 / 57.7 / 47.7 / 33.7 against aims of 50/40/30/20. The ladder had not
+stretched, it had come off its pegs altogether - every rung between 13.7 and
+24.6 points too easy, and the easy end of it far out of the community
+band.
 
-  so Standard lands on 3/3/3/3 at 39.1 for an aim of 40, Nobulous on
-  4/4/4/4 at 21.7 for 20, and Hard falls between 3/3/4/4 at 32.7 and
-  4/3/4/4 at 27.3, 2.7 either side of 30. EASY IS THE ONE THAT CANNOT
-  MOVE: it is already zero dice exhausted and reads 54.8 against an aim
-  of 50, and the only way down is to start it tired, which costs the
-  rule that Easy means nothing starts exhausted.
+AND ONE DIAL WAS STILL ENOUGH, which was not obvious until it was measured.
+Holding the Pool is worth +17.3 with nothing exhausted, +5.6 at ten dice,
+and LESS THAN NOTHING past thirteen - -0.1, -1.2 and -2.4 at fourteen,
+fifteen and sixteen. The handicap does double duty: it takes the dice away
+AND it takes away the value of banking help for a later session, so the
+dial reaches all four aims on dice alone: it spans 72.1 to 19.3 as swept and
+74.6 to 20.4 at the shipped HOLD_LAST. A second axis was measured in case it
+did not, and none of it was needed - sixteen dice with 4 Health reads 14.3%,
+with REC 2 reads 3.4%, with an eighteenth Exhibit 0.1%.
 
-LADDER IS LEFT EXACTLY AS PRINTED. rules/nrj.html prints these dice counts
-and win rates of "about 1 game in 2, 2 in 5, 3 in 10, 1 in 5"; the model
-now reads about 5.5, 4.8, 4.2 and 3.3 in 10 against them. Changing the
-counts here would change the rulebook, the lab and the mod from a
-measuring tool's own authority, and the Easy rung cannot be fixed by it
-anyway. Raised, not taken.
+  THOSE FIGURES WERE SWEPT AT HOLD_LAST = 3, which is the shape the policy
+  had while the dial was being walked, and 1 is what ships. They are quoted
+  for the SHAPE - holding decays, then reverses - which is what the
+  paragraph argues from and which does not move. The per-rung gap at the
+  LIVE default is recomputed by section 8 on every run, signed, so read
+  finale.txt for the number and this for the reason.
+
+THE PRICE IS PAID IN TWO PLACES. Both are design facts rather than
+measurements, so they are recorded here rather than quietly fixed.
+
+  1 EASY STARTS TIRED NOW, and "Easy means nothing starts exhausted" was a
+    rule of this scenario until 2026-11-14. Easy exhausts 3 yellow, 3
+    green, 2 blue and 2 purple, leaving six colour dice and the red. That
+    is what pegging Easy to 50% costs once the policy being modelled is
+    the strong one. The alternative was to leave the counts alone and let
+    the printed rates go on describing a weaker policy - which is what
+    rules/nrj.html's own box already says they are, "a competent policy,
+    but neither an optimal one nor a human one".
+  2 NO SINGLE res IS BEST ON ALL FOUR RUNGS. Spending the Pool at once
+    BEATS the modelled default by 1.2 at fifteen dice and 2.4 at sixteen,
+    so the two hardest rungs are cut against a policy a player could
+    improve on. Section 8 prints that gap per rung WITH ITS SIGN rather
+    than hiding it. The reading is not that the model is wrong but that
+    WHEN to spend is a live decision whose answer depends on how tired
+    you are, which is a better property for a scenario than one right
+    answer at every setting.
+
+THE COLOUR SPREAD STOPPED MATTERING, at the end of the dial where the rungs
+now live. The counts are still spread rather than taken whole - 4 yellow
+and 4 green reads 28.7% against 38.4% for the same eight dice off the
+purple end, because the wheel opens Yellow+Green - but at thirteen of
+sixteen there is almost nothing left to choose between: the four 13-dice
+spreads read 37.8, 38.1, 38.6 and 39.4 and the four 15-dice spreads
+24.9, 25.9, 27.1 and 27.9. The ORDERING survives, and it is why Standard is
+3/3/3/4 rather than 4/3/3/3 and Hard is 4/3/4/4 rather than 4/4/4/3:
+purple is the cheapest colour to lose and yellow or green the dearest, so
+the extra die comes off the purple end first.
+
+AND THE PRINTED WIN RATES ARE TRUE AGAIN. rules/nrj.html prints "about 1
+game in 2, 2 in 5, 3 in 10, 1 in 5" and the model reads 5.2, 3.9, 2.8 and 2.0 in
+10 against them. It read 5.5, 4.8, 4.2 and 3.3 this morning, with the clauses
+played and the old counts still printed. Only the four rows of dice counts
+changed in the book; not one percentage did.
 
 THE EIGHTEEN CLAUSES, implemented 2026-11-14. Every Tier III card prints
 one along its foot and this module played none of them: a retained card was
@@ -154,6 +213,13 @@ integers and the finale played the same whichever ones you carried. Jon:
 "you want to feel like you had agency in obtaining the specific cards that
 you carry into the imposter scenario". CLAUSES = False restores the flat
 pool and every figure measured through it.
+
+  MEASURED 2026-11-13, on the rungs as they were then and with the Pool
+  spent the session it was dealt. The ladder was re-cut and the default
+  policy changed the next day, so every figure in this block is a
+  historical reading. NOTHING HERE IS RETYPED FROM IT: section 9 recomputes
+  the layer and the spread every run and section 8 recomputes the per-rung
+  gap, so read finale.txt, not this.
 
   the layer      +4.6 at Easy, 50.1 to 54.8
   choosing       +0.4 here and -2.0 under the best policy, so this model
@@ -202,12 +268,17 @@ TWO THINGS THE CLAUSES FOUND, and neither is about the clauses.
     nothing makes answering an Exhibit mandatory - and it needs no memory,
     because the Pool is face-up.
 
-    THIS IS LEFT AS A POLICY AND NOT MADE THE DEFAULT, deliberately. This
-    file's own rule is that it should model the best cell of the grid, and
-    by that rule the pitch is 72.2% rather than 54.8%; making that change
-    here would re-pitch the scenario, flatten the ladder further and
-    contradict the win rates printed in rules/nrj.html, all on a measuring
-    tool's own authority. It is a design decision and it is Jon's.
+    IT IS THE DEFAULT SINCE 2026-11-14, and it took the ladder with it.
+    This paragraph used to say the opposite - left as a policy, because by
+    this file's own rule that it models the best cell the pitch would be
+    72.2% rather than 54.8%, and making that change here would re-pitch
+    the scenario and contradict the win rates printed in rules/nrj.html on
+    a measuring tool's own authority. That was Jon's call to make and he
+    made it: res = "time" is what play() does now and the four rungs were
+    re-cut against it the same day, which put the printed win rates back
+    inside a point of true. res = "small" reproduces every figure this
+    file published before 2026-11-14, and HOLD_LAST and HOLD_FLOOR are the
+    shape of the policy that replaced it.
 
 WHAT 2026-10-30 MOVED, in three corrections. research() was still dealing the
 pool the Tier III rework replaced the day before - a NAP card always worth 1,
@@ -341,8 +412,36 @@ FORCE_CLAUSE = None
 # there are more than HOLD_LAST sessions left to spend it in. Past that it
 # spends everything, so a held card is never stranded - which is the whole
 # difference between holding and the "none" policy that reads 8.7%.
+#
+# BOTH WERE SWEPT ON 2026-11-14, when res = "time" became the default. While
+# it was one policy among five these two were just the shape of that policy;
+# as the default they set the number the LADDER is cut against, so cutting
+# first and sweeping afterwards would have pegged four rulebook rows to a
+# policy that is knowably beaten. HOLD_LAST was 3 and 3 is not the best cell.
+#
+# HOLD_LAST IS NOT A SMOOTH PREFERENCE - it names a session to dump on, and
+# it has TWO local maxima. Five seeds at 6000, nothing exhausted:
+#
+#   0 -> 71.0   1 -> 74.6   2 -> 72.9   3 -> 71.7   4 -> 70.4
+#   5 -> 71.8   6 -> 70.8
+#
+# 1 dumps in session 9 and 5 dumps from session 5, which is the RED session -
+# one die, the hard one, sitting exactly in the middle of a five-long wheel.
+# This is the same phase effect the header records for SESSIONS, arriving on
+# a different dial: a policy parameter that interacts with the wheel is not
+# evidence about the pool, so do not read the dip at 3 and 4 as a preference.
+# At 2000 games HOLD_LAST = 5 appeared to beat 1 at the tired rungs; at 6000
+# it does not, at either rung tested, which is what the sample is for.
+#
+# HOLD_FLOOR = 1.0 IS A COMPROMISE AND NOT A MAXIMUM, and it is the one dial
+# here that changes sign down the ladder. Easy wants to bank MORE than this
+# and the tired rungs want to bank less - 2.0 reads 74.6% with nothing
+# exhausted and 7.9% with sixteen dice gone, and 0.5 is the best of the three
+# at sixteen. 1.0 is the value that is never badly wrong, which is what a
+# single modelled policy across four rungs has to be. The sign flip is the
+# same one the dice dial shows, where holding stops paying past 13 dice.
 HOLD_FLOOR = 1.0
-HOLD_LAST = 3
+HOLD_LAST = 1
 
 # THE IMPOSTER YOU CHOSE. Five two-sided cards, ten abilities, one lever each,
 # and every side prints the finale's own 5 HP / 2 STR / 3 REC - the house rule
@@ -403,14 +502,17 @@ HERO_TEXT = {
 # The single red is never exhausted: session 5 allows only Red and Yellow,
 # and there is one red die.
 #
+# RE-CUT 2026-11-14 against the held Pool - see THE LADDER in the header
+# for why, and for the two prices it is paid with. The aims are unchanged.
+#
 #   level      y  g  b  p     n    win     aim
-#   Easy       0  0  0  0     0   50.6%   +0.6
-#   Standard   3  2  2  2     9   39.2%   -0.8
-#   Hard       3  3  3  2    11   30.6%   +0.6
-#   Nobulous   3  3  4  4    14   19.4%   -0.6
+#   Easy       3  3  2  2    10   51.6%   +1.6
+#   Standard   3  3  3  4    13   39.4%   -0.6
+#   Hard       4  3  4  4    15   27.9%   -2.1
+#   Nobulous   4  4  4  4    16   20.4%   +0.4
 TIRED_COLOURS = ("yellow", "green", "blue", "purple")
-LADDER = {"easy": (0, 0, 0, 0), "standard": (3, 2, 2, 2),
-          "hard": (3, 3, 3, 2), "nobulous": (3, 3, 4, 4)}
+LADDER = {"easy": (3, 3, 2, 2), "standard": (3, 3, 3, 4),
+          "hard": (4, 3, 4, 4), "nobulous": (4, 4, 4, 4)}
 START_TIRED = LADDER["easy"]
 
 DOMAINS = ("Knowledge", "Physical", "Cover-Up")
@@ -892,10 +994,15 @@ class Game(object):
         none", Strategy says "Nothing is compulsory", and nothing anywhere
         makes answering an Exhibit mandatory.
 
-        IT IS WORTH ABOUT +19 EVEN ON A POOL OF FLAT -2s, which is why this
-        does not ask whether the clauses are on. That is a finding about the
-        policy grid rather than about the clauses, and it is left as a
-        policy rather than made the default: see section 9.
+        IT IS WORTH +13.3 EVEN ON A POOL OF FLAT -2s, which is why this
+        does not ask whether the clauses are on: the timing is a finding
+        about the policy grid rather than about the clauses. ("+19" stood
+        here until 2026-11-14 and was never measured - it was a first
+        reading taken while Damage was still being recomputed from the
+        Target, and section 9 computes the real figure every run.)
+
+        THIS IS THE DEFAULT SINCE 2026-11-14, and the ladder is cut against
+        it: res = "small" reproduces every figure published before that.
 
         A card is never stranded. Past HOLD_LAST the policy spends
         everything, and an Exhibit at BIG or above is always worth
@@ -1408,7 +1515,7 @@ def session(g, pace, recov, rew, commit, res):
 
 
 def play(rng, pace="clock", recov="horizon", rew="dice", commit="adaptive",
-         res="small"):
+         res="time"):
     g = Game(rng)
     for _ in range(SESSIONS):
         if not g.deck and not g.active:
@@ -1422,7 +1529,8 @@ KW = ("pace", "recov", "rew", "commit", "res")
 DIALS = ("SESSIONS", "DEAL", "HEALTH", "STRAT", "REC_BASE", "BIG", "CARRY",
          "RESEARCH", "RETAIN", "CARD_VALUE", "LAID_OUT", "HERO",
          "START_TIRED", "TARGET_OFFSET", "WINDOW", "PAY_REWARDS",
-         "CLAUSES", "CARD_PICK", "FORCE_CLAUSE", "DAMAGE_TRACKS_TARGET")
+         "CLAUSES", "CARD_PICK", "FORCE_CLAUSE", "DAMAGE_TRACKS_TARGET",
+         "HOLD_FLOOR", "HOLD_LAST")
 
 
 def run(games=GAMES, seed=11, **over):
@@ -1517,7 +1625,10 @@ if __name__ == "__main__":
                          res="small")),
                     ("+ commit only what you need", dict(
                          recov="next", pace="clock", commit="adaptive",
-                         res="small"))):
+                         res="small")),
+                    ("+ hold it for the session it pays", dict(
+                         recov="next", pace="clock", commit="adaptive",
+                         res="time"))):
         w = run(**kw)
         print("   %-32s %7.1f%%%s%s"
               % (lab, w, band(w),
@@ -1641,6 +1752,12 @@ if __name__ == "__main__":
     print("   property that chose this dial: the RECOVERY decision, which is")
     print("   what the attention wheel exists to create, pays MORE as the")
     print("   ladder gets harder.")
+    print("   RESEARCH IS THE ONE THAT CHANGES SIGN, and a negative figure")
+    print("   there is not a typo: it is how much spending the Pool at once")
+    print("   would BEAT the policy this module plays at that rung. Holding")
+    print("   is worth +17 with nothing exhausted and less than nothing")
+    print("   once the handicap is deep, so no single res is best on all")
+    print("   four rungs - see THE LADDER in the header.")
     for lab in ("easy", "standard", "hard", "nobulous"):
         c = LADDER[lab]
 
@@ -1648,9 +1765,12 @@ if __name__ == "__main__":
             return sum(run(seed=sd, START_TIRED=c, **kw)
                        for sd in seeds) / len(seeds)
         base = g()
-        print("   %-10s %5.1f%%   pace %+5.1f   recover %+5.1f   commit %+5.1f"
+        print("   %-10s %5.1f%%   pace %+5.1f   recover %+5.1f"
+              "   commit %+5.1f\n              "
+              "research %+5.1f   clauses %+5.1f"
               % (lab.title(), base, base - g(pace="two"),
-                 base - g(recov="best"), base - g(commit="all")))
+                 base - g(recov="best"), base - g(commit="all"),
+                 base - g(res="small"), base - g(CLAUSES=False)))
         sys.stdout.flush()
     print()
     print("   AND WHETHER COMMITTING IS STILL A DECISION. The pool lowers")
@@ -1673,15 +1793,34 @@ if __name__ == "__main__":
     print("   used only here; you get it as well as the -%d, from the moment"
           % CARD_VALUE)
     print("   you spend the card to the end of that session.")
-    base = sum(run(seed=sd, CLAUSES=False) for sd in seeds) / len(seeds)
-    rows = [("the flat pool, CLAUSES = False", dict(CLAUSES=False)),
-            ("clauses, spent in hand order", dict(CARD_PICK="any")),
-            ("clauses, hand scored", dict(CARD_PICK="clause")),
-            ("...and held for its session", dict(res="time")),
-            ("the flat pool, held", dict(CLAUSES=False, res="time"))]
+    print("   The baseline is the model as it stood on 2026-11-13: a pool")
+    print("   of flat -2s spent the session it is dealt. BOTH of the things")
+    print("   that moved since are on this table, because the clauses and")
+    print("   the timing are separate findings and the second is the bigger")
+    print("   one.")
+    base = sum(run(seed=sd, CLAUSES=False, res="small")
+               for sd in seeds) / len(seeds)
+    rows = [("the flat pool, spent at once", dict(CLAUSES=False,
+                                                  res="small")),
+            ("the flat pool, held", dict(CLAUSES=False)),
+            ("clauses, spent at once", dict(res="small")),
+            ("clauses, held - AS IT SHIPS", {}),
+            ("clauses, held, hand scored", dict(CARD_PICK="clause"))]
     for lab, over in rows:
         w = sum(run(seed=sd, **over) for sd in seeds) / len(seeds)
         print("   %-34s %6.1f%%%s  %+.1f" % (lab, w, band(w), w - base))
+        sys.stdout.flush()
+    print()
+    print("   WHICH SESSION TO DUMP ON. HOLD_LAST is the default policy's")
+    print("   one free parameter and it is NOT a smooth preference: it")
+    print("   names a session, and the wheel is five long with the red")
+    print("   session - one die, the hard one - in the middle at 5. Two")
+    print("   local maxima, at the last session and at the red one.")
+    for last in (0, 1, 2, 3, 4, 5, 6):
+        w = sum(run(seed=sd, HOLD_LAST=last) for sd in seeds) / len(seeds)
+        print("   dump with %d session(s) left        %6.1f%%%s%s"
+              % (last, w, band(w),
+                 "   <- shipped" if last == HOLD_LAST else ""))
         sys.stdout.flush()
     print()
     print("   ONE CLAUSE AT A TIME, forced into the hand in place of one of")

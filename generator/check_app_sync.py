@@ -1308,8 +1308,8 @@ check("no file still halves a card for having been spent",
 # four rows of yellow / green / blue / purple or the lab is not playing the
 # game the book describes. The counts are not interchangeable: the same
 # total taken from different colours measured 28.7% against 38.4%.
-LADDER = (("easy", (0, 0, 0, 0)), ("standard", (3, 2, 2, 2)),
-          ("hard", (3, 3, 3, 2)), ("nobulous", (3, 3, 4, 4)))
+LADDER = (("easy", (3, 3, 2, 2)), ("standard", (3, 3, 3, 4)),
+          ("hard", (4, 3, 4, 4)), ("nobulous", (4, 4, 4, 4)))
 sim = text("simulation/finale.py")
 check("finale.py carries the ladder as a per-colour table",
       'TIRED_COLOURS = ("yellow", "green", "blue", "purple")' in sim
@@ -1326,7 +1326,7 @@ check("nrj.html prints the same four rows",
       "Four difficulties" in nrj
       and all("".join("<td>%d</td>" % n for n in c) in
               nrj.replace("\n", "").replace("      ", "")
-              for lvl, c in LADDER if lvl != "easy"))
+              for lvl, c in LADDER))
 check("and nobody exhausts the single red die",
       "red" not in sim[sim.index("TIRED_COLOURS"):
                        sim.index("START_TIRED = ")]

@@ -168,7 +168,7 @@ def main(games=DEFAULT):
     print("  The NRJ tiers apply to the three games above, NOT to the")
     print("  finale, which has a ladder of its own - cut with dice rather")
     print("  than with a dial. START_TIRED is how many you begin with")
-    print("  exhausted: 0/0/0/0, 3/2/2/2, 3/3/3/2, 3/3/4/4 across Easy to")
+    print("  exhausted: 3/3/2/2, 3/3/3/4, 4/3/4/4, 4/4/4/4 across Easy to")
     print("  Nobulous, aiming at 50/40/30/20 rather than at the 47-57%")
     print("  band. The figure below is the EASY rung, which is the pitch.")
     print("  The ten Imposter sides went INTO finale.py on 2026-11-06,")
