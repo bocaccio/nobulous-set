@@ -139,11 +139,11 @@ rulebook that no longer publishes one, with five rungs where BAT has four.
 
 Against that band the three games read, re-measured 2026-11-05 at 20,000 games
 a cell, Easy 62.7 / 55.5 / 60.1% and Standard **53.2 / 48.8 / 51.7%**
-(BAT / NAP / AoS) on the no-NRJ axis, with the finale at **51.6%**
+(BAT / NAP / AoS) on the no-NRJ axis, with the finale at **48.7%**
 (`finale.py`; the nine-attempt version it replaced reads 61.6% in `nrj.py`,
 which still models it and is not what ships). The finale read 50.5% until
-2026-11-14 and 54.8% for part of that one day, and THREE things happened to
-it. The eighteen Imposter clauses printed on the Tier III cards were
+2026-11-14 and 54.8% for part of that one day, and FOUR things have happened
+to it since - three that day, and one on 2026-11-16. The eighteen Imposter clauses printed on the Tier III cards were
 implemented, and `finale.CLAUSES = False` restores the figure every earlier
 line here was measured through. The policy grid turned out to have no WHEN
 on its Research axis - all four values spent the Pool the session it was
@@ -151,16 +151,23 @@ dealt - so holding it for later was added and became the default, worth
 +13.3 on a pool of flat -2s with nothing exhausted, and `res = "small"`
 restores the old one. That +13.3 is a zero-dice reading and no rung sits
 at zero dice now: at the Easy rung that ships, holding a flat pool LOSES
-11.3 points and holding a pool of clauses gains 6.7, so reproducing the
+12.7 points and holding a pool of clauses gains 4.6, so reproducing the
 pre-2026-11-14 model takes both controls together.
-And the difficulty ladder was RE-CUT against that default the same day: it
-reads **51.6 / 39.4 / 27.7 / 20.4** against aims of 50/40/30/20 where this
-morning it read 54.8 / 47.6 / 42.2 / 32.8. The sentence that stood here -
-"the dice dial cannot be re-cut to make it" - was wrong: it can, because
-holding stops paying once the dice come off, so the handicap takes the
-policy away along with the dice. What it cost is that Easy starts tired now,
-ten of sixteen colour dice, where the rule used to be that Easy exhausts
-none. `finale.py`'s header has the whole argument. All three games and the finale
+The fourth is that the model now chooses WHICH retained card to spend rather
+than spending whatever came to hand (`CARD_PICK`, worth +5.0 and `"any"`
+restores it), and the difficulty ladder was RE-CUT against the third the
+same day and AGAIN against the fourth: it reads
+**48.7 / 39.6 / 33.0 / 22.1** against aims of 50/40/30/20, where the first
+cut read 51.6 / 39.4 / 27.7 / 20.4 and the morning before it
+54.8 / 47.6 / 42.2 / 32.8. The sentence that stood here - "the dice dial
+cannot be re-cut to make it" - was wrong: it can, because holding stops
+paying once the dice come off, so the handicap takes the policy away along
+with the dice. It cannot do it ALONE, though, which is what the second cut
+found: the colour dice run out before the hardest aim, so the last two rungs
+take a point of Health instead and read 4 and 3 where the Imposter cards
+print 5. What it cost is that Easy starts tired now, twelve of sixteen
+colour dice, where the rule used to be that Easy exhausts none.
+`finale.py`'s header has the whole argument. All three games and the finale
 are in the band at Standard on their own column - AoS since the 2026-11-05
 re-pitch onto the strongest allocation line the printed rules allow, and NAP
 since the model started playing the printed End-of-Day burn.

@@ -75,8 +75,13 @@ FINF_SET = { {'Increase', 1}, {'Increase', 2}, {'Increase', 3},
 AOS_MIX = { Easy = {3, 3, 2}, Standard = {2, 3, 3}, Hard = {1, 3, 4}, Nobulous = {0, 3, 5} }
 -- The finale: dice that START exhausted, Yellow / Green / Blue / Purple.
 -- Red is never one of them - session 5 allows only Red and Yellow.
-IMP_TIRED = { Easy = {3, 3, 2, 2}, Standard = {3, 3, 3, 4},
-              Hard = {4, 3, 4, 4}, Nobulous = {4, 4, 4, 4} }
+IMP_TIRED = { Easy = {3, 3, 3, 3}, Standard = {3, 3, 4, 4},
+              Hard = {3, 3, 4, 4}, Nobulous = {3, 3, 4, 4} }
+-- AND THE SECOND AXIS. The dice stop at fourteen because the attention
+-- opens Yellow+Green and a rung that took every yellow and every green
+-- would open with nothing it may apply. Health carries the last two
+-- rungs: a ceiling, not a point of damage - nothing recovers past it.
+IMP_HEALTH = { Easy = 5, Standard = 5, Hard = 4, Nobulous = 3 }
 -- The Council's attention advances one step at the end of every session, so
 -- it is derived from the clock rather than tracked by hand.
 ATTENTION = { 'Yellow', 'Green', 'Blue', 'Purple', 'Red' }
@@ -2802,11 +2807,12 @@ function setupImposter()
     -- across the top of the table took the whole row and four of them
     -- were going back in the bag the moment you chose.
     deckOut('Imposters (A / B)', {CHAR_X, 3, ROW_CHAR}, FACEUP)
-    -- 5 HP / 2 STR / 3 REC, which is what this setup already says in
-    -- words at the end of it.
+    -- 2 STR / 3 REC on every rung, and HP off the ladder: 5, or 4 at
+    -- Nobulous, which is what this setup already says in words at the
+    -- end of it.
     local sx = statRow(CHAR_X)
     local sz = statZ(ROW_CHAR)
-    setMarker('Health', sx[1], sz, 5)
+    setMarker('Health', sx[1], sz, IMP_HEALTH[STATE.difficulty] or 5)
     setMarker('Strategy', sx[2], sz, 2)
     setMarker('Recovery', sx[3], sz, 3)
     ex = deckOut('Exhibits', {IMP_DOSSIER_X, 3, ROW_MAIN})

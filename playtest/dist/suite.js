@@ -1241,7 +1241,14 @@
   // window the attention opens on and make the wheel's phase the
   // difficulty. Fitted to 50/40/30/20 in simulation/finale.txt section 7.
   const NRJ_TIRED_COLORS=["yellow","green","blue","purple"];
-  const NRJ_LADDER={easy:[3,3,2,2],standard:[3,3,3,4],hard:[4,3,4,4],nobulous:[4,4,4,4]};
+  const NRJ_LADDER={easy:[3,3,3,3],standard:[3,3,4,4],hard:[3,3,4,4],nobulous:[3,3,4,4]};
+  // AND THE SECOND AXIS, new on 2026-11-16. The dice stop at fourteen
+  // because the attention opens Yellow+Green: a rung that took every
+  // yellow and every green would open with nothing it may APPLY, which
+  // skips session 1 rather than making it hard. Every rung keeps a yellow
+  // and a green, and Health carries the last two. It is a CEILING, not a
+  // point of damage - nothing recovers past it.
+  const NRJ_LADDER_HP={easy:5,standard:5,hard:4,nobulous:3};
 
   // ---- The five Imposters, ten abilities -----------------------------
   // generator/build_nrj.py IMPOSTERS is the authority. The `when` and
@@ -1471,6 +1478,7 @@
     c.sel=!was;save();renderNRJ();
   }
   const nrjLevel=()=>$("nrjLevel")?.value||"easy";
+  const nrjStartHp=()=>NRJ_LADDER_HP[nrjLevel()]||5;
   function nrjStartingDice(){
     const dice=freshDice(),counts=NRJ_LADDER[nrjLevel()]||NRJ_LADDER.easy;
     NRJ_TIRED_COLORS.forEach((color,i)=>{
@@ -1482,7 +1490,7 @@
   function buildNRJ(){
     const dossier=["Knowledge","Physical","Cover-Up"].flatMap(d=>
       shuffle(SCENARIOS.map((x,i)=>x[1]===d?i:null).filter(i=>i!==null)).slice(0,NRJ_DEAL));
-    state.nrj={hp:5,str:2,rec:3,session:0,dossier:shuffle(dossier),active:[],buried:[],
+    state.nrj={hp:nrjStartHp(),str:2,rec:3,session:0,dossier:shuffle(dossier),active:[],buried:[],
       key:0,recCredit:0,discount:0,rollsUsed:0,rollResult:"",outcome:null,
       recovering:false,pool:18,cards:nrjSampleMode()?dealNRJPool():null,
       level:nrjLevel(),dice:nrjStartingDice(),

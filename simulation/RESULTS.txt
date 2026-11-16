@@ -778,9 +778,13 @@ NRJ  Imposter Scenario (the campaign finale)
   The NRJ tiers apply to the three games above, NOT to the
   finale, which has a ladder of its own - cut with dice rather
   than with a dial. START_TIRED is how many you begin with
-  exhausted: 3/3/2/2, 3/3/3/4, 4/3/4/4, 4/4/4/4 across Easy to
-  Nobulous, aiming at 50/40/30/20 rather than at the 47-57%
-  band. The figure below is the EASY rung, which is the pitch.
+  exhausted: 3/3/3/3 then 3/3/4/4 on the other three, aiming
+  at 50/40/30/20 rather than at the 47-57% band. SINCE
+  2026-11-16 THERE IS A SECOND AXIS: the dice stop at fourteen
+  because the attention opens Yellow+Green and a rung that
+  took every one of both would open with nothing to apply, so
+  Hard and Nobulous lower Health to 4 and 3 instead. The
+  figure below is the EASY rung, which is the pitch.
   ("The finale has no difficulty dial" stood here until
   2026-11-05 and was simply false - finale.py's docstring opens
   "THE LADDER IS CUT WITH DICE, not with a dial".  The old
@@ -797,16 +801,19 @@ NRJ  Imposter Scenario (the campaign finale)
   below to the decimal. finale.py section 7 prints the roster;
   do not retype its numbers here.
 
-  THESE NRJ ROWS WERE RE-MEASURED ON 2026-11-14 and the three
+  THESE NRJ ROWS WERE RE-MEASURED ON 2026-11-16 and the three
   grids above are still the 2026-11-12 run, because the finale
-  moved that day and BAT, NAP and AoS did not. Holding the
-  Research Pool became the modelled policy, which took Easy to
-  74.6%, and the four difficulty rows were re-cut against it;
-  the counts above are the new ones. simulation/finale.txt is
-  the regenerated report and the authority for every finale
-  figure here.
+  moved twice in three days and BAT, NAP and AoS did not.
+  First holding the Research Pool became the modelled policy,
+  which took Easy to 74.6%; then the model began choosing WHICH
+  card to spend rather than taking what came to hand, which
+  lifted the dice dial by about two dice. The four difficulty
+  rows were re-cut against each, and the second cut needed a
+  Health row as well because the dice stop at fourteen before
+  the hardest aim does. simulation/finale.txt is the regenerated
+  report and the authority for every finale figure here.
 
-  as it SHIPS          51.6%   finale.py, 6000 finales x 5 seeds
+  as it SHIPS          48.7%   finale.py, 6000 finales x 5 seeds
 
   SUPERSEDED - the nine-attempt Suspicion scenario the Dossier
   finale replaced on 2026-10-29. Kept because nrj.py is still
@@ -1006,12 +1013,15 @@ CALIBRATION - published 20 Strong titles, community-recorded
          2026-11-05 re-pitch onto the strongest allocation
          line the printed rules allow (ALLOC_MODE = sacrifice_short);
          Standard at Tier III below the band (38.7%).
-    NRJ  the finale that SHIPS in band (51.6%), computed from
+    NRJ  the finale that SHIPS in band (48.7%), computed from
          finale.py over 6000 finales x 5 seeds; finale.txt is
          its full report. This line used to be a hardcoded
          50.5% printed under a grid of the WRONG finale, and
          read 50.5% from a pre-2026-11-14 ladder until the
-         re-cut.
+         first re-cut.  The ladder was re-cut again on
+         2026-11-16, against a model that chooses which
+         retained card to spend, and the Easy rung it pitches
+         at reads 48.7%.
 
   WHAT THIS FOOTER USED TO SAY, and why it is generated now.  It
   claimed "BAT in band at Standard (53.9%)" directly above a grid

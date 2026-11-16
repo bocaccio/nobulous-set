@@ -1,3 +1,105 @@
+2026-11-16  ONE WORDING FOR THE 20 STRONG COMPONENTS
+All four books now print the same two bullets for what the Scenario
+borrows from the base game - the 17 unit dice, then the 3 stat dice and
+the Chip - whether or not that game uses all of them.  Jon: "a future
+revision may use these components."  aos.html spelled the stat dice out
+in full, nrj.html listed the dice in WHEEL order and ran both bullets
+together, and bat.html argued about use: it named the Recovery die as the
+active-Rat marker, the Health dial as the Tyrant track, and said the
+Strategy die is not used.
+
+NOTHING WAS LOST BUT THE "NOT USED" SENTENCE.  Every usage fact in BAT's
+old bullet is stated where it is used - the Splice Phase places the
+Recovery die, the battle moves it, Setup puts the Health die on the Buff
+track and the dial on core Health - and the mod's BAT quick reference
+still carries all of it including the Strategy die.  A check that read
+the marker die's NAME out of that bullet is re-anchored to the Splice
+Phase, which is where the die is defined now, and still cross-checks the
+battle against it.
+
+2026-11-16  THE "9% WITH NONE" IN THE TIER III BOX HAD BEEN WRONG FOR TWO DAYS
+Found while re-measuring the book against the second re-cut.  The box
+says the pool "buys the whole finale", and quoted about 51% walking in
+with a full pool against about 9% with none.  The 9% was measured on
+2026-11-13, against an Easy rung that exhausted NO dice.  The first
+re-cut took Easy to ten dice exhausted and nothing re-read the box:
+
+                             full pool   no pool
+   2026-11-13, Easy none       50.1%       8.5%     <- what the book said
+   2026-11-14, Easy 3/3/2/2    51.6%       0.60%
+   2026-11-16, Easy 3/3/3/3    48.7%       0.22%
+
+Both figures are re-measured, and the second one is now "under 1%".  The
+box's point is stronger than it was, not weaker: at a rung that starts
+twelve dice down, a finale without the retained cards is not harder, it
+is lost.  WHAT THIS COST was a check - the dice rows are held against
+four files and the PROSE figures are held against nothing, which is why a
+re-cut moved one and no test noticed for two days.
+
+2026-11-16  THE LADDER, RE-CUT A SECOND TIME - AND ON TWO AXES
+The model now chooses WHICH retained card to spend rather than spending
+whatever came to hand (finale.py CARD_PICK, "clause" where it was "any").
+That is worth 5 to 7 points at every rung, it lifts the whole dice dial
+by about two dice, and the four printed rows were cut against it:
+
+                 11-13      11-14      is       HP   reads   aim
+      Easy       -          3/3/2/2    3/3/3/3   5    48.7%   50
+      Standard   3/2/2/2    3/3/3/4    3/3/4/4   5    39.6%   40
+      Hard       3/3/3/2    4/3/4/4    3/3/4/4   4    33.0%   30
+      Nobulous   3/3/4/4    4/4/4/4    3/3/4/4   3    22.1%   20
+
+THE DICE STOP AT FOURTEEN, which is new, and the rule that stops them is
+the one the book already applies one session further on.  The attention
+opens on Yellow with a Yellow+Green window, so a rung that exhausts all
+four Yellow AND all four Green begins holding only the Red die and may
+apply nothing at all: session 1 is not hard there, it is skipped - deploy
+nothing, take nothing, recover 3, begin in session 2.  The book's own
+sentence for the other end is the precedent: "the single Red die is never
+exhausted at setup: session 5 allows only Red and Yellow".  Every rung
+keeps a Yellow and a Green and opens with two applicable dice, and
+check_app_sync now asserts it.
+
+SO HEALTH CARRIES THE LAST TWO RUNGS, at 4 and 3 - a ceiling and not a
+point of damage, since recovery caps on it too.  The two axes are the
+same size: a point of Health costs 6.6 at Hard and 10.9 more at Nobulous
+against 6.1 for the fourteenth die, so the ladder does not lurch when it
+changes feet.  THE TOP THREE RUNGS THEREFORE SHARE A DICE ROW, which is
+what the cap costs the printed table; the table tells the true story
+rather than a tidier one.
+
+TWO CANDIDATES WERE BUILT OR MEASURED AND DROPPED.  Sixteen dice at 4
+Health reads 21.5%, lands as well as this and was built first - it was
+dropped for the skipped session, not for its reading, because a rung that
+is unplayable for a ninth of the scenario is a shorter puzzle and not a
+harder one.  A sixteenth Exhibit overshoots to 11.5%: the Dossier is the
+steepest dial in the model and the only one that cannot be spent a
+fraction of.
+
+WHAT THE SECOND CUT COSTS, and it is not a dice count.  The cards are
+chosen by CLAUSE_WORTH, a scoring table this project invented rather than
+a rule printed on anything, and the obvious question is how much of the
+gain is that guess being RIGHT.  Section 9 answers it by dealing the same
+eighteen scoring functions to the WRONG cards: a permuted table is worth
++0.2 - nothing - and three of five read worse than spending what came to
+hand.  So the whole of it is the table's content, and four printed rungs
+are pegged to a guess.  Every term in that table reads something
+face-up, which is what makes it bearable rather than what makes it true.
+
+TWO DIALS WERE RE-SWEPT BEFORE THE CUT, not after, because both are read
+out of CLAUSE_WORTH and a scored hand is exactly the change that could
+move them.  Both survived and both got better: HOLD_LAST = 1 was a TIE
+with 5 at the old rung and now wins by 2.3, and HOLD_FLOOR = 1.0 was "a
+compromise and not a maximum" and is now the best value at both ends of
+the ladder.  The model no longer knowingly plays below the best cell of
+its grid anywhere.
+
+AND THE PRINTED WIN RATES ARE STILL TRUE.  "About 1 in 2, 2 in 5, 3 in 10,
+1 in 5" against 4.9, 4.0, 3.3 and 2.2 in 10.  Across two re-cuts the book
+has changed four rows of dice counts, one Health column, one sentence and
+the word "game" in four table cells - the last so a seventh column would
+fit without the supplement gaining a fifth page for one orphan line.  Not
+one percentage.
+
 2026-11-14  THE SAME SEED WAS NOT THE SAME SAMPLE
 Found while re-measuring the ladder: the same cell read 39.4% and 39.5%,
 and 27.9% and 27.7%, on two runs that should have been identical.  The

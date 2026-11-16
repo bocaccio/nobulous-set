@@ -2429,18 +2429,46 @@ Not your job to fix, but worth knowing if Jon raises them:
   count - NAP 3, BAT 2, AoS 2, which is the seven that reads 50%.
 
   **THE DIFFICULTY LADDER SHIPPED**, cut with named dice rather than a
-  dial, and was **re-cut on 2026-11-14** when holding the Research Pool
-  became the policy the model plays. Easy 3/3/2/2, Standard 3/3/3/4, Hard
-  4/3/4/4, Nobulous 4/4/4/4 (yellow/green/blue/purple), measuring
-  51.6 / 39.4 / 27.7 / 20.4 against aims of 50/40/30/20. It was Easy none,
-  3/2/2/2, 3/3/3/2, 3/3/4/4 for 50.6 / 39.2 / 30.6 / 19.4 before that.
-  Three things to know before touching it:
+  dial, and was re-cut **twice in three days** - on 2026-11-14 when
+  holding the Research Pool became the policy the model plays, and on
+  2026-11-16 when it began choosing WHICH card to spend. Easy 3/3/3/3 at
+  5 Health, then 3/3/4/4 at 5, 4 and 3 (yellow/green/blue/purple),
+  measuring 48.7 / 39.6 / 33.0 / 22.1 against aims of 50/40/30/20. It was
+  3/3/2/2, 3/3/3/4, 4/3/4/4, 4/4/4/4 for
+  51.6 / 39.4 / 27.7 / 20.4 after the first cut, and Easy none, 3/2/2/2,
+  3/3/3/2, 3/3/4/4 for 50.6 / 39.2 / 30.6 / 19.4 before either.
+  Four things to know before touching it:
 
   1. **The dice are NAMED, not chosen.** An earlier version let the player
      pick and the model picked worse than random at the hard end, because
      all four colours come four to a pool and "spend the commonest" broke
      the tie on purple. Do not reintroduce a player choice here.
-  2. **The counts are SPREAD on purpose.** Whole colours collide with the
+  2. **There is a SECOND AXIS as of 2026-11-16, and the DICE STOP AT
+     FOURTEEN.** The attention opens on Yellow with a Yellow+Green
+     window, so a rung that exhausts all four yellow AND all four green
+     begins holding only the red die and cannot apply anything: session 1
+     is skipped rather than hard. That is the same argument the rulebook
+     already makes for the red die at session 5, and check_app_sync now
+     asserts it. Hard and Nobulous therefore take the Imposter in at
+     **4 and 3 Health** rather than the 5 its cards print - a ceiling,
+     not a point of damage, since recovery caps on it too. Sixteen dice
+     at 4 Health reads 21.5% and was built first; it was dropped for the
+     skipped session, not for its reading. A sixteenth Exhibit overshoots
+     to 11.5%. Four files carry the Health row (finale.py
+     `LADDER_HEALTH`, suite.js `NRJ_LADDER_HP`, rules/nrj.html's table,
+     tts/lua.lua `IMP_HEALTH`) and check_app_sync holds all four against
+     the rulebook.
+
+     **Health only became usable as an axis because it stopped
+     saturating**, and `finale.py` was still calling it "a buffer rather
+     than a dial" two days after it had: that sentence was measured at
+     3 / 4 / 5 / 6 = 43.5 / 50.3 / 50.1 / 50.0 and the same sweep now
+     reads 31.6 / 41.6 / 48.4 / 52.2. It flattens UPWARD, so the axis
+     runs DOWN from 5 - a sixth point is worth 3.8 and a third costs
+     16.8. Re-read that sweep before moving Health again, and do not
+     trust a sentence about which dial is flat; `finale.txt` section 5
+     is the live one.
+  3. **The counts are SPREAD on purpose.** Whole colours collide with the
      attention wheel: 4 yellow + 4 green reads 28.7% against 38.4% for the
      same eight dice taken off the purple end, because the wheel opens on
      Yellow+Green. Weakest-first has a 14.6-point cliff between 6 and 8
@@ -2448,10 +2476,11 @@ Not your job to fix, but worth knowing if Jon raises them:
      is already chosen for where sessions 5 and 9 land, so the ladder has
      to stay independent of it.
 
-  3. **EASY STARTS TIRED, since 2026-11-14.** "Easy means nothing starts
+  4. **EASY STARTS TIRED, since 2026-11-14.** "Easy means nothing starts
      exhausted" was a rule of the scenario and is gone: pegging Easy to
-     50% against the strong Research policy takes ten of the sixteen
-     colour dice. If that reads wrong on the table the fix is not to hand
+     50% against the strong Research policy took ten of the sixteen
+     colour dice, and twelve once the model also chose which card to
+     spend. If that reads wrong on the table the fix is not to hand
      Easy its dice back - that puts it at 74.6% - it is to decide whether
      the published rates should describe the best policy or a competent
      one. `simulation/finale.py`, THE LADDER, argues both sides.

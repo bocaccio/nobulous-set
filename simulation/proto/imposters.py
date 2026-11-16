@@ -47,9 +47,11 @@ Two to four points hot, five at worst, and still inside the 47-57% band.
 The ladder is NOT re-pegged for it: Easy is already zero dice exhausted, so
 pegging it back to 50 would cost "Easy means nothing starts exhausted",
 (WHICH IS NO LONGER A RULE - the shipping ladder was re-cut on 2026-11-14
-and Easy exhausts 3/3/2/2. This prototype's argument is kept as the record
-of why the sides were not priced into the rungs; finale.py has the live
-one.)
+and again on 2026-11-16, and Easy exhausts 3/3/3/3 now (the other three
+rungs 3/3/4/4, at 5, 4 and 3 Health). This prototype's
+argument is kept as the record of why the sides were not priced into the
+rungs; finale.py has the live one, and it is cut on two axes since the
+second re-cut.)
 which is worth more than three points.
 
 WHAT CANNOT BE ABILITY SPACE, measured rather than assumed:

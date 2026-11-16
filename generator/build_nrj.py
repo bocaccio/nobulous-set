@@ -468,8 +468,9 @@ BIG_TARGET = 5
 
 # The five Rewards that still pay in a currency this finale has. "If you
 # succeed" is reworded to the event the finale actually has: the Exhibit
-# falling. These five are worth +7.8 points of win rate and are the reason
-# REC is 3 rather than 4 - see simulation/finale.py. DO NOT ADD TO THIS
+# falling. These five are worth +24 points of win rate - they were +7.8
+# until the model started holding the Research Pool - and they are the
+# reason REC is 3 rather than 4; see simulation/finale.py. DO NOT ADD TO THIS
 # TABLE without re-running the grid; a sixth paying Reward is a balance
 # change, not a text change.
 EXHIBIT_REWARD = {
@@ -634,12 +635,14 @@ print("Exhibits", render_deck('NRJ_ImposterScenarios', cards, 'IMP', back='CardB
 # simulation/cards.py). The choice is one Imposter and one of its sides.
 #
 # WHAT THEY MAY NOT TOUCH, measured in simulation/finale.py:
-#   STR         a point is worth 85 points of win rate
-#   REC         REC 4 inverts the commit decision and the finale stops
-#               being a game of holding dice back
-#   the window  a third colour reads 90%
-#   the PHASE   the attention wheel's phase swings the finale 27 points
-#               (8 sessions 23.8%, 9 sessions 50.5%, 10 sessions 21.8%), so
+#   STR         a point takes the finale from 48% to 79%
+#   REC         REC 5 inverts the commit decision and REC 4 leaves about a
+#               point of it, so the finale stops being a game of holding
+#               dice back
+#   the window  a third colour reads 67% and takes the recovery decision
+#               off the policy the model plays
+#   the PHASE   the attention wheel's phase swings the finale 19 points
+#               (8 sessions 29.5%, 9 sessions 48.4%, 10 sessions 31.7%), so
 #               a card that holds the dial is a difficulty dial. Measured at
 #               +11.9 and cut.
 #   dice back,

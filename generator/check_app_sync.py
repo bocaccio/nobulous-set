@@ -1308,8 +1308,14 @@ check("no file still halves a card for having been spent",
 # four rows of yellow / green / blue / purple or the lab is not playing the
 # game the book describes. The counts are not interchangeable: the same
 # total taken from different colours measured 28.7% against 38.4%.
-LADDER = (("easy", (3, 3, 2, 2)), ("standard", (3, 3, 3, 4)),
-          ("hard", (4, 3, 4, 4)), ("nobulous", (4, 4, 4, 4)))
+LADDER = (("easy", (3, 3, 3, 3)), ("standard", (3, 3, 4, 4)),
+          ("hard", (3, 3, 4, 4)), ("nobulous", (3, 3, 4, 4)))
+# AND THE HEALTH ROW, which is new on 2026-11-16 and is the first time this
+# ladder has been cut on two axes. Sixteen is every colour die there is and
+# the cap still read 27% once the model scored its hand, so the last rung
+# lowers Health instead. Four files carry it and all four have to agree:
+# the rulebook's own table is the owner, exactly as it is for the dice.
+LADDER_HP = (("easy", 5), ("standard", 5), ("hard", 4), ("nobulous", 3))
 sim = text("simulation/finale.py")
 check("finale.py carries the ladder as a per-colour table",
       'TIRED_COLOURS = ("yellow", "green", "blue", "purple")' in sim
@@ -1327,6 +1333,30 @@ check("nrj.html prints the same four rows",
       and all("".join("<td>%d</td>" % n for n in c) in
               nrj.replace("\n", "").replace("      ", "")
               for lvl, c in LADDER))
+check("finale.py carries the Health row beside the dice",
+      "LADDER_HEALTH = {%s}"
+      % ", ".join('"%s": %d' % r for r in LADDER_HP) in sim
+      and "HEALTH=LADDER_HEALTH[lab]" in sim)
+check("suite.js carries the same Health row, and starts the finale on it",
+      "const NRJ_LADDER_HP={%s};"
+      % ",".join("%s:%d" % r for r in LADDER_HP)
+      in text("playtest/dist/suite.js")
+      and "hp:nrjStartHp()" in text("playtest/dist/suite.js"))
+check("nrj.html prints the Health column",
+      all("".join("<td>%d</td>" % n for n in c + (hp,)) in
+          nrj.replace("\n", "").replace("      ", "")
+          for (lvl, c), (_l2, hp) in zip(LADDER, LADDER_HP))
+      and "<b>Hard and Nobulous lower\nyour Health instead</b>" in nrj)
+# AND NO RUNG OPENS WITH NOTHING IT MAY APPLY. The attention starts on
+# Yellow with a Yellow+Green window, so a rung that exhausts all four
+# yellow AND all four green begins holding only the red die and session 1
+# is skipped rather than hard. This is the same argument the rulebook
+# already makes for the red die one session further on, and it is what
+# caps the dice at fourteen and pushes the last two rungs onto Health.
+check("no rung starts with nothing the opening window can apply",
+      all(c[0] < 4 and c[1] < 4 for _lvl, c in LADDER),
+      "y/g fully exhausted at: %r"
+      % ([l for l, c in LADDER if c[0] >= 4 and c[1] >= 4],))
 check("and nobody exhausts the single red die",
       "red" not in sim[sim.index("TIRED_COLOURS"):
                        sim.index("START_TIRED = ")]
@@ -1372,8 +1402,8 @@ check("five Imposters, two sides each", len(imp) == 10
 check("every Imposter prints the finale's own 5 HP / 2 STR / 3 REC",
       "IMP_STATS = (5, 2, 3)" in nrjgen
       and "The Imposter begins at <b>5 HP / 2 STR / 3 REC</b>" in nrj_flat)
-# finale.py prices a point of STR at 85 points and REC 4 inverts the commit
-# decision, so no ability may hand out either.
+# finale.py prices a point of STR at 30 points of win rate and REC 5 inverts
+# the commit decision, so no ability may hand out either.
 check("no Imposter ability touches STR or REC",
       not any("STR" in r[5] or "REC" in r[5] for r in imp))
 check("the five Imposters are named in rules/nrj.html",
@@ -2824,6 +2854,24 @@ for _m in re.finditer(r"<tr><td>(Easy|Standard|Hard|Nobulous)</td>(.*?)</tr>",
 check("tts/lua.lua IMP_TIRED matches the table in rules/nrj.html",
       _tired and _lua_rows("IMP_TIRED", _lvl) == _tired,
       "rulebook says %r" % (_tired,))
+# THE HEALTH COLUMN IS THE FIFTH NUMBER IN THE SAME ROWS, so it is read
+# from the same table rather than from a second source of truth. The mod
+# sets the Health die from it; before 2026-11-16 that die was a literal 5
+# and every rung started on it.
+_imp_hp = {}
+for _m in re.finditer(r"<tr><td>(Easy|Standard|Hard|Nobulous)</td>(.*?)</tr>",
+                      _nrules, re.S):
+    _cells = re.findall(r"<td>(?:&mdash;|(\d+))</td>", _m.group(2))
+    if len(_cells) >= 5:
+        _imp_hp[_m.group(1)] = int(_cells[4])
+check("tts/lua.lua IMP_HEALTH matches the same table",
+      _imp_hp and all(
+          re.search(r"IMP_HEALTH = \{[^}]*%s = %d\b" % (_l, _imp_hp[_l]),
+                    _lua, re.S) for _l in _lvl),
+      "rulebook says %r" % (_imp_hp,))
+check("...and the mod sets the Health die from it rather than from a 5",
+      "setMarker('Health', sx[1], sz, IMP_HEALTH[STATE.difficulty] or 5)"
+      in _lua)
 
 # The notebook quotes the same dials in words, so derive the words.
 _bat_line = "   ".join("%s %d and %d" % (l, sb_["DIFFICULTY"][l][0],
@@ -3184,25 +3232,31 @@ check("the readout's width has one owner",
 
 # THE DIE THAT MARKS THE ACTIVE RAT IS THE ONE THE RULEBOOK NAMES.
 #
-# rules/bat.html says it three times - in the components, in the
-# Splice Phase and again in the battle - and setupBAT laid the Health
-# die on the corner instead. Nothing compared the two, because the
-# harness only asked whether that corner was a snap point and the
-# rulebook checks are all about numbers. This reads the die out of the
-# sentence that defines it.
+# setupBAT laid the Health die on the Rat's corner and nothing compared
+# it with the book, because the harness only asked whether that corner
+# was a snap point and the rulebook checks are all about numbers. This
+# reads the die out of the sentence that defines it.
+#
+# RE-ANCHORED 2026-11-16, from the components list to the Splice Phase.
+# The components bullet used to name the die and say what it was for;
+# all four books now print one shared From-20-Strong wording that lists
+# the stat dice and the Chip and says nothing about what each game does
+# with them, because a future revision may use the ones a game does not.
+# The die is still named twice in bat.html - when it is placed and when
+# it moves - and the second check holds those two against each other, so
+# the cross-check this had before the move survives the move.
 _bat_html = text("rules/bat.html")
-_marks = re.search(r"the <b>(\w+) die</b>, which marks the active Lab Rat",
-                   _bat_html)
+_marks = re.search(r"put the <b>(\w+) die</b> on it", _bat_html)
 _mark_src = re.search(r"setMarker\('(\w+)', batMarkX\(\), batMarkZ\(1\)[,)]",
                       _lua)
 check("the mod marks the active Rat with the die rules/bat.html names",
       _marks and _mark_src and _marks.group(1) == _mark_src.group(1),
       "rulebook %r, setup %r"
       % (_marks and _marks.group(1), _mark_src and _mark_src.group(1)))
-check("...and the Splice Phase names the same die as the components",
-      _marks and ("put the <b>%s die</b> on it" % _marks.group(1))
+check("...and the battle moves the same die the Splice Phase placed",
+      _marks and ("move the <b>%s die</b> to it" % _marks.group(1))
       in _bat_html,
-      "components say %r" % (_marks and _marks.group(1),))
+      "the Splice Phase places %r" % (_marks and _marks.group(1),))
 check("...and the harness checks which die is really on the card",
       "and the Recovery die is the one on the top Rat" in _ts
       and "and no Health die is sitting on any Rat" in _ts)
