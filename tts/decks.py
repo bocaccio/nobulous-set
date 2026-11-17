@@ -17,8 +17,14 @@ DECKS = [
     # ---- BAT -------------------------------------------------------------
     dict(key='BAT_Rats', count=4, w=4, h=1, back='unique', land=True,
          game='BAT', label='Lab Rats (A / B)', card='Lab Rat'),
+    # LABELLED FOR THE CARD BACK, not for the sheet it is cut from.
+    # The stem stays BAT_Encounters because that is a filename and
+    # nobody sees it; the back prints 'Experiment', bat.html says
+    # Experiment throughout and catalog.json titles the deck
+    # Experiments, so the hover text said the one thing in the set
+    # that disagreed.
     dict(key='BAT_Encounters', count=20, w=10, h=2, back='CardBack_BAT_Encounter',
-         land=False, game='BAT', label='Encounters', card='Encounter'),
+         land=False, game='BAT', label='Experiments', card='Experiment'),
     dict(key='BAT_Upgrades', count=16, w=10, h=2, back='CardBack_BAT_Upgrade',
          land=False, game='BAT', label='Upgrades', card='Upgrade'),
     dict(key='BAT_Specimens', count=8, w=8, h=1, back='CardBack_BAT_Upgrade',

@@ -2470,7 +2470,7 @@ def covered_assertions():
     a deck is a stack you can already see. Naming them is the point -
     an unnamed card with nowhere to be is a failure, not a default.
     """
-    BOXLESS = {"BAT": ("Lab Rat", "Lab Rats (A / B)", "Encounters",
+    BOXLESS = {"BAT": ("Lab Rat", "Lab Rats (A / B)", "Experiments",
                        "Experiment", "Upgrades"),
                "AoS": ()}
     for which, listing in (("BAT", "batBoxes"), ("AoS", "aosBoxes")):
@@ -2897,7 +2897,7 @@ def finale_assertions():
          [round(float(g.batRightX(int(g.BAT_ATTACK_UP))), 2)])
     want("...and both Splice-Phase decks back in the box",
          [o.name for o in w.table.values()
-          if o.name in ("Encounters", "Upgrades")], [])
+          if o.name in ("Experiments", "Upgrades")], [])
     want("...while the Upgrade a Rat is holding stays with it",
          held.guid in w.table, True)
     want("...and the Splice stays on the Tyrant's track",
@@ -4190,7 +4190,7 @@ def main():
             want(t + " BAT Research Notes out",
                  out(w, "Research Notes"), 6 if tier >= 3 else 0)
             want(t + " BAT shuffled the Experiments",
-                 "Encounters" in w.shuffled, True)
+                 "Experiments" in w.shuffled, True)
 
             n = run(lvl, tier, "NAP")
             # WHAT THE SETUP SAYS IN CHAT, which is the only account of the

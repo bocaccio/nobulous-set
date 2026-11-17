@@ -285,10 +285,10 @@ def draw_bat(d, lua):
     # THE THREE CARDS A TURN TURNS OVER. They were the only outlined
     # spaces on this table with nothing said about them, and the only
     # way to tell which was which was to hover the deck that fills
-    # them - which answers "Encounters", the internal name, where the
-    # card back and bat.html both say Experiment. The felt says what
-    # the rulebook says: "Reveal the next Experiment card. Reveal 2
-    # cards from the Upgrade deck."
+    # them - which answered "Encounters" until the deck was relabelled
+    # to match its own card back. The felt says what the rulebook
+    # says: "Reveal the next Experiment card. Reveal 2 cards from the
+    # Upgrade deck."
     #
     # BY THE SCRIPT'S OWN COLUMN, like everything else here:
     # BAT_REVEALED is where the Experiment lands and the two Upgrades

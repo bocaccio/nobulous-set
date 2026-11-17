@@ -2266,7 +2266,7 @@ function setupBAT()
     batSnaps()
   end)
   step(function()
-    local exp = deckOut('Encounters',
+    local exp = deckOut('Experiments',
                         {batRightX(BAT_EXPERIMENTS), 3, batRowZ(1)})
     if exp then exp.shuffle() end
     -- THE TYRANT'S OWN CARDS STAY IN THE BAG. Nothing draws a Tyrant
