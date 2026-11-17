@@ -282,6 +282,22 @@ def draw_bat(d, lua):
     label(d, "PROTOCOL", rx(int(g.BAT_PROTOCOL)), rz(1), fit=half * 1.8)
     label(d, "RESEARCH\nNOTES", rx(int(g.BAT_NOTES)), rz(1),
           fit=half * 1.8)
+    # THE THREE CARDS A TURN TURNS OVER. They were the only outlined
+    # spaces on this table with nothing said about them, and the only
+    # way to tell which was which was to hover the deck that fills
+    # them - which answers "Encounters", the internal name, where the
+    # card back and bat.html both say Experiment. The felt says what
+    # the rulebook says: "Reveal the next Experiment card. Reveal 2
+    # cards from the Upgrade deck."
+    #
+    # BY THE SCRIPT'S OWN COLUMN, like everything else here:
+    # BAT_REVEALED is where the Experiment lands and the two Upgrades
+    # follow it, so moving that constant moves all three labels with
+    # the cards.
+    rev = int(g.BAT_REVEALED)
+    label(d, "EXPERIMENT", rx(rev), rz(2), fit=half * 1.8)
+    for k in (1, 2):
+        label(d, "UPGRADE", rx(rev + k), rz(2), fit=half * 1.8)
     # The two piles that fill every turn, past the three revealed
     # cards in the same row.
     label(d, "EXPERIMENT\nDISCARD", rx(int(g.BAT_EXP_DISCARD)), rz(2),
