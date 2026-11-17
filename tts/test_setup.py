@@ -431,6 +431,16 @@ class Obj(object):
     def setRotationValue(self, v):
         self.value = v
 
+    def getRotationValue(self):
+        """What a dial is resting on, which is what TTS reports.
+
+        setRotationValue records it. A disc the script turned with
+        setRotation has none here, because inverting CHIP_DIAL back to
+        a number is TTS's job and not this stub's - and `nil` is the
+        answer dialRead is written around.
+        """
+        return getattr(self, "value", None)
+
     def takeObject(self, spec):
         keys = set(spec.keys())
         if self.dead:
@@ -2455,6 +2465,61 @@ def battle_dice_assertions():
          sorted(["Purple", "Purple", "Blue", "Blue", "Green", "Yellow"]))
 
 
+def battle_dial_assertions():
+    """The battle keeps the number on the dial instead of resetting it.
+
+    One Experiment in the deck writes to the Tyrant's core Health:
+    Degraded Tissue Study, "If successful, reduce the Prototyrant's
+    Health dial by 2." The battle used to turn the dial back to the
+    difficulty's printed core, which threw that away - Jon earned one
+    two Splices before the fight and lost it to this on 2026-11-17.
+
+    THREE SOURCES, IN ORDER, because this script has no onSave: the
+    disc on the table, then STATE, then the difficulty. STATE.dial is
+    back to 0 after a reload while the disc still shows the number,
+    and a battle announcing a Tyrant at 0 Health would be worse than
+    one that resets - so neither fallback can be dropped.
+    """
+    def battle(setup):
+        w, g = start("Standard", 0)
+        g.setupBAT()
+        drain(w)
+        core = int(g.BAT_DIFF[g.STATE.difficulty][2])
+        setup(w, g, core)
+        mark = len(w.said)
+        g.btnFinale()
+        drain(w)
+        return g, core, [m for m in w.said[mark:] if "TYRANT BATTLE" in m]
+
+    # TICKED DOWN THE WAY THE BUTTONS TICK IT, through the one call
+    # that writes the disc and the plate together.
+    g, core, said = battle(lambda w, g, core: g.dialSet(core - 2))
+    want("an Experiment's 2 off the dial survives the battle setup",
+         int(g.STATE.dial), core - 2)
+    want("...and the battle says so rather than correcting it",
+         [True for m in said if "CARRIED OVER, NOT RESET" in m
+          and str(core - 2) in m], [True])
+
+    # A TABLE RELOADED MID-GAME. STATE is gone and the disc is not.
+    def reloaded(w, g, core):
+        g.dialSet(core - 2)
+        g.marker("Dial").setRotationValue(core - 2)
+        g.STATE.dial = 0
+    g, core, said = battle(reloaded)
+    want("...and the disc is believed over a STATE that was reloaded",
+         int(g.STATE.dial), core - 2)
+
+    # AND A ZERO FROM NOWHERE IS NOT AN ANSWER: no disc value, no
+    # STATE, so the difficulty's own core Health is what is left.
+    def nothing(w, g, core):
+        g.STATE.dial = 0
+    g, core, said = battle(nothing)
+    want("...while a dial reading nothing at all falls back to the table",
+         int(g.STATE.dial), core)
+    want("...and says nothing about carrying anything over",
+         [m for m in said if "CARRIED OVER" in m], [])
+
+
 def buff_lock_assertions():
     """The Buff HP card locks itself when it reaches its space.
 
@@ -2857,10 +2922,11 @@ def finale_assertions():
 
             Counting them is not enough: deckOut finds a deck already
             on the table and simply moves it, so a second press deals
-            no extra cards in two of the three games. What it does do
-            is turn a SECOND Tyrant Attack face-up, which changes the
-            commit colour and shortens the deck - and that is only
-            visible in the split, never in the total.
+            no extra cards in two of the three games. What it used to
+            do was turn a SECOND Tyrant Attack face-up, which changed
+            the commit colour and shortened the deck, and was only
+            ever visible in the split. Nothing is flipped now, so the
+            split is what would catch a re-deal instead.
             """
             return sorted((len(o.kids) or 1, o.is_face_down)
                           for o in w.table.values()
@@ -2992,12 +3058,19 @@ def finale_assertions():
          out(w, "Tyrant Attacks"), 7)
     attacks = [o for o in w.table.values()
                if o.name.startswith(names_of("Tyrant Attacks"))]
-    want("...as a face-down deck and one card face-up beside it",
+    # ONE DECK OF SEVEN, FACE-DOWN, AND NOTHING BESIDE IT. A card was
+    # turned up here onto the discard space to seed the first commit
+    # colour, which also showed the table one of the seven attacks it
+    # was about to face; Jon, 2026-11-17, would rather have the free
+    # first attack. The deck is one card longer for it, so the count
+    # is part of the claim and not just the facing.
+    want("...as one face-down deck of seven, with nothing turned up",
          sorted((len(o.kids) or 1, o.is_face_down) for o in attacks),
-         [(1, False), (6, True)])
-    want("...with the face-up one on the discard space",
-         [round(o.pos[0], 2) for o in attacks if not o.is_face_down],
-         [round(float(g.batRightX(int(g.BAT_ATTACK_UP))), 2)])
+         [(7, True)])
+    want("...and the Attack discard space empty",
+         [o.name for o in w.table.values()
+          if abs(o.pos[0] - float(g.batRightX(int(g.BAT_ATTACK_UP)))) < 0.05
+          and abs(o.pos[2] - float(g.batRowZ(3))) < 0.05], [])
     want("...and both Splice-Phase decks back in the box",
          [o.name for o in w.table.values()
           if o.name in ("Experiments", "Upgrades")], [])
@@ -4255,6 +4328,7 @@ def main():
     aos_assertions()
     chip_face_assertions()
     battle_dice_assertions()
+    battle_dial_assertions()
     buff_lock_assertions()
     on_card_assertions()
     pile_assertions()

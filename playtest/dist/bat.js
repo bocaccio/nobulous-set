@@ -842,8 +842,11 @@
   // The color dot on each Attack card. The top card of the Attack discard
   // sets the color the attacking Rat must commit.
   const ATTACK_COLORS=["green","blue","yellow","green","yellow","green","yellow"];
-  // The commit color now in force: the last card revealed, or the card
-  // flipped at the start of the battle before the Tyrant has attacked.
+  // The commit color now in force: the last card revealed, and NONE until
+  // the Tyrant has attacked once. Nothing is flipped at setup - Jon,
+  // 2026-11-17 - so the Rats' first attack honours no color, which is what
+  // the null here already meant. startFlip is only ever set in a battle
+  // saved before that date, and is read for those games alone.
   function commitColor(b){
     if(!b) return null;
     const top=(b.attack!=null)?b.attack:b.startFlip;
@@ -895,8 +898,6 @@
     if(state.battle&&!Array.isArray(state.battle.attackDeck)){
       state.battle.attackDeck=shuffle([...Array(ATTACK_NAMES.length).keys()]);
       state.battle.attackDiscard=[];state.battle.attack=null;save();}
-    if(state.battle&&state.battle.startFlip==null&&state.battle.attack==null&&Array.isArray(state.battle.attackDeck)&&state.battle.attackDeck.length){
-      state.battle.startFlip=state.battle.attackDeck.pop();state.battle.attackDiscard.push(state.battle.startFlip);save();}
     if(!state.battle){
       const order=shuffle([...Array(5).keys()]);
       state.battle={turn:"rats",round:1,order,hp:order.map(i=>cardValue(state.spliceCards[i])),max:order.map(i=>cardValue(state.spliceCards[i])),
@@ -906,9 +907,11 @@
       // set stranded the attacker choice behind a Recover button that the
       // battle layout does not even have.
       state.turnLocked=false;state.turnRedPlaced=false;
-      // Flip the top Attack card to start the discard and supply the first color.
-      state.battle.startFlip=state.battle.attackDeck.pop();
-      state.battle.attackDiscard.push(state.battle.startFlip);
+      // NOTHING IS FLIPPED. The deck is shuffled face-down and stays that
+      // way, so the discard is empty and the first Rat attack has no commit
+      // color - rules/bat.html, "leave them that way". A card was turned up
+      // here to seed that color, which also showed the table one of the
+      // seven attacks coming for it.
       drawTyrantDice();
       save();
     }

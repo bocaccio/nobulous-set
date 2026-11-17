@@ -4471,6 +4471,52 @@ check("...and every game that has a character places all three of them",
       and re.search(r"^EXHAUST_Z = \{", _sv["LuaScript"], re.M),
       "%r, with %r marking the active Rat" % (_mk, _mark_die))
 
+# THE BATTLE CARRIES THE DIAL, it does not reset it. One Experiment in
+# the deck writes to the Tyrant's core Health - Degraded Tissue Study,
+# "reduce the Prototyrant's Health dial by 2" - and startBattle used
+# to turn the dial back to the difficulty's printed core, which threw
+# that away on the way into the fight it was earned for. The rulebook
+# had the same hole in the same place: its Awakening paragraph said
+# the dial is SET to the core Health.
+#
+# THREE SOURCES AND ALL THREE NAMED, because this script has no
+# onSave: STATE.dial is 0 again after a reload while the disc still
+# shows the number, so the disc is asked first and the difficulty is
+# only the last resort.
+_satk = text("simulation/bat.py")
+_sdial = text("generator/build_bat.py")
+check("the Tyrant battle carries the dial rather than resetting it",
+      "local core = BAT_DIFF[STATE.difficulty][2]" in _lua
+      and ("local hp = dialRead() or (((STATE.dial or 0) > 0)"
+           " and STATE.dial) or core") in _lua
+      and re.search(r"function dialRead\(\).*?getRotationValue", _lua, re.S)
+      and "CARRIED OVER, NOT RESET" in _lua
+      and "less any Experiment that cut it" in _RULES["bat"]
+      # ...AND THE CARD THAT MAKES IT WORTH CARRYING IS STILL PRINTED
+      # AND STILL MODELLED. Without this the check passes happily on a
+      # battle that carries a number nothing can ever change.
+      and "reduce the Prototyrant's Health dial by 2" in _sdial
+      and "tyrant_minus_2" in _satk,
+      "startBattle does not carry the dial it was handed")
+
+# NOTHING IS TURNED UP OUT OF THE ATTACK DECK. A card was flipped at
+# setup to seed the first commit colour, which also showed the table
+# one of the seven attacks coming for it; Jon, 2026-11-17. The deck is
+# one card longer for it and the Rats' first attack honours no colour,
+# which has to be true in all four places or the lab and the table
+# play different games.
+_atk_block = re.search(r"deckOut\('Tyrant Attacks'.*?end\)", _lua, re.S)
+check("nothing is turned up out of the Tyrant Attack deck",
+      _atk_block is not None
+      and "d.shuffle()" in _atk_block.group(0)
+      and "takeObject" not in _atk_block.group(0)
+      and "leave them that way" in _RULES["bat"]
+      and "first attack is unrestricted" in _RULES["bat"]
+      and "FIRST_ATTACK_FREE = True" in _satk
+      and "startFlip=state.battle.attackDeck.pop()" not in
+          text("playtest/dist/bat.js"),
+      "the battle still flips a card, or one of the four disagrees")
+
 # The overlay's three box labels are one size, and make_template proves
 # it at build time rather than leaving it to the eye: `fit` can shrink
 # one of them below what it was asked for.

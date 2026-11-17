@@ -224,9 +224,31 @@ UNSTABLE_GROWTH = 6     # if the target survives, attack again with 2 dice
 ATTACK_COUNT = 7
 # Proposed color dot on each Attack card, in the order above. The most
 # recently revealed card sets the color for Buff HP and the Tyrant's Health,
-# which have none of their own; one card is flipped at the start of the battle
-# to supply it before the Tyrant has attacked. No Red: Red is never wild.
+# which have none of their own. No Red: Red is never wild.
 ATTACK_COLORS = ["green", "blue", "yellow", "green", "yellow", "green", "yellow"]
+# NOTHING IS FLIPPED AT SETUP, so the Rats' FIRST attack has no commit color
+# at all - there is no card on the Attack discard to read one off. Jon,
+# 2026-11-17: a face-up card at setup shows the table one of the seven bad
+# things waiting for it, and the price of hiding it is that the first attack
+# goes unrestricted.
+#
+# THE DECK WAS NEVER SHORT HERE. This model has always rebuilt attack_deck as
+# all 7, so the flip it described never removed a card - which means this dial
+# changes the first round's color restriction and nothing else, and the
+# measured difference is the whole cost of the change.
+#
+# WHAT IT COSTS, 20000 games a cell, tier none, price_first_attack.py:
+# Easy 62.7 -> 60.7, Standard 52.7 -> 52.0, Hard 38.5 -> 38.6, Nobulous
+# 26.2 -> 26.0. Only Easy moves further than the noise, and it moves the way
+# a relaxed restriction should not: the color rule was buying the Rats an
+# extra die on the opening blow through its own "two dice of one other color"
+# fallback, and that was worth more than the constraint cost them. Standard
+# stays inside the 49-54% band CARD_MANIFEST rev 28 pegged it into, which is
+# what made the change affordable.
+#
+# False restores the behaviour every figure published before 2026-11-17 was
+# measured through: a random color in force from the first attack onward.
+FIRST_ATTACK_FREE = True
 # Mass, Reflexes and Crushing Blow are Green; Predatory Instinct, Roar and
 # Unstable Growth are Yellow; Adaptive Strike is the lone Blue.
 
@@ -1717,8 +1739,10 @@ class Game(object):
         # Each Modification the Tyrant holds may be tapped once in the battle.
         self.tyrant_taps = self.splice_mods
         self.round_no = 0
-        # Flip one Attack card to supply the Buff HP / Health color.
-        self.attack_color = ATTACK_COLORS[self.rng.randrange(ATTACK_COUNT)]
+        # NO CARD IS FLIPPED, so there is no commit color until the Tyrant
+        # has attacked once. See FIRST_ATTACK_FREE.
+        self.attack_color = (None if FIRST_ATTACK_FREE else
+                             ATTACK_COLORS[self.rng.randrange(ATTACK_COUNT)])
         need = []
         for color, count in TYRANT_NEED:
             need += [color] * count
@@ -1849,7 +1873,8 @@ class Game(object):
             # Tyrant Health: none, or under both_full it carries the color
             # of the last Splice destroyed.
             if by_card:
-                need = [self.attack_color]
+                # No card revealed yet is no color, not a color of None.
+                need = [self.attack_color] if self.attack_color else []
             elif not (full and self.last_destroyed):
                 return pick
             else:

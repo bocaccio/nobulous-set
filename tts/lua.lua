@@ -3482,22 +3482,66 @@ function batBattleDice()
   return #bag, #pool, short, stayed
 end
 
+-- WHAT THE DIAL ON THE TABLE READS. There is no onSave in this
+-- script, so STATE.dial is back to its table literal after a reload
+-- while the disc still shows the number - and the battle has to
+-- believe the disc. TTS answers getRotationValue off the disc's own
+-- RotationValues; the test stub answers it off setRotationValue, and
+-- a dial nothing has turned has no value in either, which is what the
+-- nil is for.
+function dialRead()
+  local d = marker('Dial')
+  if not d then return nil end
+  local ok, v = pcall(function() return d.getRotationValue() end)
+  v = ok and tonumber(v) or nil
+  if v and v >= 0 and v <= DIAL_MAX then return math.floor(v) end
+  return nil
+end
+
 function startBattle()
-  local hp = BAT_DIFF[STATE.difficulty][2]
+  -- THE DIAL IS WHAT THE DIAL READS, not what the difficulty says.
+  -- This used to reset it to the difficulty's core Health, on the
+  -- grounds that a Splice phase is long and the dial is a thing
+  -- players turn - and that threw away the one Experiment in the deck
+  -- that writes to it. Degraded Tissue Study, Experiment 19: "If
+  -- successful, reduce the Prototyrant's Health dial by 2." The
+  -- reduction is earned in the Splice phase and is meant to be spent
+  -- in the battle; simulation/bat.py and playtest/dist/bat.js both
+  -- carry it, and this was the only place in the set that did not.
+  -- Jon lost one to it on 2026-11-17.
+  --
+  -- SO THE BATTLE REPORTS THE DIAL RATHER THAN CORRECTING IT. A
+  -- number that is wrong because somebody leaned on the dial is
+  -- visible in the chat now instead of being silently fixed, which is
+  -- the right way round: the script cannot tell a wrong number from
+  -- an earned one, and only one of the two is common.
+  --
+  -- A ZERO IS NOT AN ANSWER. STATE.dial starts at 0 and comes back as
+  -- 0 after a reload, and a battle announcing a Tyrant at 0 Health is
+  -- worse than one that resets; both fallbacks are there for that.
+  local core = BAT_DIFF[STATE.difficulty][2]
+  local hp = dialRead() or (((STATE.dial or 0) > 0) and STATE.dial) or core
   local spliced = 0
   local buffCard = nil
   local tyrant, swept, short, stayed = 0, 0, {}, 0
   step(function() clearBoxes(batBattleBoxes()) end)
   step(function()
-    -- "Shuffle the 7 Tyrant Attack cards face-down, then flip the top
-    -- card face-up to start the Attack discard. It does not attack; it
-    -- only supplies the first commit color."
+    -- "Shuffle the 7 Tyrant Attack cards face-down and leave them that
+    -- way. The Attack discard starts empty, so the Rats' first attack
+    -- has no commit color."
+    --
+    -- NOTHING IS TURNED OVER. One card was flipped here to seed the
+    -- first commit colour, which also showed the table one of the
+    -- seven bad things waiting for it; Jon, 2026-11-17, would rather
+    -- have the free first attack than hand over the preview. The deck
+    -- keeps all 7 - the flipped card was never shuffled back in - so
+    -- this is one more card in the deck as well as one less thing
+    -- known about it, and the discard space fills on the Tyrant's
+    -- first attack like any other round.
     local d = deckOut('Tyrant Attacks',
                       {batRightX(BAT_ATTACK_DECK), 3, batRowZ(3)})
     if not d then say('No Tyrant Attacks in the BAT box.') return end
     d.shuffle()
-    d.takeObject({position = {batRightX(BAT_ATTACK_UP), 3, batRowZ(3)},
-                  rotation = FACEUP, smooth = false})
   end)
   step(function() spliced = shuffleSplices() end)
   step(function()
@@ -3565,12 +3609,20 @@ function startBattle()
     tyrant, swept, short, stayed = batBattleDice()
   end)
   step(function()
-    say('TYRANT BATTLE. Tyrant Health ' .. hp .. ' on the dial. Both' ..
+    say('TYRANT BATTLE. Tyrant Health ' .. hp .. ' on the dial.' ..
+        (hp ~= core
+          and (' CARRIED OVER, NOT RESET: ' .. STATE.difficulty ..
+               ' prints a core Health of ' .. core ..
+               ' and the dial reads ' .. hp .. '. Degraded Tissue Study' ..
+               ' takes 2 off it; turn it back if nothing should have.')
+          or '') ..
+        ' Both' ..
         ' decks, the three cards they reveal and both discards are back' ..
         ' in the box; the Rats keep their own Upgrades and their own' ..
-        ' Health. The 7 Tyrant Attacks are shuffled with the top card' ..
-        ' face-up -- it does not attack, it only sets the first commit' ..
-        ' colour. ' .. spliced .. ' Splices put in a random order.' ..
+        ' Health. The 7 Tyrant Attacks are shuffled face-down and stay' ..
+        ' that way -- nothing is turned over, so the first Rat attack' ..
+        ' has no commit colour and the Tyrant sets one when it attacks.' ..
+        ' ' .. spliced .. ' Splices put in a random order.' ..
         ' ' .. tyrant .. ' dice are on the Tyrant Dice space -- 2' ..
         ' Purple, 2 Blue, 1 Green and 1 Yellow out of the Rats own' ..
         ' supply, which the Tyrant draws from fresh every round and' ..
