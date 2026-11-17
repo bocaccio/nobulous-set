@@ -259,6 +259,12 @@ BAT_ATTACK_DECK, BAT_ATTACK_UP, BAT_BUFF = 1, 2, 3
 -- one space two columns wide, because a handful of dice is not a card
 -- and reads better in a wide tray than in a card-shaped box.
 BAT_TYRANT_DICE = 4                    -- the first of the two columns
+-- WHAT GOES IN IT, by colour: "Take 2 Purple, 2 Blue, 1 Green and 1
+-- Yellow out of the Rats' personal dice - there are only 17 in the
+-- game, so the Tyrant's six come from the Rats' own supply." Written
+-- out as the rulebook writes it, because this is a quantity from the
+-- book and not an arithmetic of the layout.
+BAT_TYRANT_BAG = { Purple = 2, Blue = 2, Green = 1, Yellow = 1 }
 
 -- The Dial sits below the rightmost Splice, clear of the row above it.
 BAT_CHIP_X = BAT_RIGHT1 + (BAT_SPLICES - 1) * BAT_COL
@@ -308,6 +314,27 @@ function buffSpace(v)
   local col = i % 3
   return batRightX(BAT_BUFF) + (col - 1) * BUFF_PITCH,
          batRowZ(3) + BUFF_GRID_DZ + (2 - row) * BUFF_PITCH
+end
+
+-- WHERE THE DIE STANDS AT LAYER 0, which is every shipping rung: on
+-- the card, above the grid, on no number at all. The battle used to
+-- leave it wherever the Splice Phase had it, which is correct about
+-- the layer - there is no 0 space to stand on - and wrong about the
+-- table, because the one die the players are invited to move was the
+-- one thing the setup did not put in front of them. Jon asked for it
+-- on the card, 2026-11-17.
+--
+-- ABOVE THE GRID, NOT ON IT. A die on a numbered space IS a layer, so
+-- parking it on one would claim a point nobody chose. The band
+-- between the top row of spaces and the top edge of the card is the
+-- heading and the tip, and it is 2.5 units deep - room for a die with
+-- a quarter of one to spare at each end. Measured off BUFF_PITCH and
+-- CARD_L rather than typed, so it follows the grid check_app_sync
+-- pins to the rendered art.
+function buffPark()
+  local top = batRowZ(3) + CARD_L / 2
+  local grid = batRowZ(3) + BUFF_GRID_DZ + 2 * BUFF_PITCH + BUFF_PITCH / 2
+  return batRightX(BAT_BUFF), (top + grid) / 2
 end
 
 -- BAT'S TWO SPARE STAT DICE, in a column off the exhausted corner's
@@ -397,6 +424,80 @@ function batBanished()
   local x, z = batRightX(BAT_SPLICES), batRowZ(1)
   return { x - BAT_BOX_HW, x + BAT_BOX_HW,
            z + BAT_BOX_HD, z - BAT_BOX_HD }
+end
+
+-- IS THIS DIE OUT OF THE GAME? Asked of the position rather than of a
+-- list, because nothing tracks a banishment: a player drops the die in
+-- that corner and the corner is the record. The battle has to know,
+-- because a banished die is not swept into the shared pool and may
+-- still be pulled back out to make up the Tyrant's six.
+function batBanishedHas(p)
+  local b = batBanished()
+  return p and p.x >= b[1] and p.x <= b[2] and p.z <= b[3] and p.z >= b[4]
+end
+
+-- ...AND ON A RAT'S CARD IS THE OTHER PLACE IT CAN BE. rules/bat.html
+-- puts a banished die on the card of the Rat it was borrowed FROM, so
+-- that the Rat's workbench shows which colour it has lost and an
+-- exhausted die of that colour is not recovered back to it. That is
+-- the record, so it has to be read as one.
+--
+-- A CARD, NOT A ROW. A Rat's four available dice sit in the band
+-- BELOW its card - batDieZ(r), half a row pitch down - and nothing
+-- the setup does puts a unit die on the card itself. The Red die and
+-- the Recovery marker do stand on a Rat, in two corners of it, and
+-- neither is in BAT_RAT_DICE, so neither can be seen from here.
+--
+-- WHAT THIS CANNOT TELL is a banished die from one a player happens
+-- to have left lying on a Rat when they press the button. Nothing
+-- tracks a banishment - the position is the whole record - so the
+-- count of what was left behind goes in the battle's message, where
+-- it can be argued with.
+function batOnRat(p)
+  if not p then return nil end
+  if math.abs(p.x - BAT_RAT_X) > CARD_L / 2 then return nil end
+  for r = 1, BAT_ROWS do
+    if math.abs(p.z - batRatZ(r)) <= CARD_W / 2 then return r end
+  end
+  return nil
+end
+
+function batIsBanished(p)
+  return batBanishedHas(p) or batOnRat(p) ~= nil
+end
+
+-- AND SOMEWHERE FOR THE DICE THAT ARE STILL IN IT. "Sweep every
+-- personal die still in the game - from all four Rats, available and
+-- exhausted - into one shared battle pool, all available." The pool
+-- is the Rats' whole supply less the Tyrant's six and less whatever
+-- was banished, so it is at most ten dice: five to a row, two rows,
+-- at the pitch a Rat's own row of dice already uses.
+--
+-- THE BOTTOM LEFT IS WHERE IT FITS, and Jon's call. The exhausted
+-- corner starts at BAT_EXHAUST_X0, most of the way across the table,
+-- and the Rats' lowest row of dice stops above EXHAUST_Z - so this
+-- corner is the one piece of felt in the band that nothing else
+-- wants. Derived from the felt and the band rather than typed, so a
+-- table that is resized does not leave the pool hanging off it.
+BAT_POOL_COLS = 5
+BAT_POOL_X = FELT.x0 + 1.2
+BAT_POOL_Z = EXHAUST_Z[1] - BAT_DIE_PITCH / 2
+
+function batPoolAt(i)
+  local col = (i - 1) % BAT_POOL_COLS
+  local row = math.floor((i - 1) / BAT_POOL_COLS)
+  return BAT_POOL_X + col * BAT_DIE_PITCH,
+         BAT_POOL_Z - row * BAT_DIE_PITCH
+end
+
+-- The outline the felt draws round it, half a pitch outside the dice,
+-- the way batBanished() is derived from the grid it sits in.
+function batPool()
+  local pad = BAT_DIE_PITCH / 2
+  return { BAT_POOL_X - pad,
+           BAT_POOL_X + (BAT_POOL_COLS - 1) * BAT_DIE_PITCH + pad,
+           BAT_POOL_Z + pad,
+           BAT_POOL_Z - BAT_DIE_PITCH - pad }
 end
 
 -- ------------------------------------------------------------ the AoS table
@@ -3312,10 +3413,80 @@ function shuffleSplices()
   return #found
 end
 
+-- THE DICE THE BATTLE REARRANGES, which the script used to ask the
+-- players to do by hand in a sentence six lines long. Two piles come
+-- out of one supply:
+--
+--   the Tyrant's six   2 Purple, 2 Blue, 1 Green, 1 Yellow, on the
+--                      Tyrant Dice space. "Those six never exhaust;
+--                      the Tyrant draws from them fresh every round."
+--   the battle pool    everything else that is still in the game,
+--                      from all four Rats, available and exhausted
+--                      alike, "into one shared battle pool, all
+--                      available".
+--
+-- BANISHED DICE ARE NOT SWEPT, and they are the reason this reads
+-- positions rather than counting: "Banished dice stay gone." They
+-- are in two places - the banished corner, and on the Rat each was
+-- borrowed from - and batIsBanished knows both. But the Tyrant may
+-- still reach into them: "if a colour is short, take dice of that
+-- colour back out of the banished dice to make up the number. They
+-- are not returned to the Rats; they go straight into the bag." So a
+-- banished die can leave for the Tyrant and for nothing else. The
+-- rows are taken first and the banished ones only when a colour is
+-- short, which is the order the rulebook puts them in.
+--
+-- RED IS NOT TOUCHED. "Red is not part of the pool; it is available
+-- to the attacking Rat every round", so it stays on whichever Rat
+-- holds it. It is not in BAT_RAT_DICE, so nothing here can see it.
+function batBattleDice()
+  local bag, pool, short, stayed = {}, {}, {}, 0
+  for _, colour in ipairs(BAT_RAT_DICE) do
+    local want = BAT_TYRANT_BAG[colour] or 0
+    local live, gone = {}, {}
+    for _, d in ipairs(markersNamed(colour)) do
+      if batIsBanished(d.getPosition()) then
+        table.insert(gone, d)
+      else
+        table.insert(live, d)
+      end
+    end
+    local took = 0
+    while took < want and #live > 0 do
+      table.insert(bag, table.remove(live, 1))
+      took = took + 1
+    end
+    while took < want and #gone > 0 do
+      table.insert(bag, table.remove(gone, 1))
+      took = took + 1
+    end
+    if took < want then
+      table.insert(short, (want - took) .. ' ' .. colour)
+    end
+    stayed = stayed + #gone
+    for _, d in ipairs(live) do table.insert(pool, d) end
+  end
+  -- CENTRED ON WHAT IS ACTUALLY THERE, not on six. If a colour has
+  -- been banished out of the game altogether "the Tyrant simply goes
+  -- without and draws from a smaller bag", and a five-die bag should
+  -- sit in the middle of its space rather than leaving a gap where
+  -- the sixth would have been.
+  local mid = batRightX(BAT_TYRANT_DICE) + BAT_COL / 2
+  for i, d in ipairs(bag) do
+    moveMarker(d, mid + (i - (#bag + 1) / 2) * BAT_DIE_PITCH, batRowZ(3))
+  end
+  for i, d in ipairs(pool) do
+    local x, z = batPoolAt(i)
+    moveMarker(d, x, z)
+  end
+  return #bag, #pool, short, stayed
+end
+
 function startBattle()
   local hp = BAT_DIFF[STATE.difficulty][2]
   local spliced = 0
   local buffCard = nil
+  local tyrant, swept, short, stayed = 0, 0, {}, 0
   step(function() clearBoxes(batBattleBoxes()) end)
   step(function()
     -- "Shuffle the 7 Tyrant Attack cards face-down, then flip the top
@@ -3375,9 +3546,23 @@ function startBattle()
     -- THE DIE LAST, onto a card that has settled and been locked.
     -- Set to 1: the number that counts is the space it stands on,
     -- and a die showing anything else reads as a second number.
+    --
+    -- AND IT GOES ON THE CARD EITHER WAY. At layer 0 - which is
+    -- every rung that ships - there is no space to stand on, and
+    -- this used to leave the die wherever the Splice Phase had put
+    -- it. That is right about the layer and wrong about the table:
+    -- the outer layer is the one number the book leaves to the
+    -- players, and the die they are invited to move was the one
+    -- thing the setup did not hand them. It parks above the grid,
+    -- on the card and on no number.
     local layer = BAT_DIFF[STATE.difficulty][3] or 0
     local bx, bz = buffSpace(layer)
-    if layer > 0 and bx then setMarker('Health', bx, bz, 1, nil, ONTO) end
+    if not bx then bx, bz = buffPark() end
+    setMarker('Health', bx, bz, 1, nil, ONTO)
+  end)
+  step(function()
+    -- AND THE DICE, which were six lines of instructions until now.
+    tyrant, swept, short, stayed = batBattleDice()
   end)
   step(function()
     say('TYRANT BATTLE. Tyrant Health ' .. hp .. ' on the dial. Both' ..
@@ -3386,13 +3571,23 @@ function startBattle()
         ' Health. The 7 Tyrant Attacks are shuffled with the top card' ..
         ' face-up -- it does not attack, it only sets the first commit' ..
         ' colour. ' .. spliced .. ' Splices put in a random order.' ..
-        ' BY HAND: take 2 Purple, 2 Blue, 1 Green and 1 Yellow out of' ..
-        ' the Rats own dice into a bag on the Tyrant Dice space -- the' ..
-        ' Tyrant draws from those six fresh every round and they never' ..
-        ' exhaust; if a colour is short, take it back out of the' ..
-        ' banished pile. Sweep every other personal die, available and' ..
-        ' exhausted, into one shared pool, all available; banished dice' ..
-        ' stay gone and Red is not in the pool. Rat abilities are' ..
+        ' ' .. tyrant .. ' dice are on the Tyrant Dice space -- 2' ..
+        ' Purple, 2 Blue, 1 Green and 1 Yellow out of the Rats own' ..
+        ' supply, which the Tyrant draws from fresh every round and' ..
+        ' which never exhaust. ' .. swept .. ' dice are swept into the' ..
+        ' shared pool at the bottom left, all available, from the Rats' ..
+        ' rows and the exhausted corner alike.' ..
+        (stayed > 0 and (' ' .. stayed .. ' left where they were, as' ..
+                         ' banished: in the banished corner or on the' ..
+                         ' Rat each was borrowed from.') or '') ..
+        (#short > 0
+          and (' SHORT ' .. table.concat(short, ', ') .. ': banished' ..
+               ' out of the game altogether, so the Tyrant goes without' ..
+               ' and draws from a smaller bag.')
+          or '') ..
+        ' Banished dice stay gone, and Red is not in the pool: it stays' ..
+        ' on its Rat, and the attacking Rat may commit it but not in' ..
+        ' the same round as tapping an Upgrade. Rat abilities are' ..
         ' silent in the battle. A Splice never chips: meet its printed' ..
         ' Value in ONE attack or the whole attack bounces. Eight rounds' ..
         ' to break five walls. The dial reads the Tyrant CORE Health,' ..

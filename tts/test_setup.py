@@ -2333,12 +2333,25 @@ def on_card_assertions():
     want("...on the space for the LAYER, not for the core Health",
          (round(hd.pos[0] - bx, 3), round(hd.pos[2] - bz, 3)), (0.0, 0.0))
 
-    # AND AT LAYER 0 THERE IS NOTHING TO STAND ON. The card still comes
-    # out - it is part of the Tyrant's track either way - but a die on
-    # it would be claiming a layer the difficulty does not give.
+    # AND AT LAYER 0 IT PARKS ON THE CARD, on no number. There is no 0
+    # space to stand on - the track is 15 down to 1 - and standing it
+    # on one would claim a point the difficulty does not give. It used
+    # to be left wherever the Splice Phase had it, which put the one
+    # die the book invites the players to move out of their way; Jon
+    # asked for it on the card, 2026-11-17.
     w0, g0, hd0 = battle(0)
-    want("layer 0 leaves the Health die off the Buff card",
-         card_top_under(hd0.pos[0], hd0.pos[2]), None)
+    under0 = card_top_under(hd0.pos[0], hd0.pos[2])
+    want("layer 0 parks the Health die ON the Buff card",
+         under0 and under0[1], "Buff HP Track")
+    want("...and lets it go above that card's face too",
+         bool(under0) and hd0.pos[1] - w0.die_half >= under0[0], True)
+    # ON NO NUMBERED SPACE. A name cannot satisfy this: it asks all
+    # fifteen cells where the die is, rather than trusting that the
+    # park is somewhere else.
+    want("...on none of the fifteen numbered spaces",
+         [v for v in range(1, int(gl.BUFF_SPACES) + 1)
+          if max(abs(hd0.pos[0] - float(g0.buffSpace(v)[0])),
+                 abs(hd0.pos[2] - float(g0.buffSpace(v)[1]))) < 0.4], [])
     want("...and the card is still dealt",
          sorted(o.name for o in w0.table.values()
                 if o.name == "Buff HP Track"), ["Buff HP Track"])
@@ -2350,6 +2363,96 @@ def on_card_assertions():
     want("dropOnto over empty felt is DROP_Y",
          round(float(g.dropOnto(hd, 26.0, -17.5)), 3),
          round(float(gl.DROP_Y), 3))
+
+
+def battle_dice_assertions():
+    """The battle lays the dice out, which was six lines of instructions.
+
+    The setup message used to say BY HAND: take 2 Purple, 2 Blue, 1
+    Green and 1 Yellow into a bag on the Tyrant Dice space, then sweep
+    every other personal die into one shared pool. Jon asked for the
+    button to do it, 2026-11-17, so these are the two piles and the
+    rule that decides which die goes in which.
+
+    SIXTEEN DICE, AND ALL OF THEM SOMEWHERE. The count is the first
+    claim here because the sweep MOVES things: a die that is dropped
+    rather than placed is the failure this cannot see by looking at
+    the two destinations alone.
+    """
+    w, g = start("Standard", 0)
+    g.setupBAT()
+    drain(w)
+    g.btnFinale()
+    drain(w)
+    colours = [str(c) for c in g.BAT_RAT_DICE.values()]
+    dice = [o for o in w.markers.values() if o.name in colours]
+    want("the battle still has all sixteen colour dice", len(dice), 16)
+
+    mid = float(g.batRightX(int(g.BAT_TYRANT_DICE))) + float(g.BAT_COL) / 2
+    bag = [o for o in dice
+           if abs(o.pos[2] - float(g.batRowZ(3))) < 0.05
+           and abs(o.pos[0] - mid) <= float(g.BAT_WIDE_HW)]
+    want("the Tyrant's six are on the Tyrant Dice space",
+         sorted(o.name for o in bag),
+         sorted(["Purple", "Purple", "Blue", "Blue", "Green", "Yellow"]))
+
+    px0, px1, pzt, pzb = [float(v) for v in g.batPool().values()]
+    pool = [o for o in dice
+            if px0 <= o.pos[0] <= px1 and pzb <= o.pos[2] <= pzt]
+    want("...and the other ten are in the battle pool", len(pool), 10)
+    # THE RATS' ROWS ARE EMPTY AFTERWARDS, which is the half of
+    # "sweep every personal die" that counting the pool cannot prove:
+    # ten in the pool and ten left behind would both read as ten.
+    want("...with nothing left in a Rat's own row",
+         sorted(o.name for o in dice
+                if any(abs(o.pos[2] - float(g.batDieZ(r))) < 0.05
+                       for r in range(1, 5))), [])
+    want("...and no two dice standing in one place",
+         len(set((round(o.pos[0], 2), round(o.pos[2], 2)) for o in dice)), 16)
+
+    # A BANISHED DIE IS NOT SWEPT. "Banished dice stay gone" - and the
+    # position is the only record there is, so this puts three Greens
+    # in the banished corner and one on the Rat it was borrowed from,
+    # which is where rules/bat.html now says a banished die goes.
+    w, g = start("Standard", 0)
+    g.setupBAT()
+    drain(w)
+    b = [float(v) for v in g.batBanished().values()]
+    greens = [o for o in w.markers.values() if o.name == "Green"]
+    for i, o in enumerate(greens[:3]):
+        o.pos = [(b[0] + b[1]) / 2 + 0.01 * i, o.pos[1], (b[2] + b[3]) / 2]
+    greens[3].pos = [float(g.BAT_RAT_X), greens[3].pos[1],
+                     float(g.batRatZ(2))]
+    g.btnFinale()
+    drain(w)
+    px0, px1, pzt, pzb = [float(v) for v in g.batPool().values()]
+    pool = [o for o in w.markers.values()
+            if o.name in colours and px0 <= o.pos[0] <= px1
+            and pzb <= o.pos[2] <= pzt]
+    want("a banished die is not swept into the pool",
+         [o.name for o in pool if o.name == "Green"], [])
+    # THREE OF THE FOUR STAY WHERE THEY WERE, in the corner or on the
+    # Rat; WHICH three is not this test's business, because the Tyrant
+    # takes whichever it reaches first.
+    on_rat = lambda o: (
+        abs(o.pos[0] - float(g.BAT_RAT_X)) <= float(g.CARD_L) / 2
+        and any(abs(o.pos[2] - float(g.batRatZ(r))) <= float(g.CARD_W) / 2
+                for r in range(1, 5)))
+    want("...and three of the four Greens stay banished where they lay",
+         len([o for o in greens
+              if (b[0] <= o.pos[0] <= b[1] and b[3] <= o.pos[2] <= b[2])
+              or on_rat(o)]), 3)
+    # ...EXCEPT THE ONE THE TYRANT IS SHORT OF. The bag wants a Green
+    # and all four are banished, so one comes back out of them - "they
+    # are not returned to the Rats; they go straight into the bag".
+    mid = float(g.batRightX(int(g.BAT_TYRANT_DICE))) + float(g.BAT_COL) / 2
+    bag = [o for o in w.markers.values()
+           if o.name in colours
+           and abs(o.pos[2] - float(g.batRowZ(3))) < 0.05
+           and abs(o.pos[0] - mid) <= float(g.BAT_WIDE_HW)]
+    want("...but the Tyrant takes one back out to make up its six",
+         sorted(o.name for o in bag),
+         sorted(["Purple", "Purple", "Blue", "Blue", "Green", "Yellow"]))
 
 
 def buff_lock_assertions():
@@ -4151,6 +4254,7 @@ def main():
     bat_assertions()
     aos_assertions()
     chip_face_assertions()
+    battle_dice_assertions()
     buff_lock_assertions()
     on_card_assertions()
     pile_assertions()

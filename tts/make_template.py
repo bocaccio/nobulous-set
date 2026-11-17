@@ -314,6 +314,19 @@ def draw_bat(d, lua):
     bcx, bcz = (bx0 + bx1) / 2.0, (bzt + bzb) / 2.0
     card(d, bcx, bcz, (bx1 - bx0) / 2.0, (bzt - bzb) / 2.0, PEN["snap"], 4)
     label(d, "BANISHED\nDICE", bcx, bcz, fit=half * 1.8)
+    # AND THE SHARED POOL THE BATTLE SWEEPS EVERY SURVIVING DIE INTO,
+    # in the corner of the band the exhausted corner leaves. Empty
+    # all through the Splice Phase, the way the Tyrant's own spaces
+    # are: a space that is waiting is still worth printing, and this
+    # one is ten dice the players reach into every round.
+    #
+    # From the script's own rectangle, like the banished corner above
+    # - batPool() is what batBattleDice lays the dice out inside, so
+    # the felt and the sweep cannot disagree about where it is.
+    px0, px1, pzt, pzb = [float(v) for v in g.batPool().values()]
+    pcx, pcz = (px0 + px1) / 2.0, (pzt + pzb) / 2.0
+    card(d, pcx, pcz, (px1 - px0) / 2.0, (pzt - pzb) / 2.0, PEN["snap"], 4)
+    label(d, "BATTLE POOL", pcx, pcz, fit=(px1 - px0) * 0.8)
     # The Chip's own circle, the way NAP marks the dial's place, and
     # where the exhausted-dice corner has to stop to clear it.
     # WHERE THE EXHAUSTED CORNER STOPS AT EITHER END, read off the

@@ -2093,7 +2093,11 @@ else:
           "THREE PAGES, NOT FOUR" in text("rules/bat.html")
           and "FOUR PAGES, NOT FIVE" in text("rules/nap.html")
           and "FOUR PAGES, NOT SIX" in text("rules/nrj.html")
-          and "line-height: 1.34" in text("rules/bat.html")
+          # BAT went 1.34 -> 1.31 on 2026-11-17, to buy the three
+          # lines that say what to set the outer layer to and where a
+          # banished die goes. Its own style block records the
+          # measurement: 1.31 fits and 1.32 does not.
+          and "line-height: 1.31" in text("rules/bat.html")
           and "line-height: 1.30" in text("rules/nap.html")
           and "line-height: 1.25" in text("rules/nrj.html"))
     # AND THE CREDIT LINE IS IN THE BOOK ITSELF, which nothing had ever
@@ -4444,13 +4448,23 @@ _mark_die = _mark_src.group(1) if _mark_src else None
 # from, so moving that corner moves the dice beside it.
 # Health is placed once more than the other two: three stat rows,
 # BAT's column beside the exhausted corner, and the Tyrant battle
-# standing it on the Buff HP track.
+# standing it on the Buff HP track - on the layer's space when the
+# difficulty gives one, and parked on the card when it does not.
 check("...and every game that has a character places all three of them",
       _mark_die in _mk
       and _mk == {"Health": 5, "Strategy": 4, "Recovery": 4}
       and "setMarker('Health', BAT_STAT_X, BAT_STAT_Z[1])" in _lua
-      and ("if layer > 0 and bx then"
-           " setMarker('Health', bx, bz, 1, nil, ONTO) end") in _lua
+      # AND THE BATTLE PUTS IT ON THE CARD WHETHER OR NOT THERE IS A
+      # SPACE FOR IT. buffSpace answers nil for 0 - the track is 15
+      # down to 1 - and the call used to be skipped entirely, which
+      # left the one die the book invites the players to move
+      # wherever the Splice Phase had it. It parks above the grid
+      # now, and the park is MEASURED off the grid rather than typed,
+      # so the two cannot drift apart on a card that re-renders.
+      and "if not bx then bx, bz = buffPark() end" in _lua
+      and "setMarker('Health', bx, bz, 1, nil, ONTO)" in _lua
+      and re.search(r"function buffPark\(\).*?BUFF_GRID_DZ \+ 2 \* BUFF_PITCH",
+                    _lua, re.S)
       and "setMarker('Strategy', BAT_STAT_X, BAT_STAT_Z[2])" in _lua
       and "BAT_STAT_X = BAT_EXHAUST_X0 -" in _lua
       and "EXHAUST_Z[1]" in _lua
