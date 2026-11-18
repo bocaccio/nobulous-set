@@ -237,6 +237,23 @@ BUFF_LAYER = True
 # what charging for it costs.
 RED_COSTS_REC = False
 
+# THROW IN THE TOWEL. Jon, 2026-11-18, on how the Splice Phase is actually
+# played: "later in the splice phase this creates some tension because you
+# can't really borrow dice, but at that point you just throw in the towel
+# and grant splices to the tyrants because you already have upgrades for
+# the rats."
+#
+# THE MODEL HAS NO CONCEDE POLICY - splice_turn always commits and always
+# resolves - so no figure in this package describes that player. This dial
+# is the OTHER extreme, conceding every Experiment from the first, which
+# brackets the real line between it and the shipping policy. If conceding
+# everything wins MORE than playing, the phase is negative-sum for the Rats
+# and no amount of in-phase pressure can fix it: see simulation/price_red.py
+# for the measurement that raised the question.
+#
+# OFF IS THE PRINTED GAME.
+PHASE_CONCEDE = False
+
 TYRANT_NEED = [("purple", 2), ("blue", 2), ("green", 1), ("yellow", 1)]
 
 # Borrowing: "The active Rat may borrow one available non-Red die from another
@@ -1457,9 +1474,17 @@ class Game(object):
         rolled = []          # (die, value) so a side can reroll one
         used_red = False
         borrowed = None
+        if PHASE_CONCEDE:
+            # Commit nothing, roll nothing, borrow nothing: the Experiment
+            # fails and the Tyrant eats the revealed card. Jumping here
+            # spends no dice and no RNG, which is the whole point - the
+            # Rats arrive with every die they started with.
+            target = 1
         cap_dice = 2 if eff == "max_two" else None
         specimen_up = any(kind == "s" for kind, _ in options)
         phases = STR_PHASES + (1 if (rat.ability == "experimental" and specimen_up) else 0)
+        if PHASE_CONCEDE:
+            phases = 0
         if eff in ("str_one", "no_phase_two"):
             phases = 1          # Endurance Trial: STR 1. Resource Depletion:
                                 # no further dice in the second phase, which
