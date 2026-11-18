@@ -1612,9 +1612,37 @@ print("BAT - rules and app")
 jb = text("playtest/dist/bat.js")
 hb = text("rules/bat.html")
 hbd = js_literal("playtest/dist/bat.js", "HEALTH_BY_DIFFICULTY")
-check("bat.js Tyrant Health 9/10/12/14 (%s)"
-      % "/".join(str(hbd[k]) for k in ("Easy", "Standard", "Hard", "Nobulous")),
-      [hbd[k] for k in ("Easy", "Standard", "Hard", "Nobulous")] == [9, 10, 12, 14])
+_ORDER = ("Easy", "Standard", "Hard", "Nobulous")
+check("bat.js Tyrant core Health 8/9/9/11 (%s)"
+      % "/".join(str(hbd[k]) for k in _ORDER),
+      [hbd[k] for k in _ORDER] == [8, 9, 9, 11])
+# AND THE LAB DEALS THE WALL AGAIN. Buff HP was 0 on every rung until
+# 2026-11-18 and the lab did not model it at all, which was consistent -
+# a wall of 0 and no wall are the same game. With real numbers in the
+# column they are not, and a lab that skips it plays an easier Tyrant
+# than the table does.
+hbb = js_literal("playtest/dist/bat.js", "BUFF_BY_DIFFICULTY")
+check("bat.js Buff HP 1/1/2/2 (%s)"
+      % "/".join(str(hbb[k]) for k in _ORDER),
+      [hbb[k] for k in _ORDER] == [1, 1, 2, 2])
+# A CALL SITE, NOT A TABLE ENTRY - AGENTS.md, and three claims in this
+# repo have passed while the card did nothing. A BUFF_BY_DIFFICULTY
+# value proves nothing about whether a blow ever touches the wall, so
+# this reads the inside of the function that would have to, and the
+# ORDER inside it: the wall chips before the loop over the Splices.
+_jdmg = jb[jb.index("function applyTyrantDamage("):]
+_jdmg = _jdmg[:_jdmg.index("function renderRatSteps(")]
+check("...and bat.js chips the wall before any Splice",
+      "b.buff-=take" in _jdmg
+      and "if(b.buff>0||left<=0) return n;" in _jdmg
+      and _jdmg.index("b.buff") < _jdmg.index("for(let i=0"),
+      "applyTyrantDamage does not strip the wall before the Splices")
+check("...and draws the cell the wall stands on",
+      "function buffCell(" in jb and 'bat-buff-cell' in jb
+      and "b.buffMax>0?[buffCell(b,front)]" in jb
+      # ...and the die that reads it: frontSlot has to hand the wall the
+      # front, or the cell draws no die and nothing says what is left.
+      and 'if(b.buff>0) return "buff";' in jb)
 check("bat.js ROUND_LIMIT = 8", "ROUND_LIMIT = 8" in jb or "ROUND_LIMIT=8" in jb)
 check("rules/bat.html: 8-round containment breach", "8 rounds" in hb or "eight rounds" in hb)
 check("rules/bat.html: Splice met in one attack",
@@ -2242,17 +2270,25 @@ for _label, _needle in (
         ("nothing carries over past a Rat's Upgrade", "nothing carries over")):
     check("rules/bat.html still says %s" % _label, _needle in _bat)
 
-# The lab stopped modelling Buff HP when Health became the difficulty dial,
-# so its Tyrant track is five Splices and nothing else. The track hint said
-# damage ran through Buff HP first until 2026-11-03.
+# THE TRACK HINT NAMES EVERY CARD THE LAB DRAWS. It stopped naming Buff HP
+# on 2026-11-03, when the lab stopped modelling it - which was right then,
+# because the wall was 0 on every rung. Both came back on 2026-11-18, so
+# the hint has to name it again and has to say the thing that makes it
+# different from a Splice: it CHIPS, where a Splice must be met in one blow.
 _hint = re.search(r'<p class="hint bat-track-hint">([^<]*Damage runs[^<]*)</p>',
                   _idx)
 check("the Tyrant track hint describes the track the lab draws",
-      bool(_hint) and "Buff HP" not in _hint.group(1),
+      bool(_hint) and "Buff HP" in _hint.group(1)
+      and "chips" in _hint.group(1)
+      and _hint.group(1).index("Buff HP") < _hint.group(1).index("Splice"),
       "hint: %r" % (_hint.group(1) if _hint else None,))
 _js = text("playtest/dist/bat.js")
-check("nothing in bat.js still renders a Buff HP cell",
-      "bat-buff" not in _js and '"Buff HP"' not in _js)
+# ...AND THE SCRIPT THE HINT DESCRIBES IS CACHE-BUSTED. index.html names
+# every ?v= token in the lab, so a changed bat.js that keeps its old token
+# is a feature that is simply absent in a browser that has been here
+# before - which reads exactly like code nobody wrote. AGENTS.md says so.
+check("index.html asks for the bat.js that models the wall",
+      'bat.js?v=buffhp' in _idx)
 
 # An Assignment Task prints its Demand half upside down, to be read by
 # turning the card over. In a Time Slot the lab turns it for you; in the
@@ -2840,15 +2876,40 @@ check("tts/lua.lua offers all four difficulties",
 check("tts/lua.lua BAT_DIFF matches bat.DIFFICULTY",
       _lua_rows("BAT_DIFF", _lvl) == dict(
           (k, tuple(v)) for k, v in sb_["DIFFICULTY"].items()))
-# ...AND THE BUFF HP SHIPS AT 0 ON EVERY RUNG, which is what makes it a
-# mechanism rather than a difficulty change. One point of it costs the Rats
-# 4 to 8 points of win rate - simulation/price_buff.py, measured
-# 2026-11-12 - and the core ladder is pegged to the 20 Strong community band
-# at Standard, so a non-zero value here has to be a decision somebody made
-# and not a number a test left behind.
+# ...AND THE BUFF HP LADDER IS THE ONE SOMEBODY MEASURED. It was 0 on every
+# rung until 2026-11-18 and this check held it there, because an unmeasured
+# non-zero value would have moved every published figure. The four values
+# below were chosen against a core x Buff HP grid and confirmed at 20,000
+# games a rung - simulation/price_buff_ladder.py - so they are pinned here
+# by VALUE: a point of Buff HP is worth two to three of core, and a number
+# a test left behind would show up as a win rate nobody published.
 _lay = dict((k, v[2]) for k, v in sb_["DIFFICULTY"].items())
-check("...and the Tyrant's Buff HP is 0 on every rung",
-      set(_lay.values()) == {0}, "%r" % (_lay,))
+check("...and the Tyrant's Buff HP is 1/1/2/2",
+      [_lay[k] for k in _lvl] == [1, 1, 2, 2], "%r" % (_lay,))
+# ...AND NO RUNG SHIPS A 0, which is the thing Jon asked for: a column of
+# four zeros reads as a table nobody filled in, and the card did nothing in
+# any game anyone played.
+check("...and no rung leaves the Buff HP card doing nothing",
+      0 not in set(_lay.values()), "%r" % (_lay,))
+# ...AND THE CORE LADDER STILL LADDERS. This is the real constraint on how
+# steep the Buff HP column can get: holding the win rates at Buff HP 3 wants
+# a Hard core near 7 and a Nobulous core near 9, and at Buff HP 2 it wants a
+# Standard core of 6 - LOWER than Easy's 8. A table whose core column goes
+# down as the difficulty goes up is wrong on its face, so the column stops
+# at 2 until somebody decides to re-pitch the set.
+_core = [sb_["DIFFICULTY"][k][1] for k in _lvl]
+check("...and the core Health still rises with the difficulty",
+      _core == sorted(_core), "%r" % (list(zip(_lvl, _core)),))
+# ...AND THE BOOK'S OWN TABLE IS THE SAME FOUR ROWS. The rulebook is the
+# player-facing copy of this ladder and had no check at all: the zeros it
+# printed were right by accident of never having been touched.
+_hrows = re.findall(
+    r"<tr><td>(?:<b>)?(Easy|Standard|Hard|Nobulous)(?:</b>)?</td>"
+    r"<td>(\d+)</td><td>(\d+)</td><td>(\d+)</td></tr>", hb)
+check("rules/bat.html prints bat.DIFFICULTY in its setup table",
+      [(n, int(a), int(b), int(c)) for n, a, b, c in _hrows]
+      == [(k,) + tuple(sb_["DIFFICULTY"][k]) for k in _lvl],
+      "book says %r" % (_hrows,))
 check("tts/lua.lua NAP_DIFF matches nap.LEVELS",
       _lua_rows("NAP_DIFF", _lvl) == dict(
           (k, tuple(v)) for k, v in sn["LEVELS"].items()))
@@ -2892,6 +2953,14 @@ _bat_line = "   ".join("%s %d and %d" % (l, sb_["DIFFICULTY"][l][0],
                        for l in _lvl)
 check("the TTS notebook prints BAT's Specimens and Tyrant Health",
       _bat_line in _mod, "wanted %r" % _bat_line)
+# ...AND THE THIRD NUMBER, which the notebook left out while it was 0 on
+# every rung and described as an optional way to hold part of the Health on
+# the track. It is neither optional nor part of the Health now.
+_buff_line = "Buff HP: " + "   ".join("%s %d" % (l, sb_["DIFFICULTY"][l][2])
+                                      for l in _lvl)
+check("...and BAT's Buff HP per difficulty",
+      _buff_line in _mod and "Buff HP card is optional" not in _mod,
+      "wanted %r" % _buff_line)
 _nap_line = "   ".join("%s %d and %d" % (l, sn["LEVELS"][l][0],
                                          sn["LEVELS"][l][1])
                        for l in _lvl)

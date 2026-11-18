@@ -48,16 +48,24 @@ STATE = { game = nil, difficulty = 'Standard', tier = 0,
 -- nap.LEVELS, aos.LEVELS and the finale table in rules/nrj.html.
 LEVELS = { 'Easy', 'Standard', 'Hard', 'Nobulous' }
 -- BAT: Specimens shuffled into the Upgrade deck, and the Tyrant's Health.
--- Specimens, the Tyrant's CORE Health, its BUFF HP. Buff HP is 0 at
--- every rung: the Tyrant is Splices and a core, and Buff HP is a
--- fine-tuning dial the player raises. One point of it costs the Rats
--- 4 to 8 points of win rate - simulation/price_buff.py - so it is not
--- a number to set lightly.
+-- Specimens, the Tyrant's CORE Health, its BUFF HP. The Tyrant is a
+-- wall, five Splices and a core, and damage has to get past the wall
+-- AND every Splice before the core can be touched at all.
+--
+-- BUFF HP IS PER-DIFFICULTY AGAIN, 2026-11-18. It was 0 at every rung,
+-- so the rulebook printed a column of four zeros and the card did
+-- nothing in any game anyone played. A point of it is worth two to
+-- three of core - the five Splices keep their full Values, and the
+-- dice those Values draw, for the whole time the wall stands - so the
+-- core came down to pay for it. simulation/price_buff_ladder.py chose
+-- the pairs and confirmed them at 20,000 games a rung; the ladder's
+-- win rates did not move, 59.8 / 51.6 / 39.2 / 27.5 against the
+-- 60.7 / 52.0 / 38.6 / 26.0 the zero column was measured at.
 --
 -- CALLED BUFF HP, after the card it stands on. It was "the outer
 -- layer" in rules/bat.html until 2026-11-18, when Jon asked for the
 -- card's own name everywhere; the book no longer uses the word.
-BAT_DIFF = { Easy = {5, 9, 0}, Standard = {6, 10, 0}, Hard = {7, 12, 0}, Nobulous = {8, 14, 0} }
+BAT_DIFF = { Easy = {5, 8, 1}, Standard = {6, 9, 1}, Hard = {7, 9, 2}, Nobulous = {8, 11, 2} }
 -- NAP: the Credit goal, and how many Setbacks are in the Assignment deck.
 -- (Credit goal, Setbacks shuffled in).  Stepped one Credit down and one
 -- Setback up 2026-11-12: 58.1 / 49.0 / 37.0 / 26.3 solo, six Apprentices,
@@ -2487,9 +2495,10 @@ function setupBAT()
         (STATE.tier >= 3 and (' TIER III: the 6 Research Notes are a face-up' ..
          ' stack on their space -- spread it to read them.') or '') ..
         ' The Tyrant Attacks and the Buff HP card stay in the bag until' ..
-        ' the Tyrant wakes; the Buff HP card is optional, and holds part' ..
-        ' of the Health at the FRONT of the Tyrant track, ahead of the' ..
-        ' Splices, so it has to come off before any of them.')
+        ' the Tyrant wakes. The Buff HP card is the wall at the FRONT of' ..
+        ' the Tyrant track, ahead of the Splices, so it has to come off' ..
+        ' before any of them -- and it is the only card there that' ..
+        ' chips.')
   end)
   run()
 end
@@ -3595,14 +3604,12 @@ function startBattle()
     -- Set to 1: the number that counts is the space it stands on,
     -- and a die showing anything else reads as a second number.
     --
-    -- AND IT GOES ON THE CARD EITHER WAY. At layer 0 - which is
-    -- every rung that ships - there is no space to stand on, and
-    -- this used to leave the die wherever the Splice Phase had put
-    -- it. That is right about the layer and wrong about the table:
-    -- the Buff HP is the one number the book leaves to the
-    -- players, and the die they are invited to move was the one
-    -- thing the setup did not hand them. It parks above the grid,
-    -- on the card and on no number.
+    -- AND IT GOES ON THE CARD EITHER WAY. No rung ships a 0 any
+    -- more, but a table may still set one, and at 0 there is no
+    -- space to stand on: this used to leave the die wherever the
+    -- Splice Phase had put it, which is right about the number and
+    -- wrong about the table. It parks above the grid instead, on
+    -- the card and on no number.
     local layer = BAT_DIFF[STATE.difficulty][3] or 0
     local bx, bz = buffSpace(layer)
     if not bx then bx, bz = buffPark() end

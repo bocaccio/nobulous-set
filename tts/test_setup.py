@@ -2315,11 +2315,15 @@ def on_card_assertions():
     # card was being locked while still in the air and the die went
     # under it. The lock was fixed; the drop height was not.
     #
-    # AND THE DIE GOES ON THE LAYER, NOT ON THE CORE HEALTH. It used to
-    # stand on the core number while the dial read the same, which
-    # printed the Tyrant's Health twice. The two are independent stats,
-    # so this needs a difficulty that HAS a layer - every shipping rung
-    # is 0 - and the 0 case is checked underneath it.
+    # AND THE DIE GOES ON THE BUFF HP, NOT ON THE CORE HEALTH. It used
+    # to stand on the core number while the dial read the same, which
+    # printed the Tyrant's Health twice. The two are independent stats.
+    #
+    # THIS FORCES THE VALUE because it wants one the ladder does not
+    # print - 3 is off the top of a column that runs 1, 1, 2, 2 - and
+    # 0 underneath it is a value no rung ships at all since
+    # 2026-11-18. Every shipping rung is checked further down, against
+    # the number lua.lua itself carries.
     def battle(layer):
         w, g = start("Standard", 0)
         w.lua.execute("BAT_DIFF.Standard[3] = %d" % layer)
@@ -2365,6 +2369,43 @@ def on_card_assertions():
     want("...and the card is still dealt",
          sorted(o.name for o in w0.table.values()
                 if o.name == "Buff HP Track"), ["Buff HP Track"])
+
+    # AND EVERY RUNG SHIPS A WALL NOW, so a game nobody has touched
+    # stands the die on a numbered space. Both cases above have to
+    # force a value to reach this code at all, which is exactly how a
+    # setup that placed the die correctly in a forced test and wrongly
+    # in a real game would get through: this plays the four games.
+    #
+    # BY THE VALUE THE SCRIPT CARRIES, not by four numbers written out
+    # here too. A ladder edited in lua.lua would otherwise be measured
+    # against the ladder it replaced - and the whole point of the
+    # 2026-11-18 change is that four files carry these numbers.
+    for _lv in ("Easy", "Standard", "Hard", "Nobulous"):
+        wS, gS = start(_lv, 0)
+        gS.setupBAT()
+        drain(wS)
+        gS.btnFinale()
+        drain(wS)
+        hdS = [o for o in wS.markers.values() if o.name == "Health"][0]
+        _b = int(gS.BAT_DIFF[_lv][3])
+        _fits = 1 <= _b <= int(gl.BUFF_SPACES)
+        want("%s ships a Buff HP the track has a space for" % _lv,
+             _fits, True)
+        if not _fits:
+            continue        # buffSpace(0) is nil; the want above says why
+        bxS, bzS = (float(v) for v in gS.buffSpace(_b))
+        want("...and %s stands the Health die on that space" % _lv,
+             (round(hdS.pos[0] - bxS, 3), round(hdS.pos[2] - bzS, 3)),
+             (0.0, 0.0))
+        # ...AND NOT ON THE CORE'S SPACE. The two numbers are close
+        # enough on this ladder - 8 and 1, 9 and 2 - that a setup
+        # reading the wrong column would still land on the card.
+        _core = int(gS.BAT_DIFF[_lv][2])
+        if _core != _b and 1 <= _core <= int(gl.BUFF_SPACES):
+            cxS, czS = (float(v) for v in gS.buffSpace(_core))
+            want("...and not on the space for %s's core Health" % _lv,
+                 max(abs(hdS.pos[0] - cxS), abs(hdS.pos[2] - czS)) > 0.4,
+                 True)
 
     # A DESTINATION WITH NOTHING AT IT BEHAVES AS IT DID. dropOnto
     # never goes below DROP_Y, so an empty patch of felt is still the

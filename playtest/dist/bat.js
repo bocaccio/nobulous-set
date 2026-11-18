@@ -14,11 +14,23 @@
     yellow: ["✦", "✷", "", "", "", ""],
     red: ["✦", "✦", "✦", "✦", "✦", "✷"]
   };
-  // The Tyrant's bulk is its five Splices; Health is what is left once the
-  // last wall comes down, and it is also the difficulty dial. Buff HP used
-  // to carry these points on its own card, back when Health was a flat 20.
-  const HEALTH_BY_DIFFICULTY={Easy:9,Standard:10,Hard:12,Nobulous:14};
-  const tyrantMaxHealth=()=>HEALTH_BY_DIFFICULTY[state.difficulty]??10;
+  // The Tyrant's bulk is its five Splices; core Health is what is left
+  // once the last wall comes down. BUFF HP is the wall in FRONT of the
+  // Splices and the only card on the track that chips, which is why a
+  // point of it is worth more than a point of core: the five Splices keep
+  // their full Values, and the dice those Values draw, for the whole time
+  // it stands.
+  //
+  // PER-DIFFICULTY AGAIN since 2026-11-18. Buff HP was 0 on every rung,
+  // so the rulebook printed a column of zeros and the card did nothing in
+  // any game anyone played. simulation/price_buff_ladder.py picked these
+  // four against the core Health beside them, at 20,000 games a rung, so
+  // the ladder's win rates did not move: 59.8 / 51.6 / 39.2 / 27.5 against
+  // the 60.7 / 52.0 / 38.6 / 26.0 the zero column was measured at.
+  const HEALTH_BY_DIFFICULTY={Easy:8,Standard:9,Hard:9,Nobulous:11};
+  const BUFF_BY_DIFFICULTY={Easy:1,Standard:1,Hard:2,Nobulous:2};
+  const tyrantMaxHealth=()=>HEALTH_BY_DIFFICULTY[state.difficulty]??9;
+  const tyrantMaxBuff=()=>BUFF_BY_DIFFICULTY[state.difficulty]??1;
   // The Tyrant breaks containment if it survives this many rounds, so
   // chipping away is not a plan.
   const ROUND_LIMIT=8;
@@ -324,7 +336,7 @@
     return {
       difficulty, tier, protocol, notes, deck:shuffle([...cards.keys()]),
       upgradeDeck:shuffle([...upgrades.keys()].map(i=>({type:"u",i})).concat(mods,shuffle([...specimens.keys()]).slice(0,specimenCount).map(i=>({type:"s",i})))),
-      current:null, discard:[], splices:0, spliceCards:[], rounds:0, health:HEALTH_BY_DIFFICULTY[difficulty]??10, notice:"", activeRat:0, battle:null,
+      current:null, discard:[], splices:0, spliceCards:[], rounds:0, health:HEALTH_BY_DIFFICULTY[difficulty]??9, notice:"", activeRat:0, battle:null,
       red:{holder:Math.floor(Math.random()*4),zone:"available",selected:false,face:""},
       lastRat:null,recBonus:null,
       rats:names.map((name,i)=>({name,hp:[1,1,2,2][i],side:"front",upgrades:[],dice:colors.map((color,j)=>({id:`rat-${i}-${j}`,color,zone:"available",selected:false,face:""}))}))
@@ -895,12 +907,18 @@
         const k=liveRatFrom(t);state.battle.attackRat=k>=0?k:null;
       }
     }
+    // A BATTLE SAVED BEFORE 2026-11-18 HAS NO WALL, and keeps the game
+    // it started: a 0 here is indistinguishable from a wall already
+    // stripped, which is exactly what that battle was playing.
+    if(state.battle&&typeof state.battle.buff!=="number"){
+      state.battle.buff=0;state.battle.buffMax=0;save();}
     if(state.battle&&!Array.isArray(state.battle.attackDeck)){
       state.battle.attackDeck=shuffle([...Array(ATTACK_NAMES.length).keys()]);
       state.battle.attackDiscard=[];state.battle.attack=null;save();}
     if(!state.battle){
       const order=shuffle([...Array(5).keys()]);
       state.battle={turn:"rats",round:1,order,hp:order.map(i=>cardValue(state.spliceCards[i])),max:order.map(i=>cardValue(state.spliceCards[i])),
+        buff:tyrantMaxBuff(),buffMax:tyrantMaxBuff(),
         attackDeck:shuffle([...Array(ATTACK_NAMES.length).keys()]),attackDiscard:[],attack:null};
       // The Experiment phase's turn flags end here. The battle runs its own
       // turn structure (battle.turn / battle.needRec), and leaving turnLocked
@@ -934,6 +952,7 @@
 
   // The Health die sits on the leftmost card still standing.
   function frontSlot(b) {
+    if(b.buff>0) return "buff";
     const i=b.hp.findIndex(v=>v>0);
     return i<0?"tyrant":i;
   }
@@ -943,9 +962,26 @@
   // card's Value.
   const healthDie = n =>
     `<span class="bat-health-die" title="Health die \u00b7 ${n} left on this card">${n}</span>`;
-  // One cell of the Tyrant track. Every cell is a Splice: Buff HP stopped
-  // being modelled here when Health became the difficulty dial, and the
-  // 15-space grid it used to print went with it.
+  // THE BUFF HP CELL, the wall in front of the five Splices. It is not a
+  // Splice and does not behave like one: the die shows what is LEFT of it
+  // rather than a Value a blow has to meet, because this is the one card
+  // on the track that chips. Strip/Restore is there for the same reason
+  // the Splices have Destroy/Restore - a tester who misapplies a blow has
+  // to be able to put it back.
+  function buffCell(b,front) {
+    const dead=b.buff<=0,on=front==="buff";
+    return `<div class="bat-track-cell bat-buff-cell ${dead?"destroyed":""} ${on?"front":""}">`
+      +`<div class="suite-card portrait bat-track-art" style="background-image:url('assets/BAT_BuffHP_TTS.png?v=buffhp1');background-size:100% 100%"></div>`
+      +(on?`<div class="bat-track-die">${healthDie(b.buff)}</div>`:"")
+      +`<div class="bat-track-name">Buff HP</div>`
+      +`<div class="bat-hp-selector bat-splice-toggle"><strong>Buff ${b.buffMax}</strong>`
+      +`<button data-buff-hp="1" title="${dead?"Put the Buff HP back up":"Strip the Buff HP"}">`
+      +`${dead?"Restore":"Strip"}</button></div>`
+      +`<div class="bat-track-state">${dead?"Stripped":"Taking damage"}</div></div>`;
+  }
+
+  // One cell of the Tyrant track. Every other cell is a Splice, which must
+  // be met in one blow or the blow bounces off it entirely.
   function trackCell(slot,card,hp,max,front,editable) {
     const dead=hp<=0;
     return `<div class="bat-track-cell ${dead?"destroyed":""} ${front===slot?"front":""}">`
@@ -1002,6 +1038,17 @@
     let left=n;
     b.bounced=0;b.bounceLeft=0;b.brokeThisHit=null;   // cards, not names
     const broke=[];
+    // BUFF HP CHIPS, and it is the only card on the track that does. The
+    // card says to step the die down one space per point of damage, so a
+    // blow smaller than what is left takes what it can and stops there
+    // rather than bouncing - and only once the wall falls in THIS blow
+    // does the remainder carry on into a Splice.
+    if(b.buff>0){
+      const take=Math.min(b.buff,left);
+      b.buff-=take;left-=take;
+      b.strippedBuff=b.buff<=0;
+      if(b.buff>0||left<=0) return n;
+    } else b.strippedBuff=false;
     for(let i=0;i<b.hp.length;i++){
       if(b.hp[i]<=0) continue;            // already destroyed
       if(left<b.hp[i]) {                  // this wall is not met; nothing carries
@@ -1127,7 +1174,10 @@
     // A destroyed Splice stays editable, or Restore could never be reached:
     // destroying it moves the front marker past it and would disable its own
     // undo. Otherwise only the card currently taking damage is adjustable.
-    const cells=b.order.map((cardIndex,pos)=>trackCell(pos,state.spliceCards[cardIndex],b.hp[pos],b.max[pos],front,front===pos||b.hp[pos]<=0));
+    // The wall is drawn only by a battle that was dealt one, so a battle
+    // saved before the wall existed does not grow a stripped cell.
+    const cells=(b.buffMax>0?[buffCell(b,front)]:[])
+      .concat(b.order.map((cardIndex,pos)=>trackCell(pos,state.spliceCards[cardIndex],b.hp[pos],b.max[pos],front,front===pos||b.hp[pos]<=0)));
     const draws=Math.min(6,Math.max(2,...b.order.map((cardIndex,pos)=>b.hp[pos]>0?cardValue(state.spliceCards[cardIndex]):0)));
     const drawn=tyrantDice().filter(d=>d.selected),bag=tyrantDice().filter(d=>!d.selected);
     const tyrantDie=d=>`<button class="rat-die ${d.color} ${d.selected?"selected":""} ${d.face?"rolled":""}" data-tyrant-die="${d.id}" title="${d.color}"><span class="face">${d.face||""}</span><span class="tiny">${d.color[0].toUpperCase()}</span></button>`;
@@ -1370,13 +1420,20 @@
     const button=event.target.closest("button");
     const panel=event.target.closest(".bat-rat");
     if(!button&&!panel) return;
-    if(button&&!button.matches("[data-new-game='bat'],#batEndYes,#batEndNo,[data-bat-die],[data-bat-red],[data-bat-borrow],[data-bat-return],[data-bat-swap],[data-bat-borrow-check],[data-bat-reset],[data-bat-allocate],[data-move-red],[data-rat-side],[data-rat-hp],[data-rat-roll],[data-rat-recover],[data-rat-rollzero],[data-rat-ability],[data-bat-note-claim],[data-bat-note-spend],[data-pool-roll],[data-pool-recover],[data-pool-exhaust],[data-pool-apply],[data-apply-hits],[data-hit-target],[data-bat-held],[data-bat-drop],[data-track-hp],[data-tyrant-hp],[data-tyrant-die],[data-tyrant-draw],[data-roar-exhaust],[data-goto-target],[data-tyrant-attack],[data-bat-splice],[data-bat-action],#batRollSelected,#batAllocate,#batReadyAll,#batSuccessA,#batSuccessB,#batSuccessC,#batFail")) return;
+    if(button&&!button.matches("[data-new-game='bat'],#batEndYes,#batEndNo,[data-bat-die],[data-bat-red],[data-bat-borrow],[data-bat-return],[data-bat-swap],[data-bat-borrow-check],[data-bat-reset],[data-bat-allocate],[data-move-red],[data-rat-side],[data-rat-hp],[data-rat-roll],[data-rat-recover],[data-rat-rollzero],[data-rat-ability],[data-bat-note-claim],[data-bat-note-spend],[data-pool-roll],[data-pool-recover],[data-pool-exhaust],[data-pool-apply],[data-apply-hits],[data-hit-target],[data-bat-held],[data-bat-drop],[data-track-hp],[data-buff-hp],[data-tyrant-hp],[data-tyrant-die],[data-tyrant-draw],[data-roar-exhaust],[data-goto-target],[data-tyrant-attack],[data-bat-splice],[data-bat-action],#batRollSelected,#batAllocate,#batReadyAll,#batSuccessA,#batSuccessB,#batSuccessC,#batFail")) return;
     event.preventDefault();event.stopImmediatePropagation();
     if(button?.dataset.newGame==="bat") {state=fresh(state.difficulty);save();ensureExperiment()||render();return;}
     if(button?.id==="batEndYes"){$("batEndDialog").close();state=fresh(state.difficulty);save();ensureExperiment()||render();return;}
     if(button?.id==="batEndNo"){$("batEndDialog").close();if(state.endGame)state.endGame.dismissed=true;
       state.notice=(state.endGame?{win:"The Tyrant is defeated.",timeout:"The Tyrant broke containment."}[state.endGame.kind]||"Every Rat is knocked out.":"Every Rat is knocked out.")+" The board is left as it ended.";
       save();render();return;}
+    if(button?.dataset.buffHp!==undefined){const b=state.battle;if(b){
+      const wasDown=b.buff<=0;
+      b.buff=wasDown?b.buffMax:0;
+      setNotice(wasDown
+        ? `Buff HP restored to ${b.buffMax}.`
+        : "Buff HP stripped. Damage now reaches the Splices.");
+      return;}return;}
     if(button?.dataset.trackHp!==undefined){const b=state.battle;if(b){
       // Whole or gone - there is no value in between for a Splice to hold.
       const i=Number(button.dataset.trackHp);

@@ -167,25 +167,43 @@ EXPERIMENT_TARGETS = [3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5
 # there are only 8 Specimen cards; the Buff HP track was extended to 15
 # spaces so the bottom two rungs could separate.
 # (Specimens shuffled into the Upgrade deck, the Tyrant's CORE Health, its
-# outer layer).
+# BUFF HP).
 #
-# THE TYRANT IS AN OUTER LAYER, FIVE SPLICES AND A CORE - three things, and
-# the third number is the first of them. Jon's framing, 2026-11-12: the two
+# THE TYRANT IS A WALL, FIVE SPLICES AND A CORE - three things, and the
+# third number is the first of them. Jon's framing, 2026-11-12: the two
 # health quantities are independent stats rather than one total that gets
-# divided, and damage has to get past the layer AND every Splice before the
-# core can be touched at all. The card and rules/bat.html say the same.
+# divided, and damage has to get past the Buff HP AND every Splice before
+# the core can be touched at all. The card and rules/bat.html say the same.
 #
-# THE LAYER IS 0 AT EVERY RUNG UNTIL SOMEONE PICKS THE NUMBERS, and that is
-# deliberate: 0 is exactly today's game, so this commit adds the mechanism
-# without moving a single measured figure. Every point of layer is expensive
-# - see BUFF_PRICE below, measured - and the core numbers here are pegged to
-# the 20 Strong community band (Standard 52.8%), so the four values are a
-# design decision and not a default to be guessed at.
+# SOMEONE PICKED THE NUMBERS, 2026-11-18. The line above used to say the
+# layer was 0 at every rung "until someone picks the numbers", which was
+# honest about the mechanism and left the rulebook printing a column of
+# four zeros - a table that reads as one nobody filled in, and a card that
+# did nothing in any game anyone played. Jon's call.
+#
+# THE CORE CAME DOWN TO PAY FOR IT, because a point of Buff HP is worth two
+# to three of core: the five Splices keep their full Values, and the dice
+# those Values draw, for the whole time the wall stands. The pairs were
+# chosen off a core x Buff HP grid and then confirmed at 20,000 games a
+# rung - simulation/price_buff_ladder.py, which prints both - and the
+# ladder's win rates did not move:
+#
+#   Easy      9/0  60.7%  ->   8/1  59.8%
+#   Standard 10/0  52.0%  ->   9/1  51.6%   inside the 49-54% band
+#   Hard     12/0  38.6%  ->   9/2  39.2%
+#   Nobulous 14/0  26.0%  ->  11/2  27.5%
+#
+# WHY NOT A STEEPER COLUMN. 1/2/3/4 was asked for and cannot be paid for:
+# holding the rates at Buff HP 3 wants a Hard core near 7 and a Nobulous
+# core near 9, so the core column stops laddering - Easy would print a
+# HIGHER core than Standard. Buff HP is simply too expensive per point for
+# the core to absorb more than two of it. A steeper column means a harder
+# set, which is a re-pitch and not a tuning.
 DIFFICULTY = {
-    "Easy": (5, 9, 0),
-    "Standard": (6, 10, 0),
-    "Hard": (7, 12, 0),
-    "Nobulous": (8, 14, 0),
+    "Easy": (5, 8, 1),
+    "Standard": (6, 9, 1),
+    "Hard": (7, 9, 2),
+    "Nobulous": (8, 11, 2),
 }
 
 # What a point of outer layer costs the Rats, measured on 2026-11-12 at 3000
