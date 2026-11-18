@@ -48,11 +48,15 @@ STATE = { game = nil, difficulty = 'Standard', tier = 0,
 -- nap.LEVELS, aos.LEVELS and the finale table in rules/nrj.html.
 LEVELS = { 'Easy', 'Standard', 'Hard', 'Nobulous' }
 -- BAT: Specimens shuffled into the Upgrade deck, and the Tyrant's Health.
--- Specimens, the Tyrant's CORE Health, its OUTER LAYER. The layer is 0
--- at every rung: the Tyrant is Splices and a core, and a layer is a
+-- Specimens, the Tyrant's CORE Health, its BUFF HP. Buff HP is 0 at
+-- every rung: the Tyrant is Splices and a core, and Buff HP is a
 -- fine-tuning dial the player raises. One point of it costs the Rats
 -- 4 to 8 points of win rate - simulation/price_buff.py - so it is not
 -- a number to set lightly.
+--
+-- CALLED BUFF HP, after the card it stands on. It was "the outer
+-- layer" in rules/bat.html until 2026-11-18, when Jon asked for the
+-- card's own name everywhere; the book no longer uses the word.
 BAT_DIFF = { Easy = {5, 9, 0}, Standard = {6, 10, 0}, Hard = {7, 12, 0}, Nobulous = {8, 14, 0} }
 -- NAP: the Credit goal, and how many Setbacks are in the Assignment deck.
 -- (Credit goal, Setbacks shuffled in).  Stepped one Credit down and one
@@ -3595,7 +3599,7 @@ function startBattle()
     -- every rung that ships - there is no space to stand on, and
     -- this used to leave the die wherever the Splice Phase had put
     -- it. That is right about the layer and wrong about the table:
-    -- the outer layer is the one number the book leaves to the
+    -- the Buff HP is the one number the book leaves to the
     -- players, and the die they are invited to move was the one
     -- thing the setup did not hand them. It parks above the grid,
     -- on the card and on no number.
@@ -3643,9 +3647,8 @@ function startBattle()
         ' silent in the battle. A Splice never chips: meet its printed' ..
         ' Value in ONE attack or the whole attack bounces. Eight rounds' ..
         ' to break five walls. The dial reads the Tyrant CORE Health,' ..
-        ' ' .. hp .. ', which nothing can touch until the outer layer' ..
-        ' and all five Splices are gone. The Buff HP card is out as' ..
-        ' that outer layer, at ' ..
+        ' ' .. hp .. ', which nothing can touch until the Buff HP' ..
+        ' and all five Splices are gone. The Buff HP card is out, at ' ..
         ((BAT_DIFF[STATE.difficulty][3] or 0) > 0
           and ('' .. BAT_DIFF[STATE.difficulty][3] ..
                ' -- the Health die is standing on it.')

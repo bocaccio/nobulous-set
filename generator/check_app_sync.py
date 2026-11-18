@@ -1621,17 +1621,26 @@ check("rules/bat.html: Splice met in one attack",
       "one attack" in hb.lower())
 check("rules/bat.html: no commit cap left",
       "up to 6 dice" not in hb.lower())
-# BUFF HP IS THE TYRANT'S OUTER LAYER, and the book has to say the ORDER.
+# BUFF HP IS WHAT A BLOW STRIPS FIRST, and the book has to say the ORDER.
 #
 # It said "optional, hold part of the Health on it and spend that first",
-# which with a track of Splices THEN Health put the layer last but one - and
-# the layer's whole purpose is that the Splices shelter behind it. Jon's
-# framing, 2026-11-12: an outer layer and a core Health are two independent
-# stats, and damage has to get past the layer AND every Splice to reach the
-# core. Three things have to hold together, so three things are checked.
-check("rules/bat.html: Buff HP is the Tyrant's outer layer",
-      "outer layer" in hb.lower() and "core Health" in hb
-      and "Buff HP" in hb
+# which with a track of Splices THEN Health put it last but one - and its
+# whole purpose is that the Splices shelter behind it. Jon's framing,
+# 2026-11-12: Buff HP and a core Health are two independent stats, and
+# damage has to get past the Buff HP AND every Splice to reach the core.
+# Three things have to hold together, so three things are checked.
+#
+# AND THE STAT IS CALLED BUFF HP, after the card it stands on. It was "the
+# Tyrant's outer layer" until 2026-11-18; the term is retired, and the
+# retirement is an invariant here rather than a tidy-up somebody has to
+# remember - two glosses on one stat is how the Encounters/Experiment
+# split started.
+check("rules/bat.html: Buff HP is what a blow strips first",
+      "Buff HP" in hb and "core Health" in hb
+      and "stripped before any Splice can be damaged" in hb
+      # A WORD BOUNDARY, because "player" contains "layer" and a plain
+      # substring test here can never pass.
+      and not re.search(r"\blayers?\b", hb, re.I)
       # ...and the superseded framing is gone, both halves of it.
       and "part of the Health" not in hb
       and "Tyrant Health</th>" not in hb)
@@ -1639,16 +1648,16 @@ check("rules/bat.html: Buff HP is the Tyrant's outer layer",
 # the sentence rather than matched as a phrase, so saying it differently
 # still passes and saying it backwards does not.
 # BY POSITION IN THE SENTENCE, NOT BY MEMBERSHIP. The first version of
-# this read `[w for w in ("outer layer", "Splices", "core Health") if w in
+# this read `[w for w in ("Buff HP", "Splices", "core Health") if w in
 # sentence]`, which sorts by the TUPLE's order and not the text's - so it
 # passed with the sentence printed backwards. Mutation-tested both ways now.
 _track = re.search(r"The <b>Tyrant track</b> runs(.{0,200}?)&mdash;", hb, re.S)
 _where = [(_track.group(1).find(w), w)
-          for w in ("outer layer", "Splices", "core Health")] if _track else []
-check("...and prints the damage order: layer, Splices, core",
+          for w in ("Buff HP", "Splices", "core Health")] if _track else []
+check("...and prints the damage order: Buff HP, Splices, core",
       bool(_where) and all(i >= 0 for i, _w in _where)
       and [w for _i, w in sorted(_where)]
-      == ["outer layer", "Splices", "core Health"],
+      == ["Buff HP", "Splices", "core Health"],
       "found %r in %r" % (sorted(_where), _track and _track.group(1)[:70]))
 # AND THE MODEL RUNS THAT ORDER. The book could say it while damage_tyrant
 # went straight to the Splices; this is the call site, not a table entry.
@@ -2094,7 +2103,7 @@ else:
           and "FOUR PAGES, NOT FIVE" in text("rules/nap.html")
           and "FOUR PAGES, NOT SIX" in text("rules/nrj.html")
           # BAT went 1.34 -> 1.31 on 2026-11-17, to buy the three
-          # lines that say what to set the outer layer to and where a
+          # lines that say what to set the Buff HP to and where a
           # banished die goes. Its own style block records the
           # measurement: 1.31 fits and 1.32 does not.
           and "line-height: 1.31" in text("rules/bat.html")
@@ -2831,14 +2840,14 @@ check("tts/lua.lua offers all four difficulties",
 check("tts/lua.lua BAT_DIFF matches bat.DIFFICULTY",
       _lua_rows("BAT_DIFF", _lvl) == dict(
           (k, tuple(v)) for k, v in sb_["DIFFICULTY"].items()))
-# ...AND THE OUTER LAYER SHIPS AT 0 ON EVERY RUNG, which is what makes the
-# layer a mechanism rather than a difficulty change. One point of it costs
-# the Rats 4 to 8 points of win rate - simulation/price_buff.py, measured
+# ...AND THE BUFF HP SHIPS AT 0 ON EVERY RUNG, which is what makes it a
+# mechanism rather than a difficulty change. One point of it costs the Rats
+# 4 to 8 points of win rate - simulation/price_buff.py, measured
 # 2026-11-12 - and the core ladder is pegged to the 20 Strong community band
 # at Standard, so a non-zero value here has to be a decision somebody made
 # and not a number a test left behind.
 _lay = dict((k, v[2]) for k, v in sb_["DIFFICULTY"].items())
-check("...and the Tyrant's outer layer is 0 on every rung",
+check("...and the Tyrant's Buff HP is 0 on every rung",
       set(_lay.values()) == {0}, "%r" % (_lay,))
 check("tts/lua.lua NAP_DIFF matches nap.LEVELS",
       _lua_rows("NAP_DIFF", _lvl) == dict(
