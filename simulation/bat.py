@@ -221,6 +221,22 @@ BUFF_PRICE = {}
 # a non-zero layer in DIFFICULTY above.
 BUFF_LAYER = True
 
+# RED COSTS A REC SLOT. Jon's proposal, 2026-11-18, aimed at a Splice Phase
+# that applies no pressure: "exhausting the red die - if you use REC to get
+# it back, you have to apply it to a rat during the next turn (not the
+# active rat). In other words, it uses up one REC slot."
+#
+# The second half is already the printed rule - rules/bat.html, "After Red
+# is used it is set aside rather than exhausted", and it goes to a
+# non-active Rat on the next turn - so the dial is the FIRST half: the
+# active Rat recovers one die fewer on a turn it commits Red.
+#
+# OFF IS THE PRINTED GAME, so every published figure stands with this here.
+# Red is committed in 49% of Experiments and is free today, which is what
+# makes it the phase's most reliable crutch - simulation/price_red.py has
+# what charging for it costs.
+RED_COSTS_REC = False
+
 TYRANT_NEED = [("purple", 2), ("blue", 2), ("green", 1), ("yellow", 1)]
 
 # Borrowing: "The active Rat may borrow one available non-Red die from another
@@ -1717,6 +1733,11 @@ class Game(object):
                 d.zone = "exhausted"
 
         recovery = rat.effective_rec()
+        if RED_COSTS_REC and used_red:
+            # One REC slot, spent on getting Red back rather than on the
+            # Rat's own dice. Floored at 0: a Rat with REC 1 that commits
+            # Red recovers nothing that turn.
+            recovery = max(0, recovery - 1)
         if rat.ability == "experimental" and specimen_up:
             recovery += 1
         if rat.ability == "adaptation" and successes >= target:

@@ -20,14 +20,49 @@ the zero column was measured at. The ladder it chose:
     Hard     12 core / 0 buff  38.6%  ->   9 / 2  39.2%
     Nobulous 14 core / 0 buff  26.0%  ->  11 / 2  27.5%
 
-AND WHY THE COLUMN IS NOT STEEPER. 1/2/3/4 was asked for and the grid will
-not pay for it: holding the rates at Buff HP 3 wants a Hard core near 7 and
-a Nobulous core near 9, and holding them at Buff HP 2 on Standard wants a
-core of 6 - LOWER than Easy's. Read the grid down a column and the core
-needed stops laddering before the Buff HP column gets interesting, because
-a point of Buff HP is worth two to three of core at every rung. A steeper
-column is a harder set, which is a re-pitch of the published figures and not
-a tuning; simulation/price_buff.py prices that choice.
+AND WHY THE SHIPPED COLUMN IS NOT STEEPER - WHICH IS A CHOICE AND NOT A
+LIMIT. Under one constraint, that the core column keeps laddering near the
+numbers it printed, 1/2/3/4 cannot be paid for: holding the rates at Buff HP
+3 wants a Hard core near 7 and a Nobulous core near 9, and at Buff HP 2 it
+wants a Standard core of 6 - LOWER than Easy's. The core needed stops
+laddering before the wall column gets interesting.
+
+DROP THAT CONSTRAINT AND A STEEP COLUMN IS AFFORDABLE. With the core flat at
+its floor of 3, the walls below hold every rung's rate - a wall ladder
+instead of a core ladder, which is what the 15-space track was drawn for.
+The first version of this docstring said a steeper column "cannot be paid
+for" full stop; that was the constraint talking, not the grid.
+
+THE CORE CANNOT GO BELOW 3, and this is measured, not assumed. Degraded
+Tissue Study prints "if successful, reduce the Prototyrant's Health dial by
+2", and the Tyrant is dead the moment the dial reads 0 - before the wall or
+a single Splice is touched. So a core of 1 or 2 hands the Rats the game
+outright whenever that Experiment comes up and succeeds. At Easy with a
+wall of 6, 6000 games a cell, turning that one card off is worth:
+
+    core 1   66.0% -> 58.2%   -7.8      the card is an instant win
+    core 2   61.0% -> 54.5%   -6.5      so is this
+    core 3   51.8% -> 52.1%   +0.3      noise: it leaves the dial at 1
+    core 4   50.6% -> 49.6%   -1.0      noise
+
+That is also why a core x wall grid has a cliff between its 3 and 2 rows
+that is twice what a point of core is worth anywhere else. Read a row above
+3 as a free win and not as a tuning.
+
+AND AT THE FLOOR THE WALL CAN BE MUCH BIGGER, which is the ladder the
+15-space track was drawn for. Holding each rung's rate with core 3:
+
+    Easy      core 3 / wall 3   61.7%   against a target of 60.7%
+    Standard  core 3 / wall 4   52.1%   against 52.0%
+    Hard      core 3 / wall 6   42.5%   against 38.6% - wall 7 is the fit
+    Nobulous  core 3 / wall 6   40.2%   against 26.0% - far more fits
+
+Nobulous wants a wall somewhere past 6 at core 3; big_wall measured core 3 /
+wall 10 at 21.2%, so its fit is between. A flat core of 3 with the ladder
+carried on the card is the OLD design - HANDOFF section 9a00000000: Buff HP
+existed because the Health chip only reads to 20, and the bulk lived on the
+card. What shipped on 2026-11-18 is the opposite, a core ladder with a small
+wall, because it was the change that moved no published figure.
 
 Pass a game count. 6000 a cell is enough to read the grid; the ladder at the
 bottom is reprinted at 20000, which puts the standard error on a difference
