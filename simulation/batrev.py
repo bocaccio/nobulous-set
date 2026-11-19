@@ -147,6 +147,12 @@ TYRANT_BAG = ["purple", "purple", "blue", "blue", "green", "yellow"]
 ROUND_GUARD = 300          # genuine stalls are reported, not won or lost
 COMMIT_MARGIN = 0.0        # extra expected damage the policy wants
 
+# How many of the Prototyrant's grafts are revealed each battle round. 1 is
+# the handoff's rule. 2 is the graft-choice test: reveal two, use and expose
+# one, set the other aside until the pile reshuffles - so the card held back
+# cannot be destroyed that round.
+GRAFT_REVEAL = 1
+
 # Experiment titles, in the order generator/build_bat.py prints them,
 # so the seeded playthrough can name its cards.
 EXPERIMENT_NAMES = [
@@ -633,6 +639,14 @@ class Game(object):
         self.regained = 0
         self.pass_graft_lived = 0
         self.unbreakable = 0
+        # WHY a forced pass happened. Three problems wear the same face:
+        #   "colour" the commit-colour rule cost them the reaching dice
+        #   "cap"    the graft Value capped them, though the pool had enough
+        #   "pool"   not enough dice existed at all, cap or no cap
+        self.forced_why = collections.Counter()
+        self.forced_unmodelled = 0
+        self.graft_aside = []
+        self.graft_picked = collections.Counter()
         self.gate = dict(
             grafts=len(self.grafts),
             graft_value=sum(g.value for g in self.grafts),
@@ -676,33 +690,85 @@ class Game(object):
                 return (pick[:max(0, cap - 2)] + pair)[:cap]
         return pick
 
-    def best_possible(self, cap, graft):
-        """Most damage the Rats could roll with what they hold - for the
-        'cannot mathematically break it' count."""
-        avail = pick_order(self.shared_available(), self.rng)[:cap]
-        top = sum(max(FACES[d.color]) for d in avail)
-        return top + (GRAFT_DAMAGE.get(graft.name, 0) if graft else 0)
+    def ceiling(self, dice, graft):
+        """Most damage this exact set of dice could possibly roll."""
+        return (sum(max(FACES[d.color]) for d in dice)
+                + (GRAFT_DAMAGE.get(graft.name, 0) if graft else 0))
+
+    def choose_graft(self, options, splice):
+        """Which revealed graft to use and expose.
+
+        A graft does two jobs: its Value CAPS the dice the Rats may commit,
+        and it is the threshold an incoming attack must meet to destroy it.
+        A high Value is better at both, so the only reason to expose a low
+        one is to keep the better card out of harm - worth doing exactly
+        when the cheap one already gets the job done, because the card set
+        aside cannot be destroyed this round.
+
+        If no graft makes the blow viable the Rats are passing anyway and
+        the cap is irrelevant, so expose whichever DEFENDS best - the
+        highest threshold.
+        """
+        scored = []
+        for g in options:
+            pick = self.commit_dice(g.value)
+            ok = self.ceiling(pick, g) >= splice.value
+            likely = (sum(EV[d.color] for d in pick)
+                      + GRAFT_DAMAGE.get(g.name, 0)) >= splice.value
+            scored.append((ok, likely, -g.value, g))
+        if any(t[0] for t in scored):
+            scored.sort(key=lambda t: (t[0], t[1], t[2]), reverse=True)
+        else:
+            # -t[2] is the graft's Value: highest threshold first.
+            scored.sort(key=lambda t: -t[2], reverse=True)
+        use = scored[0][3]
+        return use, [g for g in options if g is not use]
 
     def battle_round(self):
         self.rounds += 1
-        graft = self.graft_pile.pop(0) if self.graft_pile else None
-        if graft is None and self.grafts:
-            self.graft_pile = [g for g in self.grafts if g is not None]
-            self.rng.shuffle(self.graft_pile)
-            graft = self.graft_pile.pop(0) if self.graft_pile else None
         splice = self.splices[0]
+        if len(self.graft_pile) < GRAFT_REVEAL:
+            self.graft_pile += [g for g in self.grafts
+                                if g not in self.graft_pile]
+            self.graft_aside = []
+            self.rng.shuffle(self.graft_pile)
+        shown = []
+        while self.graft_pile and len(shown) < GRAFT_REVEAL:
+            shown.append(self.graft_pile.pop(0))
+        if len(shown) > 1:
+            graft, rest = self.choose_graft(shown, splice)
+            low = min(g.value for g in shown)
+            self.graft_picked["low" if graft.value == low else "high"] += 1
+            self.graft_aside += rest
+            self.say("  revealed %s -> using %s [%d], %s set aside",
+                     ", ".join("%s [%d]" % (g.name, g.value) for g in shown),
+                     graft.name, graft.value,
+                     ", ".join(g.name for g in rest))
+        else:
+            graft = shown[0] if shown else None
         rat = self.choose_rat()
         if rat is None:
             return False
 
         cap = graft.value if graft is not None else NO_GRAFT_CAP
-        ceiling = self.best_possible(cap, graft)
+        avail = pick_order(self.shared_available(), self.rng)
+        pick = self.commit_dice(cap)
+        ceiling = self.ceiling(pick, graft)
         viable = ceiling >= splice.value
         if not viable:
             self.unbreakable += 1
-
-        # Decision policy, visible information only.
-        pick = self.commit_dice(cap)
+            if self.ceiling(avail[:cap], graft) >= splice.value:
+                why = "colour"
+            elif self.ceiling(avail, graft) >= splice.value:
+                why = "cap"
+            else:
+                why = "pool"
+            self.forced_why[why] += 1
+            if graft is not None and graft.name not in GRAFT_DAMAGE \
+                    and graft.name not in GRAFT_SOAK:
+                # The card has printed battle text this module does not
+                # model, so the real game might have resolved the round.
+                self.forced_unmodelled += 1
         expect = sum(EV[d.color] for d in pick) \
             + (GRAFT_DAMAGE.get(graft.name, 0) if graft else 0)
         want_pass = (graft is not None
@@ -919,6 +985,123 @@ def batch(games=4000, seed=20):
           "where no legal commit could reach the exposed Splice.")
 
 
+
+# ---------------------------------------------------------------- analyses
+def sample(lvl, games, seed=11, parts=None, reveal=None):
+    """Run one arm and return the aggregates these reports need."""
+    global GRAFT_REVEAL
+    old_parts, old_reveal = PARTS_AT_SETUP.get(lvl), GRAFT_REVEAL
+    if parts is not None:
+        PARTS_AT_SETUP[lvl] = parts
+    if reveal is not None:
+        GRAFT_REVEAL = reveal
+    try:
+        rng = random.Random(seed)
+        a = collections.Counter()
+        rounds, wins = [], 0
+        for _ in range(games):
+            g = Game(lvl, rng)
+            out = g.play()
+            wins += out == "win"
+            a["stall"] += out == "stall"
+            rounds.append(g.rounds)
+            a["rounds"] += g.rounds
+            a["passes"] += g.passes
+            a["forced"] += g.forced_passes
+            a["vol"] += g.passes - g.forced_passes
+            a["attacks"] += g.rounds - g.passes
+            a["splices"] += g.gate["splices"]
+            a["broken"] += g.gate["splices"] - len(g.splices)
+            a["unmodelled"] += g.forced_unmodelled
+            for k, v in g.forced_why.items():
+                a["why_" + k] += v
+            for k, v in g.graft_picked.items():
+                a["pick_" + k] += v
+    finally:
+        if old_parts is not None:
+            PARTS_AT_SETUP[lvl] = old_parts
+        GRAFT_REVEAL = old_reveal
+    a["games"], a["wins"] = games, wins
+    a["p50"] = sorted(rounds)[len(rounds) // 2]
+    return a
+
+
+def pass_line(a):
+    f = float(a["games"])
+    rnd = max(1.0, float(a["rounds"]))
+    pas = max(1.0, float(a["passes"]))
+    return ("%5.2f %5.2f %5.2f  %5.1f%% %5.1f%%"
+            % (a["passes"] / f, a["forced"] / f, a["vol"] / f,
+               100 * a["forced"] / pas, 100 * a["forced"] / rnd))
+
+
+HEAD = "pass/g forced volun  %ofpas %ofrnd"
+
+
+def diagnose(games=3000):
+    print("WHY EACH FORCED PASS HAPPENED. Three problems wear one face:")
+    print("  colour = the commit-colour rule cost them the reaching dice")
+    print("  cap    = the graft Value capped them, though the pool had enough")
+    print("  pool   = not enough dice existed at all, cap or no cap")
+    print("%d games a rung, current rules, decks 10/14/18/22." % games)
+    print("")
+    print("%-10s %-34s %7s %6s %6s %7s"
+          % ("rung", HEAD, "colour", "cap", "pool", "unmodl"))
+    for lvl in LEVELS:
+        a = sample(lvl, games)
+        tot = max(1.0, float(a["why_colour"] + a["why_cap"] + a["why_pool"]))
+        print("%-10s %-34s %6.1f%% %5.1f%% %5.1f%% %6.1f%%"
+              % (lvl, pass_line(a),
+                 100 * a["why_colour"] / tot, 100 * a["why_cap"] / tot,
+                 100 * a["why_pool"] / tot,
+                 100 * a["unmodelled"] / max(1.0, float(a["forced"]))))
+    print("")
+    print("Every ratio is accumulated per game, not got by dividing means.")
+    print("unmodl = forced passes whose exposed graft has printed battle text")
+    print("         this module does not model, so the real game might have")
+    print("         resolved the round.")
+
+
+def ladder(games=3000):
+    print("TIGHTER LADDER: starting decks 10/12/14/16, combat unchanged.")
+    print("%d games an arm." % games)
+    print("")
+    print("%-12s %5s %7s %7s %7s %7s  %s"
+          % ("rung (deck)", "wall", "win%", "attacks", "broken", "rounds",
+             HEAD))
+    for lvl, parts in zip(LEVELS, (10, 12, 14, 16)):
+        a = sample(lvl, games, parts=parts)
+        f = float(a["games"])
+        print("%-12s %5.2f %6.1f%% %7.2f %7.2f %7.2f  %s"
+              % ("%s (%d)" % (lvl, parts), a["splices"] / f,
+                 100 * a["wins"] / f, a["attacks"] / f, a["broken"] / f,
+                 a["rounds"] / f, pass_line(a)))
+    print("")
+    print("wall = Splices at Wake-Up. The questions: is a 5-Splice wall a")
+    print("good Standard, and is 9 still too much for Nobulous?")
+
+
+def graft_choice(games=3000):
+    print("GRAFT CHOICE: deck 14 on every rung, reveal 1 graft versus 2.")
+    print("%d games an arm." % games)
+    print("")
+    print("%-14s %7s %7s %7s  %-34s %s"
+          % ("arm", "win%", "attacks", "broken", HEAD, "low-Value chosen"))
+    for lvl in LEVELS:
+        for reveal in (1, 2):
+            a = sample(lvl, games, parts=14, reveal=reveal)
+            f = float(a["games"])
+            tp = float(a["pick_low"] + a["pick_high"]) or 1.0
+            extra = ("%5.1f%%" % (100 * a["pick_low"] / tp)) if reveal == 2                 else "     -"
+            print("%-14s %6.1f%% %7.2f %7.2f  %-34s %s"
+                  % ("%s, reveal %d" % (lvl[:8], reveal),
+                     100 * a["wins"] / f, a["attacks"] / f,
+                     a["broken"] / f, pass_line(a), extra))
+    print("")
+    print("Reveal 2: use and expose one graft, set the other aside until the")
+    print("pile reshuffles - the card held back cannot be destroyed.")
+
+
 if __name__ == "__main__":
     mode = sys.argv[1] if len(sys.argv) > 1 else "batch"
     if mode == "one":
@@ -926,5 +1109,11 @@ if __name__ == "__main__":
         one(lvl, int(sys.argv[3]) if len(sys.argv) > 3 else 20)
     elif mode == "assumptions":
         print(__doc__)
+    elif mode == "diagnose":
+        diagnose(int(sys.argv[2]) if len(sys.argv) > 2 else 3000)
+    elif mode == "ladder":
+        ladder(int(sys.argv[2]) if len(sys.argv) > 2 else 3000)
+    elif mode == "graft":
+        graft_choice(int(sys.argv[2]) if len(sys.argv) > 2 else 3000)
     else:
         batch(int(sys.argv[2]) if len(sys.argv) > 2 else 4000)
