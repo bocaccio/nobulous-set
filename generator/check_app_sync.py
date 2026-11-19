@@ -4595,6 +4595,71 @@ check("nothing is turned up out of the Tyrant Attack deck",
           text("playtest/dist/bat.js"),
       "the battle still flips a card, or one of the four disagrees")
 
+# THE SPLICE PHASE DIALS SHIP SET TO THE PRINTED GAME. Both of these
+# change the Splice Phase for every game the model plays, so a dial left
+# on silently invalidates every BAT figure in this repository - and
+# neither one is visible in any output a reader would check. The
+# predicates are about the SOURCE OF THE ROW and the fallthrough branch,
+# not about a value in BORROWABLE: a table of four colour lists proves
+# nothing about which index is ever looked up.
+_brow = _method("simulation/bat.py", "borrow_row")
+_bfor = _method("simulation/bat.py", "borrow_for")
+check("the borrow table still reads off the borrower's Upgrades",
+      # the dial ships at the printed reading...
+      'BORROW_RULE = "upgrades"' in _satk
+      # ...the lookup really goes through it, so the dial cannot be
+      # decoration sitting beside a hard-coded len(rat.upgrades)...
+      and "BORROWABLE[min(3, self.borrow_row(rat))]" in _bfor
+      # ...and "upgrades" is the fallthrough, which is what makes the
+      # printed rule the one you get when the dial is misspelled.
+      and "return len(rat.upgrades)" in _brow
+      # The alternatives exist, so deleting them cannot pass this.
+      and 'BORROW_RULE == "flat"' in _brow
+      and 'BORROW_RULE == "splices"' in _brow
+      # And the rules still print that column as the one that narrows it.
+      and "The more Upgrades the borrower already holds" in _RULES["bat"]
+      and "Upgrades held" in _RULES["bat"],
+      "BORROW_RULE does not ship at the printed reading, or nothing reads it")
+
+# THE BORROW POLICY IS WORTH MORE THAN ANY RULE IN THE GAME: 10 to 12
+# points, measured 2026-11-18, which is larger than every rule change
+# priced in this repository put together. It is a POLICY and not a rule -
+# the rules say what a Rat MAY borrow, never what it SHOULD - so nothing
+# in any player-facing file can contradict it and no other check would
+# ever notice it move. Every published BAT figure is measured through
+# "short_best", so this one guards the figures themselves.
+check("the borrow POLICY still ships as the one BAT's figures were measured "
+      "through",
+      'BORROW_POLICY = "short_best"' in _satk
+      # The policy really reaches the choice of die...
+      and 'pick = min if BORROW_POLICY == "short_cheapest" else max' in _bfor
+      # ...and the two restraints that beat it are implemented, so the
+      # check cannot be satisfied by deleting the comparison.
+      and 'if BORROW_POLICY == "never":' in _bfor
+      and 'BORROW_POLICY == "decisive"' in _bfor
+      # The decisive policy needs the gap, so the call sites must pass it;
+      # without this the policy silently never declines anything.
+      and "self.borrow_for(rat, target - expected)" in _satk
+      # And the finding is written down where a reader of the figures
+      # would meet it, rather than living only in this predicate.
+      and "ten to twelve points" in text("simulation/price_borrow.py").lower(),
+      "BORROW_POLICY moved, or nothing reads it, or the finding went "
+      "unrecorded")
+
+check("Red still comes back free, as the printed rule has it",
+      "RED_COSTS_REC = False" in _satk
+      # The two charged readings are implemented, so this check cannot be
+      # satisfied by deleting the dial and the question with it.
+      and 'RED_COSTS_REC == "always"' in _satk
+      and 'RED_COSTS_REC == "afford"' in _satk
+      and "self.red_down = True" in _satk
+      # "afford" has to be able to withhold Red, not merely charge for it:
+      # the holder test is where that lands.
+      and "has_red = self.red_holder is rat and not getattr(" in _satk
+      and "After Red is used it is set aside rather than exhausted"
+          in _RULES["bat"],
+      "the model charges for Red, or the rules stopped setting it aside")
+
 # The overlay's three box labels are one size, and make_template proves
 # it at build time rather than leaving it to the eye: `fit` can shrink
 # one of them below what it was asked for.

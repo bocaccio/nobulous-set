@@ -231,11 +231,30 @@ BUFF_LAYER = True
 # non-active Rat on the next turn - so the dial is the FIRST half: the
 # active Rat recovers one die fewer on a turn it commits Red.
 #
+# THREE READINGS, because the first one implemented was a penalty with no
+# choice in it: it charged the slot and handed Red back anyway. Jon's words
+# are "if they choose to do so", so the slot has to BUY something that does
+# not otherwise come.
+#
+#   False      the printed game: Red is set aside and returns free
+#   "always"   Red returns every turn, at the cost of one REC slot
+#   "afford"   Red is EXHAUSTED when used and stays down until a Rat with a
+#              slot to spare - recovery of 2 or more - spends one on it. A
+#              REC 1 Rat may still pay, and then recovers nothing of its own.
+#
 # OFF IS THE PRINTED GAME, so every published figure stands with this here.
 # Red is committed in 49% of Experiments and is free today, which is what
 # makes it the phase's most reliable crutch - simulation/price_red.py has
 # what charging for it costs.
 RED_COSTS_REC = False
+# WHO MAY PAY, AND WHAT IT COSTS, under "afford". These two decide the SIGN
+# of the whole rule - simulation/price_red.py has the measurement. Jon's words
+# are "a rat with REC 1 could only recover red, if they choose to do so", so
+# FLOOR 1 is the faithful reading: every Rat may pay. A floor of 3 is
+# unreachable - RAT_REC is [2, 2, 1, 1] - and is how "Red never comes back
+# at all" gets measured.
+RED_AFFORD_FLOOR = 1
+RED_AFFORD_COST = 1
 
 # THROW IN THE TOWEL. Jon, 2026-11-18, on how the Splice Phase is actually
 # played: "later in the splice phase this creates some tension because you
@@ -309,6 +328,44 @@ BORROWABLE = {
     2: ["green", "yellow"],
     3: ["yellow"],
 }
+
+# WHICH NUMBER PICKS THE ROW. The printed rule reads off the borrower's own
+# Upgrade count, so success makes borrowing worse and being behind makes it
+# better - a rubber band that cancels pressure applied anywhere else in the
+# phase. simulation/price_borrow.py measures what each reading is worth.
+#
+#   "upgrades"  THE PRINTED GAME: len(borrower's Upgrades), capped at row 3
+#   "flat"      row 0 always - the table switched off, no feedback at all
+#   "worst"     row 3 always - Yellow or nothing, constant, no feedback
+#   "borrows"   how many dice this Rat has already borrowed this phase, so
+#               the cost accumulates with USE rather than with success
+#   "splices"   len(self.splices) - a phase clock that tightens on every Rat
+#               at once as the Tyrant fills up, 0..4 over a phase
+#
+# OFF IS THE PRINTED GAME, so every published figure stands with "upgrades".
+BORROW_RULE = "upgrades"
+
+# HOW THE MODEL BORROWS, which is a POLICY and not a rule - the printed rules
+# say what you MAY borrow, never what you SHOULD. Every "restricting borrowing
+# makes the Rats stronger" result rests on this policy being a good one, so it
+# has to be swappable or the result cannot be read.
+#
+#   "short_best"      what the model has always done: borrow whenever the
+#                     hand falls short of the Target, and take the BEST die
+#                     the row allows
+#   "short_cheapest"  borrow just as often, but take the WORST allowed die -
+#                     same help declined, far less to lose
+#   "decisive"        borrow only when the best die the row allows can
+#                     actually close the gap to the Target. Declines the
+#                     borrows that risk a die for a long shot.
+#   "never"           never borrow. The control: if this beats the default,
+#                     the model has been borrowing against its own interest
+#                     and the borrow-table findings are about policy.
+#
+# IT DOES BEAT IT, BY 10 TO 12 POINTS - see simulation/price_borrow.py. The
+# shipped policy is left in place because every published BAT figure was
+# measured through it, but it is not a model of a competent table.
+BORROW_POLICY = "short_best"
 
 # ---------------------------------------------------------------------------
 # NRJ overlay tiers. Each tier includes the ones before it.
@@ -842,6 +899,7 @@ class Rat(object):
         self.mod_ids = []   # indices of held Unauthorized Modifications
         self.side = 0       # 0 = front, 1 = back
         self.specimens = 0  # Specimens this Rat holds
+        self.borrows = 0    # dice borrowed this phase, for BORROW_RULE
 
     @property
     def ability(self):
@@ -1077,6 +1135,8 @@ class Game(object):
                 victim.dice.pop()
         self.red_holder = self.rng.choice(self.rats)
         self.red_aside = False
+        # "afford" only: Red is exhausted and nobody has paid to lift it.
+        self.red_down = False
         self.deck = list(range(20))
         self.rng.shuffle(self.deck)
         plain = 16 - (len(MOD_VALUES) if (MODS_REPLACE and module_active("mods", tier)) else 0)
@@ -1234,19 +1294,44 @@ class Game(object):
             self.claimed.add("red_means_go")
             self.grant_note("red_means_go")
 
-    def borrow_for(self, rat):
-        """Take the best die the borrower's Upgrade count still allows."""
-        allowed = BORROWABLE[min(3, len(rat.upgrades))]
+    def borrow_row(self, rat):
+        """Which BORROWABLE row this borrow reads off. See BORROW_RULE."""
+        if BORROW_RULE == "flat":
+            return 0
+        if BORROW_RULE == "worst":
+            return 3
+        if BORROW_RULE == "borrows":
+            return rat.borrows
+        if BORROW_RULE == "splices":
+            return len(self.splices)
+        return len(rat.upgrades)              # "upgrades", the printed game
+
+    def borrow_for(self, rat, need=None):
+        """Take the best die the borrower's Upgrade count still allows.
+
+        `need` is how far short of the Target the hand is, which only the
+        "decisive" policy consults.
+        """
+        allowed = BORROWABLE[min(3, self.borrow_row(rat))]
         # Cross-Contamination: "The first time each Rat borrows a die, it may
         # borrow any color regardless of Upgrade count."
         if self.protocol == "cross_contamination" and rat.i not in self.freeborrow:
             self.freeborrow.add(rat.i)
             allowed = BORROWABLE[0]
+        if BORROW_POLICY == "never":
+            return None
         pool = [(other, d) for other in self.rats if other is not rat
                 for d in self.available(other) if d.color in allowed]
         if not pool:
             return None
-        lender, die = max(pool, key=lambda od: EV[od[1].color])
+        pick = min if BORROW_POLICY == "short_cheapest" else max
+        lender, die = pick(pool, key=lambda od: EV[od[1].color])
+        if BORROW_POLICY == "decisive" and need is not None \
+                and EV[die.color] < need:
+            # The best die on offer still does not close the gap, so risking
+            # it buys a long shot. Decline, and the die stays with its owner.
+            return None
+        rat.borrows += 1
         die.zone = "borrowed"
         self.lender = lender
         return die
@@ -1360,7 +1445,14 @@ class Game(object):
             eligible = [r for r in self.rats if not r.down]
         rat = max(
             eligible,
-            key=lambda r: (r is self.red_holder and not self.red_aside,
+            # A READY Red, not merely a Red. Under RED_COSTS_REC="afford"
+            # Red can be off the table with its holder unchanged, and
+            # without red_down here the policy preferred a Rat for a die it
+            # could not roll, ahead of a Rat with more dice ready. That cost
+            # the withheld-Red arm about a point of its own measurement.
+            # Neutral when the dial is off: red_down is then always False.
+            key=lambda r: (r is self.red_holder and not self.red_aside
+                           and not getattr(self, "red_down", False),
                            len(self.available(r)),
                            sum(EV[d.color] for d in self.available(r))),
         )
@@ -1423,7 +1515,8 @@ class Game(object):
             if others:
                 self.red_holder = self.rng.choice(others)
             self.red_aside = False
-        has_red = self.red_holder is rat
+        has_red = self.red_holder is rat and not getattr(
+            self, "red_down", False)
         if eff == "no_red":
             # "Place the Red die on the active Rat. Red cannot be used."
             self.red_holder = rat
@@ -1524,7 +1617,7 @@ class Game(object):
                 if expected < target and borrowed is None and \
                         not rat.has("no_borrow") and not solo_rat:
                     borrowed = (None if eff == "no_borrow"
-                                else self.borrow_for(rat))
+                                else self.borrow_for(rat, target - expected))
             elif PHASE2_POLICY == "extra_die":
                 take = pool[:1]  # second Strategy phase: one more die
             elif PHASE2_POLICY == "push":
@@ -1545,7 +1638,8 @@ class Game(object):
                 borrow_now = None
                 if expected < target and borrowed is None and \
                         not rat.has("no_borrow") and not solo_rat:
-                    borrowed = borrow_now = self.borrow_for(rat)
+                    borrowed = borrow_now = self.borrow_for(
+                        rat, target - expected)
                     if borrow_now is not None:
                         expected += EV[borrow_now.color]
                 # A thrown die comes back as at most a Crit. If that ceiling
@@ -1758,11 +1852,23 @@ class Game(object):
                 d.zone = "exhausted"
 
         recovery = rat.effective_rec()
-        if RED_COSTS_REC and used_red:
+        if RED_COSTS_REC == "always" and used_red:
             # One REC slot, spent on getting Red back rather than on the
             # Rat's own dice. Floored at 0: a Rat with REC 1 that commits
             # Red recovers nothing that turn.
             recovery = max(0, recovery - 1)
+        elif RED_COSTS_REC == "afford":
+            if used_red:
+                # Committing Red exhausts it. It is nobody's until paid for.
+                self.red_down = True
+            if getattr(self, "red_down", False) \
+                    and recovery >= RED_AFFORD_FLOOR:
+                # The slot buys Red back off the table. It still goes to a
+                # non-active Rat on the next turn - red_aside does that.
+                self.red_down = False
+                recovery = max(0, recovery - RED_AFFORD_COST)
+        elif RED_COSTS_REC and used_red:
+            recovery = max(0, recovery - 1)      # legacy True == "always"
         if rat.ability == "experimental" and specimen_up:
             recovery += 1
         if rat.ability == "adaptation" and successes >= target:

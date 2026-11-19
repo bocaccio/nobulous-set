@@ -349,6 +349,41 @@ runs left to right. The current numbers are in `RESULTS.txt`.
 | Hard | 7 | 12 | 40.1% |
 | Nobulous | 8 | 14 | 28.1% |
 
+> The **Health** column above predates 2026-11-18, when part of the Tyrant's
+> Health moved onto the Buff HP card and the core dropped to 8 / 9 / 9 / 11
+> with a wall of 1 / 1 / 2 / 2. `bat.DIFFICULTY` is authoritative; the win
+> rates were chosen to hold, and `price_buff_ladder.py` shows the working.
+
+#### WARNING: these rates are measured through a bad borrow policy
+
+**The model's borrow policy is worth 10 to 12 points, which is more than
+every rule change priced in this repository put together.** It borrows
+whenever the acting Rat's hand falls short of the Target and never weighs
+the one-in-four chance that the borrowed die is banished for good. A policy
+identical except that it declines a borrow which cannot close the gap wins
+**+12.0 / +11.8 / +10.4 / +9.7** by rung, and simply never borrowing scores
+the same to within noise - so essentially all of it is bad borrows declined
+rather than good borrows found.
+
+| rung | shipped | declines hopeless borrows | never borrows |
+|---|---|---|---|
+| Easy | 59.8% | 71.8% | 71.5% |
+| Standard | 51.6% | 63.5% | 63.5% |
+| Hard | 39.2% | 49.7% | 49.5% |
+| Nobulous | 27.5% | 37.2% | 36.7% |
+
+Jon's own play, reported 2026-11-18, is the second column: the Rats hold a
+purple and a blue with "an occasional green or yellow for borrowing
+purposes". So **Standard is pegged into a 49-54% band that the same game
+reads at 63.5% once the phase is played well**, and the Splice Phase's
+measured pressure was largely self-inflicted. `BORROW_POLICY` ships at
+`"short_best"` because every published figure stands on it; whether to
+re-baseline the band or change the policy is a design decision. See
+`price_borrow.py` for the measurement, and note that it also reverses the
+borrow table's own ordering: under the shipped policy every alternative
+reading looks like a gift, and under a competent one all sixteen cells go
+the other way.
+
 #### The battle was rewritten
 
 The Tyrant battle this model describes is not the one in the older sections
