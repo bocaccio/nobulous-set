@@ -39,6 +39,32 @@ print-and-play; the "older generator has 2/3/4" warning in the handoff does
 not apply to this tree, so there is nothing to reconcile.
 
 -----------------------------------------------------------------------
+THE CONFIGURATION THESE FIGURES ARE MEASURED THROUGH
+-----------------------------------------------------------------------
+
+    Experiment phase   dice stay PER-RAT; Red held by one Rat, set aside
+                       after use, handed to a non-active Rat. Unchanged.
+    Battle             dice POOLED; one PROTOTYRANT Health track
+                       (SHARED_HP_START 12); an active Rat chosen every
+                       round; Red on its own Experiment-phase rule, not
+                       drawn from the pool.
+    Dials left at the handoff's spec: PARTS_AT_SETUP 10/14/18/22 and
+    GRAFT_REVEAL 1. The recommended settings are below, not baked in.
+
+RECOMMENDED LADDER, 1500 games an arm, GRAFT_REVEAL 2:
+
+    Proto HP   deck 13  deck 14  deck 15  deck 16  deck 17
+       9         54.0%    43.1%    30.9%    22.5%    12.1%
+      12         58.2%    44.5%    34.5%    23.8%    15.1%
+      15         58.3%    46.0%    35.4%    23.7%    15.8%
+
+So decks 13/14/15/16 give 58 / 45 / 35 / 24 against BAT's printed
+60 / 52 / 39 / 27, and the Specimen mix - held at 6 throughout, and the
+dial that moves Splice VALUES rather than counts - is the fine adjustment
+for the rest. HP saturates by 12: Health sets the LEVEL, the deck builds
+the LADDER at 10-14 points a Splice.
+
+-----------------------------------------------------------------------
 WHERE THE FIRST ROUND OF TUNING LANDED
 -----------------------------------------------------------------------
 
@@ -49,12 +75,33 @@ against a Splice Target averaging 3.74 needed in ONE blow, and 2.62 dice a
 round sit banished behind knocked-out Rats. Health and the dice pool were
 the same resource, so a knockout cost four dice and bought the next one.
 
-SHARED_HP pools Health the way the dice already pool, and that is what
-fixes it: banished dice 2.54 -> 0.02, available 3.38 -> 4.68, rounds
-opening with nothing to roll 24% -> 18%, forced passes 3.04 -> 1.85. At
-equal total Health it is roughly a wash on win rate - pooling also recovers
-the overkill a per-Rat track wastes - so the gain is in restored agency,
-not in survivability.
+One Prototyrant Health track fixes it: banished dice 2.54 -> 0.02,
+available 3.38 -> 4.68, rounds opening with nothing to roll 24% -> 18%,
+forced passes 3.04 -> 1.85. At equal total Health it is roughly a wash on
+win rate - pooling also recovers the overkill a per-Rat track wastes - so
+the gain is in restored agency, not in survivability.
+
+RESTORING RED IS WORTH ABOUT ONE SPLICE. On its own rule - the active Rat
+commits it, it counts toward the graft cap, it is SET ASIDE rather than
+exhausted, then it moves to a non-active Rat - it is worth +9.0 points
+(49.2 -> 58.2 at deck 13) and takes forced passes 2.40 -> 1.40, because
+being set aside rather than exhausted makes it the one die that comes back
+every round. Folded into the pool instead it was worth only +4.1.
+
+NOTE FOR THE DESIGNER: because the active-Rat choice is free and the sort
+prefers whoever holds Red, the Red holder is activated every round and Red
+is usable in 100% of them. "Red goes to a non-active Rat" therefore
+restricts nothing here - it guarantees Red is always in play. That is
+optimal play under the rule as written, not a modelling slip, but it is
+worth deciding whether it is intended.
+
+WHERE THE FORCED PASSES ENDED UP, deck 14, Proto HP 12, GRAFT_REVEAL 2:
+    passes 5.77/game, forced 1.63, voluntary 4.14
+    forced = 28.2% of passes and 12.4% of all rounds (from 44.2% / 21.5%)
+    cause: colour 0.0%, cap 17.4%, pool 82.6%
+18% of rounds still open with no available dice, so the pool is still the
+binding constraint - but it is now a reason to pass, not a round with no
+move in it.
 
 The HP dial SATURATES near 9: deck 12 reads 51.7 / 55.6 / 58.6 / 60.7 at
 HP 6/7/8/9 and then only 59.9 / 60.5 / 61.4 at 10/11/12. Above 9 the Rats'
@@ -201,8 +248,34 @@ GRAFT_REVEAL = 1
 # neutral setting and the dial is what the simulation tunes.
 # Note this makes the retargeting Attack cards - Adaptive Strike, Predatory
 # Instinct - cosmetic, since all damage lands on the same track.
-SHARED_HP = False
-SHARED_HP_START = 6
+# JON, 2026-11-19: "Keep the separate dice pools during the experiment
+# phase, but pool the dice and the hp during the battle... think of it as the
+# base HP for the prototyrant." So this is not pooled RAT Health - it is the
+# PROTOTYRANT's Health track, and the Rats ride it. The Experiment phase is
+# untouched either way: nothing there damages Health, and lab dice stay
+# per-Rat through self.available(rat).
+# False restores the handoff's per-Rat 1/1/2/2 and every figure measured
+# before this. 12 is where the sweep landed; the printed total is 6, and
+# pooling also recovers the overkill a per-Rat track wastes.
+SHARED_HP = True
+SHARED_HP_START = 12
+
+# RED IN THE BATTLE, WORKED AS IN THE EXPERIMENT PHASE. The handoff says
+# "Red counts toward the cap", but
+# Rats' four personal dice were the only thing all_dice() returned, so Red
+# was used all through the lab and then vanished at Wake-Up. It is the
+# strongest die in the game - EV 1.17 against Purple's 1.00 - and the battle
+# pool averages under five available dice, so this was a material omission
+# rather than a rounding one.
+# RED_OR_ABILITY is the printed either/or: "the printed choice of Red or the
+# graft ability", so committing Red forgoes the graft's damage text.
+# Red keeps its own rule rather than joining the pool:
+#   * only the ACTIVE RAT may commit it, and only while that Rat holds it
+#   * it counts toward the graft's dice cap, so taking it costs a pooled die
+#   * it is SET ASIDE after use rather than exhausted
+#   * afterwards it moves to a non-active Rat, as rules/bat.html has it
+RED_IN_BATTLE = True
+RED_OR_ABILITY = True
 
 # Experiment titles, in the order generator/build_bat.py prints them,
 # so the seeded playthrough can name its cards.
@@ -353,6 +426,8 @@ class Game(object):
         self.last_active = None
         self.banished = 0
         self.shared_hp = SHARED_HP_START
+        self.in_battle = False
+        self.red_commits = 0
         self.notes = []            # verbose playthrough lines
 
     # ------------------------------------------------------------- logging
@@ -368,6 +443,9 @@ class Game(object):
         return [d for d in rat.dice if d.zone == "exhausted"]
 
     def all_dice(self):
+        """The shared battle pool. RED IS NOT IN IT: it belongs to
+        whichever Rat holds it and is committed by the active Rat under the
+        Experiment phase's own rule, never drawn from the pool."""
         return [d for r in self.rats if not r.down for d in r.dice]
 
     def shared_available(self):
@@ -649,6 +727,9 @@ class Game(object):
     # =====================================================================
     def start_battle(self):
         """R13/R14. The wall is starting parts minus grafts."""
+        # Red joins the shared pool, available, before the opening recovery.
+        self.in_battle = True
+        self.red.zone = "available"
         # Carve the Tyrant's bag out of the Rats' dice.
         self.bag = []
         for want in TYRANT_BAG:
@@ -721,10 +802,12 @@ class Game(object):
             self.rng.shuffle(self.attack_deck)
         return self.attack_deck.pop()
 
-    def commit_dice(self, cap):
+    def commit_dice(self, cap, allow_red=True):
         """Up to `cap` dice honouring the commit colour (one of it, or two of
         one other colour)."""
         avail = pick_order(self.shared_available(), self.rng)
+        if not allow_red:
+            avail = [d for d in avail if d.color != "red"]
         pick = avail[:cap]
         if not self.attack_color or any(d.color == self.attack_color
                                         for d in pick):
@@ -743,11 +826,53 @@ class Game(object):
         return pick
 
     def ceiling(self, dice, graft):
-        """Most damage this exact set of dice could possibly roll."""
-        return (sum(max(FACES[d.color]) for d in dice)
-                + (GRAFT_DAMAGE.get(graft.name, 0) if graft else 0))
+        """Most damage this exact set of dice could possibly roll.
 
-    def choose_graft(self, options, splice):
+        Prices the Red either/or, or the policy believes in a blow it cannot
+        assemble and the forced-pass count goes soft.
+        """
+        return self._score(dice, graft, lambda c: max(FACES[c]))
+
+    def expected(self, dice, graft):
+        """Mean damage, with the same either/or applied."""
+        return self._score(dice, graft, lambda c: EV[c])
+
+    def _score(self, dice, graft, per_die):
+        top = sum(per_die(d.color) for d in dice)
+        if graft is None:
+            return top
+        if RED_OR_ABILITY and any(d.color == "red" for d in dice):
+            return top
+        return top + GRAFT_DAMAGE.get(graft.name, 0)
+
+    def may_use_red(self, rat):
+        """The Experiment phase's rule, unchanged: the active Rat commits Red
+        only while it holds it and it has not been set aside."""
+        return (RED_IN_BATTLE and self.red_holder is rat
+                and not self.red_aside and self.red.zone != "banished")
+
+    def best_commit(self, cap, graft, target, rat):
+        """THE RED CHOICE, made rather than stumbled into.
+
+        Red counts toward the cap, so taking it costs a pooled die, and under
+        RED_OR_ABILITY it also forfeits the graft's text - worth up to 3. A
+        policy that simply grabbed its strongest dice committed Red every
+        round it held it and LOST 7 points doing so, which would have read as
+        "Red hurts the Rats" when the truth was that no choice was being
+        made. So price both hands and keep the better: viability first, then
+        mean damage.
+        """
+        best = None
+        for use_red in ((False, True) if self.may_use_red(rat) else (False,)):
+            pk = self.commit_dice(cap - 1 if use_red else cap)
+            hand = list(pk) + ([self.red] if use_red else [])
+            key = (self.ceiling(hand, graft) >= target,
+                   self.expected(hand, graft))
+            if best is None or key > best[0]:
+                best = (key, hand)
+        return best[1]
+
+    def choose_graft(self, options, splice, rat):
         """Which revealed graft to use and expose.
 
         A graft does two jobs: its Value CAPS the dice the Rats may commit,
@@ -763,10 +888,9 @@ class Game(object):
         """
         scored = []
         for g in options:
-            pick = self.commit_dice(g.value)
+            pick = self.best_commit(g.value, g, splice.value, rat)
             ok = self.ceiling(pick, g) >= splice.value
-            likely = (sum(EV[d.color] for d in pick)
-                      + GRAFT_DAMAGE.get(g.name, 0)) >= splice.value
+            likely = self.expected(pick, g) >= splice.value
             scored.append((ok, likely, -g.value, g))
         if any(t[0] for t in scored):
             scored.sort(key=lambda t: (t[0], t[1], t[2]), reverse=True)
@@ -779,6 +903,14 @@ class Game(object):
     def battle_round(self):
         self.rounds += 1
         splice = self.splices[0]
+        # AN ACTIVE RAT EACH BATTLE TURN, chosen exactly as in the Experiment
+        # phase - the sort prefers whoever holds Red, which is why Red moves
+        # to a NON-ACTIVE Rat at the end of the round. This has to happen
+        # before the graft decision: whether Red is available changes which
+        # graft is worth exposing.
+        rat = self.choose_rat()
+        if rat is None:
+            return False
         if len(self.graft_pile) < GRAFT_REVEAL:
             self.graft_pile += [g for g in self.grafts
                                 if g not in self.graft_pile]
@@ -788,7 +920,7 @@ class Game(object):
         while self.graft_pile and len(shown) < GRAFT_REVEAL:
             shown.append(self.graft_pile.pop(0))
         if len(shown) > 1:
-            graft, rest = self.choose_graft(shown, splice)
+            graft, rest = self.choose_graft(shown, splice, rat)
             low = min(g.value for g in shown)
             self.graft_picked["low" if graft.value == low else "high"] += 1
             self.graft_aside += rest
@@ -798,13 +930,10 @@ class Game(object):
                      ", ".join(g.name for g in rest))
         else:
             graft = shown[0] if shown else None
-        rat = self.choose_rat()
-        if rat is None:
-            return False
 
         cap = graft.value if graft is not None else NO_GRAFT_CAP
         avail = pick_order(self.shared_available(), self.rng)
-        pick = self.commit_dice(cap)
+        pick = self.best_commit(cap, graft, splice.value, rat)
         ceiling = self.ceiling(pick, graft)
         viable = ceiling >= splice.value
         if not viable:
@@ -821,8 +950,7 @@ class Game(object):
                 # The card has printed battle text this module does not
                 # model, so the real game might have resolved the round.
                 self.forced_unmodelled += 1
-        expect = sum(EV[d.color] for d in pick) \
-            + (GRAFT_DAMAGE.get(graft.name, 0) if graft else 0)
+        expect = self.expected(pick, graft)
         want_pass = (graft is not None
                      and (not viable
                           or expect < splice.value - COMMIT_MARGIN)
@@ -842,10 +970,16 @@ class Game(object):
                      ceiling, splice.value)
         else:
             dmg = 0
+            used_red = any(d.color == "red" for d in pick)
+            if used_red:
+                self.red_commits += 1
             for d in pick:
-                d.zone = "exhausted"
+                if d is self.red:
+                    self.red_aside = True     # set aside, not exhausted
+                else:
+                    d.zone = "exhausted"
                 dmg += roll(d.color, self.rng)
-            if graft is not None:
+            if graft is not None and not (used_red and RED_OR_ABILITY):
                 dmg += GRAFT_DAMAGE.get(graft.name, 0)
             self.say("  commit %d dice -> %d damage vs Target %d",
                      len(pick), dmg, splice.value)
@@ -912,6 +1046,16 @@ class Game(object):
             self.regained += len(got)
             self.say("  recovered %d dice (REC %d + %d).",
                      len(got), rat.rec, PASS_RECOVERY_BONUS)
+
+        # rules/bat.html: Red goes to a NON-ACTIVE Rat, and a Red that was
+        # set aside comes back. In the Experiment phase recover() does this;
+        # the battle has no recover(), so it happens here.
+        self.red_aside = False
+        others = [r for r in self.rats if r is not rat and not r.down]
+        if others:
+            self.red_holder = max(others, key=lambda r: (
+                len(self.available(r)),
+                sum(EV[d.color] for d in self.available(r))))
 
         if self.rats_beaten():
             return "loss"
