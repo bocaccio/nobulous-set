@@ -4,6 +4,10 @@
     python3 batrev.py one           # one complete seeded playthrough, named cards
     python3 batrev.py batch [n]     # seeded batch at all four difficulties
     python3 batrev.py assumptions   # the ruling log alone
+    python3 batrev.py diagnose      # WHY each forced pass happened
+    python3 batrev.py ladder        # starting decks 10/12/14/16
+    python3 batrev.py graft         # reveal 1 graft vs 2
+    python3 batrev.py hp            # pooled Rat Health, tuned
 
 THIS IS NOT bat.py. bat.py models the PRINTED game and its figures are
 calibrated; nothing here touches it. Card data is imported from it, because
@@ -33,6 +37,40 @@ CARD SOURCE. generator/build_bat.py, via bat.py's transcribed tables. The
 Experiment numbers there are ALREADY 3/4/5, matching the November 12
 print-and-play; the "older generator has 2/3/4" warning in the handoff does
 not apply to this tree, so there is nothing to reconcile.
+
+-----------------------------------------------------------------------
+WHERE THE FIRST ROUND OF TUNING LANDED
+-----------------------------------------------------------------------
+
+The forced passes were never the graft cap. Logging a cause for each one
+gives colour 0.0%, cap 8.4%, pool 91.6% - they would still be forced with
+no cap and no colour rule at all. The Rats fight with 3.69 available dice
+against a Splice Target averaging 3.74 needed in ONE blow, and 2.62 dice a
+round sit banished behind knocked-out Rats. Health and the dice pool were
+the same resource, so a knockout cost four dice and bought the next one.
+
+SHARED_HP pools Health the way the dice already pool, and that is what
+fixes it: banished dice 2.54 -> 0.02, available 3.38 -> 4.68, rounds
+opening with nothing to roll 24% -> 18%, forced passes 3.04 -> 1.85. At
+equal total Health it is roughly a wash on win rate - pooling also recovers
+the overkill a per-Rat track wastes - so the gain is in restored agency,
+not in survivability.
+
+The HP dial SATURATES near 9: deck 12 reads 51.7 / 55.6 / 58.6 / 60.7 at
+HP 6/7/8/9 and then only 59.9 / 60.5 / 61.4 at 10/11/12. Above 9 the Rats'
+problem is no longer survival, so Health sets the LEVEL and cannot build
+the ladder. The ladder has to come from the deck, where one Splice is worth
+13-15 points.
+
+    pooled HP 12, starting decks 12/13/14/15, two grafts revealed:
+        62.1% / 48.5% / 38.3% / 26.8%
+    BAT's printed ladder, for comparison:
+        60%   / 52%   / 39%   / 27%
+
+Three rungs land on it. Standard is ~3.5 points light, and the Specimen mix
+- held at 6 throughout these sweeps - is the fine dial for that, since it
+moves Splice VALUES while the deck size moves COUNTS. The first proposal
+moved both together, which charged every rung twice.
 
 -----------------------------------------------------------------------
 RULINGS. Every one of these is a choice this module made, not printed text.
@@ -152,6 +190,19 @@ COMMIT_MARGIN = 0.0        # extra expected damage the policy wants
 # one, set the other aside until the pile reshuffles - so the card held back
 # cannot be destroyed that round.
 GRAFT_REVEAL = 1
+
+# THE RATS' HEALTH, POOLED. In the battle the dice are already a shared pool,
+# but Health is still per-Rat - so a knockout costs four dice as well as a
+# Rat, and that is what turns one knockout into the next. 2.62 dice a round
+# are sitting banished behind downed Rats, against 3.69 available.
+# SHARED_HP pools Health the way the dice already pool: damage comes off one
+# track, nobody goes down until it is empty, and every die stays in the pool
+# for the whole battle. The printed total is sum(RAT_HP) = 6, so 6 is the
+# neutral setting and the dial is what the simulation tunes.
+# Note this makes the retargeting Attack cards - Adaptive Strike, Predatory
+# Instinct - cosmetic, since all damage lands on the same track.
+SHARED_HP = False
+SHARED_HP_START = 6
 
 # Experiment titles, in the order generator/build_bat.py prints them,
 # so the seeded playthrough can name its cards.
@@ -301,6 +352,7 @@ class Game(object):
 
         self.last_active = None
         self.banished = 0
+        self.shared_hp = SHARED_HP_START
         self.notes = []            # verbose playthrough lines
 
     # ------------------------------------------------------------- logging
@@ -861,16 +913,30 @@ class Game(object):
             self.say("  recovered %d dice (REC %d + %d).",
                      len(got), rat.rec, PASS_RECOVERY_BONUS)
 
-        if all(r.down for r in self.rats):
+        if self.rats_beaten():
             return "loss"
         if not self.splices:
             return "win"
         return True
 
+    def hurt(self, rat, n):
+        """Put n damage on the Rats, pooled or per-Rat."""
+        if not n:
+            return
+        if SHARED_HP:
+            self.shared_hp -= n
+        else:
+            rat.hp -= n
+
+    def rats_beaten(self):
+        if SHARED_HP:
+            return self.shared_hp <= 0
+        return all(r.down for r in self.rats)
+
     def apply_attack(self, rat, hits, graft, direct, passed):
         """R15: a revealed graft defends; a Rat is only reached without one."""
         if direct:
-            rat.hp -= direct
+            self.hurt(rat, direct)
         if graft is not None:
             hits = max(0, hits - GRAFT_SOAK.get(graft.name, 0))
             if hits >= graft.value:
@@ -884,9 +950,13 @@ class Game(object):
                 self.say("  graft %s holds (%d < %d).",
                          graft.name, hits, graft.value)
         else:
-            rat.hp -= hits
+            self.hurt(rat, hits)
             if hits:
-                self.say("  no graft: %s takes %d to Health.", rat.name, hits)
+                self.say("  no graft: %d to Health%s.", hits,
+                         " (pool now %d)" % self.shared_hp if SHARED_HP
+                         else " on " + rat.name)
+        if SHARED_HP:
+            return
         if rat.hp <= 0 and not rat.down:
             rat.down = True
             for d in rat.dice:
@@ -1081,6 +1151,41 @@ def ladder(games=3000):
     print("good Standard, and is 9 still too much for Nobulous?")
 
 
+def hp_tune(games=2500):
+    global SHARED_HP, SHARED_HP_START
+    print("POOLED RAT HEALTH, TUNED. Two grafts revealed. %d games an arm."
+          % games)
+    print("Per-Rat 1/1/2/2 = 6 is the printed total. Pooling also recovers")
+    print("the overkill a per-Rat track wastes, so 6 pooled is not 6 kinder.")
+    print("")
+    decks = (11, 12, 13, 14, 15)
+    print("%6s  " % "HP" + "".join("%9s" % ("deck %d" % d) for d in decks)
+          + "   forced")
+    SHARED_HP = True
+    try:
+        for hp in (6, 8, 9, 10, 12):
+            SHARED_HP_START = hp
+            row, forced = [], 0.0
+            for d in decks:
+                a = sample("Standard", games, parts=d, reveal=2)
+                row.append(100.0 * a["wins"] / a["games"])
+                if d == 13:
+                    forced = a["forced"] / float(games)
+            print("%6d  " % hp + "".join("%8.1f%%" % v for v in row)
+                  + "   %6.2f" % forced)
+    finally:
+        SHARED_HP = False
+    row = []
+    for d in decks:
+        a = sample("Standard", games, parts=d, reveal=2)
+        row.append(100.0 * a["wins"] / a["games"])
+    print("%6s  " % "1122" + "".join("%8.1f%%" % v for v in row))
+    print("")
+    print("The dial saturates near 9: Health sets the LEVEL, the deck builds")
+    print("the LADDER. HP 12 with decks 12/13/14/15 reads 62/49/38/27")
+    print("against BAT's printed 60/52/39/27.")
+
+
 def graft_choice(games=3000):
     print("GRAFT CHOICE: deck 14 on every rung, reveal 1 graft versus 2.")
     print("%d games an arm." % games)
@@ -1115,5 +1220,7 @@ if __name__ == "__main__":
         ladder(int(sys.argv[2]) if len(sys.argv) > 2 else 3000)
     elif mode == "graft":
         graft_choice(int(sys.argv[2]) if len(sys.argv) > 2 else 3000)
+    elif mode == "hp":
+        hp_tune(int(sys.argv[2]) if len(sys.argv) > 2 else 2500)
     else:
         batch(int(sys.argv[2]) if len(sys.argv) > 2 else 4000)
