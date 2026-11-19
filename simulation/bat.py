@@ -949,6 +949,84 @@ def splice_value(card):
     return UPGRADE_VALUES[idx]
 
 
+# JON'S TWO NUMBERS, 2026-11-18. A card's Value does two unrelated jobs:
+# as a Tyrant Splice it is a THRESHOLD a blow must meet in one attack, and as
+# a Rat's Upgrade it is... almost nothing. The printed rules are explicit -
+# "A Rat's Upgrade blocks one attack and is spent" - so on the Rat side the
+# Value only ranks the two revealed cards and feeds Predatory Instinct's
+# targeting. Jon wants the Rat number to be the Tyrant number minus 1.
+#
+# BEWARE: A UNIFORM SHIFT IS VERY NEARLY A NO-OP, and the reason is worth
+# writing down rather than rediscovering. Ranking two cards is unchanged by
+# subtracting 1 from both, blocking spends the card whatever the blow was
+# worth, and the borrow table reads the Upgrade COUNT. See
+# simulation/price_split_values.py for what it measures at.
+RAT_VALUE_DELTA = 0
+
+# WHICH MAKES THIS THE DIAL THAT GIVES THE RAT NUMBER A JOB.
+#   "spend"      the printed rule: an Upgrade blocks one attack and is spent,
+#                whatever its Value and whatever the blow
+#   "threshold"  an Upgrade may only block a blow its Value meets, the way a
+#                Tyrant Splice does. Nothing blocks a bigger blow, and no
+#                card is spent on one.
+#   "absorb"     an Upgrade soaks up to its Value and is spent; anything over
+#                that carries through to the Rat. A BUDGET rather than a
+#                threshold, and the only reading measured that gives the Rat
+#                number a job without falling off a cliff.
+# "spend" IS THE PRINTED GAME, so every published figure stands with it.
+RAT_BLOCK_RULE = "spend"
+
+# AND THIS IS THE OTHER HALF: on a SUCCESS, the Rats may decline the Upgrade
+# and Splice one of the two revealed cards onto the Tyrant instead, choosing
+# WHICH. The card they Splice is the weaker of the two - the point of the
+# rule is that a chosen Splice is a weak one, where a failure hands over the
+# strong one. It also moves the phase a step closer to the battle.
+#
+#   "never"      the printed game: a success always offers the Upgrade
+#   "when_full"  only when the Rat cannot take an Upgrade anyway. Today that
+#                success is simply WASTED - the card is discarded - so this
+#                reading costs the Rats nothing and is pure added agency.
+#   "cheap"      also when the weaker revealed card is at or below
+#                SPLICE_CHOICE_FLOOR, so there is something worth dumping
+#   "always"     always Splice. The control: forced, so it should hurt.
+SPLICE_CHOICE = "never"
+SPLICE_CHOICE_FLOOR = 2
+
+# THE UPGRADE LIMIT, 3 as printed - AND IT NEVER BINDS. The Rats reach the
+# Tyrant holding 3.7 Upgrades of a possible 12, so "when_full" fires 0.01
+# times a game. A cap that binds is the only way the take-or-splice choice
+# stops being optional, and an optional choice cannot apply pressure: a Rat
+# that does not want to Splice simply takes the Upgrade instead.
+UPGRADE_CAP = 3
+
+
+# THE SAME GAP, PUT ON THE SIDE THAT DOES THE WORK. A Tyrant Splice's Value
+# is a threshold a blow must MEET in a single attack, so every point added
+# here is real; a Rat's Upgrade Value is read by almost nothing, so every
+# point taken off there is free. RAT_VALUE_DELTA -1 and TYRANT_VALUE_DELTA +1
+# describe the same two-number design and measure nothing alike.
+TYRANT_VALUE_DELTA = 0
+
+
+def rat_value(card):
+    """What a card is worth AS A RAT'S UPGRADE.
+
+    RAT_VALUE_DELTA 0 is the printed game, where one number serves both
+    sides. Floored at 1 so a card never becomes valueless.
+    """
+    return max(1, splice_value(card) + RAT_VALUE_DELTA)
+
+
+def tyrant_value(card):
+    """What a card is worth AS A TYRANT SPLICE - a threshold, not a budget.
+
+    TYRANT_VALUE_DELTA 0 is the printed game. Ranking the two revealed
+    cards still uses splice_value, so a uniform shift here changes what a
+    Splice COSTS to break without changing which card is the stronger.
+    """
+    return max(1, splice_value(card) + TYRANT_VALUE_DELTA)
+
+
 def splice_name(card):
     kind, idx = card
     if kind == "s":
@@ -1294,6 +1372,30 @@ class Game(object):
             self.claimed.add("red_means_go")
             self.grant_note("red_means_go")
 
+    def choose_splice(self, rat, options, best, cap):
+        """Which revealed card the Rats Splice on a SUCCESS, or None to take
+        the Upgrade instead. See SPLICE_CHOICE.
+
+        The card offered to the Tyrant is always the WEAKER of the two: a
+        chosen Splice is a cheap one, where a failed Experiment hands over
+        `best`. That gap is the whole value of the choice.
+        """
+        rest = [c for c in options if c is not best]
+        if not rest or SPLICE_CHOICE == "never":
+            return None
+        weakest = min(rest, key=splice_value)
+        # At the Upgrade limit the success is wasted under the printed rule,
+        # so every reading Splices here.
+        full = len(rat.upgrades) >= cap
+        if SPLICE_CHOICE == "always":
+            return weakest
+        if SPLICE_CHOICE == "when_full":
+            return weakest if full else None
+        if SPLICE_CHOICE == "cheap":
+            return weakest if (full or splice_value(weakest)
+                               <= SPLICE_CHOICE_FLOOR) else None
+        return None
+
     def borrow_row(self, rat):
         """Which BORROWABLE row this borrow reads off. See BORROW_RULE."""
         if BORROW_RULE == "flat":
@@ -1357,7 +1459,7 @@ class Game(object):
                 if not self.upgrade_deck:
                     break
                 extra = self.upgrade_deck.pop()
-                self.splices.append(Splice(splice_value(extra), splice_cat(extra), splice_effect(extra), splice_colors(extra)))
+                self.splices.append(Splice(tyrant_value(extra), splice_cat(extra), splice_effect(extra), splice_colors(extra)))
                 if extra[0] == "m":
                     self.splice_mods += 1
         if INDEP_LENDER_PAYOUT and not banished \
@@ -1422,7 +1524,7 @@ class Game(object):
             # Feed the Tyrant the better Upgrade in exchange for an easier
             # Experiment and a fresh reveal.
             strongest = max(options, key=splice_value)
-            self.splices.append(Splice(splice_value(strongest), splice_cat(strongest),
+            self.splices.append(Splice(tyrant_value(strongest), splice_cat(strongest),
                                        splice_effect(strongest), splice_colors(strongest)))
             if strongest[0] == "m":
                 self.splice_mods += 1
@@ -1547,7 +1649,7 @@ class Game(object):
             own = sum(EV[d.color] for d in self.available(rat))
             if own < target - 1:
                 strongest = max(options, key=splice_value)
-                self.splices.append(Splice(splice_value(strongest),
+                self.splices.append(Splice(tyrant_value(strongest),
                                            splice_cat(strongest),
                                            splice_effect(strongest),
                                            splice_colors(strongest)))
@@ -1753,8 +1855,30 @@ class Game(object):
         if successes >= target:
             # Questionable Procurement lets the first Specimen sit outside the
             # 3-Upgrade limit.
-            cap = 4 if self.protocol == "questionable_procurement" else 3
-            took = len(rat.upgrades) < cap
+            cap = (UPGRADE_CAP + 1
+                   if self.protocol == "questionable_procurement"
+                   else UPGRADE_CAP)
+            chosen = self.choose_splice(rat, options, best, cap)
+            if chosen is not None:
+                # "Instead of just choosing to take an upgrade, you can
+                # choose whether to take the upgrade or splice one of them
+                # onto the tyrant" - Jon, 2026-11-18. Both revealed cards
+                # leave: the chosen one onto the Tyrant at its FULL value,
+                # the other to the discard. The Rat gains nothing, and the
+                # phase moves a step closer to the battle.
+                if chosen in self.discard:
+                    self.discard.remove(chosen)
+                self.splices.append(Splice(tyrant_value(chosen),
+                                           splice_cat(chosen),
+                                           splice_effect(chosen),
+                                           splice_colors(chosen)))
+                if chosen[0] == "m":
+                    self.splice_mods += 1
+            # A chosen Splice forgoes the Upgrade, so `took` is False and the
+            # block below discards `best`. An owed Research Note is NOT paid
+            # off by it: the debt is "forgo the next Upgrade a completed
+            # Experiment earns", and this Experiment earned none.
+            took = chosen is None and len(rat.upgrades) < cap
             if took and self.owed_upgrade:
                 # The printed price of a Research Note, paid here: the Rat
                 # forgoes the Upgrade this Experiment earned it.
@@ -1774,7 +1898,7 @@ class Game(object):
                     self.notes += 1
                 took = False
             if took:
-                rat.upgrades.append(Upgrade(splice_value(best),
+                rat.upgrades.append(Upgrade(rat_value(best),
                                             splice_effect(best),
                                             splice_name(best),
                                             splice_cat(best), best))
@@ -1788,7 +1912,7 @@ class Game(object):
                 # above as the card to be taken, and without this it left the
                 # game entirely.
                 self.discard.append(best)
-            if eff == "retrofit" and rat.upgrades:
+            if eff == "retrofit" and rat.upgrades and chosen is None:
                 # "If successful, you may swap one of the active Rat's
                 # Upgrades with one of the revealed Upgrades. Specimens
                 # cannot be swapped." Resolved after the take, because the
@@ -1801,13 +1925,16 @@ class Game(object):
                 if mine and offer:
                     worst = min(mine, key=lambda u: u.value)
                     pick = max(offer, key=splice_value)
-                    if splice_value(pick) > worst.value:
+                    # LIKE WITH LIKE: both sides of this comparison have
+                    # to be Rat values, or a non-zero RAT_VALUE_DELTA makes
+                    # every swap look like an upgrade.
+                    if rat_value(pick) > worst.value:
                         rat.upgrades.remove(worst)
                         if worst.card is not None:
                             self.discard.append(worst.card)
                         if worst.name in MOD_NAMES:
                             rat.drop_mod(worst.card)
-                        rat.upgrades.append(Upgrade(splice_value(pick),
+                        rat.upgrades.append(Upgrade(rat_value(pick),
                                                     splice_effect(pick),
                                                     splice_name(pick),
                                                     splice_cat(pick), pick))
@@ -1838,7 +1965,7 @@ class Game(object):
                     if victim in self.discard:
                         self.discard.remove(victim)
                     self.discard.append(best)
-            self.splices.append(Splice(splice_value(victim),
+            self.splices.append(Splice(tyrant_value(victim),
                                        splice_cat(victim),
                                        splice_effect(victim),
                                        splice_colors(victim)))
@@ -2469,6 +2596,19 @@ class Game(object):
 
         armor = ([u for u in rat.upgrades] if self.tapped_defends
                   else [u for u in rat.upgrades if not u.tapped])
+        if armor and RAT_BLOCK_RULE == "absorb":
+            # Spend the smallest card that soaks the whole blow; if none
+            # does, spend the largest and let the remainder through.
+            able = [u for u in armor if u.value >= hits]
+            armor = [min(able, key=lambda u: u.value) if able
+                     else max(armor, key=lambda u: u.value)]
+        if armor and RAT_BLOCK_RULE == "threshold":
+            # A Rat's Upgrade read the way a Tyrant Splice is read: it only
+            # stops a blow its Value MEETS. Nothing stops a bigger one, and
+            # no card is spent failing to. This is the dial that gives
+            # RAT_VALUE_DELTA something to bite on.
+            able = [u for u in armor if u.value >= hits]
+            armor = [min(able, key=lambda u: u.value)] if able else []
         if armor:
             affordable = [u for u in armor if hits >= u.value]
             if affordable:
@@ -2481,7 +2621,12 @@ class Game(object):
                 rat.upgrades.remove(lost)
                 if rat.mods:
                     rat.drop_mod(lost.card)
-            hits = 0                      # no carryover, ever
+            # "no carryover, ever" is the printed rule and the default.
+            # Under "absorb" the Value is a budget, so the overflow lands on
+            # the Rat - which is what makes RAT_VALUE_DELTA cost something.
+            hits = (max(0, hits - lost.value)
+                    if RAT_BLOCK_RULE == "absorb" and lost is not None
+                    else 0)
 
         hits += direct
         if hits > 0:
@@ -2519,7 +2664,7 @@ class Game(object):
                     self.rng.randrange(len(self.upgrade_deck)))
             else:
                 card = ("u", self.rng.randrange(16))
-            self.splices.append(Splice(splice_value(card), splice_cat(card), splice_effect(card), splice_colors(card)))
+            self.splices.append(Splice(tyrant_value(card), splice_cat(card), splice_effect(card), splice_colors(card)))
         self.start_battle()
         for _ in range(500):
             if self.health <= 0:

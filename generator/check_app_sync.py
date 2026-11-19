@@ -4646,6 +4646,44 @@ check("the borrow POLICY still ships as the one BAT's figures were measured "
       "BORROW_POLICY moved, or nothing reads it, or the finding went "
       "unrecorded")
 
+# ONE VALUE SERVES BOTH SIDES, which is what the card prints and what the
+# book describes. Jon asked for two numbers - a Rat value of Tyrant minus
+# one - and simulation/price_split_values.py measures that design at zero
+# on the Rat side and off a cliff on the Tyrant side, so the dials exist
+# and all five ship at the printed game.
+#
+# THE COUNTS ARE THE POINT OF THIS CHECK. A value dial wired into some of
+# its construction sites and not others builds the Tyrant's wall out of
+# two different numbers, and no output any reader checks would show it.
+# Three of the six Splice sites were missed on the first pass here.
+check("one Value still serves both the Rat and the Tyrant",
+      "RAT_VALUE_DELTA = 0" in _satk
+      and "TYRANT_VALUE_DELTA = 0" in _satk
+      and 'RAT_BLOCK_RULE = "spend"' in _satk
+      and 'SPLICE_CHOICE = "never"' in _satk
+      and "UPGRADE_CAP = 3" in _satk
+      # Every Splice and every Upgrade is built through the helper...
+      and "Splice(splice_value(" not in _satk
+      and "Upgrade(splice_value(" not in _satk
+      and _satk.count("Splice(tyrant_value(") == 6
+      and _satk.count("Upgrade(rat_value(") == 2
+      # ...and the readings that would move them are really implemented,
+      # so deleting the question cannot pass this.
+      # "absorb" takes TWO call sites - picking the card that soaks, and
+      # letting the overflow through - and naming the dial proves neither.
+      # Asserting only the name let a mutation delete half of it and pass.
+      and "armor = [min(able, key=lambda u: u.value) if able" in _satk
+      and "max(0, hits - lost.value)" in _satk
+      and 'RAT_BLOCK_RULE == "threshold"' in _satk
+      and "def choose_splice(" in _satk
+      # And the book still prints the rules these defaults encode.
+      and "A Rat's Upgrade blocks one attack and is spent" in _RULES["bat"]
+      and "A Rat may hold at most 3 Upgrades" in _RULES["bat"]
+      and "must meet or exceed this threshold in a single attack" \
+          in _RULES["bat"],
+      "a Value dial ships on or is half-wired, or the book stopped printing "
+      "the rule it encodes")
+
 check("Red still comes back free, as the printed rule has it",
       "RED_COSTS_REC = False" in _satk
       # The two charged readings are implemented, so this check cannot be
