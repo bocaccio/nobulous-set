@@ -4684,6 +4684,30 @@ check("one Value still serves both the Rat and the Tyrant",
       "a Value dial ships on or is half-wired, or the book stopped printing "
       "the rule it encodes")
 
+# THE SPLICE TRACK IS THE CLOCK: the phase runs while there are fewer than
+# 5 Splices, and play tops the track up to exactly 5 before the battle. So
+# what a volunteered Splice really costs is a TURN, and the dial that prices
+# it has to leave both the clock and the top-up reading the same count or
+# the phase quietly runs long.
+check("a volunteered Splice still ticks the clock",
+      'SPLICE_CHOICE_CLOCK = "advance"' in _satk
+      # Both other readings are really implemented, so deleting the
+      # question cannot satisfy this.
+      and 'SPLICE_CHOICE_CLOCK == "replace"' in _satk
+      and 'SPLICE_CHOICE_CLOCK == "free"' in _satk
+      and "self.volunteered += 1" in _satk
+      # "replace" has to splice OVER the biggest card on the track, not
+      # append beside it - naming the dial proves nothing.
+      and "self.splices[top] = fresh" in _satk
+      # AND THE TWO COUNTS HAVE TO AGREE. The clock and the end-of-phase
+      # top-up both read the track, and a discount applied to one but not
+      # the other builds a Tyrant out of the wrong number of cards.
+      and _satk.count("len(self.splices) - self.volunteered < 5") == 2
+      and "self.volunteered = 0" in _satk
+      and "Five Splices and it wakes up" in _RULES["bat"],
+      "the volunteer dial ships on, is half-wired, or the clock and the "
+      "top-up stopped counting the track the same way")
+
 check("Red still comes back free, as the printed rule has it",
       "RED_COSTS_REC = False" in _satk
       # The two charged readings are implemented, so this check cannot be

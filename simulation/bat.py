@@ -992,6 +992,25 @@ RAT_BLOCK_RULE = "spend"
 SPLICE_CHOICE = "never"
 SPLICE_CHOICE_FLOOR = 2
 
+# WHAT A VOLUNTEERED SPLICE COSTS. The Splice track IS the clock - the phase
+# runs while there are fewer than 5 Splices and the Tyrant wakes on the
+# fifth - and play tops the track up to exactly 5 from unused Upgrades. So
+# the Tyrant is always built of five cards and a volunteered Splice does not
+# add to the wall: it SPENDS A TURN of the phase, which is why the choice
+# measures as a trap rather than a gift.
+#   "advance"    the reading built first: the card is appended and the clock
+#                ticks, so the battle arrives one Experiment sooner. Costs
+#                the Rats an Upgrade AND a turn.
+#   "replace"    the card is Spliced OVER the strongest Splice already on
+#                the track. The count does not grow, so the clock does not
+#                tick: the price is the forgone Upgrade alone.
+#   "free"       the card is appended but not counted toward the five, so
+#                the phase runs its full length and the Tyrant ends with
+#                MORE than five Splices. Pays in wall instead of clock.
+# "advance" is the reading every figure published before 2026-11-19 was
+# measured through, and with SPLICE_CHOICE "never" none of the three fires.
+SPLICE_CHOICE_CLOCK = "advance"
+
 # THE UPGRADE LIMIT, 3 as printed - AND IT NEVER BINDS. The Rats reach the
 # Tyrant holding 3.7 Upgrades of a possible 12, so "when_full" fires 0.01
 # times a game. A cap that binds is the only way the take-or-splice choice
@@ -1255,6 +1274,7 @@ class Game(object):
         self.attack_deck = []  # the 7 Tyrant Attack cards, shuffled on use
         self.discard = []      # revealed Upgrades that were not kept
         self.splices = []
+        self.volunteered = 0   # Splices the clock does not count
         self.splice_mods = 0   # Unauthorized Modifications the Tyrant holds
         self.tyrant_taps = 0
         self.last_destroyed = ()
@@ -1868,10 +1888,21 @@ class Game(object):
                 # phase moves a step closer to the battle.
                 if chosen in self.discard:
                     self.discard.remove(chosen)
-                self.splices.append(Splice(tyrant_value(chosen),
-                                           splice_cat(chosen),
-                                           splice_effect(chosen),
-                                           splice_colors(chosen)))
+                fresh = Splice(tyrant_value(chosen),
+                               splice_cat(chosen),
+                               splice_effect(chosen),
+                               splice_colors(chosen))
+                if SPLICE_CHOICE_CLOCK == "replace" and self.splices:
+                    # Spliced OVER the Tyrant's biggest card, so the track
+                    # does not grow and the clock does not tick. This is the
+                    # reading that makes the choice cost only the Upgrade.
+                    top = max(range(len(self.splices)),
+                              key=lambda i: self.splices[i].value)
+                    self.splices[top] = fresh
+                else:
+                    if SPLICE_CHOICE_CLOCK == "free":
+                        self.volunteered += 1
+                    self.splices.append(fresh)
                 if chosen[0] == "m":
                     self.splice_mods += 1
             # A chosen Splice forgoes the Upgrade, so `took` is False and the
@@ -2023,7 +2054,7 @@ class Game(object):
                 d.zone = "exhausted"
         self.claim_notes(rat, successes >= target, committed, used_red)
         self.experiments += 1
-        return len(self.splices) < 5
+        return len(self.splices) - self.volunteered < 5
 
     # ------------------------------------------------------------------
     # Tyrant Battle
@@ -2658,7 +2689,7 @@ class Game(object):
         # "Splicing Machine Malfunction. If the Experiment deck runs out
         # first, randomly select enough UNUSED UPGRADE CARDS to bring the
         # Tyrant to exactly 5 Splices." Not Specimens - whatever is left.
-        while len(self.splices) < 5:
+        while len(self.splices) - self.volunteered < 5:
             if self.upgrade_deck:
                 card = self.upgrade_deck.pop(
                     self.rng.randrange(len(self.upgrade_deck)))

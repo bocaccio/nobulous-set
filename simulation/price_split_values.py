@@ -5,6 +5,7 @@ choosing the Tyrant's wall. What Jon's design prices out at.
     python3 price_split_values.py [games]          # the Rat number
     python3 price_split_values.py [games] choice   # the take-or-splice choice
     python3 price_split_values.py [games] tyrant   # the gap on the Tyrant side
+    python3 price_split_values.py [games] clock    # what a Splice should cost
 
 JON, 2026-11-18: "It's almost like I want two numbers for each upgrade, a
 smaller number for the rats and a larger number for the tyrant (in essence,
@@ -93,6 +94,52 @@ the same "cheap" heuristic GAINS the Rats 1.9 to 6.0 points, because the
 phase ends two Experiments early and the model's bad borrows end with it.
 The sign of this mechanic is set by how well the phase is played, which is
 the clearest single illustration of why price_borrow.py comes first.
+
+-----------------------------------------------------------------------
+3b. WHAT A VOLUNTEERED SPLICE COSTS, AND WHY NO PRICE MAKES IT LIVE.
+
+The Splice track IS the clock: the phase runs while there are fewer than 5
+Splices, and play tops the track up to exactly 5 from unused Upgrades before
+the battle. So the Tyrant is always built of five cards and a volunteered
+Splice never adds to the wall - it SPENDS A TURN. SPLICE_CHOICE_CLOCK prices
+that turn three ways. Competent policy, printed values, 20,000 games an arm:
+
+    rung        advance  replace  replace     free     free
+                cheap f2 cheap f2 when_full   cheap f2 always
+    Easy           -7.8     -5.9     +0.0     -45.7    -71.0
+    Standard       -5.6     -4.7     +0.0     -41.8    -63.0
+    Hard           -4.3     -3.1     +0.4     -33.6    -49.4
+    Nobulous       -2.9     -0.5     -0.2     -26.2    -37.1
+
+"replace" - Splicing OVER the Tyrant's biggest card, so the clock never
+ticks - is the cheapest reading there is, and it still loses. It narrows
+the trap (7.8 to 5.9 at Easy) without closing it. "free" is a disaster:
+not counting the card toward the five means the Tyrant ends with SEVEN
+Splices, a 24-point wall against 20.
+
+THE TRADE IS BAD AT ANY PRICE, and the reason is a supply fact rather than
+a tuning one. A volunteered Splice costs an Upgrade: under "replace, cheap"
+the Rats arrive holding 1.95 instead of 3.70, half their build. What it buys
+is 3.1 points off the Tyrant's TOTAL wall (20.35 to 17.29) - and 0.10 off
+its biggest single Splice (4.99 to 4.89). The total is not what gates the
+battle. A Splice Value is a threshold a blow must MEET in one attack, so
+what matters is the HIGHEST card, and that one does not move:
+
+    mean Splices on the track                5.00
+    mean count of value-5 Splices            2.75
+    games with two or more fives            92.7%
+    games with no fives                      0.4%
+    all Splices, by value    2: 645  3: 2322  4: 1543  5: 5490
+
+More than half the Tyrant's wall is fives, and every five is a Specimen
+(SPECIMEN_VALUE 5; Upgrades run 2 to 4). Replacing the top card leaves 1.75
+more behind it, so the Rats cannot sandbag the number that gates the battle.
+
+The fives arrive there by selection, not by chance: a random five of the 24
+cards would hold 1.67 of them. The printed failure rule hands the Tyrant the
+STRONGEST revealed card, and a Specimen is always the strongest, so failures
+pump Specimens onto the wall. That is where the real difficulty dial is, and
+it is nowhere near the take-or-splice choice.
 
 -----------------------------------------------------------------------
 4. AND THE TYRANT NUMBER IS ALREADY AT THE EDGE OF A CLIFF.
@@ -207,6 +254,7 @@ def setd(**kw):
     bat.SPLICE_CHOICE = kw.get("choice", "never")
     bat.SPLICE_CHOICE_FLOOR = kw.get("floor", 2)
     bat.UPGRADE_CAP = kw.get("cap", 3)
+    bat.SPLICE_CHOICE_CLOCK = kw.get("clock", "advance")
     bat.BORROW_POLICY = kw.get("policy", "short_best")
 
 
@@ -266,6 +314,22 @@ CAP = [
 ]
 
 
+CLOCK = [
+    ("printed: no choice", dict(policy="decisive")),
+    ("advance, cheap f2", dict(choice="cheap", floor=2, clock="advance",
+                               policy="decisive")),
+    ("replace, cheap f2", dict(choice="cheap", floor=2, clock="replace",
+                               policy="decisive")),
+    ("replace, when_full", dict(choice="when_full", clock="replace",
+                                policy="decisive")),
+    ("replace, always", dict(choice="always", clock="replace",
+                             policy="decisive")),
+    ("free, cheap f2", dict(choice="cheap", floor=2, clock="free",
+                            policy="decisive")),
+    ("free, always", dict(choice="always", clock="free", policy="decisive")),
+]
+
+
 def main():
     games = int(sys.argv[1]) if len(sys.argv) > 1 else 6000
     which = (sys.argv[2] if len(sys.argv) > 2 else "rat").lower()
@@ -280,6 +344,13 @@ def main():
             table("THE GAP ON THE TYRANT SIDE", TYRANT, games,
                   "Competent borrow policy. A Splice Value is a threshold a\n"
                   "blow must meet in ONE attack, so this number is a cliff.")
+        elif which.startswith("clo"):
+            table("WHAT A VOLUNTEERED SPLICE SHOULD COST", CLOCK, games,
+                  "Competent borrow policy. The Splice track is the clock,\n"
+                  "so a volunteered Splice spends a TURN, not wall. Even\n"
+                  "priced at zero turns it loses: what it buys is the\n"
+                  "wall's TOTAL, and the battle is gated by its\n"
+                  "biggest single card, a Specimen 5 that will not move.")
         elif which.startswith("cap"):
             table("THE UPGRADE LIMIT", CAP, games,
                   "Competent borrow policy. The only way to make the choice\n"
