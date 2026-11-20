@@ -1390,8 +1390,8 @@ def hp_tune(games=2500):
     print("%6s  " % "1122" + "".join("%8.1f%%" % v for v in row))
     print("")
     print("The dial saturates near 9: Health sets the LEVEL, the deck builds")
-    print("the LADDER. HP 12 with decks 12/13/14/15 reads 62/49/38/27")
-    print("against BAT's printed 60/52/39/27.")
+    print("the LADDER. With Red exhausting (R21), HP 12 and decks 12/13/14/15")
+    print("read 63/53/39/30 against BAT's printed 60/52/39/27.")
 
 
 def graft_choice(games=3000):
