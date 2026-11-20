@@ -1293,8 +1293,21 @@ check("the 4 Imposter Task dots agree in the cards, the lab and nap.py",
 # card's text to the player and app.js:414 prints the Corrupted Limitation's,
 # so a copy that keeps the old wording teaches a rule no card has. Nothing
 # was comparing either deck until the cap had to be made in two places.
-for key, path, jsname in (("NOTES", "playtest/dist/bat.js", "BAT_NOTES"),
-                          ("BACKDOOR", "playtest/dist/app.js",
+# BAT'S TIER MODULES ARE NOT PORTED TO THE SCAVENGED-TYRANT LAB YET, so
+# the lab must carry NO copy of their text rather than a stale one - the
+# revision rewrites every card (R33/R34/R35) and an old copy would teach a
+# rule no card has, which is exactly what this block exists to stop. The
+# pair of conditions is the point: no stale data AND a notice where a
+# playtester sees it. When the modules are ported, BAT_NOTES comes back and
+# this check is replaced by the loop below.
+_jbat = text("playtest/dist/bat.js")
+check("the lab declares BAT's tier modules unported, and carries no "
+      "stale copy of their text",
+      "BAT_NOTES" not in _jbat and "BAT_PROTOCOLS" not in _jbat
+      and "BAT_MODS" not in _jbat
+      and "NOT dealt by this table yet" in _jbat,
+      "the lab has half-ported BAT's NRJ modules, or stopped saying so")
+for key, path, jsname in (("BACKDOOR", "playtest/dist/app.js",
                            "AOS_BACKDOOR"),
                           ("INTF", "playtest/dist/app.js",
                            "AOS_INTERFERENCE"),
@@ -1670,40 +1683,85 @@ for game in sorted(cat):
 print()
 print("BAT - rules and app")
 jb = text("playtest/dist/bat.js")
+jr = text("playtest/dist/bat_rules.js")
 hb = text("rules/bat.html")
-hbd = js_literal("playtest/dist/bat.js", "HEALTH_BY_DIFFICULTY")
 _ORDER = ("Easy", "Standard", "Hard", "Nobulous")
-check("bat.js Tyrant core Health 8/9/9/11 (%s)"
-      % "/".join(str(hbd[k]) for k in _ORDER),
-      [hbd[k] for k in _ORDER] == [8, 9, 9, 11])
-# AND THE LAB DEALS THE WALL AGAIN. Buff HP was 0 on every rung until
-# 2026-11-18 and the lab did not model it at all, which was consistent -
-# a wall of 0 and no wall are the same game. With real numbers in the
-# column they are not, and a lab that skips it plays an easier Tyrant
-# than the table does.
-hbb = js_literal("playtest/dist/bat.js", "BUFF_BY_DIFFICULTY")
-check("bat.js Buff HP 1/1/2/2 (%s)"
-      % "/".join(str(hbb[k]) for k in _ORDER),
-      [hbb[k] for k in _ORDER] == [1, 1, 2, 2])
+
+# THE LAB'S RULES ARE A FILE OF THEIR OWN NOW. bat.js was 1685 lines with
+# the rules and the DOM in the same functions, so the only way to check a
+# rule was to play the page; playtest/dist/bat_rules.js has no document in
+# it and playtest/test_bat_rules.js runs it under node. These checks hold
+# that split, because it is the thing that makes the rest checkable.
+check("the lab keeps its BAT rules out of the rendering",
+      "BAT_RULES" in jr and "window.BAT_RULES" in jb
+      # DOM ACCESS, not the WORD: the first version of this rejected
+      # "document" anywhere in the file and so failed on its own header
+      # comment, which says the file touches no document.
+      and "document." not in jr
+      and "getElementById" not in jr
+      and "querySelector" not in jr
+      and "innerHTML" not in jr,
+      "bat_rules.js touches the document, or bat.js stopped using it")
+check("...and the node harness exists and names what it is for",
+      "test_bat_rules" in text("playtest/test_bat_rules.js")[:400]
+      or "rules checks pass" in text("playtest/test_bat_rules.js"),
+      "playtest/test_bat_rules.js is missing or says nothing")
+
+# AND ITS NUMBERS ARE batrev's. The lab and the model of record have to
+# deal the same carcass, run the same clock and start the same Health
+# track, or the table and the figures are different games. Read out of the
+# JS literal, so a number edited in one place and not the other fails.
+_jd = js_literal("playtest/dist/bat_rules.js", "DIFFICULTY")
+check("the lab's Specimens per rung are batrev's",
+      dict((k, _jd[k]["specimens"]) for k in _ORDER)
+      == dict((k, _brev["SPECIMENS_IN_POOL"][k]) for k in _ORDER),
+      "%r" % (_jd,))
+check("...and so are its rounds, which are the ladder",
+      dict((k, _jd[k]["rounds"]) for k in _ORDER)
+      == dict((k, _brev["ROUND_LIMITS"][k]) for k in _ORDER),
+      "%r" % (_jd,))
+for _name, _want in (("PARTS_DECK", sorted(set(
+                          _brev["PARTS_AT_SETUP"].values()))[0]),
+                     ("EXPERIMENTS_DEALT", _brev["EXPERIMENTS_DEALT"]),
+                     ("WAKEUP_PACKET", _brev["WAKEUP_PACKET"]),
+                     ("PROTO_HP", _brev["SHARED_HP_START"]),
+                     ("NO_GRAFT_CAP", _brev["NO_GRAFT_CAP"]),
+                     ("GRAFT_REVEAL", _brev["GRAFT_REVEAL"]),
+                     ("TARGET_FLOOR", _brev["TARGET_FLOOR"]),
+                     ("OPENING_RECOVERY", _brev["OPENING_RECOVERY"]),
+                     ("PASS_RECOVERY_BONUS",
+                      _brev["PASS_RECOVERY_BONUS"])):
+    _m = re.search(r"var %s = (\d+);" % _name, jr)
+    check("  bat_rules.%s is batrev's %r" % (_name, _want),
+          bool(_m) and int(_m.group(1)) == _want,
+          "lab %s" % (_m and _m.group(1),))
+
 # A CALL SITE, NOT A TABLE ENTRY - AGENTS.md, and three claims in this
-# repo have passed while the card did nothing. A BUFF_BY_DIFFICULTY
-# value proves nothing about whether a blow ever touches the wall, so
-# this reads the inside of the function that would have to, and the
-# ORDER inside it: the wall chips before the loop over the Splices.
-_jdmg = jb[jb.index("function applyTyrantDamage("):]
-_jdmg = _jdmg[:_jdmg.index("function renderRatSteps(")]
-check("...and bat.js chips the wall before any Splice",
-      "b.buff-=take" in _jdmg
-      and "if(b.buff>0||left<=0) return n;" in _jdmg
-      and _jdmg.index("b.buff") < _jdmg.index("for(let i=0"),
-      "applyTyrantDamage does not strip the wall before the Splices")
-check("...and draws the cell the wall stands on",
-      "function buffCell(" in jb and 'bat-buff-cell' in jb
-      and "b.buffMax>0?[buffCell(b,front)]" in jb
-      # ...and the die that reads it: frontSlot has to hand the wall the
-      # front, or the cell draws no die and nothing says what is left.
-      and 'if(b.buff>0) return "buff";' in jb)
-check("bat.js ROUND_LIMIT = 8", "ROUND_LIMIT = 8" in jb or "ROUND_LIMIT=8" in jb)
+# repo have passed while the card did nothing. A number in DIFFICULTY
+# proves nothing about whether the clock is ever read, so these read the
+# inside of the functions that would have to.
+check("...and the lab really ends the battle on the round limit",
+      "b.round >= s.rounds" in jr and 's.phase = "lost"' in jr,
+      "nothing in bat_rules.js reads the clock")
+check("...and a Splice is met in one blow or not at all",
+      "broke = damage >= partValue(b.splice)" in jr
+      and "b.wall.shift();" in jr
+      # no carry-over: nothing may subtract the Splice's Value and go on
+      and "damage - partValue" not in jr,
+      "the lab chips a Splice or carries a remainder")
+check("...and every Experiment grafts one part and reclaims the other",
+      "s.grafts.push(graft);" in jr and "s.discard.push(reclaim);" in jr
+      and "else graft = order[1];" in jr,
+      "the lab stopped giving each side a part every time")
+
+# THE PRINTED GAME'S LAB IS GONE WITH IT. Buff HP, the core Health dial
+# and the eight-round limit were the printed BAT's, and a lab still
+# drawing them would be playing a game no rulebook describes.
+check("the lab no longer models Buff HP, a core dial or 8 rounds",
+      "BUFF_BY_DIFFICULTY" not in jb and "HEALTH_BY_DIFFICULTY" not in jb
+      and "buffCell" not in jb and "ROUND_LIMIT = 8" not in jb
+      and "ROUND_LIMIT=8" not in jb,
+      "a printed-game remnant is still in bat.js")
 # THE ROUNDS ARE PER RUNG NOW, so the book cannot print one number. It has
 # to print the sentence that makes the clock a loss condition, and the
 # table above is what holds the four values.
@@ -2359,20 +2417,42 @@ check("rules/bat.html: no remainder carries on any more",
 # because the wall was 0 on every rung. Both came back on 2026-11-18, so
 # the hint has to name it again and has to say the thing that makes it
 # different from a Splice: it CHIPS, where a Splice must be met in one blow.
-_hint = re.search(r'<p class="hint bat-track-hint">([^<]*Damage runs[^<]*)</p>',
+# THE HINT DESCRIBES THE TRACK THE LAB NOW DRAWS: one exposed Splice, met
+# in one blow or not at all, with the exposed graft defending and the
+# Prototyrant's shared Health behind it. The old hint walked a left-to-
+# right track of Buff HP, five Splices and a core dial, none of which
+# exists. Both halves are checked, because a hint that says only the first
+# is the half-truth that sent a playtester looking for a wall to chip.
+_hint = re.search(r'<p class="hint bat-track-hint">([^<]*one blow[^<]*)</p>',
                   _idx)
-check("the Tyrant track hint describes the track the lab draws",
-      bool(_hint) and "Buff HP" in _hint.group(1)
-      and "chips" in _hint.group(1)
-      and _hint.group(1).index("Buff HP") < _hint.group(1).index("Splice"),
+check("the battle hint describes the track the lab draws",
+      bool(_hint) and "one blow" in _hint.group(1)
+      and "nothing carries over" in _hint.group(1)
+      and "defends" in _hint.group(1)
+      and "Buff HP" not in _idx,
       "hint: %r" % (_hint.group(1) if _hint else None,))
 _js = text("playtest/dist/bat.js")
 # ...AND THE SCRIPT THE HINT DESCRIBES IS CACHE-BUSTED. index.html names
 # every ?v= token in the lab, so a changed bat.js that keeps its old token
 # is a feature that is simply absent in a browser that has been here
 # before - which reads exactly like code nobody wrote. AGENTS.md says so.
-check("index.html asks for the bat.js that models the wall",
-      'bat.js?v=buffhp' in _idx)
+# ...SO EVERY TOKEN IN THE PAGE MOVES TOGETHER. Pinning one literal here
+# meant editing this check on every bump, and it never checked the thing
+# that actually bites: index.html names every ?v= in the lab, so a page a
+# browser already has pins EVERY asset behind it, however many tokens were
+# bumped. One token for the whole page is the rule, and the old value
+# cannot survive anywhere in it.
+_tokens = set(re.findall(r"\?v=([A-Za-z0-9_.-]+)", _idx))
+check("index.html carries exactly one ?v= token, bumped from the last one",
+      len(_tokens) == 1 and "buffhp" not in _tokens,
+      "tokens: %r" % (sorted(_tokens),))
+# AND THE RULES ENGINE LOADS BEFORE THE TABLE THAT READS IT. bat.js reads
+# window.BAT_RULES at parse time, so the order is not a style question.
+check("...and bat_rules.js is loaded before bat.js",
+      0 <= _idx.find('src="bat_rules.js')
+      < _idx.find('src="bat.js'),
+      "rules %d, table %d" % (_idx.find('src="bat_rules.js'),
+                              _idx.find('src="bat.js')))
 
 # An Assignment Task prints its Demand half upside down, to be read by
 # turning the card over. In a Time Slot the lab turns it for you; in the

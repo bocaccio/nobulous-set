@@ -110,13 +110,13 @@ window.BAT_EXPERIMENTS = [
   {
     "name": "Methodological Optimization",
     "target": 5,
-    "effect": "You may reduce the Target to 0. If you do, take the weaker revealed Upgrade and Splice the stronger revealed Upgrade into the Prototyrant. If tied, choose which to take.",
+    "effect": "Reduce the Target to 0. The old Tyrant reclaims the stronger revealed part and your Prototyrant grafts the weaker. If tied, you choose which it takes.",
     "flavor": "Why test both prototypes when the Prototyrant can test the better one?"
   },
   {
     "name": "Degraded Tissue Study",
     "target": 5,
-    "effect": "If successful, reduce the Prototyrant's Health dial by 2.",
+    "effect": "If successful, raise the Prototyrant's Health track by 2.",
     "flavor": "The tissue tears neatly along the dotted line Nobulous insists he did not draw."
   }
 ];
