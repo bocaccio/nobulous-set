@@ -49,9 +49,8 @@ THE CONFIGURATION THESE FIGURES ARE MEASURED THROUGH
                        round; Red on its own Experiment-phase rule, not
                        drawn from the pool, but EXHAUSTING when committed
                        rather than set aside (R21).
-    PARTS_AT_SETUP is now 12/13/14/15, not the handoff's 10/14/18/22.
-    GRAFT_REVEAL is left at the handoff's 1; the ladder below was measured
-    at 2, which is worth a few points a rung.
+    PARTS_AT_SETUP is now 12/13/14/15, not the handoff's 10/14/18/22, and
+    GRAFT_REVEAL is 2, not the handoff's 1. Both are measured below.
 
 THE LADDER AS IT SHIPS, 2000 games a rung, Proto HP 12, decks 12/13/14/15:
 
@@ -283,10 +282,13 @@ ROUND_GUARD = 300          # genuine stalls are reported, not won or lost
 COMMIT_MARGIN = 0.0        # extra expected damage the policy wants
 
 # How many of the Prototyrant's grafts are revealed each battle round. 1 is
-# the handoff's rule. 2 is the graft-choice test: reveal two, use and expose
-# one, set the other aside until the pile reshuffles - so the card held back
-# cannot be destroyed that round.
-GRAFT_REVEAL = 1
+# the handoff's rule. 2 reveals two, uses and exposes one and sets the other
+# aside until the pile reshuffles - so the card held back cannot be destroyed
+# that round. 2 is the default because it is the closer fit to BAT's printed
+# ladder (64/53/38/25 against 60/52/39/27, where 1 reads 65/49/37/23) and
+# because it is the round's only real decision: which graft to spend and
+# which to protect. Set it to 1 for the handoff's rule.
+GRAFT_REVEAL = 2
 
 # THE RATS' HEALTH, POOLED. In the battle the dice are already a shared pool,
 # but Health is still per-Rat - so a knockout costs four dice as well as a
