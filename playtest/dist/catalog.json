@@ -317,7 +317,7 @@
     "backLabel": "Lab Rat card · side B"
    },
    {
-    "title": "Buff HP track",
+    "title": "Health track",
     "sheet": "BAT_BuffHP_TTS.png",
     "cols": 1,
     "rows": 1,
@@ -330,8 +330,8 @@
     "hdr": "",
     "cards": [
      {
-      "name": "Buff HP track",
-      "kind": "Tyrant track card"
+      "name": "Health track",
+      "kind": "Prototyrant track card"
      }
     ],
     "back": "CardBack_BAT_BuffHP.png",

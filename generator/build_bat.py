@@ -26,8 +26,8 @@ EXPERIMENTS = [
     ("Containment Failure", 5, "You may choose to reduce the Target by 2. If you do, before committing, roll a Yellow die. On a hit or Crit, banish one available Blue die. Otherwise, banish that Yellow die.", "The blast shield performed exactly as specified. The blast did not."),
     ("Endurance Trial", 5, "STR is 1 for this Experiment.", "The experiment is repeatable. Unfortunately, so is the overtime."),
     ("Field Retrofit Trial", 5, "If successful, you may swap one of the active Rat's Upgrades with one of the revealed Upgrades. Specimens cannot be swapped.", "The replacement fits perfectly once you stop asking what it replaced."),
-    ("Methodological Optimization", 5, "You may reduce the Target to 0. If you do, take the weaker revealed Upgrade and Splice the stronger revealed Upgrade into the Prototyrant. If tied, choose which to take.", "Why test both prototypes when the Prototyrant can test the better one?"),
-    ("Degraded Tissue Study", 5, "If successful, reduce the Prototyrant's Health dial by 2.", "The tissue tears neatly along the dotted line Nobulous insists he did not draw."),
+    ("Methodological Optimization", 5, "Reduce the Target to 0. The old Tyrant reclaims the stronger revealed part and your Prototyrant grafts the weaker. If tied, you choose which it takes.", "Why test both prototypes when the Prototyrant can test the better one?"),
+    ("Degraded Tissue Study", 5, "If successful, raise the Prototyrant's Health track by 2.", "The tissue tears neatly along the dotted line Nobulous insists he did not draw."),
 ]
 
 UPGRADES = [
@@ -129,7 +129,7 @@ def C(title, sub, body, ftr='', warn=False, acc=None, tint=None, flavor='', dot=
 
 
 # Card backs first: the deck PnPs interleave them behind the fronts.
-make_back('CardBack_BAT_BuffHP', 'BAT', 'Buff HP', '#2c5f4a')
+make_back('CardBack_BAT_BuffHP', 'BAT', 'Health', '#2c5f4a')
 make_back('CardBack_BAT_Encounter', 'BAT', 'Experiment', '#2c5f4a')
 make_back('CardBack_BAT_Upgrade', 'BAT', 'Upgrade &middot; Specimen', '#2c5f4a')
 make_back('CardBack_BAT_TyrantAttack', 'BAT', 'Tyrant Attack', ATTACK_ACC)
@@ -228,7 +228,7 @@ def track():
     return '<div class="trk">%s</div>' % ''.join(rows)
 
 
-buff = [C('Buff HP', 'Tyrant · outer layer',
+buff = [C('Health', 'Prototyrant · shared',
           # KEEP THIS THE DEPTH IT IS: THREE LINES, so about 105 to 125
           # characters at 6.2pt. The tip sits above the grid, so a line
           # more or less moves the fifteen spaces and the Lua's snap
@@ -237,8 +237,8 @@ buff = [C('Buff HP', 'Tyrant · outer layer',
           # rendered card against it. A two-line tip raised the grid by
           # 0.234 units, which is exactly one line of this text, and a
           # six-line one pushed it off the bottom.
-          '<div class="bufftip">The Tyrant’s outer layer: strip it before '
-          'any Splice can be damaged. Put the die on its value and step it '
+          '<div class="bufftip">The Prototyrant’s Health, shared by all '
+          'four Rats: damage no graft absorbs comes off here. Step the die '
           'down.</div>'
           + track(),
           # NO FOOTER, AND THERE IS NO ROOM FOR ONE. The fifteenth space ends
@@ -262,5 +262,5 @@ buff = [C('Buff HP', 'Tyrant · outer layer',
           # The rule survives: the tip above the grid says it in other words,
           # and rules/bat.html says it under The Tyrant track.
           acc=BUFF_GREEN)]
-print("Buff HP track", render_deck('BAT_BuffHP', buff, 'BAT', PORTRAIT, TRACK_CSS, back='CardBack_BAT_BuffHP'))
+print("Health track", render_deck('BAT_BuffHP', buff, 'BAT', PORTRAIT, TRACK_CSS, back='CardBack_BAT_BuffHP'))
 

@@ -2,51 +2,35 @@
 <link rel="stylesheet" href="style.css">
 <style>
 :root { --accent: #2c5f4a; }
-/* THREE PAGES, NOT FOUR.
-   BAT ran eight lines over - the tail of Carrying BAT forward and
-   nothing else, on a fourth page that was otherwise blank. The text
-   is unchanged; this is the gentlest setting that fits it, found by
-   building the book and counting the pages rather than by eye.
+/* PAGE COUNT IS MEASURED, NOT GUESSED.
+   This book was tuned to three pages at leading 1.31 with the block
+   spacing below, by building it and counting pages rather than by eye.
+   PAGE COUNT MOVES IN JUMPS: boxes and tables are break-inside:
+   avoid, so what decides a page is whether a whole block clears the
+   bottom of the last column, which is why two leadings three
+   hundredths apart can differ by a page while the slack under the
+   last line differs by three millimetres.
 
-   Leading alone did it at 1.32 and not at 1.33, which is no margin
-   at all. The block spacing below is invisible on its own and buys
-   about two lines, which is what let the leading stay at 1.34 - a
-   1.5% tightening against 3%. That left ~10.7mm of blank paper under
-   the last line, around two and a half lines of room for the next
-   sentence anyone adds.
-
-   AND TWO AND A HALF LINES IS WHAT IT HAD. 2026-11-17 spent them:
-   the Fine-tuning paragraph now says what to set the Buff HP to
-   rather than only that it is yours to raise, and a banished die is
-   given somewhere to go - the card of the Rat it was borrowed from.
-   2026-11-18: the stat is called BUFF HP throughout, after the card
-   it stands on, and the older word for it is gone from the book -
-   Jon's call, and it reads shorter everywhere it appears. The check
-   in check_app_sync.py holds the retirement, so it cannot creep back
-   in one paragraph while eleven others say Buff HP. The same day the
-   column of four zeros got real numbers and the core Health came down
-   to pay for them, so Fine-tuning no longer has to explain a 0 and
-   gave a line back.
-   Three lines of print between them, so the leading went to 1.31,
-   measured the same way: 1.31 fits and 1.32 does not, with the same
-   block spacing. The margin is a line of print again, no more: the
-   next sentence after these will cost a page unless something else
-   comes out.
-
-   PAGE COUNT MOVES IN JUMPS, not smoothly: boxes and tables are
-   break-inside: avoid, so what decides the fourth page is whether a
-   whole block clears the bottom of the last column. That is why
-   1.33 and 1.32 differ by a page while the slack below the last line
-   differs by three millimetres.
+   2026-11-20 REWROTE THE BOOK for the scavenged-Tyrant design: the
+   Rats now strip an abandoned Tyrant for parts and build a
+   Prototyrant they can direct, every Experiment hands one part to
+   each side, the Experiment deck is the clock, and the battle is
+   bounded by the difficulty's round count. The new text is longer,
+   so the leading came down from 1.31 to 1.25 to hold three pages -
+   measured, not guessed: 1.26 with the spacing it had is four pages
+   and 1.25 is three. There is no margin left again. The next block
+   anyone adds costs a page unless something else comes out, and the
+   cheapest things to cut are the 'One carcass, two halves' box and
+   the Fine-tuning paragraph.
 
    BAT ONLY, deliberately. The other three books are 4, 3 and 6 pages
    and nobody has asked for those to move; style.css is shared, so a
    change there reflows all four. */
-body { line-height: 1.31; }
-p { margin-bottom: 1.7mm; }
-li { margin-bottom: 0.85mm; }
-.box { margin-bottom: 2.4mm; }
-ol.seq li { margin-bottom: 1.2mm; }
+body { line-height: 1.25; }
+p { margin-bottom: 1.45mm; }
+li { margin-bottom: 0.65mm; }
+.box { margin-bottom: 2.0mm; }
+ol.seq li { margin-bottom: 0.95mm; }
 </style>
 </head><body>
 
@@ -54,10 +38,11 @@ ol.seq li { margin-bottom: 1.2mm; }
   <div class="eyebrow">The Nobulous Set &middot; Game One</div>
   <p class="byline">Designed by Jonathan Weeks</p>
   <h1>Build&#8209;a&#8209;Tyrant (BAT)</h1>
-  <p class="tagline">Four scientists, one boss, and every failure makes it stronger.</p>
-  <p class="blurb">Four Lab Rats work their benches in Nobulous&rsquo; laboratory, resolving Experiments and
-  bolting salvaged Upgrades onto themselves. Every Experiment they fail donates material to the thing growing
-  in the tank. Five Splices and it wakes up. Then they have to kill it.</p>
+  <p class="tagline">Four scientists, one scrapped monster, and not enough of it to go around.</p>
+  <p class="blurb">An earlier Tyrant failed because nobody could control it. Four Lab Rats are stripping the
+  carcass for parts and building a <b>Prototyrant</b> they can direct. Every Experiment gives their machine
+  one part and lets the old Tyrant reclaim the other &mdash; so the question is never how many parts you get,
+  it is <em>which</em>. Then the old thing wakes up, and you find out whether you built enough.</p>
 </div>
 
 <div class="body">
@@ -65,11 +50,11 @@ ol.seq li { margin-bottom: 1.2mm; }
 <h2>Components</h2>
 <ul>
   <li>4 double&#8209;sided Lab Rat cards</li>
-  <li>20 Experiment cards</li>
+  <li>20 Experiment cards and 1 <b>Wake&#8209;Up</b> card</li>
   <li>16 regular Upgrade cards (4 each of Power, Mobility, Defense, Senses)</li>
   <li>8 Specimen cards</li>
   <li>7 Tyrant Attack cards</li>
-  <li>1 Buff HP track card (15 spaces) &mdash; <em>stripped before any Splice can be damaged</em></li>
+  <li>1 Health track card (15 spaces) &mdash; <em>the Prototyrant&rsquo;s, and the Rats share it</em></li>
   <li><b>From 20 Strong:</b> the 17 unit dice &mdash;
       <span class="dice"><span class="sw P"></span>4 Purple, <span class="sw B"></span>4 Blue,
       <span class="sw G"></span>4 Green, <span class="sw Y"></span>4 Yellow,
@@ -79,37 +64,55 @@ ol.seq li { margin-bottom: 1.2mm; }
 
 <h2>Setup</h2>
 <ol class="seq">
-  <li>Choose one side for each of the four Lab Rat cards. That side is fixed for the game. Place all four Rats in
-      a row/column &mdash; every Rat is in play at once.</li>
+  <li>Choose one side for each of the four Lab Rat cards. That side is fixed for the game. Place all four Rats
+      in a row &mdash; every Rat is in play at once.</li>
   <li>Give each Rat one Purple, one Blue, one Green and one Yellow die. These are that Rat&rsquo;s
       <b>personal dice</b> and stay at their own workbench.</li>
   <li>Place the Red die on a randomly selected Lab Rat. Red is communal and belongs to no Rat.</li>
-  <li>Choose a difficulty. It sets the <b>Specimens</b> added to the Upgrade deck and the Tyrant&rsquo;s
-      <b>core Health</b>.
+  <li>Choose a difficulty. It sets the <b>Specimens</b> that go into the old Tyrant&rsquo;s carcass and the
+      <b>rounds</b> you will get in the battle.
     <table>
-      <tr><th>Difficulty</th><th>Specimens</th><th>Core Health</th><th>Buff HP</th></tr>
-      <tr><td>Easy</td><td>5</td><td>8</td><td>1</td></tr>
-      <tr><td><b>Standard</b></td><td>6</td><td>9</td><td>1</td></tr>
-      <tr><td>Hard</td><td>7</td><td>9</td><td>2</td></tr>
-      <tr><td>Nobulous</td><td>8</td><td>11</td><td>2</td></tr>
+      <tr><th>Difficulty</th><th>Specimens</th><th>Rounds</th></tr>
+      <tr><td>Easy</td><td>5</td><td>12</td></tr>
+      <tr><td><b>Standard</b></td><td>7</td><td>10</td></tr>
+      <tr><td>Hard</td><td>7</td><td>9</td></tr>
+      <tr><td>Nobulous</td><td>8</td><td>8</td></tr>
     </table>
-    Shuffle that many random Specimens in with the 16 regular Upgrades. Return the rest to the box.
     </li>
-  <li>Shuffle the 20 Experiments into a face&#8209;down deck.</li>
-  <li>Leave room for the <b>Tyrant Splices</b> and the <b>Tyrant Attack deck</b>.</li>
+  <li>Build the <b>old Tyrant&rsquo;s parts deck</b>: shuffle that many random Specimens in with the 16
+      regular Upgrades, deal <b>13</b> at random face&#8209;down, and return everything else to the box. That
+      deck is the carcass, and every part either side ends up with comes out of it.</li>
+  <li>Build the <b>Experiment deck</b>: shuffle the 20 Experiments and deal <b>8</b>. Take the last two of
+      those eight, shuffle the <b>Wake&#8209;Up</b> card in with them, and put that packet of three
+      underneath the first six. You will resolve <b>six, seven or eight</b> Experiments, and you will not
+      know which.</li>
+  <li>Leave room for the <b>Prototyrant&rsquo;s grafts</b>, the old Tyrant&rsquo;s <b>discard</b>, and the
+      <b>Tyrant Attack deck</b>.</li>
 </ol>
 
 <h2>Object of the game</h2>
-<p>The game is split into two parts: the <b>Splice Phase</b> and the <b>Tyrant Battle</b>. Five Splices awaken the Tyrant. You cannot avoid this &mdash; the game is about <em>which</em> five cards it
-gets and <em>what shape your Rats are in</em> when it stands up. Defeat the Tyrant to win.</p>
+<p>The game is split into the <b>Lab Phase</b> and the <b>Tyrant Battle</b>. In the lab you and the old
+Tyrant divide its own carcass between you, one part each per Experiment. What is left in the carcass when the
+Wake&#8209;Up card turns is the <b>wall</b> you then have to break, and what you grafted is what you have to
+break it with. Destroy the old Tyrant&rsquo;s last Splice before the rounds run out to win.</p>
+<div class="box">
+  <span class="lbl">One carcass, two halves</span>
+  Thirteen parts go in and thirteen come out: every part is either <b>grafted</b> onto your Prototyrant or
+  <b>reclaimed</b> by the old Tyrant. So a good Experiment does two things at once &mdash; it arms you and it
+  shortens the wall &mdash; and a bad one does both in reverse. Nothing is discarded and nothing is wasted.
+</div>
 
-<h2>The Splice Phase (a turn)</h2>
+<h2>The Lab Phase (an Experiment)</h2>
 <ol class="seq">
-  <li>Reveal the next Experiment card.</li>
-  <li>Reveal 2 cards from the Upgrade deck. If either is a Specimen, increase this Experiment&rsquo;s Target by
-      <b>+1</b> (once only, even if both are Specimens).</li>
-  <li>Choose which Rat is active and put the <b>Recovery die</b> on it <em>after</em> seeing the Experiment
-      and the two Upgrades. The same Rat may be chosen on consecutive turns.</li>
+  <li>Reveal the next Experiment card. If it is the <b>Wake&#8209;Up</b> card the lab ends at once &mdash; go
+      to <em>Wake&#8209;Up</em>.</li>
+  <li>Reveal <b>2 parts</b> from the old Tyrant&rsquo;s deck. If it is empty, shuffle its discard to make a
+      new deck.</li>
+  <li>Work out the <b>Target</b>: the two parts&rsquo; <b>combined Value minus the Experiment&rsquo;s printed
+      number</b>, never less than <b>1</b>. Rich parts are harder to win and a high-numbered Experiment is a
+      better method.</li>
+  <li>Choose which Rat is active and put the <b>Recovery die</b> on it, <em>after</em> seeing the Experiment
+      and the two parts. The same Rat may be chosen on consecutive turns.</li>
   <li>Place the set&#8209;aside Red die on a <b>non&#8209;active</b> Rat.</li>
   <li>Resolve any ability that triggers after selection but before dice are committed.</li>
   <li>Commit dice, roll, and resolve (below).</li>
@@ -119,130 +122,134 @@ gets and <em>what shape your Rats are in</em> when it stands up. Defeat the Tyra
 
 <h3>Committing and rolling</h3>
 <p>The active Rat may commit any number of its own available dice, plus Red if it holds it, plus at most one
-borrowed die. Hits and Crits count toward the Experiment Target.</p>
+borrowed die. Hits and Crits count toward the Target.</p>
 
 <div class="box">
   <span class="lbl">Success</span>
-  Roll successes greater than or equal to the Target value and satisfy any printed restriction. The active Rat
-  takes <b>one</b> of the two revealed Upgrades (max 3 per Rat). Discard the other upgrade.
+  Roll successes greater than or equal to the Target and satisfy any printed restriction. <b>You choose</b>
+  which of the two parts your Prototyrant grafts. The old Tyrant reclaims the other.
 </div>
 <div class="box warn">
   <span class="lbl">Failure</span>
-  Splice the stronger revealed Upgrade into the Tyrant &mdash; add it face&#8209;up to the
-  <b>Tyrant Splices</b> stack near the Tyrant Attack deck. Discard the other upgrade. If the two are
-  equal in Value, choose either card.
+  <b>The old Tyrant chooses</b>, and it takes the higher&#8209;Value part. Your Prototyrant grafts the other
+  one. If the two are equal in Value, you choose which it takes.
 </div>
+<p>Either way <b>both parts leave the deck</b>: the graft goes face&#8209;up with your Prototyrant and stays
+there, and the reclaimed part goes to the old Tyrant&rsquo;s <b>discard</b>, where it waits to be shuffled
+back in and revealed again. Success never means more parts. It means the better one.</p>
 
-<h3>Zero&#8209;dice turns</h3>
-<p>A Rat may be selected and commit nothing. The Experiment fails automatically and the stronger Upgrade is
-Spliced. Recovery still happens. This is a legal choice, not a rest action &mdash; it gives no bonus.</p>
+<h3>Zero&#8209;dice Experiments</h3>
+<p>A Rat may be selected and commit nothing. The Experiment fails automatically and the old Tyrant takes the
+better part. Recovery still happens. This is a legal choice, not a rest action &mdash; it gives no bonus.</p>
 
-<h2>Upgrades</h2>
-<p>Every Upgrade card includes three elements: a <b>category</b> (Power, Mobility, Defense or Senses), a
-<b>Value</b>, and a printed <b>tap effect</b>.</p>
+<h2>Parts</h2>
+<p>Every part &mdash; Upgrade or Specimen &mdash; has a <b>category</b> (Power, Mobility, Defense or Senses),
+a <b>Value</b>, and a printed <b>effect</b>. Specimens are all Value 5. Which side holds a part decides what
+its Value means:</p>
 <ul>
-  <li>During the <b>Splice Phase</b>, the Value indicates which of two revealed cards is the
-      <em>stronger</em> one &mdash; the one that gets Spliced when you fail. Holding Upgrades also limits which dice you
-      may borrow from other rats.</li>
-  <li>During the <b>Tyrant Battle</b> a Value is a <b>threshold</b>: damage to a Tyrant Splice must meet
-      or exceed this threshold in a single attack in order to be removed. A Rat&rsquo;s Upgrade blocks one
-      attack and is spent (see <em>Armor</em>). Tapping a card (Rats only) uses its printed effect.</li>
-  <li>A Rat may hold at most <b>3</b> Upgrades. Specimens count against that limit.</li>
+  <li><b>In the lab</b>, Value is the stake: the two revealed Values set the Target, and the higher one is
+      what the old Tyrant takes when you fail.</li>
+  <li><b>Grafted on your Prototyrant</b>, a part&rsquo;s Value is the <b>dice cap</b> for the round it is
+      exposed in, and the <b>threshold</b> an incoming attack must meet to destroy it. Its printed effect is
+      yours to use.</li>
+  <li><b>Reclaimed by the old Tyrant</b> it becomes a <b>Splice</b>: its Value is the damage you must land in
+      one blow to break it, and the number of dice it rolls back at you. A Splice&rsquo;s printed effect is
+      used only while it still stands.</li>
 </ul>
-<p>The Tyrant holds Spliced Upgrades differently. It never taps, and a Splice&rsquo;s printed effect is
-<b>never used</b> &mdash; on the Tyrant a card is only its Value. What it costs you is the die it takes with
-it when it breaks (see <em>Breaking a Splice</em>).</p>
+<p>There is no limit on grafts. Your Prototyrant will finish the lab holding six, seven or eight parts.</p>
 
 <h2>Borrowing</h2>
 <p>The active Rat may borrow <b>one</b> available non&#8209;Red die from another Rat, before either Strategy
-roll. The more Upgrades the borrower already holds, the worse the die it is allowed to take:</p>
+roll. The bigger your Prototyrant has grown, the more of the lab&rsquo;s equipment it is already using, and
+the worse the die you are allowed to take:</p>
 <table>
-  <tr><th>Upgrades held</th><th>May borrow</th><th>Banish risk</th></tr>
+  <tr><th>Grafts held</th><th>May borrow</th><th>Banish risk</th></tr>
   <tr><td>0</td><td>Purple, Blue, Green or Yellow</td><td>17%</td></tr>
   <tr><td>1</td><td>Blue, Green or Yellow</td><td>33%</td></tr>
   <tr><td>2</td><td>Green or Yellow</td><td>50%</td></tr>
-  <tr><td>3</td><td>Yellow only</td><td>67%</td></tr>
+  <tr><td>3 or more</td><td>Yellow only</td><td>67%</td></tr>
 </table>
-<p>After the Experiment resolves, roll the borrowed die by itself. On a miss it is <b>banished</b> &mdash; removed
-from the game permanently. On a hit or Crit it returns to its owner exhausted. <b>Put a banished die on the card of
-the Rat it was borrowed from:</b> that Rat is a die short for good, and no exhausted die of that color
-goes back to it.</p>
+<p>After the Experiment resolves, roll the borrowed die by itself. On a miss it is <b>banished</b> &mdash;
+removed from the game permanently. On a hit or Crit it returns to its owner exhausted. <b>Put a banished die
+on the card of the Rat it was borrowed from:</b> that Rat is a die short for good, and no exhausted die of
+that color goes back to it.</p>
 
 <h2>The Red die</h2>
 <ul>
   <li>Red is communal, is never banished, and belongs to no workbench.</li>
   <li>If the active Rat holds Red, it may commit it normally.</li>
-  <li>After Red is used it is <b>set aside</b> rather than exhausted.</li>
-  <li>At the start of the next turn, after the active Rat has been chosen, place the set&#8209;aside Red on any
-      <b>non&#8209;active</b> Rat. If Red was not used it is not set aside, and this step is skipped.</li>
+  <li>In the lab, after Red is used it is <b>set aside</b> rather than exhausted.</li>
+  <li>At the start of the next Experiment, after the active Rat has been chosen, place the set&#8209;aside Red
+      on any <b>non&#8209;active</b> Rat. If Red was not used it is not set aside, and this step is
+      skipped.</li>
 </ul>
-<p>During the Tyrant Battle the Red die works differently. It is not included in the shared pool, nor is it
-passed around. <b>The attacking Rat may commit it, but only if they do not tap an Upgrade as part of the
-attack.</b> The Red die is set aside afterwards instead of being exhausted.</p>
+<p>In the battle Red belongs to whichever Rat holds it and only the active Rat may commit it, as in the lab.
+Two things change. It <b>counts toward the exposed graft&rsquo;s dice cap</b>, so taking it costs you a
+pooled die; and it <b>exhausts</b> like any other committed die, so it comes back only on a recovery. Hand it
+to a non&#8209;active Rat at the end of each round either way.</p>
 
-<h2>Awakening the Tyrant</h2>
-<p>The Tyrant awakens the moment it reaches <b>5 Splices</b>. Build the <b>Tyrant track</b>; from left to
-right, the <b>Buff HP card</b> with the Health die on the Tyrant&rsquo;s <b>Buff HP</b> &mdash; see
-<em>Fine&#8209;tuning</em> &mdash; then the five Tyrant Splices <b>in a random order</b>, then the
-<b>Health dial</b>, reading your <b>core Health</b> less any Experiment that cut it. Begin the battle.</p>
-<p><b>Splicing Machine Malfunction.</b> If the Experiment deck runs out first, randomly select enough unused
-Upgrade cards to bring the Tyrant to exactly 5 Splices, apply them, and begin the battle. Running out of
-<em>Upgrade</em> cards is not a malfunction &mdash; reshuffle the Upgrade discard instead.</p>
+<h2>Wake&#8209;Up</h2>
+<p>The Wake&#8209;Up card ends the lab the instant it is turned, wherever you are in the deck. Nothing about
+the parts changes: what you grafted is yours and what the old Tyrant reclaimed is its wall.</p>
+<ol class="seq">
+  <li>Combine the old Tyrant&rsquo;s <b>undrawn deck and its discard</b>, shuffle them, and stand them up as
+      its <b>Splices</b> &mdash; its wall, five to eight cards deep depending on how the lab went.</li>
+  <li>Shuffle your <b>grafts</b> into the Prototyrant&rsquo;s own face&#8209;down pile.</li>
+  <li>Put the Health die on the Health track at <b>12</b>. That is the Prototyrant&rsquo;s Health and all
+      four Rats share it &mdash; damage nothing absorbs comes off this one track, and at 0 the Rats
+      lose.</li>
+</ol>
 
 <h2>The Tyrant battle</h2>
 <h3>Setting up the fight</h3>
 <ol class="seq">
   <li>Shuffle the 7 <b>Tyrant Attack</b> cards face&#8209;down and <b>leave them that way</b>. The Attack
-      discard starts empty.</li>
-  <li>The <b>Tyrant track</b> runs the <b>Buff HP</b>, then the five shuffled Splices, then the
-      <b>core Health</b> &mdash; the order damage has to chew through, and the core cannot be touched until
-      the Buff HP and every Splice are gone. Nothing marks a Splice: <b>a Splice is never
-      part&#8209;damaged</b>, so it is either whole or gone.</li>
-  <li>Its bulk is the five Splices &mdash; the dial is only what is left once the last wall comes down, and
-      the fight is won by breaking them. Take <b>2 Purple, 2 Blue, 1 Green and 1 Yellow</b>
-      out of the Rats&rsquo; personal dice &mdash; there are only 17 in the game, so the Tyrant&rsquo;s six come
-      from the Rats&rsquo; own supply. Keep them in a bag. Those six never exhaust; the Tyrant draws from them
-      fresh every round.
+      discard starts empty, so the Rats&rsquo; first attack is unrestricted.</li>
+  <li>Take <b>2 Purple, 2 Blue, 1 Green and 1 Yellow</b> out of the Rats&rsquo; personal dice &mdash; there
+      are only 17 in the game, so the old Tyrant&rsquo;s six come from your own supply. Keep them in a bag.
+      Those six never exhaust; it draws from them fresh every round.
       <br><b>If a color is short</b> &mdash; borrowing banished too many of it &mdash; take dice of that
-      color back off the Rats they were banished on to make up the number. They are not given back; they go
-      straight into the bag. If there is no die of that color anywhere, the Tyrant simply goes without and
-      draws from a smaller bag. It was assembled out of your equipment either way.</li>
-  <li>Sweep every personal die still in the game &mdash; from all four Rats, available <em>and</em> exhausted
-      &mdash; into one <b>shared battle pool</b>, all available. Banished dice stay gone. <b>Red is not part of
-      the pool</b>; it is available to the attacking Rat every round, on the terms described under
+      color back off the Rats they were banished on. They are not given back; they go straight into the bag.
+      If there is no die of that color anywhere, the Tyrant goes without and draws from a smaller bag.</li>
+  <li>Sweep every personal die still in the game into one <b>shared battle pool</b>: those that were
+      available stay available, those that were exhausted stay exhausted, and then <b>recover 2</b>. Banished
+      dice stay gone. <b>Red is not part of the pool</b> &mdash; it stays with its holder, on the terms under
       <em>The Red die</em>.</li>
-  <li>Each Rat keeps its own Health and its own Upgrades. <b>Lab Rat abilities do not apply in the
-      battle</b> &mdash; they are laboratory technique, and help only with Experiments.</li>
+  <li><b>Lab Rat abilities do not apply in the battle</b> &mdash; they are laboratory technique, and help
+      only with Experiments.</li>
 </ol>
 
 <h3>A battle round</h3>
 <ol class="seq">
-  <li><b>Untap.</b> Every Upgrade tapped last round untaps now.</li>
-  <li><b>Choose the attacking Rat</b> from those still standing and move the <b>Recovery die</b> to it. It
-      uses its own Upgrades; its printed ability is silent here.</li>
-  <li><b>Commit as many dice as you like</b> from the shared battle pool, <b>honoring the commit color</b>,
-      and roll them &mdash; no limit, but you only get <b>REC + 2</b> back.
-      Every hit is 1 damage and every Crit is 2, and <b>STR 2</b> gives a second Strategy roll here too.</li>
-  <li><b>Either tap one Upgrade or commit Red &mdash; not both.</b> Tapping applies that Upgrade&rsquo;s
-      printed effect, and the card cannot absorb damage until it untaps. Committing Red adds it to the roll
-      on top of your committed dice, for free. A Rat may do neither.</li>
-  <li><b>Apply the damage</b> left to right. <b>A Splice does not chip:</b> your blow must <b>meet its
-      printed Value in this one attack</b> or it bounces off and the whole attack is wasted. Meet it and the
-      Splice is destroyed outright, and the remainder carries on &mdash; it may break the next Splice too,
-      and whatever survives all five comes off Health, which does chip. <b>Each Splice you break banishes one
-      die of its own color</b> from the shared pool, or any die if none of that color is left; its printed
-      effect is never used, and it goes aside rather than onto a Rat. The Tyrant was built from your equipment and takes
-      some with it.
-      <br>The dice you have just committed <b>are</b> still pool dice and can be banished: they are not
-      exhausted until the Recover step, which comes after this one. Only when the pool is empty does a
-      banishment reach into the exhausted dice instead.</li>
-  <li><b>Recover.</b> Return dice equal to the attacking Rat&rsquo;s <b>REC + 2</b> from the ones you just
-      committed to the shared pool. <b>The rest are exhausted and do not come back.</b></li>
-  <li>If the Tyrant is at 0 Health, the Rats win. Otherwise the Tyrant attacks.</li>
-  <li><b>Count the round.</b> If the Tyrant has survived <b>8 rounds</b> it breaks containment and the Rats
-      lose. You have eight attacks to break five walls.</li>
+  <li><b>Reveal two grafts</b> from the Prototyrant&rsquo;s pile and the <b>top Splice</b> of the old
+      Tyrant&rsquo;s wall. Choose <b>one</b> graft to use and expose; the other is <b>set aside</b> until the
+      pile is next shuffled, where nothing can destroy it. When the pile runs out, shuffle the grafts that
+      survive and carry on.</li>
+  <li><b>Choose the active Rat</b> from those still standing and move the <b>Recovery die</b> to it. Its
+      printed ability is silent here.</li>
+  <li><b>Commit dice</b> from the shared pool, <b>up to the exposed graft&rsquo;s Value</b> and
+      <b>honoring the commit color</b>, and roll them. Every hit is 1 damage and every Crit is 2, and
+      <b>STR 2</b> gives a second Strategy roll here too. With no graft revealed at all, the cap is
+      <b>3</b>.</li>
+  <li><b>Either use the exposed graft&rsquo;s effect or commit Red &mdash; not both.</b> Red counts toward
+      the cap. Dice a graft&rsquo;s effect explicitly adds may exceed it.</li>
+  <li><b>Apply the damage.</b> <b>A Splice does not chip:</b> your blow must <b>meet its printed Value in
+      this one attack</b> or it bounces off and the whole attack is wasted. Nothing carries over to the next
+      Splice. Meet it and the Splice is destroyed outright &mdash; and if it was the last one, <b>the Rats
+      win immediately</b>.</li>
+  <li><b>Retaliation.</b> The old Tyrant attacks even if you just broke the Splice that was facing you
+      (below).</li>
+  <li><b>Count the round.</b> If its last Splice is still standing when your difficulty&rsquo;s rounds are
+      used up, it finishes the job and the Rats lose.</li>
 </ol>
 
+<div class="box">
+  <span class="lbl">The recovery pass</span>
+  Before committing dice the active Rat may <b>pass</b>: make no attack and forgo the exposed
+  graft&rsquo;s effect. The old Tyrant retaliates as normal and the graft defends as normal &mdash; it may
+  well survive. Afterwards recover <b>REC + 2</b> dice from the exhausted pool. You may pass with a graft
+  revealed, and with the rounds counting down it is never free.
+</div>
 
 <div class="box">
   <span class="lbl">Committing by color</span>
@@ -254,46 +261,47 @@ Upgrade cards to bring the Tyrant to exactly 5 Splices, apply them, and begin th
   instead commit <b>two dice of one other color</b>. <b>Red never counts</b> towards the commit color.
 </div>
 
-<h3>The Tyrant&rsquo;s attack</h3>
+<h3>The old Tyrant&rsquo;s retaliation</h3>
 <ol class="seq">
-  <li>Reveal the top <b>Tyrant Attack</b> card and apply it. Discard it face&#8209;up afterwards; reshuffle the
-      discard if the deck runs out. Its color dot is now the <b>commit color</b> for the next Rat attack.</li>
-  <li>The Tyrant draws a number of dice equal to the <b>highest Value among the Splices it still holds</b>
-      &mdash; 2 if it holds none, never more than its 6 &mdash; <b>at random, without looking</b>, and rolls
-      them, then return them to the bag.</li>
-  <li>Unless the card says otherwise the attack lands on the <b>attacking Rat</b>. Choose one of its
-      <em>untapped</em> Upgrades to take the blow: it stops the attack dead, and <b>it is spent</b> &mdash;
-      discard it, whatever the blow was worth. At most one Upgrade is lost and nothing carries over. Only a
-      Rat with <b>no</b> untapped Upgrade takes the damage to its Health (see <em>Armor</em>).</li>
-  <li>A Rat reduced to 0 Health is <b>knocked out</b>: set it aside and discard its Upgrades. It cannot be
-      chosen as the attacker again.</li>
+  <li>Reveal the top <b>Tyrant Attack</b> card and apply it. Discard it face&#8209;up afterwards; reshuffle
+      the discard if the deck runs out. Its color dot is now the <b>commit color</b> for the next Rat
+      attack.</li>
+  <li>It draws dice equal to <b>the exposed Splice&rsquo;s Value</b> &mdash; never more than its six &mdash;
+      at random, without looking, rolls them, then returns them to the bag. <b>A Splice you destroyed this
+      round still sets that number</b>, but its printed effect does not fire. A Splice that survived applies
+      its effect as well.</li>
+  <li>The <b>exposed graft defends</b>, whether or not you attacked with it. If the attack <b>meets or
+      exceeds its Value</b> that graft is destroyed &mdash; discard it, and it is gone for the rest of the
+      game. If it holds, it cycles back into the Prototyrant&rsquo;s pile. Only damage with no graft to
+      absorb it reaches the <b>Prototyrant&rsquo;s Health</b>.</li>
 </ol>
-<p>Reduce the Tyrant to 0 Health to win. The Tyrant wins if <b>every Rat is knocked out</b>, or if it
-<b>survives 8 rounds</b>; either way you replay BAT.</p>
+<p>Destroy the old Tyrant&rsquo;s last Splice to win. It wins if the Prototyrant&rsquo;s Health reaches
+<b>0</b>, or if its last Splice is still standing when the rounds run out; either way you replay BAT.</p>
 
 <h3>Armor</h3>
 <div class="box">
   <span class="lbl">Two kinds of armor</span>
-  <b>Neither kind chips</b> &mdash; no card here is ever left part&#8209;damaged. A Splice must be met in one
-  blow or it takes nothing; a Rat&rsquo;s Upgrade stops an attack dead whatever it was worth. The difference is
-  the price: a Splice stands until a big enough hit lands, a Rat&rsquo;s Upgrade is <b>spent the moment it
-  blocks</b>. The Tyrant&rsquo;s armor is a wall; the Rats&rsquo; is a budget.
+  <b>Neither kind chips.</b> A Splice must be met in one blow or it takes nothing; a graft stops an attack
+  dead whatever the blow was worth. The difference is the price: a Splice stands until a big enough hit lands,
+  a graft is <b>destroyed the moment a big enough attack finds it</b> and never comes back. The old
+  Tyrant&rsquo;s armor is a wall. Yours is a stock, and it runs down.
 </div>
 
 <h3>Fine&#8209;tuning</h3>
-<p>Both of the Tyrant&rsquo;s numbers come off the table, and they do not trade one for one: a point of
-<b>Buff HP</b> is worth two or three of <b>core Health</b>, because the five Splices shelter behind it at
-full strength the whole time it stands. The track has 15 spaces if you want a longer wall &mdash; take core
-Health off the dial to pay for it.</p>
+<p>The round count is the dial. A round is worth roughly a tenth of your chances, so take one off for a
+harder game and add one for a kinder one &mdash; and if you want the fight itself to bite harder rather than
+be shorter, raise the <b>Specimens</b> instead: that makes each Splice dearer to break without adding another
+one to the wall. The Health track has 15 spaces if you would rather start above 12.</p>
 
 <h2>Carrying BAT forward</h2>
 <p><em>Only relevant if you are playing the Nobulous Research Journal (NRJ) campaign, which is Tier III
 only. Skip otherwise.</em></p>
-<p>BAT contributes its <b>6 Research Notes</b>, and nothing leaves the Upgrade deck. A Note you claimed is
+<p>BAT contributes its <b>6 Research Notes</b>, and nothing leaves the parts deck. A Note you claimed is
 <b>retained</b>, up to 2; one still lying face&#8209;up unclaimed is a <b>candidate</b>. It does not matter
 whether you went on to spend it. A retained Note answers <b>Physical</b> Exhibits in the finale, reducing a
-Target by <b>2</b>. Claiming one costs the next Upgrade a completed Experiment earns, so the Rats fight
-thinner for it: BAT is harder so the Imposter is better armed.</p>
+Target by <b>2</b>. Claiming one costs you the choice: on your next completed Experiment the old Tyrant picks
+the part it reclaims, so the Rats build thinner for it &mdash; BAT is harder so the Imposter is better
+armed.</p>
 
 <div class="foot">BAT &middot; The Nobulous Set &middot; fan expansion for 20 Strong &middot; prototype rules,
 not affiliated with Chip Theory Games</div>
