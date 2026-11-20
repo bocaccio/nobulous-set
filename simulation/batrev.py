@@ -134,11 +134,41 @@ the Modifications' benefits to the Rats are flattened into damage and soak
 numbers while their Value inflation reaches the old Tyrant in full. Tier II
 is the next thing worth pricing properly.
 
-The price of a Research Note, Standard, NOTE_PRICE "choice":
+The price of a Research Note, Standard, NOTE_PRICE "choice", with two of
+the six rewards modelled (R35) and 1500 games an arm. A claimed Note counts
+for the finale whether or not it is cashed in, so HOARD is the campaign's
+reading and SPEND is this game's:
 
     Notes claimed        0        1        2
-    great lab        28.0%    20.2%    13.2%
-    overall          11.8%     8.3%     5.1%
+    hoard, great lab 29.0%    21.4%    20.2%
+    spend, great lab 29.0%    28.0%    33.4%
+
+HOARDING COSTS WHAT THE RULEBOOK ADVERTISES: -7.6 then -8.8 against the -6
+then -9 nrj.html quotes. That is the figure to trust, and it is the one the
+campaign is priced on.
+
+SPENDING IS WHERE THE TIER'S DILEMMA LEAKS. Modelled as printed - Unexpected
+Resilience recovering ALL dice - claiming and spending read 37.6% and 40.0%
+against 29.0% for not claiming at all, so the rational player claims both,
+spends both, wins BAT MORE often and still arms the finale. The question
+"how much of your own margin will you give up?" then has the answer "none".
+Splitting the two rewards shows it is one card: Unexpected Resilience alone
+is worth +13 points of great-lab, fired 0.81 times a game, because
+"recover them all" was written for an unbounded battle and in a ten-round
+one - where 17% of rounds open with nothing to roll - it turns a dead round
+into a full-pool attack. Acceptable Losses alone is worth about nothing,
+firing 0.20 times a game.
+
+RESILIENCE_ALL = False scopes it to the battle's own economy, REC + 2 dice,
+and that is the default. Claiming and spending ONE Note then reads 28.0%
+against 29.0% - a loan, which is what the tier is for.
+
+ONE THING STILL NEEDS A DESIGN DECISION. At two Notes, spending reads 33.4%
+- still above not claiming - and the reason is that ACCEPTABLE LOSSES IS
+SELF-FUNDING. Its price is a pick and its reward IS a pick, so the card
+pays for itself and should always be claimed. Either charge it differently
+(the pick on the next TWO completed Experiments), or give it a reward in
+another currency, or accept it as the deck's deliberate gift.
 
 TIER III is the serious one, because both rulebooks print the price of a
 Research Note - "claiming one costs the next Upgrade a completed Experiment
@@ -454,12 +484,53 @@ BATTLE
         Hypermetabolism   a pass pays MOD_RECOVER_BONUS (2) more while it is
                           exposed; its per-Experiment cost is OMITTED
 
+  R35 THE SIX RESEARCH NOTES, re-expressed where the revision deleted what
+      they referred to. A Note is CLAIMED when its own condition fires -
+      not banked at setup - and the bill falls due on the next COMPLETED
+      Experiment, so claiming late is a bet that Wake-Up arrives first.
+      MAX_UNPAID_DEBT (1) stops both Notes being claimed on the last
+      Experiment for nothing. The proposed printed wording:
+
+      Unexpected Resilience   condition unchanged. Reward scoped: "when
+        there are no available dice, recover them all" reads the POOL in
+        the battle, where dice are shared, and the active Rat in the lab.
+        MODELLED.
+      Successful Integration  both halves were broken. "When a Rat holds a
+        Specimen" has no owner now, so: "when the Prototyrant has a
+        Specimen grafted". Its reward - ignore the +1 Target a Specimen
+        adds - is VOID, because R2 replaced the blanket surcharge with
+        Target = combined Value - Experiment number. Proposed instead:
+        "once per game, treat a revealed Specimen as Value 2 for the
+        Target", which is the same idea and worth 3 Target once.
+      Acceptable Losses       unchanged, and now the strongest Note in the
+        deck: choosing which part is reclaimed after a failure REFUNDS a
+        pick, which is exactly what a claim costs. MODELLED.
+      Cross-Species Compat.   reward broken - no Rat holds Upgrades and the
+        grafts are already shared. Proposed: "once during the battle, also
+        use the graft you set aside this round", which is a real reward now
+        that two are revealed.
+      Controlled Failure      condition fine; a zero-dice pass still hands
+        the old Tyrant the better part. The reward acquired a hidden cost,
+        because the Experiment deck IS the clock and discarding a card
+        pulls Wake-Up closer. Proposed: draw the replacement from the
+        undealt reserve, as R3 does for Performance Trial, so the clock and
+        the 6-8 window are untouched.
+      Red Means Go            its reward says "rather than setting it
+        aside", which is still true in the lab but not in the battle, where
+        R21 has Red exhaust. Proposed second use: "once in the battle, Red
+        is set aside instead of exhausting" - worth about a free die, and
+        it teaches the rule.
+
+      Only the first and third are MODELLED here; the other four are
+      proposals for the card text and are in the omission list below.
+
 OMITTED CARD TEXT, declared rather than quietly dropped
-  * THE RESEARCH NOTES' REWARDS. Only their PRICE is modelled, so Tier III
-    at 0 Notes claimed is identical to Tier II by construction, and every
-    Tier III figure here is a lower bound: claiming a Note buys a one-shot
-    reward this module does not give back. The price is the part that was
-    mispriced, and the part the campaign turns on.
+  * FOUR OF THE SIX RESEARCH NOTES' REWARDS (R35). Acceptable Losses and
+    Unexpected Resilience are modelled; Successful Integration, Cross-
+    Species Compatibility, Controlled Failure and Red Means Go are not, so
+    a Tier III figure is still a lower bound - by less than it was. Tier
+    III at 0 Notes claimed remains identical to Tier II by construction,
+    since nothing is claimed and nothing is owed.
   * Each Protocol's secondary clause: Independent Funding's lender payout,
     Shared Equipment Budget's two-way exchange (modelled as a flat +2 on a
     completed Experiment against one die donated at setup), and
@@ -615,6 +686,33 @@ CLOCK_AWARE_PASS = True
 # NOTES_CLAIMED is how many Notes the Rats bank; each forfeits the graft
 # from the next completed Experiment. 0 is off.
 NOTES_CLAIMED = 0
+# R35: the two rewards this module implements, and how the Rats treat them.
+# A claim is no longer free bookkeeping: the Note is claimed when its own
+# condition fires, which is what creates the timing decision below.
+#   Acceptable Losses     after another failure, the RATS choose which part
+#                         the old Tyrant reclaims - it refunds a pick, the
+#                         currency the price is charged in
+#   Unexpected Resilience when there are no available dice, recover them
+#                         all; scoped to the POOL in the battle, where the
+#                         dice are shared, and to the active Rat in the lab
+# NOTE_SPEND is the campaign's own question: a claimed Note counts for the
+# finale whether or not it is cashed in, so "hoard" is what the Imposter
+# scenario wants and "spend" is what this game wants.
+NOTE_REWARDS_ON = ("Acceptable Losses", "Unexpected Resilience")
+NOTE_SPEND = True
+NOTE_REFUND_GAP = 2       # Value gap worth spending Acceptable Losses on
+# "Recover them ALL" was written for an unbounded battle. In a ten-round
+# one where 17% of rounds open with nothing to roll, it turns a dead round
+# into a full-pool attack and measured +13 points of great-lab win rate on
+# its own - which is what made claiming a Note NET GOOD for BAT and
+# deleted the tier's dilemma. RESILIENCE_ALL False scopes it to the
+# battle's own recovery economy, REC + PASS_RECOVERY_BONUS dice.
+RESILIENCE_ALL = False
+# A debt falls due on the next COMPLETED Experiment, and Wake-Up may arrive
+# first - so claiming late is a bet that the lab ends before the bill. That
+# is a decision worth keeping, but one unpaid debt is the cap, or both Notes
+# can be claimed on the last Experiment for nothing.
+MAX_UNPAID_DEBT = 1
 #
 # NOTE_PRICE is HOW a claim is paid, because the printed wording charges
 # twice in this structure. "both" is the literal reading: the Prototyrant
@@ -999,10 +1097,20 @@ class Game(object):
         # costs the part itself.
         self.pick_debt = 0
         if NOTE_PRICE == "choice":
-            self.pick_debt = NOTES_CLAIMED
+            # R35: nothing is owed until a Note's condition fires and the
+            # Rats take it. notes_to_claim below is the appetite.
             self.notes_owed = 0
         self.picks_lost = 0
         self.contaminated = False
+        # R35. Under the revision a Note is CLAIMED when its condition
+        # fires, not banked at setup, so notes_to_claim is the policy's
+        # appetite and `claimed` is what actually happened.
+        self.notes_to_claim = NOTES_CLAIMED if self.tier >= 3 else 0
+        self.claimed = []
+        self.rewards = []
+        self.fail_window = []      # the four-Experiment rotation
+        self.last_used_red = False
+        self.rewards_spent = []
         self.equip_bonus = 0
         self.last_stand = False    # R34: Redundant Organs, once a game
         self.exposed = None        # the graft on show this battle round
@@ -1154,6 +1262,8 @@ class Game(object):
                  "/".join(d.color[0].upper() for d in self.available(rat))
                  or "none")
 
+        if self.tier >= 3:
+            self.resilience(rat)      # R35, before the dice are needed
         if PROTOCOL_EFFECTS:
             if (self.protocol == "Accelerated Trials"
                     and number >= ACCEL_FLOOR_REV):
@@ -1169,6 +1279,8 @@ class Game(object):
                 self.say("  Independent Funding: %d dice exhausted.", paid)
         ok = self.attempt(rat, target, eff, parts)
         self.say("  -> %s", "SUCCESS" if ok else "FAILURE")
+        if self.tier >= 3:
+            self.note_claim(ok)                       # R35
         self.assign(parts, ok, eff)
         self.recover(rat, parts)
         self.last_active = rat
@@ -1192,6 +1304,72 @@ class Game(object):
             r is self.red_holder and not self.red_aside,
             len(self.available(r)),
             sum(EV[d.color] for d in self.available(r))))
+
+    def note_claim(self, ok):
+        """R35: claim a Research Note whose condition has just fired.
+
+        The printed conditions are nearly free - the printed model finds
+        five of six firing in 73-98% of games - and that is deliberate:
+        the decision this tier wants is the TRADE, not a scavenger hunt.
+        What makes it a decision here is the timing, because the bill falls
+        due on the next completed Experiment and Wake-Up may come first.
+        """
+        if not self.notes_to_claim or self.pick_debt >= MAX_UNPAID_DEBT:
+            return
+        self.fail_window.append(not ok)
+        self.fail_window = self.fail_window[-4:]
+        ready = []
+        if ok and not self.last_used_red:
+            ready.append("Unexpected Resilience")
+        if sum(1 for f in self.fail_window if f) >= 3:
+            ready.append("Acceptable Losses")
+        for name in ready:
+            if name in self.claimed:
+                continue
+            self.claimed.append(name)
+            self.notes_to_claim -= 1
+            self.pick_debt += 1
+            if name in NOTE_REWARDS_ON:
+                self.rewards.append(name)
+            self.say("    Research Note claimed: %s. The next completed Experiment pays for it (R31/R35).", name)
+            return
+
+    def spend_reward(self, name):
+        """Cash a claimed Note in, once. Hoarding is the other option."""
+        if not NOTE_SPEND or name not in self.rewards:
+            return False
+        self.rewards.remove(name)
+        self.rewards_spent.append(name)
+        return True
+
+    def resilience(self, rat):
+        """Unexpected Resilience: recover everything, once a game. In the
+        battle the pool is shared, so the condition reads the POOL; in the
+        lab it reads the active Rat, which is whose dice they are.
+        """
+        if "Unexpected Resilience" not in self.rewards:
+            return False
+        if self.in_battle:
+            if self.shared_available():
+                return False
+            dice = self.shared_exhausted()
+        else:
+            if self.available(rat):
+                return False
+            dice = self.exhausted(rat)
+        if not dice:
+            return False
+        if not self.spend_reward("Unexpected Resilience"):
+            return False
+        if not RESILIENCE_ALL:
+            n = rat.rec + PASS_RECOVERY_BONUS
+            dice = pick_order(dice, self.rng)[:n]
+        for d in dice:
+            d.zone = "available"
+        self.regained += len(dice)
+        self.say("    Unexpected Resilience: %d dice recovered (R35).",
+                 len(dice))
+        return True
 
     def holds_mod(self, name):
         """Is this Modification among the Prototyrant's installed parts?"""
@@ -1302,6 +1480,7 @@ class Game(object):
         self.say("    committed %d dice%s%s -> %d successes vs %d",
                  len(committed), " + Red" if used_red else "",
                  " + borrow" if borrowed else "", successes, target)
+        self.last_used_red = used_red        # R35 claim condition
         return successes >= target
 
     def resolve_borrow(self, lender, die, rat):
@@ -1343,6 +1522,16 @@ class Game(object):
             self.picks_lost += 1
             ok = False
             self.say("    a debt falls due: the old Tyrant picks this one.")
+        if not ok and len(parts) >= 2:
+            # R35, Acceptable Losses: after a failure the RATS choose which
+            # part is reclaimed. It refunds exactly what a claim costs, so
+            # it is only worth cashing when the two parts really differ.
+            order = sorted(parts, key=part_value, reverse=True)
+            if (part_value(order[0]) - part_value(order[-1])
+                    >= NOTE_REFUND_GAP
+                    and self.spend_reward("Acceptable Losses")):
+                ok = True
+                self.say("    Acceptable Losses: the Rats pick after all (R35).")
         order = sorted(parts, key=part_value, reverse=True)
         if eff == "methodology":                           # R8
             graft = order[-1]
@@ -1660,6 +1849,8 @@ class Game(object):
                 cap = CAP_FLAT                                    # R27
             elif CAP_FLOOR:
                 cap = max(cap, CAP_FLOOR)                         # R25
+        if self.tier >= 3 and not self.shared_available():
+            self.resilience(rat)                      # R35
         avail = pick_order(self.shared_available(), self.rng)
         self.avail_sum += len(avail)
         if not avail:
