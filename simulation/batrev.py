@@ -8,6 +8,10 @@
     python3 batrev.py ladder        # the first proposal's 10/12/14/16
     python3 batrev.py graft         # reveal 1 graft vs 2
     python3 batrev.py attrition     # is running out of grafts the loss?
+    python3 batrev.py directed      # R22, directing the attack, priced
+    python3 batrev.py weak          # R22 vs R23 vs R24 for weak builds
+    python3 batrev.py lab           # win rate by how well the lab went
+    python3 batrev.py shape         # R25/R26, lowering the ceiling only
     python3 batrev.py hp            # pooled Rat Health, tuned
 
 THIS IS NOT bat.py. bat.py models the PRINTED game and its figures are
@@ -262,6 +266,35 @@ BATTLE
   R20 A destroyed Splice still sets the counterattack's dice count, and its
       printed effect does NOT fire. A recovery pass still pays out when the
       graft survives.
+  R23 PARTIAL DAMAGE (PARTIAL_DAMAGE, off). A blow that falls short stays
+      on the exposed Splice and the Rats need only the remainder next time.
+      The handoff says no partial damage, so this contradicts it on
+      purpose. The retaliation still reads the Splice's printed Value.
+  R24 SPEND THE GRAFT (SPEND_GRAFT, off). The active Rat may destroy the
+      exposed graft to add its Value to the blow, closing a gap the dice
+      could not. The part is gone for good and cannot defend that round's
+      retaliation, so it is attrition the Rats choose rather than suffer.
+  R25 CAP FLOOR (CAP_FLOOR, off). The dice cap is max(graft Value, floor),
+      so a Value-2 graft stops meaning a two-dice round.
+  R26 FLAT RETALIATION (SPLICE_ATTACK_DICE, off). The Tyrant rolls a fixed
+      number of dice instead of the exposed Splice's Value, so a high-Value
+      Splice is a harder TARGET without also being a bigger HITTER.
+
+      R25 and R26 exist because a part's Value does THREE jobs at once -
+      the Rats' dice cap, the Target they must meet in one blow, and the
+      Tyrant's attack dice - so one lost Experiment charges them three
+      times. Both dials are worth most to the weakest build.
+  R22 DIRECT THE ATTACK. Before rolling, with a graft exposed, the active
+      Rat may forgo that graft's ability and commit up to DIRECT_CAP (4)
+      dice whatever the graft's Value, setting aside DIRECT_COST (1) further
+      available die. The graft stays exposed and defends at its printed
+      Value, with its soak text forgone. The tied-up die reaches the
+      exhausted pool after this round's recovery, so only a later recovery
+      pass reclaims it; attacks pay no recovery here, so that ordering is
+      only future-proofing. Because the ability is forgone the hand is
+      scored with no graft at all, which also frees Red from the printed
+      either/or. A round that PASSES directs nothing: nothing is forgone
+      and no die is tied up. DIRECT_ATTACK turns the whole rule off.
   R21 Red works in the battle as it does in the Experiment phase - only the
       active Rat commits it, only while that Rat holds it, it counts toward
       the graft's dice cap, and it then moves to a non-active Rat - with ONE
@@ -310,6 +343,56 @@ STR_PHASES = 2
 OPENING_RECOVERY = 2       # dice recovered once at the transition
 PASS_RECOVERY_BONUS = 2    # a recovery pass pays REC + 2
 NO_GRAFT_CAP = 3           # dice cap with no graft revealed
+
+# R22: DIRECT THE ATTACK. Without it the exposed graft's Value is a hard
+# ceiling on the Rats' OWN dice, so a Value-2 graft against a Value-5
+# Splice is not a decision, it is a lost round - and attrition() shows
+# running out of grafts is the loss condition. Directing lets the active
+# Rat forgo the graft's ability and commit up to DIRECT_CAP dice whatever
+# the graft's Value, paying DIRECT_COST available dice that are tied up
+# until a later recovery. The graft stays exposed and defends at its
+# printed Value, so a fragile graft is being risked to force a break.
+# DIRECT_MARGIN is the expected damage the directed route must BEAT the
+# graft route by: 0.0 makes the policy greedy, which is the harshest test
+# of whether the price is too low.
+# Measured OFF: rescue 0.09 a round against luxury 1.08, and a point of win
+# rate lost. R22 raises the dice CAP, and only 12% of forced passes are
+# cap-caused. `batrev.py directed` reproduces that.
+DIRECT_ATTACK = False
+DIRECT_CAP = 4
+DIRECT_COST = 1
+DIRECT_MARGIN = 0.0
+
+# TWO MORE WAYS A WEAK BUILD MIGHT GET THROUGH, both OFF by default and
+# both aimed at the constraint R22 turns out to miss. R22 raises the DICE
+# CAP, but only 12% of forced passes are cap-caused; 88% are the pool.
+#
+# PARTIAL_DAMAGE (R23) lets a blow that falls short stay on the exposed
+# Splice, so several small blows can do what the Rats cannot do in one.
+# That is what a weak build produces. The handoff says no partial damage,
+# so this contradicts it on purpose and stays off until chosen.
+#
+# SPEND_GRAFT (R24) lets the active Rat destroy the exposed graft to add
+# its Value to the blow, taking the retaliation bare. It hands graft
+# attrition - which attrition() shows IS the loss condition - to the Rats
+# as something they spend on purpose rather than something done to them.
+PARTIAL_DAMAGE = False
+SPEND_GRAFT = False
+
+# TWO DIALS THAT LIFT THE FLOOR WITHOUT LIFTING THE CEILING. A part's Value
+# currently does THREE jobs at once, and losing one Experiment charges the
+# Rats for all three: the part they keep caps their dice, the part the old
+# Tyrant takes sets the Target they must meet in one blow, AND sets how many
+# dice it rolls back at them. These unhook the first and the third, so they
+# are worth something to a Value-2 graft and nothing to a Value-5 one -
+# which is what makes them compress the spread rather than raise it.
+#
+# CAP_FLOOR (R25): the dice cap is max(graft Value, CAP_FLOOR). 0 is off.
+# SPLICE_ATTACK_DICE (R26): the Tyrant rolls this many dice instead of the
+# exposed Splice's Value, so a high-Value Splice is a harder TARGET without
+# also being a bigger HITTER. 0 is off.
+CAP_FLOOR = 0
+SPLICE_ATTACK_DICE = 0
 BANISH_ON_BREAK = False    # R19: off for the main run
 TYRANT_BAG = ["purple", "purple", "blue", "blue", "green", "yellow"]
 ROUND_GUARD = 300          # genuine stalls are reported, not won or lost
@@ -470,9 +553,10 @@ class Rat(object):
 
 class Part(object):
     """A part once it is installed or reclaimed: Value plus identity."""
-    __slots__ = ("value", "name", "cat", "card")
+    __slots__ = ("value", "name", "cat", "card", "dmg")
 
     def __init__(self, card):
+        self.dmg = 0          # R23: damage standing on an exposed Splice
         self.value = part_value(card)
         self.name = part_name(card)
         self.cat = part_cat(card)
@@ -525,6 +609,10 @@ class Game(object):
         self.red_commits = 0
         self.red_rounds = 0        # battle rounds where Red was usable
         self.naked_round = None    # first round with no graft left to use
+        self.directed_rescue = 0   # R22 used where the graft could not win
+        self.directed_luxury = 0   # R22 used though the graft route was live
+        self.direct_fee = 0        # dice tied up paying for R22
+        self.grafts_spent = 0      # R24: grafts cashed in for damage
         self.avail_sum = 0         # pooled dice available, summed
         self.no_dice_rounds = 0    # rounds that opened with nothing
         self.notes = []            # verbose playthrough lines
@@ -981,6 +1069,23 @@ class Game(object):
                 best = (key, hand)
         return best[1]
 
+    def direct_option(self, avail, graft, need, rat):
+        """R22. The directed attack: (pick, fee), or (None, None).
+
+        Only with a graft exposed - directing is a way of using a graft
+        BADLY, not of fighting without one - and only while the Rats can
+        still set aside DIRECT_COST dice they did not commit. The graft's
+        ability is forgone, which is why the hand is scored with no graft
+        at all; that also frees Red from the printed either/or.
+        """
+        if not DIRECT_ATTACK or graft is None:
+            return None, None
+        pick = self.best_commit(DIRECT_CAP, None, need, rat)
+        spare = [d for d in avail if d not in pick]
+        if len(spare) < DIRECT_COST:
+            return None, None
+        return pick, spare[-DIRECT_COST:]
+
     def choose_graft(self, options, splice, rat):
         """Which revealed graft to use and expose.
 
@@ -1016,6 +1121,10 @@ class Game(object):
         if not self.grafts and self.naked_round is None:
             self.naked_round = self.rounds
         splice = self.splices[0]
+        # R23: with partial damage the Rats need only the REMAINDER. Every
+        # decision below reads `need`; the retaliation still reads the
+        # Splice's printed Value, which sets its attack dice.
+        need = splice.value - splice.dmg if PARTIAL_DAMAGE else splice.value
         # AN ACTIVE RAT EACH BATTLE TURN, chosen exactly as in the Experiment
         # phase - the sort prefers whoever holds Red, which is why Red moves
         # to a NON-ACTIVE Rat at the end of the round. This has to happen
@@ -1045,20 +1154,43 @@ class Game(object):
             graft = shown[0] if shown else None
 
         cap = graft.value if graft is not None else NO_GRAFT_CAP
+        if CAP_FLOOR and graft is not None:
+            cap = max(cap, CAP_FLOOR)                              # R25
         avail = pick_order(self.shared_available(), self.rng)
         self.avail_sum += len(avail)
         if not avail:
             self.no_dice_rounds += 1
         if self.may_use_red(rat):
             self.red_rounds += 1
-        pick = self.best_commit(cap, graft, splice.value, rat)
+        pick = self.best_commit(cap, graft, need, rat)
         ceiling = self.ceiling(pick, graft)
-        viable = ceiling >= splice.value
+        viable = ceiling >= need
+        expect = self.expected(pick, graft)
+
+        # R22. Price the directed attack against the graft route and keep
+        # the better: can it break at all first, then mean damage.
+        dpick, dfee = self.direct_option(avail, graft, need, rat)
+        use_direct = False
+        if dpick is not None:
+            dceil = self.ceiling(dpick, None)
+            dexp = self.expected(dpick, None)
+            if ((dceil >= need, dexp - DIRECT_MARGIN)
+                    > (viable, expect)):
+                use_direct = True
+                graft_viable = viable
+                pick = dpick
+                ceiling = dceil
+                viable = dceil >= need
+                expect = dexp
+        if not use_direct:
+            dfee = []
+
         if not viable:
             self.unbreakable += 1
-            if self.ceiling(avail[:cap], graft) >= splice.value:
+            cls_cap = DIRECT_CAP if use_direct else cap
+            if self.ceiling(avail[:cls_cap], graft) >= need:
                 why = "colour"
-            elif self.ceiling(avail, graft) >= splice.value:
+            elif self.ceiling(avail, graft) >= need:
                 why = "cap"
             else:
                 why = "pool"
@@ -1068,15 +1200,20 @@ class Game(object):
                 # The card has printed battle text this module does not
                 # model, so the real game might have resolved the round.
                 self.forced_unmodelled += 1
-        expect = self.expected(pick, graft)
         want_pass = (graft is not None
                      and (not viable
-                          or expect < splice.value - COMMIT_MARGIN)
+                          or expect < need - COMMIT_MARGIN)
                      and len(self.shared_exhausted()) > 0)
+        if want_pass and use_direct:
+            # R22 is paid for on the attack. A round that passes directs
+            # nothing, forgoes nothing and ties up no die.
+            use_direct = False
+            dfee = []
         self.say("")
         self.say("Round %d: graft %s [%d] / Splice %s [%d]  (colour %s)",
                  self.rounds, graft.name if graft else "none",
-                 cap, splice.name, splice.value, self.attack_color)
+                 graft.value if graft is not None else cap,
+                 splice.name, splice.value, self.attack_color)
 
         broke = False
         if want_pass:
@@ -1085,9 +1222,14 @@ class Game(object):
                 self.forced_passes += 1
             self.say("  RECOVERY PASS (%s): ceiling %d vs Target %d",
                      "no legal break" if not viable else "rational",
-                     ceiling, splice.value)
+                     ceiling, need)
         else:
             dmg = 0
+            if use_direct:
+                if graft_viable:
+                    self.directed_luxury += 1   # chosen with a live graft
+                else:
+                    self.directed_rescue += 1   # a forced pass, rescued
             used_red = any(d.color == "red" for d in pick)
             if used_red:
                 self.red_commits += 1
@@ -1097,10 +1239,36 @@ class Game(object):
                 else:
                     d.zone = "exhausted"
                 dmg += roll(d.color, self.rng)
-            if graft is not None and not (used_red and RED_OR_ABILITY):
+            if (graft is not None and not use_direct
+                    and not (used_red and RED_OR_ABILITY)):
                 dmg += GRAFT_DAMAGE.get(graft.name, 0)
-            self.say("  commit %d dice -> %d damage vs Target %d",
-                     len(pick), dmg, splice.value)
+            for d in dfee:
+                d.zone = "aside"      # invisible to both pools this round
+                self.direct_fee += 1
+            # R24: cash the exposed graft in when the blow falls short and
+            # its Value closes the gap. The part is gone and cannot defend.
+            spent = None
+            gname = graft.name if graft is not None else "no graft"
+            if (SPEND_GRAFT and graft is not None and dmg < need
+                    and dmg + graft.value >= need):
+                spent = graft
+                dmg += graft.value
+                self.grafts = [g for g in self.grafts if g is not graft]
+                self.grafts_spent += 1
+                self.say("  SPEND %s [%d] for the break - the part is gone.",
+                         graft.name, graft.value)
+                graft = None
+            self.say("  %s %d dice -> %d damage vs Target %d%s",
+                     "DIRECT" if use_direct else "commit",
+                     len(pick), dmg, need,
+                     ("  (forgoing %s, %d die tied up)"
+                      % (gname, len(dfee))) if use_direct else "")
+            if PARTIAL_DAMAGE:
+                splice.dmg += dmg
+                dmg = splice.dmg
+                if dmg < splice.value:
+                    self.say("  %s holds at %d of %d.",
+                             splice.name, dmg, splice.value)
             if dmg >= splice.value:
                 broke = True
                 self.splices.pop(0)
@@ -1116,7 +1284,7 @@ class Game(object):
 
         # ---- counterattack. R20: a destroyed Splice still sets the count.
         card = self.draw_attack()
-        draws = min(splice.value, len(self.bag))
+        draws = min(SPLICE_ATTACK_DICE or splice.value, len(self.bag))
         hits = sum(roll(d.color, self.rng) for d in self.bag[:draws])
         if not broke:
             hits += SPLICE_DAMAGE.get(splice.name, 0)
@@ -1148,7 +1316,8 @@ class Game(object):
                  ATTACK_NAMES[card], hits,
                  " (+1 direct)" if direct else "")
 
-        self.apply_attack(target, hits, graft, direct, passed=want_pass)
+        self.apply_attack(target, hits, graft, direct, passed=want_pass,
+                          no_ability=use_direct)
 
         if card == 6 and not target.down:                             # R17
             second = sum(roll(d.color, self.rng) for d in self.bag[:2])
@@ -1164,6 +1333,13 @@ class Game(object):
             self.regained += len(got)
             self.say("  recovered %d dice (REC %d + %d).",
                      len(got), rat.rec, PASS_RECOVERY_BONUS)
+
+        # R22: the die tied up by a directed attack joins the EXHAUSTED
+        # pool after this round's recovery, so it cannot be reclaimed until
+        # a later recovery pass. Attacks pay no recovery in this model, so
+        # the ordering only matters if that ever changes.
+        for d in dfee:
+            d.zone = "exhausted"
 
         # rules/bat.html: Red goes to a NON-ACTIVE Rat, and a Red that was
         # set aside comes back. In the Experiment phase recover() does this;
@@ -1197,12 +1373,18 @@ class Game(object):
             return self.shared_hp <= 0
         return all(r.down for r in self.rats)
 
-    def apply_attack(self, rat, hits, graft, direct, passed):
-        """R15: a revealed graft defends; a Rat is only reached without one."""
+    def apply_attack(self, rat, hits, graft, direct, passed,
+                     no_ability=False):
+        """R15: a revealed graft defends; a Rat is only reached without one.
+
+        no_ability is R22: the Rats directed the attack, so the graft keeps
+        its printed Value as a threshold but its soak text is forgone.
+        """
         if direct:
             self.hurt(rat, direct)
         if graft is not None:
-            hits = max(0, hits - GRAFT_SOAK.get(graft.name, 0))
+            if not no_ability:
+                hits = max(0, hits - GRAFT_SOAK.get(graft.name, 0))
             if hits >= graft.value:
                 self.grafts = [g for g in self.grafts if g is not graft]
                 self.say("  graft %s destroyed (took %d vs threshold %d).",
@@ -1348,6 +1530,9 @@ def sample(lvl, games, seed=11, parts=None, reveal=None):
             a["broken"] += g.gate["splices"] - len(g.splices)
             a["unmodelled"] += g.forced_unmodelled
             a["red_rounds"] += g.red_rounds
+            a["d_rescue"] += g.directed_rescue
+            a["d_luxury"] += g.directed_luxury
+            a["d_fee"] += g.direct_fee
             if g.naked_round is not None:
                 a["naked"] += 1
                 a["naked_round"] += g.naked_round
@@ -1499,6 +1684,231 @@ def attrition(games=2000):
     print("win rate for games that do and do not get there.")
 
 
+def directed(games=2000):
+    """R22: can the Rats push a WEAK Prototyrant through a bad matchup?
+
+    Without R22 the exposed graft's Value caps the Rats' own dice, so the
+    build they assembled in the lab is the build they fight with. The
+    questions the rule has to answer are whether a previously forced pass
+    becomes a directed attack, whether weak builds win through that route,
+    and whether directing becomes the DEFAULT - which would mean the price
+    of one tied-up die is too low.
+    """
+    global DIRECT_ATTACK, DIRECT_MARGIN
+    was_on, was_margin = DIRECT_ATTACK, DIRECT_MARGIN
+    weak_at = 24          # gate graft Value; the mean is about 25.5
+    print("R22, DIRECTING THE ATTACK. Standard, deck %d, Proto HP %d,"
+          % (PARTS_AT_SETUP["Standard"], SHARED_HP_START))
+    print("GRAFT_REVEAL %d, %d games an arm. weak = gate graft Value <= %d."
+          % (GRAFT_REVEAL, games, weak_at))
+    print("")
+    print("%-20s %6s %7s %8s %8s %8s %7s %7s %7s"
+          % ("arm", "win%", "win|wk", "win|str", "direct/g", "rescue",
+             "luxury", "naked%", "rounds"))
+    try:
+        for name, on, margin in (("R22 off", False, 0.0),
+                                 ("on, greedy", True, 0.0),
+                                 ("on, margin 0.5", True, 0.5),
+                                 ("on, margin 1.0", True, 1.0),
+                                 ("on, margin 2.0", True, 2.0)):
+            DIRECT_ATTACK, DIRECT_MARGIN = on, margin
+            rng = random.Random(11)
+            a = collections.Counter()
+            for _ in range(games):
+                g = Game("Standard", rng)
+                out = g.play()
+                won = out == "win"
+                weak = g.gate["graft_value"] <= weak_at
+                a["win"] += won
+                a["weak"] += weak
+                a["win_weak"] += won and weak
+                a["rescue"] += g.directed_rescue
+                a["luxury"] += g.directed_luxury
+                a["naked"] += g.naked_round is not None
+                a["rounds"] += g.rounds
+            f = float(games)
+            wk = max(1, a["weak"])
+            st = max(1, games - a["weak"])
+            print("%-20s %5.1f%% %6.1f%% %7.1f%% %8.2f %8.2f %7.2f %6.1f%%"
+                  " %7.2f"
+                  % (name, 100.0 * a["win"] / f, 100.0 * a["win_weak"] / wk,
+                     100.0 * (a["win"] - a["win_weak"]) / st,
+                     (a["rescue"] + a["luxury"]) / f, a["rescue"] / f,
+                     a["luxury"] / f, 100.0 * a["naked"] / f,
+                     a["rounds"] / f))
+    finally:
+        DIRECT_ATTACK, DIRECT_MARGIN = was_on, was_margin
+    print("")
+    print("rescue = directed where the graft route could not reach the")
+    print("Splice at all, i.e. a round that would have been a forced pass.")
+    print("luxury = directed although the graft route COULD have broken it;")
+    print("if that dominates, one tied-up die is too cheap a price.")
+
+
+def shape(games=2000):
+    """Can the GREAT third sit at 40-50% without the poor third at 2%?
+
+    Deck size moves every third together and hits the poor one hardest, so
+    on its own it buys the target rate at the cost of a hopeless floor. The
+    floor dials (R25, R26) are worth most to the weakest build, so the two
+    together should be able to lower the ceiling and lift the floor at once.
+    """
+    global CAP_FLOOR, SPLICE_ATTACK_DICE
+    was = (CAP_FLOOR, SPLICE_ATTACK_DICE, PARTS_AT_SETUP["Standard"])
+    print("SHAPING THE SPREAD. Standard rung, Proto HP %d, GRAFT_REVEAL %d,"
+          % (SHARED_HP_START, GRAFT_REVEAL))
+    print("%d games an arm. Thirds are by graft Value at Wake-Up." % games)
+    print("")
+    print("%-26s %7s %9s %9s %9s %8s"
+          % ("arm", "win%", "poor 3rd", "mid 3rd", "great 3rd", "rounds"))
+    arms = (("plain", 0, 0),
+            ("cap floor 4", 4, 0),
+            ("flat attack 3", 0, 3),
+            ("flat attack 4", 0, 4),
+            ("floor 4 + flat 3", 4, 3))
+    try:
+        for deck in (15, 16, 17, 18):
+            PARTS_AT_SETUP["Standard"] = deck
+            for name, floor, flat in arms:
+                CAP_FLOOR, SPLICE_ATTACK_DICE = floor, flat
+                rng = random.Random(11)
+                rows, rounds = [], 0
+                for _ in range(games):
+                    g = Game("Standard", rng)
+                    out = g.play()
+                    rows.append((g.gate["graft_value"], out == "win"))
+                    rounds += g.rounds
+                rows.sort(key=lambda t: t[0])
+                n = len(rows)
+                cut = n // 3
+                thirds = (rows[:cut], rows[cut:n - cut], rows[n - cut:])
+                r = [100.0 * sum(1 for _, w in t if w) / max(1, len(t))
+                     for t in thirds]
+                print("%-26s %6.1f%% %8.1f%% %8.1f%% %8.1f%% %8.2f"
+                      % ("deck %d, %s" % (deck, name),
+                         100.0 * sum(1 for _, w in rows if w) / n,
+                         r[0], r[1], r[2], rounds / float(n)))
+            print("")
+    finally:
+        CAP_FLOOR, SPLICE_ATTACK_DICE, PARTS_AT_SETUP["Standard"] = was
+    print("Read the great-3rd column against 40-50%, then the poor 3rd for")
+    print("how hopeless a bad lab is. A dial that lifts the poor third more")
+    print("than the great one is doing what the brief asks.")
+
+
+def lab(games=2000):
+    """Does the lab's outcome set the battle's difficulty, and where?
+
+    The target: a GREAT lab should still be a challenge - 40-50% at
+    Standard - and a POOR lab should be close to hopeless. So the number
+    to tune against is not the overall win rate but the TOP THIRD's.
+
+    Lab quality is the Prototyrant's total graft Value at Wake-Up. That one
+    number carries both sides of every Experiment, because conservation
+    makes the old Tyrant's wall the complement of it: parts taken plus
+    parts reclaimed is the starting deck.
+    """
+    old = PARTS_AT_SETUP["Standard"]
+    print("DID THE LAB DECIDE IT? Standard rung, Proto HP %d, GRAFT_REVEAL"
+          % SHARED_HP_START)
+    print("%d, %d games a deck. Games are split into thirds by the"
+          % (GRAFT_REVEAL, games))
+    print("Prototyrant's total graft Value at Wake-Up.")
+    print("")
+    print("%6s %7s %9s %9s %9s %9s %8s"
+          % ("deck", "win%", "poor 3rd", "mid 3rd", "great 3rd", "cuts",
+             "rounds"))
+    try:
+        for deck in (13, 14, 15, 16, 17):
+            PARTS_AT_SETUP["Standard"] = deck
+            rng = random.Random(11)
+            rows, rounds = [], 0
+            for _ in range(games):
+                g = Game("Standard", rng)
+                out = g.play()
+                rows.append((g.gate["graft_value"], out == "win"))
+                rounds += g.rounds
+            rows.sort(key=lambda t: t[0])
+            n = len(rows)
+            cut = n // 3
+            thirds = (rows[:cut], rows[cut:n - cut], rows[n - cut:])
+            rates = [100.0 * sum(1 for _, w in t if w) / max(1, len(t))
+                     for t in thirds]
+            lo = thirds[0][-1][0] if thirds[0] else 0
+            hi = thirds[2][0][0] if thirds[2] else 0
+            print("%6d %6.1f%% %8.1f%% %8.1f%% %8.1f%% %5d/%-3d %8.2f"
+                  % (deck, 100.0 * sum(1 for _, w in rows if w) / n,
+                     rates[0], rates[1], rates[2], lo, hi,
+                     rounds / float(n)))
+    finally:
+        PARTS_AT_SETUP["Standard"] = old
+    print("")
+    print("cuts = the graft-Value boundaries of the poor and great thirds.")
+    print("The dial to read is the GREAT third: the brief wants it at 40-50%,")
+    print("with the poor third far below it.")
+
+
+def weak(games=2000):
+    """Can a WEAK Prototyrant win, and by which mechanism?
+
+    attrition() shows the loss condition is running out of grafts, and
+    diagnose() shows 88% of forced passes are the dice POOL rather than the
+    graft cap. So a rule that raises the cap (R22) is aimed at the 12%.
+    These are the three candidates, priced against the same baseline and
+    split by how good a build the lab produced.
+    """
+    global DIRECT_ATTACK, PARTIAL_DAMAGE, SPEND_GRAFT
+    was = (DIRECT_ATTACK, PARTIAL_DAMAGE, SPEND_GRAFT)
+    weak_at = 24          # gate graft Value; the mean is about 25.5
+    print("WAYS A WEAK BUILD MIGHT GET THROUGH. Standard, deck %d, Proto"
+          % PARTS_AT_SETUP["Standard"])
+    print("HP %d, GRAFT_REVEAL %d, %d games an arm. weak = gate graft"
+          % (SHARED_HP_START, GRAFT_REVEAL, games))
+    print("Value <= %d, which is a bit under half of all games." % weak_at)
+    print("")
+    print("%-22s %6s %7s %8s %6s %7s %7s %7s"
+          % ("arm", "win%", "win|wk", "win|str", "gap", "spent/g",
+             "naked%", "rounds"))
+    arms = (("baseline, none of it", False, False, False),
+            ("R22 direct only", True, False, False),
+            ("R23 partial only", False, True, False),
+            ("R24 spend only", False, False, True),
+            ("R22 + R23", True, True, False),
+            ("R22 + R24", True, False, True),
+            ("all three", True, True, True))
+    try:
+        for name, d, pa, sp in arms:
+            DIRECT_ATTACK, PARTIAL_DAMAGE, SPEND_GRAFT = d, pa, sp
+            rng = random.Random(11)
+            a = collections.Counter()
+            for _ in range(games):
+                g = Game("Standard", rng)
+                out = g.play()
+                won = out == "win"
+                wk = g.gate["graft_value"] <= weak_at
+                a["win"] += won
+                a["weak"] += wk
+                a["win_weak"] += won and wk
+                a["spent"] += g.grafts_spent
+                a["naked"] += g.naked_round is not None
+                a["rounds"] += g.rounds
+            f = float(games)
+            nw = max(1, a["weak"])
+            ns = max(1, games - a["weak"])
+            pw = 100.0 * a["win_weak"] / nw
+            ps = 100.0 * (a["win"] - a["win_weak"]) / ns
+            print("%-22s %5.1f%% %6.1f%% %7.1f%% %5.1f %7.2f %6.1f%% %7.2f"
+                  % (name, 100.0 * a["win"] / f, pw, ps, ps - pw,
+                     a["spent"] / f, 100.0 * a["naked"] / f,
+                     a["rounds"] / f))
+    finally:
+        DIRECT_ATTACK, PARTIAL_DAMAGE, SPEND_GRAFT = was
+    print("")
+    print("gap = how much better a strong build does than a weak one. That")
+    print("is the number the brief is about: a mechanism that lets a weak")
+    print("Prototyrant win should SHRINK it without lifting the ceiling.")
+
+
 def graft_choice(games=3000):
     print("GRAFT CHOICE: deck 14 on every rung, reveal 1 graft versus 2.")
     print("%d games an arm." % games)
@@ -1531,6 +1941,14 @@ if __name__ == "__main__":
         diagnose(int(sys.argv[2]) if len(sys.argv) > 2 else 3000)
     elif mode == "ladder":
         ladder(int(sys.argv[2]) if len(sys.argv) > 2 else 3000)
+    elif mode == "shape":
+        shape(int(sys.argv[2]) if len(sys.argv) > 2 else 2000)
+    elif mode == "lab":
+        lab(int(sys.argv[2]) if len(sys.argv) > 2 else 2000)
+    elif mode == "weak":
+        weak(int(sys.argv[2]) if len(sys.argv) > 2 else 2000)
+    elif mode == "directed":
+        directed(int(sys.argv[2]) if len(sys.argv) > 2 else 2000)
     elif mode == "attrition":
         attrition(int(sys.argv[2]) if len(sys.argv) > 2 else 2000)
     elif mode == "graft":
