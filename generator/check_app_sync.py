@@ -741,8 +741,22 @@ def rulenum(game, pattern, want, label):
 _rulenum_missing = []
 
 # -- BAT ---------------------------------------------------------------------
-_bat = py_tables("simulation/bat.py")
+# BAT'S MODEL OF RECORD IS batrev.py as of 2026-11-20, when rules/bat.html
+# adopted the scavenged-Tyrant design. simulation/bat.py models the printed
+# game that preceded it and is retired: its card tables are still the
+# transcription every other table here is held against, and nothing else in
+# it describes BAT. Both are loaded, and the retirement is checked below so
+# that bat.py cannot quietly become the model of record again.
+_bat = py_tables("simulation/bat.py")        # retired, card tables only
+_brev = py_tables("simulation/batrev.py")    # the model of record
 _gbat = py_tables("generator/build_bat.py")
+check("simulation/bat.py says it is retired, and batrev.py says it is not",
+      "RETIRED: the PRINTED Build-a-Tyrant" in text("simulation/bat.py")
+      and "BAT'S MODEL OF RECORD IS simulation/batrev.py"
+          in text("simulation/bat.py")
+      and "BAT'S MODEL OF RECORD" in text("simulation/batrev.py")
+      and "retired" in text("simulation/batrev.py"),
+      "one of the two modules stopped saying which one the game is")
 rulenum("bat", r"(\d+) Experiment cards", len(_gbat["EXPERIMENTS"]),
         "the Experiment deck size")
 rulenum("bat", r"(\d+) regular Upgrade cards", len(_gbat["UPGRADES"]),
@@ -751,12 +765,52 @@ rulenum("bat", r"(\d+) Specimen cards", len(_gbat["SPECIMENS"]),
         "the Specimen count")
 rulenum("bat", r"(\d+) Tyrant Attack cards", len(_gbat["ATTACKS"]),
         "the Tyrant Attack count")
-rulenum("bat", r"survived (\d+) rounds", _bat["ROUND_LIMIT"],
-        "the round limit")
-rulenum("bat", r"hold at most (\d+) Upgrades", 3,
-        "the Upgrade limit a Rat may hold")
-rulenum("bat", r"awakens the moment it reaches (\d+) Splices", 5,
-        "the Splice count that awakens the Tyrant")
+# THE ROUNDS ARE THE LADDER NOW, so the book prints four of them and the
+# setup table is where they live. Read out of the plain text of that table
+# rather than matched as a phrase, and compared against batrev's own dict,
+# so renaming a rung or reordering the columns fails here.
+# THE SETUP TABLE HAS NO WHITESPACE BETWEEN CELLS, so _plain collapses
+# "Easy 5 12" into "Easy512" and no digit regex can split it. Read the
+# ROWS out of the markup instead, which also fails if a column is
+# reordered or a rung renamed.
+_rows = re.findall(r"<tr><td>(?:<b>)?(Easy|Standard|Hard|Nobulous)"
+                   r"(?:</b>)?</td><td>(\d+)</td><td>(\d+)</td></tr>",
+                   text("rules/bat.html"))
+_book_rounds = [(a, int(b), int(c)) for a, b, c in _rows]
+_want_rounds = [(k, _brev["SPECIMENS_IN_POOL"][k], _brev["ROUND_LIMITS"][k])
+                for k in ("Easy", "Standard", "Hard", "Nobulous")]
+check("rules/bat.html prints batrev's Specimens and rounds per rung",
+      _book_rounds == _want_rounds,
+      "book %r, source %r" % (_book_rounds, _want_rounds))
+# AND THE PARTS DECK IS ONE NUMBER ON EVERY RUNG. It was 12/13/14/15 for a
+# day; a deck card is a whole Splice, which is a whole attack out of ten
+# rounds, so the rungs could not be spaced with it.
+_parts = set(_brev["PARTS_AT_SETUP"].values())
+rulenum("bat", r"deal (\d+) at random", sorted(_parts)[0],
+        "the old Tyrant's parts deck")
+check("...and that deck is the same size on every rung",
+      len(_parts) == 1, "%r" % (_brev["PARTS_AT_SETUP"],))
+# THERE IS NO GRAFT LIMIT, and the book has to say so: a Rat held at most 3
+# Upgrades in the printed game, and the Prototyrant holds everything it is
+# given. The borrow table below is the only thing a graft count still gates.
+check("rules/bat.html: no limit on grafts, and batrev has no cap for one",
+      "There is no limit on grafts" in _RULES["bat"]
+      # NO_GRAFT_CAP is the dice cap for a round with no graft revealed,
+      # which is a printed rule. What must not exist is a cap on how MANY
+      # grafts the Prototyrant may hold.
+      and not [k for k in _brev
+               if k in ("UPGRADE_CAP", "GRAFT_LIMIT", "MAX_GRAFTS")],
+      "%r" % ([k for k in _brev if "CAP" in k or "LIMIT" in k],))
+# AND THE CLOCK IS THE EXPERIMENT DECK, not a Splice count. Eight dealt and
+# a three-card packet holding the Wake-Up gives six, seven or eight.
+rulenum("bat", r"shuffle the 20 Experiments and deal (\d+)",
+        _brev["EXPERIMENTS_DEALT"], "the Experiments dealt")
+check("rules/bat.html prints the Wake-Up window batrev deals",
+      "six, seven or eight" in _RULES["bat"]
+      and _brev["WAKEUP_PACKET"] == 3
+      and _brev["EXPERIMENTS_DEALT"] == 8,
+      "dealt %r, packet %r" % (_brev.get("EXPERIMENTS_DEALT"),
+                               _brev.get("WAKEUP_PACKET")))
 
 # The commit-colour dot is the card; the model reads its own copy of the
 # order. Nothing compared them until 2026-11-06.
@@ -839,11 +893,17 @@ check("rules/nrj.html: 5 Knowledge, 5 Physical and 5 Cover-Up Exhibits",
 # CHARGED THEM until 2026-11-06, so both Tier III columns were measured with
 # free cards. These two checks are the reason that cannot happen quietly
 # again: the rulebook says the price and the model has to be charging it.
-check("rules/bat.html prints the Research Note claim cost, and bat.py "
+# BAT'S PRICE IS RE-EXPRESSED, because the printed wording charges twice in
+# this structure: the part the Prototyrant forfeits is a part the old Tyrant
+# reclaims, so a graft is lost AND a Splice joins the wall. Measured at 30
+# points of great-lab win rate against the 6 nrj.html advertises. The book
+# charges the PICK instead, and batrev has to be charging the same thing.
+check("rules/bat.html prints the Research Note claim cost, and batrev.py "
       "charges it",
-      "Claiming one costs the next Upgrade" in _RULES["bat"]
-      and _bat["NOTE_COSTS_UPGRADE"] is True,
-      "NOTE_COSTS_UPGRADE=%r" % (_bat.get("NOTE_COSTS_UPGRADE"),))
+      "Claiming one costs you the choice" in _RULES["bat"]
+      and "the old Tyrant picks the part it reclaims" in _RULES["bat"]
+      and _brev["NOTE_PRICE"] == "choice",
+      "NOTE_PRICE=%r" % (_brev.get("NOTE_PRICE"),))
 check("rules/aos.html prints the Backdoor Routine claim cost, and aos.py "
       "charges it",
       "costs the next Program Reward" in _RULES["aos"]
@@ -1644,7 +1704,13 @@ check("...and draws the cell the wall stands on",
       # front, or the cell draws no die and nothing says what is left.
       and 'if(b.buff>0) return "buff";' in jb)
 check("bat.js ROUND_LIMIT = 8", "ROUND_LIMIT = 8" in jb or "ROUND_LIMIT=8" in jb)
-check("rules/bat.html: 8-round containment breach", "8 rounds" in hb or "eight rounds" in hb)
+# THE ROUNDS ARE PER RUNG NOW, so the book cannot print one number. It has
+# to print the sentence that makes the clock a loss condition, and the
+# table above is what holds the four values.
+check("rules/bat.html: the clock is a loss condition",
+      "rounds are used up" in _RULES["bat"]
+      and "the Rats lose" in _RULES["bat"]
+      and "8 rounds" not in hb and "eight rounds" not in hb)
 check("rules/bat.html: Splice met in one attack",
       "one attack" in hb.lower())
 check("rules/bat.html: no commit cap left",
@@ -1663,15 +1729,22 @@ check("rules/bat.html: no commit cap left",
 # retirement is an invariant here rather than a tidy-up somebody has to
 # remember - two glosses on one stat is how the Encounters/Experiment
 # split started.
-check("rules/bat.html: Buff HP is what a blow strips first",
-      "Buff HP" in hb and "core Health" in hb
-      and "stripped before any Splice can be damaged" in hb
-      # A WORD BOUNDARY, because "player" contains "layer" and a plain
-      # substring test here can never pass.
-      and not re.search(r"\blayers?\b", hb, re.I)
-      # ...and the superseded framing is gone, both halves of it.
-      and "part of the Health" not in hb
-      and "Tyrant Health</th>" not in hb)
+# BUFF HP AND THE CORE HEALTH ARE BOTH RETIRED. The old Tyrant has no
+# Health at all now - its bulk IS its wall of Splices - and the one Health
+# track in the game is the PROTOTYRANT's, shared by all four Rats. The
+# retirement is an invariant rather than a tidy-up, for the same reason the
+# "outer layer" wording was: two glosses on one stat is how the
+# Encounters/Experiment split started.
+check("rules/bat.html: one shared Health track, and Buff HP is retired",
+      "the Prototyrant&rsquo;s Health and all" in hb
+      and "Buff HP" not in hb and "core Health" not in hb
+      and "Tyrant Health</th>" not in hb
+      and not re.search(r"\blayers?\b", hb, re.I))
+# ...AND IT IS THE NUMBER batrev STARTS THE TRACK AT.
+rulenum("bat", r"Health track at (\d+)", _brev["SHARED_HP_START"],
+        "the Prototyrant's starting Health")
+check("...and batrev pools it rather than tracking a Health per Rat",
+      _brev["SHARED_HP"] is True, "SHARED_HP=%r" % (_brev.get("SHARED_HP"),))
 # AND THE ORDER IS PRINTED, in the sentence that lists the track. Read out of
 # the sentence rather than matched as a phrase, so saying it differently
 # still passes and saying it backwards does not.
@@ -1679,14 +1752,15 @@ check("rules/bat.html: Buff HP is what a blow strips first",
 # this read `[w for w in ("Buff HP", "Splices", "core Health") if w in
 # sentence]`, which sorts by the TUPLE's order and not the text's - so it
 # passed with the sentence printed backwards. Mutation-tested both ways now.
-_track = re.search(r"The <b>Tyrant track</b> runs(.{0,200}?)&mdash;", hb, re.S)
-_where = [(_track.group(1).find(w), w)
-          for w in ("Buff HP", "Splices", "core Health")] if _track else []
-check("...and prints the damage order: Buff HP, Splices, core",
-      bool(_where) and all(i >= 0 for i, _w in _where)
-      and [w for _i, w in sorted(_where)]
-      == ["Buff HP", "Splices", "core Health"],
-      "found %r in %r" % (sorted(_where), _track and _track.group(1)[:70]))
+# THERE IS NO DAMAGE ORDER LEFT TO PRINT. The Tyrant track - Buff HP, then
+# five Splices, then a core dial - is gone with the printed game. One
+# Splice faces the Rats at a time, and the only thing damage can reach is
+# that Splice. What the book has to say instead is that nothing carries:
+# the old order let a blow run on through the wall.
+check("...and no damage order survives, because only one Splice is exposed",
+      "the top Splice" in _RULES["bat"]
+      and "Nothing carries over to the next" in _RULES["bat"]
+      and "Tyrant track" not in hb)
 # AND THE MODEL RUNS THAT ORDER. The book could say it while damage_tyrant
 # went straight to the Splices; this is the call site, not a table entry.
 
@@ -2127,14 +2201,18 @@ else:
     # lines of CSS in one book's own style block and nothing else
     # says why the book is set differently from its neighbours.
     check("...and each squeezed fit is recorded where it lives",
-          "THREE PAGES, NOT FOUR" in text("rules/bat.html")
+          # BAT's marker changed with the 2026-11-20 rewrite, which is
+          # itself the thing worth recording: the book is longer now and
+          # the leading came down 1.31 -> 1.25 to hold three pages, with
+          # 1.26 measured at four. The phrasing is free; what is checked
+          # is that the measurement and the value it produced are both in
+          # the book's own style block, where the CSS is.
+          "PAGE COUNT IS MEASURED, NOT GUESSED" in text("rules/bat.html")
+          and "1.26 with the spacing it had is four pages"
+              in text("rules/bat.html")
           and "FOUR PAGES, NOT FIVE" in text("rules/nap.html")
           and "FOUR PAGES, NOT SIX" in text("rules/nrj.html")
-          # BAT went 1.34 -> 1.31 on 2026-11-17, to buy the three
-          # lines that say what to set the Buff HP to and where a
-          # banished die goes. Its own style block records the
-          # measurement: 1.31 fits and 1.32 does not.
-          and "line-height: 1.31" in text("rules/bat.html")
+          and "line-height: 1.25" in text("rules/bat.html")
           and "line-height: 1.30" in text("rules/nap.html")
           and "line-height: 1.25" in text("rules/nrj.html"))
     # AND THE CREDIT LINE IS IN THE BOOK ITSELF, which nothing had ever
@@ -2265,10 +2343,16 @@ check("the app links all four rulebooks (%d)" % len(_linked),
 _bat = text("rules/bat.html")
 for _label, _needle in (
         ("a Splice does not chip", "A Splice does not chip"),
-        ("a broken Splice's remainder carries on", "the remainder carries on"),
-        ("a Rat's Upgrade has no threshold", "whatever the blow was worth"),
-        ("nothing carries over past a Rat's Upgrade", "nothing carries over")):
+        ("a graft has no threshold to meet", "whatever the blow was worth"),
+        ("nothing carries past the exposed Splice", "Nothing carries over")):
     check("rules/bat.html still says %s" % _label, _needle in _bat)
+# AND IT NO LONGER SAYS THE OPPOSITE. A broken Splice's remainder used to
+# run on into the next one and into the core Health behind it; in this
+# design a blow either meets the exposed Splice or is wasted, and there is
+# nothing behind it to reach.
+check("rules/bat.html: no remainder carries on any more",
+      "the remainder carries on" not in _bat
+      and "whatever survives all five" not in _bat)
 
 # THE TRACK HINT NAMES EVERY CARD THE LAB DRAWS. It stopped naming Buff HP
 # on 2026-11-03, when the lab stopped modelling it - which was right then,
@@ -2903,13 +2987,15 @@ check("...and the core Health still rises with the difficulty",
 # ...AND THE BOOK'S OWN TABLE IS THE SAME FOUR ROWS. The rulebook is the
 # player-facing copy of this ladder and had no check at all: the zeros it
 # printed were right by accident of never having been touched.
+# BAT'S SETUP TABLE IS TWO COLUMNS NOW - Specimens and rounds - and it is
+# held against batrev where the table is read, further up this file. What
+# is checked here is that the THREE-column printed table is gone, so the
+# retired bat.DIFFICULTY cannot drift back into the book.
 _hrows = re.findall(
     r"<tr><td>(?:<b>)?(Easy|Standard|Hard|Nobulous)(?:</b>)?</td>"
     r"<td>(\d+)</td><td>(\d+)</td><td>(\d+)</td></tr>", hb)
-check("rules/bat.html prints bat.DIFFICULTY in its setup table",
-      [(n, int(a), int(b), int(c)) for n, a, b, c in _hrows]
-      == [(k,) + tuple(sb_["DIFFICULTY"][k]) for k in _lvl],
-      "book says %r" % (_hrows,))
+check("rules/bat.html no longer prints the retired three-column table",
+      not _hrows, "book says %r" % (_hrows,))
 check("tts/lua.lua NAP_DIFF matches nap.LEVELS",
       _lua_rows("NAP_DIFF", _lvl) == dict(
           (k, tuple(v)) for k, v in sn["LEVELS"].items()))
@@ -4616,10 +4702,23 @@ check("the borrow table still reads off the borrower's Upgrades",
       # The alternatives exist, so deleting them cannot pass this.
       and 'BORROW_RULE == "flat"' in _brow
       and 'BORROW_RULE == "splices"' in _brow
-      # And the rules still print that column as the one that narrows it.
-      and "The more Upgrades the borrower already holds" in _RULES["bat"]
-      and "Upgrades held" in _RULES["bat"],
+      ,
       "BORROW_RULE does not ship at the printed reading, or nothing reads it")
+
+# AND THE BOOK'S OWN TABLE IS HELD AGAINST batrev, which is the model of
+# record. The column narrowed on the borrower's own Upgrades in the printed
+# game; here the Prototyrant holds every graft, so the row rises as IT grows
+# and the lab's borrowing degrades as the machine does. Printed as
+# "3 or more", because a graft count does not stop at three any more.
+_satr = text("simulation/batrev.py")
+check("rules/bat.html's borrow table reads the Prototyrant's grafts, and "
+      "batrev does too",
+      "Grafts held" in _RULES["bat"]
+      and "The bigger your Prototyrant has grown" in _RULES["bat"]
+      and "3 or more" in _RULES["bat"]
+      and "return min(3, len(self.grafts))" in _satr
+      and "Upgrades held" not in _RULES["bat"],
+      "the book and batrev no longer agree on what narrows a borrow")
 
 # THE BORROW POLICY IS WORTH MORE THAN ANY RULE IN THE GAME: 10 to 12
 # points, measured 2026-11-18, which is larger than every rule change
@@ -4676,13 +4775,23 @@ check("one Value still serves both the Rat and the Tyrant",
       and "max(0, hits - lost.value)" in _satk
       and 'RAT_BLOCK_RULE == "threshold"' in _satk
       and "def choose_splice(" in _satk
-      # And the book still prints the rules these defaults encode.
-      and "A Rat's Upgrade blocks one attack and is spent" in _RULES["bat"]
-      and "A Rat may hold at most 3 Upgrades" in _RULES["bat"]
-      and "must meet or exceed this threshold in a single attack" \
-          in _RULES["bat"],
-      "a Value dial ships on or is half-wired, or the book stopped printing "
-      "the rule it encodes")
+      ,
+      "a Value dial ships on or is half-wired")
+
+# AND IN THE GAME AS IT SHIPS, ONE VALUE DOES THREE JOBS - which is the
+# reason one lost Experiment is worth so much: the part you keep caps your
+# dice, the part it takes sets the Target you must meet in one blow, AND
+# sets how many dice it rolls back. The book prints all three and batrev
+# reads Value at all three CALL SITES, not in a table.
+check("rules/bat.html prints Value's three jobs, and batrev reads it at "
+      "all three",
+      "Value is the stake" in _RULES["bat"]
+      and "the dice cap for the round it is exposed in" in _RULES["bat"]
+      and "the damage you must land in one blow" in _RULES["bat"]
+      and "cap = graft.value if graft is not None else NO_GRAFT_CAP" in _satr
+      and "need = splice.value - splice.dmg if PARTIAL_DAMAGE" in _satr
+      and "draws = min(SPLICE_ATTACK_DICE or splice.value" in _satr,
+      "the book and batrev disagree on what a part's Value does")
 
 # THE SPLICE TRACK IS THE CLOCK: the phase runs while there are fewer than
 # 5 Splices, and play tops the track up to exactly 5 before the battle. So
@@ -4703,10 +4812,24 @@ check("a volunteered Splice still ticks the clock",
       # top-up both read the track, and a discount applied to one but not
       # the other builds a Tyrant out of the wrong number of cards.
       and _satk.count("len(self.splices) - self.volunteered < 5") == 2
-      and "self.volunteered = 0" in _satk
-      and "Five Splices and it wakes up" in _RULES["bat"],
+      and "self.volunteered = 0" in _satk,
       "the volunteer dial ships on, is half-wired, or the clock and the "
       "top-up stopped counting the track the same way")
+
+# THE QUESTION THE VOLUNTEER DIAL PRICED DOES NOT EXIST ANY MORE. It asked
+# what it should cost to hand the Tyrant a card you were allowed to keep,
+# and in this design EVERY Experiment grafts one part and reclaims the
+# other whether you win or lose - success only decides who picks. So the
+# clock is the Experiment deck and the book must not print a Splice count
+# that wakes anything, while batrev must graft on BOTH branches.
+check("every Experiment grafts a part, so there is no Splice clock left",
+      "Five Splices and it wakes up" not in _RULES["bat"]
+      and "awakens the moment it reaches" not in _RULES["bat"]
+      and "both parts leave the deck" in _RULES["bat"]
+      and "self.grafts.append(Part(graft))" in _satr
+      and "graft = order[-1]" in _satr
+      and "graft = max(parts, key=graft_score)" in _satr,
+      "the book or batrev stopped giving each side a part every time")
 
 check("Red still comes back free, as the printed rule has it",
       "RED_COSTS_REC = False" in _satk
@@ -4717,10 +4840,27 @@ check("Red still comes back free, as the printed rule has it",
       and "self.red_down = True" in _satk
       # "afford" has to be able to withhold Red, not merely charge for it:
       # the holder test is where that lands.
-      and "has_red = self.red_holder is rat and not getattr(" in _satk
-      and "After Red is used it is set aside rather than exhausted"
-          in _RULES["bat"],
-      "the model charges for Red, or the rules stopped setting it aside")
+      and "has_red = self.red_holder is rat and not getattr(" in _satk,
+      "the model charges for Red")
+
+# RED IS SET ASIDE IN THE LAB AND EXHAUSTS IN THE BATTLE, and the two
+# halves are a measured design choice rather than a tidy symmetry. Carried
+# into the battle, the lab's set-aside rule made Red the one die that never
+# runs out: usable in 100% of rounds and worth about one whole Splice.
+# Exhausting, it is worth half that and usable in two rounds out of three -
+# a die with downtime, which is the point. So the book prints both halves
+# and batrev has to be running the second one.
+check("rules/bat.html sets Red aside in the lab and exhausts it in the "
+      "battle, and batrev agrees",
+      "set aside rather than exhausted" in _RULES["bat"]
+      and "exhausts</b> like any other committed die" in text("rules/bat.html")
+      and "counts toward the exposed graft" in _RULES["bat"]
+      and "RED_SET_ASIDE_IN_BATTLE = False" in _satr
+      # ...and the dial is really wired, so deleting the question cannot
+      # satisfy this: the commit site has to branch on it.
+      and "if d is self.red and RED_SET_ASIDE_IN_BATTLE:" in _satr
+      and "RED_IN_BATTLE = True" in _satr,
+      "the book and batrev disagree about Red in the battle")
 
 # The overlay's three box labels are one size, and make_template proves
 # it at build time rather than leaving it to the eye: `fit` can shrink

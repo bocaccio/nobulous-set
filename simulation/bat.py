@@ -1,6 +1,31 @@
-"""Build-a-Tyrant: Splice Phase, then the Tyrant Battle.
+"""RETIRED: the PRINTED Build-a-Tyrant - Splice Phase, then the Tyrant
+Battle. Kept, not current.
 
-Rules source: rules/bat.html plus the card data in generator/build_bat.py.
+BAT'S MODEL OF RECORD IS simulation/batrev.py as of 2026-11-20, when
+rules/bat.html adopted the scavenged-Tyrant design: the Rats strip an
+abandoned Tyrant for parts, every Experiment grafts one and lets the old
+Tyrant reclaim the other, the Experiment deck is the clock, and the
+battle is bounded by the difficulty's rounds. None of that is modelled
+here, and NO FIGURE IN THIS FILE DESCRIBES THE GAME ANY MORE. The
+printed ladder it was calibrated to - 60/52/39/27 - is the old game's.
+
+It stays in the tree for two reasons, both load-bearing:
+  * ITS CARD TABLES ARE THE TRANSCRIPTION. batrev.py imports
+    EXPERIMENT_TARGETS, UPGRADE_VALUES, SPECIMEN_NAMES and the rest from
+    here, and check_app_sync.py holds those tables against
+    generator/build_bat.py. Moving them would buy nothing and risk the
+    one thing in this file that is still true.
+  * A DOZEN PRICING SCRIPTS EXERCISE IT - price_borrow, price_buff,
+    price_red, price_split_values and the rest - and they are the record
+    of how the printed game was tuned. They are history, not guidance.
+
+So: read it for card data, cite it for the printed game's history, and
+do not quote its win rates as BAT's. check_app_sync.py binds
+rules/bat.html to batrev.py now, and holds this retirement as an
+invariant so it cannot quietly become the model of record again.
+
+Rules source for the printed game it models: the pre-2026-11-20
+rules/bat.html, plus the card data in generator/build_bat.py.
 
 Verified against rules/bat.html and the core 20-Strong_Rulebook.pdf.
 

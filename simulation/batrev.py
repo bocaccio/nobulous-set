@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
-"""Revised standalone Build-a-Tyrant: the scavenged-Tyrant redesign.
+"""Build-a-Tyrant: the scavenged-Tyrant design. BAT'S MODEL OF RECORD.
+
+Rules source: rules/bat.html, which adopted this design on 2026-11-20.
+simulation/bat.py models the PRINTED game that preceded it and is
+retired - it is where the card tables below are transcribed, and
+nothing else in it describes BAT any more.
 
     python3 batrev.py one           # one complete seeded playthrough, named cards
     python3 batrev.py batch [n]     # seeded batch at all four difficulties

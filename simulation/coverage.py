@@ -256,8 +256,10 @@ CLAIMS = [
           lambda: sum(len(r) for r in bat.RAT_SIDES),
           note="8 sides on 4 cards; silent during the Tyrant battle, which "
                "is the printed rule"),
-    Claim("BAT", "Buff HP track", 1, lambda: 1,
-          note="a track, not an effect"),
+    Claim("BAT", "Health track", 1, lambda: 1,
+          note="a track, not an effect. It was the Tyrant's Buff HP until "
+               "2026-11-20; the card is the PROTOTYRANT's shared Health "
+               "now, and batrev.SHARED_HP is what reads it"),
 
     # -----------------------------------------------------------------------
     # NAP. Tasks are well covered; the Final Exams are not covered at all,
