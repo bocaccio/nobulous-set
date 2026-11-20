@@ -5,7 +5,7 @@
     python3 batrev.py batch [n]     # seeded batch at all four difficulties
     python3 batrev.py assumptions   # the ruling log alone
     python3 batrev.py diagnose      # WHY each forced pass happened
-    python3 batrev.py ladder        # starting decks 10/12/14/16
+    python3 batrev.py ladder        # the first proposal's 10/12/14/16
     python3 batrev.py graft         # reveal 1 graft vs 2
     python3 batrev.py hp            # pooled Rat Health, tuned
 
@@ -49,10 +49,24 @@ THE CONFIGURATION THESE FIGURES ARE MEASURED THROUGH
                        round; Red on its own Experiment-phase rule, not
                        drawn from the pool, but EXHAUSTING when committed
                        rather than set aside (R21).
-    Dials left at the handoff's spec: PARTS_AT_SETUP 10/14/18/22 and
-    GRAFT_REVEAL 1. The recommended settings are below, not baked in.
+    PARTS_AT_SETUP is now 12/13/14/15, not the handoff's 10/14/18/22.
+    GRAFT_REVEAL is left at the handoff's 1; the ladder below was measured
+    at 2, which is worth a few points a rung.
 
-RECOMMENDED LADDER, 1500 games an arm, GRAFT_REVEAL 2:
+THE LADDER AS IT SHIPS, 2000 games a rung, Proto HP 12, decks 12/13/14/15:
+
+                    Easy  Standard   Hard  Nobulous
+    GRAFT_REVEAL 1  64.7%    48.9%   36.5%    22.8%
+    GRAFT_REVEAL 2  64.2%    52.8%   37.9%    25.1%
+    BAT, printed    60%      52%     39%      27%
+
+Reveal 2 is the closer fit and lands Standard and Hard almost exactly;
+Easy runs four points generous and Nobulous two light. Walls are 5/6/7/8
+Splices against 7.0 grafts, so the Prototyrant outnumbers what is left of
+the old Tyrant on every rung - the lab is now the bigger half of the game.
+
+How the deck size was found, HP swept against it on the Standard rung,
+1500 games an arm, GRAFT_REVEAL 2:
 
     Proto HP   deck 11  deck 12  deck 13  deck 14  deck 15  deck 16
        9         73.9%    63.1%    48.7%    37.7%    25.8%    15.9%
@@ -60,12 +74,12 @@ RECOMMENDED LADDER, 1500 games an arm, GRAFT_REVEAL 2:
       15         75.2%    66.4%    51.2%    39.7%    29.8%    21.3%
       18         77.1%    64.3%    52.5%    39.5%    30.1%    19.9%
 
-So Proto HP 12 with decks 12/13/14/15 gives 63 / 53 / 39 / 30 against
-BAT's printed 60 / 52 / 39 / 27 - Standard and Hard land on it, Easy and
-Nobulous run a few points generous, and the Specimen mix (held at 6
-throughout, and the dial that moves Splice VALUES rather than counts) is
-the fine adjustment. HP saturates by 12: Health sets the LEVEL, the deck
-builds the LADDER at 10-14 points a Splice.
+HP saturates by 12: Health sets the LEVEL, the deck builds the LADDER at
+10-14 points a Splice. Read that sweep as DECK SIZE ONLY - it moves the
+Standard rung's deck and leaves its Specimen pool at 6, so it understates
+the real upper rungs, which carry 7 and 8 Specimens and therefore higher
+Splice VALUES. The sweep says 29.6% for a 15-card deck; the Nobulous rung,
+with its own mix, measures 25.1%. The four-rung batch is the authority.
 
 -----------------------------------------------------------------------
 WHERE THE FIRST ROUND OF TUNING LANDED
@@ -247,7 +261,12 @@ from bat import (EXPERIMENT_TARGETS, EXPERIMENT_EFFECT, UPGRADE_VALUES,
                  SPECIMEN_VALUE, RAT_HP, RAT_REC, pick_order)
 
 # ---------------------------------------------------------------- dials
-PARTS_AT_SETUP = {"Easy": 10, "Standard": 14, "Hard": 18, "Nobulous": 22}
+# PARTS_AT_SETUP is the old Tyrant's starting deck, and the ladder's coarse
+# dial: one Splice on the wall is worth 10-14 points. The handoff proposed
+# 10/14/18/22, which is a cliff - 84 / 39 / 6 / 0 measured. 12/13/14/15 is
+# what the sweeps landed on, because the Rats' capacity to BREAK Splices is
+# near constant (4.7 a game) while the spec scaled the requirement 2 -> 15.
+PARTS_AT_SETUP = {"Easy": 12, "Standard": 13, "Hard": 14, "Nobulous": 15}
 SPECIMENS_IN_POOL = {"Easy": 5, "Standard": 6, "Hard": 7, "Nobulous": 8}
 LEVELS = ("Easy", "Standard", "Hard", "Nobulous")
 
@@ -1321,7 +1340,8 @@ def diagnose(games=3000):
     print("  colour = the commit-colour rule cost them the reaching dice")
     print("  cap    = the graft Value capped them, though the pool had enough")
     print("  pool   = not enough dice existed at all, cap or no cap")
-    print("%d games a rung, current rules, decks 10/14/18/22." % games)
+    print("%d games a rung, current rules, decks %s."
+          % (games, "/".join(str(PARTS_AT_SETUP[l]) for l in LEVELS)))
     print("")
     print("%-10s %-34s %7s %6s %6s %7s"
           % ("rung", HEAD, "colour", "cap", "pool", "unmodl"))
@@ -1342,6 +1362,9 @@ def diagnose(games=3000):
 
 def ladder(games=3000):
     print("TIGHTER LADDER: starting decks 10/12/14/16, combat unchanged.")
+    print("This is the FIRST proposal, kept as a comparison arm; the dials")
+    print("now ship at %s."
+          % "/".join(str(PARTS_AT_SETUP[l]) for l in LEVELS))
     print("%d games an arm." % games)
     print("")
     print("%-12s %5s %7s %7s %7s %7s  %s"
