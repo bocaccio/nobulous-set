@@ -12,6 +12,7 @@
     python3 batrev.py weak          # R22 vs R23 vs R24 for weak builds
     python3 batrev.py lab           # win rate by how well the lab went
     python3 batrev.py shape         # R25/R26, lowering the ceiling only
+    python3 batrev.py flatten       # R27/R28, compressing the spread
     python3 batrev.py hp            # pooled Rat Health, tuned
 
 THIS IS NOT bat.py. bat.py models the PRINTED game and its figures are
@@ -393,6 +394,44 @@ SPEND_GRAFT = False
 # also being a bigger HITTER. 0 is off.
 CAP_FLOOR = 0
 SPLICE_ATTACK_DICE = 0
+
+# AND TWO THAT CAP WHAT A GREAT LAB CAN BE WORTH. The compounding runs on
+# BOTH sides: a part's Value sets the Rats' dice cap and their graft's
+# defence threshold, while the part the old Tyrant took sets its Target and
+# its attack dice - and conservation means a great lab also leaves a weaker
+# wall. One good Experiment improves four things at once. A floor dial
+# (R25/R26) lifts the weakest build but lifts the strongest further, so the
+# only way to compress the spread is to stop Value doing so many jobs on
+# the RATS' side, leaving it to matter as the Target.
+#
+# CAP_FLAT (R27): every graft caps dice at this number whatever its Value.
+# DEFENCE_FLAT (R28): every graft defends at this threshold whatever its
+# Value. Both 0 for off; CAP_FLAT overrides R25.
+CAP_FLAT = 0
+DEFENCE_FLAT = 0
+
+# LOSE_WHEN_NAKED (R29). A Prototyrant with no parts left is scrap: the
+# battle ends there instead of playing on. attrition() prices what that
+# throws away - a naked Prototyrant wins 3-7% - against what it saves,
+# which is every round after the verdict. A poor lab that is going to lose
+# currently plays 12.9 rounds of a 14.4-round battle to find out.
+LOSE_WHEN_NAKED = False
+
+# ROUND_LIMIT (R30). The printed game ends the battle after eight rounds;
+# the handoff removed that. Putting a limit back is the one dial that does
+# BOTH jobs the brief asks for, because it binds on the games that run
+# long: a doomed lab stops slogging, and a great lab - which wins around
+# round 10-12 - is pulled down toward the 40-50% the brief wants without
+# needing a bigger deck to get there. 0 is off.
+ROUND_LIMIT = 0
+
+# CLOCK_AWARE_PASS. With a round limit a recovery pass costs a CHANCE, not
+# just tempo, so a policy that passes on expected damage alone throws the
+# game away - and throws away more of it the shorter the limit is, which
+# would bias every tempo comparison in favour of long battles. The rule:
+# pass only while the rounds left would still be enough to break every
+# Splice still standing. Off reproduces the figures measured before.
+CLOCK_AWARE_PASS = True
 BANISH_ON_BREAK = False    # R19: off for the main run
 TYRANT_BAG = ["purple", "purple", "blue", "blue", "green", "yellow"]
 ROUND_GUARD = 300          # genuine stalls are reported, not won or lost
@@ -613,6 +652,7 @@ class Game(object):
         self.directed_luxury = 0   # R22 used though the graft route was live
         self.direct_fee = 0        # dice tied up paying for R22
         self.grafts_spent = 0      # R24: grafts cashed in for damage
+        self.clock_forced = 0      # attacks the round limit insisted on
         self.avail_sum = 0         # pooled dice available, summed
         self.no_dice_rounds = 0    # rounds that opened with nothing
         self.notes = []            # verbose playthrough lines
@@ -1120,6 +1160,12 @@ class Game(object):
         # ONE-WAY clock. Record the round it runs out: see attrition().
         if not self.grafts and self.naked_round is None:
             self.naked_round = self.rounds
+        if LOSE_WHEN_NAKED and not self.grafts:
+            self.say("")
+            self.say("Round %d: the Prototyrant has no parts left. Scrap.",
+                     self.rounds)
+            self.rounds -= 1          # this round is never played
+            return "loss"
         splice = self.splices[0]
         # R23: with partial damage the Rats need only the REMAINDER. Every
         # decision below reads `need`; the retaliation still reads the
@@ -1154,8 +1200,11 @@ class Game(object):
             graft = shown[0] if shown else None
 
         cap = graft.value if graft is not None else NO_GRAFT_CAP
-        if CAP_FLOOR and graft is not None:
-            cap = max(cap, CAP_FLOOR)                              # R25
+        if graft is not None:
+            if CAP_FLAT:
+                cap = CAP_FLAT                                    # R27
+            elif CAP_FLOOR:
+                cap = max(cap, CAP_FLOOR)                         # R25
         avail = pick_order(self.shared_available(), self.rng)
         self.avail_sum += len(avail)
         if not avail:
@@ -1204,6 +1253,11 @@ class Game(object):
                      and (not viable
                           or expect < need - COMMIT_MARGIN)
                      and len(self.shared_exhausted()) > 0)
+        if (want_pass and viable and ROUND_LIMIT and CLOCK_AWARE_PASS
+                and ROUND_LIMIT - self.rounds < len(self.splices)):
+            # No slack left: a pass can no longer be paid for. Swing.
+            want_pass = False
+            self.clock_forced += 1
         if want_pass and use_direct:
             # R22 is paid for on the attack. A round that passes directs
             # nothing, forgoes nothing and ties up no die.
@@ -1385,16 +1439,17 @@ class Game(object):
         if graft is not None:
             if not no_ability:
                 hits = max(0, hits - GRAFT_SOAK.get(graft.name, 0))
-            if hits >= graft.value:
+            thresh = DEFENCE_FLAT or graft.value            # R28
+            if hits >= thresh:
                 self.grafts = [g for g in self.grafts if g is not graft]
                 self.say("  graft %s destroyed (took %d vs threshold %d).",
-                         graft.name, hits, graft.value)
+                         graft.name, hits, thresh)
             else:
                 self.graft_pile.append(graft)
                 if passed:
                     self.pass_graft_lived += 1
                 self.say("  graft %s holds (%d < %d).",
-                         graft.name, hits, graft.value)
+                         graft.name, hits, thresh)
         else:
             self.hurt(rat, hits)
             if hits:
@@ -1427,6 +1482,11 @@ class Game(object):
             if out in ("win", "loss"):
                 return out
             if out is False:
+                return "loss"
+            if ROUND_LIMIT and self.rounds >= ROUND_LIMIT:
+                self.say("")
+                self.say("Round limit reached with %d Splices standing.",
+                         len(self.splices))
                 return "loss"
         self.stalled = True
         return "stall"
@@ -1745,6 +1805,62 @@ def directed(games=2000):
     print("if that dominates, one tied-up die is too cheap a price.")
 
 
+def flatten(games=1500):
+    """Compress the spread by capping what a GREAT lab can be worth.
+
+    Target: the great third at 40-50% with the poor third grim but alive.
+    shape() shows the floor dials cannot get there - inside the 40-50%
+    window the poor third never beats 4.2% - because they lift the ceiling
+    further than the floor. These take the Rats' side of Value apart
+    instead: a flat dice cap and a flat defence threshold.
+    """
+    global CAP_FLAT, DEFENCE_FLAT, SPLICE_ATTACK_DICE
+    was = (CAP_FLAT, DEFENCE_FLAT, SPLICE_ATTACK_DICE,
+           PARTS_AT_SETUP["Standard"])
+    print("CAPPING WHAT A GREAT LAB IS WORTH. Standard rung, Proto HP %d,"
+          % SHARED_HP_START)
+    print("GRAFT_REVEAL %d, %d games an arm. Thirds by graft Value."
+          % (GRAFT_REVEAL, games))
+    print("")
+    print("%-30s %7s %9s %9s %9s %8s"
+          % ("arm", "win%", "poor 3rd", "mid 3rd", "great 3rd", "rounds"))
+    arms = (("plain", 0, 0, 0),
+            ("cap flat 3", 3, 0, 0),
+            ("cap flat 4", 4, 0, 0),
+            ("defence flat 4", 0, 4, 0),
+            ("cap flat 4 + def flat 4", 4, 4, 0),
+            ("cap flat 4 + def 4 + att 3", 4, 4, 3))
+    try:
+        for deck in (13, 14, 15, 16):
+            PARTS_AT_SETUP["Standard"] = deck
+            for name, cf, df, at in arms:
+                CAP_FLAT, DEFENCE_FLAT, SPLICE_ATTACK_DICE = cf, df, at
+                rng = random.Random(11)
+                rows, rounds = [], 0
+                for _ in range(games):
+                    g = Game("Standard", rng)
+                    out = g.play()
+                    rows.append((g.gate["graft_value"], out == "win"))
+                    rounds += g.rounds
+                rows.sort(key=lambda t: t[0])
+                n = len(rows)
+                cut = n // 3
+                thirds = (rows[:cut], rows[cut:n - cut], rows[n - cut:])
+                r = [100.0 * sum(1 for _, w in t if w) / max(1, len(t))
+                     for t in thirds]
+                print("%-30s %6.1f%% %8.1f%% %8.1f%% %8.1f%% %8.2f"
+                      % ("deck %d, %s" % (deck, name),
+                         100.0 * sum(1 for _, w in rows if w) / n,
+                         r[0], r[1], r[2], rounds / float(n)))
+            print("")
+    finally:
+        (CAP_FLAT, DEFENCE_FLAT, SPLICE_ATTACK_DICE,
+         PARTS_AT_SETUP["Standard"]) = was
+    print("A dial that compresses shows a SMALLER great-to-poor ratio at the")
+    print("same great-third rate. That is the brief: a great lab still hard,")
+    print("a poor lab grim but not already decided.")
+
+
 def shape(games=2000):
     """Can the GREAT third sit at 40-50% without the poor third at 2%?
 
@@ -1941,6 +2057,8 @@ if __name__ == "__main__":
         diagnose(int(sys.argv[2]) if len(sys.argv) > 2 else 3000)
     elif mode == "ladder":
         ladder(int(sys.argv[2]) if len(sys.argv) > 2 else 3000)
+    elif mode == "flatten":
+        flatten(int(sys.argv[2]) if len(sys.argv) > 2 else 1500)
     elif mode == "shape":
         shape(int(sys.argv[2]) if len(sys.argv) > 2 else 2000)
     elif mode == "lab":
