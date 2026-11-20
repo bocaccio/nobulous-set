@@ -13,6 +13,7 @@
     python3 batrev.py lab           # win rate by how well the lab went
     python3 batrev.py shape         # R25/R26, lowering the ceiling only
     python3 batrev.py flatten       # R27/R28, compressing the spread
+    python3 batrev.py tiers         # the NRJ overlay modules, I/II/III
     python3 batrev.py hp            # pooled Rat Health, tuned
 
 THIS IS NOT bat.py. bat.py models the PRINTED game and its figures are
@@ -110,8 +111,34 @@ THE NRJ TIERS AGAINST THIS STRUCTURE
 
 The tiers are overlay modules, not difficulty: I Agenda, II Contamination,
 III Exploitation, each including the ones before. bat.py models all three
-for the PRINTED game. This module models none of them, and two of the
-three do not survive the revision unchanged.
+for the printed game; this module now models them too (R32-R34), with two
+Protocols re-expressed, three re-priced, and the Research Note's price
+rewritten because the printed wording charges twice here.
+
+`batrev.py tiers`, 1200 games a cell, great-lab win rate - and a tier must
+never make its own game easier:
+
+    rung        none      I     II    III (0 Notes)
+    Easy       65.5%  60.2%  56.2%   56.2%
+    Standard   47.5%  45.5%  28.0%   28.0%
+    Hard       36.0%  35.0%  20.2%   20.2%
+    Nobulous   21.8%  17.5%   7.8%    7.8%
+
+Every rung steps down. Two things to read carefully. Tier III equals Tier
+II at 0 Notes BY CONSTRUCTION, because only the Note's price is modelled
+and not its reward - so every Tier III figure here is a lower bound. And
+Tier II is a 17-point step at Standard, the biggest single thing in the
+table, which is partly real - it inflates Splice Value, and Value is the
+Target AND the Tyrant's attack dice - and partly a modelling floor, since
+the Modifications' benefits to the Rats are flattened into damage and soak
+numbers while their Value inflation reaches the old Tyrant in full. Tier II
+is the next thing worth pricing properly.
+
+The price of a Research Note, Standard, NOTE_PRICE "choice":
+
+    Notes claimed        0        1        2
+    great lab        28.0%    20.2%    13.2%
+    overall          11.8%     8.3%     5.1%
 
 TIER III is the serious one, because both rulebooks print the price of a
 Research Note - "claiming one costs the next Upgrade a completed Experiment
@@ -134,30 +161,43 @@ so the old Tyrant takes the better part. Every count stays intact, and it
 measures -7.5 then -10.6 against the rulebook's advertised -6 then -9. It
 is the default for that reason.
 
-TIER I: five of the six Experimental Protocols port directly - they move
-Targets or tax dice, both of which still exist. Two need attention.
-Questionable Methodology ("Splice the stronger one into the Tyrant and
-reveal a replacement") is nearly a dead card here, because the old Tyrant
-taking the stronger part is what a FAILED Experiment already does; R8
-models it as the Rats being forced to graft the weaker. Cross-Contamination
-("if that die is banished, reveal the top 3 Upgrades and Splice them into
-the Tyrant") is structurally incompatible: it adds three Splices from
-outside the starting deck, which breaks conservation and adds three
-attacks the Rats do not have in a ten-round battle.
+TIER I is implemented with two Protocols re-expressed (R33) and three
+re-priced. Standard rung, 1500 games an arm, great-lab win rate against a
+46.8% baseline - a tier must INTERFERE, so every entry should be down:
 
-TIER II: the six Unauthorized Modifications replace six ordinary Upgrades,
-and they are Value 4, 4, 5, 4, 5, 4 against ordinary Upgrades' 2-4. So the
-tier inflates the part pool's Value without changing its COUNT - the wall
-stays about 6 Splices but each one is dearer, and Value favours the Tyrant
-asymmetrically, since a Splice's Value is both the Target to meet in one
-blow and the dice it rolls back. A Contamination tier that makes the game
-harder is the intent, so this one lands the right way round. What needs
-rulings is their ownership text: "the holder may not borrow dice", "may
-not use the Red die", "has 1 less Health", "cannot be selected as active
-on consecutive turns" and Redundant Organs' knockout clause are all
-written for a RAT holding a card. Grafts belong to the Prototyrant and its
-Health is one pooled track, so each needs the treatment R10/R11 gave the
-base cards.
+    no module                  46.8%
+    (random of the six)        44.8%    -2.0
+    Independent Funding        41.4%    -5.4
+    Questionable Methodology   42.0%    -4.8
+    Accelerated Trials         42.6%    -4.2
+    Cross-Contamination        42.8%    -4.0
+    Questionable Procurement   46.0%    -0.8
+    Shared Equipment Budget    47.8%    +1.0
+
+Three of those numbers are the result of re-pricing, and the first draft
+of each was a defect worth recording. Shared Equipment Budget modelled as
+a flat +2 recovery was worth +20 points - a Tier I card making its own
+game EASIER, which is exactly the defect nrj.html records NAP's Tier I
+having had and being fixed for. It is an exchange, not a grant. Independent
+Funding billing the printed two dice was worth -24 where the rest of the
+tier sits at -5, because Targets of 4 or less are most of the deck and this
+lab decides the battle; one die, from a Rat with dice to spare, puts it in
+band. Questionable Procurement had lost its only drawback, since R2
+replaced the blanket Specimen surcharge with the Target formula and the
+3-Upgrade limit means nothing once the Prototyrant holds every graft.
+
+Shared Equipment Budget still measures +1.0, which at 500 games a third is
+inside noise of neutral but is the weakest card in the tier.
+
+TIER II lands the right way round by itself. The six Unauthorized
+Modifications are Value 4/4/5/4/5/4 against ordinary Upgrades' 2-4, so the
+tier inflates the part pool's Value without changing the wall's COUNT -
+the wall stays about 6 Splices and its total Value goes 19.3 -> 22.7 - and
+Value favours the old Tyrant asymmetrically, since a Splice's Value is both
+the Target to meet in one blow and the dice it rolls back. Their ownership
+text needed the R34 rulings, because every clause reads "while held"
+against a Rat.
+
 
 -----------------------------------------------------------------------
 WHAT ACTUALLY DECIDES THE BATTLE: GRAFT ATTRITION, NOT HEALTH
@@ -377,7 +417,53 @@ BATTLE
       from the shared pool, and shared_exhausted() reaches it so a recovery
       can return it. RED_SET_ASIDE_IN_BATTLE restores the lab reading.
 
+  R32 THE OVERLAY MODULES ARE MODELLED, as TIER "none"/"I"/"II"/"III",
+      each including the ones before. Tier II displaces MODS_DISPLACE (6)
+      ordinary Upgrades for the 6 Unauthorized Modifications, so the part
+      pool keeps its SIZE and gains Value. Tier I draws one of the 6
+      Experimental Protocols at setup; PROTOCOL_PICK forces one.
+  R33 TWO PROTOCOLS ARE RE-EXPRESSED, because they do not survive this
+      structure as printed.
+      Cross-Contamination's "reveal the top 3 Upgrades and Splice them into
+      the Tyrant" would import three Splices from outside the starting deck,
+      breaking conservation and adding three attacks the Rats do not have in
+      a bounded battle. It now spoils the batch instead: the Rats lose the
+      PICK on their next CONTAM_PICKS (3) completed Experiments, which puts
+      the same parts in the old Tyrant's hands at a payable price.
+      Questionable Methodology's "Splice the stronger one into the Tyrant"
+      is nearly a dead card here, because that is what a FAILED Experiment
+      already does. It now fires at Experiment number METHOD_FLOOR (5) and
+      the old Tyrant reclaims the stronger revealed part AT ONCE, with a
+      replacement revealed, so the Rats pick from a fresh pair with the best
+      card already gone. Conservation holds: the part goes to the discard.
+      The other four port directly - they move Targets, tax dice or add a
+      Specimen, all of which still exist. Questionable Procurement's
+      3-Upgrade-limit clause is moot, since the Prototyrant holds every
+      graft; only its extra Specimen is modelled.
+  R34 THE MODIFICATIONS' OWNERSHIP TEXT IS RE-EXPRESSED. Each reads "while
+      held" against a RAT, and here grafts belong to the PROTOTYRANT and
+      Health is one pooled track:
+        Adrenal Gland     +3 damage; the Prototyrant's track starts 1 lower
+        Bone Plating      soaks 2; a recovery pass pays 1 less while it is
+                          the exposed graft (its -1 REC)
+        Secondary Brain   +1 damage; Red may not be committed while it is
+                          exposed, which is its "may not use the Red die"
+        Extra Limbs       +1 damage; no borrowing at all once it is grafted
+        Redundant Organs  soaks 1, and the first time the Prototyrant would
+                          fall it holds at 1 and this part tears loose
+        Hypermetabolism   a pass pays MOD_RECOVER_BONUS (2) more while it is
+                          exposed; its per-Experiment cost is OMITTED
+
 OMITTED CARD TEXT, declared rather than quietly dropped
+  * THE RESEARCH NOTES' REWARDS. Only their PRICE is modelled, so Tier III
+    at 0 Notes claimed is identical to Tier II by construction, and every
+    Tier III figure here is a lower bound: claiming a Note buys a one-shot
+    reward this module does not give back. The price is the part that was
+    mispriced, and the part the campaign turns on.
+  * Each Protocol's secondary clause: Independent Funding's lender payout,
+    Shared Equipment Budget's two-way exchange (modelled as a flat +2 on a
+    completed Experiment against one die donated at setup), and
+    Cross-Contamination's free first borrow of any colour.
   * Per-card battle effects for grafts and Splices beyond the flat damage
     and damage-reduction table in GRAFT_DAMAGE / SPLICE_DAMAGE. The
     conditional ones (colour-contingent damage, reroll and recovery riders,
@@ -647,9 +733,122 @@ GRAFT_SOAK = {
     "Layered Carapace": 2,
     "Thickened Hide": 1,
 }
+# R34: the Modifications' battle text. Their ownership clauses are written
+# for a RAT holding a card - "the holder may not borrow dice", "may not use
+# the Red die", "has 1 less Health", "cannot be selected as active on
+# consecutive turns" - and in this structure grafts belong to the
+# PROTOTYRANT and Health is one pooled track. Rulings, narrowest first:
+#   Adrenal Gland     +3 damage; the Prototyrant's track starts 1 lower
+#   Bone Plating      soaks 2; the active Rat recovers 1 less on a pass
+#   Secondary Brain   +1 damage; Red may not be committed while it is the
+#                     exposed graft (the either/or it already had)
+#   Extra Limbs       +1 damage; no borrowing while it is exposed
+#   Redundant Organs  the first time the Prototyrant would fall, it holds
+#                     at 1 and this part is destroyed instead
+#   Hypermetabolism   recovery +2 on a pass while exposed; declared
+#                     OMITTED on the lab side, where its cost sits
+GRAFT_DAMAGE.update({
+    "Adrenal Gland": 3,
+    "Secondary Brain": 1,
+    "Extra Limbs": 1,
+})
+SPLICE_DAMAGE.update({
+    "Adrenal Gland": 3,
+    "Secondary Brain": 1,
+    "Extra Limbs": 1,
+})
+GRAFT_SOAK.update({
+    "Bone Plating": 2,
+    "Redundant Organs": 1,
+})
+MOD_NO_RED = "Secondary Brain"
+MOD_NO_BORROW = "Extra Limbs"
+MOD_PASS_PENALTY = "Bone Plating"
+MOD_LAST_STAND = "Redundant Organs"
+MOD_HP_COST = "Adrenal Gland"
+MOD_RECOVER = "Hypermetabolism"
+MOD_RECOVER_BONUS = 2
+
 # A graft worth taking for its text even a point down on Value.
 GRAFT_EFFECT_BONUS = dict((n, 1) for n in
                           list(GRAFT_DAMAGE) + list(GRAFT_SOAK))
+
+# ======================= THE NRJ OVERLAY MODULES ========================
+# Tiers are not difficulty: I Agenda, II Contamination, III Exploitation,
+# each including the ones before. bat.py models all three for the PRINTED
+# game; these are the revisions this structure needs. R32-R34 record them.
+TIER = "none"              # "none" | "I" | "II" | "III"
+PROTOCOL_PICK = None       # force one Protocol by name, for pricing
+MODS_DISPLACE = 6          # ordinary Upgrades the Modifications replace
+
+# Tier II, from generator/build_nrj.py's MODS. Values 4-5 against ordinary
+# Upgrades' 2-4, so the tier inflates the pool's VALUE without touching the
+# wall's COUNT - and Value favours the old Tyrant, whose Splice Value is
+# both the Target to meet in one blow and the dice it rolls back.
+MOD_NAMES = ["Extra Limbs", "Secondary Brain", "Adrenal Gland",
+             "Bone Plating", "Redundant Organs", "Hypermetabolism"]
+MOD_VALUES = [4, 4, 5, 4, 5, 4]
+MOD_CATS = ["Mobility", "Senses", "Power", "Defense", "Defense", "Senses"]
+
+# Tier I, from the same file's PROTOCOLS.
+PROTOCOL_NAMES = ["Cross-Contamination", "Shared Equipment Budget",
+                  "Accelerated Trials", "Questionable Procurement",
+                  "Independent Funding", "Questionable Methodology"]
+
+# R33: TWO PROTOCOLS DO NOT SURVIVE THE REVISION AS PRINTED.
+#
+# Cross-Contamination ("if that die is banished, reveal the top 3 Upgrades
+# and Splice them into the Tyrant") would import three Splices from outside
+# the starting deck. That breaks conservation - starting parts == wall +
+# grafts - and adds three attacks the Rats do not have in a bounded battle.
+# Re-expressed: the contamination costs the Rats their PICK on their next
+# CONTAM_PICKS completed Experiments, which is the same penalty shape
+# (parts the old Tyrant would not otherwise have had) at a payable price.
+#
+# Questionable Methodology ("Splice the stronger one into the Tyrant and
+# reveal a replacement") is nearly a dead card here, because handing the
+# old Tyrant the stronger part is what a FAILED Experiment already does.
+# Re-expressed to keep its teeth: on a high-numbered Experiment the old
+# Tyrant reclaims the stronger revealed part AT ONCE and a replacement is
+# revealed, so the Rats choose from a fresh pair but the best card is
+# already gone. Conservation holds, because the reclaimed part goes to the
+# old Tyrant's discard like any other.
+CONTAM_PICKS = 3
+METHOD_FLOOR = 5           # Experiment number at which it fires
+PROTOCOL_EFFECTS = True    # off measures the tier as pool changes alone
+TIER_RANK = {"none": 0, "I": 1, "II": 2, "III": 3}
+ACCEL_FLOOR_REV = 5        # Experiment number Accelerated Trials helps
+FUNDING_CEIL = 4           # and the one Independent Funding taxes
+# Independent Funding bills the printed TWO dice in bat.py, where it
+# measures in band. Here Targets of 4 or less are most of the deck and the
+# lab decides the battle, so two dice measured -24 points of great-lab win
+# rate against -5 for the rest of the tier. One die, and only from a Rat
+# with dice to spare - "the grant funds ambitious work only", so routine
+# work by a nearly spent Rat is self-funded - puts it among them.
+FUNDING_DICE = 1
+FUNDING_SPARE = 3          # available dice the Rat must have to be taxed
+# Shared Equipment Budget is an EXCHANGE, not a grant: a die goes into the
+# Equipment pool at setup and a completed Experiment swaps dice back out of
+# it. Modelled as +2 recovery it was worth +20 points, which is a Tier I
+# card making its own game easier - the defect nrj.html records NAP's Tier I
+# having had. The donated die now LEAVES the Rats' pool for the lab, and a
+# completed Experiment buys back one.
+# An exchange is not a grant: the die goes into the Equipment pool and a
+# completed Experiment swaps dice with it, which nets to nothing in a model
+# where dice of a colour are fungible. At +1 a completed Experiment it was
+# still worth +10. At 0 the card is what it reads as: one die out of the
+# Rats' pool for the lab.
+SHARED_EQUIP_RECOVER_REV = 0
+# Questionable Procurement shuffles in an extra Specimen, and its printed
+# drawback - a Specimen counting against the holder's 3-Upgrade limit - has
+# no meaning once the Prototyrant holds every graft. R2 also replaced the
+# blanket Specimen surcharge with the Target formula, so the card was left
+# as pure upside and measured +0.5. The surcharge comes back FOR THIS CARD
+# ONLY, and only on an Experiment whose revealed parts are ALL Specimens -
+# charging every Specimen was worth -17, which is a difficulty card rather
+# than an interference one.
+PROCURE_SURCHARGE = 1
+PROCURE_ALL_SPECIMENS = True
 
 ATTACK_NAMES = ["Overwhelming Mass", "Adaptive Strike", "Predatory Instinct",
                 "Spliced Reflexes", "Terrifying Roar", "Crushing Blow",
@@ -659,15 +858,27 @@ ATTACK_COLORS = bat.ATTACK_COLORS
 
 # ------------------------------------------------------------ card helpers
 def part_value(card):
-    return SPECIMEN_VALUE if card[0] == "s" else UPGRADE_VALUES[card[1]]
+    if card[0] == "s":
+        return SPECIMEN_VALUE
+    if card[0] == "m":
+        return MOD_VALUES[card[1]]
+    return UPGRADE_VALUES[card[1]]
 
 
 def part_name(card):
-    return SPECIMEN_NAMES[card[1]] if card[0] == "s" else UPGRADE_NAMES[card[1]]
+    if card[0] == "s":
+        return SPECIMEN_NAMES[card[1]]
+    if card[0] == "m":
+        return MOD_NAMES[card[1]]
+    return UPGRADE_NAMES[card[1]]
 
 
 def part_cat(card):
-    return SPECIMEN_CATS[card[1]] if card[0] == "s" else UPGRADE_CATS[card[1]]
+    if card[0] == "s":
+        return SPECIMEN_CATS[card[1]]
+    if card[0] == "m":
+        return MOD_CATS[card[1]]
+    return UPGRADE_CATS[card[1]]
 
 
 def is_specimen(card):
@@ -724,8 +935,25 @@ class Game(object):
         self.red_aside = False
 
         # ---- R1: the old Tyrant's starting parts
-        specs = self.rng.sample(range(8), SPECIMENS_IN_POOL[difficulty])
-        pool = [("u", i) for i in range(16)] + [("s", i) for i in specs]
+        # ---- R32: which overlay modules are in play
+        self.tier = TIER_RANK.get(TIER, 0)
+        self.protocol = None
+        if self.tier >= 1:
+            self.protocol = (PROTOCOL_PICK if PROTOCOL_PICK is not None
+                             else self.rng.choice(PROTOCOL_NAMES))
+        extra_spec = (1 if self.protocol == "Questionable Procurement"
+                      else 0)                      # the printed +1 Specimen
+        want = min(8, SPECIMENS_IN_POOL[difficulty] + extra_spec)
+        specs = self.rng.sample(range(8), want)
+        ords = list(range(16))
+        mods = []
+        if self.tier >= 2:
+            # Tier II displaces ordinary Upgrades one for one.
+            drop = self.rng.sample(ords, min(MODS_DISPLACE, len(ords)))
+            ords = [i for i in ords if i not in drop]
+            mods = [("m", i) for i in range(len(MOD_NAMES))]
+        pool = ([("u", i) for i in ords] + [("s", i) for i in specs]
+                + mods)
         n = PARTS_AT_SETUP[difficulty]
         self.tyrant_deck = self.rng.sample(pool, min(n, len(pool)))
         self.rng.shuffle(self.tyrant_deck)
@@ -763,7 +991,29 @@ class Game(object):
         self.grafts_spent = 0      # R24: grafts cashed in for damage
         self.clock_forced = 0      # attacks the round limit insisted on
         self.notes_owed = NOTES_CLAIMED   # R31: Notes still to be paid for
-        self.round_limit = ROUND_LIMIT or ROUND_LIMITS.get(difficulty, 0)
+        self.round_limit = ROUND_LIMITS.get(difficulty, 0)
+        if ROUND_LIMIT:
+            self.round_limit = ROUND_LIMIT
+        # R31/R33: debts the Rats pay out of future Experiments. A PICK debt
+        # costs them the choice; notes_owed is the literal reading, which
+        # costs the part itself.
+        self.pick_debt = 0
+        if NOTE_PRICE == "choice":
+            self.pick_debt = NOTES_CLAIMED
+            self.notes_owed = 0
+        self.picks_lost = 0
+        self.contaminated = False
+        self.equip_bonus = 0
+        self.last_stand = False    # R34: Redundant Organs, once a game
+        self.exposed = None        # the graft on show this battle round
+        if PROTOCOL_EFFECTS and self.protocol == "Shared Equipment Budget":
+            # One personal die into the common pool at setup; a completed
+            # Experiment exchanges dice back out of it.
+            donor = self.rng.choice(self.rats)
+            spare = self.available(donor)
+            if spare:
+                spare[-1].zone = "equipment"      # out of both pools
+            self.equip_bonus = SHARED_EQUIP_RECOVER_REV
         self.notes_paid = 0
         self.avail_sum = 0         # pooled dice available, summed
         self.no_dice_rounds = 0    # rounds that opened with nothing
@@ -847,6 +1097,23 @@ class Game(object):
             if len(parts) < 2:
                 return False
 
+        # R33: Questionable Methodology, re-expressed. The old Tyrant
+        # reclaims the stronger revealed part at once and a replacement is
+        # revealed, so the Rats pick from a fresh pair with the best card
+        # already gone. Conservation holds: it goes to the discard.
+        if (PROTOCOL_EFFECTS and self.protocol == "Questionable Methodology"
+                and number >= METHOD_FLOOR and len(parts) >= 2):
+            taken = max(parts, key=part_value)
+            parts = [q for q in parts if q is not taken]
+            self.reclaimed += 1
+            self.tyrant_discard.append(taken)
+            fresh = self.draw_part()
+            if fresh is not None:
+                parts.append(fresh)
+            self.say("  Questionable Methodology: the old Tyrant takes %s [%d] at once (R33).", part_name(taken), part_value(taken))
+            if len(parts) < 2:
+                return False
+
         rat = self.choose_rat()
         if rat is None:
             return False
@@ -866,6 +1133,10 @@ class Game(object):
         else:
             combined = part_value(parts[0])
         target = max(TARGET_FLOOR, combined - number)
+        spec_test = all if PROCURE_ALL_SPECIMENS else any
+        if (PROTOCOL_EFFECTS and self.protocol == "Questionable Procurement"
+                and spec_test(is_specimen(q) for q in parts)):
+            target += PROCURE_SURCHARGE               # R33
         if eff == "methodology":                          # R8
             target = 0
 
@@ -883,6 +1154,19 @@ class Game(object):
                  "/".join(d.color[0].upper() for d in self.available(rat))
                  or "none")
 
+        if PROTOCOL_EFFECTS:
+            if (self.protocol == "Accelerated Trials"
+                    and number >= ACCEL_FLOOR_REV):
+            # printed: Target 5+ gets -1, paid for in two of the active
+            # Rat's dice before the attempt
+                target = max(TARGET_FLOOR, target - 1)
+                paid = self.tax_dice(rat, 2, "purple")
+                self.say("  Accelerated Trials: Target -1, %d dice exhausted.", paid)
+            elif (self.protocol == "Independent Funding"
+                  and number <= FUNDING_CEIL
+                  and len(self.available(rat)) >= FUNDING_SPARE):
+                paid = self.tax_dice(rat, FUNDING_DICE, "blue")
+                self.say("  Independent Funding: %d dice exhausted.", paid)
         ok = self.attempt(rat, target, eff, parts)
         self.say("  -> %s", "SUCCESS" if ok else "FAILURE")
         self.assign(parts, ok, eff)
@@ -909,11 +1193,32 @@ class Game(object):
             len(self.available(r)),
             sum(EV[d.color] for d in self.available(r))))
 
+    def holds_mod(self, name):
+        """Is this Modification among the Prototyrant's installed parts?"""
+        return any(g.name == name for g in self.grafts)
+
+    def tax_dice(self, rat, n, first):
+        """A Protocol's pre-attempt cost: exhaust n dice, `first` colour
+        first, else the weakest. Billed BEFORE the attempt, because a cost
+        charged afterwards bills dice the Rat has already spent.
+        """
+        av = self.available(rat)
+        pick = [d for d in av if d.color == first][:n]
+        if len(pick) < n:
+            rest = sorted((d for d in av if d not in pick),
+                          key=lambda d: EV[d.color])
+            pick += rest[:n - len(pick)]
+        for d in pick:
+            d.zone = "exhausted"
+        return len(pick)
+
     def borrow_row(self):
         """R10: the restriction reads the Prototyrant's graft count."""
         return min(3, len(self.grafts))
 
     def borrow_for(self, rat, need):
+        if PROTOCOL_EFFECTS and self.holds_mod(MOD_NO_BORROW):
+            return None                               # R34: Extra Limbs
         allowed = bat.BORROWABLE[self.borrow_row()]
         pool = [(o, d) for o in self.rats if o is not rat and not o.down
                 for d in self.available(o) if d.color in allowed]
@@ -1007,6 +1312,14 @@ class Game(object):
         if bad:
             die.zone = "banished"
             self.banished += 1
+            if (PROTOCOL_EFFECTS and self.protocol == "Cross-Contamination"
+                    and not self.contaminated):
+                # R33: three Splices cannot be imported without breaking
+                # conservation, so the batch is contaminated instead - the
+                # Rats lose the pick on their next three Experiments.
+                self.contaminated = True
+                self.pick_debt += CONTAM_PICKS
+                self.say("    Cross-Contamination: the batch is spoiled - the next %d picks are the old Tyrant's (R33).", CONTAM_PICKS)
 
     def assign(self, parts, ok, eff):
         """R5/R6/R8/R9: one graft, one reclaim, leftovers to the discard."""
@@ -1018,15 +1331,18 @@ class Game(object):
         if ok and self.notes_owed:
             self.notes_owed -= 1
             self.notes_paid += 1
-            if NOTE_PRICE == "choice":
-                ok = False        # every count intact; the pick is lost
-                self.say("    Research Note banked: the old Tyrant picks this one (R31).")
-            else:
-                for part in parts:
-                    self.reclaimed += 1
-                    self.tyrant_discard.append(part)
-                self.say("    Research Note banked: the Prototyrant gets nothing, the old Tyrant takes both (R31).")
-                return
+            for part in parts:
+                self.reclaimed += 1
+                self.tyrant_discard.append(part)
+            self.say("    Research Note banked: the Prototyrant gets nothing, the old Tyrant takes both (R31).")
+            return
+        if ok and self.pick_debt:
+            # R31 under NOTE_PRICE "choice", and R33's contamination: the
+            # counts are untouched and the Rats simply lose the pick.
+            self.pick_debt -= 1
+            self.picks_lost += 1
+            ok = False
+            self.say("    a debt falls due: the old Tyrant picks this one.")
         order = sorted(parts, key=part_value, reverse=True)
         if eff == "methodology":                           # R8
             graft = order[-1]
@@ -1079,6 +1395,8 @@ class Game(object):
             n += sum(1 for g in self.grafts if is_specimen(g.card))   # R11
         if rat.ability == "prepared" and self.last_active is not rat:
             n += 1
+        if self.equip_bonus and parts is not None:
+            n += self.equip_bonus      # R33: exchange with the Equipment pool
         ex = self.exhausted(rat)
         for d in pick_order(ex, self.rng)[:n]:
             d.zone = "available"
@@ -1113,6 +1431,12 @@ class Game(object):
             self.bag.append(pick)
         for d in self.bag:
             d.zone = "tyrant"
+
+        # R34: Adrenal Gland runs the Prototyrant one Health short, and
+        # Redundant Organs is good for one save.
+        if self.holds_mod(MOD_HP_COST):
+            self.shared_hp -= 1
+        self.last_stand = self.holds_mod(MOD_LAST_STAND)
 
         # R14: recover once at the transition.
         for d in pick_order(self.shared_exhausted(), self.rng)[:OPENING_RECOVERY]:
@@ -1212,6 +1536,9 @@ class Game(object):
         only while it holds it and it is neither set aside nor spent.
         The zone test covers both readings - set aside leaves Red
         available, exhausting it does not."""
+        if (self.exposed is not None
+                and self.exposed.name == MOD_NO_RED):
+            return False                              # R34: Secondary Brain
         return (RED_IN_BATTLE and self.red_holder is rat
                 and not self.red_aside and self.red.zone == "available")
 
@@ -1326,6 +1653,7 @@ class Game(object):
         else:
             graft = shown[0] if shown else None
 
+        self.exposed = graft                          # R34 reads this
         cap = graft.value if graft is not None else NO_GRAFT_CAP
         if graft is not None:
             if CAP_FLAT:
@@ -1508,6 +1836,12 @@ class Game(object):
         # ---- recovery pass payout (R20)
         if want_pass:
             n = rat.rec + PASS_RECOVERY_BONUS
+            if graft is not None:                     # R34
+                if graft.name == MOD_PASS_PENALTY:
+                    n -= 1                            # Bone Plating, -1 REC
+                elif graft.name == MOD_RECOVER:
+                    n += MOD_RECOVER_BONUS            # Hypermetabolism
+            n = max(0, n)
             got = pick_order(self.shared_exhausted(), self.rng)[:n]
             for d in got:
                 d.zone = "available"
@@ -1543,6 +1877,16 @@ class Game(object):
     def hurt(self, rat, n):
         """Put n damage on the Rats, pooled or per-Rat."""
         if not n:
+            return
+        if (SHARED_HP and self.last_stand and self.shared_hp - n <= 0
+                and self.holds_mod(MOD_LAST_STAND)):
+            # R34: Redundant Organs. The Prototyrant holds at 1 and the
+            # part is destroyed instead, once.
+            self.last_stand = False
+            self.grafts = [g for g in self.grafts
+                           if g.name != MOD_LAST_STAND]
+            self.shared_hp = 1
+            self.say("  Redundant Organs tears loose: the Prototyrant holds at 1 (R34).")
             return
         if SHARED_HP:
             self.shared_hp -= n
@@ -1932,6 +2276,106 @@ def directed(games=2000):
     print("if that dominates, one tied-up die is too cheap a price.")
 
 
+def thirds_of(rows):
+    """(poor, mid, great) win rates, split by graft Value at Wake-Up."""
+    rows = sorted(rows, key=lambda t: t[0])
+    n = len(rows)
+    cut = n // 3
+    th = (rows[:cut], rows[cut:n - cut], rows[n - cut:])
+    return [100.0 * sum(1 for x in t if x[1]) / max(1, len(t))
+            for t in th]
+
+
+def tiers(games=1500):
+    """The NRJ overlay modules against the revised structure (R32-R34).
+
+    A tier must never make its game EASIER - nrj.html records NAP's Tier I
+    doing exactly that and being fixed for it - so the test is that each
+    rung's great-lab rate falls as the tiers stack.
+    """
+    global TIER, PROTOCOL_PICK, NOTES_CLAIMED
+    was = (TIER, PROTOCOL_PICK, NOTES_CLAIMED)
+    print("THE NRJ TIERS. Deck %d, rounds %s, Proto HP %d, GRAFT_REVEAL %d,"
+          % (PARTS_AT_SETUP["Standard"],
+             "/".join(str(ROUND_LIMITS[l]) for l in LEVELS),
+             SHARED_HP_START, GRAFT_REVEAL))
+    print("%d games a cell. Tier III is shown at 0 Notes claimed; the price"
+          % games)
+    print("of claiming is the second table.")
+    print("")
+    print("%-10s %-7s %6s %6s %6s %6s   %5s %5s"
+          % ("rung", "tier", "win%", "poorW", "midW", "greatW", "wall",
+             "wallV"))
+    try:
+        for lvl in LEVELS:
+            for tier in ("none", "I", "II", "III"):
+                TIER = tier
+                NOTES_CLAIMED = 0
+                rng = random.Random(11)
+                rows, wall, wallv = [], 0, 0
+                for _ in range(games):
+                    g = Game(lvl, rng)
+                    out = g.play()
+                    rows.append((g.gate["graft_value"], out == "win"))
+                    wall += g.gate["splices"]
+                    wallv += g.gate["splice_value"]
+                r = thirds_of(rows)
+                f = float(games)
+                print("%-10s %-7s %5.1f%% %5.1f%% %5.1f%% %5.1f%%   %5.2f %5.1f"
+                      % (lvl, tier,
+                         100.0 * sum(1 for x in rows if x[1]) / f,
+                         r[0], r[1], r[2], wall / f, wallv / f))
+            print("")
+
+        print("TIER I, BY PROTOCOL. Standard rung, one card forced each"
+              " time.")
+        print("%-26s %6s %6s %6s %6s"
+              % ("protocol", "win%", "poorW", "midW", "greatW"))
+        TIER = "I"
+        for name in [None] + list(PROTOCOL_NAMES):
+            PROTOCOL_PICK = name
+            rng = random.Random(11)
+            rows = []
+            for _ in range(games):
+                g = Game("Standard", rng)
+                out = g.play()
+                rows.append((g.gate["graft_value"], out == "win"))
+            r = thirds_of(rows)
+            print("%-26s %5.1f%% %5.1f%% %5.1f%% %5.1f%%"
+                  % (name or "(random of the six)",
+                     100.0 * sum(1 for x in rows if x[1]) / float(games),
+                     r[0], r[1], r[2]))
+        PROTOCOL_PICK = None
+
+        print("")
+        print("TIER III, THE PRICE OF A RESEARCH NOTE. Standard rung,"
+              " NOTE_PRICE = %r." % NOTE_PRICE)
+        print("%-26s %6s %6s %6s   %6s %6s"
+              % ("arm", "win%", "poorW", "greatW", "grafts", "wall"))
+        TIER = "III"
+        for notes in (0, 1, 2):
+            NOTES_CLAIMED = notes
+            rng = random.Random(11)
+            rows, gr, wl = [], 0, 0
+            for _ in range(games):
+                g = Game("Standard", rng)
+                out = g.play()
+                rows.append((g.gate["graft_value"], out == "win"))
+                gr += g.gate["grafts"]
+                wl += g.gate["splices"]
+            r = thirds_of(rows)
+            f = float(games)
+            print("%-26s %5.1f%% %5.1f%% %5.1f%%   %6.2f %6.2f"
+                  % ("%d Notes claimed" % notes,
+                     100.0 * sum(1 for x in rows if x[1]) / f,
+                     r[0], r[2], gr / f, wl / f))
+    finally:
+        TIER, PROTOCOL_PICK, NOTES_CLAIMED = was
+    print("")
+    print("A tier that RAISES its rung's great-lab rate is a bug, not a"
+          " flavour.")
+
+
 def flatten(games=1500):
     """Compress the spread by capping what a GREAT lab can be worth.
 
@@ -2184,6 +2628,8 @@ if __name__ == "__main__":
         diagnose(int(sys.argv[2]) if len(sys.argv) > 2 else 3000)
     elif mode == "ladder":
         ladder(int(sys.argv[2]) if len(sys.argv) > 2 else 3000)
+    elif mode == "tiers":
+        tiers(int(sys.argv[2]) if len(sys.argv) > 2 else 1500)
     elif mode == "flatten":
         flatten(int(sys.argv[2]) if len(sys.argv) > 2 else 1500)
     elif mode == "shape":
