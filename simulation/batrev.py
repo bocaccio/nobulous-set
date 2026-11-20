@@ -163,12 +163,29 @@ RESILIENCE_ALL = False scopes it to the battle's own economy, REC + 2 dice,
 and that is the default. Claiming and spending ONE Note then reads 28.0%
 against 29.0% - a loan, which is what the tier is for.
 
-ONE THING STILL NEEDS A DESIGN DECISION. At two Notes, spending reads 33.4%
-- still above not claiming - and the reason is that ACCEPTABLE LOSSES IS
-SELF-FUNDING. Its price is a pick and its reward IS a pick, so the card
-pays for itself and should always be claimed. Either charge it differently
-(the pick on the next TWO completed Experiments), or give it a reward in
-another currency, or accept it as the deck's deliberate gift.
+AND A CORRECTION, because two figures above were measured on ONE seed and
+one of them was wrong. Averaged over seeds 11/23/47, 1500 games each:
+
+    not claimed at all        31.9%
+    hoard 1 / hoard 2         22.7% / 21.6%
+    spend 1 / spend 2         29.6% / 30.7%
+
+So spending is BELOW not claiming at both counts and the tier was already
+a loan. The 33.4% that looked like Acceptable Losses funding itself was
+seed noise: a third of 1500 games is 500, worth about 2.5 points a sigma.
+The die price failed the same way - it read +4.2 on seed 11 and +0.6 over
+five seeds, which is zero. Single-seed arms are not evidence in this model,
+and a difference under about 5 points needs several seeds.
+
+WHAT A PRICE IS WORTH HERE, then, with that caution applied:
+    a pick            about 7 points of great-lab win rate, robust
+    a banished die    0.6 +- 1.5 points - indistinguishable from free
+The second is a consequence of the ten-round battle: bounding it made
+ROUNDS scarce and left dice in surplus, since the Rats commit about 3.6 a
+round and a pass refills the pool. Dice delivered when the pool is EMPTY
+are still worth 6.6 points (that is Unexpected Resilience), so the dice
+economy is lumpy rather than scarce - which is why a die is a bad price and
+a well-timed handful of them is a good reward.
 
 TIER III is the serious one, because both rulebooks print the price of a
 Research Note - "claiming one costs the next Upgrade a completed Experiment
@@ -700,7 +717,27 @@ NOTES_CLAIMED = 0
 # scenario wants and "spend" is what this game wants.
 NOTE_REWARDS_ON = ("Acceptable Losses", "Unexpected Resilience")
 NOTE_SPEND = True
-NOTE_REFUND_GAP = 2       # Value gap worth spending Acceptable Losses on
+# ACCEPTABLE LOSSES KEEPS ITS PRINTED REWARD, and the story of why is worth
+# keeping. Its reward - choose which part is Spliced after a failure -
+# refunds a PICK, which is exactly what a claim costs, so on one seed the
+# card looked self-funding: two Notes claimed and spent read +4.4 points
+# against not claiming at all. Averaged over three seeds it reads -1.2, and
+# the +4.4 was seed noise - the same mistake the die price produced. A third
+# of 1500 games is 500, so a third moves about 2.5 points a sigma and single
+# seeds are not evidence here.
+#
+# The re-expression written to fix it - "reveal a fresh pair; the old Tyrant
+# still takes the better one" - measures 30.5/30.6 against the printed
+# 29.6/30.7. No difference, because the card fires 0.2-0.3 times a game:
+# its condition, three failures inside one four-Rat rotation, is rare. So
+# the printed text stays, and NOTE_REWARD_REFUND False keeps the fresh-pair
+# version for anyone who wants to try it.
+#
+# What actually fixed Tier III was scoping Unexpected Resilience, which took
+# spending from +8.6/+11.0 to about -1. One card carried the whole leak.
+NOTE_REROLL_BELOW = 3
+NOTE_REFUND_GAP = 2
+NOTE_REWARD_REFUND = True
 # "Recover them ALL" was written for an unbounded battle. In a ten-round
 # one where 17% of rounds open with nothing to roll, it turns a dead round
 # into a full-pool attack and measured +13 points of great-lab win rate on
@@ -713,6 +750,14 @@ RESILIENCE_ALL = False
 # is a decision worth keeping, but one unpaid debt is the cap, or both Notes
 # can be claimed on the last Experiment for nothing.
 MAX_UNPAID_DEBT = 1
+# NOTE_CLAIM_COST is the currency a CLAIM is paid in. "pick" is R31's
+# re-expression and the default. "die" banishes one of the Rats' dice
+# instead, which is the table-feasible answer to Acceptable Losses being
+# self-funding: a banished die physically leaves the pool, so the component
+# state IS the record - nothing to flip, nothing to remember - and the
+# price is no longer the same currency as that card's reward. Banishment is
+# printed BAT's own concept, so it adds no vocabulary.
+NOTE_CLAIM_COST = "pick"
 #
 # NOTE_PRICE is HOW a claim is paid, because the printed wording charges
 # twice in this structure. "both" is the literal reading: the Prototyrant
@@ -1328,11 +1373,31 @@ class Game(object):
                 continue
             self.claimed.append(name)
             self.notes_to_claim -= 1
-            self.pick_debt += 1
+            if NOTE_CLAIM_COST == "die":
+                self.banish_for_note()
+            else:
+                self.pick_debt += 1
             if name in NOTE_REWARDS_ON:
                 self.rewards.append(name)
             self.say("    Research Note claimed: %s. The next completed Experiment pays for it (R31/R35).", name)
             return
+
+    def banish_for_note(self):
+        """A claim paid in dice: the Rats give up their weakest.
+
+        Self-tracking at the table, and it reaches the battle, because the
+        Rats carry their surviving dice into it.
+        """
+        live = [d for r in self.rats for d in r.dice
+                if d.zone in ("available", "exhausted")]
+        if not live:
+            return
+        worst = min(live, key=lambda d: (EV[d.color],
+                                        d.zone == "available"))
+        worst.zone = "banished"
+        self.banished += 1
+        self.say("    the claim is paid in dice: a %s die is banished.",
+                 worst.color)
 
     def spend_reward(self, name):
         """Cash a claimed Note in, once. Hoarding is the other option."""
@@ -1523,15 +1588,32 @@ class Game(object):
             ok = False
             self.say("    a debt falls due: the old Tyrant picks this one.")
         if not ok and len(parts) >= 2:
-            # R35, Acceptable Losses: after a failure the RATS choose which
-            # part is reclaimed. It refunds exactly what a claim costs, so
-            # it is only worth cashing when the two parts really differ.
             order = sorted(parts, key=part_value, reverse=True)
-            if (part_value(order[0]) - part_value(order[-1])
-                    >= NOTE_REFUND_GAP
-                    and self.spend_reward("Acceptable Losses")):
-                ok = True
-                self.say("    Acceptable Losses: the Rats pick after all (R35).")
+            if NOTE_REWARD_REFUND:
+                # the printed reward: the Rats pick after all
+                if (part_value(order[0]) - part_value(order[-1])
+                        >= NOTE_REFUND_GAP
+                        and self.spend_reward("Acceptable Losses")):
+                    ok = True
+                    self.say("    Acceptable Losses: the Rats pick after all (R35).")
+            elif (part_value(order[-1]) < NOTE_REROLL_BELOW
+                  and self.spend_reward("Acceptable Losses")):
+                # R35 re-expressed: a fresh pair, the old Tyrant still
+                # taking the better of it. Conservation holds - the
+                # discarded pair goes to the old Tyrant's discard, exactly
+                # as Contaminated Tissue's re-reveal does.
+                self.tyrant_discard += parts
+                fresh = [q for q in (self.draw_part(),
+                                     self.draw_part()) if q is not None]
+                self.say("    Acceptable Losses: %s salvaged for a fresh pair (R35).",
+                         ", ".join(part_name(q) for q in parts))
+                if len(fresh) < 2:
+                    return
+                parts = fresh
+                order = sorted(parts, key=part_value, reverse=True)
+                self.say("    fresh parts: %s", ", ".join(
+                    "%s [%d]" % (part_name(q), part_value(q))
+                    for q in parts))
         order = sorted(parts, key=part_value, reverse=True)
         if eff == "methodology":                           # R8
             graft = order[-1]
