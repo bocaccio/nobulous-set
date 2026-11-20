@@ -7,6 +7,7 @@
     python3 batrev.py diagnose      # WHY each forced pass happened
     python3 batrev.py ladder        # the first proposal's 10/12/14/16
     python3 batrev.py graft         # reveal 1 graft vs 2
+    python3 batrev.py attrition     # is running out of grafts the loss?
     python3 batrev.py hp            # pooled Rat Health, tuned
 
 THIS IS NOT bat.py. bat.py models the PRINTED game and its figures are
@@ -79,6 +80,39 @@ Standard rung's deck and leaves its Specimen pool at 6, so it understates
 the real upper rungs, which carry 7 and 8 Specimens and therefore higher
 Splice VALUES. The sweep says 29.6% for a 15-card deck; the Nobulous rung,
 with its own mix, measures 25.1%. The four-rung batch is the authority.
+
+-----------------------------------------------------------------------
+WHAT ACTUALLY DECIDES THE BATTLE: GRAFT ATTRITION, NOT HEALTH
+-----------------------------------------------------------------------
+
+A destroyed graft leaves the Prototyrant for good (R15), so its seven
+parts are spent at about one a round against a battle that runs twelve.
+Run `batrev.py attrition`; 2000 games a rung, decks 12/13/14/15:
+
+    rung        win%   naked%  atRound  win|naked  win|clad  rounds
+    Easy       65.5%    37.0%     11.9       6.8%     99.8%   10.55
+    Standard   52.7%    49.6%     12.3       5.1%     99.6%   12.16
+    Hard       37.8%    63.7%     12.8       3.3%     98.3%   13.67
+    Nobulous   24.9%    76.6%     13.5       2.8%     97.2%   14.66
+
+RUNNING OUT OF GRAFTS IS THE LOSS CONDITION. A game that keeps one graft
+to the end wins 97-100% of the time; a game that runs out wins 3-7%. The
+whole ladder is the naked% column read backwards, and the Rats' Health is
+a two-round epilogue once the last graft dies - which is exactly why the
+HP dial saturated: Health is not what they are spending.
+
+The experience that falls out of it is the one the brief asked for. The
+question at Wake-Up is not "can I out-damage it" but "have I got enough
+parts to outlast its wall", and the card that kills you is whichever
+Specimen a failed Experiment handed over - in the seeded playthrough, a
+Value-5 Splice that stood for eight rounds and was still standing when
+the grafts ran out. The lab phase is where that is decided.
+
+It also says where the remaining dials are. Graft COUNT is the lab's
+length; graft SURVIVAL is its thresholds against the Tyrant's attack
+sizes; and whether a destroyed graft can ever be recovered is an open
+rules question, not a tuning one. The Health track's value was removing
+the dice spiral, not being a resource.
 
 -----------------------------------------------------------------------
 WHERE THE FIRST ROUND OF TUNING LANDED
@@ -490,6 +524,7 @@ class Game(object):
         self.in_battle = False
         self.red_commits = 0
         self.red_rounds = 0        # battle rounds where Red was usable
+        self.naked_round = None    # first round with no graft left to use
         self.avail_sum = 0         # pooled dice available, summed
         self.no_dice_rounds = 0    # rounds that opened with nothing
         self.notes = []            # verbose playthrough lines
@@ -976,6 +1011,10 @@ class Game(object):
 
     def battle_round(self):
         self.rounds += 1
+        # A destroyed graft never returns, so the Prototyrant's parts are a
+        # ONE-WAY clock. Record the round it runs out: see attrition().
+        if not self.grafts and self.naked_round is None:
+            self.naked_round = self.rounds
         splice = self.splices[0]
         # AN ACTIVE RAT EACH BATTLE TURN, chosen exactly as in the Experiment
         # phase - the sort prefers whoever holds Red, which is why Red moves
@@ -1309,6 +1348,10 @@ def sample(lvl, games, seed=11, parts=None, reveal=None):
             a["broken"] += g.gate["splices"] - len(g.splices)
             a["unmodelled"] += g.forced_unmodelled
             a["red_rounds"] += g.red_rounds
+            if g.naked_round is not None:
+                a["naked"] += 1
+                a["naked_round"] += g.naked_round
+                a["win_naked"] += out == "win"
             a["red_commits"] += g.red_commits
             a["avail"] += g.avail_sum
             a["no_dice"] += g.no_dice_rounds
@@ -1419,6 +1462,43 @@ def hp_tune(games=2500):
     print("read 63/53/39/30 against BAT's printed 60/52/39/27.")
 
 
+def attrition(games=2000):
+    """Is graft attrition the real battle clock, rather than Health?
+
+    A destroyed graft leaves self.grafts for good (R15), so the
+    Prototyrant's seven parts are spent at roughly one a round against a
+    battle that runs twelve. Once they are gone there is no defender and
+    the dice cap falls to NO_GRAFT_CAP.
+    """
+    print("GRAFT ATTRITION AS THE REAL BATTLE CLOCK.")
+    print("A destroyed graft never comes back, so the Prototyrant's parts")
+    print("are a one-way resource. This asks how often the Rats end the")
+    print("fight naked: no graft to defend with, and a dice cap of %d."
+          % NO_GRAFT_CAP)
+    print("Decks %s, Proto HP %d, GRAFT_REVEAL %d, %d games a rung."
+          % ("/".join(str(PARTS_AT_SETUP[l]) for l in LEVELS),
+             SHARED_HP_START, GRAFT_REVEAL, games))
+    print("")
+    print("%-10s %7s %8s %9s %10s %9s %8s"
+          % ("rung", "win%", "naked%", "atRound", "win|naked", "win|clad",
+             "rounds"))
+    for lvl in LEVELS:
+        a = sample(lvl, games)
+        f = float(a["games"])
+        nk = max(1, a["naked"])
+        cl = max(1, a["games"] - a["naked"])
+        print("%-10s %6.1f%% %7.1f%% %9.1f %9.1f%% %8.1f%% %8.2f"
+              % (lvl, 100.0 * a["wins"] / f, 100.0 * a["naked"] / f,
+                 a["naked_round"] / float(nk),
+                 100.0 * a["win_naked"] / nk,
+                 100.0 * (a["wins"] - a["win_naked"]) / cl,
+                 a["rounds"] / f))
+    print("")
+    print("naked% = games reaching a round with no surviving graft;")
+    print("atRound = when it first happens; win|naked vs win|clad = the")
+    print("win rate for games that do and do not get there.")
+
+
 def graft_choice(games=3000):
     print("GRAFT CHOICE: deck 14 on every rung, reveal 1 graft versus 2.")
     print("%d games an arm." % games)
@@ -1451,6 +1531,8 @@ if __name__ == "__main__":
         diagnose(int(sys.argv[2]) if len(sys.argv) > 2 else 3000)
     elif mode == "ladder":
         ladder(int(sys.argv[2]) if len(sys.argv) > 2 else 3000)
+    elif mode == "attrition":
+        attrition(int(sys.argv[2]) if len(sys.argv) > 2 else 2000)
     elif mode == "graft":
         graft_choice(int(sys.argv[2]) if len(sys.argv) > 2 else 3000)
     elif mode == "hp":
