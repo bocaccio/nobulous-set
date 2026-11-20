@@ -58,17 +58,35 @@ THE CONFIGURATION THESE FIGURES ARE MEASURED THROUGH
     PARTS_AT_SETUP is now 12/13/14/15, not the handoff's 10/14/18/22, and
     GRAFT_REVEAL is 2, not the handoff's 1. Both are measured below.
 
-THE LADDER AS IT SHIPS, 2000 games a rung, Proto HP 12, decks 12/13/14/15:
+THE LADDER AS IT SHIPS. The brief is not an overall win rate any more: a
+GREAT lab should still be a challenge at 40-50% on Standard and a POOR lab
+should be close to hopeless, so the figures below are split into thirds by
+the Prototyrant's total graft Value at Wake-Up. 2000 games a rung.
 
-                    Easy  Standard   Hard  Nobulous
-    GRAFT_REVEAL 1  64.7%    48.9%   36.5%    22.8%
-    GRAFT_REVEAL 2  64.2%    52.8%   37.9%    25.1%
-    BAT, printed    60%      52%     39%      27%
+    rung         win%  poorW   midW greatW   wall  rnds  pass  near%
+    Easy        37.8%  14.3%  34.0%  65.0%   6.03 10.97  4.87  28.0%
+    Standard    23.4%   5.1%  18.4%  46.5%   6.02  9.71  4.23  23.5%
+    Hard        16.5%   1.4%  11.1%  37.1%   5.97  8.86  3.72  22.3%
+    Nobulous     8.9%   0.5%   4.6%  21.6%   6.01  7.96  3.24  17.9%
 
-Reveal 2 is the closer fit and lands Standard and Hard almost exactly;
-Easy runs four points generous and Nobulous two light. Walls are 5/6/7/8
-Splices against 7.0 grafts, so the Prototyrant outnumbers what is left of
-the old Tyrant on every rung - the lab is now the bigger half of the game.
+Standard's great third is 46.5%, mid-band. The wall is 6 Splices against
+about 7 grafts on every rung, because only the CLOCK changes - Easy 12
+rounds, Standard 10, Hard 9, Nobulous 8, which is printed BAT's own limit.
+near% is losses with one Splice still standing: 18-28%, so the clock stays
+visible as a threat rather than a formality.
+
+WHAT A POOR LAB IS WORTH, and the thing to decide: 5.1% on Standard. The
+brief wants that grim, and it is - but it is grim from Wake-Up, not from
+round 8. No battle-side dial changes it. Seven were priced (R22-R29) and
+every one lifted the strong build more than the weak one, because
+capability is worth more to whoever already has it. Conservation is why:
+the wall is the complement of the grafts, so a poor lab faces a BIGGER
+wall with a WEAKER Prototyrant and the battle cannot repair the lab. If a
+poor lab should be live at 10-15%, the mechanism has to narrow what a bad
+lab COSTS, inside the lab.
+
+The round limit is also what stops a decided game being played out. Before
+it, a doomed poor lab spent 12.9 rounds of a 14.4-round battle finding out.
 
 How the deck size was found, HP swept against it on the Standard rung,
 1500 games an arm, GRAFT_REVEAL 2:
@@ -85,6 +103,61 @@ Standard rung's deck and leaves its Specimen pool at 6, so it understates
 the real upper rungs, which carry 7 and 8 Specimens and therefore higher
 Splice VALUES. The sweep says 29.6% for a 15-card deck; the Nobulous rung,
 with its own mix, measures 25.1%. The four-rung batch is the authority.
+
+-----------------------------------------------------------------------
+THE NRJ TIERS AGAINST THIS STRUCTURE
+-----------------------------------------------------------------------
+
+The tiers are overlay modules, not difficulty: I Agenda, II Contamination,
+III Exploitation, each including the ones before. bat.py models all three
+for the PRINTED game. This module models none of them, and two of the
+three do not survive the revision unchanged.
+
+TIER III is the serious one, because both rulebooks print the price of a
+Research Note - "claiming one costs the next Upgrade a completed Experiment
+earns" - and nrj.html quotes what it should be worth: "about 6 points of
+win rate and a second about 9 more". Taken literally here it is charged
+TWICE, because the part the Prototyrant forfeits is a part the old Tyrant
+reclaims. Standard, 2000 games a rung, great-lab win rate:
+
+    Notes claimed        0        1        2     grafts -> wall
+    literal (both)   46.5%    17.6%     3.0%     7->5, 6->8
+    the choice        46.5%    39.0%    28.4%     7->7, 6->6
+
+The literal reading costs 29 points and then 15 more, and at two Notes
+BAT is a 1.2% game overall - which breaks the campaign, since NRJ is Tier
+III only, requires BAT to be WON, and wants 2 Notes out of it for a finale
+that reads 49% with a full pool against under 1% with none. Nobody pays
+that. NOTE_PRICE = "choice" charges the thing the Rats actually won
+instead: the next completed Experiment resolves as though it had failed,
+so the old Tyrant takes the better part. Every count stays intact, and it
+measures -7.5 then -10.6 against the rulebook's advertised -6 then -9. It
+is the default for that reason.
+
+TIER I: five of the six Experimental Protocols port directly - they move
+Targets or tax dice, both of which still exist. Two need attention.
+Questionable Methodology ("Splice the stronger one into the Tyrant and
+reveal a replacement") is nearly a dead card here, because the old Tyrant
+taking the stronger part is what a FAILED Experiment already does; R8
+models it as the Rats being forced to graft the weaker. Cross-Contamination
+("if that die is banished, reveal the top 3 Upgrades and Splice them into
+the Tyrant") is structurally incompatible: it adds three Splices from
+outside the starting deck, which breaks conservation and adds three
+attacks the Rats do not have in a ten-round battle.
+
+TIER II: the six Unauthorized Modifications replace six ordinary Upgrades,
+and they are Value 4, 4, 5, 4, 5, 4 against ordinary Upgrades' 2-4. So the
+tier inflates the part pool's Value without changing its COUNT - the wall
+stays about 6 Splices but each one is dearer, and Value favours the Tyrant
+asymmetrically, since a Splice's Value is both the Target to meet in one
+blow and the dice it rolls back. A Contamination tier that makes the game
+harder is the intent, so this one lands the right way round. What needs
+rulings is their ownership text: "the holder may not borrow dice", "may
+not use the Red die", "has 1 less Health", "cannot be selected as active
+on consecutive turns" and Redundant Organs' knockout clause are all
+written for a RAT holding a card. Grafts belong to the Prototyrant and its
+Health is one pooled track, so each needs the treatment R10/R11 gave the
+base cards.
 
 -----------------------------------------------------------------------
 WHAT ACTUALLY DECIDES THE BATTLE: GRAFT ATTRITION, NOT HEALTH
@@ -328,13 +401,18 @@ from bat import (EXPERIMENT_TARGETS, EXPERIMENT_EFFECT, UPGRADE_VALUES,
                  SPECIMEN_VALUE, RAT_HP, RAT_REC, pick_order)
 
 # ---------------------------------------------------------------- dials
-# PARTS_AT_SETUP is the old Tyrant's starting deck, and the ladder's coarse
-# dial: one Splice on the wall is worth 10-14 points. The handoff proposed
-# 10/14/18/22, which is a cliff - 84 / 39 / 6 / 0 measured. 12/13/14/15 is
-# what the sweeps landed on, because the Rats' capacity to BREAK Splices is
-# near constant (4.7 a game) while the spec scaled the requirement 2 -> 15.
-PARTS_AT_SETUP = {"Easy": 12, "Standard": 13, "Hard": 14, "Nobulous": 15}
-SPECIMENS_IN_POOL = {"Easy": 5, "Standard": 6, "Hard": 7, "Nobulous": 8}
+# THE DECK IS THE SAME ON EVERY RUNG AND THE CLOCK IS THE LADDER (R30).
+# The handoff proposed 10/14/18/22, which is a cliff - 84/39/6/0 measured -
+# because the Rats' capacity to BREAK Splices is near constant while that
+# scaled the requirement from 2 to 15. 12/13/14/15 was the next attempt,
+# and once the battle has a ten-round limit even one card is too coarse: a
+# deck card is a whole Splice, which is a whole attack out of ten rounds,
+# worth 20-27 points of great-lab win rate. Deck 13 leaves a 6-Splice wall
+# against about 7 grafts on every rung, so the battle has one shape and the
+# rungs differ only in how long the Rats have. The Specimen pool trims 2-4
+# points by moving the wall's VALUE without moving its count.
+PARTS_AT_SETUP = {"Easy": 13, "Standard": 13, "Hard": 13, "Nobulous": 13}
+SPECIMENS_IN_POOL = {"Easy": 5, "Standard": 7, "Hard": 7, "Nobulous": 8}
 LEVELS = ("Easy", "Standard", "Hard", "Nobulous")
 
 EXPERIMENTS_DEALT = 8      # six, then a three-card packet with the Wake-Up
@@ -423,6 +501,11 @@ LOSE_WHEN_NAKED = False
 # long: a doomed lab stops slogging, and a great lab - which wins around
 # round 10-12 - is pulled down toward the 40-50% the brief wants without
 # needing a bigger deck to get there. 0 is off.
+# THE LADDER ITSELF: the rounds the Rats get before the old Tyrant finishes
+# them. Measured great-lab win rates are about 70 / 48 / 37 / 26, with
+# Nobulous landing on printed BAT's own eight rounds. ROUND_LIMIT overrides
+# the table when it is non-zero, which is what the sweeps use.
+ROUND_LIMITS = {"Easy": 12, "Standard": 10, "Hard": 9, "Nobulous": 8}
 ROUND_LIMIT = 0
 
 # CLOCK_AWARE_PASS. With a round limit a recovery pass costs a CHANCE, not
@@ -432,6 +515,32 @@ ROUND_LIMIT = 0
 # pass only while the rounds left would still be enough to break every
 # Splice still standing. Off reproduces the figures measured before.
 CLOCK_AWARE_PASS = True
+
+# NRJ TIER III (R31). Both rulebooks print the price of a Research Note:
+# "claiming one costs the next Upgrade a completed Experiment earns". In the
+# PRINTED game that is one Upgrade off the Rats' pile, measured at about 6
+# points of win rate for the first and 9 more for the second. In the
+# REVISION the same words cost twice over, because conservation makes the
+# wall the complement of the grafts: the part the Prototyrant does not get
+# is a part the old Tyrant reclaims, so the Prototyrant is one part lighter
+# AND the wall is one Splice heavier. One Splice of wall is worth about 27
+# points of great-lab win rate in a ten-round battle.
+#
+# NOTES_CLAIMED is how many Notes the Rats bank; each forfeits the graft
+# from the next completed Experiment. 0 is off.
+NOTES_CLAIMED = 0
+#
+# NOTE_PRICE is HOW a claim is paid, because the printed wording charges
+# twice in this structure. "both" is the literal reading: the Prototyrant
+# forfeits the part and the old Tyrant reclaims it, so a graft is lost AND
+# a Splice joins the wall - measured at 30 points of great-lab win rate for
+# the first Note against the 6 the rulebook advertises. "choice" keeps every
+# count intact and charges what the Rats actually won: the next completed
+# Experiment resolves as though it had FAILED, so the old Tyrant takes the
+# better part and the Prototyrant keeps the other. That is the rulebook's
+# own intent - the Rats fight thinner for it - at about a quarter of the
+# Value, and it leaves conservation untouched.
+NOTE_PRICE = "choice"
 BANISH_ON_BREAK = False    # R19: off for the main run
 TYRANT_BAG = ["purple", "purple", "blue", "blue", "green", "yellow"]
 ROUND_GUARD = 300          # genuine stalls are reported, not won or lost
@@ -653,6 +762,9 @@ class Game(object):
         self.direct_fee = 0        # dice tied up paying for R22
         self.grafts_spent = 0      # R24: grafts cashed in for damage
         self.clock_forced = 0      # attacks the round limit insisted on
+        self.notes_owed = NOTES_CLAIMED   # R31: Notes still to be paid for
+        self.round_limit = ROUND_LIMIT or ROUND_LIMITS.get(difficulty, 0)
+        self.notes_paid = 0
         self.avail_sum = 0         # pooled dice available, summed
         self.no_dice_rounds = 0    # rounds that opened with nothing
         self.notes = []            # verbose playthrough lines
@@ -900,6 +1012,21 @@ class Game(object):
         """R5/R6/R8/R9: one graft, one reclaim, leftovers to the discard."""
         if not parts:
             return
+        # R31: a banked Research Note is paid by the next COMPLETED
+        # Experiment, and in this structure the forfeited part is not
+        # merely lost - the old Tyrant reclaims it, so it joins the wall.
+        if ok and self.notes_owed:
+            self.notes_owed -= 1
+            self.notes_paid += 1
+            if NOTE_PRICE == "choice":
+                ok = False        # every count intact; the pick is lost
+                self.say("    Research Note banked: the old Tyrant picks this one (R31).")
+            else:
+                for part in parts:
+                    self.reclaimed += 1
+                    self.tyrant_discard.append(part)
+                self.say("    Research Note banked: the Prototyrant gets nothing, the old Tyrant takes both (R31).")
+                return
         order = sorted(parts, key=part_value, reverse=True)
         if eff == "methodology":                           # R8
             graft = order[-1]
@@ -1253,8 +1380,8 @@ class Game(object):
                      and (not viable
                           or expect < need - COMMIT_MARGIN)
                      and len(self.shared_exhausted()) > 0)
-        if (want_pass and viable and ROUND_LIMIT and CLOCK_AWARE_PASS
-                and ROUND_LIMIT - self.rounds < len(self.splices)):
+        if (want_pass and viable and self.round_limit and CLOCK_AWARE_PASS
+                and self.round_limit - self.rounds < len(self.splices)):
             # No slack left: a pass can no longer be paid for. Swing.
             want_pass = False
             self.clock_forced += 1
@@ -1483,7 +1610,7 @@ class Game(object):
                 return out
             if out is False:
                 return "loss"
-            if ROUND_LIMIT and self.rounds >= ROUND_LIMIT:
+            if self.round_limit and self.rounds >= self.round_limit:
                 self.say("")
                 self.say("Round limit reached with %d Splices standing.",
                          len(self.splices))
