@@ -47,25 +47,23 @@ STATE = { game = nil, difficulty = 'Standard', tier = 0,
 -- check_app_sync.py now holds these four tables against bat.DIFFICULTY,
 -- nap.LEVELS, aos.LEVELS and the finale table in rules/nrj.html.
 LEVELS = { 'Easy', 'Standard', 'Hard', 'Nobulous' }
--- BAT: Specimens shuffled into the Upgrade deck, and the Tyrant's Health.
--- Specimens, the Tyrant's CORE Health, its BUFF HP. The Tyrant is a
--- wall, five Splices and a core, and damage has to get past the wall
--- AND every Splice before the core can be touched at all.
+-- BAT: the Specimens that go into the old Tyrant's carcass, and the
+-- ROUNDS the Rats get in the battle. {specimens, rounds}.
 --
--- BUFF HP IS PER-DIFFICULTY AGAIN, 2026-11-18. It was 0 at every rung,
--- so the rulebook printed a column of four zeros and the card did
--- nothing in any game anyone played. A point of it is worth two to
--- three of core - the five Splices keep their full Values, and the
--- dice those Values draw, for the whole time the wall stands - so the
--- core came down to pay for it. simulation/price_buff_ladder.py chose
--- the pairs and confirmed them at 20,000 games a rung; the ladder's
--- win rates did not move, 59.8 / 51.6 / 39.2 / 27.5 against the
--- 60.7 / 52.0 / 38.6 / 26.0 the zero column was measured at.
+-- THE SCAVENGED-TYRANT DESIGN, 2026-11-20. There is no Tyrant Health
+-- and no Buff HP any more: the old Tyrant's bulk IS its wall of
+-- Splices, and the one Health track in the game is the PROTOTYRANT's,
+-- shared by all four Rats and starting at 12 on every rung. The carcass
+-- is 13 parts on every rung too, because a deck card is a whole Splice -
+-- a whole attack out of ten rounds - and the rungs could not be spaced
+-- with it.
 --
--- CALLED BUFF HP, after the card it stands on. It was "the outer
--- layer" in rules/bat.html until 2026-11-18, when Jon asked for the
--- card's own name everywhere; the book no longer uses the word.
-BAT_DIFF = { Easy = {5, 8, 1}, Standard = {6, 9, 1}, Hard = {7, 9, 2}, Nobulous = {8, 11, 2} }
+-- SO THE LADDER IS THE CLOCK. simulation/batrev.py measures a round at
+-- nine to fourteen points of win rate for a good lab, which is a step
+-- fine enough to build four rungs out of: a great lab reads about
+-- 65 / 47 / 37 / 22 across these four. Nobulous lands on the eight
+-- rounds printed BAT used to give everybody.
+BAT_DIFF = { Easy = {5, 12}, Standard = {7, 10}, Hard = {7, 9}, Nobulous = {8, 8} }
 -- NAP: the Credit goal, and how many Setbacks are in the Assignment deck.
 -- (Credit goal, Setbacks shuffled in).  Stepped one Credit down and one
 -- Setback up 2026-11-12: 58.1 / 49.0 / 37.0 / 26.3 solo, six Apprentices,
@@ -610,16 +608,18 @@ ASSIGN_SLOTS = 4
 --   Final Exams     you reach them; the exam button starts them
 --   Tyrant Attacks  nothing draws one until the Tyrant is awake, which is
 --                   five Splices away
---   Buff HP Track   the front layer of the Tyrant track, so the battle
---                   deals it and stands the Health die on the
---                   difficulty's number. rules/bat.html still calls the
---                   card optional - a player who does not want it can
---                   push the whole Health onto the dial and ignore it
+--   Health Track    the PROTOTYRANT's, shared by all four Rats. The lab
+--                   phase cannot touch Health at all, so the card has no
+--                   job until the battle; Wake-Up deals it and stands
+--                   the Health die on 12
+--   Wake-Up         row 1 is full at Tier III and the packet this card
+--                   belongs in is three cards deep, so the player builds
+--                   the clock by hand - see the setup's own say()
 --
 -- Named here so that "every deck a setup can reach" stays a real check
 -- rather than one that quietly stopped covering a deck.
-IN_THE_BAG = { 'Final Exams', 'Tyrant Attacks', 'Buff HP Track',
-               'Advanced Programs' }
+IN_THE_BAG = { 'Final Exams', 'Tyrant Attacks', 'Health Track',
+               'Wake-Up', 'Advanced Programs' }
 
 -- The printed layout under the cards. One per game, each its own tile
 -- in its own bag, which is what lets them be different felts.
@@ -2364,7 +2364,9 @@ function setupBAT()
   packUp(true)
   STATE.game = 'BAT'
   STATE.finale = false
-  local spec, hp = BAT_DIFF[STATE.difficulty][1], BAT_DIFF[STATE.difficulty][2]
+  local spec, rounds = BAT_DIFF[STATE.difficulty][1],
+                       BAT_DIFF[STATE.difficulty][2]
+  local PROTO_HP = 12      -- the Prototyrant's track, on every rung
   local upg
 
   -- THE OVERLAY FIRST, so everything else lands on top of it.
@@ -2428,6 +2430,20 @@ function setupBAT()
   -- when moveN reaches for it.
   step(function() moveN(deckOut('Specimens', pad(4)), upg, spec) end)
   step(function() if upg then upg.shuffle() end end)
+  -- AND THEN IT IS CUT TO THIRTEEN. The old Tyrant's carcass is 13 parts
+  -- on every rung - rules/bat.html's setup - so the pool the Specimens
+  -- were mixed into is dealt down to that and the rest goes back to the
+  -- box. Taken off the TOP of a shuffled deck, so which parts are in the
+  -- game is random rather than a function of deck order.
+  step(function()
+    if not upg then return end
+    local objs = upg.getObjects()
+    local over = #objs - 13
+    for i = 1, over do
+      local e = objs[i]
+      if e then dropCard(upg, e.nickname) end
+    end
+  end)
 
   if STATE.tier >= 1 then
     step(function()
@@ -2442,9 +2458,12 @@ function setupBAT()
   end
 
   step(function()
-    -- THE DIAL IS THE TYRANT'S HEALTH (rules/bat.html's components),
-    -- so it goes where the Tyrant's cards are - below the rightmost
-    -- Splice - turned to the Health this difficulty gives it.
+    -- THE DIAL IS THE ROUND COUNT NOW. The old Tyrant has no Health to
+    -- track, and what counts in this design is how long the Rats have:
+    -- turn it to the difficulty's rounds and step it down one per battle
+    -- round. At 0 with a Splice still standing, the Rats lose. The
+    -- Prototyrant's own Health rides on the Health track card, which
+    -- Wake-Up deals.
     --
     -- AN OBJECT OF ITS OWN, in the BAT bag, dealt like the overlay.
     -- It was the Chip's other face for a while; two objects cost one
@@ -2454,9 +2473,9 @@ function setupBAT()
     -- the whole time, so a setup turns it to this difficulty's Health
     -- and slides it under the Splices; Pack up slides it back.
     setMarker('Dial', BAT_CHIP_X, BAT_CHIP_Z, nil,
-              {CHIP_DIAL[hp] or CHIP_DIAL[0], 0})
-    STATE.dial = hp
-    readoutOut(hp)
+              {CHIP_DIAL[rounds] or CHIP_DIAL[0], 0})
+    STATE.dial = rounds
+    readoutOut(rounds)
   end)
 
   step(function()
@@ -2484,21 +2503,26 @@ function setupBAT()
   step(function()
     STATE.splices = 0
     refreshPanel()
-    say('BAT ready -- ' .. STATE.difficulty .. '. Tyrant Health ' .. hp ..
-        ' (Health dial), ' .. spec ..
-        ' Specimens shuffled into the Upgrade deck. Four Lab Rats are out' ..
-        ' with a Purple, Blue, Green and Yellow die under each and the Red' ..
-        ' die on a random one -- pick a side for each Rat. Five Splices' ..
-        ' awaken the Tyrant, and its six dice come off these rows.' ..
+    say('BAT ready -- ' .. STATE.difficulty .. '. The old Tyrant\'s' ..
+        ' carcass is 13 parts, with ' .. spec .. ' Specimens mixed in,' ..
+        ' and you get ' .. rounds .. ' rounds when it wakes -- the dial' ..
+        ' is that count, so step it down one per battle round. Four Lab' ..
+        ' Rats are out with a Purple, Blue, Green and Yellow die under' ..
+        ' each and the Red die on a random one -- pick a side for each' ..
+        ' Rat.' ..
         (STATE.tier >= 1 and ' TIER I: your Experimental Protocol is face-up.' or '') ..
         (STATE.tier >= 2 and ' TIER II: 6 ordinary Upgrades out, the 6 Modifications in.' or '') ..
         (STATE.tier >= 3 and (' TIER III: the 6 Research Notes are a face-up' ..
          ' stack on their space -- spread it to read them.') or '') ..
-        ' The Tyrant Attacks and the Buff HP card stay in the bag until' ..
-        ' the Tyrant wakes. The Buff HP card is the wall at the FRONT of' ..
-        ' the Tyrant track, ahead of the Splices, so it has to come off' ..
-        ' before any of them -- and it is the only card there that' ..
-        ' chips.')
+        ' BUILD THE CLOCK BEFORE YOU START: take 8 Experiments off the' ..
+        ' deck, take the Wake-Up card out of the BAT bag, shuffle it' ..
+        ' with the last TWO of those eight, and put that packet of' ..
+        ' three underneath the first six. Six, seven or eight' ..
+        ' Experiments will resolve and you will not know which. Every' ..
+        ' Experiment grafts one revealed part onto your Prototyrant and' ..
+        ' lets the old Tyrant reclaim the other -- winning decides WHICH,' ..
+        ' not how many. The Tyrant Attacks and the Health track card' ..
+        ' stay in the bag until Wake-Up.')
   end)
   run()
 end
@@ -3532,8 +3556,14 @@ function startBattle()
   -- A ZERO IS NOT AN ANSWER. STATE.dial starts at 0 and comes back as
   -- 0 after a reload, and a battle announcing a Tyrant at 0 Health is
   -- worse than one that resets; both fallbacks are there for that.
-  local core = BAT_DIFF[STATE.difficulty][2]
-  local hp = dialRead() or (((STATE.dial or 0) > 0) and STATE.dial) or core
+  -- THE DIAL IS THE ROUND CLOCK in this design, not a Health. The
+  -- fallbacks are unchanged in shape and for the same reason: a dial
+  -- somebody leaned on is reported rather than silently corrected, and a
+  -- 0 is not an answer, because STATE.dial starts and reloads at 0.
+  local rounds = BAT_DIFF[STATE.difficulty][2]
+  local clock = dialRead() or (((STATE.dial or 0) > 0) and STATE.dial)
+                or rounds
+  local PROTO_HP = 12
   local spliced = 0
   local buffCard = nil
   local tyrant, swept, short, stayed = 0, 0, {}, 0
@@ -3581,16 +3611,16 @@ function startBattle()
     -- DEALT LOW, so there is barely any fall to wait out. Every
     -- other deal drops from y 3 and lets physics find the table,
     -- which is fine for a card nothing is about to be stood on.
-    buffCard = deckOut('Buff HP Track',
+    buffCard = deckOut('Health Track',
                        {batRightX(BAT_BUFF), 1.2, batRowZ(3)}, FACEUP)
-    -- AND THE DIAL, again. setupBAT turned it to the same number,
-    -- but a Splice phase is long and the dial is a thing players
-    -- turn; the battle is where the Health starts counting down, so
-    -- it starts the battle reading what it should.
+    -- AND THE DIAL, again. setupBAT turned it to the same number, but
+    -- the lab phase is long and the dial is a thing players turn; the
+    -- battle is where the clock starts running down, so it starts the
+    -- battle reading what it should.
     setMarker('Dial', BAT_CHIP_X, BAT_CHIP_Z, nil,
-              {CHIP_DIAL[hp] or CHIP_DIAL[0], 0})
-    STATE.dial = hp
-    readoutOut(hp)
+              {CHIP_DIAL[clock] or CHIP_DIAL[0], 0})
+    STATE.dial = clock
+    readoutOut(clock)
   end)
   step(function()
     -- LOCKED ONLY ONCE IT HAS LANDED. Locking it in the step that
@@ -3604,14 +3634,11 @@ function startBattle()
     -- Set to 1: the number that counts is the space it stands on,
     -- and a die showing anything else reads as a second number.
     --
-    -- AND IT GOES ON THE CARD EITHER WAY. No rung ships a 0 any
-    -- more, but a table may still set one, and at 0 there is no
-    -- space to stand on: this used to leave the die wherever the
-    -- Splice Phase had put it, which is right about the number and
-    -- wrong about the table. It parks above the grid instead, on
-    -- the card and on no number.
-    local layer = BAT_DIFF[STATE.difficulty][3] or 0
-    local bx, bz = buffSpace(layer)
+    -- TWELVE, ON EVERY RUNG. This is the PROTOTYRANT's Health now -
+    -- shared by all four Rats - and the difficulty does not touch it;
+    -- what the difficulty sets is the round clock on the dial. The park
+    -- fallback stays for a track that cannot seat the number.
+    local bx, bz = buffSpace(PROTO_HP)
     if not bx then bx, bz = buffPark() end
     setMarker('Health', bx, bz, 1, nil, ONTO)
   end)
@@ -3620,12 +3647,11 @@ function startBattle()
     tyrant, swept, short, stayed = batBattleDice()
   end)
   step(function()
-    say('TYRANT BATTLE. Tyrant Health ' .. hp .. ' on the dial.' ..
-        (hp ~= core
+    say('TYRANT BATTLE. ' .. clock .. ' rounds on the dial.' ..
+        (clock ~= rounds
           and (' CARRIED OVER, NOT RESET: ' .. STATE.difficulty ..
-               ' prints a core Health of ' .. core ..
-               ' and the dial reads ' .. hp .. '. Degraded Tissue Study' ..
-               ' takes 2 off it; turn it back if nothing should have.')
+               ' gives ' .. rounds .. ' rounds and the dial reads ' ..
+               clock .. '. Turn it back if nothing should have moved it.')
           or '') ..
         ' Both' ..
         ' decks, the three cards they reveal and both discards are back' ..
@@ -3652,15 +3678,14 @@ function startBattle()
         ' on its Rat, and the attacking Rat may commit it but not in' ..
         ' the same round as tapping an Upgrade. Rat abilities are' ..
         ' silent in the battle. A Splice never chips: meet its printed' ..
-        ' Value in ONE attack or the whole attack bounces. Eight rounds' ..
-        ' to break five walls. The dial reads the Tyrant CORE Health,' ..
-        ' ' .. hp .. ', which nothing can touch until the Buff HP' ..
-        ' and all five Splices are gone. The Buff HP card is out, at ' ..
-        ((BAT_DIFF[STATE.difficulty][3] or 0) > 0
-          and ('' .. BAT_DIFF[STATE.difficulty][3] ..
-               ' -- the Health die is standing on it.')
-          or '0 at this difficulty -- put the Health die on the track' ..
-             ' to give the Tyrant one.'))
+        ' Value in ONE attack or the whole attack bounces, and nothing' ..
+        ' carries over to the next one. Reveal TWO grafts each round,' ..
+        ' use and expose one and set the other aside: the exposed' ..
+        " graft's Value is your dice cap AND the threshold an incoming" ..
+        ' attack must meet to destroy it. The Health track card is out,' ..
+        ' with the Health die on 12 -- that is the Prototyrant\'s' ..
+        ' Health and all four Rats share it. Step the dial down one' ..
+        ' per round; at 0 with a Splice still standing the Rats lose.')
   end)
   run()
 end
@@ -4151,13 +4176,13 @@ function onObjectDrop(color, obj)
   -- that slides when you nudge the die is worse than no card. It
   -- starts in the bag because it is optional; this locks it the moment
   -- it reaches its space, and right-click Unlock takes it away again.
-  if STATE.game == 'BAT' and deckLabel(obj.getName()) == 'Buff HP Track' then
+  if STATE.game == 'BAT' and deckLabel(obj.getName()) == 'Health Track' then
     local p = obj.getPosition()
     if math.abs(p.x - batRightX(BAT_BUFF)) < BAT_BOX_HW + 1.0
         and math.abs(p.z - batRowZ(3)) < BAT_BOX_HD + 1.0 then
       obj.setPosition({batRightX(BAT_BUFF), p.y, batRowZ(3)})
       obj.setLock(true)
-      say('Buff HP card locked in place -- right-click it to unlock.')
+      say('Health track locked in place -- right-click it to unlock.')
     end
     return
   end

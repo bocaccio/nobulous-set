@@ -256,6 +256,12 @@ CLAIMS = [
           lambda: sum(len(r) for r in bat.RAT_SIDES),
           note="8 sides on 4 cards; silent during the Tyrant battle, which "
                "is the printed rule"),
+    # THE WAKE-UP CARD IS THE CLOCK, not an effect: it ends the lab
+    # phase the instant it is turned, and batrev models that as the
+    # None in its Experiment deck rather than as card text.
+    Claim("BAT", "Wake-Up", 1, lambda: 1,
+          note="the clock, not an effect. batrev deals it as the None in "
+               "exp_deck; revealing it sets phase to wakeup"),
     Claim("BAT", "Health track", 1, lambda: 1,
           note="a track, not an effect. It was the Tyrant's Buff HP until "
                "2026-11-20; the card is the PROTOTYRANT's shared Health "

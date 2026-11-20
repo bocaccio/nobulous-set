@@ -158,6 +158,10 @@ CATALOG = {'bat': {'title': 'Build-a-Tyrant', 'decks': []},
 CATALOG['bat']['decks'] += [
     deck('Experiments', 'BAT_Encounters_TTS.png', names(build_bat.EXPERIMENTS),
          'Experiment card', 'CardBack_BAT_Encounter.png'),
+    # One card, on the EXPERIMENT back, so it cannot be told from an
+    # Experiment face-down - which is what makes the clock a clock.
+    deck('Wake-Up', 'BAT_WakeUp_TTS.png', ['Wake-Up'],
+         'Wake-Up card', 'CardBack_BAT_Encounter.png'),
     deck('Upgrades', 'BAT_Upgrades_TTS.png', names(build_bat.UPGRADES),
          lambda n, i: 'Upgrade card · %s' % build_bat.UPGRADES[i][1].split(' - ')[1],
          'CardBack_BAT_Upgrade.png'),

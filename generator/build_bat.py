@@ -4,7 +4,7 @@ from gen import render_deck, render_duplex, make_back, elements, hdr_fit, title_
 # The shape of the cards being built, for header measurement.
 CARD_SIZE = PORTRAIT
 
-SPEC_FTR = 'If at least one revealed Upgrade is a Specimen, +1 Target total.'
+SPEC_FTR = ('Target = the two revealed parts&rsquo; combined Value minus this number, minimum 1.')
 TAP_FTR = 'Tap to use. A tapped Upgrade cannot absorb damage.'
 
 EXPERIMENTS = [
@@ -138,9 +138,20 @@ print("card backs done")
 cards = []
 for n, t, e, flavor in EXPERIMENTS:
     cards.append(C(n, "Build-a-Tyrant Experiment",
-                   '<div class="big">%d</div><div class="biglbl">Target</div>'
+                   '<div class="big">%d</div><div class="biglbl">Method</div>'
                    '<div class="txt c">%s</div>' % (t, e), SPEC_FTR, flavor=flavor))
 print("Experiments", render_deck('BAT_Encounters', cards, 'BAT', back='CardBack_BAT_Encounter'))
+
+# THE WAKE-UP CARD, on the Experiment back so it cannot be told from one
+# face-down. Shuffled with the last two of the eight dealt Experiments, it
+# is what makes the lab six, seven or eight turns long without the Rats
+# knowing which.
+wake = [C('Wake-Up', 'Build-a-Tyrant &middot; the old Tyrant stirs',
+          '<div class="txt c">The Lab Phase ends at once.</div>'
+          '<div class="txt">Combine the old Tyrant&rsquo;s undrawn deck and its discard, shuffle them, and stand them up as its Splices. Shuffle the Prototyrant&rsquo;s grafts into their own pile. Put the Health die on the Health track at 12.</div>',
+          'Whatever you have built is what you fight with.',
+          flavor='The tank stops bubbling. Something in it is listening.')]
+print("Wake-Up", render_deck('BAT_WakeUp', wake, 'BAT', back='CardBack_BAT_Encounter'))
 
 cards = [C(n, s, '<div class="big">%d</div><div class="biglbl">Value</div><div class="txt">%s</div>' % (v, e),
            TAP_FTR, acc=CAT[s.split(' - ')[1]], flavor=f) for n, s, v, e, f in UPGRADES]

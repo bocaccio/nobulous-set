@@ -3037,9 +3037,16 @@ check("tts/lua.lua offers all four difficulties",
       and [s for s in re.findall(r"'([A-Za-z]+)'",
                                  re.search(r"LEVELS = \{([^}]*)\}",
                                            _lua).group(1))] == _lvl)
-check("tts/lua.lua BAT_DIFF matches bat.DIFFICULTY",
+# BAT_DIFF IS {SPECIMENS, ROUNDS} NOW, and held against batrev - the
+# model of record - rather than the retired printed game's three-column
+# DIFFICULTY. The old table carried a core Health and a Buff HP, and
+# neither exists: the old Tyrant's bulk is its wall and the one Health
+# track belongs to the Prototyrant.
+check("tts/lua.lua BAT_DIFF is batrev's Specimens and rounds",
       _lua_rows("BAT_DIFF", _lvl) == dict(
-          (k, tuple(v)) for k, v in sb_["DIFFICULTY"].items()))
+          (k, (_brev["SPECIMENS_IN_POOL"][k], _brev["ROUND_LIMITS"][k]))
+          for k in _lvl),
+      "%r" % (_lua_rows("BAT_DIFF", _lvl),))
 # ...AND THE BUFF HP LADDER IS THE ONE SOMEBODY MEASURED. It was 0 on every
 # rung until 2026-11-18 and this check held it there, because an unmeasured
 # non-zero value would have moved every published figure. The four values
@@ -3524,9 +3531,23 @@ _bagged = re.findall(r"'([^']+)'",
                                _lua, re.S).group(1))
 _dealt_by_finale = [d for d in _bagged
                     if re.search(r"deckOut\('%s'" % re.escape(d), _lua_code)]
-check("every deck that waits in a box is dealt by a finale",
-      sorted(set(_bagged) - set(_dealt_by_finale)) == [],
-      "never dealt: %r" % (sorted(set(_bagged) - set(_dealt_by_finale)),))
+# ...EXCEPT THE ONE THE PLAYER FETCHES. The Wake-Up card belongs in a
+# packet three cards deep, row 1 is full at Tier III, and TTS deck
+# surgery at setup is the least reliable thing in lua.lua - so the setup
+# tells the player to build the clock by hand instead of guessing at a
+# put that may not land. It is named here so that staying in the bag is a
+# DECISION rather than a deck somebody forgot, and the setup has to say
+# so out loud.
+BY_HAND = {"Wake-Up"}
+check("every deck that waits in a box is dealt by a finale, or handed "
+      "to the player in words",
+      sorted(set(_bagged) - set(_dealt_by_finale) - BY_HAND) == [],
+      "never dealt: %r"
+      % (sorted(set(_bagged) - set(_dealt_by_finale) - BY_HAND),))
+check("...and the setup really tells them to build the clock",
+      "BUILD THE CLOCK BEFORE YOU START" in _lua
+      and "shuffle it" in _lua and "underneath the first six" in _lua,
+      "the Wake-Up card waits in the bag and nothing says to fetch it")
 
 
 # THE BUFF HP TRACK IS HELD TO ITS OWN CARD.
@@ -4729,19 +4750,37 @@ check("...and every game that has a character places all three of them",
 # only the last resort.
 _satk = text("simulation/bat.py")
 _sdial = text("generator/build_bat.py")
+# THE DIAL IS THE ROUND CLOCK NOW, and the battle still has to carry what
+# the table left on it rather than resetting it: the lab phase is long and
+# a dial is a thing players turn. The shape of the fallback chain is the
+# invariant - read the dial, else a non-zero STATE.dial, else the rung's
+# rounds - because a 0 is not an answer: STATE.dial starts and reloads at
+# 0, and a battle announcing 0 rounds is worse than one that resets.
 check("the Tyrant battle carries the dial rather than resetting it",
-      "local core = BAT_DIFF[STATE.difficulty][2]" in _lua
-      and ("local hp = dialRead() or (((STATE.dial or 0) > 0)"
-           " and STATE.dial) or core") in _lua
+      "local rounds = BAT_DIFF[STATE.difficulty][2]" in _lua
+      and ("local clock = dialRead() or (((STATE.dial or 0) > 0)"
+           " and STATE.dial)") in _lua
+      and "or rounds" in _lua
       and re.search(r"function dialRead\(\).*?getRotationValue", _lua, re.S)
       and "CARRIED OVER, NOT RESET" in _lua
-      and "less any Experiment that cut it" in _RULES["bat"]
-      # ...AND THE CARD THAT MAKES IT WORTH CARRYING IS STILL PRINTED
-      # AND STILL MODELLED. Without this the check passes happily on a
-      # battle that carries a number nothing can ever change.
-      and "reduce the Prototyrant's Health dial by 2" in _sdial
-      and "tyrant_minus_2" in _satk,
-      "startBattle does not carry the dial it was handed")
+      # ...AND THE BOOK AGREES THAT RUNNING OUT IS A LOSS, which is what
+      # makes the number worth carrying at all. Without this the check
+      # passes on a battle that tracks a figure nothing reads.
+      and "rounds are used up" in _RULES["bat"]
+      and "the Rats lose" in _RULES["bat"]
+      # ...AND THE MODEL BOUNDS THE BATTLE BY IT.
+      and "b.round >= s.rounds" in text("playtest/dist/bat_rules.js")
+      and "self.round_limit - self.rounds" not in _satr,
+      "the battle does not carry the clock it was handed")
+# AND THE PROTOTYRANT'S HEALTH IS A SEPARATE THING FROM IT, on the track
+# card, at the one number every rung uses. Two numbers on one dial is how
+# the printed game's core Health and Buff HP got confused for each other.
+check("...and the Prototyrant's Health is 12 on the track, not on the dial",
+      "local PROTO_HP = 12" in _lua
+      and _lua.count("local PROTO_HP = 12") == 2
+      and "buffSpace(PROTO_HP)" in _lua
+      and _brev["SHARED_HP_START"] == 12,
+      "lua and batrev disagree on the Prototyrant's starting Health")
 
 # NOTHING IS TURNED UP OUT OF THE ATTACK DECK. A card was flipped at
 # setup to seed the first commit colour, which also showed the table

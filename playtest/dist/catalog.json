@@ -101,6 +101,28 @@
     "backLabel": "Card back"
    },
    {
+    "title": "Wake-Up",
+    "sheet": "BAT_WakeUp_TTS.png",
+    "cols": 1,
+    "rows": 1,
+    "landscape": false,
+    "cell": [
+     750,
+     1050
+    ],
+    "gutter": 24,
+    "hdr": "",
+    "cards": [
+     {
+      "name": "Wake-Up",
+      "kind": "Wake-Up card"
+     }
+    ],
+    "back": "CardBack_BAT_Encounter.png",
+    "backIsSheet": false,
+    "backLabel": "Card back"
+   },
+   {
     "title": "Upgrades",
     "sheet": "BAT_Upgrades_TTS.png",
     "cols": 10,

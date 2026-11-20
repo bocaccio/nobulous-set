@@ -1748,9 +1748,9 @@ def in_the_bag_assertions():
     what it does NOT name must not be sitting there forgotten.
     """
     bagged = sorted(str(v) for v in g_in_the_bag())
-    want("four decks are declared as staying in the bag", bagged,
-         ["Advanced Programs", "Buff HP Track", "Final Exams",
-          "Tyrant Attacks"])
+    want("five decks are declared as staying in the bag", bagged,
+         ["Advanced Programs", "Final Exams", "Health Track",
+          "Tyrant Attacks", "Wake-Up"])
     for which, tier in (("BAT", 0), ("BAT", 3), ("NAP", 0), ("NAP", 3),
                         ("AoS", 0), ("AoS", 3)):
         w, g = start("Standard", tier, Panel())
@@ -2324,95 +2324,72 @@ def on_card_assertions():
     # 0 underneath it is a value no rung ships at all since
     # 2026-11-18. Every shipping rung is checked further down, against
     # the number lua.lua itself carries.
-    def battle(layer):
-        w, g = start("Standard", 0)
-        w.lua.execute("BAT_DIFF.Standard[3] = %d" % layer)
-        g.setupBAT()
-        drain(w)
-        g.btnFinale()
-        drain(w)
-        hd = [o for o in w.markers.values() if o.name == "Health"][0]
-        return w, g, hd
-
-    w, g, hd = battle(3)
-    under = card_top_under(hd.pos[0], hd.pos[2])
-    want("a layer puts the Health die on the Buff HP card",
-         under and under[1], "Buff HP Track")
-    want("...and lets it go above that card's face",
-         bool(under) and hd.pos[1] - w.die_half >= under[0], True)
-    # ON THE LAYER'S OWN SPACE. buffSpace(3) and buffSpace(10) are
-    # different cells, so standing it on the core Health would land it
-    # somewhere else on the same card and still pass the two above.
-    bx, bz = (float(v) for v in g.buffSpace(3))
-    want("...on the space for the LAYER, not for the core Health",
-         (round(hd.pos[0] - bx, 3), round(hd.pos[2] - bz, 3)), (0.0, 0.0))
-
-    # AND AT LAYER 0 IT PARKS ON THE CARD, on no number. There is no 0
-    # space to stand on - the track is 15 down to 1 - and standing it
-    # on one would claim a point the difficulty does not give. It used
-    # to be left wherever the Splice Phase had it, which put the one
-    # die the book invites the players to move out of their way; Jon
-    # asked for it on the card, 2026-11-17.
-    w0, g0, hd0 = battle(0)
-    under0 = card_top_under(hd0.pos[0], hd0.pos[2])
-    want("layer 0 parks the Health die ON the Buff card",
-         under0 and under0[1], "Buff HP Track")
-    want("...and lets it go above that card's face too",
-         bool(under0) and hd0.pos[1] - w0.die_half >= under0[0], True)
-    # ON NO NUMBERED SPACE. A name cannot satisfy this: it asks all
-    # fifteen cells where the die is, rather than trusting that the
-    # park is somewhere else.
-    want("...on none of the fifteen numbered spaces",
-         [v for v in range(1, int(gl.BUFF_SPACES) + 1)
-          if max(abs(hd0.pos[0] - float(g0.buffSpace(v)[0])),
-                 abs(hd0.pos[2] - float(g0.buffSpace(v)[1]))) < 0.4], [])
-    want("...and the card is still dealt",
-         sorted(o.name for o in w0.table.values()
-                if o.name == "Buff HP Track"), ["Buff HP Track"])
-
-    # AND EVERY RUNG SHIPS A WALL NOW, so a game nobody has touched
-    # stands the die on a numbered space. Both cases above have to
-    # force a value to reach this code at all, which is exactly how a
-    # setup that placed the die correctly in a forced test and wrongly
-    # in a real game would get through: this plays the four games.
-    #
-    # BY THE VALUE THE SCRIPT CARRIES, not by four numbers written out
-    # here too. A ladder edited in lua.lua would otherwise be measured
-    # against the ladder it replaced - and the whole point of the
-    # 2026-11-18 change is that four files carry these numbers.
+    # THE HEALTH DIE STANDS ON 12, ON EVERY RUNG. The Buff HP layer and
+    # the core Health are gone with the printed game: the one Health track
+    # in this design is the PROTOTYRANT's, shared by all four Rats, and it
+    # starts at 12 whatever the difficulty. What the difficulty sets is the
+    # ROUNDS, which ride on the dial - so both are checked, and checked
+    # against the numbers lua.lua itself carries rather than a copy here.
+    PROTO_HP = 12
     for _lv in ("Easy", "Standard", "Hard", "Nobulous"):
         wS, gS = start(_lv, 0)
         gS.setupBAT()
         drain(wS)
+        # THE DIAL IS THE CLOCK, and the setup has to have turned it to
+        # this rung's rounds before the battle starts counting down.
+        want("%s sets the dial to its round count" % _lv,
+             int(gS.STATE.dial), int(gS.BAT_DIFF[_lv][2]))
         gS.btnFinale()
         drain(wS)
         hdS = [o for o in wS.markers.values() if o.name == "Health"][0]
-        _b = int(gS.BAT_DIFF[_lv][3])
-        _fits = 1 <= _b <= int(gl.BUFF_SPACES)
-        want("%s ships a Buff HP the track has a space for" % _lv,
-             _fits, True)
+        _fits = 1 <= PROTO_HP <= int(gl.BUFF_SPACES)
+        want("%s's Health track has a space for 12" % _lv, _fits, True)
         if not _fits:
-            continue        # buffSpace(0) is nil; the want above says why
-        bxS, bzS = (float(v) for v in gS.buffSpace(_b))
-        want("...and %s stands the Health die on that space" % _lv,
+            continue
+        # card_top_under closes over the FIRST world this function
+        # made, so asking it about a later one searches a table where
+        # the battle never ran. Looked up in wS directly.
+        under = None
+        for _o in wS.table.values():
+            _land = LAND.get(_o.name.rstrip("0123456789").strip(),
+                             LAND.get(_o.name))
+            if _land is None:
+                continue
+            _cw, _cl = float(gl.CARD_W), float(gl.CARD_L)
+            _hw, _hd = ((_cl / 2, _cw / 2) if _land
+                        else (_cw / 2, _cl / 2))
+            if (abs(_o.pos[0] - hdS.pos[0]) <= _hw
+                    and abs(_o.pos[2] - hdS.pos[2]) <= _hd):
+                _t = _o.pos[1] + Obj.FLAT_THICK / 2
+                if under is None or _t > under[0]:
+                    under = (_t, _o.name)
+        want("%s stands the Health die on the Health track" % _lv,
+             under and under[1], "Health Track")
+        want("...and lets it go above that card's face",
+             bool(under) and hdS.pos[1] - wS.die_half >= under[0], True)
+        bxS, bzS = (float(v) for v in gS.buffSpace(PROTO_HP))
+        want("...and on the space for 12 rather than anywhere on the card",
              (round(hdS.pos[0] - bxS, 3), round(hdS.pos[2] - bzS, 3)),
              (0.0, 0.0))
-        # ...AND NOT ON THE CORE'S SPACE. The two numbers are close
-        # enough on this ladder - 8 and 1, 9 and 2 - that a setup
-        # reading the wrong column would still land on the card.
-        _core = int(gS.BAT_DIFF[_lv][2])
-        if _core != _b and 1 <= _core <= int(gl.BUFF_SPACES):
-            cxS, czS = (float(v) for v in gS.buffSpace(_core))
-            want("...and not on the space for %s's core Health" % _lv,
-                 max(abs(hdS.pos[0] - cxS), abs(hdS.pos[2] - czS)) > 0.4,
+        # ...AND NOT ON THE SPACE THE ROUNDS WOULD PICK. 12, 10, 9 and 8
+        # are all real spaces on this track, so a battle reading the wrong
+        # number would still land on the card and pass the three above.
+        _rounds = int(gS.BAT_DIFF[_lv][2])
+        if _rounds != PROTO_HP and 1 <= _rounds <= int(gl.BUFF_SPACES):
+            rxS, rzS = (float(v) for v in gS.buffSpace(_rounds))
+            want("...and not on the space for %s's rounds" % _lv,
+                 max(abs(hdS.pos[0] - rxS), abs(hdS.pos[2] - rzS)) > 0.4,
                  True)
 
     # A DESTINATION WITH NOTHING AT IT BEHAVES AS IT DID. dropOnto
     # never goes below DROP_Y, so an empty patch of felt is still the
     # same drop - asked of the function directly, because every marker
     # a setup moves has something under it somewhere.
+    # The marker is whichever Health die the loop above left standing;
+    # the old `hd` came from a helper that forced a Buff HP layer, and
+    # that layer no longer exists.
     want("dropOnto over empty felt is DROP_Y",
-         round(float(g.dropOnto(hd, 26.0, -17.5)), 3),
+         round(float(gS.dropOnto(hdS, 26.0, -17.5)), 3),
          round(float(gl.DROP_Y), 3))
 
 
@@ -2573,12 +2550,12 @@ def buff_lock_assertions():
     g.setupBAT()
     drain(w)
     bx, bz = float(g.batRightX(int(g.BAT_BUFF))), float(g.batRowZ(3))
-    card = Obj(w, "buff", "Buff HP Track")
+    card = Obj(w, "buff", "Health Track")
     card.pos = (bx + 0.4, 1.0, bz - 0.3)
     w.table[card.guid] = card
     g.onObjectDrop("White", card)
     drain(w)
-    want("the Buff HP card locks when it lands on its space",
+    want("the Health track locks when it lands on its space",
          (card.locked, round(card.pos[0], 2), round(card.pos[2], 2)),
          (True, round(bx, 2), round(bz, 2)))
 
@@ -4385,25 +4362,44 @@ def main():
     char_bag_assertions()
     carry_assertions()
     pool_assertions()
+    # TIER II MUST STILL BITE, and one run of a random 13 cannot show it:
+    # 6 Modifications in a pool of 22 miss the cut about a third of the
+    # time. Sampled instead - over twenty Standard setups a Tier II
+    # carcass has to show a Modification, and a Tier 0 carcass never may.
+    _seen2, _seen0 = 0, 0
+    for _i in range(20):
+        _seen2 += inside(run("Standard", 2, "BAT"), "Upgrades",
+                         "Unauthorized Modification")
+        _seen0 += inside(run("Standard", 0, "BAT"), "Upgrades",
+                         "Unauthorized Modification")
+    want("Tier II really puts Modifications in the carcass", _seen2 > 0,
+         True)
+    want("...and Tier 0 never does", _seen0, 0)
+
     for lvl in ("Easy", "Standard", "Hard", "Nobulous"):
         spec, sb = BAT_SPECIMENS[lvl], NAP_SETBACKS[lvl]
         for tier in (0, 1, 2, 3):
             t = "%s t%d" % (lvl, tier)
 
             w = run(lvl, tier, "BAT")
-            # Tier II removes 6 ORDINARY Upgrades. Both halves of that are
-            # asserted: the Specimen count survives it, and the six that
-            # left were ordinary ones. Counting the deck alone cannot tell
-            # the difference - 6 out and 6 in is the same number either way.
-            want(t + " BAT Upgrade deck", len(deck(w, "Upgrades").kids),
-                 16 + spec)
-            want(t + " BAT Specimens in it",
-                 inside(w, "Upgrades", "Specimen"), spec)
-            want(t + " BAT ordinary Upgrades in it",
-                 inside(w, "Upgrades", "Upgrade "), 16 - 6 if tier >= 2 else 16)
-            want(t + " BAT Modifications in it",
-                 inside(w, "Upgrades", "Unauthorized Modification"),
-                 6 if tier >= 2 else 0)
+            # THE CARCASS IS 13 AND ITS COMPOSITION IS RANDOM, which is a
+            # printed rule: rules/bat.html mixes the rung's Specimens into
+            # the 16 Upgrades and deals 13 at random. So the exact counts
+            # this block used to pin cannot come back - what is left to
+            # check is the size, the bounds, and that nothing from outside
+            # the pool got in.
+            _spc = inside(w, "Upgrades", "Specimen")
+            _ord = inside(w, "Upgrades", "Upgrade ")
+            _mod = inside(w, "Upgrades", "Unauthorized Modification")
+            want(t + " BAT carcass is 13 parts",
+                 len(deck(w, "Upgrades").kids), 13)
+            want(t + " ...and all 13 are parts", _spc + _ord + _mod, 13)
+            want(t + " ...with no more Specimens than the rung mixed in",
+                 _spc <= spec, True)
+            want(t + " ...and no more ordinary Upgrades than exist",
+                 _ord <= (16 - 6 if tier >= 2 else 16), True)
+            want(t + " ...and Modifications only at Tier II or above",
+                 _mod == 0 if tier < 2 else _mod <= 6, True)
             want(t + " BAT Protocol dealt",
                  out(w, "Experimental Protocols"), 1 if tier >= 1 else 0)
             want(t + " BAT Research Notes out",

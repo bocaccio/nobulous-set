@@ -348,6 +348,7 @@ DECK SHEETS AND BACKS
   AoS_Unstable                   8x1     portrait   AoS_Unstable_TTS_back.png  (Unique Backs)
   BAT_BuffHP                     1x1     portrait   CardBack_BAT_BuffHP
   BAT_Encounters                 10x2    portrait   CardBack_BAT_Encounter
+  BAT_WakeUp                     1x1     portrait   CardBack_BAT_Encounter
   BAT_Rats                       4x1     landscape  BAT_Rats_TTS_back.png  (Unique Backs)
   BAT_Specimens                  8x1     portrait   CardBack_BAT_Upgrade
   BAT_TyrantAttacks              7x1     portrait   CardBack_BAT_TyrantAttack
