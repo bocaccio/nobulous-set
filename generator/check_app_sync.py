@@ -749,6 +749,7 @@ _rulenum_missing = []
 # that bat.py cannot quietly become the model of record again.
 _bat = py_tables("simulation/bat.py")        # retired, card tables only
 _brev = py_tables("simulation/batrev.py")    # the model of record
+_satr = text("simulation/batrev.py")
 _gbat = py_tables("generator/build_bat.py")
 check("simulation/bat.py says it is retired, and batrev.py says it is not",
       "RETIRED: the PRINTED Build-a-Tyrant" in text("simulation/bat.py")
@@ -4770,7 +4771,11 @@ check("the Tyrant battle carries the dial rather than resetting it",
       and "the Rats lose" in _RULES["bat"]
       # ...AND THE MODEL BOUNDS THE BATTLE BY IT.
       and "b.round >= s.rounds" in text("playtest/dist/bat_rules.js")
-      and "self.round_limit - self.rounds" not in _satr,
+      # ...and batrev bounds it too, at the call site rather than in a
+      # table. Nothing is asserted ABSENT here: the first version of this
+      # forbade "self.round_limit - self.rounds", which is a real line in
+      # the clock-aware pass rule, so the check failed on correct code.
+      and "if self.round_limit and self.rounds >= self.round_limit:" in _satr,
       "the battle does not carry the clock it was handed")
 # AND THE PROTOTYRANT'S HEALTH IS A SEPARATE THING FROM IT, on the track
 # card, at the one number every rung uses. Two numbers on one dial is how
@@ -4829,7 +4834,6 @@ check("the borrow table still reads off the borrower's Upgrades",
 # game; here the Prototyrant holds every graft, so the row rises as IT grows
 # and the lab's borrowing degrades as the machine does. Printed as
 # "3 or more", because a graft count does not stop at three any more.
-_satr = text("simulation/batrev.py")
 check("rules/bat.html's borrow table reads the Prototyrant's grafts, and "
       "batrev does too",
       "Grafts held" in _RULES["bat"]
