@@ -47,22 +47,25 @@ THE CONFIGURATION THESE FIGURES ARE MEASURED THROUGH
     Battle             dice POOLED; one PROTOTYRANT Health track
                        (SHARED_HP_START 12); an active Rat chosen every
                        round; Red on its own Experiment-phase rule, not
-                       drawn from the pool.
+                       drawn from the pool, but EXHAUSTING when committed
+                       rather than set aside (R21).
     Dials left at the handoff's spec: PARTS_AT_SETUP 10/14/18/22 and
     GRAFT_REVEAL 1. The recommended settings are below, not baked in.
 
 RECOMMENDED LADDER, 1500 games an arm, GRAFT_REVEAL 2:
 
-    Proto HP   deck 13  deck 14  deck 15  deck 16  deck 17
-       9         54.0%    43.1%    30.9%    22.5%    12.1%
-      12         58.2%    44.5%    34.5%    23.8%    15.1%
-      15         58.3%    46.0%    35.4%    23.7%    15.8%
+    Proto HP   deck 11  deck 12  deck 13  deck 14  deck 15  deck 16
+       9         73.9%    63.1%    48.7%    37.7%    25.8%    15.9%
+      12         74.7%    63.4%    53.0%    38.8%    29.6%    19.5%
+      15         75.2%    66.4%    51.2%    39.7%    29.8%    21.3%
+      18         77.1%    64.3%    52.5%    39.5%    30.1%    19.9%
 
-So decks 13/14/15/16 give 58 / 45 / 35 / 24 against BAT's printed
-60 / 52 / 39 / 27, and the Specimen mix - held at 6 throughout, and the
-dial that moves Splice VALUES rather than counts - is the fine adjustment
-for the rest. HP saturates by 12: Health sets the LEVEL, the deck builds
-the LADDER at 10-14 points a Splice.
+So Proto HP 12 with decks 12/13/14/15 gives 63 / 53 / 39 / 30 against
+BAT's printed 60 / 52 / 39 / 27 - Standard and Hard land on it, Easy and
+Nobulous run a few points generous, and the Specimen mix (held at 6
+throughout, and the dial that moves Splice VALUES rather than counts) is
+the fine adjustment. HP saturates by 12: Health sets the LEVEL, the deck
+builds the LADDER at 10-14 points a Splice.
 
 -----------------------------------------------------------------------
 WHERE THE FIRST ROUND OF TUNING LANDED
@@ -81,27 +84,44 @@ forced passes 3.04 -> 1.85. At equal total Health it is roughly a wash on
 win rate - pooling also recovers the overkill a per-Rat track wastes - so
 the gain is in restored agency, not in survivability.
 
-RESTORING RED IS WORTH ABOUT ONE SPLICE. On its own rule - the active Rat
-commits it, it counts toward the graft cap, it is SET ASIDE rather than
-exhausted, then it moves to a non-active Rat - it is worth +9.0 points
-(49.2 -> 58.2 at deck 13) and takes forced passes 2.40 -> 1.40, because
-being set aside rather than exhausted makes it the one die that comes back
-every round. Folded into the pool instead it was worth only +4.1.
+RED WAS MISSING FROM THE BATTLE ENTIRELY, against the handoff's "Red
+counts toward the cap": all_dice() returned only each Rat's four personal
+dice, so Red worked all through the lab and vanished at Wake-Up. What it
+is worth depends entirely on whether it comes back by itself. Standard,
+Proto HP 12, GRAFT_REVEAL 2, 2500 games an arm:
 
-NOTE FOR THE DESIGNER: because the active-Rat choice is free and the sort
-prefers whoever holds Red, the Red holder is activated every round and Red
-is usable in 100% of them. "Red goes to a non-active Rat" therefore
-restricts nothing here - it guarantees Red is always in play. That is
-optimal play under the rule as written, not a modelling slip, but it is
-worth deciding whether it is intended.
+    arm                       deck 12  deck 13  deck 14  deck 15  deck 16
+    Red set aside               68.0%    59.0%    44.8%    35.0%    23.8%
+    Red exhausts (default)      63.0%    51.9%    39.8%    29.1%    19.5%
+    Red absent                  60.7%    48.2%    35.6%    24.2%    17.7%
 
-WHERE THE FORCED PASSES ENDED UP, deck 14, Proto HP 12, GRAFT_REVEAL 2:
-    passes 5.77/game, forced 1.63, voluntary 4.14
-    forced = 28.2% of passes and 12.4% of all rounds (from 44.2% / 21.5%)
-    cause: colour 0.0%, cap 17.4%, pool 82.6%
-18% of rounds still open with no available dice, so the pool is still the
+SET ASIDE, Red is worth about one whole Splice (+9.2 at deck 14) because
+it is then the one die that never runs out: usable in 100% of rounds, and
+forced passes fall 2.65 -> 1.63. EXHAUSTING, it is worth +4.2, usable in
+67% of rounds and committed in 29% - a die with real downtime, which is
+the point of the change. Folded into the shared pool instead of keeping
+its own rule it was worth only +4.1, and for a worse reason: the pool can
+spend it on any round, so no decision attaches to it.
+
+NOTE FOR THE DESIGNER: the active-Rat choice is free and the sort prefers
+whoever holds Red, so the HOLDER is activated every round regardless. The
+handover rule therefore restricts nothing by itself - under the set-aside
+reading Red was simply always in play. It is exhaustion, not the handover,
+that gives Red downtime: the third of rounds it is unusable are rounds it
+sits in the exhausted pool waiting for a recovery, and a recovery spent
+getting Red back is a real choice against the dice it could have bought.
+The handover still matters to the Experiment phase, where it stops one Rat
+working every Experiment.
+
+WHERE THE FORCED PASSES ENDED UP, deck 13, Proto HP 12, GRAFT_REVEAL 2:
+    passes 5.72/game, forced 1.99, voluntary 3.73
+    forced = 34.8% of passes and 16.3% of all rounds (from 44.2% / 21.5%)
+    cause: colour 0.0%, cap 12.5%, pool 87.5%
+    deck 14 reads 6.38 / 2.35 / 4.03 and 36.9% / 17.5%, same causes
+17% of rounds still open with no available dice, so the pool is still the
 binding constraint - but it is now a reason to pass, not a round with no
-move in it.
+move in it. An exhausting Red costs 0.7 forced passes a game against the
+set-aside reading: that is the price of giving it downtime.
 
 The HP dial SATURATES near 9: deck 12 reads 51.7 / 55.6 / 58.6 / 60.7 at
 HP 6/7/8/9 and then only 59.9 / 60.5 / 61.4 at 10/11/12. Above 9 the Rats'
@@ -110,14 +130,18 @@ the ladder. The ladder has to come from the deck, where one Splice is worth
 13-15 points.
 
     pooled HP 12, starting decks 12/13/14/15, two grafts revealed:
-        62.1% / 48.5% / 38.3% / 26.8%
+        no Red at all:      62.1% / 48.5% / 38.3% / 26.8%
+        Red, exhausting:    63.4% / 53.0% / 38.8% / 29.6%
     BAT's printed ladder, for comparison:
         60%   / 52%   / 39%   / 27%
 
-Three rungs land on it. Standard is ~3.5 points light, and the Specimen mix
-- held at 6 throughout these sweeps - is the fine dial for that, since it
-moves Splice VALUES while the deck size moves COUNTS. The first proposal
-moved both together, which charged every rung twice.
+An exhausting Red is worth about four points, which the SAME deck sizes
+absorb - the set-aside reading was worth nine and moved every rung a whole
+deck. Standard and Hard land on the printed ladder; Easy and Nobulous run
+a few points generous, and the Specimen mix - held at 6 throughout these
+sweeps - is the fine dial for that, since it moves Splice VALUES while the
+deck size moves COUNTS. The first proposal moved both together, which
+charged every rung twice.
 
 -----------------------------------------------------------------------
 RULINGS. Every one of these is a choice this module made, not printed text.
@@ -191,6 +215,13 @@ BATTLE
   R20 A destroyed Splice still sets the counterattack's dice count, and its
       printed effect does NOT fire. A recovery pass still pays out when the
       graft survives.
+  R21 Red works in the battle as it does in the Experiment phase - only the
+      active Rat commits it, only while that Rat holds it, it counts toward
+      the graft's dice cap, and it then moves to a non-active Rat - with ONE
+      difference: in the battle it EXHAUSTS rather than being set aside, so
+      it has to be recovered like any other die. It is still never drawn
+      from the shared pool, and shared_exhausted() reaches it so a recovery
+      can return it. RED_SET_ASIDE_IN_BATTLE restores the lab reading.
 
 OMITTED CARD TEXT, declared rather than quietly dropped
   * Per-card battle effects for grafts and Splices beyond the flat damage
@@ -272,10 +303,19 @@ SHARED_HP_START = 12
 # Red keeps its own rule rather than joining the pool:
 #   * only the ACTIVE RAT may commit it, and only while that Rat holds it
 #   * it counts toward the graft's dice cap, so taking it costs a pooled die
-#   * it is SET ASIDE after use rather than exhausted
+#   * it EXHAUSTS when committed, like every other die, and has to be
+#     recovered before its holder can commit it again
 #   * afterwards it moves to a non-active Rat, as rules/bat.html has it
 RED_IN_BATTLE = True
 RED_OR_ABILITY = True
+# RED_SET_ASIDE_IN_BATTLE. In the Experiment phase Red is SET ASIDE
+# after use and is back the next turn. Carrying that into the battle,
+# where every other die exhausts and recovery is the scarce resource,
+# made Red the one die that never runs out - most of the +9.0 points it
+# was worth. Off, Red EXHAUSTS like any other committed die and has to
+# be recovered, so it is a resource with real downtime. True reproduces
+# the figures measured before 2026-11-19.
+RED_SET_ASIDE_IN_BATTLE = False
 
 # Experiment titles, in the order generator/build_bat.py prints them,
 # so the seeded playthrough can name its cards.
@@ -428,6 +468,9 @@ class Game(object):
         self.shared_hp = SHARED_HP_START
         self.in_battle = False
         self.red_commits = 0
+        self.red_rounds = 0        # battle rounds where Red was usable
+        self.avail_sum = 0         # pooled dice available, summed
+        self.no_dice_rounds = 0    # rounds that opened with nothing
         self.notes = []            # verbose playthrough lines
 
     # ------------------------------------------------------------- logging
@@ -452,7 +495,15 @@ class Game(object):
         return [d for d in self.all_dice() if d.zone == "available"]
 
     def shared_exhausted(self):
-        return [d for d in self.all_dice() if d.zone == "exhausted"]
+        ex = [d for d in self.all_dice() if d.zone == "exhausted"]
+        # A Red that EXHAUSTS in the battle must be recoverable like
+        # any other die, and it is not in all_dice() because it belongs
+        # to its holder and not to the pool. It still never appears in
+        # shared_available(): the holder commits it, nobody draws it.
+        if (self.in_battle and not RED_SET_ASIDE_IN_BATTLE
+                and self.red.zone == "exhausted"):
+            ex.append(self.red)
+        return ex
 
     def draw_part(self):
         """R4: never fail to reveal a part."""
@@ -847,9 +898,11 @@ class Game(object):
 
     def may_use_red(self, rat):
         """The Experiment phase's rule, unchanged: the active Rat commits Red
-        only while it holds it and it has not been set aside."""
+        only while it holds it and it is neither set aside nor spent.
+        The zone test covers both readings - set aside leaves Red
+        available, exhausting it does not."""
         return (RED_IN_BATTLE and self.red_holder is rat
-                and not self.red_aside and self.red.zone != "banished")
+                and not self.red_aside and self.red.zone == "available")
 
     def best_commit(self, cap, graft, target, rat):
         """THE RED CHOICE, made rather than stumbled into.
@@ -933,6 +986,11 @@ class Game(object):
 
         cap = graft.value if graft is not None else NO_GRAFT_CAP
         avail = pick_order(self.shared_available(), self.rng)
+        self.avail_sum += len(avail)
+        if not avail:
+            self.no_dice_rounds += 1
+        if self.may_use_red(rat):
+            self.red_rounds += 1
         pick = self.best_commit(cap, graft, splice.value, rat)
         ceiling = self.ceiling(pick, graft)
         viable = ceiling >= splice.value
@@ -974,7 +1032,7 @@ class Game(object):
             if used_red:
                 self.red_commits += 1
             for d in pick:
-                if d is self.red:
+                if d is self.red and RED_SET_ASIDE_IN_BATTLE:
                     self.red_aside = True     # set aside, not exhausted
                 else:
                     d.zone = "exhausted"
@@ -1049,7 +1107,9 @@ class Game(object):
 
         # rules/bat.html: Red goes to a NON-ACTIVE Rat, and a Red that was
         # set aside comes back. In the Experiment phase recover() does this;
-        # the battle has no recover(), so it happens here.
+        # the battle has no recover(), so it happens here. Under the
+        # default an exhausted Red does NOT come back here: it waits in
+        # the exhausted pool for a recovery like every other die.
         self.red_aside = False
         others = [r for r in self.rats if r is not rat and not r.down]
         if others:
@@ -1227,6 +1287,10 @@ def sample(lvl, games, seed=11, parts=None, reveal=None):
             a["splices"] += g.gate["splices"]
             a["broken"] += g.gate["splices"] - len(g.splices)
             a["unmodelled"] += g.forced_unmodelled
+            a["red_rounds"] += g.red_rounds
+            a["red_commits"] += g.red_commits
+            a["avail"] += g.avail_sum
+            a["no_dice"] += g.no_dice_rounds
             for k, v in g.forced_why.items():
                 a["why_" + k] += v
             for k, v in g.graft_picked.items():
