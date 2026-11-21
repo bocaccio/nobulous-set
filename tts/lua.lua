@@ -50,13 +50,13 @@ LEVELS = { 'Easy', 'Standard', 'Hard', 'Nobulous' }
 -- BAT: the Specimens that go into the old Tyrant's carcass, and the
 -- ROUNDS the Rats get in the battle. {specimens, rounds}.
 --
--- THE SCAVENGED-TYRANT DESIGN, 2026-11-20. There is no Tyrant Health
--- and no Health any more: the old Tyrant's bulk IS its wall of
--- Splices, and the one Health track in the game is the PROTOTYRANT's,
--- shared by all four Rats and starting at 12 on every rung. The carcass
--- is 13 parts on every rung too, because a deck card is a whole Splice -
--- a whole attack out of ten rounds - and the rungs could not be spaced
--- with it.
+-- THE SCAVENGED-TYRANT DESIGN, 2026-11-20. The old Tyrant has no
+-- Health of any kind now - no core and no outer layer: its bulk IS its
+-- wall of Splices, and the one Health track in the game is the
+-- PROTOTYRANT's, shared by all four Rats and starting at 12 on every
+-- rung. The carcass is 13 parts on every rung too, because a deck card
+-- is a whole Splice - a whole attack out of ten rounds - and the rungs
+-- could not be spaced with it.
 --
 -- SO THE LADDER IS THE CLOCK. simulation/batrev.py measures a round at
 -- nine to fourteen points of win rate for a good lab, which is a step

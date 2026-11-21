@@ -1794,7 +1794,7 @@ check("rules/bat.html: no commit cap left",
 # retirement is an invariant rather than a tidy-up, for the same reason the
 # "outer layer" wording was: two glosses on one stat is how the
 # Encounters/Experiment split started.
-check("rules/bat.html: one shared Health track, and Health is retired",
+check("rules/bat.html: one shared Health track, and the Tyrant's own Health is retired",
       "the Prototyrant&rsquo;s Health and all" in hb
       # THE RETIRED NAMES, not the live one. A blind rename turned this
       # into "Health" not in hb, which can never pass in a book whose
