@@ -224,8 +224,24 @@ BAT_RAT_Z1 = 14.80
 BAT_LEFT1 = -16.45
 BAT_RIGHT1 = 1.75
 BAT_ROWS = 4
-BAT_UPGRADES = 3
-BAT_SPLICES = 5
+-- THE RATS HOLD NO CARDS. Twelve boxes beside them held a Rat's own
+-- Upgrades, three each, and the scavenged-Tyrant design retired that
+-- rule outright: every part a Rat wins is grafted onto the PROTOTYRANT,
+-- which is one shared machine. The left block is two piles instead -
+-- what the Prototyrant has been given, and what the old Tyrant has
+-- taken back - and those two are the whole stake of the lab phase, so
+-- they are the biggest spaces on the felt.
+BAT_PILE_GRAFTS, BAT_PILE_RECLAIMED = 2, 3     -- the rows they sit on
+BAT_PILE_HW = (3 * BAT_COL - 0.25) / 2         -- three columns wide
+-- Row 4 is the battle's working row: the Splice facing the Rats, the
+-- graft they are using, and the one they set aside out of its reach. The
+-- wall itself is a face-down pile on the reclaimed space, not five cards
+-- laid out - it is five to eight deep now and nobody lays that out.
+BAT_EXPOSED_SPLICE, BAT_EXPOSED_GRAFT, BAT_ASIDE_GRAFT = 1, 2, 3
+BAT_BATTLE_COLS = 3
+-- The dial's column, which used to be derived from the five Splices and
+-- so would have moved when they stopped being five.
+BAT_DIAL_COL = 5
 BAT_BOX_DROP = (CARD_W - CARD_L) / 2
 
 -- A drawn space is the pitch less a hair, not a card: see above.
@@ -277,7 +293,7 @@ BAT_TYRANT_DICE = 4                    -- the first of the two columns
 BAT_TYRANT_BAG = { Purple = 2, Blue = 2, Green = 1, Yellow = 1 }
 
 -- The Dial sits below the rightmost Splice, clear of the row above it.
-BAT_CHIP_X = BAT_RIGHT1 + (BAT_SPLICES - 1) * BAT_COL
+BAT_CHIP_X = BAT_RIGHT1 + (BAT_DIAL_COL - 1) * BAT_COL
 BAT_CHIP_Z = -16.0
 
 -- THE HEALTH READOUT, beside the Dial and left of it. The Dial is a
@@ -431,7 +447,7 @@ end
 -- batRightX exists, and derived from the grid so it stays a card
 -- the day the card scale changes.
 function batBanished()
-  local x, z = batRightX(BAT_SPLICES), batRowZ(1)
+  local x, z = batRightX(BAT_DIAL_COL), batRowZ(1)
   return { x - BAT_BOX_HW, x + BAT_BOX_HW,
            z + BAT_BOX_HD, z - BAT_BOX_HD }
 end
@@ -1938,18 +1954,19 @@ function batBoxes()
   local function box(x, z)
     table.insert(out, {x = x, z = z, hw = BAT_BOX_HW, hd = BAT_BOX_HD})
   end
-  for r = 1, BAT_ROWS do
-    for k = 1, BAT_UPGRADES do box(batLeftX(k), batRowZ(r)) end
-  end
+  -- The two piles the lab phase fills, side by side down the left.
+  table.insert(out, {x = batLeftX(2), z = batRowZ(BAT_PILE_GRAFTS),
+                     hw = BAT_PILE_HW, hd = BAT_BOX_HD})
+  table.insert(out, {x = batLeftX(2), z = batRowZ(BAT_PILE_RECLAIMED),
+                     hw = BAT_PILE_HW, hd = BAT_BOX_HD})
   box(batRightX(BAT_PROTOCOL), batRowZ(1))
   box(batRightX(BAT_NOTES), batRowZ(1))
   for k = 1, 3 do box(batRightX(k), batRowZ(2)) end
   box(batRightX(BAT_EXP_DISCARD), batRowZ(2))
-  box(batRightX(BAT_UPG_DISCARD), batRowZ(2))
   for k = 1, 3 do box(batRightX(k), batRowZ(3)) end
   table.insert(out, {x = batRightX(BAT_TYRANT_DICE) + BAT_COL / 2,
                      z = batRowZ(3), hw = BAT_WIDE_HW, hd = BAT_BOX_HD})
-  for k = 1, BAT_SPLICES do box(batRightX(k), batRowZ(4)) end
+  for k = 1, BAT_BATTLE_COLS do box(batRightX(k), batRowZ(4)) end
   return out
 end
 
@@ -3423,32 +3440,33 @@ function batBattleBoxes()
   return out
 end
 
--- "From left to right, place the five Tyrant Splices in a random
--- order." They are on the track in the order you failed in, which is
--- an order - just not a random one, and it is the order damage has to
--- chew through.
+-- THE WALL IS A SHUFFLED PILE, not a row. It was five Splices laid out
+-- left to right because damage chewed through them in order; in the
+-- scavenged-Tyrant design it is five to eight cards deep, one is exposed
+-- at a time, and nothing carries past the one facing you. So this
+-- shuffles the reclaimed pile where it stands and turns its top card up
+-- onto the exposed-Splice space.
 function shuffleSplices()
-  local xs, found = {}, {}
-  for k = 1, BAT_SPLICES do xs[k] = batRightX(k) end
+  -- EVERY CARD ON THE RECLAIMED PILE, wherever on that space it was
+  -- dropped. A reclaimed part is put there loose through the whole lab
+  -- phase, so this gathers the space rather than five known columns.
+  local px, pz = batLeftX(2), batRowZ(BAT_PILE_RECLAIMED)
+  local found = {}
   for _, o in ipairs(getAllObjects()) do
     if isGameCard(o) and packable(o) then
       local p = o.getPosition()
-      if math.abs(p.z - batRowZ(4)) <= BAT_BOX_HD then
-        for k = 1, BAT_SPLICES do
-          if math.abs(p.x - xs[k]) <= BAT_BOX_HW then
-            table.insert(found, o)
-            break
-          end
-        end
+      if math.abs(p.z - pz) <= BAT_BOX_HD
+          and math.abs(p.x - px) <= BAT_PILE_HW then
+        table.insert(found, o)
       end
     end
   end
-  local order = shuffled(xs)
-  for i, o in ipairs(found) do
-    if order[i] then
-      o.setLock(false)
-      o.setPositionSmooth({order[i], 1.6, batRowZ(4)}, false, true)
-    end
+  -- Stack them where they stand and shuffle in place: the wall is a
+  -- face-down pile five to eight deep, and the battle turns its top
+  -- card up onto the exposed-Splice space one at a time.
+  for _, o in ipairs(found) do
+    o.setLock(false)
+    o.setPositionSmooth({px, 1.6, pz}, false, true)
   end
   return #found
 end

@@ -1280,11 +1280,15 @@ def layout_assertions():
                     # active-Rat mark, the opposite corner the Red die
                     # marks and its row of dice on each row, the two
                     # decks, and one per cell of the Health track.
-                    rows, ups = int(g.BAT_ROWS), int(g.BAT_UPGRADES)
+                    # The Rats hold no cards now: the twelve boxes
+                    # beside them are two piles, the Prototyrant's
+                    # grafts and what the old Tyrant reclaimed. Row 4
+                    # is three working spaces, not five Splices.
+                    rows = int(g.BAT_ROWS)
                     cols = len(list(g.BAT_RAT_DICE.values()))
-                    exp = (rows * ups + 2 + 3 + 2 + 3 + 1
-                           + int(g.BAT_SPLICES) + (3 + cols) * rows + 2
-                           + len(list(g.TRACK_CELL.values())))
+                    exp = (2 + 2 + 3 + 1 + 3 + 1
+                           + int(g.BAT_BATTLE_COLS) + (3 + cols) * rows
+                           + 2 + len(list(g.TRACK_CELL.values())))
                 elif which == "AoS":
                     # The Technician, the two decks and the two
                     # cards they reveal, the Advanced Programs and
@@ -1844,12 +1848,23 @@ def bat_assertions():
     # The spaces are a grid: none overlaps another, none leaves the felt.
     boxes = [(float(b.x), float(b.z), float(b.hw), float(b.hd))
              for b in g.batBoxes().values()]
-    # Twelve beside the Rats; the Protocol and the Research Notes on
-    # the deck row; three revealed and two discards; the Tyrant's
-    # three and its dice tray; the five Splices.
+    # Two piles down the left - the Prototyrant's grafts and the old
+    # Tyrant's reclaimed parts, which is the whole stake of the lab;
+    # the Protocol and the Research Notes on the deck row; three
+    # revealed and the Experiment discard; the Tyrant's three and its
+    # dice tray; and the battle's three working spaces.
     want("BAT draws a space for every card you put down", len(boxes),
-         int(g.BAT_ROWS) * int(g.BAT_UPGRADES) + 2 + 3 + 2 + 3 + 1
-         + int(g.BAT_SPLICES))
+         2 + 2 + 3 + 1 + 3 + 1 + int(g.BAT_BATTLE_COLS))
+    # AND THE TWO PILES ARE THE WIDEST THINGS ON THE FELT, which is how
+    # they read as piles rather than as another card space.
+    # BY THE PILE WIDTH, not merely "wider than a card": the Tyrant's
+    # dice tray is two columns wide too, so a loose test counted three.
+    _piles = [b for b in boxes
+              if abs(b[2] - float(g.BAT_PILE_HW)) < 0.01]
+    want("the two lab piles are drawn at pile width", len(_piles), 2)
+    want("...and they sit on the left, beside the Rats",
+         sorted(round(b[0], 2) for b in _piles),
+         [round(float(g.batLeftX(2)), 2)] * 2)
     over = [(a, b) for i, a in enumerate(boxes) for b in boxes[i + 1:]
             if abs(a[0] - b[0]) < a[2] + b[2] - 0.02
             and abs(a[1] - b[1]) < a[3] + b[3] - 0.02]
@@ -2006,14 +2021,17 @@ def bat_assertions():
     # one more thing to put away and save working out which way up a
     # thing is every time somebody types at it. It lies loose on the
     # table beside the Chip, so it is a marker, not a dealt card.
-    hp = int(g.BAT_DIFF[g.STATE.difficulty][2])
+    # The dial is the ROUND CLOCK now, and its column is its own
+    # constant: it used to be derived from the five Splices, so it
+    # would have moved when they stopped being five.
+    rounds = int(g.BAT_DIFF[g.STATE.difficulty][2])
     dial = g.marker("Dial")
-    want("BAT moves the Dial below the rightmost Splice",
+    want("BAT moves the Dial to its own column",
          (dial is not None, round(dial.pos[0], 2) if dial else None),
-         (True, round(float(g.batRightX(int(g.BAT_SPLICES))), 2)))
-    want("...turned to the Tyrant's Health",
+         (True, round(float(g.batRightX(int(g.BAT_DIAL_COL))), 2)))
+    want("...turned to this difficulty's round count",
          dial.rot[1] if dial and dial.rot else None,
-         float(g.CHIP_DIAL[hp]))
+         float(g.CHIP_DIAL[rounds]))
     want("...and the dial has an angle for every number it prints",
          sorted(int(k) for k in dict(g.CHIP_DIAL)), list(range(21)))
     # THE CHIP IS NAP'S AND GOES IN THE NAP BOX. It used to stay in

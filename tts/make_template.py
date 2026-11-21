@@ -275,7 +275,28 @@ def draw_bat(d, lua):
     label(d, "TYRANT\nATTACK", rx(int(g.BAT_ATTACK_UP)), rz(3),
           fit=half * 1.8)
     label(d, "HEALTH", rx(3), rz(3), fit=half * 1.8)
-    label(d, "TYRANT\nSPLICES", rx(1), rz(4), fit=half * 1.8)
+    # ROW 4 IS THE BATTLE'S WORKING ROW. It was five Splices laid out
+    # left to right because damage chewed through them in order; the
+    # wall is a face-down pile of five to eight now and one Splice faces
+    # the Rats at a time, with the graft they are using beside it and the
+    # one they held back out of its reach.
+    label(d, "EXPOSED\nSPLICE", rx(int(g.BAT_EXPOSED_SPLICE)), rz(4),
+          fit=half * 1.8)
+    label(d, "GRAFT\nIN USE", rx(int(g.BAT_EXPOSED_GRAFT)), rz(4),
+          fit=half * 1.8)
+    label(d, "SET\nASIDE", rx(int(g.BAT_ASIDE_GRAFT)), rz(4),
+          fit=half * 1.8)
+    # THE TWO PILES THE LAB FILLS, down the left where a Rat's own
+    # Upgrades used to sit. Every Experiment puts one part on each, and
+    # that is the whole stake of the phase: what your machine has been
+    # given, and what the old Tyrant has taken back and will fight you
+    # with. The reclaimed pile IS the wall when the Wake-Up card turns.
+    lx = float(g.batLeftX(2))
+    pile_fit = float(g.BAT_PILE_HW) * 1.7
+    label(d, "PROTOTYRANT\nGRAFTS", lx, rz(int(g.BAT_PILE_GRAFTS)),
+          fit=pile_fit)
+    label(d, "OLD TYRANT\nRECLAIMED", lx, rz(int(g.BAT_PILE_RECLAIMED)),
+          fit=pile_fit)
     # What the NRJ tiers put out and you keep in front of you: the
     # Tier I Protocol, and the six Tier III Research Notes as one
     # face-up stack rather than a row this table has no room for.
@@ -297,12 +318,14 @@ def draw_bat(d, lua):
     rev = int(g.BAT_REVEALED)
     label(d, "EXPERIMENT", rx(rev), rz(2), fit=half * 1.8)
     for k in (1, 2):
-        label(d, "UPGRADE", rx(rev + k), rz(2), fit=half * 1.8)
-    # The two piles that fill every turn, past the three revealed
-    # cards in the same row.
+        label(d, "PART", rx(rev + k), rz(2), fit=half * 1.8)
+    # The Experiment discard, past the three revealed cards in the same
+    # row. THERE IS NO PART DISCARD ANY MORE: both revealed parts leave
+    # the table every Experiment, one to the Prototyrant and one to the
+    # old Tyrant, so nothing is thrown away and the space that said
+    # UPGRADE DISCARD was labelling a pile that can never have a card on
+    # it.
     label(d, "EXPERIMENT\nDISCARD", rx(int(g.BAT_EXP_DISCARD)), rz(2),
-          fit=half * 1.8)
-    label(d, "UPGRADE\nDISCARD", rx(int(g.BAT_UPG_DISCARD)), rz(2),
           fit=half * 1.8)
     # The Tyrant's own dice, two columns wide over the Splices.
     label(d, "TYRANT DICE",
