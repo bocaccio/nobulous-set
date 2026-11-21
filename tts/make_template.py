@@ -274,7 +274,7 @@ def draw_bat(d, lua):
           fit=half * 1.8)
     label(d, "TYRANT\nATTACK", rx(int(g.BAT_ATTACK_UP)), rz(3),
           fit=half * 1.8)
-    label(d, "BUFF HP", rx(3), rz(3), fit=half * 1.8)
+    label(d, "HEALTH", rx(3), rz(3), fit=half * 1.8)
     label(d, "TYRANT\nSPLICES", rx(1), rz(4), fit=half * 1.8)
     # What the NRJ tiers put out and you keep in front of you: the
     # Tier I Protocol, and the six Tier III Research Notes as one

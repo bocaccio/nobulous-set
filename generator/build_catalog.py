@@ -174,11 +174,11 @@ CATALOG['bat']['decks'] += [
     # Two-sided decks print the odd-indexed entries on the back sheet.
     deck('Lab Rats', 'BAT_Rats_TTS.png', names(build_bat.RATS[0::2]), 'Lab Rat card · side A',
          'BAT_Rats_TTS_back.png', 'Lab Rat card · side B', names(build_bat.RATS[1::2])),
-    # The file id stays BAT_BuffHP: renaming it would move the mod's
+    # The file id stays BAT_HealthTrack: renaming it would move the mod's
     # baked art URLs and 84 references with them. The CARD is the
     # Prototyrant's shared Health track now.
-    deck('Health track', 'BAT_BuffHP_TTS.png', ['Health track'], 'Prototyrant track card',
-         'CardBack_BAT_BuffHP.png'),
+    deck('Health track', 'BAT_HealthTrack_TTS.png', ['Health track'], 'Prototyrant track card',
+         'CardBack_BAT_HealthTrack.png'),
 ]
 
 # ---- NAP -------------------------------------------------------------------

@@ -222,7 +222,7 @@ class Obj(object):
         """The world-space box TTS answers. dropOnto reads this.
 
         THERE IS NO GRAVITY IN THIS HARNESS. A dealt card keeps the y
-        the script let it go at - 3, or 1.2 for the Buff HP card -
+        the script let it go at - 3, or 1.2 for the Health track card -
         where TTS would have it resting on the felt a unit lower. So
         no height that comes out of here is TTS's height and none of
         them may be read as one.
@@ -1279,12 +1279,12 @@ def layout_assertions():
                     # the places with no box of their own - a Rat, its
                     # active-Rat mark, the opposite corner the Red die
                     # marks and its row of dice on each row, the two
-                    # decks, and one per cell of the Buff HP track.
+                    # decks, and one per cell of the Health track.
                     rows, ups = int(g.BAT_ROWS), int(g.BAT_UPGRADES)
                     cols = len(list(g.BAT_RAT_DICE.values()))
                     exp = (rows * ups + 2 + 3 + 2 + 3 + 1
                            + int(g.BAT_SPLICES) + (3 + cols) * rows + 2
-                           + len(list(g.BUFF_CELL.values())))
+                           + len(list(g.TRACK_CELL.values())))
                 elif which == "AoS":
                     # The Technician, the two decks and the two
                     # cards they reveal, the Advanced Programs and
@@ -1985,11 +1985,11 @@ def bat_assertions():
          [(r, i) for r in range(1, 5) for i in range(1, len(colours) + 1)
           if not snapped(float(g.batDieX(i)), float(g.batDieZ(r)))], [])
 
-    # The Buff HP track's cells are snap points inside the Buff HP space.
-    bx, bz = float(g.batRightX(int(g.BAT_BUFF))), float(g.batRowZ(3))
+    # The Health track's cells are snap points inside the Health space.
+    bx, bz = float(g.batRightX(int(g.BAT_TRACK))), float(g.batRowZ(3))
     cells = [(bx + float(c[1]), bz + float(c[2]))
-             for c in g.BUFF_CELL.values()]
-    want("the Buff HP track has fifteen cells", len(cells), 15)
+             for c in g.TRACK_CELL.values()]
+    want("the Health track has fifteen cells", len(cells), 15)
     want("...every one of them inside the card's own space",
          [c for c in cells
           if abs(c[0] - bx) > cw or abs(c[1] - bz) > cl][:2], [])
@@ -2207,7 +2207,7 @@ def on_card_assertions():
     pushes the two apart is not the script's to choose, and three
     dice in this mod stand on a card: the Recovery die on the active
     Rat, the Red die on the Rat that drew it, and the Health die on
-    the Buff HP track. Two of the three have been seen to lose.
+    the Health track. Two of the three have been seen to lose.
 
     WHAT IS CHECKED IS THE RELATION, NOT THE HEIGHT. There is no
     gravity here, so the cards are still at the y the script let them
@@ -2311,11 +2311,11 @@ def on_card_assertions():
           for n in ("Health", "Strategy")], [None, None])
 
     # THE SAME THING IN THE BATTLE, where the Health die stands on the
-    # Buff HP track's printed grid. This is the one Jon saw first: the
+    # Health track's printed grid. This is the one Jon saw first: the
     # card was being locked while still in the air and the die went
     # under it. The lock was fixed; the drop height was not.
     #
-    # AND THE DIE GOES ON THE BUFF HP, NOT ON THE CORE HEALTH. It used
+    # AND THE DIE GOES ON THE HEALTH, NOT ON THE CORE HEALTH. It used
     # to stand on the core number while the dial read the same, which
     # printed the Tyrant's Health twice. The two are independent stats.
     #
@@ -2324,7 +2324,7 @@ def on_card_assertions():
     # 0 underneath it is a value no rung ships at all since
     # 2026-11-18. Every shipping rung is checked further down, against
     # the number lua.lua itself carries.
-    # THE HEALTH DIE STANDS ON 12, ON EVERY RUNG. The Buff HP layer and
+    # THE HEALTH DIE STANDS ON 12, ON EVERY RUNG. The Health layer and
     # the core Health are gone with the printed game: the one Health track
     # in this design is the PROTOTYRANT's, shared by all four Rats, and it
     # starts at 12 whatever the difficulty. What the difficulty sets is the
@@ -2342,7 +2342,7 @@ def on_card_assertions():
         gS.btnFinale()
         drain(wS)
         hdS = [o for o in wS.markers.values() if o.name == "Health"][0]
-        _fits = 1 <= PROTO_HP <= int(gl.BUFF_SPACES)
+        _fits = 1 <= PROTO_HP <= int(gl.TRACK_SPACES)
         want("%s's Health track has a space for 12" % _lv, _fits, True)
         if not _fits:
             continue
@@ -2367,7 +2367,7 @@ def on_card_assertions():
              under and under[1], "Health Track")
         want("...and lets it go above that card's face",
              bool(under) and hdS.pos[1] - wS.die_half >= under[0], True)
-        bxS, bzS = (float(v) for v in gS.buffSpace(PROTO_HP))
+        bxS, bzS = (float(v) for v in gS.trackSpace(PROTO_HP))
         want("...and on the space for 12 rather than anywhere on the card",
              (round(hdS.pos[0] - bxS, 3), round(hdS.pos[2] - bzS, 3)),
              (0.0, 0.0))
@@ -2375,8 +2375,8 @@ def on_card_assertions():
         # are all real spaces on this track, so a battle reading the wrong
         # number would still land on the card and pass the three above.
         _rounds = int(gS.BAT_DIFF[_lv][2])
-        if _rounds != PROTO_HP and 1 <= _rounds <= int(gl.BUFF_SPACES):
-            rxS, rzS = (float(v) for v in gS.buffSpace(_rounds))
+        if _rounds != PROTO_HP and 1 <= _rounds <= int(gl.TRACK_SPACES):
+            rxS, rzS = (float(v) for v in gS.trackSpace(_rounds))
             want("...and not on the space for %s's rounds" % _lv,
                  max(abs(hdS.pos[0] - rxS), abs(hdS.pos[2] - rzS)) > 0.4,
                  True)
@@ -2386,7 +2386,7 @@ def on_card_assertions():
     # same drop - asked of the function directly, because every marker
     # a setup moves has something under it somewhere.
     # The marker is whichever Health die the loop above left standing;
-    # the old `hd` came from a helper that forced a Buff HP layer, and
+    # the old `hd` came from a helper that forced a Health layer, and
     # that layer no longer exists.
     want("dropOnto over empty felt is DROP_Y",
          round(float(gS.dropOnto(hdS, 26.0, -17.5)), 3),
@@ -2539,7 +2539,7 @@ def battle_dial_assertions():
 
 
 def buff_lock_assertions():
-    """The Buff HP card locks itself when it reaches its space.
+    """The Health track card locks itself when it reaches its space.
 
     It starts in the bag, because it is optional; you fetch it when you
     want it. It holds part of the Tyrant's Health on a track you push a
@@ -2549,7 +2549,7 @@ def buff_lock_assertions():
     w, g = start("Standard", 0, Panel())
     g.setupBAT()
     drain(w)
-    bx, bz = float(g.batRightX(int(g.BAT_BUFF))), float(g.batRowZ(3))
+    bx, bz = float(g.batRightX(int(g.BAT_TRACK))), float(g.batRowZ(3))
     card = Obj(w, "buff", "Health Track")
     card.pos = (bx + 0.4, 1.0, bz - 0.3)
     w.table[card.guid] = card
@@ -2560,7 +2560,7 @@ def buff_lock_assertions():
          (True, round(bx, 2), round(bz, 2)))
 
     # Dropped anywhere else it is just a card.
-    loose = Obj(w, "buff2", "Buff HP Track")
+    loose = Obj(w, "buff2", "Health Track")
     loose.pos = (bx, 1.0, bz + 12.0)
     w.table[loose.guid] = loose
     g.onObjectDrop("White", loose)
@@ -2644,7 +2644,7 @@ def covered_assertions():
     from the script's own list of boxes, which is right - a box on the
     felt and a space you can drop onto cannot then disagree - but it
     left nothing comparing the two halves. BAT's Tier I Protocol was
-    being dealt onto bare felt right of the Buff HP space and its six
+    being dealt onto bare felt right of the Health space and its six
     Tier III Research Notes along the Splice row, each one straddling
     two boxes belonging to something else, for as long as that overlay
     has existed. Nothing failed, because nothing asked.

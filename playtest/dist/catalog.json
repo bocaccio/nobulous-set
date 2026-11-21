@@ -340,7 +340,7 @@
    },
    {
     "title": "Health track",
-    "sheet": "BAT_BuffHP_TTS.png",
+    "sheet": "BAT_HealthTrack_TTS.png",
     "cols": 1,
     "rows": 1,
     "landscape": false,
@@ -356,7 +356,7 @@
       "kind": "Prototyrant track card"
      }
     ],
-    "back": "CardBack_BAT_BuffHP.png",
+    "back": "CardBack_BAT_HealthTrack.png",
     "backIsSheet": false,
     "backLabel": "Card back"
    }

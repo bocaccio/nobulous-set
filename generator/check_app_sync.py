@@ -1755,12 +1755,12 @@ check("...and every Experiment grafts one part and reclaims the other",
       and "else graft = order[1];" in jr,
       "the lab stopped giving each side a part every time")
 
-# THE PRINTED GAME'S LAB IS GONE WITH IT. Buff HP, the core Health dial
+# THE PRINTED GAME'S LAB IS GONE WITH IT. Health, the core Health dial
 # and the eight-round limit were the printed BAT's, and a lab still
 # drawing them would be playing a game no rulebook describes.
-check("the lab no longer models Buff HP, a core dial or 8 rounds",
+check("the lab no longer models Health, a core dial or 8 rounds",
       "BUFF_BY_DIFFICULTY" not in jb and "HEALTH_BY_DIFFICULTY" not in jb
-      and "buffCell" not in jb and "ROUND_LIMIT = 8" not in jb
+      and "trackCell" not in jb and "ROUND_LIMIT = 8" not in jb
       and "ROUND_LIMIT=8" not in jb,
       "a printed-game remnant is still in bat.js")
 # THE ROUNDS ARE PER RUNG NOW, so the book cannot print one number. It has
@@ -1774,28 +1774,32 @@ check("rules/bat.html: Splice met in one attack",
       "one attack" in hb.lower())
 check("rules/bat.html: no commit cap left",
       "up to 6 dice" not in hb.lower())
-# BUFF HP IS WHAT A BLOW STRIPS FIRST, and the book has to say the ORDER.
+# HEALTH IS WHAT A BLOW STRIPS FIRST, and the book has to say the ORDER.
 #
 # It said "optional, hold part of the Health on it and spend that first",
 # which with a track of Splices THEN Health put it last but one - and its
 # whole purpose is that the Splices shelter behind it. Jon's framing,
-# 2026-11-12: Buff HP and a core Health are two independent stats, and
-# damage has to get past the Buff HP AND every Splice to reach the core.
+# 2026-11-12: Health and a core Health are two independent stats, and
+# damage has to get past the Health AND every Splice to reach the core.
 # Three things have to hold together, so three things are checked.
 #
-# AND THE STAT IS CALLED BUFF HP, after the card it stands on. It was "the
+# AND THE STAT IS CALLED HEALTH, after the card it stands on. It was "the
 # Tyrant's outer layer" until 2026-11-18; the term is retired, and the
 # retirement is an invariant here rather than a tidy-up somebody has to
 # remember - two glosses on one stat is how the Encounters/Experiment
 # split started.
-# BUFF HP AND THE CORE HEALTH ARE BOTH RETIRED. The old Tyrant has no
+# HEALTH AND THE CORE HEALTH ARE BOTH RETIRED. The old Tyrant has no
 # Health at all now - its bulk IS its wall of Splices - and the one Health
 # track in the game is the PROTOTYRANT's, shared by all four Rats. The
 # retirement is an invariant rather than a tidy-up, for the same reason the
 # "outer layer" wording was: two glosses on one stat is how the
 # Encounters/Experiment split started.
-check("rules/bat.html: one shared Health track, and Buff HP is retired",
+check("rules/bat.html: one shared Health track, and Health is retired",
       "the Prototyrant&rsquo;s Health and all" in hb
+      # THE RETIRED NAMES, not the live one. A blind rename turned this
+      # into "Health" not in hb, which can never pass in a book whose
+      # subject is a Health track - and a check that cannot pass is worse
+      # than none, because it hides the ones that can.
       and "Buff HP" not in hb and "core Health" not in hb
       and "Tyrant Health</th>" not in hb
       and not re.search(r"\blayers?\b", hb, re.I))
@@ -1808,10 +1812,10 @@ check("...and batrev pools it rather than tracking a Health per Rat",
 # the sentence rather than matched as a phrase, so saying it differently
 # still passes and saying it backwards does not.
 # BY POSITION IN THE SENTENCE, NOT BY MEMBERSHIP. The first version of
-# this read `[w for w in ("Buff HP", "Splices", "core Health") if w in
+# this read `[w for w in ("Health", "Splices", "core Health") if w in
 # sentence]`, which sorts by the TUPLE's order and not the text's - so it
 # passed with the sentence printed backwards. Mutation-tested both ways now.
-# THERE IS NO DAMAGE ORDER LEFT TO PRINT. The Tyrant track - Buff HP, then
+# THERE IS NO DAMAGE ORDER LEFT TO PRINT. The Tyrant track - Health, then
 # five Splices, then a core dial - is gone with the printed game. One
 # Splice faces the Rats at a time, and the only thing damage can reach is
 # that Splice. What the book has to say instead is that nothing carries:
@@ -2413,7 +2417,7 @@ check("rules/bat.html: no remainder carries on any more",
       "the remainder carries on" not in _bat
       and "whatever survives all five" not in _bat)
 
-# THE TRACK HINT NAMES EVERY CARD THE LAB DRAWS. It stopped naming Buff HP
+# THE TRACK HINT NAMES EVERY CARD THE LAB DRAWS. It stopped naming Health
 # on 2026-11-03, when the lab stopped modelling it - which was right then,
 # because the wall was 0 on every rung. Both came back on 2026-11-18, so
 # the hint has to name it again and has to say the thing that makes it
@@ -2421,7 +2425,7 @@ check("rules/bat.html: no remainder carries on any more",
 # THE HINT DESCRIBES THE TRACK THE LAB NOW DRAWS: one exposed Splice, met
 # in one blow or not at all, with the exposed graft defending and the
 # Prototyrant's shared Health behind it. The old hint walked a left-to-
-# right track of Buff HP, five Splices and a core dial, none of which
+# right track of Health, five Splices and a core dial, none of which
 # exists. Both halves are checked, because a hint that says only the first
 # is the half-truth that sent a playtester looking for a wall to chip.
 _hint = re.search(r'<p class="hint bat-track-hint">([^<]*one blow[^<]*)</p>',
@@ -2517,7 +2521,7 @@ check("every step points at a control that exists",
 # ---------------------------------------------------------------------------
 # THE TTS MOD, which had no checks at all until 2026-11-08 and had drifted
 # a whole design generation: lua.lua still dealt a flat-20-Health Tyrant with
-# per-difficulty Buff HP, a 12-card Imposter Dossier with a Suspicion row,
+# per-difficulty Health, a 12-card Imposter Dossier with a Suspicion row,
 # and one AoS Program deck chosen by difficulty instead of a mix of three.
 # Two findDeck labels matched nothing in decks.py, so NAP's Time Slots were
 # never dealt and Tier II dealt nothing. The notebook is a FOURTH copy of
@@ -3040,7 +3044,7 @@ check("tts/lua.lua offers all four difficulties",
                                            _lua).group(1))] == _lvl)
 # BAT_DIFF IS {SPECIMENS, ROUNDS} NOW, and held against batrev - the
 # model of record - rather than the retired printed game's three-column
-# DIFFICULTY. The old table carried a core Health and a Buff HP, and
+# DIFFICULTY. The old table carried a core Health and a Health, and
 # neither exists: the old Tyrant's bulk is its wall and the one Health
 # track belongs to the Prototyrant.
 check("tts/lua.lua BAT_DIFF is batrev's Specimens and rounds",
@@ -3048,24 +3052,24 @@ check("tts/lua.lua BAT_DIFF is batrev's Specimens and rounds",
           (k, (_brev["SPECIMENS_IN_POOL"][k], _brev["ROUND_LIMITS"][k]))
           for k in _lvl),
       "%r" % (_lua_rows("BAT_DIFF", _lvl),))
-# ...AND THE BUFF HP LADDER IS THE ONE SOMEBODY MEASURED. It was 0 on every
+# ...AND THE HEALTH LADDER IS THE ONE SOMEBODY MEASURED. It was 0 on every
 # rung until 2026-11-18 and this check held it there, because an unmeasured
 # non-zero value would have moved every published figure. The four values
-# below were chosen against a core x Buff HP grid and confirmed at 20,000
+# below were chosen against a core x Health grid and confirmed at 20,000
 # games a rung - simulation/price_buff_ladder.py - so they are pinned here
-# by VALUE: a point of Buff HP is worth two to three of core, and a number
+# by VALUE: a point of Health is worth two to three of core, and a number
 # a test left behind would show up as a win rate nobody published.
 _lay = dict((k, v[2]) for k, v in sb_["DIFFICULTY"].items())
-check("...and the Tyrant's Buff HP is 1/1/2/2",
+check("...and the Tyrant's Health is 1/1/2/2",
       [_lay[k] for k in _lvl] == [1, 1, 2, 2], "%r" % (_lay,))
 # ...AND NO RUNG SHIPS A 0, which is the thing Jon asked for: a column of
 # four zeros reads as a table nobody filled in, and the card did nothing in
 # any game anyone played.
-check("...and no rung leaves the Buff HP card doing nothing",
+check("...and no rung leaves the Health track card doing nothing",
       0 not in set(_lay.values()), "%r" % (_lay,))
 # ...AND THE CORE LADDER STILL LADDERS. This is the real constraint on how
-# steep the Buff HP column can get: holding the win rates at Buff HP 3 wants
-# a Hard core near 7 and a Nobulous core near 9, and at Buff HP 2 it wants a
+# steep the Health column can get: holding the win rates at Health 3 wants
+# a Hard core near 7 and a Nobulous core near 9, and at Health 2 it wants a
 # Standard core of 6 - LOWER than Easy's 8. A table whose core column goes
 # down as the difficulty goes up is wrong on its face, so the column stops
 # at 2 until somebody decides to re-pitch the set.
@@ -3121,20 +3125,24 @@ check("...and the mod sets the Health die from it rather than from a 5",
       "setMarker('Health', sx[1], sz, IMP_HEALTH[STATE.difficulty] or 5)"
       in _lua)
 
-# The notebook quotes the same dials in words, so derive the words.
-_bat_line = "   ".join("%s %d and %d" % (l, sb_["DIFFICULTY"][l][0],
-                                         sb_["DIFFICULTY"][l][1])
+# The notebook quotes the same dials in words, so derive the words. BAT's
+# ladder is batrev's Specimens and ROUNDS now - there is no Tyrant Health
+# and no third column - so the quoted line is built from those two.
+_bat_line = "   ".join("%s %d and %d" % (l, _brev["SPECIMENS_IN_POOL"][l],
+                                         _brev["ROUND_LIMITS"][l])
                        for l in _lvl)
-check("the TTS notebook prints BAT's Specimens and Tyrant Health",
+check("the TTS notebook prints BAT's Specimens and rounds",
       _bat_line in _mod, "wanted %r" % _bat_line)
-# ...AND THE THIRD NUMBER, which the notebook left out while it was 0 on
-# every rung and described as an optional way to hold part of the Health on
-# the track. It is neither optional nor part of the Health now.
-_buff_line = "Buff HP: " + "   ".join("%s %d" % (l, sb_["DIFFICULTY"][l][2])
-                                      for l in _lvl)
-check("...and BAT's Buff HP per difficulty",
-      _buff_line in _mod and "Buff HP card is optional" not in _mod,
-      "wanted %r" % _buff_line)
+# ...AND THE ONE HEALTH IN THE GAME IS THE PROTOTYRANT'S, at the one
+# number every rung uses. The notebook used to print a per-difficulty
+# Buff HP here and called the card optional; both are retired, and a
+# notebook still saying either would teach a rule no card has.
+check("...and the Prototyrant's Health, which no rung varies",
+      "Health track at 12" in _mod
+      and "Buff HP" not in _mod and "core Health" not in _mod
+      and "Health track card is optional" not in _mod,
+      "the notebook still prints a retired Health stat, or stopped "
+      "printing the live one")
 _nap_line = "   ".join("%s %d and %d" % (l, sn["LEVELS"][l][0],
                                          sn["LEVELS"][l][1])
                        for l in _lvl)
@@ -3521,9 +3529,9 @@ check("...and the harness checks which die is really on the card",
 #
 # IN_THE_BAG names the decks no SETUP deals, because they belong to a
 # part of the game you reach rather than one you set up: the Final
-# Exams, the Tyrant Attacks, the Buff HP card and the Advanced
+# Exams, the Tyrant Attacks, the Health track card and the Advanced
 # Programs. Every one of them now has a finale that deals it - the
-# Buff HP card was the last holdout, and the Tyrant battle now puts
+# Health track card was the last holdout, and the Tyrant battle now puts
 # it out with the Health die standing on the difficulty's number. So
 # the list is empty, which is a stronger claim than the one this
 # made while the card was still called optional.
@@ -3551,7 +3559,7 @@ check("...and the setup really tells them to build the clock",
       "the Wake-Up card waits in the bag and nothing says to fetch it")
 
 
-# THE BUFF HP TRACK IS HELD TO ITS OWN CARD.
+# THE HEALTH TRACK IS HELD TO ITS OWN CARD.
 #
 # The Tyrant battle stands the Health die on the difficulty's number,
 # which means the Lua has to know where the fifteen spaces are. It
@@ -3578,7 +3586,7 @@ for _line in text("generator/gen.py").splitlines():
 
 def _buff_grid():
     from PIL import Image
-    im = Image.open(os.path.join(ROOT, "images", "BAT_BuffHP_TTS.png"))
+    im = Image.open(os.path.join(ROOT, "images", "BAT_HealthTrack_TTS.png"))
     im = im.convert("RGB")
     w, h = im.size
     px = im.load()
@@ -3617,7 +3625,7 @@ def _buff_grid():
 
 
 _bg = _buff_grid()
-_buff_said = re.search(r"^BUFF_PITCH = CARD_W \* \(([\d.]+) / ([\d.]+)\)",
+_buff_said = re.search(r"^TRACK_PITCH = CARD_W \* \(([\d.]+) / ([\d.]+)\)",
                        _lua, re.M)
 if _bg and _buff_said:
     _w, _h, _x0, _x1, _y0, _y1 = _bg
@@ -3630,21 +3638,21 @@ if _bg and _buff_said:
     _pitch_lua = _cw * (float(_buff_said.group(1))
                         / float(_buff_said.group(2)))
     # The grid's centre, down from the card's, which is what
-    # BUFF_GRID_DZ carries.
+    # TRACK_GRID_DZ carries.
     _dz_art = (_h / 2.0 - (_y0 + _y1) / 2.0) * _cl / _h
     _dx_art = ((_x0 + _x1) / 2.0 - _w / 2.0) * _cw / _w
-    check("the Buff HP track's pitch is the one printed on the card",
+    check("the Health track's pitch is the one printed on the card",
           abs(_pitch_art - _pitch_lua) < 0.04,
           "card %.3f, lua %.3f" % (_pitch_art, _pitch_lua))
     check("...and its grid sits one pitch below the card's centre",
           abs(_dz_art - (-_pitch_art)) < 0.06 and abs(_dx_art) < 0.06
-          and "BUFF_GRID_DZ = -BUFF_PITCH" in _lua,
+          and "TRACK_GRID_DZ = -TRACK_PITCH" in _lua,
           "card dz %.3f dx %.3f against one pitch %.3f"
           % (_dz_art, _dx_art, _pitch_art))
 else:
-    check("the Buff HP track's pitch is the one printed on the card",
+    check("the Health track's pitch is the one printed on the card",
           False, "could not measure the grid clear of the card's own "
-                 "frame, or BUFF_PITCH is gone")
+                 "frame, or TRACK_PITCH is gone")
 
 # ONE BUTTON PER GAME THAT HAS A FINALE, and none for the Imposter
 # scenario, which is itself NRJ's finale and has nothing after it.
@@ -4652,7 +4660,7 @@ check("the setup turns the Chip after it lands, not while it moves",
 # lying on the table, and the move is made with collide off so nothing
 # stops it. Three dice in this mod stand on a card, and two of the
 # three were seen to end up under it - the Red die on its Rat (Jon,
-# 2026-11-12) and the Health die on the Buff HP track before that.
+# 2026-11-12) and the Health die on the Health track before that.
 #
 # NAMED, NOT COUNTED. "three calls pass ONTO" would pass with the wrong
 # three; these are the three, and a fourth on-card die that forgot the
@@ -4714,22 +4722,22 @@ _mark_die = _mark_src.group(1) if _mark_src else None
 # from, so moving that corner moves the dice beside it.
 # Health is placed once more than the other two: three stat rows,
 # BAT's column beside the exhausted corner, and the Tyrant battle
-# standing it on the Buff HP track - on the layer's space when the
+# standing it on the Health track - on the layer's space when the
 # difficulty gives one, and parked on the card when it does not.
 check("...and every game that has a character places all three of them",
       _mark_die in _mk
       and _mk == {"Health": 5, "Strategy": 4, "Recovery": 4}
       and "setMarker('Health', BAT_STAT_X, BAT_STAT_Z[1])" in _lua
       # AND THE BATTLE PUTS IT ON THE CARD WHETHER OR NOT THERE IS A
-      # SPACE FOR IT. buffSpace answers nil for 0 - the track is 15
+      # SPACE FOR IT. trackSpace answers nil for 0 - the track is 15
       # down to 1 - and the call used to be skipped entirely, which
       # left the one die the book invites the players to move
       # wherever the Splice Phase had it. It parks above the grid
       # now, and the park is MEASURED off the grid rather than typed,
       # so the two cannot drift apart on a card that re-renders.
-      and "if not bx then bx, bz = buffPark() end" in _lua
+      and "if not bx then bx, bz = trackPark() end" in _lua
       and "setMarker('Health', bx, bz, 1, nil, ONTO)" in _lua
-      and re.search(r"function buffPark\(\).*?BUFF_GRID_DZ \+ 2 \* BUFF_PITCH",
+      and re.search(r"function trackPark\(\).*?TRACK_GRID_DZ \+ 2 \* TRACK_PITCH",
                     _lua, re.S)
       and "setMarker('Strategy', BAT_STAT_X, BAT_STAT_Z[2])" in _lua
       and "BAT_STAT_X = BAT_EXHAUST_X0 -" in _lua
@@ -4779,11 +4787,11 @@ check("the Tyrant battle carries the dial rather than resetting it",
       "the battle does not carry the clock it was handed")
 # AND THE PROTOTYRANT'S HEALTH IS A SEPARATE THING FROM IT, on the track
 # card, at the one number every rung uses. Two numbers on one dial is how
-# the printed game's core Health and Buff HP got confused for each other.
+# the printed game's core Health and Health got confused for each other.
 check("...and the Prototyrant's Health is 12 on the track, not on the dial",
       "local PROTO_HP = 12" in _lua
       and _lua.count("local PROTO_HP = 12") == 2
-      and "buffSpace(PROTO_HP)" in _lua
+      and "trackSpace(PROTO_HP)" in _lua
       and _brev["SHARED_HP_START"] == 12,
       "lua and batrev disagree on the Prototyrant's starting Health")
 

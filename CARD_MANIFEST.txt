@@ -16,7 +16,7 @@ CHANGES IN THIS REVISION
     plays a near-optimal commitment policy every turn, so a human's first-play
     rate will sit below these numbers.
     Track gold spaces re-marked 4 to 8.  Eight Specimens is the ceiling, so past
-    Nobulous only Buff HP rises; the track runs to 12, where the Tyrant wins
+    Nobulous only Health rises; the track runs to 12, where the Tyrant wins
     about three games in four.
   - The full difficulty surface, with the NRJ tiers interleaving between rungs:
                       no NRJ   Tier I   Tier II   Tier III
@@ -77,7 +77,7 @@ EARLIER (rev 25)
 
 EARLIER (rev 24)
   - SPLICES ARE A FACE-UP STACK DURING PLAY, SHUFFLED INTO A ROW AT THE BATTLE.
-    Reverts rev 23's build-as-you-go track.  At the battle: lay the Buff HP card
+    Reverts rev 23's build-as-you-go track.  At the battle: lay the Health track card
     with the Health die on the difficulty number, shuffle the five Splices into
     a row beside it, then set the Health dial to 20 at the right-hand end.
     The reason is shape, not balance.  Splice order and every sorted arrangement
@@ -94,7 +94,7 @@ EARLIER (rev 23)
     HP card goes beside the Tyrant Attack deck with the Health die on the
     difficulty number; every Splice is then laid in the rightmost open spot.  At
     5 Splices the Health dial is set to 20 and placed at the right-hand end.
-    The row is therefore Buff HP, the Splices in the order they were spliced,
+    The row is therefore Health, the Splices in the order they were spliced,
     Health - no sorting and no shuffling step at all.
   - Measured: splice order is NOT arbitrary.  The Upgrade deck is richest at the
     start, so the first card Spliced averages Value 3.89 and the fifth 2.94.
@@ -104,7 +104,7 @@ EARLIER (rev 23)
     stands at 84 / 76 / 69 / 61 / 53 percent.
 
 EARLIER (rev 22)
-  - DIFFICULTY IS NOW A SINGLE NUMBER.  Specimens and Buff HP are always equal:
+  - DIFFICULTY IS NOW A SINGLE NUMBER.  Specimens and Health are always equal:
         Easy      2 / 2   ~84%
         Standard  3 / 3   ~76%
         Hard      4 / 4   ~69%
@@ -118,7 +118,7 @@ EARLIER (rev 22)
     randomized - one fewer setup instruction and no two Tyrants look alike.
     Only smallest-Splice-first is measurably worse for the Rats.
   - Tier III campaign back on target: 71.8% with BAT at Standard, 66.2% at Hard.
-    The rev 21 drift is gone; Standard's extra Buff HP absorbed it.
+    The rev 21 drift is gone; Standard's extra Health absorbed it.
 
 EARLIER (rev 21)
   - THE SIMULATOR WAS USING A FICTIONAL UPGRADE DECK.  It generated regular
@@ -158,15 +158,15 @@ EARLIER (rev 21)
     retained Specimens 0.66).  Flagged, not yet re-tuned.
 
 EARLIER (rev 20)
-  - BUFF HP MOVES TO THE FRONT OF THE TYRANT'S ROW.  Damage now goes Buff HP,
+  - HEALTH MOVES TO THE FRONT OF THE TYRANT'S ROW.  Damage now goes Health,
     Defense Splices, remaining Splices, Health.  The Health die starts on the
-    Buff HP track at setup and only ever moves right.
-    This is a real difficulty change, not a re-ordering: Buff HP shelters the
+    Health track at setup and only ever moves right.
+    This is a real difficulty change, not a re-ordering: Health shelters the
     Splices, so the Tyrant's frontmost-Splice effect AND its dice count stay at
     full strength for the whole time you are carving the Buff off.  Measured at
-    Buff 9: 2.49 dice per Tyrant attack against 2.18 with Buff HP at the back.
-    Each point of Buff HP is worth roughly twice what it was.
-  - BUFF HP LADDER RE-PEGGED BACK TO 0 / 2 / 4 / 6 / 8:
+    Buff 9: 2.49 dice per Tyrant attack against 2.18 with Health at the back.
+    Each point of Health is worth roughly twice what it was.
+  - HEALTH LADDER RE-PEGGED BACK TO 0 / 2 / 4 / 6 / 8:
         Easy      2 Specimens   Buff 0   ~89%
         Standard  3 Specimens   Buff 2   ~79%
         Hard      4 Specimens   Buff 4   ~66%
@@ -185,7 +185,7 @@ EARLIER (rev 19)
     partially-damaged Tyrant Splice and ZERO Rat Upgrades, so the Health die
     covers the entire battle and the game needs no tokens, counters or notes -
     just the 20 Strong dice, the cards and the Chip.
-  - BUFF HP LADDER RE-PEGGED TO 0 / 3 / 6 / 9 / 12, using the 12-space track:
+  - HEALTH LADDER RE-PEGGED TO 0 / 3 / 6 / 9 / 12, using the 12-space track:
         Easy      2 Specimens   Buff  0   ~89%
         Standard  3 Specimens   Buff  3   ~79%
         Hard      4 Specimens   Buff  6   ~66%
@@ -206,12 +206,12 @@ EARLIER (rev 18)
     tapping, the Tyrant would tap every round and its frontmost Splice could
     never be destroyed.  Reading past Defense Splices instead of using the
     frontmost measured identically, so the simple rule wins.
-  - BUFF HP IS ONE CARD AGAIN, a 12-space track.  Put the Health die on the
+  - HEALTH IS ONE CARD AGAIN, a 12-space track.  Put the Health die on the
     difficulty's number and step it down one space per damage.  The Health die
     also walks the Splice row before that, sitting on whichever card is being
     damaged - one die runs the entire Tyrant, and the dial and the second card
     are both gone.
-  - THE ORIGINAL BUFF HP LADDER IS RESTORED.  Random Tyrant dice gave the Rats
+  - THE ORIGINAL HEALTH LADDER IS RESTORED.  Random Tyrant dice gave the Rats
     about +8 points and the frontmost-Splice effect takes about -8 back, so the
     table reads exactly as first published:
         Easy      2 Specimens   Buff 0   ~87%
@@ -234,8 +234,8 @@ EARLIER (rev 17)
     the printed pool had never been simulated.
     Blind drawing costs the Tyrant about 18 percent of its damage per attack
     (2.19 -> 1.79 expected successes) and is worth +5 to +11 points to the Rats,
-    so the whole Buff HP ladder is re-pegged below.
-  - BUFF HP LADDER RE-PEGGED, and BAT_BuffHP is now a 2-CARD deck.
+    so the whole Health ladder is re-pegged below.
+  - HEALTH LADDER RE-PEGGED, and BAT_HealthTrack is now a 2-CARD deck.
         Easy      2 Specimens   Buff 2     ~86%
         Standard  3 Specimens   Buff 4     ~76%
         Hard      4 Specimens   Buff 6     ~67%
@@ -252,8 +252,8 @@ EARLIER (rev 16)
     landscape cards are themselves landscape, so 3 x 3 fits at full poker size
     with a 0.25in margin on every side.  Faint crop ticks mark every cut line.
     Page counts: BAT 15 -> 11, NAP 14 -> 10, AoS 17 -> 12, NRJ 17 -> 12.
-  - The Buff HP dial is now included in NobulousSet_BAT_PnP.pdf (pages 10-11,
-    duplex).  It was previously only in its own BAT_BuffHP_PnP.pdf.
+  - The Health dial is now included in NobulousSet_BAT_PnP.pdf (pages 10-11,
+    duplex).  It was previously only in its own BAT_HealthTrack_PnP.pdf.
   - Duplex back pages now mirror about the center of the full 3-wide grid
     rather than about the cards present in that row.  The old behavior put
     the backs of a part-filled row one or two columns out of register.
@@ -346,7 +346,7 @@ DECK SHEETS AND BACKS
   AoS_Specialized                8x1     portrait   AoS_Specialized_TTS_back.png  (Unique Backs)
   AoS_Technicians                3x1     landscape  AoS_Technicians_TTS_back.png  (Unique Backs)
   AoS_Unstable                   8x1     portrait   AoS_Unstable_TTS_back.png  (Unique Backs)
-  BAT_BuffHP                     1x1     portrait   CardBack_BAT_BuffHP
+  BAT_HealthTrack                     1x1     portrait   CardBack_BAT_HealthTrack
   BAT_Encounters                 10x2    portrait   CardBack_BAT_Encounter
   BAT_WakeUp                     1x1     portrait   CardBack_BAT_Encounter
   BAT_Rats                       4x1     landscape  BAT_Rats_TTS_back.png  (Unique Backs)
@@ -376,7 +376,7 @@ CARD BACKS
   BAT   CardBack_BAT_Encounter        Encounter deck
         CardBack_BAT_Upgrade          Upgrade deck (regular Upgrades + Specimens)
         CardBack_BAT_TyrantAttack     Tyrant Attack deck
-        CardBack_BAT_BuffHP           Buff HP track (a mat; never shuffled)
+        CardBack_BAT_HealthTrack           Health track (a mat; never shuffled)
   NAP   CardBack_NAP_Assignment       Assignment deck (Tasks, Opportunities,
                                       Setbacks, FINF)
         CardBack_NAP_FinalExam        Final Exams - reads FINAL EXAM / SET ASIDE
@@ -399,12 +399,12 @@ CARD BACKS
   Their NRJ identity is carried on the face instead, by the foot band reading
   NOBULOUS RESEARCH JOURNAL.
 
-BUFF HP AND DIFFICULTY
+HEALTH AND DIFFICULTY
   Superseded 2026-11-12; kept because the percentages were measured.  It read:
     "Difficulty is one number, used twice: that many Specimens in the Upgrade
-    deck and that much Buff HP on the Tyrant.  Easy 4, Standard 5, Hard 6,
-    Brutal 7, Nobulous 8, for 70 / 63 / 56 / 49 / 42 percent.  Buff HP sits at
-    the FRONT of the Tyrant's damage row, ahead of its Splices.  BAT_BuffHP is
+    deck and that much Health on the Tyrant.  Easy 4, Standard 5, Hard 6,
+    Brutal 7, Nobulous 8, for 70 / 63 / 56 / 49 / 42 percent.  Health sits at
+    the FRONT of the Tyrant's damage row, ahead of its Splices.  BAT_HealthTrack is
     a single one-sided track card with 12 spaces, gold at 4-8."
 
 THE TYRANT, CURRENT
@@ -420,7 +420,7 @@ THE TYRANT, CURRENT
   not a number to set casually.  simulation/price_buff.py prints the price
   list, and simulation/bat.py's damage_tyrant is the only place that decides
   the order.
-  BAT_BuffHP is a single one-sided 15-space track card with no gold spaces -
+  BAT_HealthTrack is a single one-sided 15-space track card with no gold spaces -
   the difficulty table owns the value, so nothing on the card can mark a
   starting space without going stale.  The layer CHIPS: a blow takes what it
   can and stops, and only a blow that finishes the layer in the same attack

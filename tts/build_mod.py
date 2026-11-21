@@ -42,7 +42,7 @@ USED = set()
 # Imposter Scenario is NRJ's finale, not a fifth game.
 # HOW BIG A CARD IS, and everything downstream of that.
 #
-# A die has to fit in a Buff HP box. That card prints a 3x5 grid of boxes
+# A die has to fit in a Health box. That card prints a 3x5 grid of boxes
 # each about 15% of the card's width; a TTS card is roughly 2.4 units wide
 # and a TTS die about 0.9 across, so a box at scale 1 is 0.37 units and
 # will not take one. 0.9 / (0.15 * 2.4) is 2.5, and 2.6 leaves a margin.
@@ -370,8 +370,8 @@ CHARACTERS = [('APPRENTICE', 'build_nap.py', 'APPS', None),
               ('IMPOSTER', 'build_nrj.py', 'IMPOSTERS', 2)]
 
 
-def buff_cells():
-    """The 15 track cells on the Buff HP card, as offsets from its centre.
+def track_cells():
+    """The 15 track cells on the Health track card, as offsets from its centre.
 
     MEASURED OFF THE PRINTED CARD, not counted out from the CSS that
     drew it. generator/build_bat.py lays the track as 5 rows of 3 pale
@@ -386,7 +386,7 @@ def buff_cells():
     runs of that colour and keep the 15 biggest blobs.
     """
     from PIL import Image
-    path = os.path.join(SHEETS, 'BAT_BuffHP_TTS.png')
+    path = os.path.join(SHEETS, 'BAT_HealthTrack_TTS.png')
     im = Image.open(path).convert('RGB')
     w, h = im.size
     px = im.load()
@@ -421,7 +421,7 @@ def buff_cells():
     xs = bands(cols, max(cols) // 3, w // 12)
     ys = bands(rows, max(rows) // 3, h // 18)
     if len(xs) != 3 or len(ys) != 5:
-        raise SystemExit('the Buff HP track reads as %d columns by %d rows,'
+        raise SystemExit('the Health track reads as %d columns by %d rows,'
                          ' not 3 by 5' % (len(xs), len(ys)))
     cells = [(0, cx, cy) for cy in ys for cx in xs]
     out = []
@@ -656,9 +656,9 @@ def lua_header(box_guids):
         'MAT_ASPECT = %.5f' % (lambda wh: wh[0] / float(wh[1]))(
             jpeg_size(os.path.join(SHEETS, nap_table_image()))),
         'MAT_Z = %.2f' % NAP_TABLE_Z,
-        # The Buff HP track's cells, so BAT can put a snap point in the
+        # The Health track's cells, so BAT can put a snap point in the
         # middle of each one. Measured off the printed card.
-        'BUFF_CELL = { %s }' % j('{%.3f, %.3f}' % c for c in buff_cells()),
+        'TRACK_CELL = { %s }' % j('{%.3f, %.3f}' % c for c in track_cells()),
         'DIE_SCALE = %.2f' % DIE_SCALE,
         # THE ALT VIEW'S ANGLE FOR EACH FACE of a landscape card. The
         # save bakes the face-up one into every such card; the script
@@ -1435,94 +1435,103 @@ def notebook():
          "  bag.\n\n"
          "The script deals and counts. It never enforces a rule in play."),
         ("BAT quick reference",
-         "SPLICE PHASE, a turn: reveal the next Experiment; reveal 2 Upgrades\n"
-         "(+1 Target if either is a Specimen, once only even for two); choose\n"
-         "the active Rat and put the Recovery die on it; place the set-aside\n"
-         "Red on a NON-active Rat; commit, roll, resolve; exhaust the dice you\n"
-         "committed and recover that Rat's REC.\n\n"
-         "Success: successes at or over the Target, and the printed\n"
-         "restriction honored. The active Rat takes one of the two revealed\n"
-         "Upgrades (max 3 per Rat, Specimens counting) and discards the other.\n"
-         "Failure: Splice the stronger revealed Upgrade into the Tyrant and\n"
-         "discard the other; on a tie choose either. Committing nothing is a\n"
-         "legal choice - the Experiment fails, the stronger Upgrade is\n"
-         "Spliced, recovery still happens, and it earns no bonus.\n"
-         "Five Splices awaken the Tyrant. You cannot avoid this - the game is\n"
-         "about WHICH five cards it gets. If the Experiment deck runs out\n"
-         "first, random unused Upgrades bring it to exactly 5 and the battle\n"
-         "begins; running out of UPGRADES is not a malfunction, reshuffle\n"
-         "their discard.\n\n"
-         "DIFFICULTY sets the Specimens shuffled in with the 16 Upgrades and\n"
-         "the Tyrant's core HEALTH:\n"
-         "  Easy 5 and 8   Standard 6 and 9   Hard 7 and 9   Nobulous 8 and 11\n"
-         "...and its BUFF HP, which is a stat of its own and not part of the\n"
-         "Health:\n"
-         "  Buff HP: Easy 1   Standard 1   Hard 2   Nobulous 2\n"
-         "Set the Health DIAL to the core number and stand the Health die on\n"
-         "the Buff HP card, on that many spaces. Buff HP is the FRONT of the\n"
-         "track, so it comes off before any Splice can be damaged - which\n"
-         "means the five Splices shelter behind it at full strength while you\n"
-         "carve it away - and it is the only card on the track that CHIPS. A\n"
-         "point of it is worth two or three of core, so the core came down to\n"
-         "pay for it and the ladder's win rates did not move.\n\n"
+         "THE LAB, an Experiment: reveal the next Experiment card; reveal 2 PARTS\n"
+         "from the old Tyrant's deck; work out the Target - the two parts'\n"
+         "combined Value MINUS the Experiment's printed number, never below 1;\n"
+         "choose the active Rat and put the Recovery die on it; place the\n"
+         "set-aside Red on a NON-active Rat; commit, roll, resolve; exhaust the\n"
+         "dice you committed and recover that Rat's REC.\n"
+         "\n"
+         "ONE PART EACH, EVERY TIME. Success means YOU choose which part your\n"
+         "Prototyrant grafts; failure, or a zero-dice pass, means the old Tyrant\n"
+         "takes the higher-Value part and you graft the other. Either way both\n"
+         "parts leave the deck: your graft stays with the Prototyrant and the\n"
+         "reclaimed part goes to the old Tyrant's discard, to be shuffled back in\n"
+         "and revealed again. Winning does not get you MORE parts. It gets you\n"
+         "the better one.\n"
+         "\n"
+         "A zero-dice Experiment is a legal choice: it fails, the old Tyrant\n"
+         "takes the better part, recovery still happens, and it earns no bonus.\n"
+         "\n"
+         "THE CLOCK IS THE EXPERIMENT DECK. Deal 8 Experiments, shuffle the\n"
+         "WAKE-UP card in with the last TWO, and put that packet of three\n"
+         "underneath the first six. Six, seven or eight Experiments resolve and\n"
+         "you will not know which. The Wake-Up card ends the lab the instant it\n"
+         "turns.\n"
+         "\n"
+         "DIFFICULTY sets the Specimens mixed into the old Tyrant's carcass and\n"
+         "the ROUNDS you get in the battle:\n"
+         "  Easy 5 and 12   Standard 7 and 10   Hard 7 and 9   Nobulous 8 and 8\n"
+         "The carcass is 13 parts on every rung. Turn the DIAL to your round\n"
+         "count and step it down one per battle round; at 0 with a Splice still\n"
+         "standing, the Rats lose.\n"
+         "\n"
          "BORROWING, one available non-Red die from another Rat, before either\n"
-         "Strategy roll. The more Upgrades you already hold, the worse the die\n"
+         "Strategy roll. The bigger your Prototyrant has grown, the worse the die\n"
          "you may take:\n"
-         "  0 Upgrades held: Purple, Blue, Green or Yellow\n"
-         "  1: Blue, Green or Yellow   2: Green or Yellow   3: Yellow only\n"
-         "Roll it by itself afterwards: on a miss it is banished from the game\n"
-         "for good, on a hit or Crit it goes home exhausted.\n\n"
-         "RED is communal, is never banished, and belongs to no workbench. The\n"
-         "Rat holding it may commit it normally. After use it is set aside\n"
-         "rather than exhausted, then placed on a NON-active Rat at the start\n"
-         "of the next turn; if it was not used, that step is skipped.\n\n"
+         "  0 grafts held: Purple, Blue, Green or Yellow\n"
+         "  1: Blue, Green or Yellow   2: Green or Yellow   3 or more: Yellow\n"
+         "Roll it by itself afterwards: on a miss it is banished from the game for\n"
+         "good, on a hit or Crit it goes home exhausted.\n"
+         "\n"
+         "RED is communal and is never banished. The Rat holding it may commit it\n"
+         "normally. In the LAB it is set aside after use rather than exhausted,\n"
+         "then placed on a NON-active Rat. In the BATTLE it counts toward the\n"
+         "exposed graft's dice cap and it EXHAUSTS like any other die, so it comes\n"
+         "back only on a recovery.\n"
+         "\n"
+         "WAKE-UP. Combine the old Tyrant's undrawn deck and its discard, shuffle\n"
+         "them, and stand them up as its SPLICES - its wall, five to eight deep\n"
+         "depending on how the lab went. Shuffle your grafts into their own pile.\n"
+         "Put the Health die on the Health track at 12: that is the\n"
+         "PROTOTYRANT'S Health and all four Rats share it.\n"
+         "\n"
          "THE BATTLE, a round:\n"
-         "1 Untap every Upgrade tapped last round.\n"
-         "2 Choose the attacking Rat from those still standing and move the\n"
-         "  Recovery die to it. Rat abilities are silent in the battle.\n"
-         "3 Commit as many dice from the shared pool as you like, honoring the\n"
-         "  commit color, and roll - no limit, but you only get REC + 2 back.\n"
-         "  A hit is 1 damage, a Crit 2; STR 2 gives a second Strategy roll.\n"
-         "4 Either tap ONE Upgrade or commit Red, not both; neither is also\n"
-         "  fine. A tapped card cannot absorb damage until it untaps.\n"
-         "5 Apply the damage left to right.\n"
-         "6 Recover REC + 2 of the dice you just committed. The rest exhaust.\n"
-         "7 At 0 Tyrant Health the Rats win; otherwise the Tyrant attacks.\n"
-         "Eight rounds and it breaks containment: eight attacks, five walls.\n\n"
+         "1 Reveal TWO grafts and the TOP Splice. Use and expose one graft; the\n"
+         "  other is set aside until the pile is next shuffled, where nothing can\n"
+         "  destroy it.\n"
+         "2 Choose the active Rat and move the Recovery die to it. Rat abilities\n"
+         "  are silent in the battle.\n"
+         "3 Commit dice from the shared pool UP TO THE EXPOSED GRAFT'S VALUE,\n"
+         "  honoring the commit color, and roll. A hit is 1 damage, a Crit 2;\n"
+         "  STR 2 gives a second Strategy roll. With no graft at all the cap is 3.\n"
+         "4 Either use the exposed graft's effect or commit Red, not both.\n"
+         "5 A SPLICE DOES NOT CHIP: meet its printed Value in THIS ONE attack or\n"
+         "  the attack is wasted, and nothing carries over to the next Splice.\n"
+         "  Break the last Splice and the Rats win immediately.\n"
+         "6 The old Tyrant retaliates even if you just broke the Splice facing\n"
+         "  you.\n"
+         "7 Step the dial down. At 0 with its wall still standing, you lose.\n"
+         "\n"
+         "THE RECOVERY PASS. Before committing dice the active Rat may pass: no\n"
+         "attack, and the exposed graft's effect forgone. The old Tyrant\n"
+         "retaliates as normal and the graft defends as normal - it may well\n"
+         "survive. Then recover REC + 2 dice from the exhausted pool. With the\n"
+         "rounds counting down, a pass is never free.\n"
+         "\n"
          "COMMIT COLOR. Every Tyrant Attack card prints a colored dot in its\n"
-         "title band (3 Green, 3 Yellow, 1 Blue), and the one that counts is\n"
-         "on top of the Attack discard - the card flipped up at setup supplies\n"
-         "the first. An attacking Rat must commit at least one die of that\n"
-         "color, or two dice of a single other color if the pool holds none of\n"
-         "it. Red never counts toward the commit color.\n\n"
-         "THE TYRANT TRACK, left to right: the Buff HP layer if you are using\n"
-         "one, the five Splices in a RANDOM order, then Health. That is the\n"
-         "order damage has to chew through, and a Splice does NOT chip - your\n"
-         "blow must meet its printed Value in this one attack or it bounces\n"
-         "off and the whole attack is wasted. Meet it and the Splice is\n"
-         "destroyed outright and the remainder carries on, and whatever\n"
-         "survives all five comes off Health. The Buff track and the dial are\n"
-         "the two things that DO chip.\n"
-         "Each Splice you break banishes one pool die of its own color, or any\n"
-         "die if none of that color is left. On the Tyrant a Splice is only\n"
-         "its Value: it never taps and a Splice's printed effect is never\n"
-         "used.\n\n"
-         "A RAT'S UPGRADE IS THE OTHER KIND OF ARMOR, and neither kind chips.\n"
-         "It stops an attack dead whatever the blow was worth, and it is\n"
-         "spent: discard it. At most one Upgrade is lost and nothing carries\n"
-         "over. Only a Rat with no untapped Upgrade takes damage to its\n"
-         "Health, and a Rat at 0 Health is knocked out, its Upgrades\n"
-         "discarded, and cannot be chosen to attack again.\n\n"
-         "The Tyrant's six dice come out of the Rats' own supply - 2 Purple /\n"
-         "2 Blue / 1 Green / 1 Yellow, kept in a bag and never exhausting -\n"
-         "and it draws as many as the highest Value among the Splices it still\n"
-         "holds, 2 if it holds none. In the BATTLE Red is not in the shared\n"
-         "pool and is not passed around: the attacking Rat may commit it, but\n"
-         "only if they do not tap an Upgrade as part of that attack.\n\n"
-         "The RECOVERY die marks the active Rat all game, and moves to the\n"
-         "attacking Rat in the battle. The Health DIAL runs the Tyrant track.\n"
-         "A Rat's own Health, STR and REC are printed on its card, so the\n"
-         "Strategy die is not used."),
+         "title band (3 Green, 3 Yellow, 1 Blue), and the one that counts is on\n"
+         "top of the Attack discard - which is empty until the Tyrant has\n"
+         "attacked, so the Rats' first attack is unrestricted. An attacking Rat\n"
+         "must commit at least one die of that color, or two dice of a single\n"
+         "other color if the pool holds none of it. Red never counts toward it.\n"
+         "\n"
+         "RETALIATION. The old Tyrant draws dice equal to THE EXPOSED SPLICE'S\n"
+         "VALUE - never more than its six - rolls them, and returns them to the\n"
+         "bag. A Splice you destroyed this round still sets that number, but its\n"
+         "printed effect does not fire; one that survived applies its effect too.\n"
+         "\n"
+         "THE EXPOSED GRAFT DEFENDS, whether or not you attacked with it. If the\n"
+         "attack MEETS OR EXCEEDS its Value the graft is destroyed - discard it,\n"
+         "and it is gone for the rest of the game. If it holds, it cycles back\n"
+         "into the Prototyrant's pile. Only damage with no graft to absorb it\n"
+         "reaches the Prototyrant's Health.\n"
+         "\n"
+         "NEITHER KIND OF ARMOR CHIPS. A Splice must be met in one blow; a graft\n"
+         "stops an attack dead whatever the blow was worth. The difference is the\n"
+         "price: a Splice stands until a big enough hit lands, a graft is\n"
+         "destroyed the moment a big enough attack finds it and never comes back.\n"
+         "The old Tyrant's armor is a wall. Yours is a stock, and it runs down.\n"),
         ("NAP quick reference",
          "Three Time Slots a day, Morning / Afternoon / Evening, then End of\n"
          "Day. A SLOT:\n"

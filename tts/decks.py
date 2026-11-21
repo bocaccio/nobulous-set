@@ -34,10 +34,10 @@ DECKS = [
          land=False, game='BAT', label='Specimens', card='Specimen'),
     dict(key='BAT_TyrantAttacks', count=7, w=7, h=1, back='CardBack_BAT_TyrantAttack',
          land=False, game='BAT', label='Tyrant Attacks', card='Tyrant Attack'),
-    # The file id stays BAT_BuffHP - renaming it moves the mod's baked
+    # The file id stays BAT_HealthTrack - renaming it moves the mod's baked
     # art URLs - but the CARD and its label are the Prototyrant's
     # shared Health track.
-    dict(key='BAT_BuffHP', count=1, w=1, h=1, back='CardBack_BAT_BuffHP', land=False,
+    dict(key='BAT_HealthTrack', count=1, w=1, h=1, back='CardBack_BAT_HealthTrack', land=False,
          game='BAT', label='Health Track'),
     # ---- NAP -------------------------------------------------------------
     dict(key='NAP_Apprentices', count=3, w=3, h=1, back='unique', land=True,
