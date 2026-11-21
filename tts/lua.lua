@@ -1043,7 +1043,7 @@ end
 -- The drop above clears a card that is lying still. A card that is
 -- still settling can come to rest OVER the die regardless, and the die
 -- is then under it with nothing on the table to say so - which is how
--- this was reported twice, once for the Health die under the Buff card
+-- this was reported twice, once for the Health die under the track card
 -- and once for the Red die under its Rat.
 --
 -- ASKED AFTER EVERYTHING HAS LANDED, so the measurement is of a table
