@@ -1794,8 +1794,14 @@ check("rules/bat.html: no commit cap left",
 # retirement is an invariant rather than a tidy-up, for the same reason the
 # "outer layer" wording was: two glosses on one stat is how the
 # Encounters/Experiment split started.
-check("rules/bat.html: one shared Health track, and the Tyrant's own Health is retired",
-      "the Prototyrant&rsquo;s Health and all" in hb
+# AND THE TRACK CARD IS OUT OF THE BOOK, 2026-11-22. The component, the
+# Wake-Up step that stood a die on it and the Fine-tuning sentence that
+# offered its fifteenth space all went; what is left is a number you
+# keep, which is what every other count in the set already is.
+check("rules/bat.html: one shared Health, and the Tyrant's own Health is retired",
+      "Prototyrant&rsquo;s <b>Health</b> at <b>12</b>" in hb
+      and "Health track card" not in hb
+      and "Health track has 15 spaces" not in hb
       # THE RETIRED NAMES, not the live one. A blind rename turned this
       # into "Health" not in hb, which can never pass in a book whose
       # subject is a Health track - and a check that cannot pass is worse
@@ -1803,8 +1809,9 @@ check("rules/bat.html: one shared Health track, and the Tyrant's own Health is r
       and "Buff HP" not in hb and "core Health" not in hb
       and "Tyrant Health</th>" not in hb
       and not re.search(r"\blayers?\b", hb, re.I))
-# ...AND IT IS THE NUMBER batrev STARTS THE TRACK AT.
-rulenum("bat", r"Health track at (\d+)", _brev["SHARED_HP_START"],
+# ...AND IT IS THE NUMBER batrev STARTS IT AT. Read out of the Wake-Up
+# step, which is the one sentence in the book that sets it.
+rulenum("bat", r"Prototyrant.s Health at (\d+)", _brev["SHARED_HP_START"],
         "the Prototyrant's starting Health")
 check("...and batrev pools it rather than tracking a Health per Rat",
       _brev["SHARED_HP"] is True, "SHARED_HP=%r" % (_brev.get("SHARED_HP"),))
@@ -3138,9 +3145,16 @@ check("the TTS notebook prints BAT's Specimens and rounds",
 # Buff HP here and called the card optional; both are retired, and a
 # notebook still saying either would teach a rule no card has.
 check("...and the Prototyrant's Health, which no rung varies",
-      "Health track at 12" in _mod
+      "Health to 12" in _mod
       and "Buff HP" not in _mod and "core Health" not in _mod
-      and "Health track card is optional" not in _mod,
+      and "Health track at" not in _mod
+      and "Health track card is optional" not in _mod
+      # ...AND IT DOES NOT TELL THEM TO COUNT ROUNDS ON THE DIAL. The
+      # dial is the Health as of 2026-11-21 and the plate beside it
+      # stopped being the round count on 2026-11-22, so a notebook
+      # saying either is teaching a table that is not there.
+      and "Turn the DIAL to your round" not in _mod
+      and "Nothing on the table counts" in _mod,
       "the notebook still prints a retired Health stat, or stopped "
       "printing the live one")
 _nap_line = "   ".join("%s %d and %d" % (l, sn["LEVELS"][l][0],
@@ -3576,21 +3590,49 @@ check("the readout's width has one owner",
       and not re.search(r"^BAT_READOUT_HW = [\d.]", _lua, re.M)
       and bool(re.search(r"^BAT_READOUT_HW = [\d.]+$",
                          _sv["LuaScript"], re.M)))
-# AND THE PLATE IS NOT THE DIAL. They were one number on two objects
-# until 2026-11-21 and one call wrote both; the Prototyrant's Health
-# and the rounds left are different quantities and either can end the
-# game, so nothing may write one when it means the other.
-check("the dial and the plate are two numbers, not one on two objects",
-      "function clockSet(" in _lua
-      and "drawReadout()" not in re.search(
-          r"function dialSet\(.*?\nend", _lua, re.S).group(0)
-      and "STATE.dial" not in re.search(
-          r"function drawReadout\(\).*?\nend\n", _lua, re.S).group(0),
-      "dialSet still draws the plate, or the plate still reads the dial")
+# AND THE PLATE IS THE DIAL'S OTHER FACE, 2026-11-22. They were two
+# numbers for a day - the Health and the rounds left - and Jon took the
+# round count off the table, so the plate shows what the disc reads.
+#
+# TWO OBJECTS SHOWING ONE NUMBER IS ONLY SAFE WHILE THERE IS NO PATH
+# THAT WRITES ONE ALONE, which is the invariant here and the reason the
+# old arrangement was worth a check of its own in the other direction.
+# So: dialSet draws the plate, drawReadout reads STATE.dial and nothing
+# else, the plate's buttons go through dialSet, and no clock survives.
+_dialset = re.search(r"function dialSet\(.*?\nend", _lua, re.S).group(0)
+_drawro = re.search(r"function drawReadout\(\).*?\nend\n",
+                    _lua, re.S).group(0)
+check("the plate is a face of the dial, not a number of its own",
+      "drawReadout()" in _dialset
+      and "STATE.dial" in _drawro
+      and "STATE.clock" not in _drawro
+      and "function dialPlus() dialSet(" in _lua
+      and "function dialMinus() dialSet(" in _lua
+      and "btn('-', 'dialMinus'" in _lua
+      and "btn('+', 'dialPlus'" in _lua
+      # ...AND THE CLOCK IS GONE FROM THE CODE, not merely unused: a
+      # clockSet still sitting there is a second writer waiting to be
+      # called. The comments that explain the removal are allowed to
+      # name it, which is why this reads the stripped source.
+      and not any(n in _lua_code for n in
+                  ("STATE.clock", "clockSet", "clockPlus", "clockMinus",
+                   "CLOCK_MAX")),
+      "the plate and the dial can still disagree")
+# ...AND NOTHING COUNTS THE ROUNDS, so both the setup and the battle
+# have to SAY that in so many words. The rule did not go away with the
+# counter - "if its last Splice is still standing when your difficulty's
+# rounds are used up, it finishes the job and the Rats lose" - so a table
+# that shows no count and says nothing about one is a table that has
+# quietly dropped a losing condition.
+check("...and the table says out loud that nothing counts the rounds",
+      _lua_code.count("keep the count yourselves") == 2
+      and "rounds are used up" in _RULES["bat"]
+      and "the Rats lose" in _RULES["bat"],
+      "the round count vanished without the table admitting it")
 check("...and the plate is named for the number it carries",
-      "READOUT_NAME = 'Round Counter'" in _lua
-      and '"Nickname": "Round Counter"' in _mod
-      and "Health Readout" not in _lua and "Health Readout" not in _mod)
+      "READOUT_NAME = 'Health Readout'" in _lua
+      and '"Nickname": "Health Readout"' in _mod
+      and "Round Counter" not in _lua and "Round Counter" not in _mod)
 
 # THE DIE THAT MARKS THE ACTIVE RAT IS THE ONE THE RULEBOOK NAMES.
 #
@@ -3663,11 +3705,55 @@ check("every deck that waits in a box is dealt by a finale, handed "
                 - BY_HAND - RETIRED),))
 check("...and a retired card says what carries its number instead",
       all(d in _lua for d in RETIRED)
-      and "The Health track card is not used: the dial" in _lua
+      and "The Health track card is not used and is not in the" in _lua
       # ...AND NOTHING STILL DEALS IT, which is the half a mention
       # cannot prove: a say() and a deckOut would both be here.
-      and "deckOut('Health Track'" not in _lua,
+      and "deckOut('Health Track'" not in _lua
+      # ...AND THE BOOK AGREES THAT IT IS RETIRED. The card is still
+      # printed and still in the bag - a player can fetch it - but it
+      # is no longer a component, so the mod must not point at the
+      # rulebook for it.
+      and "Health track card" not in _RULES["bat"],
       "the retired card is dealt, or nothing says why it is not")
+# AND THE SPECIMENS DECK IS NEVER ASKED FOR ALL BUT ONE OF ITSELF.
+#
+# TTS COLLAPSES A DECK OF ONE into the card inside it: the Deck object
+# is destroyed and a Card respawns in its place. moveN sends the
+# remainder home after taking what it was asked for, so a call that
+# leaves exactly one card is a call whose putHome is handed a handle
+# that no longer exists - and the card stands where the deck was. That
+# is pad(4), the staging band at the bottom edge of the felt. Jon
+# photographed it there on 2026-11-21 and again on 2026-11-22: a
+# Specimen lying across the exhausted corner, at Standard and at Hard,
+# which take 7 of the 8.
+#
+# tts/test_setup.py CANNOT CATCH THIS. Its deck model keeps a deck of
+# one alive and named, so putHome succeeds there and the card goes
+# home; every assertion about the band passed while the table had a
+# card lying in it. Modelling the collapse is the real fix and is not
+# done - so this is a SOURCE check, and it is the only thing standing
+# between that card and the felt.
+#
+# THE PREDICATE IS THE CALL, not a name: setupBAT hands moveN the whole
+# deck, and no moveN call anywhere is handed BAT's per-rung count.
+_spec_n = len(_gbat["SPECIMENS"])
+_moveN_args = re.findall(r"moveN\([^;]*?,\s*([A-Za-z_][\w.\[\]']*)\)",
+                         _lua_code)
+check("BAT asks moveN for the whole Specimens deck, never all but one",
+      ("upg = moveN(deckOut('Specimens', pad(4)), upg, BAT_SPECIMENS)"
+       in _lua_code)
+      and ("BAT_SPECIMENS = %d" % _spec_n) in _lua_code
+      and "spec" not in _moveN_args
+      # ...AND THE RUNG'S COUNT IS REACHED BY TAKING THE SURPLUS BACK
+      # OUT, one card per step, after the pool is shuffled - so which
+      # Specimens go back to the box is random rather than whichever
+      # two the deck order put first.
+      and "if held > spec and pick then dropCard(upg, pick) end" in _lua_code
+      and _lua_code.index("if upg then upg.shuffle() end")
+      < _lua_code.index("if held > spec and pick"),
+      "%d Specimens printed; moveN counts in lua.lua: %r"
+      % (_spec_n, _moveN_args))
+
 check("...and the setup really tells them to build the clock",
       "BUILD THE CLOCK BEFORE YOU START" in _lua
       and "shuffle it" in _lua and "underneath the first six" in _lua,
@@ -4819,13 +4905,18 @@ check("the Tyrant battle carries the dial rather than resetting it",
       and "or PROTO_HP" in _lua
       and re.search(r"function dialRead\(\).*?getRotationValue", _lua, re.S)
       and "CARRIED, NOT RESET" in _lua
-      # ...AND THE ROUNDS ARE THE OTHER NUMBER, set from the rung every
-      # time, because the lab has no round clock to carry: the
-      # Experiment deck is the lab's clock. "If its last Splice is still
-      # standing when your difficulty's rounds are used up, it finishes
-      # the job and the Rats lose."
+      # ...AND THE ROUNDS ARE STILL A REAL LIMIT, even though nothing
+      # on the table counts them: the battle reads the rung's number
+      # and announces it. "If its last Splice is still standing when
+      # your difficulty's rounds are used up, it finishes the job and
+      # the Rats lose."
       and "local rounds = BAT_DIFF[STATE.difficulty][2]" in _lua
-      and "readoutOut(rounds)" in _lua
+      and "' ROUNDS.' .." in _lua
+      # ...AND readoutOut TAKES NO NUMBER, so nothing can hand it one
+      # that is not the dial. A predicate a name cannot satisfy: this
+      # is the call, and the only argument it ever took was the rounds.
+      and "function readoutOut()" in _lua
+      and not re.search(r"readoutOut\([^)]", _lua_code)
       and "rounds are used up" in _RULES["bat"]
       and "the Rats lose" in _RULES["bat"]
       # ...AND THE MODEL BOUNDS THE BATTLE BY IT.

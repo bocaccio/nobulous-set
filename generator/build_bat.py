@@ -27,7 +27,7 @@ EXPERIMENTS = [
     ("Endurance Trial", 5, "STR is 1 for this Experiment.", "The experiment is repeatable. Unfortunately, so is the overtime."),
     ("Field Retrofit Trial", 5, "If successful, you may swap one of the active Rat's Upgrades with one of the revealed Upgrades. Specimens cannot be swapped.", "The replacement fits perfectly once you stop asking what it replaced."),
     ("Methodological Optimization", 5, "Reduce the Target to 0. The old Tyrant reclaims the stronger revealed part and your Prototyrant grafts the weaker. If tied, you choose which it takes.", "Why test both prototypes when the Prototyrant can test the better one?"),
-    ("Degraded Tissue Study", 5, "If successful, raise the Prototyrant's Health track by 2.", "The tissue tears neatly along the dotted line Nobulous insists he did not draw."),
+    ("Degraded Tissue Study", 5, "If successful, raise the Prototyrant's Health by 2.", "The tissue tears neatly along the dotted line Nobulous insists he did not draw."),
 ]
 
 UPGRADES = [
@@ -148,7 +148,7 @@ print("Experiments", render_deck('BAT_Encounters', cards, 'BAT', back='CardBack_
 # knowing which.
 wake = [C('Wake-Up', 'Build-a-Tyrant &middot; the old Tyrant stirs',
           '<div class="txt c">The Lab Phase ends at once.</div>'
-          '<div class="txt">Combine the old Tyrant&rsquo;s undrawn deck and its discard, shuffle them, and stand them up as its Splices. Shuffle the Prototyrant&rsquo;s grafts into their own pile. Put the Health die on the Health track at 12.</div>',
+          '<div class="txt">Combine the old Tyrant&rsquo;s undrawn deck and its discard, shuffle them, and stand them up as its Splices. Shuffle the Prototyrant&rsquo;s grafts into their own pile. Set the Prototyrant&rsquo;s Health to 12.</div>',
           'Whatever you have built is what you fight with.',
           flavor='The tank stops bubbling. Something in it is listening.')]
 print("Wake-Up", render_deck('BAT_WakeUp', wake, 'BAT', back='CardBack_BAT_Encounter'))

@@ -116,7 +116,7 @@ window.BAT_EXPERIMENTS = [
   {
     "name": "Degraded Tissue Study",
     "target": 5,
-    "effect": "If successful, raise the Prototyrant's Health track by 2.",
+    "effect": "If successful, raise the Prototyrant's Health by 2.",
     "flavor": "The tissue tears neatly along the dotted line Nobulous insists he did not draw."
   }
 ];

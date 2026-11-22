@@ -496,7 +496,7 @@ def lua_header(box_guids):
     home['BAT Table'] = 'BAT'
     home['AoS Table'] = 'AoS'
     home['IMP Table'] = 'NRJ'
-    home['Round Counter'] = 'BAT'
+    home['Health Readout'] = 'BAT'
     # THE TWO FACES. Neither is dealt - both lie in the row at the
     # bottom of the table - but each has a box, because a setup stows
     # the one its game does not read. BAT reads the Dial, NAP reads
@@ -1178,8 +1178,9 @@ def readout_object():
         png_size(os.path.join(SHEETS, READOUT_IMAGE)))
     return {"GUID": guid(), "Name": "Custom_Tile",
             "Transform": xf(0, 1.2, 0, (0, 180, 0), READOUT_HW / aspect),
-            "Nickname": "Round Counter",
-            "Description": "Rounds left, with a button each side.",
+            "Nickname": "Health Readout",
+            "Description": "The Prototyrant's Health, with a button each"
+                           " side. The dial beside it is the same number.",
             "ColorDiffuse": {"r": 1.0, "g": 1.0, "b": 1.0},
             "Locked": True, "Grid": False, "Snap": False,
             "CustomImage": {"ImageURL": url(READOUT_IMAGE),
@@ -1403,9 +1404,12 @@ def notebook():
          "DIFFICULTY sets the Specimens mixed into the old Tyrant's carcass and\n"
          "the ROUNDS you get in the battle:\n"
          "  Easy 5 and 12   Standard 7 and 10   Hard 7 and 9   Nobulous 8 and 8\n"
-         "The carcass is 13 parts on every rung. Turn the DIAL to your round\n"
-         "count and step it down one per battle round; at 0 with a Splice still\n"
-         "standing, the Rats lose.\n"
+         "The carcass is 13 parts on every rung. Nothing on the table counts\n"
+         "the rounds, so keep the count yourselves: with a Splice still\n"
+         "standing when they run out, the Rats lose.\n"
+         "\n"
+         "THE DIAL AND THE PLATE BESIDE IT are both the PROTOTYRANT's Health,\n"
+         "which starts at 12. Click the plate's buttons: the disc follows.\n"
          "\n"
          "BORROWING, one available non-Red die from another Rat, before either\n"
          "Strategy roll. The bigger your Prototyrant has grown, the worse the die\n"
@@ -1424,7 +1428,7 @@ def notebook():
          "WAKE-UP. Combine the old Tyrant's undrawn deck and its discard, shuffle\n"
          "them, and stand them up as its SPLICES - its wall, five to eight deep\n"
          "depending on how the lab went. Shuffle your grafts into their own pile.\n"
-         "Put the Health die on the Health track at 12: that is the\n"
+         "Set the Prototyrant's Health to 12: that is the\n"
          "PROTOTYRANT'S Health and all four Rats share it.\n"
          "\n"
          "THE BATTLE, a round:\n"

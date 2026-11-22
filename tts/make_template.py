@@ -284,9 +284,14 @@ def draw_bat(d, lua):
     # shuffled." Both cards live in this one space, which is why there
     # is no SET ASIDE space any more - two cards, one box, and which is
     # which is which one you are using.
+    #
+    # AND THE FELT DOES NOT SAY SO. It carried that sentence as a second
+    # line under the label until 2026-11-22; a mat that explains a rule
+    # is a mat you read once and then read past, and the two snap points
+    # in the space say "two cards here" without any words at all.
     label(d, "GRAFT\nPILE", float(g.batGraftDeckX()), rz(deck_row),
           fit=half * 1.8)
-    label(d, "REVEALED GRAFTS\nuse one · set one aside",
+    label(d, "REVEALED\nGRAFTS",
           float(g.batGraftShowX()), rz(deck_row), fit=wide)
     label(d, "BATTLE POOL", -float(g.BAT_TRAY_X), float(g.batTrayZ()),
           fit=float(g.BAT_TRAY_HW) * 1.6)
@@ -306,8 +311,10 @@ def draw_bat(d, lua):
           fit=half * 1.8)
     # "That dot is the commit colour. The one that counts is on the top
     # card of the Attack discard" - so the discard is a space you read,
-    # not a pile you forget about.
-    label(d, "ATTACK\nDISCARD\ncolour", rx(int(g.BAT_ATTACK_UP)),
+    # not a pile you forget about. It said "colour" on a third line
+    # until 2026-11-22; the card lying there is face up with the dot on
+    # it, which is the reminder.
+    label(d, "ATTACK\nDISCARD", rx(int(g.BAT_ATTACK_UP)),
           rz(2), fit=half * 1.8)
     label(d, "BANISHED\nDICE", rx(int(g.BAT_BANISH_COL)), rz(2),
           fit=half * 1.8)
@@ -322,8 +329,10 @@ def draw_bat(d, lua):
     #
     # ONE SPACE, TWO JOBS, because the two phases ask the same thing of
     # it: "Reveal 2 parts from the old Tyrant's deck" in the lab, and
-    # the top Splice of its wall in the battle.
-    label(d, "REVEALED PARTS\nthen the exposed Splice",
+    # the top Splice of its wall in the battle. The felt named the
+    # second job in a line of small type until 2026-11-22 and names
+    # neither now: the battle says which it is, once, in the chat.
+    label(d, "REVEALED\nPARTS",
           float(g.batTyrantShowX()), rz(deck_row), fit=wide)
     # ONE PILE, TWO NAMES. It is the carcass the lab draws from, and at
     # Wake-Up what is left of it is shuffled with everything the old
@@ -338,22 +347,22 @@ def draw_bat(d, lua):
     label(d, "TYRANT\nRECLAIMED", float(g.batTyrantDeckX()), rz(trash_row),
           fit=half * 1.8)
 
-    # ---- AND THE TWO NUMBERS, side by side under the battle pool.
-    # "It wins if the Prototyrant's Health reaches 0, or if its last
-    # Splice is still standing when the rounds run out": two ways to
-    # lose, so two faces, and neither is a card.
+    # ---- AND ONE NUMBER ON TWO FACES, under the battle pool: the disc
+    # and the plate beside it are both the Prototyrant's Health, so they
+    # share a label rather than carrying one each. They were two numbers
+    # for a day - the plate counted the rounds - and Jon took the round
+    # count off the table on 2026-11-22.
     circle(d, float(g.BAT_CHIP_X), float(g.BAT_CHIP_Z), 1.1)
-    # THE FIT IS THE GAP ITSELF, measured off the two things either side
-    # of the dial rather than guessed at here: a label that has to shrink
-    # fails this build, and PROTOTYRANT is a long word.
-    dial_fit = (rx(1) - half
-                - (float(g.BAT_READOUT_X) + float(g.BAT_READOUT_HW)) - 0.4)
-    label(d, "PROTOTYRANT\nHEALTH", float(g.BAT_CHIP_X),
-          float(g.BAT_CHIP_Z) - 2.0, fit=dial_fit)
     card(d, float(g.BAT_READOUT_X), float(g.BAT_READOUT_Z),
          float(g.BAT_READOUT_HW), 0.95, PEN["snap"], 4)
-    label(d, "ROUNDS\nLEFT", float(g.BAT_READOUT_X),
-          float(g.BAT_READOUT_Z) - 2.4, fit=float(g.BAT_READOUT_HW) * 2.0)
+    # THE FIT IS THE GAP ITSELF, measured off the two boxes either side
+    # of the pair rather than guessed at here: a label that has to shrink
+    # fails this build, and PROTOTYRANT is a long word.
+    hp_x = (float(g.BAT_CHIP_X) + float(g.BAT_READOUT_X)) / 2.0
+    hp_fit = 2.0 * min(hp_x - (float(g.batGraftDeckX()) + half),
+                       (rx(1) - half) - hp_x) - 0.8
+    label(d, "PROTOTYRANT\nHEALTH", hp_x,
+          float(g.BAT_CHIP_Z) - 2.1, fit=hp_fit)
 
     # WHERE THE EXHAUSTED CORNER STOPS AT EITHER END, read off the
     # script rather than guessed at here: the whole bottom band is free

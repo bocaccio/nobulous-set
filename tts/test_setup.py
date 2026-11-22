@@ -1290,9 +1290,14 @@ def layout_assertions():
                     # spaces beside the Rats, and a snap point for each
                     # of the Health track's fifteen cells; the Rats hold
                     # no cards and there is no track card now.
+                    #
+                    # AND A REVEAL SPACE IS TWO, one under each card:
+                    # both halves reveal two at a time, so a single
+                    # snap in the middle of that box is a snap the two
+                    # cards would have to share. Jon, 2026-11-22.
                     rows = int(g.BAT_ROWS)
                     cols = len(list(g.BAT_RAT_DICE.values()))
-                    exp = 2 * 4 + 7 + (3 + cols) * rows + 1
+                    exp = 2 * 4 + 2 + 7 + (3 + cols) * rows + 1
                 elif which == "AoS":
                     # The Technician, the two decks and the two
                     # cards they reveal, the Advanced Programs and
@@ -2068,12 +2073,36 @@ def bat_assertions():
          float(g.CHIP_DIAL[int(g.BAT_PROTO_HP)]))
     want("...and the dial has an angle for every number it prints",
          sorted(int(k) for k in dict(g.CHIP_DIAL)), list(range(21)))
-    # THE PLATE IS A DIFFERENT NUMBER, which is the whole point of
-    # having two: the rounds are the other way to lose.
-    want("...while the plate beside it reads this difficulty's rounds",
-         int(g.STATE.clock), int(g.BAT_DIFF[g.STATE.difficulty][2]))
-    want("...and the two are not the same number on Standard",
-         int(g.STATE.clock) != int(g.STATE.dial), True)
+    # AND THE PLATE BESIDE IT IS THAT SAME NUMBER. Jon's call,
+    # 2026-11-22: the rounds came off the table, so the plate has no
+    # second quantity of its own to drift away from the disc with.
+    #
+    # BY WHAT IS PRINTED ON IT, not by a variable. The middle button's
+    # LABEL is the only thing a player can read, and a drawReadout that
+    # was never called would leave STATE agreeing with the dial and the
+    # plate showing nothing at all.
+    _plate = [o for o in w.table.values() if o.name == "Health Readout"]
+    want("...and the plate beside it shows that same Health",
+         (len(_plate),
+          [b["label"] for b in _plate[0].buttons] if _plate else None),
+         (1, ["-", str(int(g.BAT_PROTO_HP)), "+"]))
+    # ...AND ITS BUTTONS TURN THE DISC. A predicate a name cannot
+    # satisfy: click the minus and the disc's own rotation has to move
+    # with the label. Two objects showing one number is only safe while
+    # there is no path that writes one of them alone, and this is the
+    # path a player uses.
+    g.dialMinus()
+    _down = g.marker("Dial")
+    want("...and a click on the plate turns the dial with it",
+         (int(g.STATE.dial),
+          _down.rot[1] if _down and _down.rot else None,
+          [b["label"] for b in _plate[0].buttons][1]),
+         (int(g.BAT_PROTO_HP) - 1,
+          float(g.CHIP_DIAL[int(g.BAT_PROTO_HP) - 1]),
+          str(int(g.BAT_PROTO_HP) - 1)))
+    g.dialPlus()
+    want("...and back up again, which is where the rest of this leaves it",
+         int(g.STATE.dial), int(g.BAT_PROTO_HP))
     # THE CHIP IS NAP'S AND GOES IN THE NAP BOX. It used to stay in
     # the row at the bottom of the table through a game of BAT, which
     # is a thing with five colours on it that this game never reads.
@@ -2368,17 +2397,15 @@ def on_card_assertions():
          [card_top_under(by[n].pos[0], by[n].pos[2])
           for n in ("Health", "Strategy")], [None, None])
 
-    # THE TWO NUMBERS THE BATTLE SETS, on every rung. The Health die
+    # THE ONE NUMBER THE BATTLE SETS, on every rung. The Health die
     # used to stand on a printed track card here; the dial carries the
-    # Prototyrant's Health as of 2026-11-21 and the plate beside it
-    # carries the rounds, so what has to hold is that the battle writes
-    # BOTH and writes DIFFERENT things to them.
+    # Prototyrant's Health as of 2026-11-21, and as of 2026-11-22 the
+    # plate beside it is that same number's readable face rather than a
+    # round count of its own.
     #
-    # The two were one number on two objects for a long time, and a
-    # setup that read the wrong one of them printed the same figure
-    # twice. That is what the last check here is for: on three of the
-    # four rungs the rounds and the Health differ, so a battle that
-    # wrote one number to both would fail it.
+    # SO WHAT HAS TO HOLD IS THAT THEY AGREE, on the disc, in STATE and
+    # in the figure printed on the plate - and that the ROUNDS are
+    # announced rather than displayed, because nothing counts them now.
     #
     # AND AGAINST THE NUMBERS lua.lua ITSELF CARRIES, not a copy here:
     # BAT_PROTO_HP and BAT_DIFF are the script's own.
@@ -2388,25 +2415,32 @@ def on_card_assertions():
         drain(wS)
         _hp = int(gS.BAT_PROTO_HP)
         _rounds = int(gS.BAT_DIFF[_lv][2])
-        # THE LAB SETS BOTH ALREADY, so a player can see what is coming;
-        # neither is live until the battle.
+        # THE LAB SETS IT ALREADY, so a player can see what is coming;
+        # it is not live until the battle.
+        def _face(_w):
+            _p = [o for o in _w.table.values()
+                  if o.name == "Health Readout"]
+            return [b["label"] for b in _p[0].buttons] if _p else None
         want("%s sets the dial to the Prototyrant's Health" % _lv,
-             int(gS.STATE.dial), _hp)
-        want("...and the plate to %s's round count" % _lv,
-             int(gS.STATE.clock), _rounds)
+             (int(gS.STATE.dial), _face(wS)),
+             (_hp, ["-", str(_hp), "+"]))
         gS.btnFinale()
         drain(wS)
         want("%s's battle keeps the dial on the Health" % _lv,
-             int(gS.STATE.dial), _hp)
-        want("...and sets the plate to its rounds" % (),
-             int(gS.STATE.clock), _rounds)
+             (int(gS.STATE.dial), _face(wS)),
+             (_hp, ["-", str(_hp), "+"]))
         _dial = gS.marker("Dial")
         want("...and turns the disc itself to that Health" % (),
              _dial.rot[1] if _dial and _dial.rot else None,
              float(gS.CHIP_DIAL[_hp]))
-        if _rounds != _hp:
-            want("...and the two are not the same number on %s" % _lv,
-                 int(gS.STATE.clock) != int(gS.STATE.dial), True)
+        # AND THE ROUNDS ARE SAID, NOT SHOWN. Nothing on the table
+        # carries them, so the one place a player is told how many
+        # they get is the chat - and it has to be THIS rung's number.
+        want("...and says how many rounds %s gives, since nothing"
+             " counts them" % _lv,
+             [True for m in wS.said
+              if "TYRANT BATTLE" in m and ("%d ROUNDS" % _rounds) in m
+              and "keep the count yourselves" in m], [True])
         # NO TRACK CARD, EITHER PHASE. Named rather than counted: a
         # deal left in by accident is one more card, and a count would
         # not notice it.
@@ -2539,12 +2573,12 @@ def battle_dial_assertions():
     and a battle announcing a Prototyrant at 0 Health would be worse
     than one that resets - so neither fallback can be dropped.
 
-    THE ROUNDS ARE NOT THE DIAL'S and never carry: the lab has no
-    round clock - "the Experiment deck is the clock" - so the plate is
-    set to the difficulty's own number every time, and these cases
-    cannot touch it. That is checked too, because the two numbers were
-    one number on two objects until 2026-11-21 and the failure this
-    guards against is them becoming one again.
+    AND THE PLATE CARRIES WHATEVER THE DIAL DOES, because it is the
+    same number's other face as of 2026-11-22. That is checked here
+    too: a battle that carried the disc but redrew the plate from the
+    rulebook's 12 would show a player two different Healths, which is
+    the failure the round count used to make impossible by being a
+    different quantity.
     """
     def battle(setup):
         w, g = start("Standard", 0)
@@ -2565,8 +2599,10 @@ def battle_dial_assertions():
     want("...and the battle says so rather than correcting it",
          [True for m in said if "CARRIED, NOT RESET" in m
           and str(hp + 2) in m], [True])
-    want("...while the plate still reads the difficulty's rounds",
-         int(g.STATE.clock), int(g.BAT_DIFF["Standard"][2]))
+    want("...and the plate carries the same 2 the disc did",
+         [b["label"] for b in
+          [o for o in g.READOUT and [g.READOUT] or []][0].buttons],
+         ["-", str(hp + 2), "+"])
 
     # A TABLE RELOADED MID-GAME. STATE is gone and the disc is not.
     def reloaded(w, g, hp):
@@ -3037,11 +3073,11 @@ def finale_assertions():
              sorted(o.name for o in w.table.values()
                     if o.name.endswith(" Rules")
                     or o.name in ("Credit Record", "Banked Opportunities",
-                                  "Round Counter")),
+                                  "Health Readout")),
              sorted(n for n in (
                  {"NAP": ["NAP Rules", "Credit Record",
                           "Banked Opportunities"],
-                  "BAT": ["BAT Rules", "Round Counter"],
+                  "BAT": ["BAT Rules", "Health Readout"],
                   "AoS": ["AoS Rules"]}[game])))
         want("%s: ...and raised no setup error" % game,
              [m for m in w.said if "Setup error" in m][:2], [])

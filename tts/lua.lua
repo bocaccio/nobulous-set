@@ -332,6 +332,13 @@ BAT_PROTOCOL, BAT_NOTES = 1, 2
 -- The old Tyrant's carcass: 13 parts on every rung.
 BAT_CARCASS = 13
 
+-- AND HOW MANY SPECIMENS ARE PRINTED, which is not how many a rung
+-- uses: "8 Specimen cards" in the components, 5, 7, 7 or 8 of them in
+-- the carcass by difficulty. The setup deals all eight and puts the
+-- surplus back, so this is the deck's size and BAT_DIFF holds the
+-- rung's share.
+BAT_SPECIMENS = 8
+
 -- AND THE PROTOTYRANT'S HEALTH, also on every rung: "Put the Health
 -- die on the Health track at 12. That is the Prototyrant's Health and
 -- all four Rats share it." The difficulty does not touch it - what
@@ -363,17 +370,21 @@ BAT_TYRANT_BAG = { Purple = 2, Blue = 2, Green = 1, Yellow = 1 }
 BAT_CHIP_X = -13.00
 BAT_CHIP_Z = ROW_TIER
 
--- AND THE ROUND COUNTER BESIDE IT, which is a different number. "If
--- its last Splice is still standing when your difficulty's rounds are
--- used up, it finishes the job and the Rats lose", so the rounds are
--- the other way to lose and they need a face of their own.
+-- AND THE PLATE BESIDE IT IS THE DIAL'S FACE, not a second number.
+-- Jon's call, 2026-11-22.
 --
 -- THE DIAL IS EXACT AND UNREADABLE and the plate is the opposite: 21
 -- numbers round a disc's rim is the right object for a quantity you
--- turn by hand, and one big figure with a button either side is the
--- right one for a count you click down once a round. They used to be
--- the same number on two objects, which is why one call wrote both;
--- now they are two numbers and nothing writes the dial but a player.
+-- turn by hand, and one big figure is the right one for a quantity
+-- four players read across a table. They are the SAME quantity, so
+-- the plate's buttons turn the disc and the disc redraws the plate -
+-- one number, two faces, and no way for them to disagree.
+--
+-- THE ROUNDS ARE NOT ON THE TABLE AT ALL. They were on this plate for
+-- a day; nothing counts them now, which is a thing to know rather than
+-- a thing this file can fix - "if its last Splice is still standing
+-- when your difficulty's rounds are used up, it finishes the job and
+-- the Rats lose" is still the rule and the players keep the count.
 BAT_READOUT_X = -18.30
 BAT_READOUT_Z = BAT_CHIP_Z
 
@@ -1842,6 +1853,25 @@ function moveN(src, dst, n)
     if dst then dst = gatherInto(dst, src) else dst = src end
     return dst
   end
+  -- A REMAINDER OF ONE IS A CARD, NOT A DECK, and the putHome below
+  -- cannot cope with it: TTS collapses a deck of one into the card
+  -- inside it, so the Deck handle this is holding is destroyed in the
+  -- same frame and the card stays standing wherever the deck was. That
+  -- is the staging band, which is the bottom edge of the felt.
+  --
+  -- IT IS NOT FIXED HERE, deliberately. Sending the one surplus card
+  -- home instead and giving the keepers as a deck does fix it, and it
+  -- also changes what the BOX ends up holding - a loose card rather
+  -- than a named deck - which NAP's FINF cards travel in and out of
+  -- three times a game. Measured 2026-11-22: that change duplicates a
+  -- FINF card by the third setting.
+  --
+  -- SO THE ONE CALLER THAT CAN LEAVE A REMAINDER OF ONE CUTS ITS OWN
+  -- DECK FIRST - setupBAT's Specimens, one card per frame, the way the
+  -- Upgrades surplus right below it already goes home. Anything new
+  -- that calls this with count - n == 1 strands a card; tts/
+  -- test_setup.py fails on a card left in the band, which is how this
+  -- one was finally caught.
   for _ = 1, n do
     local c = src.takeObject({position = OFF, smooth = false})
     if c and dst then dst = gatherInto(dst, c) end
@@ -2042,8 +2072,12 @@ function batBoxes()
   local function box(x, z)
     table.insert(out, {x = x, z = z, hw = BAT_BOX_HW, hd = BAT_BOX_HD})
   end
+  -- TWO CARDS WIDE, AND IT SAYS SO. `two` is what makes batSnaps put a
+  -- snap point under each of the cards a reveal space holds instead of
+  -- one in the middle, where two cards cannot both go.
   local function wide(x, z)
-    table.insert(out, {x = x, z = z, hw = BAT_SHOW_HW, hd = BAT_BOX_HD})
+    table.insert(out, {x = x, z = z, hw = BAT_SHOW_HW, hd = BAT_BOX_HD,
+                       two = true})
   end
   local function tray(x)
     table.insert(out, {x = x, z = batTrayZ(),
@@ -2082,7 +2116,18 @@ function batSnaps()
     table.insert(pts, {position = {x, 1.0, z},
                        rotation = {0, 0, 0}, rotation_snap = false})
   end
-  for _, b in ipairs(batBoxes()) do at(b.x, b.z) end
+  -- EVERY DRAWN SPACE GETS ONE, and a reveal space gets two: "Reveal
+  -- two grafts from the Prototyrant's pile" and "Reveal 2 parts from
+  -- the old Tyrant's deck" both put two cards in one box, and a single
+  -- snap in the middle of it is a snap they would have to share.
+  for _, b in ipairs(batBoxes()) do
+    if b.two then
+      at(b.x - BAT_COL / 2, b.z)
+      at(b.x + BAT_COL / 2, b.z)
+    else
+      at(b.x, b.z)
+    end
+  end
   for r = 1, BAT_ROWS do
     at(batRatX(r), batRatZ(r))
     at(batMarkX(r), batMarkZ())
@@ -2550,10 +2595,48 @@ function setupBAT()
   -- a handle that may no longer be the deck on the table - and the
   -- cut below then read its name as empty and left the carcass
   -- nameless, which is a deck Pack up cannot find a box for.
+  -- ALL EIGHT GO IN, and the rung's surplus comes back out by name.
+  --
+  -- IT USED TO ASK FOR spec OF THEM, which is 5, 7, 7 or 8 - and at
+  -- Standard and Hard that leaves a remainder of ONE. TTS collapses a
+  -- deck of one into the card inside it, so the handle moveN sent home
+  -- was destroyed in the same frame and the eighth Specimen stood in
+  -- the staging band, at the bottom edge of the felt, for the whole
+  -- game. Jon saw it there on 2026-11-21 and again on 2026-11-22.
+  --
+  -- ASKED FOR ALL OF THEM, moveN gives the DECK and never takes a card
+  -- out of it, so there is no remainder to strand. The deal and the
+  -- merge stay in ONE step for the reason below: a pad is the staging
+  -- band at y 14, and a deck still waiting there is a deck FALLING.
   step(function()
-    upg = moveN(deckOut('Specimens', pad(4)), upg, spec)
+    upg = moveN(deckOut('Specimens', pad(4)), upg, BAT_SPECIMENS)
   end)
   step(function() if upg then upg.shuffle() end end)
+  -- ...AND THEN THE SURPLUS COMES BACK OUT, one card per step, which is
+  -- one card per frame: several cards dropped at OFF in one frame land
+  -- on each other and TTS builds a nameless deck out of them. The
+  -- Upgrades cut below spells that out at length.
+  --
+  -- BY NAME, because the pool is 16 Upgrades and 8 Specimens and the
+  -- top of it is any card at all: this counts the Specimens that are
+  -- left and drops one only while there are more than the rung asks
+  -- for. AFTER THE SHUFFLE, so WHICH of the eight go back to the box
+  -- is random - taking the first that matches an unshuffled pool is
+  -- taking the same two Specimens out of every Standard game.
+  for _ = 1, BAT_SPECIMENS do
+    step(function()
+      if not upg then return end
+      local one = CARD_NAME['Specimens'] or 'Specimen'
+      local held, pick = 0, nil
+      for _, e in ipairs(upg.getObjects()) do
+        if isCardOf(e.nickname, one) then
+          held = held + 1
+          pick = pick or e.nickname
+        end
+      end
+      if held > spec and pick then dropCard(upg, pick) end
+    end)
+  end
   -- AND THEN IT IS CUT TO THIRTEEN. The old Tyrant's carcass is 13 parts
   -- on every rung - rules/bat.html's setup - so the surplus comes off a
   -- shuffled pool and goes back to the box, which makes WHICH parts are
@@ -2605,14 +2688,15 @@ function setupBAT()
 
   step(function()
     -- THE DIAL IS THE PROTOTYRANT'S HEALTH, and the plate beside it is
-    -- the round count: two ways to lose, two faces. Jon's placing,
-    -- 2026-11-21, and it retires the Health track card from the felt.
+    -- the same number's readable face. Jon's placing, 2026-11-21, and
+    -- it retires the Health track card from the felt; the plate joined
+    -- it on 2026-11-22.
     --
-    -- NEITHER NUMBER IS LIVE IN THE LAB. "Put the Health die on the
-    -- Health track at 12" is a Wake-Up step and the rounds are the
-    -- battle's, so both are set here to what the battle will want and
-    -- neither is read until then. Set rather than left at 0, because a
-    -- dial reading 0 through a whole lab phase reads as a dead machine.
+    -- IT IS NOT LIVE IN THE LAB. "Put the Health die on the Health
+    -- track at 12" is a Wake-Up step, so this is set here to what the
+    -- battle will want and not read until then. Set rather than left
+    -- at 0, because a dial reading 0 through a whole lab phase reads
+    -- as a dead machine.
     --
     -- AN OBJECT OF ITS OWN, in the BAT bag. It was the Chip's other
     -- face for a while; two objects cost one more thing to pack away
@@ -2623,7 +2707,7 @@ function setupBAT()
     setMarker('Dial', BAT_CHIP_X, BAT_CHIP_Z, nil,
               {CHIP_DIAL[PROTO_HP] or CHIP_DIAL[0], 0})
     STATE.dial = PROTO_HP
-    readoutOut(rounds)
+    readoutOut()
   end)
 
   step(function()
@@ -2662,9 +2746,11 @@ function setupBAT()
         ' across the top with a Purple, Blue, Green and Yellow die' ..
         ' beside each and the Red die on a random one -- pick a side' ..
         ' for each Rat. The dial is the PROTOTYRANT\'s Health, set to ' ..
-        PROTO_HP .. ' ready for the battle; the plate beside it is the' ..
-        ' round count, and ' .. STATE.difficulty .. ' gives you ' ..
-        rounds .. ' of them once the old thing wakes.' ..
+        PROTO_HP .. ' ready for the battle, and the plate beside it is' ..
+        ' the same number with a button each side -- click those' ..
+        ' rather than turning the disc. ' .. STATE.difficulty ..
+        ' gives you ' .. rounds .. ' ROUNDS once the old thing wakes.' ..
+        ' Nothing on the table counts them, so keep the count yourselves.' ..
         (STATE.tier >= 1 and ' TIER I: your Experimental Protocol is face-up.' or '') ..
         (STATE.tier >= 2 and ' TIER II: 6 ordinary Upgrades out, the 6 Modifications in.' or '') ..
         (STATE.tier >= 3 and (' TIER III: the 6 Research Notes are a face-up' ..
@@ -3748,7 +3834,7 @@ function startBattle()
   -- THE DIAL IS WHAT THE DIAL READS, not what the rulebook's 12 says.
   -- The dial carries the PROTOTYRANT's Health, and one Experiment in
   -- the deck writes to it: Degraded Tissue Study, number 19, "If
-  -- successful, raise the Prototyrant's Health track by 2." The raise
+  -- successful, raise the Prototyrant's Health by 2." The raise
   -- is earned in the lab and is meant to be spent in the battle;
   -- simulation/batrev.py and playtest/dist/bat_rules.js both carry it,
   -- and a battle that reset the dial to 12 would throw it away. Jon
@@ -3765,9 +3851,10 @@ function startBattle()
   -- 0 after a reload, and a battle announcing a Prototyrant at 0
   -- Health is worse than one that resets; both fallbacks are for that.
   --
-  -- THE ROUNDS ARE NOT THE DIAL'S and never carry: the lab has no
-  -- round clock - "the Experiment deck is the clock" - so the plate
-  -- beside the dial is simply set to what this difficulty gives.
+  -- THE ROUNDS ARE ON NO OBJECT AT ALL. They were on the plate beside
+  -- the dial for a day; the plate is the dial's own face as of
+  -- 2026-11-22, so the count is the players' and this only announces
+  -- how many they get.
   local PROTO_HP = BAT_PROTO_HP
   local rounds = BAT_DIFF[STATE.difficulty][2]
   local hp = dialRead() or (((STATE.dial or 0) > 0) and STATE.dial)
@@ -3812,24 +3899,25 @@ function startBattle()
     -- and locked, with the Health die standing on one of fifteen
     -- printed spaces - and the dial beside it carried the round count,
     -- so the table had a card, a die and a disc between two numbers.
-    -- Jon's call, 2026-11-21: the dial is the Health and the plate
-    -- beside it is the rounds. The card, its lock, its park fallback
-    -- and the die that stood on it all went with it.
+    -- Jon's call, 2026-11-21: the dial is the Health. The card, its
+    -- lock, its park fallback and the die that stood on it all went
+    -- with it, and on 2026-11-22 the round count went too.
     setMarker('Dial', BAT_CHIP_X, BAT_CHIP_Z, nil,
               {CHIP_DIAL[hp] or CHIP_DIAL[0], 0})
     STATE.dial = hp
-    -- AND THE ROUND COUNT ON THE PLATE, which is this difficulty's and
-    -- nothing else's: the lab cannot touch it.
-    readoutOut(rounds)
+    -- AND THE PLATE SHOWS IT. readoutOut takes no number: it reads
+    -- STATE.dial, which the line above has just set.
+    readoutOut()
   end)
   step(function()
     -- AND THE DICE, which were six lines of instructions until now.
     tyrant, swept, short, stayed = batBattleDice()
   end)
   step(function()
-    say('TYRANT BATTLE. ' .. rounds .. ' rounds on the plate beside' ..
-        ' the dial, and the dial is the PROTOTYRANT\'s Health at ' ..
-        hp .. '.' ..
+    say('TYRANT BATTLE. ' .. rounds .. ' ROUNDS.' ..
+        ' Nothing on the table counts them, so keep the count yourselves.' ..
+        ' The dial and the plate beside it are both the PROTOTYRANT\'s' ..
+        ' Health, at ' .. hp .. '.' ..
         (hp ~= PROTO_HP
           and (' CARRIED, NOT RESET: the rulebook starts it at ' ..
                PROTO_HP .. ' and the dial reads ' .. hp .. '. An' ..
@@ -4366,8 +4454,10 @@ function onObjectDrop(color, obj)
   -- 2026-11-21. Nothing deals it, so nothing can drop it; a player
   -- who takes it out of the bag by hand gets an ordinary card.
   if STATE.game == 'BAT' and deckLabel(obj.getName()) == 'Health Track' then
-    say('The Health track card is not used: the dial beside the' ..
-        ' battle pool is the Prototyrant' .. chr39 .. 's Health.')
+    say('The Health track card is not used and is not in the' ..
+        ' rulebook: the dial beside the battle pool and the' ..
+        ' plate next to it are the Prototyrant' .. chr39 ..
+        's Health.')
     return
   end
   if STATE.game ~= 'NAP' then return end
@@ -4375,26 +4465,29 @@ function onObjectDrop(color, obj)
   if math.abs(p.x - PILE_X) < 6.0 then refreshCounts() end
 end
 
--- --------------------------------------------------- BAT's round counter
--- TWO WAYS TO LOSE, TWO FACES. "It wins if the Prototyrant's Health
--- reaches 0, or if its last Splice is still standing when the rounds
--- run out" - so the table has to carry two numbers, and each gets the
--- object that suits it. The DIAL is a disc with twenty-one numbers
--- round its rim: exact, turnable by hand, and unreadable across a
--- table, which is right for a Health an Experiment can raise and an
--- attack can take chunks out of. The PLATE is one big figure with a
--- button either side: right for a count you click down once a round.
+-- ------------------------------------------- BAT's Health, on two faces
+-- ONE NUMBER, TWO OBJECTS, AND THAT IS DELIBERATE. The DIAL is a disc
+-- with twenty-one numbers round its rim: exact, turnable by hand, and
+-- unreadable across a table. The PLATE is one big figure with a button
+-- either side: readable from anywhere, and a click is how a Health
+-- that moves a point at a time actually gets moved.
 --
--- THEY WERE ONE NUMBER ON TWO OBJECTS until 2026-11-21, which is why
--- one call used to write both. They are two numbers now, so nothing
--- here touches the dial and nothing on the dial touches this.
-READOUT_NAME = 'Round Counter'
+-- SO THE PLATE IS A FACE OF THE DIAL, not a second quantity. Its
+-- buttons call dialSet and dialSet draws it back; there is no path
+-- that writes one without the other, which is the whole reason the
+-- two objects are allowed to show the same thing. "It wins if the
+-- Prototyrant's Health reaches 0, or if its last Splice is still
+-- standing when the rounds run out" - the rounds were on this plate
+-- for a day, and Jon took them off on 2026-11-22. Nothing on the
+-- table counts them now; the setup and the battle both say so.
+READOUT_NAME = 'Health Readout'
 READOUT = nil
 DIAL_MAX = 20
-CLOCK_MAX = 20
 
-function readoutOut(n)
-  STATE.clock = math.max(0, math.min(CLOCK_MAX, math.floor(n or 0)))
+-- THE PLATE SHOWS WHAT THE DIAL READS. It takes no number of its own:
+-- a readoutOut(n) was an invitation to put a second quantity on it,
+-- and for one day in November there was one.
+function readoutOut()
   local o = deckOut(READOUT_NAME, {BAT_READOUT_X, 1.2, BAT_READOUT_Z}, FACEUP)
   if o then
     READOUT = o
@@ -4422,38 +4515,38 @@ function drawReadout()
     o.createButton({click_function = fn, function_owner = self, label = label,
       position = {x, 0.3, 0}, width = w, height = 440, font_size = fs,
       color = {0.16, 0.15, 0.13}, font_color = {1, 1, 1},
-      tooltip = 'Rounds left'})
+      tooltip = "The Prototyrant's Health"})
   end
-  btn('-', 'clockMinus', -0.80, 340, 330)
-  btn(tostring(STATE.clock or 0), 'nop', 0, 400, 380)
-  btn('+', 'clockPlus', 0.80, 340, 330)
+  btn('-', 'dialMinus', -0.80, 340, 330)
+  btn(tostring(STATE.dial or 0), 'nop', 0, 400, 380)
+  btn('+', 'dialPlus', 0.80, 340, 330)
 end
-
--- CLICK THE ROUND OFF. Nothing else writes this number: the lab has
--- no clock and the dial is a different quantity.
-function clockSet(n)
-  STATE.clock = math.max(0, math.min(CLOCK_MAX, math.floor(n)))
-  drawReadout()
-  return STATE.clock
-end
-
-function clockPlus() clockSet((STATE.clock or 0) + 1) end
-function clockMinus() clockSet((STATE.clock or 0) - 1) end
 
 -- Turn the Dial, which is the Prototyrant's Health. `turn` is false
 -- when TTS has already turned the disc itself, which it does for a
 -- typed number; then this only has to remember what it now reads.
 --
--- IT DOES NOT DRAW THE PLATE, because the plate is the round count.
--- It used to, and the two numbers were one.
+-- AND IT DRAWS THE PLATE, because the plate is this same number's
+-- other face. Every path that changes the Health comes through here -
+-- the setup, the battle, the plate's own buttons and a number typed
+-- onto the disc - so this one call is the only place the two can be
+-- kept in step, and nothing else writes either of them.
 function dialSet(n, turn)
   STATE.dial = math.max(0, math.min(DIAL_MAX, math.floor(n)))
   if turn ~= false then
     local d = marker('Dial')
     if d then d.setRotation({0, CHIP_DIAL[STATE.dial] or CHIP_DIAL[0], 0}) end
   end
+  drawReadout()
   return STATE.dial
 end
+
+-- THE PLATE'S BUTTONS TURN THE DISC. A click either side is how the
+-- Health actually moves in play - a point at a time, several times a
+-- round - and reaching across the table to turn a 21-position dial by
+-- hand for each one is the thing the plate is here to spare you.
+function dialPlus() dialSet((STATE.dial or 0) + 1) end
+function dialMinus() dialSet((STATE.dial or 0) - 1) end
 
 -- ---------------------------------------------------------- the rulebook
 -- A Custom_PDF on the rail in the top right corner, carrying one button
