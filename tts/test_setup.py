@@ -3075,19 +3075,23 @@ def finale_assertions():
                 if o.name in ("Credit Record", "Banked Opportunities")),
          ["Banked Opportunities", "Credit Record"])
 
-    # ---- BAT: the Attacks come out, the Rats keep their kit ----------
+    # ---- BAT: the Attacks come out, and both piles survive -----------
     w, g = start("Standard", 0, Panel())
     g.setupBAT()
     drain(w)
     want("BAT deals no Tyrant Attacks during setup",
          out(w, "Tyrant Attacks"), 0)
-    # A PLAYED TABLE, not a fresh one. The sweep has to tell an Upgrade
-    # a Rat has taken from one still in the deck, and after a bare
+    # A PLAYED TABLE, not a fresh one. The sweep has to tell a part that
+    # has been assigned from one still in the carcass, and after a bare
     # setup there is no difference to get wrong: both are in the deck.
+    # THE TWO PILES, not a Rat's hand and a laid-out Splice: no Rat
+    # holds a card now, and the wall is the reclaimed pile.
     held = take_from(w, g, "Upgrades",
-                     float(g.batLeftX(1)), float(g.batRowZ(1)))
+                     float(g.batLeftX(2)),
+                     float(g.batRowZ(int(g.BAT_PILE_GRAFTS))))
     spliced = take_from(w, g, "Upgrades",
-                        float(g.batRightX(1)), float(g.batRowZ(4)))
+                        float(g.batLeftX(2)),
+                        float(g.batRowZ(int(g.BAT_PILE_RECLAIMED))))
     g.btnFinale()
     drain(w)
     want("the Tyrant Battle deals all 7 Attack cards",
@@ -3110,11 +3114,12 @@ def finale_assertions():
     want("...and both Splice-Phase decks back in the box",
          [o.name for o in w.table.values()
           if o.name in ("Experiments", "Upgrades")], [])
-    want("...while the Upgrade a Rat is holding stays with it",
-         held.guid in w.table, True)
-    want("...and the Splice stays on the Tyrant's track",
-         (spliced.guid in w.table,
-          round(spliced.pos[2], 2) == round(float(g.batRowZ(4)), 2)),
+    want("...while a part grafted onto the Prototyrant stays put",
+         held is not None and held.guid in w.table, True)
+    want("...and so does one the old Tyrant reclaimed - it is the wall",
+         (spliced is not None and spliced.guid in w.table,
+          spliced is not None and round(spliced.pos[2], 2)
+          == round(float(g.batRowZ(int(g.BAT_PILE_RECLAIMED))), 2)),
          (True, True))
 
     # ---- AoS: three of the eight, and the Limitations stay -----------

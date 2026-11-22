@@ -242,6 +242,8 @@ BAT_BATTLE_COLS = 3
 -- The dial's column, which used to be derived from the five Splices and
 -- so would have moved when they stopped being five.
 BAT_DIAL_COL = 5
+-- The old Tyrant's carcass: 13 parts on every rung.
+BAT_CARCASS = 13
 BAT_BOX_DROP = (CARD_W - CARD_L) / 2
 
 -- A drawn space is the pitch less a hair, not a card: see above.
@@ -2445,23 +2447,52 @@ function setupBAT()
   -- made the same journey and two of them were still lying in the
   -- band with the corner empty. Dealt here, the deck has not moved
   -- when moveN reaches for it.
-  step(function() moveN(deckOut('Specimens', pad(4)), upg, spec) end)
+  -- ASSIGNED BACK. gatherInto can hand back a DIFFERENT object than
+  -- it was given, so dropping moveN's return leaves upg pointing at
+  -- a handle that may no longer be the deck on the table - and the
+  -- cut below then read its name as empty and left the carcass
+  -- nameless, which is a deck Pack up cannot find a box for.
+  step(function()
+    upg = moveN(deckOut('Specimens', pad(4)), upg, spec)
+  end)
   step(function() if upg then upg.shuffle() end end)
   -- AND THEN IT IS CUT TO THIRTEEN. The old Tyrant's carcass is 13 parts
-  -- on every rung - rules/bat.html's setup - so the pool the Specimens
-  -- were mixed into is dealt down to that and the rest goes back to the
-  -- box. Taken off the TOP of a shuffled deck, so which parts are in the
-  -- game is random rather than a function of deck order.
-  step(function()
-    if not upg then return end
-    local objs = upg.getObjects()
-    local over = #objs - 13
-    for i = 1, over do
-      local e = objs[i]
-      if e then dropCard(upg, e.nickname) end
-    end
-  end)
-
+  -- on every rung - rules/bat.html's setup - so the surplus comes off a
+  -- shuffled pool and goes back to the box, which makes WHICH parts are
+  -- in the game random rather than a function of deck order.
+  --
+  -- ONE CARD PER STEP, which is one card per eight frames. Four earlier
+  -- versions each broke in their own way and each is worth the line,
+  -- because they are all the same mistake in different clothes - moving
+  -- several cards through one frame:
+  --
+  --   a loop of dropCard put ten cards at OFF in one frame. putHome's
+  --   own comment says what happens next: they land on each other, TTS
+  --   builds a deck that frame, setName is refused on it, and a nameless
+  --   deck cannot go in a box. The ten sat at the bottom of the table.
+  --
+  --   building the CARCASS from a seed card left IT nameless, for the
+  --   same reason, and Pack up reads the name to find a box.
+  --
+  --   gathering the surplus into a pile lost a card whenever the bag
+  --   refused a put, because the carcass count then depended on how many
+  --   gathers took rather than on how many cards left.
+  --
+  --   and building that pile on a pad merged into a FALLING deck: a pad
+  --   is the staging band at y 14, and a deck waiting there is a deck
+  --   still coming down.
+  --
+  -- A step is a frame of its own, so the card is gone before the next
+  -- take, nothing is ever built, and the count is fixed by the guard.
+  -- The surplus is at most eleven: 16 ordinary Upgrades and 8 Specimens
+  -- less the thirteen kept.
+  for _ = 1, 12 do
+    step(function()
+      if not upg or count(upg) <= BAT_CARCASS then return end
+      local c = upg.takeObject({position = OFF, smooth = false})
+      if c then putHome(c) end
+    end)
+  end
   if STATE.tier >= 1 then
     step(function()
       drawOne('Experimental Protocols',
