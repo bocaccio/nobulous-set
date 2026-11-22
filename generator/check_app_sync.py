@@ -3366,21 +3366,26 @@ check("no staging pad is within a card of the point cards are taken to",
       all(abs(x - _offx) >= _num("CARD_W") for x in _padx),
       "OFF at x %.2f, pads at %s" % (_offx, [round(x, 2) for x in _padx]))
 
-# AND THE ROW OF DICE UNDER EACH RAT FITS BETWEEN THE RATS.
+# AND EACH RAT'S FOUR DICE FIT BESIDE IT.
 #
-# The row pitch is 7.82 and a Rat is a landscape card 5.88 deep, so
-# there are 1.94 units of felt between one Rat and the next and a die
-# is 1.62 across at DIE_SCALE. That is the whole budget: a change to
-# the pitch, or one more press of the scale key, puts sixteen dice
-# under the cards.
+# A slot is 13.88 wide, a Lab Rat is a landscape card 8.21 across and a
+# die is 1.62 at DIE_SCALE, so the 2x2 block has 5.67 of felt to live
+# in and two tenths of clearance against the card. That is the whole
+# budget: a change to the pitch, or one more press of the scale key,
+# puts dice on the cards - and a die ON a Rat is how a BANISHED die is
+# recorded, so an overlap here is not untidiness, it is a die the
+# battle will refuse to sweep.
 #
-# EVALUATE THE SCRIPT'S OWN PLACING. The first version of this matched
+# THE BLOCK MOVED BESIDE THE CARD on 2026-11-21, when the Rats became a
+# row. There are 1.26 units between a Rat's bottom edge and the top of
+# the row below, and a die is 1.62 across; under the card there is no
+# longer anywhere to put one.
+#
+# EVALUATE THE SCRIPT'S OWN PLACING. An earlier version matched
 # "batRatZ(r) - <rest of line>" and evaluated the rest as the drop,
-# which reads `- CARD_W / 2 - 0.9` as 2.04 when the Lua means 3.84 -
+# which reads `- CARD_W / 2 - 0.9` as 2.04 where the Lua means 3.84 -
 # so it failed a mutation for the wrong reason and would have passed
-# the next one. The functions are evaluated here instead, x relative
-# to the card's centre (BAT_RAT_X is CHAR_X, which is not a literal)
-# and z against batRatZ itself.
+# the next one. The functions are run here instead.
 _die_half = 0.45 * _num("DIE_SCALE", _mod)
 _cols = re.search(r"^BAT_RAT_DICE = \{([^}]*)\}", _lua, re.M)
 _colours = re.findall(r"'([^']+)'", _cols.group(1) if _cols else "")
@@ -3398,59 +3403,112 @@ def _lua_fn(name, arg, **env):
     return lambda v: eval(body, env, {arg: v})            # noqa: S307
 
 
-_ratZ = _lua_fn("batRatZ", "i", BAT_RAT_Z1=_num("BAT_RAT_Z1", _lua),
-                BAT_ROW_PITCH=_num("BAT_ROW_PITCH", _lua))
-_dieZ = _lua_fn("batDieZ", "r", BAT_RAT_Z1=_num("BAT_RAT_Z1", _lua),
-                BAT_ROW_PITCH=_num("BAT_ROW_PITCH", _lua),
-                CARD_W=_num("CARD_W"), CARD_L=_num("CARD_L"),
-                batRatZ=_ratZ)
-# x RELATIVE TO THE CARD, so the Rat column's own position drops out.
-_dieX = _lua_fn("batDieX", "i", BAT_RAT_X=0.0,
-                BAT_DIE_PITCH=_num("BAT_DIE_PITCH", _lua),
-                CARD_L=_num("CARD_L"), CARD_W=_num("CARD_W"))
-check("the script's dice-row geometry could be read at all",
-      None not in (_ratZ, _dieZ, _dieX) and _colours,
-      "ratZ %s dieZ %s dieX %s colours %r"
-      % (_ratZ is not None, _dieZ is not None, _dieX is not None, _colours))
-if _ratZ and _dieZ and _dieX and _colours:
-    _reach = _num("CARD_W") / 2.0 + _die_half
-    # CENTRED IN THE BAND, which is the claim the comment in lua.lua
-    # makes: the clearance above a row equals the clearance below it.
-    # Both being merely POSITIVE is a weaker thing - a row measured
-    # down from the card's edge leaves 0.09 at one end and 0.23 at the
-    # other, which is legal, ugly, and the first thing a pitch change
-    # turns into an overlap.
-    _gaps = dict(((_r, _q), round(abs(_dieZ(_r) - _ratZ(_q)) - _reach, 3))
-                 for _r in range(1, _nrats + 1)
-                 for _q in range(1, _nrats + 1))
-    check("every row of dice clears every Rat card on the table",
-          min(_gaps.values()) > 0,
-          "closest: %r" % (sorted(_gaps.items(), key=lambda e: e[1])[:3],))
-    # BETWEEN THE TWO, NOT AGAINST ONE. Measured down from the card's
-    # edge instead, a row leaves 0.09 at one end of the band and 0.23
-    # at the other: legal, lopsided, and the first thing a change to
-    # the pitch turns into an overlap. The last row has no Rat below
-    # it, so it is the one row this cannot ask about.
-    _off = [(r, _gaps[(r, r)], _gaps[(r, r + 1)])
-            for r in range(1, _nrats)
-            if abs(_gaps[(r, r)] - _gaps[(r, r + 1)]) > 0.01]
-    check("...and sits centred between them, not against one of them",
-          not _off, "lopsided rows %r" % (_off,))
-    # ...AND ACROSS THE CARD, which is the other axis and a different
-    # number: the dice have to sit within the Rat's own width, or the
-    # row reads as belonging to the column beside it.
-    _xs = [_dieX(i) for i in range(1, len(_colours) + 1)]
-    check("...and the row of dice is no wider than the Rat it sits under",
-          max(abs(x) for x in _xs) + _die_half <= _num("CARD_L") / 2.0,
-          "dice at %r on a card %s long"
-          % ([round(x, 2) for x in _xs], _num("CARD_L")))
-    check("...centred on the card, so the row looks like the card's own",
-          abs(min(_xs) + max(_xs)) < 0.01, "dice at %r" % (_xs,))
-    check("...and no two dice in a row touch each other",
-          min(_xs[i + 1] - _xs[i] for i in range(len(_xs) - 1))
-          > 2 * _die_half,
-          "dice at %r, a die is %.2f across"
-          % ([round(x, 2) for x in _xs], 2 * _die_half))
+def _lua_fn2(name, **env):
+    """...and one of the two-argument ones, which have a body.
+
+    STILL THE SCRIPT'S OWN ARITHMETIC, not a copy of it here. The
+    bodies are a `local` or two and a `return`, and nothing else; a
+    function that grows a branch stops matching and comes back None,
+    which the check below fails on rather than quietly skipping.
+    """
+    m = re.search(r"function %s\((\w+), (\w+)\)\n(.*?)\nend"
+                  % name, _lua, re.S)
+    if not m:
+        return None
+    a1, a2, body = m.group(1), m.group(2), m.group(3)
+    lines = [ln.strip() for ln in body.split("\n") if ln.strip()]
+    if not lines[-1].startswith("return ") or not all(
+            ln.startswith("local ") for ln in lines[:-1]):
+        return None
+    env.update({"__builtins__": {}, "math": math})
+
+    def call(v1, v2):
+        loc = {a1: v1, a2: v2}
+        for ln in lines[:-1]:
+            nm, expr = ln[len("local "):].split("=", 1)
+            loc[nm.strip()] = eval(expr.strip(), env, loc)   # noqa: S307
+        return eval(lines[-1][len("return "):], env, loc)    # noqa: S307
+    return call
+
+
+# THE SCRIPT'S OWN CONSTANTS, then its own functions on top of them.
+# BAT_DIE_OUT and BAT_RAT_PITCH are expressions rather than literals, so
+# they are evaluated here too: a check that re-derived either of them
+# would pass whatever lua.lua said.
+_dieout = re.search(r"^BAT_DIE_OUT = (.+)$", _lua, re.M)
+_env = dict(CARD_L=_num("CARD_L"), CARD_W=_num("CARD_W"),
+            DIE_SCALE=_num("DIE_SCALE"),
+            BAT_RAT_IN=_num("BAT_RAT_IN", _lua),
+            BAT_RAT_PITCH=None, BAT_DIE_PITCH=_num("BAT_DIE_PITCH", _lua),
+            BAT_DIE_COLS=_num("BAT_DIE_COLS", _lua), ROW_CHAR=_num("ROW_CHAR"))
+_env["BAT_DIE_OUT"] = (eval(_dieout.group(1), dict(_env, __builtins__={}))
+                       if _dieout else None)
+_pitchm = re.search(r"^BAT_RAT_PITCH = (.+)$", _lua, re.M)
+_feltx1 = float(re.search(r"FELT = \{[^}]*x1 = (-?[\d.]+)", _hdr).group(1))
+_feltx0 = float(re.search(r"FELT = \{[^}]*x0 = (-?[\d.]+)", _hdr).group(1))
+_env["FELT"] = type("F", (), {"x0": _feltx0, "x1": _feltx1})
+_env["BAT_RAT_PITCH"] = (eval(_pitchm.group(1), dict(_env, __builtins__={}))
+                         if _pitchm else None)
+_mid = _lua_fn("batRatMid", "", **_env)
+_env["batRatMid"] = (lambda: _mid(None)) if _mid else None
+_slot = _lua_fn("batRatSlot", "i", **_env)
+_env["batRatSlot"] = _slot
+_ratX = _lua_fn("batRatX", "i", **_env)
+_ratZ = _lua_fn("batRatZ", "_", **_env)
+_dieX = _lua_fn2("batDieX", **_env)
+_dieZ = _lua_fn2("batDieZ", **_env)
+check("the script's dice-block geometry could be read at all",
+      None not in (_mid, _slot, _ratX, _ratZ, _dieX, _dieZ) and _colours,
+      "mid %s slot %s ratX %s ratZ %s dieX %s dieZ %s colours %r"
+      % (_mid is not None, _slot is not None, _ratX is not None,
+         _ratZ is not None, _dieX is not None, _dieZ is not None, _colours))
+if None not in (_mid, _slot, _ratX, _ratZ, _dieX, _dieZ) and _colours:
+    _n = len(_colours)
+    _rats = range(1, _nrats + 1)
+    _dice = [(r, i, _dieX(r, i), _dieZ(r, i)) for r in _rats
+             for i in range(1, _n + 1)]
+    # ON A CARD IS WHAT BANISHED MEANS, so a die that overlaps ANY Rat
+    # - its own or its neighbour's - is a die the sweep leaves behind.
+    _hit = [(r, i, q) for r, i, x, z in _dice for q in _rats
+            if abs(x - _ratX(q)) < _num("CARD_L") / 2.0 + _die_half
+            and abs(z - _ratZ(q)) < _num("CARD_W") / 2.0 + _die_half]
+    check("every die in a Rat's block clears every Rat card on the table",
+          not _hit, "overlaps: %r" % (_hit[:3],))
+    # ...AND SITS WITHIN ITS RAT'S OWN SLOT, so a block reads as
+    # belonging to the card beside it rather than to the next one.
+    _stray = [(r, i, round(x - _slot(r), 2)) for r, i, x, _z in _dice
+              if abs(x - _slot(r)) > _env["BAT_RAT_PITCH"] / 2.0]
+    check("...and inside its own Rat's slot",
+          not _stray, "strays: %r" % (_stray[:3],))
+    # ...AND ON THE CARD'S OWN DEPTH, which is what makes the block read
+    # as that Rat's: a block floated above or below the row would clear
+    # every card and belong to none of them.
+    _zs = sorted(set(round(z, 3) for _r, _i, _x, z in _dice))
+    check("...on the Rat row's own depth, not above or below it",
+          all(abs(z - _num("ROW_CHAR")) + _die_half
+              <= _num("CARD_W") / 2.0 for z in _zs),
+          "dice at z %r on a row at %.2f" % (_zs, _num("ROW_CHAR")))
+    # ...AND NO TWO DICE TOUCH.
+    _close = [(a[:2], b[:2]) for n, a in enumerate(_dice) for b in _dice[n + 1:]
+              if abs(a[2] - b[2]) < 2 * _die_half
+              and abs(a[3] - b[3]) < 2 * _die_half]
+    check("...and no two dice in a block touch each other",
+          not _close, "touching: %r" % (_close[:3],))
+    # AND THE WHOLE ROW IS ON THE FELT, at both ends. The row is four
+    # slots of card-and-block and the felt is 56.5: the margin is 1.5 at
+    # each end, which is what batRatMid buys by centring the row on what
+    # a slot actually holds rather than on the slot.
+    _edges = (min(_ratX(r) - _num("CARD_L") / 2.0 for r in _rats),
+              max(x + _die_half for _r, _i, x, _z in _dice))
+    check("...and the row of Rats and their dice is on the felt",
+          _edges[0] > _feltx0 and _edges[1] < _feltx1,
+          "row runs %.2f..%.2f, felt %.2f..%.2f"
+          % (_edges[0], _edges[1], _feltx0, _feltx1))
+    check("...with the same margin at each end, which is what centres it",
+          abs((_edges[0] - _feltx0) - (_feltx1 - _edges[1])) < 0.02,
+          "margins %.2f and %.2f"
+          % (_edges[0] - _feltx0, _feltx1 - _edges[1]))
+
 # THE COLOURS ARE THE DICE THAT EXIST, one row's worth of each. The
 # pool is four Purple, four Blue, four Green and four Yellow and there
 # are four Rats, so the row is the whole supply dealt out - name a
@@ -3465,34 +3523,74 @@ check("a Rat's dice are the colours the mod really has, one per Rat",
       sorted(_colours) == _supply and len(_colours) == 4,
       "row %r, dice with %d copies %r" % (_colours, _nrats, _supply))
 
-# AND THE HEALTH READOUT FITS IN WHAT IS LEFT. BAT's bottom strip
-# carries the exhausted dice, the staging band, the plate and the Dial,
-# and it is the only clear strip on that table: four things in one row
-# is exactly the sort of arithmetic that silently stops being true.
-_rhw = _num("BAT_READOUT_HW")
-_bandx = (_pads / 2.0) * _pitch + _num("CARD_W") / 2.0
+# THE TWO NUMBERS SHARE A ROW, and it is a tight one. The dial is the
+# Prototyrant's Health and the plate beside it is the rounds left, and
+# they stand between the Prototyrant's discard on their left and the
+# middle's first column on their right - with the dice tray above them
+# and the exhausted band below. Six things in one strip is exactly the
+# sort of arithmetic that silently stops being true.
+#
 # READ THE SCRIPT'S OWN PLACING, not a copy of it. Recomputing the
-# right answer here and comparing it with itself is a check that
-# passes whatever lua.lua says - which is what the first draft of this
-# did, and moving the plate onto the band did not trouble it. The
-# plate is centred under one of the Splices now, so the number to read
-# out is WHICH Splice.
-_rm = re.search(r"^BAT_READOUT_SPLICE = (\d+)$", _lua, re.M)
-_rx = (_num("BAT_RIGHT1", _lua)
-       + (int(_rm.group(1)) - 1) * (_num("CARD_W") - 0.02)) if _rm else None
-_dialx = _num("BAT_RIGHT1", _lua) + 4 * (_num("CARD_W") - 0.02)
-check("the Health readout fits between the staging band and the Dial",
-      _rx is not None and _rx - _rhw >= _bandx and _rx + _rhw <= _dialx - 1.0,
-      "plate %.2f..%.2f, band ends %.2f, Dial at %.2f"
-      % ((_rx or 0) - _rhw, (_rx or 0) + _rhw, _bandx, _dialx))
-check("...and the exhausted corner stops short of it",
-      "BAT_EXHAUST_X1 = BAT_READOUT_X - BAT_READOUT_HW" in _lua
-      and "BAT_EXHAUST_X0 = BAT_RIGHT1 + BAT_COL - BAT_BOX_HW" in _lua)
+# right answer here and comparing it with itself is a check that passes
+# whatever lua.lua says - which is what the first draft of this did,
+# and moving the plate onto the staging band did not trouble it.
+_rhw = _num("BAT_READOUT_HW")
+_col = _num("CARD_W") - 0.02
+_boxhw = (_col - 0.25) / 2.0
+_rx = _num("BAT_READOUT_X", _lua)
+_dialx = _num("BAT_CHIP_X", _lua)
+_deckx = _num("BAT_DECK_X", _lua)
+_midx = -_col + (3 - 1) * _col          # batRightX(3) is not what bounds it
+_mid1 = -_col                            # ...batRightX(1) is
+check("the round counter clears the Prototyrant's discard on its left",
+      _rx - _rhw >= -_deckx + _boxhw + 0.2,
+      "plate starts %.2f, the discard ends %.2f"
+      % (_rx - _rhw, -_deckx + _boxhw))
+check("...and the dial clears the plate and the middle column",
+      _dialx - 1.1 >= _rx + _rhw + 0.5 and _dialx + 1.1 <= _mid1 - _boxhw,
+      "plate ends %.2f, dial %.2f..%.2f, the middle starts %.2f"
+      % (_rx + _rhw, _dialx - 1.1, _dialx + 1.1, _mid1 - _boxhw))
+# AND BOTH ARE ON THE BOTTOM CARD ROW, not in the dice band under it.
+# They stood in that band until 2026-11-21, because BAT had four rows
+# of cards above it and nothing else was clear; the band is the
+# exhausted corner's now, and a disc parked in it reads as a die.
+# BY NAME, NOT BY NUMBER. BAT's three card rows ARE the shared ones
+# now - ROW_MAIN, ROW_SIDE and ROW_TIER, which build_mod.py derives
+# from the felt - so the table holds three names and no literals, and
+# the thing worth checking is that it still does.
+_rowz = re.search(r"^BAT_ROW_Z = \{([^}]*)\}", _lua, re.M)
+_rows = [v.strip() for v in (_rowz.group(1).split(",") if _rowz else [])]
+check("...and both stand on the bottom card row, clear of the dice band",
+      _rows == ["ROW_MAIN", "ROW_SIDE", "ROW_TIER"]
+      and "BAT_CHIP_Z = ROW_TIER" in _lua
+      and "BAT_READOUT_Z = BAT_CHIP_Z" in _lua
+      and _num("ROW_TIER") - _num("CARD_L") / 2.0
+      >= float(re.search(r"^EXHAUST_Z = \{(-?[\d.]+)",
+                         _sv["LuaScript"], re.M).group(1)) - 0.01,
+      "BAT rows %r, ROW_TIER %.2f" % (_rows, _num("ROW_TIER")))
+check("...and the exhausted corner's ends are measured, not typed",
+      "BAT_EXHAUST_X0 = batGraftShowX() - BAT_SHOW_HW" in _lua
+      and "BAT_EXHAUST_X1 = FELT.x1 - 0.75" in _lua)
 check("the readout's width has one owner",
       bool(re.search(r"^READOUT_HW = ", _mod, re.M))
       and not re.search(r"^BAT_READOUT_HW = [\d.]", _lua, re.M)
       and bool(re.search(r"^BAT_READOUT_HW = [\d.]+$",
                          _sv["LuaScript"], re.M)))
+# AND THE PLATE IS NOT THE DIAL. They were one number on two objects
+# until 2026-11-21 and one call wrote both; the Prototyrant's Health
+# and the rounds left are different quantities and either can end the
+# game, so nothing may write one when it means the other.
+check("the dial and the plate are two numbers, not one on two objects",
+      "function clockSet(" in _lua
+      and "drawReadout()" not in re.search(
+          r"function dialSet\(.*?\nend", _lua, re.S).group(0)
+      and "STATE.dial" not in re.search(
+          r"function drawReadout\(\).*?\nend\n", _lua, re.S).group(0),
+      "dialSet still draws the plate, or the plate still reads the dial")
+check("...and the plate is named for the number it carries",
+      "READOUT_NAME = 'Round Counter'" in _lua
+      and '"Nickname": "Round Counter"' in _mod
+      and "Health Readout" not in _lua and "Health Readout" not in _mod)
 
 # THE DIE THAT MARKS THE ACTIVE RAT IS THE ONE THE RULEBOOK NAMES.
 #
@@ -3511,7 +3609,7 @@ check("the readout's width has one owner",
 # the cross-check this had before the move survives the move.
 _bat_html = text("rules/bat.html")
 _marks = re.search(r"put the <b>(\w+) die</b> on it", _bat_html)
-_mark_src = re.search(r"setMarker\('(\w+)', batMarkX\(\), batMarkZ\(1\)[,)]",
+_mark_src = re.search(r"setMarker\('(\w+)', batMarkX\(1\), batMarkZ\(\)[,)]",
                       _lua)
 check("the mod marks the active Rat with the die rules/bat.html names",
       _marks and _mark_src and _marks.group(1) == _mark_src.group(1),
@@ -3522,7 +3620,7 @@ check("...and the battle moves the same die the Splice Phase placed",
       in _bat_html,
       "the Splice Phase places %r" % (_marks and _marks.group(1),))
 check("...and the harness checks which die is really on the card",
-      "and the Recovery die is the one on the top Rat" in _ts
+      "and the Recovery die is the one on the first Rat" in _ts
       and "and no Health die is sitting on any Rat" in _ts)
 
 # EVERY DECK THAT WAITS IN A BOX HAS SOMETHING THAT TAKES IT OUT.
@@ -3548,112 +3646,60 @@ _dealt_by_finale = [d for d in _bagged
 # DECISION rather than a deck somebody forgot, and the setup has to say
 # so out loud.
 BY_HAND = {"Wake-Up"}
-check("every deck that waits in a box is dealt by a finale, or handed "
-      "to the player in words",
-      sorted(set(_bagged) - set(_dealt_by_finale) - BY_HAND) == [],
+# ...AND ONE NOTHING DEALS AT ALL. The Health track card was a
+# 15-space grid with the Health die standing on it; the dial beside
+# the battle pool carries the Prototyrant's Health as of 2026-11-21,
+# so the card has no job on this table. It is named here rather than
+# dropped from IN_THE_BAG so that retiring it stays a DECISION on the
+# record, and the next check holds the mod to saying so out loud when
+# a player fetches it anyway.
+RETIRED = {"Health Track"}
+check("every deck that waits in a box is dealt by a finale, handed "
+      "to the player in words, or retired",
+      sorted(set(_bagged) - set(_dealt_by_finale)
+             - BY_HAND - RETIRED) == [],
       "never dealt: %r"
-      % (sorted(set(_bagged) - set(_dealt_by_finale) - BY_HAND),))
+      % (sorted(set(_bagged) - set(_dealt_by_finale)
+                - BY_HAND - RETIRED),))
+check("...and a retired card says what carries its number instead",
+      all(d in _lua for d in RETIRED)
+      and "The Health track card is not used: the dial" in _lua
+      # ...AND NOTHING STILL DEALS IT, which is the half a mention
+      # cannot prove: a say() and a deckOut would both be here.
+      and "deckOut('Health Track'" not in _lua,
+      "the retired card is dealt, or nothing says why it is not")
 check("...and the setup really tells them to build the clock",
       "BUILD THE CLOCK BEFORE YOU START" in _lua
       and "shuffle it" in _lua and "underneath the first six" in _lua,
       "the Wake-Up card waits in the bag and nothing says to fetch it")
 
 
-# THE HEALTH TRACK IS HELD TO ITS OWN CARD.
+# THE HEALTH TRACK CARD'S PRINTED GRID WAS MEASURED HERE, off the
+# rendered sheet, and held against TRACK_PITCH and TRACK_GRID_DZ: the
+# mod put a snap point in the middle of each of the fifteen spaces, so
+# an art change that moved the grid a millimetre would have dropped
+# the Health die between numbers.
 #
-# The Tyrant battle stands the Health die on the difficulty's number,
-# which means the Lua has to know where the fifteen spaces are. It
-# derives them from a pitch and one offset; this measures the printed
-# card and says whether those two numbers still describe it. Re-render
-# the card a millimetre differently and the die lands between spaces -
-# which would look like a placement bug and is really an art change.
-#
-# THE PITCH FALLS OUT OF THE GRID'S OWN BOX, with no millimetres in
-# it: the grid is 3 squares and 2 gaps wide and 5 squares and 4 gaps
-# tall, so its height less its width is exactly two pitches.
-
-
-# gen.py owns the card's geometry and this needs two of its numbers.
-# NOT `_g`, which holds them a thousand lines up: a loop at "for _g in
-# (\"bat\", \"nap\"..." rebinds that name to a string long before this
-# runs, so reaching for it here raises TypeError at import time.
-_cardgeo = {}
-for _line in text("generator/gen.py").splitlines():
-    for _k in ("PORTRAIT", "CARD_INSET_MM"):
-        if _line.startswith(_k + " = "):
-            _cardgeo[_k] = ast.literal_eval(_line.split(" = ", 1)[1].strip())
-
-
-def _buff_grid():
-    from PIL import Image
-    im = Image.open(os.path.join(ROOT, "images", "BAT_HealthTrack_TTS.png"))
-    im = im.convert("RGB")
-    w, h = im.size
-    px = im.load()
-    x0 = y0 = 10 ** 6
-    x1 = y1 = -1
-    # Below the heading and INSIDE THE CARD'S OWN FRAME - which the old
-    # window said it was and was not. That frame is .5pt of #b8b0a0 at
-    # gen.py's CARD_INSET_MM, the same colour as a space's border, and
-    # the window stopped 12px short of the image: on 2026-11-14 the
-    # bottom hairline came out one shade darker, joined the box, and the
-    # "pitch" became the card's own height less its width over two -
-    # 1.6mm where the card prints 11.6mm - while the grid had not moved
-    # a pixel (403 x 677 on the sheet before and after). 40px and 12px
-    # were both guesses; the inset is the number that means something.
-    edge = int(round((_cardgeo["CARD_INSET_MM"] + 1.0)
-                     * h / _cardgeo["PORTRAIT"][1]))
-    top = int(h * 0.28)
-    for y in range(top, h - edge):
-        for x in range(edge, w - edge):
-            r, g, b = px[x, y]
-            if abs(r - 184) < 30 and abs(g - 176) < 30 and abs(b - 160) < 30:
-                x0 = min(x0, x)
-                x1 = max(x1, x)
-                y0 = min(y0, y)
-                y1 = max(y1, y)
-    if x1 < 0:
-        return None
-    # A BOX THAT TOUCHES THE WINDOW IS NOT THE GRID. It is the frame
-    # again, or a grid that has grown or slid into the band the window
-    # excludes. Either way every number below it would be fiction, so
-    # refuse to produce one rather than print a confident 1.6mm.
-    if (x0 <= edge or x1 >= w - edge - 1
-            or y0 <= top or y1 >= h - edge - 1):
-        return None
-    return w, h, x0, x1, y0, y1
-
-
-_bg = _buff_grid()
-_buff_said = re.search(r"^TRACK_PITCH = CARD_W \* \(([\d.]+) / ([\d.]+)\)",
-                       _lua, re.M)
-if _bg and _buff_said:
-    _w, _h, _x0, _x1, _y0, _y1 = _bg
-    _cw = float(re.search(r"^CARD_W = ([\d.]+)", _sv["LuaScript"],
-                          re.M).group(1))
-    _cl = float(re.search(r"^CARD_L = ([\d.]+)", _sv["LuaScript"],
-                          re.M).group(1))
-    _pitch_px = ((_y1 - _y0) - (_x1 - _x0)) / 2.0
-    _pitch_art = _pitch_px * _cw / _w
-    _pitch_lua = _cw * (float(_buff_said.group(1))
-                        / float(_buff_said.group(2)))
-    # The grid's centre, down from the card's, which is what
-    # TRACK_GRID_DZ carries.
-    _dz_art = (_h / 2.0 - (_y0 + _y1) / 2.0) * _cl / _h
-    _dx_art = ((_x0 + _x1) / 2.0 - _w / 2.0) * _cw / _w
-    check("the Health track's pitch is the one printed on the card",
-          abs(_pitch_art - _pitch_lua) < 0.04,
-          "card %.3f, lua %.3f" % (_pitch_art, _pitch_lua))
-    check("...and its grid sits one pitch below the card's centre",
-          abs(_dz_art - (-_pitch_art)) < 0.06 and abs(_dx_art) < 0.06
-          and "TRACK_GRID_DZ = -TRACK_PITCH" in _lua,
-          "card dz %.3f dx %.3f against one pitch %.3f"
-          % (_dz_art, _dx_art, _pitch_art))
-else:
-    check("the Health track's pitch is the one printed on the card",
-          False, "could not measure the grid clear of the card's own "
-                 "frame, or TRACK_PITCH is gone")
-
+# NOTHING POINTS AT THAT GRID ANY MORE. The dial beside the battle
+# pool carries the Prototyrant's Health as of 2026-11-21, nothing
+# deals the card, and TRACK_PITCH, TRACK_GRID_DZ, TRACK_SPACES and
+# TRACK_CELL went with it - so this measured a card against constants
+# that no longer exist. The claim that replaces it is below: that the
+# constants really are gone, which is what makes the measurement
+# unnecessary rather than merely unperformed.
+# IN THE CODE, NOT IN THE PROSE. Both files carry a comment naming
+# what was removed and why, which is the point of the comment; what
+# must be gone is every line that could still be executed.
+_mod_code = chr(10).join(l.split("#")[0]
+                        for l in _mod.splitlines())
+_gone = [n for n in
+         ("TRACK_PITCH", "TRACK_GRID_DZ", "TRACK_SPACES", "TRACK_CELL",
+          "trackSpace", "trackPark", "BAT_TRACK")
+         if n in _lua_code or n in _mod_code
+         or re.search(r"^%s" % n, _sv["LuaScript"], re.M)]
+check("nothing in the mod still points at the Health track's grid",
+      not _gone and "def track_cells" not in _mod_code,
+      "still live: %r" % (_gone,))
 # ONE BUTTON PER GAME THAT HAS A FINALE, and none for the Imposter
 # scenario, which is itself NRJ's finale and has nothing after it.
 _fin = re.search(r"^FINALE = \{(.*?)^\}", _lua, re.M | re.S)
@@ -4667,10 +4713,12 @@ check("the setup turns the Chip after it lands, not while it moves",
 # flag is the failure this is for. The behaviour - that the height
 # really does clear the card - is tts/test_setup.py's on_card
 # assertions; this is only that each call asks for it.
-_onto = ["setMarker('Recovery', batMarkX(), batMarkZ(1), nil, nil, ONTO)",
-         "setMarker('Red', batMarkX(), batRedZ(math.random(BAT_ROWS)), nil,"
-         " nil,\n              ONTO)",
-         "setMarker('Health', bx, bz, 1, nil, ONTO)"]
+# TWO, NOT THREE. The Health die stood on the Health track card until
+# 2026-11-21; nothing deals that card now, so the only dice that go on
+# a card are the two in a Lab Rat's corners.
+_onto = ["setMarker('Recovery', batMarkX(1), batMarkZ(), nil, nil, ONTO)",
+         "setMarker('Red', batRedX(math.random(BAT_ROWS)), batRedZ(), nil,"
+         " nil,\n              ONTO)"]
 check("every die a setup stands on a card is dropped onto it",
       all(s in _lua for s in _onto)
       and _lua.count("ONTO)") == len(_onto)
@@ -4724,22 +4772,19 @@ _mark_die = _mark_src.group(1) if _mark_src else None
 # BAT's column beside the exhausted corner, and the Tyrant battle
 # standing it on the Health track - on the layer's space when the
 # difficulty gives one, and parked on the card when it does not.
+# FOUR EACH, AND THE FOURTH IS BAT'S. Health was placed five times
+# while the Tyrant battle stood it on the Health track card; nothing
+# deals that card since 2026-11-21, so the Health die stays in BAT's
+# own column all game and all three dice are placed the same number
+# of times for the same two reasons.
 check("...and every game that has a character places all three of them",
       _mark_die in _mk
-      and _mk == {"Health": 5, "Strategy": 4, "Recovery": 4}
+      and _mk == {"Health": 4, "Strategy": 4, "Recovery": 4}
       and "setMarker('Health', BAT_STAT_X, BAT_STAT_Z[1])" in _lua
-      # AND THE BATTLE PUTS IT ON THE CARD WHETHER OR NOT THERE IS A
-      # SPACE FOR IT. trackSpace answers nil for 0 - the track is 15
-      # down to 1 - and the call used to be skipped entirely, which
-      # left the one die the book invites the players to move
-      # wherever the Splice Phase had it. It parks above the grid
-      # now, and the park is MEASURED off the grid rather than typed,
-      # so the two cannot drift apart on a card that re-renders.
-      and "if not bx then bx, bz = trackPark() end" in _lua
-      and "setMarker('Health', bx, bz, 1, nil, ONTO)" in _lua
-      and re.search(r"function trackPark\(\).*?TRACK_GRID_DZ \+ 2 \* TRACK_PITCH",
-                    _lua, re.S)
       and "setMarker('Strategy', BAT_STAT_X, BAT_STAT_Z[2])" in _lua
+      # ...AND NOTHING STANDS IT ON A CARD ANY MORE. A predicate a
+      # name cannot satisfy: this is the call that did it.
+      and "setMarker('Health', bx, bz" not in _lua_code
       and "BAT_STAT_X = BAT_EXHAUST_X0 -" in _lua
       and "EXHAUST_Z[1]" in _lua
       and re.search(r"^EXHAUST_Z = \{", _sv["LuaScript"], re.M),
@@ -4759,22 +4804,28 @@ check("...and every game that has a character places all three of them",
 # only the last resort.
 _satk = text("simulation/bat.py")
 _sdial = text("generator/build_bat.py")
-# THE DIAL IS THE ROUND CLOCK NOW, and the battle still has to carry what
-# the table left on it rather than resetting it: the lab phase is long and
-# a dial is a thing players turn. The shape of the fallback chain is the
-# invariant - read the dial, else a non-zero STATE.dial, else the rung's
-# rounds - because a 0 is not an answer: STATE.dial starts and reloads at
-# 0, and a battle announcing 0 rounds is worse than one that resets.
+# THE DIAL IS THE PROTOTYRANT'S HEALTH, and the battle still has to
+# carry what the table left on it rather than resetting it: one
+# Experiment raises it - "If successful, raise the Prototyrant's Health
+# track by 2" - and the raise is earned in a lab phase that is long and
+# a dial is a thing players lean on. The shape of the fallback chain is
+# the invariant - read the dial, else a non-zero STATE.dial, else the
+# rulebook's 12 - because a 0 is not an answer: STATE.dial starts and
+# reloads at 0, and a battle announcing 0 Health is worse than one
+# that resets.
 check("the Tyrant battle carries the dial rather than resetting it",
-      "local rounds = BAT_DIFF[STATE.difficulty][2]" in _lua
-      and ("local clock = dialRead() or (((STATE.dial or 0) > 0)"
-           " and STATE.dial)") in _lua
-      and "or rounds" in _lua
+      "local hp = dialRead() or (((STATE.dial or 0) > 0) and STATE.dial)"
+      in _lua
+      and "or PROTO_HP" in _lua
       and re.search(r"function dialRead\(\).*?getRotationValue", _lua, re.S)
-      and "CARRIED OVER, NOT RESET" in _lua
-      # ...AND THE BOOK AGREES THAT RUNNING OUT IS A LOSS, which is what
-      # makes the number worth carrying at all. Without this the check
-      # passes on a battle that tracks a figure nothing reads.
+      and "CARRIED, NOT RESET" in _lua
+      # ...AND THE ROUNDS ARE THE OTHER NUMBER, set from the rung every
+      # time, because the lab has no round clock to carry: the
+      # Experiment deck is the lab's clock. "If its last Splice is still
+      # standing when your difficulty's rounds are used up, it finishes
+      # the job and the Rats lose."
+      and "local rounds = BAT_DIFF[STATE.difficulty][2]" in _lua
+      and "readoutOut(rounds)" in _lua
       and "rounds are used up" in _RULES["bat"]
       and "the Rats lose" in _RULES["bat"]
       # ...AND THE MODEL BOUNDS THE BATTLE BY IT.
@@ -4783,18 +4834,25 @@ check("the Tyrant battle carries the dial rather than resetting it",
       # table. Nothing is asserted ABSENT here: the first version of this
       # forbade "self.round_limit - self.rounds", which is a real line in
       # the clock-aware pass rule, so the check failed on correct code.
-      and "if self.round_limit and self.rounds >= self.round_limit:" in _satr,
-      "the battle does not carry the clock it was handed")
-# AND THE PROTOTYRANT'S HEALTH IS A SEPARATE THING FROM IT, on the track
-# card, at the one number every rung uses. Two numbers on one dial is how
-# the printed game's core Health and Health got confused for each other.
-check("...and the Prototyrant's Health is 12 on the track, not on the dial",
-      "local PROTO_HP = 12" in _lua
-      and _lua.count("local PROTO_HP = 12") == 2
-      and "trackSpace(PROTO_HP)" in _lua
+      and "if self.round_limit and self.rounds >= self.round_limit:"
+      in _satr,
+      "the battle does not carry the Health it was handed")
+# AND THE ROUNDS ARE A SEPARATE THING FROM IT, on the plate beside the
+# dial. Two quantities on one object is how the printed game's core
+# Health and Health got confused for each other, and this pair can end
+# the game two different ways - so one number must not write the other.
+check("...and the Prototyrant's Health is 12, on the dial and nowhere else",
+      "BAT_PROTO_HP = 12" in _lua
+      and _lua_code.count("local PROTO_HP = BAT_PROTO_HP") == 2
+      and not re.search(r"local PROTO_HP = \d", _lua_code)
+      and "{CHIP_DIAL[PROTO_HP] or CHIP_DIAL[0], 0})" in _lua
+      and "{CHIP_DIAL[hp] or CHIP_DIAL[0], 0})" in _lua
+      # ...AND THE PLATE IS NEVER HANDED THE HEALTH.
+      and "readoutOut(hp)" not in _lua_code
+      and "readoutOut(PROTO_HP)" not in _lua_code
       and _brev["SHARED_HP_START"] == 12,
-      "lua and batrev disagree on the Prototyrant's starting Health")
-
+      "lua and batrev disagree on the Prototyrant's starting Health, or"
+      " the plate has been handed it")
 # NOTHING IS TURNED UP OUT OF THE ATTACK DECK. A card was flipped at
 # setup to seed the first commit colour, which also showed the table
 # one of the seven attacks coming for it; Jon, 2026-11-17. The deck is

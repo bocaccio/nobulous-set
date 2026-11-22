@@ -1274,21 +1274,25 @@ def layout_assertions():
                     # ...plus the Chip's circle beside each Time Slot.
                     exp = 4 * len(slots) + len(slots) + 2 + 1 + 1 + 1 + 2
                 elif which == "BAT":
-                    # Twelve Upgrade spaces beside the Rats, three
-                    # revealed, the Tyrant's three, the Splices; then
-                    # the places with no box of their own - a Rat, its
-                    # active-Rat mark, the opposite corner the Red die
-                    # marks and its row of dice on each row, the two
-                    # decks, and one per cell of the Health track.
-                    # The Rats hold no cards now: the twelve boxes
-                    # beside them are two piles, the Prototyrant's
-                    # grafts and what the old Tyrant reclaimed. Row 4
-                    # is three working spaces, not five Splices.
+                    # TWO HALVES, A MIDDLE AND A ROW OF RATS, as of
+                    # 2026-11-21. Each half draws four spaces - its
+                    # pile, the two cards that pile reveals, its dice
+                    # tray and its discard - and the middle seven: the
+                    # Experiment it turned over, the pile that goes on,
+                    # the Attack deck, the Attack discard, the banished
+                    # dice, and the two cards the NRJ tiers deal.
+                    #
+                    # Then the places with no box of their own: a Rat,
+                    # the two corners its markings stand in, its four
+                    # dice, and the Experiment deck.
+                    #
+                    # It was a grid of four rows with twelve Upgrade
+                    # spaces beside the Rats, and a snap point for each
+                    # of the Health track's fifteen cells; the Rats hold
+                    # no cards and there is no track card now.
                     rows = int(g.BAT_ROWS)
                     cols = len(list(g.BAT_RAT_DICE.values()))
-                    exp = (2 + 2 + 3 + 1 + 3 + 1
-                           + int(g.BAT_BATTLE_COLS) + (3 + cols) * rows
-                           + 2 + len(list(g.TRACK_CELL.values())))
+                    exp = 2 * 4 + 7 + (3 + cols) * rows + 1
                 elif which == "AoS":
                     # The Technician, the two decks and the two
                     # cards they reveal, the Advanced Programs and
@@ -1807,15 +1811,22 @@ def overlay_assertions():
              [])
 
 
+# A POSITION THE SCRIPT WILL READ AS ONE. batOnRat and batBanishedHas
+# are asked about a point rather than about an object, and they reach
+# for p.x and p.z - which a Python dict does not answer to. This does.
+class _P(object):
+    def __init__(self, x, z):
+        self.x, self.y, self.z = x, 1.0, z
+
 def bat_assertions():
-    """The BAT table Jon laid out, squared up.
+    """The BAT table Jon laid out, rebuilt 2026-11-21.
 
     THE GRID IS THE CLAIM, not the card positions: a space on the felt
     is drawn from batBoxes() and a snap point is made from the same
     list, so what has to be checked is that the grid itself holds
-    together - rows that line up with the Rats, spaces that do not
-    overlap each other or run off the felt, and the things that sit
-    outside it.
+    together - the Rats in a row along the top with their own dice
+    beside them, two halves that mirror each other, spaces that do not
+    overlap or run off the felt, and the things that sit outside it.
     """
     w, g = start("Standard", 0, Panel())
     w.lossy = 3
@@ -1824,47 +1835,49 @@ def bat_assertions():
     by = dict((o.name, o) for o in w.table.values())
     cw, cl = float(g.CARD_W) / 2, float(g.CARD_L) / 2
 
-    # The four Rats are a column down the left, in order, top to bottom.
+    # The four Rats are a row across the top, in order, left to right.
     rats = sorted([o for o in w.table.values() if o.name.startswith("Lab Rat")],
-                  key=lambda o: -o.pos[2])
-    want("BAT deals four Lab Rats in a column",
-         [round(o.pos[0], 2) for o in rats],
-         [round(float(g.BAT_RAT_X), 2)] * 4)
-    want("...one to a row, in the script's order",
+                  key=lambda o: o.pos[0])
+    want("BAT deals four Lab Rats in a row",
          [round(o.pos[2], 2) for o in rats],
          [round(float(g.batRatZ(i)), 2) for i in range(1, 5)])
+    want("...one to a slot, in the script's order",
+         [round(o.pos[0], 2) for o in rats],
+         [round(float(g.batRatX(i)), 2) for i in range(1, 5)])
+    # FLUSH WITH THE BACK EDGE, which is what ROW_CHAR means and what
+    # every other character card in the set does. A Rat is landscape,
+    # so its top is half its SHORT side above its centre.
+    want("...flush with the felt's back edge",
+         round(float(g.batRatZ(1)) + cw, 2), round(float(g.FELT.z1), 2))
 
-    # EACH RAT'S THREE UPGRADE SPACES SHARE ITS TOP EDGE. That is the
-    # thing Jon asked for by eye and the one relation a pitch change
-    # could quietly break.
-    bad = []
-    for r in range(1, 5):
-        top = float(g.batRatZ(r)) + cw
-        for k in range(1, 4):
-            if abs((float(g.batRowZ(r)) + cl) - top) > 0.01:
-                bad.append((r, k))
-    want("every Upgrade space is level with its Rat's top edge", bad, [])
-
-    # The spaces are a grid: none overlaps another, none leaves the felt.
+    # THE SPACES ARE A GRID: none overlaps another, none leaves the felt.
     boxes = [(float(b.x), float(b.z), float(b.hw), float(b.hd))
              for b in g.batBoxes().values()]
-    # Two piles down the left - the Prototyrant's grafts and the old
-    # Tyrant's reclaimed parts, which is the whole stake of the lab;
-    # the Protocol and the Research Notes on the deck row; three
-    # revealed and the Experiment discard; the Tyrant's three and its
-    # dice tray; and the battle's three working spaces.
+    # Each half is a pile, a two-card reveal space, a dice tray and a
+    # discard; the middle is the Experiment it turned over and the pile
+    # it goes on, the Attack deck, the Attack discard and the banished
+    # dice, and the two cards the NRJ tiers deal.
     want("BAT draws a space for every card you put down", len(boxes),
-         2 + 2 + 3 + 1 + 3 + 1 + int(g.BAT_BATTLE_COLS))
-    # AND THE TWO PILES ARE THE WIDEST THINGS ON THE FELT, which is how
-    # they read as piles rather than as another card space.
-    # BY THE PILE WIDTH, not merely "wider than a card": the Tyrant's
-    # dice tray is two columns wide too, so a loose test counted three.
-    _piles = [b for b in boxes
-              if abs(b[2] - float(g.BAT_PILE_HW)) < 0.01]
-    want("the two lab piles are drawn at pile width", len(_piles), 2)
-    want("...and they sit on the left, beside the Rats",
-         sorted(round(b[0], 2) for b in _piles),
-         [round(float(g.batLeftX(2)), 2)] * 2)
+         2 * 4 + 7)
+    # THE TWO REVEAL SPACES ARE THE WIDEST CARD SPACES ON THE FELT,
+    # because both phases turn over two at a time: "Reveal 2 parts from
+    # the old Tyrant's deck" and "Reveal two grafts from the
+    # Prototyrant's pile". BY THE WIDTH, not merely "wider than a card":
+    # the two dice trays are wider still, so a loose test counts four.
+    _show = [b for b in boxes if abs(b[2] - float(g.BAT_SHOW_HW)) < 0.01]
+    want("the two reveal spaces are drawn two cards wide", len(_show), 2)
+    want("...and they mirror each other about the middle",
+         sorted(round(b[0], 2) for b in _show),
+         sorted([round(float(g.batGraftShowX()), 2),
+                 round(float(g.batTyrantShowX()), 2)]))
+    # AND THE TABLE IS A MIRROR, which is the rulebook's own shape:
+    # "Thirteen parts go in and thirteen come out: every part is either
+    # grafted onto your Prototyrant or reclaimed by the old Tyrant."
+    # Every box on the left has a twin at the same z and the opposite x.
+    lone = [b for b in boxes if abs(b[0]) > 9.0
+            and not any(abs(a[0] + b[0]) < 0.01 and abs(a[1] - b[1]) < 0.01
+                        and abs(a[2] - b[2]) < 0.01 for a in boxes)]
+    want("...and the two halves are mirror images", lone[:2], [])
     over = [(a, b) for i, a in enumerate(boxes) for b in boxes[i + 1:]
             if abs(a[0] - b[0]) < a[2] + b[2] - 0.02
             and abs(a[1] - b[1]) < a[3] + b[3] - 0.02]
@@ -1882,54 +1895,67 @@ def bat_assertions():
           round(cl * 2, 2) > round(float(g.BAT_BOX_HD) * 2, 2)),
          (True, True))
 
-    # The Rats and the two decks get no box - Jon asked for none - but
-    # they do get somewhere to drop onto.
     def snapped(x, z):
         return any(abs(s[0] - x) < 0.05 and abs(s[1] - z) < 0.05
                    for s in w.snaps)
-    want("a Rat has a snap point and no box",
-         ([snapped(float(g.BAT_RAT_X), float(g.batRatZ(r)))
-           for r in range(1, 5)],
-          [b for b in boxes if abs(b[0] - float(g.BAT_RAT_X)) < 0.05]),
-         ([True] * 4, []))
-    # THE TWO DECK COLUMNS ONLY. Row 1 also carries the three Upgrade
-    # spaces beside the top Rat, a long way to the left; and, to the
-    # right of the decks, the Protocol, the Research Notes and the
-    # banished dice, all three of which DO have boxes.
-    want("so do the two decks",
-         ([snapped(float(g.batRightX(k)), float(g.batRowZ(1)))
-           for k in (1, 2)],
-          [b for b in boxes if abs(b[1] - float(g.batRowZ(1))) < 0.05
-           and abs(b[0] - float(g.batRightX(1))) < 0.05
-           or abs(b[1] - float(g.batRowZ(1))) < 0.05
-           and abs(b[0] - float(g.batRightX(2))) < 0.05]),
-         ([True, True], []))
 
-    # The banished-dice corner is clear of everything the grid draws.
+    # The Rats get no box - Jon asked for none - but they do get
+    # somewhere to drop onto.
+    want("a Rat has a snap point and no box",
+         ([snapped(float(g.batRatX(r)), float(g.batRatZ(r)))
+           for r in range(1, 5)],
+          [b for b in boxes
+           if any(abs(b[0] - float(g.batRatX(r))) < 0.05
+                  and abs(b[1] - float(g.batRatZ(r))) < 0.05
+                  for r in range(1, 5))]),
+         ([True] * 4, []))
+    # THE EXPERIMENT DECK IS THE ONE CARD SPACE WITH NO BOX: it is a
+    # deck you can see, and nothing gathers it by position.
+    want("so does the Experiment deck",
+         (snapped(float(g.batRightX(int(g.BAT_EXPERIMENTS))),
+                  float(g.batRowZ(1))),
+          [b for b in boxes
+           if abs(b[0] - float(g.batRightX(int(g.BAT_EXPERIMENTS)))) < 0.05
+           and abs(b[1] - float(g.batRowZ(1))) < 0.05]),
+         (True, []))
+    # ...AND THE TWO PILES DO HAVE ONE, which is not decoration:
+    # shuffleSplices and shuffleGrafts GATHER BY POSITION at Wake-Up,
+    # so a pile with no box is a pile dropped an inch from the gather.
+    want("both piles are drawn, because Wake-Up gathers them by place",
+         sorted(round(b[0], 2) for b in boxes
+                if abs(b[1] - float(g.batRowZ(int(g.BAT_DECK_ROW)))) < 0.01
+                and abs(b[2] - float(g.BAT_BOX_HW)) < 0.01
+                and abs(b[0]) > (float(g.batRightX(3))
+                                 + float(g.BAT_BOX_HW))),
+         sorted([round(float(g.batGraftDeckX()), 2),
+                 round(float(g.batTyrantDeckX()), 2)]))
+
+    # The banished-dice space is clear of everything the grid draws.
     bq = [float(v) for v in g.batBanished().values()]
-    want("the banished-dice corner is in the top right",
-         (bq[1] <= float(felt.x1), bq[2] <= float(felt.z1),
-          bq[0] > float(g.BAT_RIGHT1)),
+    want("the banished-dice space is in the middle, on the battle's row",
+         (bq[1] <= float(felt.x1), bq[3] >= float(felt.z0),
+          round((bq[2] + bq[3]) / 2, 2) == round(float(g.batRowZ(2)), 2)),
          (True, True, True))
     # ONE SPACE, THE SAME SIZE AS EVERY OTHER. It began as a wide
     # corner like the exhausted-dice one; Jon asked for a card.
     want("...and is one space, the size of all the others",
          (round((bq[1] - bq[0]) / 2, 3), round((bq[2] - bq[3]) / 2, 3)),
          (round(float(g.BAT_BOX_HW), 3), round(float(g.BAT_BOX_HD), 3)))
-    want("...and nothing else is drawn inside it",
-         [b for b in boxes
-          if b[0] + b[2] > bq[0] and b[1] - b[3] < bq[2]
-          and b[1] + b[3] > bq[3]][:2], [])
 
-    # The active-Rat mark sits ON its Rat, near the top right corner.
+    # The active-Rat mark sits ON its Rat, in the top left corner, and
+    # the Red die's corner is the opposite one. Two markings on one
+    # card cannot be mistaken for each other.
     marks = []
     for r in range(1, 5):
-        mx = float(g.BAT_RAT_X) + cl - float(g.BAT_MARK_IN)
-        mz = float(g.batRatZ(r)) + cw - float(g.BAT_MARK_IN)
-        marks.append(snapped(mx, mz)
-                     and mx < float(g.BAT_RAT_X) + cl
-                     and mz < float(g.batRatZ(r)) + cw)
-    want("each Rat has a mark on it for being the active one",
+        mx, mz = float(g.batMarkX(r)), float(g.batMarkZ())
+        rx, rz = float(g.batRedX(r)), float(g.batRedZ())
+        marks.append((snapped(mx, mz) and snapped(rx, rz)
+                      and mx > float(g.batRatX(r)) - cl
+                      and rx < float(g.batRatX(r)) + cl
+                      and mz < float(g.batRatZ(r)) + cw
+                      and rz > float(g.batRatZ(r)) - cw
+                      and mx < rx and mz > rz))
+    want("each Rat has two corners, the active mark and Red's",
          marks, [True] * 4)
 
     # AND IT IS THE RECOVERY DIE ON IT. This asked only whether the
@@ -1938,102 +1964,116 @@ def bat_assertions():
     # and then the Strategy die, against the three statements in
     # rules/bat.html that name the marker. A snap point is a place;
     # this is what is on it. Jon's call, 2026-11-12: Recovery.
-    mx, mz = float(g.batMarkX()), float(g.batMarkZ(1))
+    mx, mz = float(g.batMarkX(1)), float(g.batMarkZ())
     on_top = sorted(o.name for o in w.markers.values()
                     if abs(o.pos[0] - mx) < 0.05 and abs(o.pos[2] - mz) < 0.05)
-    want("...and the Recovery die is the one on the top Rat", on_top,
+    want("...and the Recovery die is the one on the first Rat", on_top,
          ["Recovery"])
-    # The Health die has no job in BAT at all: the Tyrant's Health is
-    # the dial, and a Rat's is written on its card.
-    rat_z = [float(g.batRatZ(r)) for r in range(1, 5)]
+    # The Health die has no job on a Rat: the Prototyrant's Health is
+    # the dial, and a Rat's is written on its own card.
     want("...and no Health die is sitting on any Rat",
          [(round(o.pos[0], 2), round(o.pos[2], 2))
           for o in w.markers.values() if o.name == "Health"
-          and abs(o.pos[0] - float(g.BAT_RAT_X)) < cl
-          and any(abs(o.pos[2] - z) < cw for z in rat_z)], [])
+          and g.batOnRat(_P(o.pos[0], o.pos[2])) is not None], [])
+    # AND RED IS ON A RAT, which the rulebook asks for by name: "Place
+    # the Red die on a randomly selected Lab Rat."
+    reds = [o for o in w.markers.values() if o.name == "Red"]
+    want("the Red die starts on exactly one Rat's own corner",
+         len([r for r in range(1, 5)
+              for o in reds
+              if abs(o.pos[0] - float(g.batRedX(r))) < 0.05
+              and abs(o.pos[2] - float(g.batRedZ())) < 0.05]), 1)
 
-    # A ROW OF FOUR DICE UNDER EVERY RAT, which the setup message asked
-    # the players to lay out by hand until Jon asked for it to be dealt.
-    # Four colours, four of each in the pool and four Rats, so this is
-    # the whole supply out on the table: what has to hold is that every
-    # row gets one of EACH colour - the failure that reads as right at a
-    # glance is four Purples on one Rat - and that no die is left behind
-    # in the block it came from.
+    # FOUR DICE PER RAT, which the setup message asked the players to
+    # lay out by hand until Jon asked for it to be dealt. Four colours,
+    # four of each in the pool and four Rats, so this is the whole
+    # supply out on the table: what has to hold is that every Rat gets
+    # one of EACH colour - the failure that reads as right at a glance
+    # is four Purples on one Rat - and that no die is left behind.
     colours = [str(c) for c in g.BAT_RAT_DICE.values()]
     want("BAT names the four colours a Rat is given", colours,
          ["Purple", "Blue", "Green", "Yellow"])
-    rows, wrong, unplaced = {}, [], []
+    blocks, wrong, unplaced = {}, [], []
     for o in w.markers.values():
         if o.name not in colours:
             continue
         hit = None
         for r in range(1, 5):
             for i, c in enumerate(colours, 1):
-                if (abs(o.pos[0] - float(g.batDieX(i))) < 0.05
-                        and abs(o.pos[2] - float(g.batDieZ(r))) < 0.05):
+                if (abs(o.pos[0] - float(g.batDieX(r, i))) < 0.05
+                        and abs(o.pos[2] - float(g.batDieZ(r, i))) < 0.05):
                     hit = (r, c)
         if hit is None:
             unplaced.append((o.name, round(o.pos[0], 2), round(o.pos[2], 2)))
         elif hit[1] != o.name:
-            wrong.append((o.name, hit))         # a Blue in the Purple column
+            wrong.append((o.name, hit))         # a Blue in Purple's corner
         else:
-            rows.setdefault(hit[0], []).append(o.name)
-    want("every colour die is under a Rat", unplaced, [])
-    want("...each in its own colour's column", wrong, [])
+            blocks.setdefault(hit[0], []).append(o.name)
+    want("every colour die is beside a Rat", unplaced, [])
+    want("...each in its own colour's place in the block", wrong, [])
     want("...one of each colour per Rat",
-         sorted((r, sorted(v)) for r, v in rows.items()),
+         sorted((r, sorted(v)) for r, v in blocks.items()),
          sorted((r, sorted(colours)) for r in range(1, 5)))
 
-    # AND THE ROW CLEARS THE CARDS AT BOTH ENDS. The band between two
-    # Rats is 1.94 units and a die is 1.62 across, so there is a sixth
-    # of a unit at each edge and no more: a row measured down from the
-    # card instead of centred in the band, or a pitch change above,
-    # puts dice under the cards rather than between them.
+    # AND THE BLOCK CLEARS THE CARDS AT BOTH ENDS. A Rat's slot is
+    # 13.88 wide, the card takes 8.21 of it and a die is 1.62 across,
+    # so the gap either side of the block is two tenths and two units.
+    # A block measured off the wrong edge puts dice under the cards -
+    # and a die ON a card is how a BANISHED die is recorded, so this is
+    # not only untidy: it is a die the battle will refuse to sweep.
     bad = []
     for r in range(1, 5):
-        dz = float(g.batDieZ(r))
-        for edge in [float(g.batRatZ(q)) for q in range(1, 5)]:
-            if abs(dz - edge) < cw + w.die_half:
-                bad.append((r, round(dz, 2), round(edge, 2)))
-    want("...and no row of dice touches a Rat card", bad, [])
+        for i in range(1, len(colours) + 1):
+            dx, dz = float(g.batDieX(r, i)), float(g.batDieZ(r, i))
+            for q in range(1, 5):
+                if (abs(dx - float(g.batRatX(q))) < cl + w.die_half
+                        and abs(dz - float(g.batRatZ(q))) < cw + w.die_half):
+                    bad.append((r, i, q))
+    want("...and no die in a block touches a Rat card", bad, [])
+    want("...so none of them reads as banished",
+         [(r, i) for r in range(1, 5) for i in range(1, len(colours) + 1)
+          if g.batOnRat(_P(float(g.batDieX(r, i)),
+                        float(g.batDieZ(r, i)))) is not None], [])
     want("...with every die on a snap point",
          [(r, i) for r in range(1, 5) for i in range(1, len(colours) + 1)
-          if not snapped(float(g.batDieX(i)), float(g.batDieZ(r)))], [])
+          if not snapped(float(g.batDieX(r, i)),
+                         float(g.batDieZ(r, i)))], [])
 
-    # The Health track's cells are snap points inside the Health space.
-    bx, bz = float(g.batRightX(int(g.BAT_TRACK))), float(g.batRowZ(3))
-    cells = [(bx + float(c[1]), bz + float(c[2]))
-             for c in g.TRACK_CELL.values()]
-    want("the Health track has fifteen cells", len(cells), 15)
-    want("...every one of them inside the card's own space",
-         [c for c in cells
-          if abs(c[0] - bx) > cw or abs(c[1] - bz) > cl][:2], [])
-    want("...and every one of them a snap point",
-         [c for c in cells if not snapped(c[0], c[1])][:2], [])
+    # THERE IS NO HEALTH TRACK CARD ON THIS TABLE any more - the dial
+    # carries the number - so neither phase may deal one. Named, not
+    # counted: the failure this catches is a deal left in by accident,
+    # and a count of cards would not notice one more.
+    want("no Health track card is dealt",
+         [n for n in by if n.startswith("Health Track")], [])
 
     # The Chip stands below the rightmost Splice, clear of the row.
     # The markers are not on w.table - they live in their own
     # index, keyed by GUID - so ask the script for it by name.
     chip = g.marker("Chip")
-    # AND BAT MOVES ITS OWN DIAL under the Splices, turned to this
-    # difficulty's Tyrant Health. The Dial is an object of its own,
-    # not a face of the Chip: no game reads both, so two objects cost
-    # one more thing to put away and save working out which way up a
-    # thing is every time somebody types at it. It lies loose on the
-    # table beside the Chip, so it is a marker, not a dealt card.
-    # The dial is the ROUND CLOCK now, and its column is its own
-    # constant: it used to be derived from the five Splices, so it
-    # would have moved when they stopped being five.
-    rounds = int(g.BAT_DIFF[g.STATE.difficulty][2])
+    # AND BAT MOVES ITS OWN DIAL beside the battle pool, turned to the
+    # Prototyrant's Health. The Dial is an object of its own, not a face
+    # of the Chip: no game reads both, so two objects cost one more
+    # thing to put away and save working out which way up a thing is
+    # every time somebody types at it. It lies loose on the table beside
+    # the Chip, so it is a marker, not a dealt card.
     dial = g.marker("Dial")
-    want("BAT moves the Dial to its own column",
-         (dial is not None, round(dial.pos[0], 2) if dial else None),
-         (True, round(float(g.batRightX(int(g.BAT_DIAL_COL))), 2)))
-    want("...turned to this difficulty's round count",
+    want("BAT moves the Dial beside the battle pool",
+         (dial is not None,
+          round(dial.pos[0], 2) if dial else None,
+          round(dial.pos[2], 2) if dial else None),
+         (True, round(float(g.BAT_CHIP_X), 2),
+          round(float(g.BAT_CHIP_Z), 2)))
+    want("...turned to the Prototyrant's starting Health",
          dial.rot[1] if dial and dial.rot else None,
-         float(g.CHIP_DIAL[rounds]))
+         float(g.CHIP_DIAL[int(g.BAT_PROTO_HP)]))
     want("...and the dial has an angle for every number it prints",
          sorted(int(k) for k in dict(g.CHIP_DIAL)), list(range(21)))
+    # THE PLATE IS A DIFFERENT NUMBER, which is the whole point of
+    # having two: the rounds are the other way to lose.
+    want("...while the plate beside it reads this difficulty's rounds",
+         int(g.STATE.clock), int(g.BAT_DIFF[g.STATE.difficulty][2]))
+    want("...and the two are not the same number on Standard",
+         int(g.STATE.clock) != int(g.STATE.dial), True)
     # THE CHIP IS NAP'S AND GOES IN THE NAP BOX. It used to stay in
     # the row at the bottom of the table through a game of BAT, which
     # is a thing with five colours on it that this game never reads.
@@ -2328,77 +2368,58 @@ def on_card_assertions():
          [card_top_under(by[n].pos[0], by[n].pos[2])
           for n in ("Health", "Strategy")], [None, None])
 
-    # THE SAME THING IN THE BATTLE, where the Health die stands on the
-    # Health track's printed grid. This is the one Jon saw first: the
-    # card was being locked while still in the air and the die went
-    # under it. The lock was fixed; the drop height was not.
+    # THE TWO NUMBERS THE BATTLE SETS, on every rung. The Health die
+    # used to stand on a printed track card here; the dial carries the
+    # Prototyrant's Health as of 2026-11-21 and the plate beside it
+    # carries the rounds, so what has to hold is that the battle writes
+    # BOTH and writes DIFFERENT things to them.
     #
-    # AND THE DIE GOES ON THE HEALTH, NOT ON THE CORE HEALTH. It used
-    # to stand on the core number while the dial read the same, which
-    # printed the Tyrant's Health twice. The two are independent stats.
+    # The two were one number on two objects for a long time, and a
+    # setup that read the wrong one of them printed the same figure
+    # twice. That is what the last check here is for: on three of the
+    # four rungs the rounds and the Health differ, so a battle that
+    # wrote one number to both would fail it.
     #
-    # THIS FORCES THE VALUE because it wants one the ladder does not
-    # print - 3 is off the top of a column that runs 1, 1, 2, 2 - and
-    # 0 underneath it is a value no rung ships at all since
-    # 2026-11-18. Every shipping rung is checked further down, against
-    # the number lua.lua itself carries.
-    # THE HEALTH DIE STANDS ON 12, ON EVERY RUNG. The Health layer and
-    # the core Health are gone with the printed game: the one Health track
-    # in this design is the PROTOTYRANT's, shared by all four Rats, and it
-    # starts at 12 whatever the difficulty. What the difficulty sets is the
-    # ROUNDS, which ride on the dial - so both are checked, and checked
-    # against the numbers lua.lua itself carries rather than a copy here.
-    PROTO_HP = 12
+    # AND AGAINST THE NUMBERS lua.lua ITSELF CARRIES, not a copy here:
+    # BAT_PROTO_HP and BAT_DIFF are the script's own.
     for _lv in ("Easy", "Standard", "Hard", "Nobulous"):
         wS, gS = start(_lv, 0)
         gS.setupBAT()
         drain(wS)
-        # THE DIAL IS THE CLOCK, and the setup has to have turned it to
-        # this rung's rounds before the battle starts counting down.
-        want("%s sets the dial to its round count" % _lv,
-             int(gS.STATE.dial), int(gS.BAT_DIFF[_lv][2]))
+        _hp = int(gS.BAT_PROTO_HP)
+        _rounds = int(gS.BAT_DIFF[_lv][2])
+        # THE LAB SETS BOTH ALREADY, so a player can see what is coming;
+        # neither is live until the battle.
+        want("%s sets the dial to the Prototyrant's Health" % _lv,
+             int(gS.STATE.dial), _hp)
+        want("...and the plate to %s's round count" % _lv,
+             int(gS.STATE.clock), _rounds)
         gS.btnFinale()
         drain(wS)
+        want("%s's battle keeps the dial on the Health" % _lv,
+             int(gS.STATE.dial), _hp)
+        want("...and sets the plate to its rounds" % (),
+             int(gS.STATE.clock), _rounds)
+        _dial = gS.marker("Dial")
+        want("...and turns the disc itself to that Health" % (),
+             _dial.rot[1] if _dial and _dial.rot else None,
+             float(gS.CHIP_DIAL[_hp]))
+        if _rounds != _hp:
+            want("...and the two are not the same number on %s" % _lv,
+                 int(gS.STATE.clock) != int(gS.STATE.dial), True)
+        # NO TRACK CARD, EITHER PHASE. Named rather than counted: a
+        # deal left in by accident is one more card, and a count would
+        # not notice it.
+        want("...and %s deals no Health track card" % _lv,
+             [n for n in (o.name for o in wS.table.values())
+              if n.startswith("Health Track")], [])
+        # AND THE HEALTH DIE STAYS IN ITS OWN COLUMN, which is where
+        # the lab left it: nothing stands it on anything now.
         hdS = [o for o in wS.markers.values() if o.name == "Health"][0]
-        _fits = 1 <= PROTO_HP <= int(gl.TRACK_SPACES)
-        want("%s's Health track has a space for 12" % _lv, _fits, True)
-        if not _fits:
-            continue
-        # card_top_under closes over the FIRST world this function
-        # made, so asking it about a later one searches a table where
-        # the battle never ran. Looked up in wS directly.
-        under = None
-        for _o in wS.table.values():
-            _land = LAND.get(_o.name.rstrip("0123456789").strip(),
-                             LAND.get(_o.name))
-            if _land is None:
-                continue
-            _cw, _cl = float(gl.CARD_W), float(gl.CARD_L)
-            _hw, _hd = ((_cl / 2, _cw / 2) if _land
-                        else (_cw / 2, _cl / 2))
-            if (abs(_o.pos[0] - hdS.pos[0]) <= _hw
-                    and abs(_o.pos[2] - hdS.pos[2]) <= _hd):
-                _t = _o.pos[1] + Obj.FLAT_THICK / 2
-                if under is None or _t > under[0]:
-                    under = (_t, _o.name)
-        want("%s stands the Health die on the Health track" % _lv,
-             under and under[1], "Health Track")
-        want("...and lets it go above that card's face",
-             bool(under) and hdS.pos[1] - wS.die_half >= under[0], True)
-        bxS, bzS = (float(v) for v in gS.trackSpace(PROTO_HP))
-        want("...and on the space for 12 rather than anywhere on the card",
-             (round(hdS.pos[0] - bxS, 3), round(hdS.pos[2] - bzS, 3)),
-             (0.0, 0.0))
-        # ...AND NOT ON THE SPACE THE ROUNDS WOULD PICK. 12, 10, 9 and 8
-        # are all real spaces on this track, so a battle reading the wrong
-        # number would still land on the card and pass the three above.
-        _rounds = int(gS.BAT_DIFF[_lv][2])
-        if _rounds != PROTO_HP and 1 <= _rounds <= int(gl.TRACK_SPACES):
-            rxS, rzS = (float(v) for v in gS.trackSpace(_rounds))
-            want("...and not on the space for %s's rounds" % _lv,
-                 max(abs(hdS.pos[0] - rxS), abs(hdS.pos[2] - rzS)) > 0.4,
-                 True)
-
+        want("...with the Health die still beside the exhausted corner",
+             (round(hdS.pos[0], 2), round(hdS.pos[2], 2)),
+             (round(float(gS.BAT_STAT_X), 2),
+              round(float(gS.BAT_STAT_Z[1]), 2)))
     # A DESTINATION WITH NOTHING AT IT BEHAVES AS IT DID. dropOnto
     # never goes below DROP_Y, so an empty patch of felt is still the
     # same drop - asked of the function directly, because every marker
@@ -2434,10 +2455,9 @@ def battle_dice_assertions():
     dice = [o for o in w.markers.values() if o.name in colours]
     want("the battle still has all sixteen colour dice", len(dice), 16)
 
-    mid = float(g.batRightX(int(g.BAT_TYRANT_DICE))) + float(g.BAT_COL) / 2
+    tx0, tx1, tzt, tzb = [float(v) for v in g.batBag().values()]
     bag = [o for o in dice
-           if abs(o.pos[2] - float(g.batRowZ(3))) < 0.05
-           and abs(o.pos[0] - mid) <= float(g.BAT_WIDE_HW)]
+           if tzb <= o.pos[2] <= tzt and tx0 <= o.pos[0] <= tx1]
     want("the Tyrant's six are on the Tyrant Dice space",
          sorted(o.name for o in bag),
          sorted(["Purple", "Purple", "Blue", "Blue", "Green", "Yellow"]))
@@ -2449,10 +2469,12 @@ def battle_dice_assertions():
     # THE RATS' ROWS ARE EMPTY AFTERWARDS, which is the half of
     # "sweep every personal die" that counting the pool cannot prove:
     # ten in the pool and ten left behind would both read as ten.
-    want("...with nothing left in a Rat's own row",
+    want("...with nothing left in a Rat's own block",
          sorted(o.name for o in dice
-                if any(abs(o.pos[2] - float(g.batDieZ(r))) < 0.05
-                       for r in range(1, 5))), [])
+                if any(abs(o.pos[0] - float(g.batDieX(r, i))) < 0.05
+                       and abs(o.pos[2] - float(g.batDieZ(r, i))) < 0.05
+                       for r in range(1, 5)
+                       for i in range(1, len(colours) + 1))), [])
     want("...and no two dice standing in one place",
          len(set((round(o.pos[0], 2), round(o.pos[2], 2)) for o in dice)), 16)
 
@@ -2467,7 +2489,7 @@ def battle_dice_assertions():
     greens = [o for o in w.markers.values() if o.name == "Green"]
     for i, o in enumerate(greens[:3]):
         o.pos = [(b[0] + b[1]) / 2 + 0.01 * i, o.pos[1], (b[2] + b[3]) / 2]
-    greens[3].pos = [float(g.BAT_RAT_X), greens[3].pos[1],
+    greens[3].pos = [float(g.batRatX(2)), greens[3].pos[1],
                      float(g.batRatZ(2))]
     g.btnFinale()
     drain(w)
@@ -2480,10 +2502,11 @@ def battle_dice_assertions():
     # THREE OF THE FOUR STAY WHERE THEY WERE, in the corner or on the
     # Rat; WHICH three is not this test's business, because the Tyrant
     # takes whichever it reaches first.
-    on_rat = lambda o: (
-        abs(o.pos[0] - float(g.BAT_RAT_X)) <= float(g.CARD_L) / 2
-        and any(abs(o.pos[2] - float(g.batRatZ(r))) <= float(g.CARD_W) / 2
-                for r in range(1, 5)))
+    # BY THE SCRIPT'S OWN ANSWER, not by a second copy of the test it
+    # makes: batOnRat is what the sweep asks, and the two have to agree
+    # about what counts as on a Rat or the sweep can leave behind a die
+    # this reads as swept.
+    on_rat = lambda o: g.batOnRat(_P(o.pos[0], o.pos[2])) is not None
     want("...and three of the four Greens stay banished where they lay",
          len([o for o in greens
               if (b[0] <= o.pos[0] <= b[1] and b[3] <= o.pos[2] <= b[2])
@@ -2491,11 +2514,10 @@ def battle_dice_assertions():
     # ...EXCEPT THE ONE THE TYRANT IS SHORT OF. The bag wants a Green
     # and all four are banished, so one comes back out of them - "they
     # are not returned to the Rats; they go straight into the bag".
-    mid = float(g.batRightX(int(g.BAT_TYRANT_DICE))) + float(g.BAT_COL) / 2
+    tx0, tx1, tzt, tzb = [float(v) for v in g.batBag().values()]
     bag = [o for o in w.markers.values()
            if o.name in colours
-           and abs(o.pos[2] - float(g.batRowZ(3))) < 0.05
-           and abs(o.pos[0] - mid) <= float(g.BAT_WIDE_HW)]
+           and tzb <= o.pos[2] <= tzt and tx0 <= o.pos[0] <= tx1]
     want("...but the Tyrant takes one back out to make up its six",
          sorted(o.name for o in bag),
          sorted(["Purple", "Purple", "Blue", "Blue", "Green", "Yellow"]))
@@ -2504,87 +2526,105 @@ def battle_dice_assertions():
 def battle_dial_assertions():
     """The battle keeps the number on the dial instead of resetting it.
 
-    One Experiment in the deck writes to the Tyrant's core Health:
-    Degraded Tissue Study, "If successful, reduce the Prototyrant's
-    Health dial by 2." The battle used to turn the dial back to the
-    difficulty's printed core, which threw that away - Jon earned one
-    two Splices before the fight and lost it to this on 2026-11-17.
+    The dial is the PROTOTYRANT's Health, and one Experiment in the
+    deck writes to it: Degraded Tissue Study, "If successful, raise the
+    Prototyrant's Health track by 2." The battle used to turn the dial
+    back to a printed number, which threw that away - Jon earned one
+    two Experiments before the fight and lost it to this on 2026-11-17,
+    when the dial carried the old Tyrant's Health instead.
 
     THREE SOURCES, IN ORDER, because this script has no onSave: the
-    disc on the table, then STATE, then the difficulty. STATE.dial is
+    disc on the table, then STATE, then BAT_PROTO_HP. STATE.dial is
     back to 0 after a reload while the disc still shows the number,
-    and a battle announcing a Tyrant at 0 Health would be worse than
-    one that resets - so neither fallback can be dropped.
+    and a battle announcing a Prototyrant at 0 Health would be worse
+    than one that resets - so neither fallback can be dropped.
+
+    THE ROUNDS ARE NOT THE DIAL'S and never carry: the lab has no
+    round clock - "the Experiment deck is the clock" - so the plate is
+    set to the difficulty's own number every time, and these cases
+    cannot touch it. That is checked too, because the two numbers were
+    one number on two objects until 2026-11-21 and the failure this
+    guards against is them becoming one again.
     """
     def battle(setup):
         w, g = start("Standard", 0)
         g.setupBAT()
         drain(w)
-        core = int(g.BAT_DIFF[g.STATE.difficulty][2])
-        setup(w, g, core)
+        hp = int(g.BAT_PROTO_HP)
+        setup(w, g, hp)
         mark = len(w.said)
         g.btnFinale()
         drain(w)
-        return g, core, [m for m in w.said[mark:] if "TYRANT BATTLE" in m]
+        return g, hp, [m for m in w.said[mark:] if "TYRANT BATTLE" in m]
 
-    # TICKED DOWN THE WAY THE BUTTONS TICK IT, through the one call
-    # that writes the disc and the plate together.
-    g, core, said = battle(lambda w, g, core: g.dialSet(core - 2))
-    want("an Experiment's 2 off the dial survives the battle setup",
-         int(g.STATE.dial), core - 2)
+    # TURNED BY HAND, the way a player turns it: dialSet is what the
+    # typed-number handler calls, and nothing else writes the disc now.
+    g, hp, said = battle(lambda w, g, hp: g.dialSet(hp + 2))
+    want("an Experiment's 2 on the dial survives the battle setup",
+         int(g.STATE.dial), hp + 2)
     want("...and the battle says so rather than correcting it",
-         [True for m in said if "CARRIED OVER, NOT RESET" in m
-          and str(core - 2) in m], [True])
+         [True for m in said if "CARRIED, NOT RESET" in m
+          and str(hp + 2) in m], [True])
+    want("...while the plate still reads the difficulty's rounds",
+         int(g.STATE.clock), int(g.BAT_DIFF["Standard"][2]))
 
     # A TABLE RELOADED MID-GAME. STATE is gone and the disc is not.
-    def reloaded(w, g, core):
-        g.dialSet(core - 2)
-        g.marker("Dial").setRotationValue(core - 2)
+    def reloaded(w, g, hp):
+        g.dialSet(hp + 2)
+        g.marker("Dial").setRotationValue(hp + 2)
         g.STATE.dial = 0
-    g, core, said = battle(reloaded)
+    g, hp, said = battle(reloaded)
     want("...and the disc is believed over a STATE that was reloaded",
-         int(g.STATE.dial), core - 2)
+         int(g.STATE.dial), hp + 2)
 
     # AND A ZERO FROM NOWHERE IS NOT AN ANSWER: no disc value, no
-    # STATE, so the difficulty's own core Health is what is left.
-    def nothing(w, g, core):
+    # STATE, so the rulebook's own 12 is what is left.
+    def nothing(w, g, hp):
         g.STATE.dial = 0
-    g, core, said = battle(nothing)
-    want("...while a dial reading nothing at all falls back to the table",
-         int(g.STATE.dial), core)
+    g, hp, said = battle(nothing)
+    want("...while a dial reading nothing at all falls back to 12",
+         int(g.STATE.dial), hp)
     want("...and says nothing about carrying anything over",
-         [m for m in said if "CARRIED OVER" in m], [])
+         [m for m in said if "CARRIED" in m], [])
 
 
-def buff_lock_assertions():
-    """The Health track card locks itself when it reaches its space.
+def track_card_assertions():
+    """The Health track card is not part of this table any more.
 
-    It starts in the bag, because it is optional; you fetch it when you
-    want it. It holds part of the Tyrant's Health on a track you push a
-    die along, so a card that slides when you nudge the die is worse
-    than no card at all.
+    It was furniture: dealt by the battle, locked where it landed, with
+    the Health die pushed along fifteen printed spaces. The dial beside
+    the battle pool carries the Prototyrant's Health as of 2026-11-21,
+    so nothing deals the card and nothing locks it.
+
+    IT IS STILL IN THE BAG, and still in the rulebook's components, so
+    a player can take it out by hand - and what they get then is an
+    ordinary card and a line in chat saying why, rather than a card
+    that silently welds itself to a space nothing uses.
     """
     w, g = start("Standard", 0, Panel())
     g.setupBAT()
     drain(w)
-    bx, bz = float(g.batRightX(int(g.BAT_TRACK))), float(g.batRowZ(3))
-    card = Obj(w, "buff", "Health Track")
-    card.pos = (bx + 0.4, 1.0, bz - 0.3)
+    want("no setup deals the Health track card",
+         [n for n in (o.name for o in w.table.values())
+          if n.startswith("Health Track")], [])
+    # AND NOTHING IN THE SCRIPT STILL KNOWS WHERE IT WENT. A predicate
+    # a name cannot satisfy: these are the functions the track needed,
+    # and a table that still has them has not really retired the card.
+    want("...and the grid it stood on is gone with it",
+         [n for n in ("trackSpace", "trackPark", "TRACK_CELL",
+                      "TRACK_PITCH", "TRACK_SPACES", "BAT_TRACK")
+          if g[n] is not None], [])
+
+    mark = len(w.said)
+    card = Obj(w, "track", "Health Track")
+    card.pos = (float(g.batRowZ(3)), 1.0, float(g.batRowZ(3)))
     w.table[card.guid] = card
     g.onObjectDrop("White", card)
     drain(w)
-    want("the Health track locks when it lands on its space",
-         (card.locked, round(card.pos[0], 2), round(card.pos[2], 2)),
-         (True, round(bx, 2), round(bz, 2)))
-
-    # Dropped anywhere else it is just a card.
-    loose = Obj(w, "buff2", "Health Track")
-    loose.pos = (bx, 1.0, bz + 12.0)
-    w.table[loose.guid] = loose
-    g.onObjectDrop("White", loose)
-    drain(w)
-    want("...and not when it lands somewhere else", loose.locked, False)
-
+    want("a track card a player fetches is left unlocked",
+         card.locked, False)
+    want("...and the table says what carries the Health instead",
+         [True for m in w.said[mark:] if "dial" in m], [True])
 
 def live_pile(w, gid):
     """The object that holds that GUID now.
@@ -2997,11 +3037,11 @@ def finale_assertions():
              sorted(o.name for o in w.table.values()
                     if o.name.endswith(" Rules")
                     or o.name in ("Credit Record", "Banked Opportunities",
-                                  "Health Readout")),
+                                  "Round Counter")),
              sorted(n for n in (
                  {"NAP": ["NAP Rules", "Credit Record",
                           "Banked Opportunities"],
-                  "BAT": ["BAT Rules", "Health Readout"],
+                  "BAT": ["BAT Rules", "Round Counter"],
                   "AoS": ["AoS Rules"]}[game])))
         want("%s: ...and raised no setup error" % game,
              [m for m in w.said if "Setup error" in m][:2], [])
@@ -3075,23 +3115,28 @@ def finale_assertions():
                 if o.name in ("Credit Record", "Banked Opportunities")),
          ["Banked Opportunities", "Credit Record"])
 
-    # ---- BAT: the Attacks come out, and both piles survive -----------
+    # ---- BAT: the Attacks come out, and both halves survive --------
     w, g = start("Standard", 0, Panel())
     g.setupBAT()
     drain(w)
     want("BAT deals no Tyrant Attacks during setup",
          out(w, "Tyrant Attacks"), 0)
-    # A PLAYED TABLE, not a fresh one. The sweep has to tell a part that
-    # has been assigned from one still in the carcass, and after a bare
-    # setup there is no difference to get wrong: both are in the deck.
-    # THE TWO PILES, not a Rat's hand and a laid-out Splice: no Rat
-    # holds a card now, and the wall is the reclaimed pile.
-    held = take_from(w, g, "Upgrades",
-                     float(g.batLeftX(2)),
-                     float(g.batRowZ(int(g.BAT_PILE_GRAFTS))))
-    spliced = take_from(w, g, "Upgrades",
-                        float(g.batLeftX(2)),
-                        float(g.batRowZ(int(g.BAT_PILE_RECLAIMED))))
+    # A PLAYED TABLE, not a fresh one. Wake-Up has to tell a part that
+    # has been grafted from one the old Tyrant reclaimed and from one
+    # still in the carcass, and after a bare setup there is no
+    # difference to get wrong: all three are in the deck.
+    #
+    # THREE PLACES, not two: the carcass pile is a real third thing
+    # now, because "combine the old Tyrant's undrawn deck and its
+    # discard, shuffle them, and stand them up as its Splices" is what
+    # builds the wall, and the undrawn half used to go in the box.
+    graft = take_from(w, g, "Upgrades",
+                      float(g.batGraftDeckX()),
+                      float(g.batRowZ(int(g.BAT_DECK_ROW))))
+    back = take_from(w, g, "Upgrades",
+                     float(g.batTyrantDeckX()),
+                     float(g.batRowZ(int(g.BAT_TRASH_ROW))))
+    carcass = int(g.BAT_CARCASS)
     g.btnFinale()
     drain(w)
     want("the Tyrant Battle deals all 7 Attack cards",
@@ -3110,17 +3155,34 @@ def finale_assertions():
     want("...and the Attack discard space empty",
          [o.name for o in w.table.values()
           if abs(o.pos[0] - float(g.batRightX(int(g.BAT_ATTACK_UP)))) < 0.05
-          and abs(o.pos[2] - float(g.batRowZ(3))) < 0.05], [])
-    want("...and both Splice-Phase decks back in the box",
+          and abs(o.pos[2] - float(g.batRowZ(2))) < 0.05], [])
+    # THE LAB'S CLOCK GOES IN THE BOX AND NOTHING ELSE DOES.
+    want("...and the Experiment deck is back in the box",
          [o.name for o in w.table.values()
-          if o.name in ("Experiments", "Upgrades")], [])
+          if o.name.startswith("Experiments")], [])
     want("...while a part grafted onto the Prototyrant stays put",
-         held is not None and held.guid in w.table, True)
-    want("...and so does one the old Tyrant reclaimed - it is the wall",
-         (spliced is not None and spliced.guid in w.table,
-          spliced is not None and round(spliced.pos[2], 2)
-          == round(float(g.batRowZ(int(g.BAT_PILE_RECLAIMED))), 2)),
-         (True, True))
+         graft is not None and graft.guid in w.table, True)
+    # AND THE WALL IS THE TWO HALVES TOGETHER, on the carcass pile's
+    # own space. A wall built from the discard alone is as deep as the
+    # lab was long and never the eight the rulebook allows for.
+    wall = [o for o in w.table.values()
+            if o.name.startswith(("Upgrade", "Specimen"))
+            and abs(o.pos[0] - float(g.batTyrantDeckX())) < 0.6
+            and abs(o.pos[2]
+                    - float(g.batRowZ(int(g.BAT_DECK_ROW)))) < 1.0]
+    # THIRTEEN WENT IN AND ONE WAS GRAFTED, so twelve stand up as the
+    # wall: the undrawn carcass plus the one part reclaimed, which is
+    # what the two halves of this pile add up to by conservation. The
+    # old battle put the undrawn half in the box, which made the wall
+    # as deep as the lab was long and never the eight the book allows.
+    want("...and the wall is the undrawn carcass AND what it reclaimed",
+         sum((len(o.kids) or 1) for o in wall), carcass - 1)
+    want("...so nothing is left on the reclaimed discard",
+         [o.name for o in w.table.values()
+          if o.name.startswith(("Upgrade", "Specimen"))
+          and abs(o.pos[0] - float(g.batTyrantDeckX())) < 0.6
+          and abs(o.pos[2]
+                  - float(g.batRowZ(int(g.BAT_TRASH_ROW)))) < 1.0], [])
 
     # ---- AoS: three of the eight, and the Limitations stay -----------
     w, g = start("Standard", 0, Panel())
@@ -4370,7 +4432,7 @@ def main():
     chip_face_assertions()
     battle_dice_assertions()
     battle_dial_assertions()
-    buff_lock_assertions()
+    track_card_assertions()
     on_card_assertions()
     pile_assertions()
     landing_assertions()

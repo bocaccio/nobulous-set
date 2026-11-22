@@ -253,9 +253,18 @@ def draw_bat(d, lua):
 
     batBoxes() is the list the setup draws its own snap points from, so
     a box on the felt and a space you can drop onto cannot disagree -
-    there is one of them. The Lab Rats and the two decks are
-    deliberately absent: Jon asked for no outline under either, and a
-    deck is a stack you can already see.
+    there is one of them. The Lab Rats and the two piles are
+    deliberately absent: Jon asked for no outline under a Rat, and a
+    pile is a stack you can already see.
+
+    THE TABLE IS TWO HALVES AND A MIDDLE as of 2026-11-21 - the
+    Prototyrant down the left, the old Tyrant down the right, the Rats
+    in a row along the top - so the labels are grouped the same way, and
+    every one of them reads its place out of lua.lua rather than out of
+    a literal here. These were literals once, so swapping two constants
+    in the script moved the cards and left the felt labelling the places
+    they had come from. A mat that lies is worse than a mat with no
+    labels on it.
     """
     for b in lua.globals().batBoxes().values():
         card(d, float(b.x), float(b.z), float(b.hw), float(b.hd),
@@ -264,106 +273,95 @@ def draw_bat(d, lua):
     rx = lambda k: float(g.batRightX(k))
     rz = lambda r: float(g.batRowZ(r))
     half = float(g.BAT_BOX_HW)
-    # The three rows on the right hold things you cannot tell apart by
-    # looking at an empty space.
-    # BY THE SCRIPT'S OWN COLUMNS, not by 1 and 2. These were
-    # literals, so swapping the two in lua.lua moved the cards and
-    # left the felt labelling the places they had come from. A mat
-    # that lies is worse than a mat with no labels on it.
-    label(d, "ATTACK\nDECK", rx(int(g.BAT_ATTACK_DECK)), rz(3),
+    wide = float(g.BAT_SHOW_HW) * 1.8
+    deck_row = int(g.BAT_DECK_ROW)
+    trash_row = int(g.BAT_TRASH_ROW)
+
+    # ---- LEFT: the Prototyrant's half.
+    #
+    # "Reveal two grafts from the Prototyrant's pile... Choose one graft
+    # to use and expose; the other is set aside until the pile is next
+    # shuffled." Both cards live in this one space, which is why there
+    # is no SET ASIDE space any more - two cards, one box, and which is
+    # which is which one you are using.
+    label(d, "GRAFT\nPILE", float(g.batGraftDeckX()), rz(deck_row),
           fit=half * 1.8)
-    label(d, "TYRANT\nATTACK", rx(int(g.BAT_ATTACK_UP)), rz(3),
+    label(d, "REVEALED GRAFTS\nuse one · set one aside",
+          float(g.batGraftShowX()), rz(deck_row), fit=wide)
+    label(d, "BATTLE POOL", -float(g.BAT_TRAY_X), float(g.batTrayZ()),
+          fit=float(g.BAT_TRAY_HW) * 1.6)
+    label(d, "GRAFTS\nDESTROYED", float(g.batGraftDeckX()), rz(trash_row),
           fit=half * 1.8)
-    label(d, "HEALTH", rx(3), rz(3), fit=half * 1.8)
-    # ROW 4 IS THE BATTLE'S WORKING ROW. It was five Splices laid out
-    # left to right because damage chewed through them in order; the
-    # wall is a face-down pile of five to eight now and one Splice faces
-    # the Rats at a time, with the graft they are using beside it and the
-    # one they held back out of its reach.
-    label(d, "EXPOSED\nSPLICE", rx(int(g.BAT_EXPOSED_SPLICE)), rz(4),
+
+    # ---- THE MIDDLE: the lab's clock on top, the battle below it, and
+    # what a tier deals at the foot.
+    #
+    # "Reveal the next Experiment card" - and the deck it comes off has
+    # no box, so the only labelled spaces are the card it turns over and
+    # the pile it goes on afterwards.
+    label(d, "EXPERIMENT", rx(int(g.BAT_EXP_UP)), rz(1), fit=half * 1.8)
+    label(d, "EXPERIMENT\nDISCARD", rx(int(g.BAT_EXP_DISCARD)), rz(1),
           fit=half * 1.8)
-    label(d, "GRAFT\nIN USE", rx(int(g.BAT_EXPOSED_GRAFT)), rz(4),
+    label(d, "ATTACK\nDECK", rx(int(g.BAT_ATTACK_DECK)), rz(2),
           fit=half * 1.8)
-    label(d, "SET\nASIDE", rx(int(g.BAT_ASIDE_GRAFT)), rz(4),
+    # "That dot is the commit colour. The one that counts is on the top
+    # card of the Attack discard" - so the discard is a space you read,
+    # not a pile you forget about.
+    label(d, "ATTACK\nDISCARD\ncolour", rx(int(g.BAT_ATTACK_UP)),
+          rz(2), fit=half * 1.8)
+    label(d, "BANISHED\nDICE", rx(int(g.BAT_BANISH_COL)), rz(2),
           fit=half * 1.8)
-    # THE TWO PILES THE LAB FILLS, down the left where a Rat's own
-    # Upgrades used to sit. Every Experiment puts one part on each, and
-    # that is the whole stake of the phase: what your machine has been
-    # given, and what the old Tyrant has taken back and will fight you
-    # with. The reclaimed pile IS the wall when the Wake-Up card turns.
-    lx = float(g.batLeftX(2))
-    pile_fit = float(g.BAT_PILE_HW) * 1.7
-    label(d, "PROTOTYRANT\nGRAFTS", lx, rz(int(g.BAT_PILE_GRAFTS)),
-          fit=pile_fit)
-    label(d, "OLD TYRANT\nRECLAIMED", lx, rz(int(g.BAT_PILE_RECLAIMED)),
-          fit=pile_fit)
     # What the NRJ tiers put out and you keep in front of you: the
     # Tier I Protocol, and the six Tier III Research Notes as one
     # face-up stack rather than a row this table has no room for.
-    label(d, "PROTOCOL", rx(int(g.BAT_PROTOCOL)), rz(1), fit=half * 1.8)
-    label(d, "RESEARCH\nNOTES", rx(int(g.BAT_NOTES)), rz(1),
+    label(d, "PROTOCOL", rx(int(g.BAT_PROTOCOL)), rz(3), fit=half * 1.8)
+    label(d, "RESEARCH\nNOTES", rx(int(g.BAT_NOTES)), rz(3),
           fit=half * 1.8)
-    # THE THREE CARDS A TURN TURNS OVER. They were the only outlined
-    # spaces on this table with nothing said about them, and the only
-    # way to tell which was which was to hover the deck that fills
-    # them - which answered "Encounters" until the deck was relabelled
-    # to match its own card back. The felt says what the rulebook
-    # says: "Reveal the next Experiment card. Reveal 2 cards from the
-    # Upgrade deck."
+
+    # ---- RIGHT: the old Tyrant's half, the mirror of the left.
     #
-    # BY THE SCRIPT'S OWN COLUMN, like everything else here:
-    # BAT_REVEALED is where the Experiment lands and the two Upgrades
-    # follow it, so moving that constant moves all three labels with
-    # the cards.
-    rev = int(g.BAT_REVEALED)
-    label(d, "EXPERIMENT", rx(rev), rz(2), fit=half * 1.8)
-    for k in (1, 2):
-        label(d, "PART", rx(rev + k), rz(2), fit=half * 1.8)
-    # The Experiment discard, past the three revealed cards in the same
-    # row. THERE IS NO PART DISCARD ANY MORE: both revealed parts leave
-    # the table every Experiment, one to the Prototyrant and one to the
-    # old Tyrant, so nothing is thrown away and the space that said
-    # UPGRADE DISCARD was labelling a pile that can never have a card on
-    # it.
-    label(d, "EXPERIMENT\nDISCARD", rx(int(g.BAT_EXP_DISCARD)), rz(2),
+    # ONE SPACE, TWO JOBS, because the two phases ask the same thing of
+    # it: "Reveal 2 parts from the old Tyrant's deck" in the lab, and
+    # the top Splice of its wall in the battle.
+    label(d, "REVEALED PARTS\nthen the exposed Splice",
+          float(g.batTyrantShowX()), rz(deck_row), fit=wide)
+    # ONE PILE, TWO NAMES. It is the carcass the lab draws from, and at
+    # Wake-Up what is left of it is shuffled with everything the old
+    # Tyrant reclaimed and stood up as the wall.
+    label(d, "CARCASS\nthen the\nWALL", float(g.batTyrantDeckX()),
+          rz(deck_row), fit=half * 1.8)
+    label(d, "TYRANT DICE", float(g.BAT_TRAY_X), float(g.batTrayZ()),
+          fit=float(g.BAT_TRAY_HW) * 1.6)
+    # "...the reclaimed part goes to the old Tyrant's discard, where it
+    # waits to be shuffled back in and revealed again." At Wake-Up it is
+    # combined with the undrawn carcass above it to make the wall.
+    label(d, "TYRANT\nRECLAIMED", float(g.batTyrantDeckX()), rz(trash_row),
           fit=half * 1.8)
-    # The Tyrant's own dice, two columns wide over the Splices.
-    label(d, "TYRANT DICE",
-          rx(int(g.BAT_TYRANT_DICE)) + float(g.BAT_COL) / 2, rz(3),
-          fit=float(g.BAT_WIDE_HW) * 1.8)
-    # Dice that are out of the game, in the corner the grid leaves.
-    # Drawn as a card space, because that is what it is now.
-    bx0, bx1, bzt, bzb = [float(v) for v in g.batBanished().values()]
-    bcx, bcz = (bx0 + bx1) / 2.0, (bzt + bzb) / 2.0
-    card(d, bcx, bcz, (bx1 - bx0) / 2.0, (bzt - bzb) / 2.0, PEN["snap"], 4)
-    label(d, "BANISHED\nDICE", bcx, bcz, fit=half * 1.8)
-    # AND THE SHARED POOL THE BATTLE SWEEPS EVERY SURVIVING DIE INTO,
-    # in the corner of the band the exhausted corner leaves. Empty
-    # all through the Splice Phase, the way the Tyrant's own spaces
-    # are: a space that is waiting is still worth printing, and this
-    # one is ten dice the players reach into every round.
-    #
-    # From the script's own rectangle, like the banished corner above
-    # - batPool() is what batBattleDice lays the dice out inside, so
-    # the felt and the sweep cannot disagree about where it is.
-    px0, px1, pzt, pzb = [float(v) for v in g.batPool().values()]
-    pcx, pcz = (px0 + px1) / 2.0, (pzt + pzb) / 2.0
-    card(d, pcx, pcz, (px1 - px0) / 2.0, (pzt - pzb) / 2.0, PEN["snap"], 4)
-    label(d, "BATTLE POOL", pcx, pcz, fit=(px1 - px0) * 0.8)
-    # The Chip's own circle, the way NAP marks the dial's place, and
-    # where the exhausted-dice corner has to stop to clear it.
+
+    # ---- AND THE TWO NUMBERS, side by side under the battle pool.
+    # "It wins if the Prototyrant's Health reaches 0, or if its last
+    # Splice is still standing when the rounds run out": two ways to
+    # lose, so two faces, and neither is a card.
+    circle(d, float(g.BAT_CHIP_X), float(g.BAT_CHIP_Z), 1.1)
+    # THE FIT IS THE GAP ITSELF, measured off the two things either side
+    # of the dial rather than guessed at here: a label that has to shrink
+    # fails this build, and PROTOTYRANT is a long word.
+    dial_fit = (rx(1) - half
+                - (float(g.BAT_READOUT_X) + float(g.BAT_READOUT_HW)) - 0.4)
+    label(d, "PROTOTYRANT\nHEALTH", float(g.BAT_CHIP_X),
+          float(g.BAT_CHIP_Z) - 2.0, fit=dial_fit)
+    card(d, float(g.BAT_READOUT_X), float(g.BAT_READOUT_Z),
+         float(g.BAT_READOUT_HW), 0.95, PEN["snap"], 4)
+    label(d, "ROUNDS\nLEFT", float(g.BAT_READOUT_X),
+          float(g.BAT_READOUT_Z) - 2.4, fit=float(g.BAT_READOUT_HW) * 2.0)
+
     # WHERE THE EXHAUSTED CORNER STOPS AT EITHER END, read off the
-    # script rather than guessed at here: its left edge lines up with
-    # the second Splice - Jon's own call - and its right edge stops
-    # short of the Health readout, which stands between it and the
-    # Dial.
+    # script rather than guessed at here: the whole bottom band is free
+    # now, so it runs from under the Prototyrant's reveal space to the
+    # right-hand edge and the two spare stat dice stand off its left.
     global BAT_STOP, BAT_START
     BAT_START = float(g.BAT_EXHAUST_X0)
     BAT_STOP = float(g.BAT_EXHAUST_X1)
-    # The readout's own plate, so the felt says where it belongs.
-    card(d, float(g.BAT_READOUT_X), float(g.BAT_READOUT_Z),
-         float(g.BAT_READOUT_HW), 0.95, PEN["snap"], 4)
-    circle(d, float(g.BAT_CHIP_X), float(g.BAT_CHIP_Z), 1.1)
 
 
 def draw_aos(d, lua):

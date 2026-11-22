@@ -370,67 +370,6 @@ CHARACTERS = [('APPRENTICE', 'build_nap.py', 'APPS', None),
               ('IMPOSTER', 'build_nrj.py', 'IMPOSTERS', 2)]
 
 
-def track_cells():
-    """The 15 track cells on the Health track card, as offsets from its centre.
-
-    MEASURED OFF THE PRINTED CARD, not counted out from the CSS that
-    drew it. generator/build_bat.py lays the track as 5 rows of 3 pale
-    squares, and a snap point is wanted in the middle of each so the
-    Health die sits where the number is. Reading the rendered sheet
-    means a redesign of that card moves the snap points with it; a grid
-    typed out here would go on pointing at where the boxes used to be,
-    and nothing at the table would say so.
-
-    The cells are the pale fill (#f2eee2) inside a darker border, on a
-    card body that is darker still, so they find themselves: scan for
-    runs of that colour and keep the 15 biggest blobs.
-    """
-    from PIL import Image
-    path = os.path.join(SHEETS, 'BAT_HealthTrack_TTS.png')
-    im = Image.open(path).convert('RGB')
-    w, h = im.size
-    px = im.load()
-
-    def pale(x, y):
-        r, g, b = px[x, y]
-        return abs(r - 242) < 10 and abs(g - 238) < 10 and abs(b - 226) < 12
-
-    # BY ROWS AND COLUMNS, NOT BY BLOB. The number printed in a cell's
-    # corner cuts that cell's fill in two, and both halves are square
-    # enough to pass for cells - which crowded a real one out of the
-    # fifteen and put two snap points on top of each other. The track
-    # is a grid, so find the grid: three bands of pale down the card
-    # and five across, and the cells are where they cross.
-    cols = [sum(1 for y in range(0, h, 2) if pale(x, y)) for x in range(w)]
-    rows = [sum(1 for x in range(0, w, 2) if pale(x, y)) for y in range(h)]
-
-    def bands(counts, floor, wide):
-        # WIDE BANDS ONLY. The card's own cream border is the same
-        # colour as a cell and runs the full height and width, so a
-        # band narrower than half a cell is the margin, not a cell.
-        out, start = [], None
-        for i, v in enumerate(list(counts) + [0]):
-            if v >= floor and start is None:
-                start = i
-            elif v < floor and start is not None:
-                if i - start >= wide:
-                    out.append((start + i - 1) / 2.0)
-                start = None
-        return out
-
-    xs = bands(cols, max(cols) // 3, w // 12)
-    ys = bands(rows, max(rows) // 3, h // 18)
-    if len(xs) != 3 or len(ys) != 5:
-        raise SystemExit('the Health track reads as %d columns by %d rows,'
-                         ' not 3 by 5' % (len(xs), len(ys)))
-    cells = [(0, cx, cy) for cy in ys for cx in xs]
-    out = []
-    for _, cx, cy in cells:
-        out.append(((cx / float(w) - 0.5) * CARD_SHORT * CARD_SCALE,
-                    (0.5 - cy / float(h)) * CARD_LONG * CARD_SCALE))
-    return out
-
-
 def exhibit_blocks():
     """1-based index range of each Exhibit domain in build_nrj.py's SCEN.
 
@@ -557,7 +496,7 @@ def lua_header(box_guids):
     home['BAT Table'] = 'BAT'
     home['AoS Table'] = 'AoS'
     home['IMP Table'] = 'NRJ'
-    home['Health Readout'] = 'BAT'
+    home['Round Counter'] = 'BAT'
     # THE TWO FACES. Neither is dealt - both lie in the row at the
     # bottom of the table - but each has a box, because a setup stows
     # the one its game does not read. BAT reads the Dial, NAP reads
@@ -656,9 +595,11 @@ def lua_header(box_guids):
         'MAT_ASPECT = %.5f' % (lambda wh: wh[0] / float(wh[1]))(
             jpeg_size(os.path.join(SHEETS, nap_table_image()))),
         'MAT_Z = %.2f' % NAP_TABLE_Z,
-        # The Health track's cells, so BAT can put a snap point in the
-        # middle of each one. Measured off the printed card.
-        'TRACK_CELL = { %s }' % j('{%.3f, %.3f}' % c for c in track_cells()),
+        # TRACK_CELL WAS HERE: the Health track card's fifteen cells,
+        # so BAT could put a snap point in the middle of each. The dial
+        # beside the battle pool carries the Prototyrant's Health as of
+        # 2026-11-21 and nothing deals that card, so there is nothing
+        # for the grid to point at. track_cells() goes with it.
         'DIE_SCALE = %.2f' % DIE_SCALE,
         # THE ALT VIEW'S ANGLE FOR EACH FACE of a landscape card. The
         # save bakes the face-up one into every such card; the script
@@ -1237,8 +1178,8 @@ def readout_object():
         png_size(os.path.join(SHEETS, READOUT_IMAGE)))
     return {"GUID": guid(), "Name": "Custom_Tile",
             "Transform": xf(0, 1.2, 0, (0, 180, 0), READOUT_HW / aspect),
-            "Nickname": "Health Readout",
-            "Description": "The Tyrant's Health, with a button each side.",
+            "Nickname": "Round Counter",
+            "Description": "Rounds left, with a button each side.",
             "ColorDiffuse": {"r": 1.0, "g": 1.0, "b": 1.0},
             "Locked": True, "Grid": False, "Snap": False,
             "CustomImage": {"ImageURL": url(READOUT_IMAGE),
