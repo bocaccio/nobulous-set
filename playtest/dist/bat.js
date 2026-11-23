@@ -374,7 +374,7 @@
     const ok = state.rolled && state.successes >= t;
     const head = $("batResolveHead");
     if (head) head.textContent = state.rolled
-      ? "Assign the parts" : "Resolve this Experiment";
+      ? "Assign the Splices" : "Resolve this Experiment";
     // BEFORE THE ROLL there is one action and it is ROLL. Two buttons both
     // reading Roll is what the first draft shipped, and it reads as a
     // choice the player does not have.
@@ -388,15 +388,15 @@
     $("batFail").hidden = false;
     $("batFail").disabled = false;
     $("batFail").textContent = state.rolled
-      ? "Failure · the old Tyrant takes the better part"
+      ? "Failure · the old Tyrant takes the better Splice"
       : "Commit nothing · automatic failure";
     $("batEffect").innerHTML = state.notice
       ? `<strong>${escape(state.notice)}</strong>`
       : state.rolled
         ? `Rolled <strong>${state.successes}</strong> against Target `
           + `<strong>${t}</strong>. ${state.successes >= t
-            ? "You choose which part the Prototyrant grafts."
-            : "The old Tyrant takes the better part."}`
+            ? "You choose which Splice the Prototyrant grafts."
+            : "The old Tyrant takes the better Splice."}`
         : state.activeRat === null
           ? "Choose the active Rat, then commit dice."
           : "Commit dice and roll.";

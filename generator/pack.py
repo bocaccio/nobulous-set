@@ -32,7 +32,6 @@ GAMES = {
         ('BAT_Upgrades', 'Upgrades'),
         ('BAT_Specimens', 'Specimens'),
         ('BAT_TyrantAttacks', 'Tyrant Attacks'),
-        ('BAT_HealthTrack', 'Health track'),
         ('BAT_Rats', 'Lab Rats (A / B)'),
     ],
     'NAP': [

@@ -52,9 +52,9 @@ LEVELS = { 'Easy', 'Standard', 'Hard', 'Nobulous' }
 --
 -- THE SCAVENGED-TYRANT DESIGN, 2026-11-20. The old Tyrant has no
 -- Health of any kind now - no core and no outer layer: its bulk IS its
--- wall of Splices, and the one Health track in the game is the
+-- wall of Splices, and the one Health in the game is the
 -- PROTOTYRANT's, shared by all four Rats and starting at 12 on every
--- rung. The carcass is 13 parts on every rung too, because a deck card
+-- rung. The carcass is 13 Splices on every rung too, because a deck card
 -- is a whole Splice - a whole attack out of ten rounds - and the rungs
 -- could not be spaced with it.
 --
@@ -339,9 +339,9 @@ BAT_CARCASS = 13
 -- rung's share.
 BAT_SPECIMENS = 8
 
--- AND THE PROTOTYRANT'S HEALTH, also on every rung: "Put the Health
--- die on the Health track at 12. That is the Prototyrant's Health and
--- all four Rats share it." The difficulty does not touch it - what
+-- AND THE PROTOTYRANT'S HEALTH, also on every rung: "Start the
+-- Prototyrant's Health at 12, on paper or any counter you like. All
+-- four Rats share it." The difficulty does not touch it - what
 -- the difficulty sets is the round count - so it is one number here
 -- rather than a local in each of the two phases that writes it.
 BAT_PROTO_HP = 12
@@ -355,18 +355,22 @@ BAT_TYRANT_BAG = { Purple = 2, Blue = 2, Green = 1, Yellow = 1 }
 
 -- THE DIAL IS THE PROTOTYRANT'S HEALTH, and it stands beside the
 -- battle pool - Jon's placing, 2026-11-21, and it puts the number the
--- Rats lose by in the Rats' own corner. "Put the Health die on the
--- Health track at 12. That is the Prototyrant's Health and all four
--- Rats share it... at 0 the Rats lose."
+-- Rats lose by in the Rats' own corner. "Start the Prototyrant's
+-- Health at 12... All four Rats share it - damage nothing absorbs
+-- comes off this one number, and at 0 the Rats lose."
 --
 -- SO THERE IS NO HEALTH TRACK CARD ON THIS TABLE. It was a 15-space
 -- grid with a die standing on it; the dial is the same number on an
 -- object that is already here, and two things showing one number is
 -- how the printed game's core Health and its Buff HP came to be
 -- confused for each other. TRACK_PITCH, TRACK_CELL, trackSpace() and
--- trackPark() went with it. The printed card is still in the deck
--- list and still in the rulebook's components - that is a question
--- for the book, not for the felt.
+-- trackPark() went with it.
+--
+-- AND THE CARD IS GONE EVERYWHERE NOW, 2026-11-23. It left the
+-- rulebook's components on 2026-11-22 and build_bat.py the day
+-- after, so there is no sheet to serve, no deck in decks.py and
+-- nothing in the bag: the dial and the plate are the only Health
+-- in this game.
 BAT_CHIP_X = -13.00
 BAT_CHIP_Z = ROW_TIER
 
@@ -682,20 +686,18 @@ ASSIGN_SLOTS = 4
 --   Final Exams     you reach them; the exam button starts them
 --   Tyrant Attacks  nothing draws one until the Wake-Up card turns and
 --                   the old Tyrant is up
---   Health Track    NOT DEALT AT ALL ANY MORE, by either phase. The
---                   dial beside the battle pool carries the
---                   Prototyrant's Health as of 2026-11-21, so this is
---                   a printed card with nothing on this table to do.
---                   It is still in the bag, and still in the
---                   rulebook's components, because retiring a printed
---                   component is a question for the book
+-- THE HEALTH TRACK CARD WAS IN THIS LIST. It is not in the bag any
+-- more and there is no deck of it to be in one: the dial took its
+-- number on 2026-11-21, the rulebook dropped the component on
+-- 2026-11-22, and build_bat.py stopped printing the sheet and
+-- decks.py stopped manifesting the deck on 2026-11-23.
 --   Wake-Up         row 1 is full at Tier III and the packet this card
 --                   belongs in is three cards deep, so the player builds
 --                   the clock by hand - see the setup's own say()
 --
 -- Named here so that "every deck a setup can reach" stays a real check
 -- rather than one that quietly stopped covering a deck.
-IN_THE_BAG = { 'Final Exams', 'Tyrant Attacks', 'Health Track',
+IN_THE_BAG = { 'Final Exams', 'Tyrant Attacks',
                'Wake-Up', 'Advanced Programs' }
 
 -- The printed layout under the cards. One per game, each its own tile
@@ -2098,9 +2100,9 @@ function batBoxes()
   box(batRightX(BAT_BANISH_COL), batRowZ(2))
   box(batRightX(BAT_PROTOCOL), batRowZ(3))
   box(batRightX(BAT_NOTES), batRowZ(3))
-  -- RIGHT, the old Tyrant: the two parts its carcass reveals - and in
-  -- the battle the Splice facing you - its own six dice, and the parts
-  -- it has reclaimed, waiting to be shuffled back in.
+  -- RIGHT, the old Tyrant: the two Splices its carcass reveals - and
+  -- in the battle the one facing you - its own six dice, and the
+  -- Splices it has reclaimed, waiting to be shuffled back in.
   wide(batTyrantShowX(), batRowZ(BAT_DECK_ROW))
   box(batTyrantDeckX(), batRowZ(BAT_DECK_ROW))
   tray(BAT_TRAY_X)
@@ -2117,7 +2119,7 @@ function batSnaps()
                        rotation = {0, 0, 0}, rotation_snap = false})
   end
   -- EVERY DRAWN SPACE GETS ONE, and a reveal space gets two: "Reveal
-  -- two grafts from the Prototyrant's pile" and "Reveal 2 parts from
+  -- two grafts from the Prototyrant's pile" and "Reveal 2 Splices from
   -- the old Tyrant's deck" both put two cards in one box, and a single
   -- snap in the middle of it is a snap they would have to share.
   for _, b in ipairs(batBoxes()) do
@@ -2547,8 +2549,8 @@ function setupBAT()
                         {batRightX(BAT_EXPERIMENTS), 3, batRowZ(1)})
     if exp then exp.shuffle() end
     -- THE TYRANT'S OWN CARDS STAY IN THE BAG. Nothing draws a Tyrant
-    -- Attack until the Wake-Up card turns, and the Health track is
-    -- the Prototyrant's - the lab phase cannot touch Health at all -
+    -- Attack until the Wake-Up card turns, and the Health is the
+    -- Prototyrant's - the lab phase cannot touch Health at all -
     -- so both belong to the battle rather than to the lab, and the
     -- row they were taking up is the row the lab is played on.
     upg = deckOut('Upgrades',
@@ -2637,10 +2639,11 @@ function setupBAT()
       if held > spec and pick then dropCard(upg, pick) end
     end)
   end
-  -- AND THEN IT IS CUT TO THIRTEEN. The old Tyrant's carcass is 13 parts
-  -- on every rung - rules/bat.html's setup - so the surplus comes off a
-  -- shuffled pool and goes back to the box, which makes WHICH parts are
-  -- in the game random rather than a function of deck order.
+  -- AND THEN IT IS CUT TO THIRTEEN. The old Tyrant's carcass is 13
+  -- Splices on every rung - rules/bat.html's setup - so the surplus
+  -- comes off a shuffled pool and goes back to the box, which makes
+  -- WHICH Splices are in the game random rather than a function of
+  -- deck order.
   --
   -- ONE CARD PER STEP, which is one card per eight frames. Four earlier
   -- versions each broke in their own way and each is worth the line,
@@ -2692,8 +2695,8 @@ function setupBAT()
     -- it retires the Health track card from the felt; the plate joined
     -- it on 2026-11-22.
     --
-    -- IT IS NOT LIVE IN THE LAB. "Put the Health die on the Health
-    -- track at 12" is a Wake-Up step, so this is set here to what the
+    -- IT IS NOT LIVE IN THE LAB. "Start the Prototyrant's Health at
+    -- 12" is a Wake-Up step, so this is set here to what the
     -- battle will want and not read until then. Set rather than left
     -- at 0, because a dial reading 0 through a whole lab phase reads
     -- as a dead machine.
@@ -2738,7 +2741,7 @@ function setupBAT()
     STATE.splices = 0
     refreshPanel()
     say('BAT ready -- ' .. STATE.difficulty .. '. The old Tyrant\'s' ..
-        ' carcass is 13 parts, with ' .. spec .. ' Specimens mixed in,' ..
+        ' carcass is 13 Splices, with ' .. spec .. ' Specimens mixed in,' ..
         ' on its own pile at the RIGHT, and it reveals two at a time' ..
         ' into the wide space beside it. Your Prototyrant is the LEFT' ..
         ' half of the table: its grafts pile, the space it reveals' ..
@@ -2760,11 +2763,12 @@ function setupBAT()
         ' with the last TWO of those eight, and put that packet of' ..
         ' three underneath the first six. Six, seven or eight' ..
         ' Experiments will resolve and you will not know which. Every' ..
-        ' Experiment grafts one revealed part onto your Prototyrant and' ..
-        ' lets the old Tyrant reclaim the other -- winning decides WHICH,' ..
-        ' not how many. The graft goes on the left pile face-up; the' ..
-        ' reclaimed part goes to the old Tyrant\'s discard at the' ..
-        ' bottom right, where it waits to be shuffled back in. The' ..
+        ' Experiment grafts one revealed Splice onto your Prototyrant' ..
+        ' and lets the old Tyrant reclaim the other -- winning decides' ..
+        ' WHICH, not how many. The graft goes on the left pile' ..
+        ' face-up; the reclaimed Splice goes to the old Tyrant\'s' ..
+        ' discard at the bottom right, where it waits to be shuffled' ..
+        ' back in. The' ..
         ' Tyrant Attacks stay in the bag until Wake-Up.')
   end)
   run()
@@ -3890,9 +3894,10 @@ function startBattle()
   step(function() grafts = shuffleGrafts() end)
   step(function()
     -- THE DIAL IS THE PROTOTYRANT'S HEALTH, and the battle is where it
-    -- starts mattering: "Put the Health die on the Health track at 12.
-    -- That is the Prototyrant's Health and all four Rats share it...
-    -- at 0 the Rats lose." Turned to what it already reads, so an
+    -- starts mattering: "Start the Prototyrant's Health at 12... All
+    -- four Rats share it - damage nothing absorbs comes off this one
+    -- number, and at 0 the Rats lose." Turned to what it already
+    -- reads, so an
     -- Experiment that raised it keeps the raise; see the header.
     --
     -- THERE IS NO HEALTH TRACK CARD ANY MORE. It came out here, face-up
@@ -4448,18 +4453,12 @@ function onObjectDrop(color, obj)
   -- hears about: it is physics. Cheap - altFace leaves anything that
   -- is not a landscape card alone on its first line.
   altFace(obj)
-  -- THE HEALTH TRACK CARD IS NOT PART OF THIS TABLE. It was furniture
-  -- here - locked where it landed, with the Health die pushed along
-  -- fifteen printed spaces - until the dial took the number over on
-  -- 2026-11-21. Nothing deals it, so nothing can drop it; a player
-  -- who takes it out of the bag by hand gets an ordinary card.
-  if STATE.game == 'BAT' and deckLabel(obj.getName()) == 'Health Track' then
-    say('The Health track card is not used and is not in the' ..
-        ' rulebook: the dial beside the battle pool and the' ..
-        ' plate next to it are the Prototyrant' .. chr39 ..
-        's Health.')
-    return
-  end
+  -- THERE IS NO HEALTH TRACK GUARD HERE ANY MORE. A say() stood on
+  -- these lines until 2026-11-23 to tell a player who fetched the
+  -- card out of the bag by hand what carried its number instead.
+  -- The card is not printed, not in decks.py and not in the bag, so
+  -- nothing can be fetched and the branch was dead the moment the
+  -- generator stopped making the sheet.
   if STATE.game ~= 'NAP' then return end
   local p = obj.getPosition()
   if math.abs(p.x - PILE_X) < 6.0 then refreshCounts() end

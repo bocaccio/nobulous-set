@@ -34,11 +34,13 @@ DECKS = [
          land=False, game='BAT', label='Specimens', card='Specimen'),
     dict(key='BAT_TyrantAttacks', count=7, w=7, h=1, back='CardBack_BAT_TyrantAttack',
          land=False, game='BAT', label='Tyrant Attacks', card='Tyrant Attack'),
-    # The file id stays BAT_HealthTrack - renaming it moves the mod's baked
-    # art URLs - but the CARD and its label are the Prototyrant's
-    # shared Health track.
-    dict(key='BAT_HealthTrack', count=1, w=1, h=1, back='CardBack_BAT_HealthTrack', land=False,
-         game='BAT', label='Health Track'),
+    # THERE IS NO HEALTH TRACK DECK. It was a 15-space grid with the
+    # Health die standing on it; the dial beside the battle pool took
+    # the number over on 2026-11-21, the rulebook dropped it as a
+    # component on 2026-11-22, and the generator stopped printing it on
+    # 2026-11-23. THIS MANIFEST IS WHAT FILLS THE BAG, so an entry left
+    # here would put a card in the box that no sheet exists for - the
+    # mod would bake a URL for art deploy.py no longer writes.
     # ---- NAP -------------------------------------------------------------
     dict(key='NAP_Apprentices', count=3, w=3, h=1, back='unique', land=True,
          game='NAP', label='Apprentices', card='Apprentice'),

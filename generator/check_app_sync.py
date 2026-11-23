@@ -783,12 +783,63 @@ _want_rounds = [(k, _brev["SPECIMENS_IN_POOL"][k], _brev["ROUND_LIMITS"][k])
 check("rules/bat.html prints batrev's Specimens and rounds per rung",
       _book_rounds == _want_rounds,
       "book %r, source %r" % (_book_rounds, _want_rounds))
+# AND THE WORD 'PART' IS NOT A GAME TERM ANY MORE, 2026-11-23. A card in
+# the carcass is a SPLICE and it is a GRAFT once the Prototyrant takes
+# it; both words were already in the book, and what went was the generic
+# one sitting in front of them.
+#
+# A COUNT, NOT A SPELLING. The book still says 'Red is not part of the
+# pool', which is ordinary English, so this cannot ask for the string to
+# be absent - it asks that the five places that NAMED the thing name a
+# Splice, and that the section heading is not Parts any more.
+check("rules/bat.html calls a card out of the carcass a Splice",
+      "Reveal 2 Splices from the old Tyrant" in _RULES["bat"]
+      and "the two Splices' combined Value" in _RULES["bat"]
+      and "both Splices leave the deck" in _RULES["bat"]
+      and "Thirteen Splices go in" in _RULES["bat"]
+      and "<h2>Splices</h2>" in text("rules/bat.html")
+      and "<h2>Parts</h2>" not in text("rules/bat.html"),
+      "the book half-renamed the thing both halves of the table hold")
+# ...AND THE FELT SAYS THE SAME, because the overlay is the only rules
+# text some tables ever read, and it is the one Jon renamed first.
+_tmpl_bat = text("tts/make_template.py")
+check("...and so does the overlay",
+      '"REVEALED\\nSPLICES"' in _tmpl_bat
+      and '"RECLAIMED\\nSPLICE"' in _tmpl_bat
+      and '"REVEALED\\nPARTS"' not in _tmpl_bat
+      and '"TYRANT\\nRECLAIMED"' not in _tmpl_bat,
+      "the felt and the book disagree about what a card is called")
+# ...AND THE HEALTH LABEL CLEARS THE DISC IT NAMES. It was two lines
+# 2.1 below the dial's centre until 2026-11-23 and the token sat over
+# the first of them - a thing no harness here could see, because the
+# overlay is a picture and nothing measures a picture.
+#
+# SO THE DRAWING MEASURES ITSELF. make_template.py works the position
+# out from the ring and the top of the exhausted corner and then
+# ASSERTS the gap both ways, against the text's own measured height -
+# so putting the label back under the dial fails the build that draws
+# it. What this check does is stop that assertion being deleted, which
+# is the only way the property can be lost quietly.
+check("...and the overlay proves its Health label clears the dial",
+      "hp_half = glyphs.text_size(hp_txt, LABEL_PT, FONT)" in _tmpl_bat
+      and "assert hp_z + hp_half < float(g.BAT_CHIP_Z) - CHIP_R"
+      in _tmpl_bat
+      and "assert hp_z - hp_half > EXHAUSTED[2]" in _tmpl_bat
+      # ...AND ONE RADIUS SERVES THE RING AND THE CLEARANCE, so a ring
+      # drawn at one size cannot be measured at another. That is what
+      # the last clause is for: no circle may carry a literal again.
+      and "CHIP_R = 1.1" in _tmpl_bat
+      and "circle(d, float(g.BAT_CHIP_X), float(g.BAT_CHIP_Z), CHIP_R)"
+      in _tmpl_bat
+      and not re.search(r"circle\(d, [^)]*, 1\.1\)", _tmpl_bat),
+      "the label can go back under the disc without failing a build")
+
 # AND THE PARTS DECK IS ONE NUMBER ON EVERY RUNG. It was 12/13/14/15 for a
 # day; a deck card is a whole Splice, which is a whole attack out of ten
 # rounds, so the rungs could not be spaced with it.
 _parts = set(_brev["PARTS_AT_SETUP"].values())
 rulenum("bat", r"deal (\d+) at random", sorted(_parts)[0],
-        "the old Tyrant's parts deck")
+        "the old Tyrant's Splice deck")
 check("...and that deck is the same size on every rung",
       len(_parts) == 1, "%r" % (_brev["PARTS_AT_SETUP"],))
 # THERE IS NO GRAFT LIMIT, and the book has to say so: a Rat held at most 3
@@ -902,7 +953,7 @@ check("rules/nrj.html: 5 Knowledge, 5 Physical and 5 Cover-Up Exhibits",
 check("rules/bat.html prints the Research Note claim cost, and batrev.py "
       "charges it",
       "Claiming one costs you the choice" in _RULES["bat"]
-      and "the old Tyrant picks the part it reclaims" in _RULES["bat"]
+      and "the old Tyrant picks the Splice it reclaims" in _RULES["bat"]
       and _brev["NOTE_PRICE"] == "choice",
       "NOTE_PRICE=%r" % (_brev.get("NOTE_PRICE"),))
 check("rules/aos.html prints the Backdoor Routine claim cost, and aos.py "
@@ -3688,33 +3739,54 @@ _dealt_by_finale = [d for d in _bagged
 # DECISION rather than a deck somebody forgot, and the setup has to say
 # so out loud.
 BY_HAND = {"Wake-Up"}
-# ...AND ONE NOTHING DEALS AT ALL. The Health track card was a
-# 15-space grid with the Health die standing on it; the dial beside
-# the battle pool carries the Prototyrant's Health as of 2026-11-21,
-# so the card has no job on this table. It is named here rather than
-# dropped from IN_THE_BAG so that retiring it stays a DECISION on the
-# record, and the next check holds the mod to saying so out loud when
-# a player fetches it anyway.
-RETIRED = {"Health Track"}
-check("every deck that waits in a box is dealt by a finale, handed "
-      "to the player in words, or retired",
-      sorted(set(_bagged) - set(_dealt_by_finale)
-             - BY_HAND - RETIRED) == [],
+check("every deck that waits in a box is dealt by a finale or handed "
+      "to the player in words",
+      sorted(set(_bagged) - set(_dealt_by_finale) - BY_HAND) == [],
       "never dealt: %r"
-      % (sorted(set(_bagged) - set(_dealt_by_finale)
-                - BY_HAND - RETIRED),))
-check("...and a retired card says what carries its number instead",
-      all(d in _lua for d in RETIRED)
-      and "The Health track card is not used and is not in the" in _lua
-      # ...AND NOTHING STILL DEALS IT, which is the half a mention
-      # cannot prove: a say() and a deckOut would both be here.
+      % (sorted(set(_bagged) - set(_dealt_by_finale) - BY_HAND),))
+
+# AND THERE IS NO RETIRED CARD IN THE BAG ANY MORE. A third set sat
+# here for a day - RETIRED = {"Health Track"} - for a printed card the
+# table had no job for: the dial took its number on 2026-11-21 and the
+# rulebook dropped the component on 2026-11-22, but the sheet was still
+# rendered and the deck was still in the box, so the mod had to tell a
+# player who fetched it what carried the number instead.
+#
+# JON RETIRED THE PRINT ON 2026-11-23, so the whole chain is gone and
+# this check is the stronger claim: not that the card is explained, but
+# that no registry makes one.
+#
+# A PREDICATE SIX FILES WIDE, because a removal like this half-happens.
+# A deck dropped from tts/decks.py while build_bat.py still renders the
+# sheet leaves a PnP page no rulebook mentions; a sheet dropped while
+# the manifest stands leaves the mod baking an art URL deploy.py never
+# writes, and TTS answers that 404 by opening the Custom Tile dialog
+# over a blank face - which reads as a broken object, not a missing
+# file. So every file that named it is asked, in its CODE and not in
+# its prose: each one carries a comment saying what left and why.
+_track_homes = (("generator/build_bat.py",
+                 ("BAT_HealthTrack", "TRACK_CSS", "TRACK_GREEN")),
+                ("generator/pack.py", ("BAT_HealthTrack",)),
+                ("generator/build_catalog.py", ("BAT_HealthTrack",)),
+                ("tts/decks.py", ("BAT_HealthTrack", "Health Track")))
+_track_left = sorted(
+    "%s: %s" % (f, n) for f, names in _track_homes for n in names
+    if n in chr(10).join(l.split("#")[0]
+                         for l in text(f).splitlines()))
+check("the Health track card is gone from every registry that made it",
+      not _track_left
+      # ...AND OUT OF THE SCRIPT'S OWN LISTS, which is where the
+      # evidence of a half-removal sits: a label left in IN_THE_BAG
+      # with no deck behind it, or a drop handler for a card that
+      # cannot be held.
+      and "'Health Track'" not in _lua_code
+      and "Health track card is not used" not in _lua
       and "deckOut('Health Track'" not in _lua
-      # ...AND THE BOOK AGREES THAT IT IS RETIRED. The card is still
-      # printed and still in the bag - a player can fetch it - but it
-      # is no longer a component, so the mod must not point at the
-      # rulebook for it.
-      and "Health track card" not in _RULES["bat"],
-      "the retired card is dealt, or nothing says why it is not")
+      # ...AND OUT OF THE BOOK, and out of the SAVE, which is the only
+      # one of these a player can see.
+      and "Health track card" not in _RULES["bat"]
+      and "Health Track" not in json.dumps(_sv),
+      "still registered: %r" % (_track_left,))
 # AND THE SPECIMENS DECK IS NEVER ASKED FOR ALL BUT ONE OF ITSELF.
 #
 # TTS COLLAPSES A DECK OF ONE into the card inside it: the Deck object
@@ -5105,7 +5177,7 @@ check("a volunteered Splice still ticks the clock",
 check("every Experiment grafts a part, so there is no Splice clock left",
       "Five Splices and it wakes up" not in _RULES["bat"]
       and "awakens the moment it reaches" not in _RULES["bat"]
-      and "both parts leave the deck" in _RULES["bat"]
+      and "both Splices leave the deck" in _RULES["bat"]
       and "self.grafts.append(Part(graft))" in _satr
       and "graft = order[-1]" in _satr
       and "graft = max(parts, key=graft_score)" in _satr,

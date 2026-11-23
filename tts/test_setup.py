@@ -1761,8 +1761,8 @@ def in_the_bag_assertions():
     what it does NOT name must not be sitting there forgotten.
     """
     bagged = sorted(str(v) for v in g_in_the_bag())
-    want("five decks are declared as staying in the bag", bagged,
-         ["Advanced Programs", "Final Exams", "Health Track",
+    want("four decks are declared as staying in the bag", bagged,
+         ["Advanced Programs", "Final Exams",
           "Tyrant Attacks", "Wake-Up"])
     for which, tier in (("BAT", 0), ("BAT", 3), ("NAP", 0), ("NAP", 3),
                         ("AoS", 0), ("AoS", 3)):
@@ -2625,24 +2625,35 @@ def battle_dial_assertions():
 
 
 def track_card_assertions():
-    """The Health track card is not part of this table any more.
+    """There is no Health track card at all any more.
 
     It was furniture: dealt by the battle, locked where it landed, with
     the Health die pushed along fifteen printed spaces. The dial beside
-    the battle pool carries the Prototyrant's Health as of 2026-11-21,
-    so nothing deals the card and nothing locks it.
+    the battle pool took the number on 2026-11-21, the rulebook dropped
+    the component on 2026-11-22, and build_bat.py stopped printing the
+    sheet on 2026-11-23.
 
-    IT IS STILL IN THE BAG, and still in the rulebook's components, so
-    a player can take it out by hand - and what they get then is an
-    ordinary card and a line in chat saying why, rather than a card
-    that silently welds itself to a space nothing uses.
+    SO THE CLAIM IS STRONGER THAN IT WAS. For a day the card was a
+    printed component nothing dealt, and the test checked that a player
+    who fetched it out of the bag was told what carried its number.
+    There is nothing to fetch now: no entry in decks.py, so no deck in
+    the BAT bag, so no object with that name anywhere in the save. THE
+    MANIFEST IS THE PREDICATE - a name in a say() cannot satisfy it.
     """
+    want("no deck of it is manifested at all",
+         [d["label"] for d in DECKS
+          if "Health" in str(d.get("label"))
+          or "Health" in str(d.get("key"))], [])
     w, g = start("Standard", 0, Panel())
     g.setupBAT()
     drain(w)
-    want("no setup deals the Health track card",
+    want("...so no setup can deal one",
          [n for n in (o.name for o in w.table.values())
           if n.startswith("Health Track")], [])
+    want("...and no bag still holds one",
+         sorted(k for b in w.byguid.values() if b.bag
+                for k in (o.name for o in b.kids)
+                if k.startswith("Health Track")), [])
     # AND NOTHING IN THE SCRIPT STILL KNOWS WHERE IT WENT. A predicate
     # a name cannot satisfy: these are the functions the track needed,
     # and a table that still has them has not really retired the card.
@@ -2651,16 +2662,20 @@ def track_card_assertions():
                       "TRACK_PITCH", "TRACK_SPACES", "BAT_TRACK")
           if g[n] is not None], [])
 
+    # AND A CARD OF THAT NAME, IF ONE EVER CAME BACK, IS AN ORDINARY
+    # CARD. The drop handler had a branch for this one until
+    # 2026-11-23; what must not come back with it is the old
+    # behaviour, which locked the card where it landed and welded the
+    # Health die to a printed space.
     mark = len(w.said)
     card = Obj(w, "track", "Health Track")
     card.pos = (float(g.batRowZ(3)), 1.0, float(g.batRowZ(3)))
     w.table[card.guid] = card
     g.onObjectDrop("White", card)
     drain(w)
-    want("a track card a player fetches is left unlocked",
-         card.locked, False)
-    want("...and the table says what carries the Health instead",
-         [True for m in w.said[mark:] if "dial" in m], [True])
+    want("a card of that name is left unlocked", card.locked, False)
+    want("...and the table does not explain a card it does not have",
+         [m for m in w.said[mark:] if "Health track card" in m], [])
 
 def live_pile(w, gid):
     """The object that holds that GUID now.

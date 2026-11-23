@@ -4,7 +4,7 @@ from gen import render_deck, render_duplex, make_back, elements, hdr_fit, title_
 # The shape of the cards being built, for header measurement.
 CARD_SIZE = PORTRAIT
 
-SPEC_FTR = ('Target = the two revealed parts&rsquo; combined Value minus this number, minimum 1.')
+SPEC_FTR = ('Target = the two revealed Splices&rsquo; combined Value minus this number, minimum 1.')
 TAP_FTR = 'Tap to use. A tapped Upgrade cannot absorb damage.'
 
 EXPERIMENTS = [
@@ -26,7 +26,7 @@ EXPERIMENTS = [
     ("Containment Failure", 5, "You may choose to reduce the Target by 2. If you do, before committing, roll a Yellow die. On a hit or Crit, banish one available Blue die. Otherwise, banish that Yellow die.", "The blast shield performed exactly as specified. The blast did not."),
     ("Endurance Trial", 5, "STR is 1 for this Experiment.", "The experiment is repeatable. Unfortunately, so is the overtime."),
     ("Field Retrofit Trial", 5, "If successful, you may swap one of the active Rat's Upgrades with one of the revealed Upgrades. Specimens cannot be swapped.", "The replacement fits perfectly once you stop asking what it replaced."),
-    ("Methodological Optimization", 5, "Reduce the Target to 0. The old Tyrant reclaims the stronger revealed part and your Prototyrant grafts the weaker. If tied, you choose which it takes.", "Why test both prototypes when the Prototyrant can test the better one?"),
+    ("Methodological Optimization", 5, "Reduce the Target to 0. The old Tyrant reclaims the stronger revealed Splice and your Prototyrant grafts the weaker. If tied, you choose which it takes.", "Why test both prototypes when the Prototyrant can test the better one?"),
     ("Degraded Tissue Study", 5, "If successful, raise the Prototyrant's Health by 2.", "The tissue tears neatly along the dotted line Nobulous insists he did not draw."),
 ]
 
@@ -129,7 +129,6 @@ def C(title, sub, body, ftr='', warn=False, acc=None, tint=None, flavor='', dot=
 
 
 # Card backs first: the deck PnPs interleave them behind the fronts.
-make_back('CardBack_BAT_HealthTrack', 'BAT', 'Health', '#2c5f4a')
 make_back('CardBack_BAT_Encounter', 'BAT', 'Experiment', '#2c5f4a')
 make_back('CardBack_BAT_Upgrade', 'BAT', 'Upgrade &middot; Specimen', '#2c5f4a')
 make_back('CardBack_BAT_TyrantAttack', 'BAT', 'Tyrant Attack', ATTACK_ACC)
@@ -196,81 +195,26 @@ print("Rats", render_duplex('BAT_Rats', sides_a, sides_b, 'BAT', LANDSCAPE), 'tw
 CARD_SIZE = PORTRAIT
 
 
-# ---- Health: a 15-space track, and the PROTOTYRANT's own.
-#      Put the Health die on 12 and step it down one space per point of
-#      damage nothing absorbed. All four Rats share this one track.
+# ---- NO HEALTH CARD. The Prototyrant's Health is a number you keep.
 #
-#      IT WAS THE TYRANT'S BUFF HP until 2026-11-20 - an outer defensive
-#      layer in front of five Splices, with a core Health behind them -
-#      and the scavenged-Tyrant design retired both of those stats. The
-#      old Tyrant's bulk IS its wall of Splices now; it has no Health at
-#      all, and this card belongs to the machine the Rats built.
+#      THERE WAS A CARD HERE UNTIL 2026-11-23: a 15-space grid, printed
+#      green, with the Health die standing on 12 and stepped down one
+#      space per point nothing absorbed. It was the Tyrant's Buff HP
+#      before 2026-11-20 and the Prototyrant's shared Health after it,
+#      and in both lives it was the one component in BAT that existed
+#      only to hold a number.
 #
-#      FIFTEEN SPACES FOR A TWELVE, deliberately: the start is 12 on every
-#      rung and the three spare spaces are there for a table that wants to
-#      start higher. The card prints no value, because nothing on it is
-#      per-difficulty any more - what the difficulty sets is the ROUNDS.
-TRACK_GREEN = '#2c5f4a'
-# A die is placed on the track, so the spaces are square and as large as the
-# card allows: 5 rows of 3 at 11mm leaves just enough room once the heading
-# text is trimmed. The number sits in a corner so a die resting on the space
-# does not hide it.
-TRACK_CSS = ('.trk{display:flex;flex-direction:column;gap:.6mm;margin-top:1mm}'
-             '.trow{display:flex;justify-content:center;gap:.6mm}'
-             '.sp{width:11mm;height:11mm;border:.9pt solid #b8b0a0;border-radius:1.4mm;'
-             'background:#f2eee2;display:flex;align-items:flex-start;'
-             'justify-content:flex-start;padding:.6mm 0 0 1mm;box-sizing:border-box;'
-             'font-size:8.5pt;font-weight:bold;color:#2c5f4a;line-height:1}'
-             '.sp.mark{border-width:1.8pt;border-color:#8a6d1f;background:#f7efd8}'
-             '.tracktip{font-size:6.2pt;line-height:1.25;text-align:center;'
-             'color:#6f675a;margin:0 0 1.4mm}')
-
-
-def track():
-    # No gold spaces: the difficulty table names the outer layer's value, so
-    # nothing on the card can mark one space as the start without going stale
-    # the moment that table moves.
-    marks = set()
-    cells = ['<div class="sp%s">%d</div>' % (' mark' if v in marks else '', v)
-             for v in range(15, 0, -1)]
-    rows = ['<div class="trow">%s</div>' % ''.join(cells[i:i + 3])
-            for i in range(0, len(cells), 3)]
-    return '<div class="trk">%s</div>' % ''.join(rows)
-
-
-buff = [C('Health', 'Prototyrant · shared',
-          # KEEP THIS THE DEPTH IT IS: THREE LINES, so about 105 to 125
-          # characters at 6.2pt. The tip sits above the grid, so a line
-          # more or less moves the fifteen spaces and the Lua's snap
-          # points no longer line up with them - TRACK_GRID_DZ is one
-          # pitch below the card's centre and check_app_sync measures the
-          # rendered card against it. A two-line tip raised the grid by
-          # 0.234 units, which is exactly one line of this text, and a
-          # six-line one pushed it off the bottom.
-          '<div class="tracktip">The Prototyrant’s Health, shared by all '
-          'four Rats: damage no graft absorbs comes off here. Step the die '
-          'down.</div>'
-          + track(),
-          # NO FOOTER, AND THERE IS NO ROOM FOR ONE. The fifteenth space ends
-          # 84.24mm down an 88.9mm card, which is the bottom of the body's
-          # padding box to within a tenth of a millimetre, and gen's `.ftr`
-          # wants 5.67mm of it (1.5 margin, a .4pt rule, 1.1 padding, one
-          # 6.8pt line). This card asked for 'Damage reaches no Splice until
-          # this layer is gone.' from the day it was written and NEVER
-          # PRINTED IT: an overflowing flex item is squashed, not spilled, so
-          # the line and its rule simply were not there, and nothing could
-          # say so until check_cards.py grew an ink pass on 2026-11-14.
-          #
-          # The grid cannot hand the room back. tts/lua.lua sets
-          # TRACK_PITCH = CARD_W * (11.6 / 63.5) and TRACK_GRID_DZ = -TRACK_PITCH,
-          # and check_app_sync measures both off this art, so the spaces and
-          # the grid's centre are where the die's snap points are. Honouring
-          # that pin, 10mm spaces free 3.07mm and 10.5mm free 1.32mm - still
-          # short of 5.67mm - and only 9mm spaces fit a footer, under a die
-          # that already overhangs an 11mm one.
-          #
-          # The rule survives: the tip above the grid says it in other words,
-          # and rules/bat.html says it under The Tyrant track.
-          acc=TRACK_GREEN)]
-print("Health track", render_deck('BAT_HealthTrack', buff, 'BAT', PORTRAIT, TRACK_CSS, back='CardBack_BAT_HealthTrack'))
+#      IT LEFT THE TABLE FIRST, THEN THE BOOK, THEN THIS FILE. The dial
+#      beside the battle pool took the number over on 2026-11-21; the
+#      rulebook stopped listing it as a component on 2026-11-22; Jon
+#      retired the print on 2026-11-23. TRACK_GREEN, TRACK_CSS,
+#      track() and the `buff` deck went with it, as did its card back,
+#      its pack.py entry, its catalog entry and its line in
+#      tts/decks.py - the mod's bag is built from that manifest, so a
+#      deck left there is a deck still in the box.
+#
+#      DO NOT PUT IT BACK WITHOUT THE BOOK. Every other count in the
+#      set is a number the table keeps, and two things showing one
+#      number is how the printed game's core Health and its Buff HP
+#      came to be confused for each other in the first place.
 

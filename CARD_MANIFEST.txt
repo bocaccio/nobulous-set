@@ -338,6 +338,11 @@ TWO-SIDED CARDS
                         8 cards each   Stable face / Overheated back
 
 DECK SHEETS AND BACKS
+  BAT_HealthTrack LEFT THIS TABLE on 2026-11-23. It was a 15-space grid with
+  the Health die standing on it; the dial beside the battle pool took the
+  number on 2026-11-21, rules/bat.html dropped the component on 2026-11-22,
+  and build_bat.py, pack.py, build_catalog.py and tts/decks.py stopped making
+  it the day after. The sections below that still describe it are HISTORY.
   DECK                           GRID    ORIENT     BACK
   AoS_Advanced                   8x1     portrait   AoS_Advanced_TTS_back.png  (Unique Backs)
   AoS_ElementMats                5x1     portrait   (none - mats)
@@ -346,7 +351,6 @@ DECK SHEETS AND BACKS
   AoS_Specialized                8x1     portrait   AoS_Specialized_TTS_back.png  (Unique Backs)
   AoS_Technicians                3x1     landscape  AoS_Technicians_TTS_back.png  (Unique Backs)
   AoS_Unstable                   8x1     portrait   AoS_Unstable_TTS_back.png  (Unique Backs)
-  BAT_HealthTrack                     1x1     portrait   CardBack_BAT_HealthTrack
   BAT_Encounters                 10x2    portrait   CardBack_BAT_Encounter
   BAT_WakeUp                     1x1     portrait   CardBack_BAT_Encounter
   BAT_Rats                       4x1     landscape  BAT_Rats_TTS_back.png  (Unique Backs)
@@ -376,7 +380,6 @@ CARD BACKS
   BAT   CardBack_BAT_Encounter        Encounter deck
         CardBack_BAT_Upgrade          Upgrade deck (regular Upgrades + Specimens)
         CardBack_BAT_TyrantAttack     Tyrant Attack deck
-        CardBack_BAT_HealthTrack           Health track (a mat; never shuffled)
   NAP   CardBack_NAP_Assignment       Assignment deck (Tasks, Opportunities,
                                       Setbacks, FINF)
         CardBack_NAP_FinalExam        Final Exams - reads FINAL EXAM / SET ASIDE

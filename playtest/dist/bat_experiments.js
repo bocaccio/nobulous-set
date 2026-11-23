@@ -110,7 +110,7 @@ window.BAT_EXPERIMENTS = [
   {
     "name": "Methodological Optimization",
     "target": 5,
-    "effect": "Reduce the Target to 0. The old Tyrant reclaims the stronger revealed part and your Prototyrant grafts the weaker. If tied, you choose which it takes.",
+    "effect": "Reduce the Target to 0. The old Tyrant reclaims the stronger revealed Splice and your Prototyrant grafts the weaker. If tied, you choose which it takes.",
     "flavor": "Why test both prototypes when the Prototyrant can test the better one?"
   },
   {

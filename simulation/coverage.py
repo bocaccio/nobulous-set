@@ -262,10 +262,19 @@ CLAIMS = [
     Claim("BAT", "Wake-Up", 1, lambda: 1,
           note="the clock, not an effect. batrev deals it as the None in "
                "exp_deck; revealing it sets phase to wakeup"),
-    Claim("BAT", "Health track", 1, lambda: 1,
-          note="a track, not an effect. It was the Tyrant's Buff HP until "
-               "2026-11-20; the card is the PROTOTYRANT's shared Health "
-               "now, and batrev.SHARED_HP is what reads it"),
+    # THERE WAS A HEALTH TRACK CLAIM HERE. It was the Tyrant's Buff HP
+    # until 2026-11-20 and the Prototyrant's shared Health after it, and
+    # in both lives it was a TRACK rather than an effect - the claim
+    # read `lambda: 1`, which is the shape AGENTS.md warns about and
+    # which is exactly why it could go on passing after the card was
+    # retired from the felt on 2026-11-21.
+    #
+    # THE CARD IS NOT PRINTED ANY MORE, 2026-11-23: no sheet, no deck,
+    # no component in rules/bat.html. The number it held is still
+    # modelled - batrev.SHARED_HP - and the claims that cover it are
+    # the ones that read what Health DOES, not the ones that count a
+    # card. check_app_sync.py holds the removal: it asks every registry
+    # that made the card whether it still names one.
 
     # -----------------------------------------------------------------------
     # NAP. Tasks are well covered; the Final Exams are not covered at all,

@@ -179,6 +179,13 @@ LABEL_PT = 34
 # What size each label was actually drawn at, so main() can check.
 DREW = []
 
+# HOW BIG THE CHIP AND THE DIAL ARE DRAWN. Both are Custom_Tokens at
+# CHIP_SCALE, and both get the same ring. It is a constant rather than
+# two literals because BAT's Health label is now placed off the BOTTOM
+# of the dial's ring: a ring drawn at one size and measured at another
+# puts the words back under the disc.
+CHIP_R = 1.1
+
 
 def label(d, text, x, z, size=LABEL_PT, ink=None, fit=None):
     """Centred text, for the boxes whose contents are not obvious.
@@ -328,11 +335,16 @@ def draw_bat(d, lua):
     # ---- RIGHT: the old Tyrant's half, the mirror of the left.
     #
     # ONE SPACE, TWO JOBS, because the two phases ask the same thing of
-    # it: "Reveal 2 parts from the old Tyrant's deck" in the lab, and
-    # the top Splice of its wall in the battle. The felt named the
+    # it: "Reveal 2 Splices from the old Tyrant's deck" in the lab,
+    # and the top Splice of its wall in the battle. The felt named the
     # second job in a line of small type until 2026-11-22 and names
     # neither now: the battle says which it is, once, in the chat.
-    label(d, "REVEALED\nPARTS",
+    #
+    # IT SAID PARTS UNTIL 2026-11-23. Jon's call: a card out of the
+    # carcass is a SPLICE, and it is a GRAFT once the Prototyrant takes
+    # it - so the two halves of this felt name the two things a card
+    # can be, and the generic word is gone from the book as well.
+    label(d, "REVEALED\nSPLICES",
           float(g.batTyrantShowX()), rz(deck_row), fit=wide)
     # ONE PILE, TWO NAMES. It is the carcass the lab draws from, and at
     # Wake-Up what is left of it is shuffled with everything the old
@@ -341,10 +353,13 @@ def draw_bat(d, lua):
           rz(deck_row), fit=half * 1.8)
     label(d, "TYRANT DICE", float(g.BAT_TRAY_X), float(g.batTrayZ()),
           fit=float(g.BAT_TRAY_HW) * 1.6)
-    # "...the reclaimed part goes to the old Tyrant's discard, where it
-    # waits to be shuffled back in and revealed again." At Wake-Up it is
-    # combined with the undrawn carcass above it to make the wall.
-    label(d, "TYRANT\nRECLAIMED", float(g.batTyrantDeckX()), rz(trash_row),
+    # "...the reclaimed Splice goes to the old Tyrant's discard, where
+    # it waits to be shuffled back in and revealed again." At Wake-Up
+    # it is combined with the undrawn carcass above it to make the
+    # wall. Named for what lies here rather than for whose half it is
+    # on - Jon's call, 2026-11-23 - because the half is obvious and
+    # the word SPLICE is the one the battle uses.
+    label(d, "RECLAIMED\nSPLICE", float(g.batTyrantDeckX()), rz(trash_row),
           fit=half * 1.8)
 
     # ---- AND ONE NUMBER ON TWO FACES, under the battle pool: the disc
@@ -352,7 +367,7 @@ def draw_bat(d, lua):
     # share a label rather than carrying one each. They were two numbers
     # for a day - the plate counted the rounds - and Jon took the round
     # count off the table on 2026-11-22.
-    circle(d, float(g.BAT_CHIP_X), float(g.BAT_CHIP_Z), 1.1)
+    circle(d, float(g.BAT_CHIP_X), float(g.BAT_CHIP_Z), CHIP_R)
     card(d, float(g.BAT_READOUT_X), float(g.BAT_READOUT_Z),
          float(g.BAT_READOUT_HW), 0.95, PEN["snap"], 4)
     # THE FIT IS THE GAP ITSELF, measured off the two boxes either side
@@ -361,8 +376,34 @@ def draw_bat(d, lua):
     hp_x = (float(g.BAT_CHIP_X) + float(g.BAT_READOUT_X)) / 2.0
     hp_fit = 2.0 * min(hp_x - (float(g.batGraftDeckX()) + half),
                        (rx(1) - half) - hp_x) - 0.8
-    label(d, "PROTOTYRANT\nHEALTH", hp_x,
-          float(g.BAT_CHIP_Z) - 2.1, fit=hp_fit)
+    # ONE LINE, CENTRED IN THE GAP UNDER BOTH OBJECTS, and both of
+    # those are measured rather than chosen. It was two lines 2.1
+    # below the dial's centre: at 34pt a two-line block reaches 0.67
+    # up from its middle, which put PROTOTYRANT within a third of a
+    # unit of the ring - and the DISC ITSELF is a physical token that
+    # overhangs the ring, so Jon read the label from under the dial
+    # (2026-11-23).
+    #
+    # THE GAP IS WHAT THERE IS: the ring's bottom above, and the top
+    # edge of the exhausted corner below, which is drawn straight
+    # across this x range. One line reaches 0.26 from its middle, so
+    # centring it leaves about 1.2 units clear each way - enough that
+    # a disc half again the size of its ring still does not reach it.
+    hp_z = ((float(g.BAT_CHIP_Z) - CHIP_R) + EXHAUSTED[2]) / 2.0
+    hp_txt = "PROTOTYRANT HEALTH"
+    # AND THE BUILD MEASURES IT, because this is a clearance and not a
+    # matter of taste. The text's own height is measured rather than
+    # worked out from LABEL_PT alone: the point size is right here,
+    # but a cap height guessed at is how the two-line version came to
+    # sit a third of a unit from the ring and read as under the disc.
+    hp_half = glyphs.text_size(hp_txt, LABEL_PT, FONT)[1] / PX / 2.0
+    assert hp_z + hp_half < float(g.BAT_CHIP_Z) - CHIP_R, (
+        "the Health label runs under the dial: %.2f vs %.2f"
+        % (hp_z + hp_half, float(g.BAT_CHIP_Z) - CHIP_R))
+    assert hp_z - hp_half > EXHAUSTED[2], (
+        "the Health label runs into the exhausted corner: %.2f vs %.2f"
+        % (hp_z - hp_half, EXHAUSTED[2]))
+    label(d, hp_txt, hp_x, hp_z, fit=hp_fit)
 
     # WHERE THE EXHAUSTED CORNER STOPS AT EITHER END, read off the
     # script rather than guessed at here: the whole bottom band is free
@@ -529,7 +570,7 @@ def draw_game(d, which, slots_out=None):
               fit=half * 1.8)
     # The Chip goes beside a Time Slot, so give it a circle there.
     for cx, cz in chips:
-        circle(d, cx, cz, 1.1)
+        circle(d, cx, cz, CHIP_R)
         if slots_out is not None:
             slots_out.append((cx, cz))
     return fp
