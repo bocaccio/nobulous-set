@@ -5,7 +5,21 @@ from gen import render_deck, render_duplex, make_back, elements, hdr_fit, title_
 CARD_SIZE = PORTRAIT
 
 SPEC_FTR = ('Target = the two revealed Splices&rsquo; combined Value minus this number, minimum 1.')
-TAP_FTR = 'Tap to use. A tapped Upgrade cannot absorb damage.'
+# NO FOOTER ON THE 16, from 2026-11-23. Every ordinary Splice used
+# to print 'Tap to use. A tapped Upgrade cannot absorb damage.' -
+# a rule out of the PRINTED game, where a Rat held its own Upgrades
+# and the battle attacked Rats. NOTHING TAPS HERE: the Prototyrant
+# holds grafts, the exposed one caps the round's dice and blocks an
+# attack whether or not its effect was used, and 'tap' appears
+# nowhere in rules/bat.html, in the lab, or in simulation/bat.py.
+# So all 16 cards stated a rule that does not exist.
+#
+# CUT RATHER THAN REWORDED, Jon's call. Swapping 'Upgrade' for
+# 'Splice' in it would have left the same phantom rule on every
+# card and made it read like live text. C()'s ftr defaults to '',
+# which prints no footer div at all, so the body simply gets the
+# room back - check_cards.py's ink pass measures the result.
+# If tapping is ever wanted, it belongs in the rulebook first.
 
 EXPERIMENTS = [
     ("Baseline Calibration", 3, "Flip the active Lab Rat to its other side. That side remains active until another effect flips it.", "Nobulous checks your pulse, then marks the equipment fit for use."),
@@ -158,7 +172,7 @@ print("Wake-Up", render_deck('BAT_WakeUp', wake, 'BAT', back='CardBack_BAT_Encou
 # every baked art URL in the mod, this back's among them, which NRJ's
 # Modifications deck also prints.
 cards = [C(n, s, '<div class="big">%d</div><div class="biglbl">Value</div><div class="txt">%s</div>' % (v, e),
-           TAP_FTR, acc=CAT[s.split(' - ')[1]], flavor=f) for n, s, v, e, f in UPGRADES]
+           acc=CAT[s.split(' - ')[1]], flavor=f) for n, s, v, e, f in UPGRADES]
 print("Splices", render_deck('BAT_Upgrades', cards, 'BAT', back='CardBack_BAT_Upgrade'))
 
 cards = [C(n, s,

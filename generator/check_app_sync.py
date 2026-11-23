@@ -3018,6 +3018,48 @@ check("BAT's ordinary cards are called Splices wherever a player looks",
       and "'BAT_Upgrades'" in _bbat
       and "key='BAT_Upgrades'" in _decks,
       "the type is half-renamed, or the sheet stem moved with it")
+
+# AND NOTHING A BAT PLAYER READS MENTIONS TAPPING, because nothing in
+# this design taps. Until 2026-11-23 all 16 Splices printed 'Tap to
+# use. A tapped Upgrade cannot absorb damage.' - a rule carried over
+# from the PRINTED game, where a Rat held its own Upgrades and the
+# battle attacked Rats. Here the Prototyrant holds grafts and the
+# exposed one blocks an attack whether or not its effect was used, so
+# the footer told every player to do something the rulebook does not
+# define. Nothing caught it: a phantom rule is spelled correctly, it
+# renders, it fits the card, and no other check reads a footer.
+#
+# THE PREDICATE IS THE WORD, not the constant. 'TAP_FTR not in' is
+# satisfied by a rename, and renaming it to 'a tapped Splice' was the
+# tempting half-fix - same phantom rule, now reading as live text. So
+# this asks the three places a BAT player actually reads: the
+# generator's printed strings, the book's body, and the lab's BAT
+# modules. \btap\b, so the Tyrant Attack flavor line about holding
+# the TAPE while it grows still passes.
+#
+# THE BOOK'S BODY, not _RULES['bat']: _plain() strips tags but leaves
+# what is INSIDE <style>, and the changelog comment up at the top of
+# bat.html is where this decision is written down - in the words
+# 'nothing taps'. Reading that would make the check fail on its own
+# explanation.
+_tap = re.compile(r"\btap(s|ped|ping)?\b", re.I)
+_bat_body = re.sub(r"<[^>]+>", " ",
+                   re.sub(r"<style.*?</style>", " ",
+                          text("rules/bat.html"), flags=re.S))
+_tap_src = chr(10).join(l.split("#")[0]
+                        for l in text("generator/build_bat.py").splitlines())
+_taps = sorted(f for f, body in
+               (("generator/build_bat.py", _tap_src),
+                ("rules/bat.html", _bat_body),
+                ("playtest/dist/bat.js", text("playtest/dist/bat.js")),
+                ("playtest/dist/bat_rules.js",
+                 text("playtest/dist/bat_rules.js")),
+                ("playtest/dist/bat_experiments.js",
+                 text("playtest/dist/bat_experiments.js")))
+               if _tap.search(body))
+check("nothing a BAT player reads mentions tapping",
+      not _taps,
+      "a phantom rule is back in: %r" % (_taps,))
 # ONE SET OF ANGLES FOR ONE DIAL. The save's rotation values and the
 # angles the script turns the Chip to were two separate tables that
 # could only agree by accident, and did not. build_mod.py owns them and
