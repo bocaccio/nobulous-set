@@ -16,7 +16,7 @@ sixteen combinations.
 
 COUNTS ARE NOT ENOUGH, and the tier assertions below are the reason this
 file is longer than it looks like it should be. BAT Tier II takes 6
-ordinary Upgrades out and puts 6 Modifications in: a Tier II that did
+ordinary Splices out and puts 6 Modifications in: a Tier II that did
 nothing at all leaves exactly the same number of cards. So the tier checks
 name the cards rather than counting them.
 
@@ -1286,7 +1286,7 @@ def layout_assertions():
                     # the two corners its markings stand in, its four
                     # dice, and the Experiment deck.
                     #
-                    # It was a grid of four rows with twelve Upgrade
+                    # It was a grid of four rows with twelve Splice
                     # spaces beside the Rats, and a snap point for each
                     # of the Health track's fifteen cells; the Rats hold
                     # no cards and there is no track card now.
@@ -2766,7 +2766,7 @@ def covered_assertions():
     an unnamed card with nowhere to be is a failure, not a default.
     """
     BOXLESS = {"BAT": ("Lab Rat", "Lab Rats (A / B)", "Experiments",
-                       "Experiment", "Upgrades"),
+                       "Experiment", "Splices"),
                "AoS": ()}
     for which, listing in (("BAT", "batBoxes"), ("AoS", "aosBoxes")):
         for lvl in ("Easy", "Nobulous"):
@@ -2921,8 +2921,8 @@ def alt_view_assertions():
     # to come through a flip with no angle at all: zero is the right
     # answer for a portrait card, and a deck is not a card.
     port = [o for o in w.table.values()
-            if o.name.startswith("Experiment") or o.name.startswith("Upgrade")]
-    for o in port[:1] + [deck(w, "Upgrades")]:
+            if o.name.startswith("Experiment") or o.name.startswith("Splice")]
+    for o in port[:1] + [deck(w, "Splices")]:
         if o is None:
             continue
         before = angle(o)
@@ -2972,7 +2972,7 @@ def take_from(w, g, deckname, x, z, nick=None):
     hand leaves the flag set. The card then sits on the table where
     nothing can find it, so a check that something DID NOT happen to
     it passes for the wrong reason. That is exactly what hid a sweep
-    that bags the Upgrades a Rat is holding.
+    that bags the Splices a Rat is holding.
     """
     d = deck(w, deckname)
     if d is None or not d.kids:
@@ -3002,7 +3002,7 @@ def finale_assertions():
     and each of the three has something sitting in the middle of that
     which it must NOT touch - NAP's Completed Credits pile is the
     record the exam pool is built from, BAT's Rats keep their own
-    Upgrades, and AoS still reveals a Limitation per Program. So every
+    Splices, and AoS still reveals a Limitation per Program. So every
     case below checks a keeper as well as a leaver.
     """
     FIN = {"NAP": ("Start the Final Exam", "setupNAP"),
@@ -3181,10 +3181,10 @@ def finale_assertions():
     # now, because "combine the old Tyrant's undrawn deck and its
     # discard, shuffle them, and stand them up as its Splices" is what
     # builds the wall, and the undrawn half used to go in the box.
-    graft = take_from(w, g, "Upgrades",
+    graft = take_from(w, g, "Splices",
                       float(g.batGraftDeckX()),
                       float(g.batRowZ(int(g.BAT_DECK_ROW))))
-    back = take_from(w, g, "Upgrades",
+    back = take_from(w, g, "Splices",
                      float(g.batTyrantDeckX()),
                      float(g.batRowZ(int(g.BAT_TRASH_ROW))))
     carcass = int(g.BAT_CARCASS)
@@ -3217,7 +3217,7 @@ def finale_assertions():
     # own space. A wall built from the discard alone is as deep as the
     # lab was long and never the eight the rulebook allows for.
     wall = [o for o in w.table.values()
-            if o.name.startswith(("Upgrade", "Specimen"))
+            if o.name.startswith(("Splice", "Specimen"))
             and abs(o.pos[0] - float(g.batTyrantDeckX())) < 0.6
             and abs(o.pos[2]
                     - float(g.batRowZ(int(g.BAT_DECK_ROW)))) < 1.0]
@@ -3230,7 +3230,7 @@ def finale_assertions():
          sum((len(o.kids) or 1) for o in wall), carcass - 1)
     want("...so nothing is left on the reclaimed discard",
          [o.name for o in w.table.values()
-          if o.name.startswith(("Upgrade", "Specimen"))
+          if o.name.startswith(("Splice", "Specimen"))
           and abs(o.pos[0] - float(g.batTyrantDeckX())) < 0.6
           and abs(o.pos[2]
                   - float(g.batRowZ(int(g.BAT_TRASH_ROW)))) < 1.0], [])
@@ -4504,9 +4504,9 @@ def main():
     # carcass has to show a Modification, and a Tier 0 carcass never may.
     _seen2, _seen0 = 0, 0
     for _i in range(20):
-        _seen2 += inside(run("Standard", 2, "BAT"), "Upgrades",
+        _seen2 += inside(run("Standard", 2, "BAT"), "Splices",
                          "Unauthorized Modification")
-        _seen0 += inside(run("Standard", 0, "BAT"), "Upgrades",
+        _seen0 += inside(run("Standard", 0, "BAT"), "Splices",
                          "Unauthorized Modification")
     want("Tier II really puts Modifications in the carcass", _seen2 > 0,
          True)
@@ -4520,19 +4520,19 @@ def main():
             w = run(lvl, tier, "BAT")
             # THE CARCASS IS 13 AND ITS COMPOSITION IS RANDOM, which is a
             # printed rule: rules/bat.html mixes the rung's Specimens into
-            # the 16 Upgrades and deals 13 at random. So the exact counts
+            # the 16 Splices and deals 13 at random. So the exact counts
             # this block used to pin cannot come back - what is left to
             # check is the size, the bounds, and that nothing from outside
             # the pool got in.
-            _spc = inside(w, "Upgrades", "Specimen")
-            _ord = inside(w, "Upgrades", "Upgrade ")
-            _mod = inside(w, "Upgrades", "Unauthorized Modification")
+            _spc = inside(w, "Splices", "Specimen")
+            _ord = inside(w, "Splices", "Splice ")
+            _mod = inside(w, "Splices", "Unauthorized Modification")
             want(t + " BAT carcass is 13 parts",
-                 len(deck(w, "Upgrades").kids), 13)
+                 len(deck(w, "Splices").kids), 13)
             want(t + " ...and all 13 are parts", _spc + _ord + _mod, 13)
             want(t + " ...with no more Specimens than the rung mixed in",
                  _spc <= spec, True)
-            want(t + " ...and no more ordinary Upgrades than exist",
+            want(t + " ...and no more ordinary Splices than exist",
                  _ord <= (16 - 6 if tier >= 2 else 16), True)
             want(t + " ...and Modifications only at Tier II or above",
                  _mod == 0 if tier < 2 else _mod <= 6, True)

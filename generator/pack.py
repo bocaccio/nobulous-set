@@ -29,7 +29,7 @@ from gen import OUT, paginate, pnp_layout, stamp, write_pnp
 GAMES = {
     'BAT': [
         ('BAT_Encounters', 'Encounters'),
-        ('BAT_Upgrades', 'Upgrades'),
+        ('BAT_Upgrades', 'Splices'),
         ('BAT_Specimens', 'Specimens'),
         ('BAT_TyrantAttacks', 'Tyrant Attacks'),
         ('BAT_Rats', 'Lab Rats (A / B)'),

@@ -10,12 +10,12 @@ TAP_FTR = 'Tap to use. A tapped Upgrade cannot absorb damage.'
 EXPERIMENTS = [
     ("Baseline Calibration", 3, "Flip the active Lab Rat to its other side. That side remains active until another effect flips it.", "Nobulous checks your pulse, then marks the equipment fit for use."),
     ("Fine Motor Trial", 3, "A Yellow die must be committed to this Experiment. If unable to do so, increase the Target by 1.", "Tiny claws. Tiny screws. Absolutely no margin for error."),
-    ("Structural Stress Trial", 4, "Reveal 1 additional Upgrade for this Experiment. Resolve the normal Upgrade choice using all revealed options.", "Nobulous calls the third prototype a control. Nobody asks what it controls."),
-    ("Contaminated Tissue", 4, "Discard the revealed Upgrades and reveal 2 new Upgrades. These become the Upgrades for this Experiment.", "The sample was sterile until Nobulous explained his definition of sterile."),
+    ("Structural Stress Trial", 4, "Reveal 1 additional Splice for this Experiment. Resolve the normal graft choice using all revealed options.", "Nobulous calls the third prototype a control. Nobody asks what it controls."),
+    ("Contaminated Tissue", 4, "Discard the revealed Splices and reveal 2 new Splices. These become the Splices for this Experiment.", "The sample was sterile until Nobulous explained his definition of sterile."),
     ("Performance Trial", 4, "Discard the top 2 cards of the Experiment deck face down without resolving them.", "The schedule has been accelerated by removing the parts involving caution."),
-    ("Load-Bearing Trial", 4, "A Purple die must be committed to this Experiment. If unable to do so, discard this Experiment and draw another one, replacing any revealed Upgrades.", "Add weight until something fails. Preferably not the researcher."),
+    ("Load-Bearing Trial", 4, "A Purple die must be committed to this Experiment. If unable to do so, discard this Experiment and draw another one, replacing any revealed Splices.", "Add weight until something fails. Preferably not the researcher."),
     ("Diagnostic Trial", 4, "If you commit a Blue die to this Experiment, you may look at the next Experiment and return it to the top of the deck.", "The instruments say everything is fine. The smoke has submitted a dissenting report."),
-    ("Rapid Response Trial", 4, "A Green die must be committed to this Experiment. If unable to do so, discard the stronger revealed Upgrade and continue the Experiment.", "There is no time to do it right, only time to make it testable."),
+    ("Rapid Response Trial", 4, "A Green die must be committed to this Experiment. If unable to do so, discard the stronger revealed Splice and continue the Experiment.", "There is no time to do it right, only time to make it testable."),
     ("Full-Spectrum Trial", 4, "Committed dice must include 3 different colors.", "Nobulous requested versatility. The equipment requested mercy."),
     ("Workspace Efficiency Study", 4, "You may only commit two dice to this Experiment.", "Four researchers. One bench. Zero lessons learned."),
     ("Restricted Materials Trial", 4, "Place the Red die on the active Rat. Red cannot be used for this Experiment.", "The best reagent is unavailable for reasons marked administrative."),
@@ -25,7 +25,7 @@ EXPERIMENTS = [
     ("Reagent Exclusion Trial", 4, "Randomly select one available die belonging to the active Rat. That die cannot be committed to this Experiment.", "Science advances rapidly once you stop checking the labels."),
     ("Containment Failure", 5, "You may choose to reduce the Target by 2. If you do, before committing, roll a Yellow die. On a hit or Crit, banish one available Blue die. Otherwise, banish that Yellow die.", "The blast shield performed exactly as specified. The blast did not."),
     ("Endurance Trial", 5, "STR is 1 for this Experiment.", "The experiment is repeatable. Unfortunately, so is the overtime."),
-    ("Field Retrofit Trial", 5, "If successful, you may swap one of the active Rat's Upgrades with one of the revealed Upgrades. Specimens cannot be swapped.", "The replacement fits perfectly once you stop asking what it replaced."),
+    ("Field Retrofit Trial", 5, "If successful, you may swap one of the active Rat's grafts with one of the revealed Splices. Specimens cannot be swapped.", "The replacement fits perfectly once you stop asking what it replaced."),
     ("Methodological Optimization", 5, "Reduce the Target to 0. The old Tyrant reclaims the stronger revealed Splice and your Prototyrant grafts the weaker. If tied, you choose which it takes.", "Why test both prototypes when the Prototyrant can test the better one?"),
     ("Degraded Tissue Study", 5, "If successful, raise the Prototyrant's Health by 2.", "The tissue tears neatly along the dotted line Nobulous insists he did not draw."),
 ]
@@ -130,7 +130,7 @@ def C(title, sub, body, ftr='', warn=False, acc=None, tint=None, flavor='', dot=
 
 # Card backs first: the deck PnPs interleave them behind the fronts.
 make_back('CardBack_BAT_Encounter', 'BAT', 'Experiment', '#2c5f4a')
-make_back('CardBack_BAT_Upgrade', 'BAT', 'Upgrade &middot; Specimen', '#2c5f4a')
+make_back('CardBack_BAT_Upgrade', 'BAT', 'Splice', '#2c5f4a')
 make_back('CardBack_BAT_TyrantAttack', 'BAT', 'Tyrant Attack', ATTACK_ACC)
 print("card backs done")
 
@@ -152,9 +152,14 @@ wake = [C('Wake-Up', 'Build-a-Tyrant &middot; the old Tyrant stirs',
           flavor='The tank stops bubbling. Something in it is listening.')]
 print("Wake-Up", render_deck('BAT_WakeUp', wake, 'BAT', back='CardBack_BAT_Encounter'))
 
+# BAT'S 16 ORDINARY SPLICES. They were UPGRADES until 2026-11-23 - Jon's
+# call, and the last of the generic words to go after 'part'. The SHEET
+# STEM STAYS BAT_Upgrades: it is a filename, and renaming it would move
+# every baked art URL in the mod, this back's among them, which NRJ's
+# Modifications deck also prints.
 cards = [C(n, s, '<div class="big">%d</div><div class="biglbl">Value</div><div class="txt">%s</div>' % (v, e),
            TAP_FTR, acc=CAT[s.split(' - ')[1]], flavor=f) for n, s, v, e, f in UPGRADES]
-print("Upgrades", render_deck('BAT_Upgrades', cards, 'BAT', back='CardBack_BAT_Upgrade'))
+print("Splices", render_deck('BAT_Upgrades', cards, 'BAT', back='CardBack_BAT_Upgrade'))
 
 cards = [C(n, s,
            '<div style="background:%s;color:#fff;font-size:6.4pt;font-weight:bold;letter-spacing:.2em;'

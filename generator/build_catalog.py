@@ -162,8 +162,11 @@ CATALOG['bat']['decks'] += [
     # Experiment face-down - which is what makes the clock a clock.
     deck('Wake-Up', 'BAT_WakeUp_TTS.png', ['Wake-Up'],
          'Wake-Up card', 'CardBack_BAT_Encounter.png'),
-    deck('Upgrades', 'BAT_Upgrades_TTS.png', names(build_bat.UPGRADES),
-         lambda n, i: 'Upgrade card · %s' % build_bat.UPGRADES[i][1].split(' - ')[1],
+    # THE DECK IS SPLICES AND THE SHEET IS BAT_Upgrades, 2026-11-23.
+    # The table that is really the old Tyrant's carcass, and the stem
+    # a rename would have dragged 80-odd baked URLs behind.
+    deck('Splices', 'BAT_Upgrades_TTS.png', names(build_bat.UPGRADES),
+         lambda n, i: 'Splice card · %s' % build_bat.UPGRADES[i][1].split(' - ')[1],
          'CardBack_BAT_Upgrade.png'),
     deck('Specimens', 'BAT_Specimens_TTS.png', names(build_bat.SPECIMENS),
          lambda n, i: 'Specimen card · %s' % build_bat.SPECIMENS[i][1].split(' ')[0],

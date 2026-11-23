@@ -760,8 +760,11 @@ check("simulation/bat.py says it is retired, and batrev.py says it is not",
       "one of the two modules stopped saying which one the game is")
 rulenum("bat", r"(\d+) Experiment cards", len(_gbat["EXPERIMENTS"]),
         "the Experiment deck size")
-rulenum("bat", r"(\d+) regular Upgrade cards", len(_gbat["UPGRADES"]),
-        "the Upgrade deck size")
+# THE TABLE IS STILL CALLED UPGRADES IN build_bat.py, and the book
+# calls what it prints Splices: the generator's variable is a name in
+# a file and the book's is the word on the card. 2026-11-23.
+rulenum("bat", r"(\d+) Splice cards", len(_gbat["UPGRADES"]),
+        "the Splice deck size")
 rulenum("bat", r"(\d+) Specimen cards", len(_gbat["SPECIMENS"]),
         "the Specimen count")
 rulenum("bat", r"(\d+) Tyrant Attack cards", len(_gbat["ATTACKS"]),
@@ -2975,7 +2978,7 @@ check("the TTS sheet and the PnP are built from the same card renders",
 _ts = text("tts/test_setup.py")
 # A CARD IS NOT ITS DECK, and matching one by the other's name fails
 # silently. BAT Tier II looked for cards starting "Upgrades " when they
-# are called "Upgrade N": it removed nothing and added six
+# were called "Upgrade N": it removed nothing and added six
 # Modifications to a full deck. Any card prefix must come from
 # CARD_NAME, so a literal "<label> " in the Lua is the bug itself.
 _cards = dict(re.findall(r"label='([^']+)', card='([^']+)'", _decks))
@@ -2987,6 +2990,34 @@ check("no card is matched by its deck's name",
       not _lit, "literal card prefixes: %r" % (_lit,))
 check("tts/decks.py gives nearly every deck a singular card name",
       len(_cards) >= 25, "only %d" % len(_cards))
+
+# AND BAT'S POOL IS CALLED ONE THING IN EVERY PLACE A PLAYER MEETS IT.
+# The 16 ordinary cards were UPGRADES until 2026-11-23 and are SPLICES
+# now: they come out of the carcass like everything else, and a second
+# type name in front of that bought nothing.
+#
+# FIVE PLACES, because a type name is not one string - it is the card
+# BACK a player turns over, the DECK they pick up in TTS, the CATALOG
+# the lab reads, the COMPONENT LIST in the book and NRJ's Tier II swap.
+# A rename that reaches four of those is the failure worth catching: a
+# back printing UPGRADE over a deck called Splices is a table arguing
+# with itself, and nothing else here would notice.
+_bbat = text("generator/build_bat.py")
+check("BAT's ordinary cards are called Splices wherever a player looks",
+      "make_back('CardBack_BAT_Upgrade', 'BAT', 'Splice'" in _bbat
+      and "label='Splices', card='Splice'" in _decks
+      and "deck('Splices', 'BAT_Upgrades_TTS.png'"
+      in text("generator/build_catalog.py")
+      and "Splice cards (4 each of" in _RULES["bat"]
+      and "ordinary Splices from the Splice deck" in _RULES["nrj"]
+      # ...AND THE SHEET STEM DID NOT FOLLOW, which is the decision
+      # this records rather than an omission: BAT_Upgrades is a
+      # filename, and renaming it would re-point every baked art URL
+      # in the mod - this back's among them, which NRJ's Modifications
+      # deck prints too.
+      and "'BAT_Upgrades'" in _bbat
+      and "key='BAT_Upgrades'" in _decks,
+      "the type is half-renamed, or the sheet stem moved with it")
 # ONE SET OF ANGLES FOR ONE DIAL. The save's rotation values and the
 # angles the script turns the Chip to were two separate tables that
 # could only agree by accident, and did not. build_mod.py owns them and

@@ -369,7 +369,7 @@
       const p = c.parts[idx];
       $("batUpgrade" + k).innerHTML = `<strong>${escape(R.partName(p))}</strong>`
         + `<span class="target-number">${R.partValue(p)}</span>`
-        + `<span class="tiny">${R.isSpecimen(p) ? "Specimen" : "Upgrade"}</span>`;
+        + `<span class="tiny">${R.isSpecimen(p) ? "Specimen" : "Splice"}</span>`;
     });
     const ok = state.rolled && state.successes >= t;
     const head = $("batResolveHead");

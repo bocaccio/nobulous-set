@@ -378,7 +378,9 @@ DECK SHEETS AND BACKS
 
 CARD BACKS
   BAT   CardBack_BAT_Encounter        Encounter deck
-        CardBack_BAT_Upgrade          Upgrade deck (regular Upgrades + Specimens)
+        CardBack_BAT_Upgrade          Splice deck (ordinary Splices + Specimens).  The
+                                      STEM is historical: the cards were Upgrades
+                                      until 2026-11-23 and the sheet did not move.
         CardBack_BAT_TyrantAttack     Tyrant Attack deck
   NAP   CardBack_NAP_Assignment       Assignment deck (Tasks, Opportunities,
                                       Setbacks, FINF)

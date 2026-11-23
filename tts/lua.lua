@@ -1870,7 +1870,7 @@ function moveN(src, dst, n)
   --
   -- SO THE ONE CALLER THAT CAN LEAVE A REMAINDER OF ONE CUTS ITS OWN
   -- DECK FIRST - setupBAT's Specimens, one card per frame, the way the
-  -- Upgrades surplus right below it already goes home. Anything new
+  -- Splices surplus right below it already goes home. Anything new
   -- that calls this with count - n == 1 strands a card; tts/
   -- test_setup.py fails on a card left in the band, which is how this
   -- one was finally caught.
@@ -1925,7 +1925,7 @@ end
 -- NO ASSERTION CAN FAIL ON THAT TODAY and the handback is here on
 -- principle. Measured over all four games at every difficulty and
 -- tier, first setup and repeat, the smallest receiver any merge ever
--- gets is AoS's Limitations at 6, then BAT's Upgrades at 10 and NAP's
+-- gets is AoS's Limitations at 6, then BAT's Splices at 10 and NAP's
 -- Assignment at 22 - never the single card that gets replaced. What
 -- keeps it that way is the difficulty tables, which is not a thing
 -- this function can see: AOS_MIX's Routine cut is to exactly one at
@@ -2553,7 +2553,7 @@ function setupBAT()
     -- Prototyrant's - the lab phase cannot touch Health at all -
     -- so both belong to the battle rather than to the lab, and the
     -- row they were taking up is the row the lab is played on.
-    upg = deckOut('Upgrades',
+    upg = deckOut('Splices',
                   {batTyrantDeckX(), 3, batRowZ(BAT_DECK_ROW)})
   end)
 
@@ -2566,10 +2566,10 @@ function setupBAT()
   if STATE.tier >= 2 then
     step(function()
       -- BY THE CARD'S OWN NAME, which is not the deck's: one of
-      -- Upgrades is an Upgrade. Matching 'Upgrades ' removed nothing
+      -- Splices is a Splice. Matching 'Splices ' removed nothing
       -- at all, and Tier II quietly added six Modifications to a full
       -- deck instead of swapping them in.
-      local pre = (CARD_NAME['Upgrades'] or 'Upgrades') .. ' '
+      local pre = (CARD_NAME['Splices'] or 'Splice') .. ' '
       local n = 0
       for _, e in ipairs(upg and upg.getObjects() or {}) do
         if n < 6 and string.sub(e.nickname, 1, #pre) == pre then
@@ -2617,9 +2617,9 @@ function setupBAT()
   -- ...AND THEN THE SURPLUS COMES BACK OUT, one card per step, which is
   -- one card per frame: several cards dropped at OFF in one frame land
   -- on each other and TTS builds a nameless deck out of them. The
-  -- Upgrades cut below spells that out at length.
+  -- Splices cut below spells that out at length.
   --
-  -- BY NAME, because the pool is 16 Upgrades and 8 Specimens and the
+  -- BY NAME, because the pool is 16 Splices and 8 Specimens and the
   -- top of it is any card at all: this counts the Specimens that are
   -- left and drops one only while there are more than the rung asks
   -- for. AFTER THE SHUFFLE, so WHICH of the eight go back to the box
@@ -2668,7 +2668,7 @@ function setupBAT()
   --
   -- A step is a frame of its own, so the card is gone before the next
   -- take, nothing is ever built, and the count is fixed by the guard.
-  -- The surplus is at most eleven: 16 ordinary Upgrades and 8 Specimens
+  -- The surplus is at most eleven: 16 ordinary Splices and 8 Specimens
   -- less the thirteen kept.
   for _ = 1, 12 do
     step(function()
@@ -2755,7 +2755,7 @@ function setupBAT()
         ' gives you ' .. rounds .. ' ROUNDS once the old thing wakes.' ..
         ' Nothing on the table counts them, so keep the count yourselves.' ..
         (STATE.tier >= 1 and ' TIER I: your Experimental Protocol is face-up.' or '') ..
-        (STATE.tier >= 2 and ' TIER II: 6 ordinary Upgrades out, the 6 Modifications in.' or '') ..
+        (STATE.tier >= 2 and ' TIER II: 6 ordinary Splices out, the 6 Modifications in.' or '') ..
         (STATE.tier >= 3 and (' TIER III: the 6 Research Notes are a face-up' ..
          ' stack on their space -- spread it to read them.') or '') ..
         ' BUILD THE CLOCK BEFORE YOU START: take 8 Experiments off the' ..

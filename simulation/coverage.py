@@ -243,7 +243,7 @@ CLAIMS = [
           note="committing Blue buys a look at the next Experiment and the "
                "policy has no lookahead to spend it on; declared in "
                "bat.UNMODELLED_EXP"),
-    Claim("BAT", "Upgrades", 16,
+    Claim("BAT", "Splices", 16,
           lambda: sum(1 for t in bat.UPGRADE_EFFECTS if t != bat.NO_EFFECT)),
     Claim("BAT", "Specimens", 8,
           lambda: sum(1 for t in bat.SPECIMEN_EFFECTS if t != bat.NO_EFFECT)),
@@ -524,7 +524,7 @@ CLAIMS = [
 # quite print, and they belong in a coverage report for that reason.
 # ---------------------------------------------------------------------------
 FIDELITY = [
-    ("BAT", "Upgrades / Specimens / Modifications",
+    ("BAT", "Splices / Specimens / Modifications",
      "every effect becomes a five-slot tuple, so a CONDITIONAL effect is "
      "modelled as its payoff with the condition always met: Serrated Claws "
      "\"+1 damage from each Blue or Green basic hit\" is a flat +1, "

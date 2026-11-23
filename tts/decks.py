@@ -28,8 +28,12 @@ DECKS = [
     dict(key='BAT_WakeUp', count=1, w=1, h=1,
          back='CardBack_BAT_Encounter', land=False,
          game='BAT', label='Wake-Up', card='Wake-Up'),
+    # THE KEY IS A FILENAME AND THE LABEL IS A NAME. BAT's ordinary
+    # cards became SPLICES on 2026-11-23 and the sheet did not move:
+    # renaming the stem would re-point every baked art URL, this back's
+    # among them, and NRJ_BAT_Modifications prints the same back.
     dict(key='BAT_Upgrades', count=16, w=10, h=2, back='CardBack_BAT_Upgrade',
-         land=False, game='BAT', label='Upgrades', card='Upgrade'),
+         land=False, game='BAT', label='Splices', card='Splice'),
     dict(key='BAT_Specimens', count=8, w=8, h=1, back='CardBack_BAT_Upgrade',
          land=False, game='BAT', label='Specimens', card='Specimen'),
     dict(key='BAT_TyrantAttacks', count=7, w=7, h=1, back='CardBack_BAT_TyrantAttack',

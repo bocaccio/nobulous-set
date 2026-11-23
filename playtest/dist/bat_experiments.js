@@ -14,13 +14,13 @@ window.BAT_EXPERIMENTS = [
   {
     "name": "Structural Stress Trial",
     "target": 4,
-    "effect": "Reveal 1 additional Upgrade for this Experiment. Resolve the normal Upgrade choice using all revealed options.",
+    "effect": "Reveal 1 additional Splice for this Experiment. Resolve the normal graft choice using all revealed options.",
     "flavor": "Nobulous calls the third prototype a control. Nobody asks what it controls."
   },
   {
     "name": "Contaminated Tissue",
     "target": 4,
-    "effect": "Discard the revealed Upgrades and reveal 2 new Upgrades. These become the Upgrades for this Experiment.",
+    "effect": "Discard the revealed Splices and reveal 2 new Splices. These become the Splices for this Experiment.",
     "flavor": "The sample was sterile until Nobulous explained his definition of sterile."
   },
   {
@@ -32,7 +32,7 @@ window.BAT_EXPERIMENTS = [
   {
     "name": "Load-Bearing Trial",
     "target": 4,
-    "effect": "A Purple die must be committed to this Experiment. If unable to do so, discard this Experiment and draw another one, replacing any revealed Upgrades.",
+    "effect": "A Purple die must be committed to this Experiment. If unable to do so, discard this Experiment and draw another one, replacing any revealed Splices.",
     "flavor": "Add weight until something fails. Preferably not the researcher."
   },
   {
@@ -44,7 +44,7 @@ window.BAT_EXPERIMENTS = [
   {
     "name": "Rapid Response Trial",
     "target": 4,
-    "effect": "A Green die must be committed to this Experiment. If unable to do so, discard the stronger revealed Upgrade and continue the Experiment.",
+    "effect": "A Green die must be committed to this Experiment. If unable to do so, discard the stronger revealed Splice and continue the Experiment.",
     "flavor": "There is no time to do it right, only time to make it testable."
   },
   {
@@ -104,7 +104,7 @@ window.BAT_EXPERIMENTS = [
   {
     "name": "Field Retrofit Trial",
     "target": 5,
-    "effect": "If successful, you may swap one of the active Rat's Upgrades with one of the revealed Upgrades. Specimens cannot be swapped.",
+    "effect": "If successful, you may swap one of the active Rat's grafts with one of the revealed Splices. Specimens cannot be swapped.",
     "flavor": "The replacement fits perfectly once you stop asking what it replaced."
   },
   {

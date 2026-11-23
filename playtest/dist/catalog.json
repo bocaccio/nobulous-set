@@ -123,7 +123,7 @@
     "backLabel": "Card back"
    },
    {
-    "title": "Upgrades",
+    "title": "Splices",
     "sheet": "BAT_Upgrades_TTS.png",
     "cols": 10,
     "rows": 2,
@@ -137,67 +137,67 @@
     "cards": [
      {
       "name": "Serrated Claws",
-      "kind": "Upgrade card · Power"
+      "kind": "Splice card · Power"
      },
      {
       "name": "Reinforced Jaw",
-      "kind": "Upgrade card · Power"
+      "kind": "Splice card · Power"
      },
      {
       "name": "Capacitor Muscles",
-      "kind": "Upgrade card · Power"
+      "kind": "Splice card · Power"
      },
      {
       "name": "Piercing Horn",
-      "kind": "Upgrade card · Power"
+      "kind": "Splice card · Power"
      },
      {
       "name": "Spring-Loaded Legs",
-      "kind": "Upgrade card · Mobility"
+      "kind": "Splice card · Mobility"
      },
      {
       "name": "Prehensile Tail",
-      "kind": "Upgrade card · Mobility"
+      "kind": "Splice card · Mobility"
      },
      {
       "name": "Tripwire Tendons",
-      "kind": "Upgrade card · Mobility"
+      "kind": "Splice card · Mobility"
      },
      {
       "name": "Evasive Reflexes",
-      "kind": "Upgrade card · Mobility"
+      "kind": "Splice card · Mobility"
      },
      {
       "name": "Thickened Hide",
-      "kind": "Upgrade card · Defense"
+      "kind": "Splice card · Defense"
      },
      {
       "name": "Layered Carapace",
-      "kind": "Upgrade card · Defense"
+      "kind": "Splice card · Defense"
      },
      {
       "name": "Chromatic Plating",
-      "kind": "Upgrade card · Defense"
+      "kind": "Splice card · Defense"
      },
      {
       "name": "Reactive Shell",
-      "kind": "Upgrade card · Defense"
+      "kind": "Splice card · Defense"
      },
      {
       "name": "Acute Hearing",
-      "kind": "Upgrade card · Senses"
+      "kind": "Splice card · Senses"
      },
      {
       "name": "Predatory Focus",
-      "kind": "Upgrade card · Senses"
+      "kind": "Splice card · Senses"
      },
      {
       "name": "Rapid Metabolism",
-      "kind": "Upgrade card · Senses"
+      "kind": "Splice card · Senses"
      },
      {
       "name": "Neural Overclock",
-      "kind": "Upgrade card · Senses"
+      "kind": "Splice card · Senses"
      }
     ],
     "back": "CardBack_BAT_Upgrade.png",
