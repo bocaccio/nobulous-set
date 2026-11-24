@@ -917,7 +917,7 @@ def rulebook(game, on_rail=False):
                           "PDFPage": 0, "PDFPageOffset": 0}}
 
 
-def card(deck_id, idx, nickname, rot, s, sideways, desc=''):
+def card(deck_id, idx, nickname, rot, s, sideways, desc):
     # A CONTAINED CARD CARRIES ITS OWN ROTATION, AND TTS HONOURS IT. The
     # deck was stored face down and every card inside it face up, which
     # is how TTS records a card someone has flipped over inside a deck.
@@ -933,6 +933,12 @@ def card(deck_id, idx, nickname, rot, s, sideways, desc=''):
     # face up - and a default here hid the fix just as well: dropping
     # the caller's rot=DECK_ROT changed nothing and no check noticed,
     # because the signature put it back. The caller says.
+    #
+    # desc WAS THE LAST DEFAULT LEFT and it hid the same way: with
+    # desc='' every card in the set shipped with an empty hover,
+    # and the save was still valid, still loaded and still looked
+    # right. Required now, so a deck cannot be added without
+    # someone deciding what a card off it says.
     out = {"GUID": guid(), "Name": "Card", "Transform": xf(0, 0, 0, rot, s),
            "Nickname": nickname, "Description": desc, "CardID": deck_id * 100 + idx,
            "Locked": False, "Grid": True, "Snap": True, "Autoraise": True, "Sticky": True,
@@ -967,17 +973,36 @@ def build_deck(d, deck_id, pos):
     # that it can still find a card by name.
     one = d.get('card', d['label'])
     scale = LAND_SCALE if d['land'] else CARD_SCALE
+
+    # A CARD'S HOVER SAYS HOW BIG ITS DECK IS, from 2026-11-23,
+    # Jon's call. The DECK object has carried 'BAT  |  16 cards'
+    # all along, but a card dragged off it carried an empty
+    # Description - so the count vanished at the exact moment you
+    # want it, which is with a card in your hand and the pile face
+    # down. Both strings are built here, once, so they cannot drift.
+    #
+    # THE CARD NAMES ITS DECK TOO. Its own nickname is 'Splice 7';
+    # 'Splices' is written nowhere else on the object, and a count
+    # with nothing to count is worse than no count at all.
+    #
+    # PLURAL, because BAT's Wake-Up is a one-card deck and the deck
+    # hover has been reading '1 cards' since the mod was first built.
+    many = '%d card%s' % (d['count'], '' if d['count'] == 1 else 's')
+    deck_hover = '%s  |  %s' % (d['game'], many)
+    card_hover = '%s %s  |  %s' % (d['game'], d['label'], many)
+
     contained, ids = [], []
     for i in range(first, first + d['count']):
         contained.append(card(deck_id, i, '%s %d' % (one, i - first + 1),
                               rot=DECK_ROT, s=scale,
-                              sideways=bool(d['land'])))
+                              sideways=bool(d['land']),
+                              desc=card_hover))
         ids.append(deck_id * 100 + i)
     r, g, b = GAME_COLOR[d['game']]
     obj = {"GUID": guid(), "Name": "Deck" if d['count'] > 1 else "CardCustom",
            "Transform": xf(pos[0], pos[1], pos[2], DECK_ROT, scale),
            "Nickname": d['label'],
-           "Description": "%s  |  %d cards" % (d['game'], d['count']),
+           "Description": deck_hover,
            "ColorDiffuse": {"r": 1.0, "g": 1.0, "b": 1.0},
            "Locked": False, "Grid": True, "Snap": True, "Autoraise": True, "Sticky": True,
            "SidewaysCard": bool(d['land']),

@@ -3358,6 +3358,79 @@ for _d in _decks_in(_sv["ObjectStates"]):
 check("a card drawn off a deck comes out the way the deck looked",
       not _mix, "deck and contents disagree: %r" % (_mix[:4],))
 
+# AND IT SAYS WHICH DECK IT IS FROM AND HOW MANY ARE IN IT. Until
+# 2026-11-23 the DECK object's hover read 'BAT  |  16 cards' and every
+# card inside it had an empty Description - so the count was there
+# while the pile was on the table and gone the moment you picked a
+# card up, which is when you want it. Jon's call to put it on the
+# card.
+#
+# COUNTED, NOT MATCHED. The predicate is arithmetic against the save's
+# OWN ContainedObjects, so no string satisfies it: a deck that gains
+# or loses a card and keeps its old hover fails, and so does a card
+# carrying a sibling deck's number. A check that looked for
+# "16 cards" would have passed all three.
+#
+# 'cards?' because BAT's Wake-Up is one card, and its hover said
+# '1 cards' from the day the mod was first built until this went in.
+_hov_n = re.compile(r"\|\s+(\d+) (cards?)$")
+
+
+def _hov_says(desc, want):
+    """The number AND the plural this hover owes, or None if it owes neither.
+
+    'cards?' alone would read '1 cards' as a one, agree with the pile and
+    pass - which is the string that was actually shipping. The plural is
+    half of what a player reads, so it is checked, not tolerated.
+    """
+    m = _hov_n.search(desc or "")
+    if not m or int(m.group(1)) != want:
+        return False
+    return m.group(2) == ("card" if want == 1 else "cards")
+
+
+def _hov_objs(objs):
+    for o in objs:
+        yield o
+        for k in o.get("ContainedObjects") or []:
+            for x in _hov_objs([k]):
+                yield x
+
+
+_hov = []
+for _o in _hov_objs(_sv["ObjectStates"]):
+    _cards = [k for k in (_o.get("ContainedObjects") or [])
+              if k.get("Name") == "Card"]
+    # A ONE-CARD DECK IS NOT A PILE. build_mod ships BAT's Wake-Up as a
+    # bare CardCustom with nothing inside it, so counting its children
+    # gives 0 and this check would have skipped the only object whose
+    # hover was WRONG - '1 cards' since the mod was first built. It is
+    # its own deck, so the number it owes is 1.
+    #
+    # CardCustom AND NOT Card: _hov_objs walks INTO the piles, so every
+    # card in the set comes round again as _o with no children of its
+    # own. Counting those as one-card decks asked all 240 of them to
+    # claim '1 card' when what they correctly say is 16.
+    _want = len(_cards) if _cards else (
+        1 if _o.get("Name") == "CardCustom" else None)
+    if _want is None:
+        continue
+    _nick = _o.get("Nickname") or ""
+    if not _hov_says(_o.get("Description"), _want):
+        _hov.append((_nick, _o.get("Description"),
+                     "holds %d" % _want))
+        continue
+    for _k in _cards:
+        _kd = _k.get("Description") or ""
+        # The card has to NAME the deck as well as count it: its own
+        # nickname is 'Splice 7' and the label is written nowhere else
+        # on the object it hands you.
+        if not _hov_says(_kd, _want) or _nick not in _kd:
+            _hov.append((_nick, _k.get("Nickname"), _kd))
+            break
+check("every card says which deck it is from and how many are in it",
+      not _hov, "hover disagrees with the pile: %r" % (_hov[:4],))
+
 # A HAND ZONE TAKES A CARD DROPPED IN IT, flips it and carries it to the
 # edge of the table. The Assignment spaces nearest the back rail were
 # inside one, and a card snapped there vanished to the rail. This is a
