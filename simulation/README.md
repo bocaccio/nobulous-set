@@ -240,6 +240,14 @@ That sweep landed on 5/0, 6/1, 7/2, 8/4 and Standard at 52.1%. The ladder
 was then stepped one Credit down and one Setback up, at Jon's ask - the same
 diagonal, shifted, so each dial still moves one step a rung:
 
+> **SUPERSEDED 2026-11-25.** The ladder below is the one that shipped until
+> the Special Recovery age rule landed. The Credit goals are 3 / 4 / 5 / 6 now
+> and REC starts at 3, and the current grid is `napage_confirm.txt`:
+> 68.9 / 55.4 / 40.0 / 28.0 solo, Standard 4 Cr / 2 Sb at the TOP of the band
+> rather than near its floor. `RESULTS.txt` has not been regenerated - see
+> `rules/RULES_CHANGELOG.txt` for why and for the two exam questions still
+> open. Everything under this note is history.
+
 | difficulty | goal / Setbacks | solo | Tier I | Tier II | Tier III |
 | --- | --- | --- | --- | --- | --- |
 | Easy | 4 / 1 | 58.1% | 47.6% | 34.9% | 43.9% |

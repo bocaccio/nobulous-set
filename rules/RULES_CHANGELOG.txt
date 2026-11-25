@@ -1,3 +1,80 @@
+2026-11-25  NAP: THE SPECIAL RECOVERY HAPPENS LAST, REC IS 3, AND THE CREDIT
+            GOALS DROP TO 3 / 4 / 5 / 6
+Jon played a Standard game, won it on the last die, and said it had never
+once asked him for a hard decision.  His own diagnosis is the whole of
+this change: "I know I will get back all purple at the end of afternoon.
+Let me roll them all now."  The Primary's dot named the NEXT slot's
+recovery color, so a queued color was one you may as well spend to the
+floor - the dice stopped being a cost and became a loan already granted,
+which is how a game can be tight on dice and still decide nothing.
+
+THE RULE IS NOW A SEQUENCING CHANGE AND NOTHING ELSE.  Special Recovery
+used to be step 1 of the next Time Slot; it is step 4 of this one, and it
+comes BEFORE you exhaust the dice you committed during the slot.  Those
+dice are still in front of you rather than in the exhausted pool, so the
+recovery cannot reach them, and they come back a Special Recovery later.
+No marker, no second pile, and the book is shorter for it: the old step 1,
+its "Day 1 Morning has nothing queued" parenthetical and the "Do not
+recover again" warning are all gone.  What you spend in a slot, you spend.
+
+WHAT IT COST AND WHAT PAID FOR IT.  Measured at 12,000 games a cell, the
+rule on its own is -17.1 points at Standard - right in kind and far too
+strong in degree, with Easy landing at 43.7% and both ladder dials already
+at their soft end on that rung.  Two things pay for it:
+
+  REC 2 -> 3, printed on all six Apprentice cards.  +1 REC is worth about
+  what the rule costs and buys the dice back WITHOUT buying the certainty
+  back, because an End of Day recovery is one choice of colors a day and
+  not a color you can see coming and dump into.  STR 3 was measured too
+  and costs nearly as much, but a spare Strategy roll is exactly what the
+  dumped dice get spent on, so it hands the exploit back.
+
+  THE CREDIT GOALS ONE LOWER - 4/5/6/7 becomes 3/4/5/6.  The Setback
+  counts do not move, so the "1, 2, 3 or 4 of the 6" setup line, the Tier
+  I split prose and NAP_SETBACK_COUNT all stood as they were.
+
+MEASURED, 20,000 games a cell, six Apprentices (simulation/napage_confirm.txt):
+
+                       no NRJ   Tier I  Tier II  Tier III
+   Easy   3 Cr / 1 Sb   68.9%    58.8%    46.4%    51.6%
+   Standard 4 / 2       55.4%    48.1%    34.2%    40.9%
+   Hard   5 / 3         40.0%    38.2%    25.7%    33.5%
+   Nobulous 6 / 4       28.0%    26.7%    19.4%    26.7%
+
+against 58.1 / 49.0 / 37.0 / 26.3 before.  Standard is in the 47-57 band
+at the TOP of it rather than near the floor, which is the opposite of the
+complaint it used to carry, and the solo steps are 13.5 / 15.4 / 12.0.
+Five of the six Apprentices are in band at Standard and the Opportunist is
+on the ceiling at 57.3%.
+
+JON CHOSE THIS OVER THE SOFTER VERSION.  A one-die allowance - "and you
+may also take back 1 of the dice you used this slot" - lands 64.6 / 51.3 /
+37.9 / 27.3 on the ladder exactly as it was printed, so it would have cost
+no difficulty number at all.  "I think I prefer A. The rule is simpler. B
+also still lets you game the system (just not as much)."
+
+AND THE PART THAT A WIN RATE CANNOT SHOW.  The pool in front of the player
+when a slot's work begins falls 6.91 dice to 6.05 and is at 3 or fewer in
+33.0% of slots against 17.9%, while the Special Recovery still returns
+about as many dice as before.  That is the difference between this and
+capping the refill, which was measured first: a cap at 2 read 4.4% at
+Standard and left the certainty exactly where it was.
+
+RESULTS.TXT IS NOT REGENERATED HERE.  table.py still imports
+simulation/bat.py, retired as BAT'+chr(39)+'s model of record on 2026-11-20 in
+favour of batrev.py - that file already carries the warning at its own BAT
+grid - so a full re-run would overwrite the warning with figures for a
+battle nobody plays.  The NAP grid above lives in napage_confirm.txt until
+table.py is repointed.
+
+STILL OPEN, both raised the same day and neither decided: what "must
+contribute" means on a Final Exam (the lab requires the die to succeed,
+the model only to be committed - worth -2.0 and it would centre Standard
+at 53.4%), and what an exam restriction the dice pool cannot answer should
+cost.  The second is not the corner case it looks like: a color clause is
+printed on a quarter of all exam sittings and cannot be met from the pool
+in over half of those, so pricing it at 1 Health is -8.0.
+
 2026-11-16  ONE WORDING FOR THE 20 STRONG COMPONENTS
 All four books now print the same two bullets for what the Scenario
 borrows from the base game - the 17 unit dice, then the 3 stat dice and

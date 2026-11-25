@@ -613,44 +613,26 @@ for lvl in ("Easy", "Standard", "Hard", "Nobulous"):
 check("the lab's AoS difficulty labels name the mix it builds",
       len(_aos_opts) == 4 and not _lbl_wrong, "; ".join(_lbl_wrong[:4]))
 
-_nap_wrong = []
-_nap_opts = dict(options("napCreditGoal"))
-# THE LABEL IS STILL DERIVED, PLURAL AND ALL. Easy dropped to 0 Setbacks and
-# Standard to 1 on 2026-11-12, so "%d Setbacks" would have asked the page for
-# "0 Setbacks" and "1 Setbacks" - and the honest way to keep a check honest
-# is to build the string the page should read, not to relax it.
-def _sb_phrase(n):
-    return "no Setbacks" if n == 0 else ("1 Setback" if n == 1
-                                         else "%d Setbacks" % n)
-
-
-for lvl in ("Easy", "Standard", "Hard", "Nobulous"):
-    goal, sb = sn["LEVELS"][lvl]
-    want = "%s &middot; %d Cr, %s" % (lvl, goal, _sb_phrase(sb))
-    got = _nap_opts.get(str(goal))
-    if got != want:
-        _nap_wrong.append("NAP %s: label %r, model wants %r"
-                          % (lvl, got, want))
-check("the lab's NAP difficulty labels name the goal it plays",
-      len(_nap_opts) == 4 and not _nap_wrong, "; ".join(_nap_wrong[:4]))
+# THE NAP DIFFICULTY LABELS IN THE LAB WERE CHECKED HERE UNTIL 2026-11-25,
+# against a derived "Easy - 4 Cr, 1 Setback" string. The lab is frozen and is
+# no longer an owner of any rule (AGENTS.md), and this check was one of the
+# ones the lab-removal pass missed: it reads the frozen page's dropdown,
+# which is keyed by the CREDIT GOAL, so moving the goals to 3/4/5/6 the same
+# day failed it with nothing to fix. The ladder the mod really deals is
+# checked below instead, which is a live owner.
 
 # AND A SEVENTH OWNER, found when the ladder stepped to 4/1, 5/2, 6/3, 7/4 on
 # 2026-11-12: the notice the lab prints when you pick a level carried its own
 # goal -> name map, hand-typed inside the onchange handler. Nothing compared
-# THE SETBACK COUNT IS PRINTED, so three sources carry it: nap.LEVELS, the
+# THE SETBACK COUNT IS PRINTED, so three sources carried it: nap.LEVELS, the
 # difficulty table in rules/nap.html, and NAP_SETBACK_COUNT in suite.js - and
 # NOTHING COMPARED THEM until the 2026-11-06 re-peg had to change all three by
-# hand. The label check above reads the dropdown text, which is prose; this
-# reads the number each source actually plays. It is the same gap that let the
-# End-of-Day burn sit unplayed in simulation/nap.py for weeks while the other
-# two sources played it, and the note below records that one.
+# hand. THE LAB ARM CAME OUT 2026-11-25 with the freeze; the two live owners
+# are the model and the book, and the mod's own copy of the ladder is checked
+# further down. It is the same gap that let the End-of-Day burn sit unplayed
+# in simulation/nap.py for weeks while the other two sources played it, and
+# the note below records that one.
 _nap_sb = []
-_sb_js = re.search(r"NAP_SETBACK_COUNT\s*=\s*\{([^}]*)\}",
-                   text("playtest/dist/suite.js"))
-_js_sb = {}
-if _sb_js:
-    _js_sb = dict((int(k), int(v)) for k, v in
-                  re.findall(r"(\d+)\s*:\s*(\d+)", _sb_js.group(1)))
 _rules_rows = re.findall(
     r"<tr><td>(?:<b>)?(Easy|Standard|Hard|Nobulous)(?:</b>)?</td>"
     r"<td>(?:<b>)?(\d+) Credits(?:</b>)?</td>"
@@ -661,12 +643,27 @@ for lvl in ("Easy", "Standard", "Hard", "Nobulous"):
     if _rules_sb.get(goal) != sb:
         _nap_sb.append("%s: nap.py %d, rules/nap.html %r"
                        % (lvl, sb, _rules_sb.get(goal)))
-    if _js_sb.get(goal) != sb:
-        _nap_sb.append("%s: nap.py %d, suite.js %r"
-                       % (lvl, sb, _js_sb.get(goal)))
-check("the Setbacks per level agree in nap.py, the rules and the lab",
-      len(_rules_sb) == 4 and len(_js_sb) == 4 and not _nap_sb,
-      "; ".join(_nap_sb[:4]))
+check("the Setbacks per level agree in nap.py and the rules",
+      len(_rules_sb) == 4 and not _nap_sb, "; ".join(_nap_sb[:4]))
+
+# AND THE MOD DEALS THE SAME LADDER, which NOTHING compared until
+# 2026-11-25. The Credit goals moved 4/5/6/7 -> 3/4/5/6 that day to pay for
+# the Special Recovery age rule, and the mod carries the ladder TWICE -
+# NAP_DIFF, which is what it really deals, and the line the NAP quick
+# reference prints. Both are derived from nap.LEVELS here, so neither can
+# drift from the model again; the lab used to be the third copy and is
+# frozen out of this check deliberately.
+_want_diff = ("NAP_DIFF = { Easy = {%d, %d}, Standard = {%d, %d}, "
+              "Hard = {%d, %d}, Nobulous = {%d, %d} }"
+              % tuple(n for lvl in ("Easy", "Standard", "Hard", "Nobulous")
+                      for n in sn["LEVELS"][lvl]))
+_want_ref = ("  " + "   ".join(
+    "%s %d and %d" % ((lvl,) + tuple(sn["LEVELS"][lvl]))
+    for lvl in ("Easy", "Standard", "Hard", "Nobulous")))
+check("the mod deals the ladder nap.LEVELS plays",
+      _want_diff in text("tts/lua.lua"), _want_diff)
+check("the mod's NAP quick reference prints that same ladder",
+      _want_ref in text("tts/build_mod.py"), _want_ref)
 # And the setup step restates the four counts in prose, so it drifts too.
 check("rules/nap.html's setup step restates the same four counts",
       "%d, %d, %d or %d of the 6" % tuple(
@@ -1108,6 +1105,36 @@ check("REC recovers at End of Day and nowhere else",
       and _says("Then recover exhausted dice equal to your <b>REC</b>")
       and sn.get("REC_AT_END_OF_DAY") is True,
       "REC_AT_END_OF_DAY = %r" % (sn.get("REC_AT_END_OF_DAY"),))
+# THE SPECIAL RECOVERY AGE RULE, 2026-11-25. The complaint it answers is
+# Jon's: "I know I will get back all purple at the end of afternoon. Let me
+# roll them all now." The Primary's dot used to name the NEXT slot's
+# recovery colour, so a queued colour was one you may as well spend to the
+# floor - the dice stopped being a cost and became a loan already granted.
+#
+# IT IS PRINTED AS A SEQUENCING CHANGE and that is the thing to hold
+# together: the recovery is now the LAST step of the slot, before the dice
+# you used in it are exhausted, so those dice are still in front of you and
+# out of its reach. There is no second pile and no marker. The old step 1
+# and its "Do not recover again" warning are both gone, and a book that
+# still carried either would be describing the exploitable game - so this
+# checks for their ABSENCE as well as for the new wording.
+check("the Special Recovery is the last step of the slot, not the first",
+      sn.get("SPECIAL_RECOVERY_AGE") is True
+      and _says("Perform <b>Special Recovery</b> for the color on the dial,"
+                " and <b>only then</b> exhaust the")
+      and _says("non&#8209;stored dice you committed this Time Slot")
+      and "Do not recover again" not in _napflat
+      and "nothing queued, so there is none" not in _napflat,
+      "SPECIAL_RECOVERY_AGE = %r" % (sn.get("SPECIAL_RECOVERY_AGE"),))
+check("the book says what the age rule costs you, in the recovery box",
+      _says("so the dice you have just spent are still in front of you,"
+            " are not in the exhausted pool, and are not recovered"),
+      "the Special Recovery box no longer explains the age rule")
+check("the mod's quick reference puts the recovery last too",
+      "4 SPECIAL RECOVERY LAST" in text("tts/build_mod.py")
+      and "WHAT YOU SPEND IN A SLOT, YOU SPEND" in text("tts/build_mod.py")
+      and "Do NOT recover again" not in text("tts/build_mod.py"),
+      "tts/build_mod.py still prints the pre-2026-11-25 slot order")
 check("two Setbacks revealed: the higher Target is the one you take",
       _says("If two Setbacks are revealed, take the one with the higher"
             " Target")
@@ -4929,10 +4956,24 @@ check("every die a setup stands on a card is dropped onto it",
 
 # The three dice say what the card says. One literal prints all six
 # Apprentice sides, so there is nothing to average over.
-check("an Apprentice starts NAP at the 2s its own card prints",
-      "HP 2 &nbsp;|&nbsp; STR 2 &nbsp;|&nbsp; REC 2" in text(
+#
+# DERIVED FROM THE MODEL AS OF 2026-11-25, because the 2s were typed in
+# here and REC rose to 3 that day - the compensation for the Special
+# Recovery age rule - and this check was the only thing in the suite that
+# had the old value written into it. Four owners now: the card literal, the
+# die the mod stands up, the sentence the mod says, and Setup in the book.
+_stats = (sn["HP_START"], sn["STR_START"], sn["REC_START"])
+check("an Apprentice starts NAP at the stats its own card prints",
+      sn["HP_START"] == sn["STR_START"]
+      and "HP %d &nbsp;|&nbsp; STR %d &nbsp;|&nbsp; REC %d" % _stats in text(
           "generator/build_nap.py")
-      and "NAP_START = 2" in _lua)
+      and "NAP_START = %d" % sn["HP_START"] in _lua
+      and "NAP_REC_START = %d" % sn["REC_START"] in _lua
+      and "setMarker('Recovery', sx[3], STAT_Z, NAP_REC_START)" in _lua
+      and "is out at %d HP / %d STR / %d REC" % _stats in _lua
+      and "All six begin at <b>%d HP / %d STR / %d REC</b>" % _stats
+      in text("rules/nap.html"),
+      "model says %d HP / %d STR / %d REC" % _stats)
 # ONE DROP FOR ALL THREE GAMES. NAP, AoS and the Imposter scenario all
 # stand their character in the same corner and all three print their
 # stats on it, so the row of dice under it is one rule measured from

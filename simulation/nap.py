@@ -143,7 +143,27 @@ SPECIAL_RECOVERY_CAP = 0
 # when the slot began: what you spend this slot is gone until a later cycle.
 # A timing change, not a quantity one - it takes away the certainty without
 # touching the size of the refill, which is what capping it at 2 does.
-SPECIAL_RECOVERY_AGE = False
+#
+# TRUE IS THE RULE AS OF 2026-11-25, with REC 3 and the Credit goals one
+# lower paying for it - Jon's candidate A out of napage.txt, chosen over a
+# one-die allowance on the printed ladder because "the rule is simpler. B
+# also still lets you game the system (just not as much)". The ladder it
+# ships on is in LEVELS below and the figures are napage_confirm.txt.
+# False is the shipped reading every NAP figure published before that day
+# was measured through.
+#
+# AND THE PRINTED RULE IS A SEQUENCING CHANGE, not a marker. rules/nap.html
+# used to recover at step 1 of the next slot; it now recovers at step 4 of
+# this one, BEFORE the dice you used this slot are exhausted. Those dice are
+# still in front of you rather than in the exhausted pile, so the recovery
+# cannot reach them, and the book needs no second pile and no "do not
+# recover again" warning. Two boundary wrinkles are left, both in the
+# player's favour and neither modelled:
+#   * a die a Setback's upkeep exhausts at the TOP of a slot is reachable by
+#     that slot's own end-of-slot recovery at the table, and waits a cycle
+#     here;
+#   * Preparation performs one more Special Recovery, unaged in both.
+SPECIAL_RECOVERY_AGE = True
 # AND THE AGE RULE IS A KNOB, NOT A SWITCH. On its own it is worth -17 at
 # Standard (napcommit.txt), which is right in kind and far too strong in
 # degree, so these two soften it. Both are inert while
@@ -881,11 +901,20 @@ COLOR_RULE_ON_SUCCESS = True
 # all six. Dials because the Special Recovery age rule of 2026-11-25 takes
 # dice INCOME away, and REC is the other income in the game: they are the
 # compensation to measure before reaching for the difficulty ladder.
+# REC ROSE TO 3 ON 2026-11-25, printed on all six Apprentice cards from
+# the single literal in generator/build_nap.py. It is what pays for the age
+# rule above: +1 REC is worth about what the rule costs (31.8% -> 46.2% at
+# the old Standard rung) and it buys the dice back without buying the
+# CERTAINTY back, because an End of Day recovery is one choice of colours a
+# day and not a colour you can see coming and dump into. STR 3 costs nearly
+# as much and does hand the certainty back - a spare Strategy roll is what
+# the dumped dice get spent on. 2 restores every figure published before
+# that day.
 HP_START = 2
 STR_START = 2
-REC_START = 2
+REC_START = 3
 
-CREDITS_TO_LEAVE = 5      # Easy 4, Standard 5, Hard 6, Nobulous 7
+CREDITS_TO_LEAVE = 4      # Easy 3, Standard 4, Hard 5, Nobulous 6
 # Difficulty is the pair (Credit goal, Setbacks in the deck).
 #
 # RE-PEGGED 2026-11-06, one Setback off every rung: 4/4/5/6 became 3/3/4/5.
@@ -956,7 +985,25 @@ CREDITS_TO_LEAVE = 5      # Easy 4, Standard 5, Hard 6, Nobulous 7
 # THAT WOULD MOVE STANDARD BACK is its own Setback count: 5/1 reads 55.1 and
 # 5/2 reads 49.0, so there is no cell between them. Raising Standard alone
 # would invert it against Easy, which is the mistake of this morning.
-LEVELS = {"Easy": (4, 1), "Standard": (5, 2), "Hard": (6, 3), "Nobulous": (7, 4)}
+#
+# RE-PEGGED AGAIN 2026-11-25, and this time only the Credit goals moved:
+# 4/5/6/7 became 3/4/5/6 and the Setback counts stayed 1/2/3/4. That is the
+# ladder paying for the Special Recovery age rule above, and the paragraph
+# over it is now history - the sentence about there being no cell between
+# 5/1 and 5/2 was true of a game whose dice all came back.
+#
+# MEASURED, 20,000 games a cell, six Apprentices, napage_confirm.txt:
+# 68.9 / 55.4 / 40.0 / 28.0 solo, steps of 13.5 / 15.4 / 12.0, against
+# 58.1 / 49.0 / 37.0 / 26.3 shipped. Standard is in the 47-57 band at the
+# top of it rather than centred, which is the opposite of the complaint it
+# used to have. Adopting "contribute means succeed" at the Final Exams -
+# still undecided, see EXAM_NEED - takes it to about 53 and centres it.
+#
+# THE SETBACK COUNTS DID NOT MOVE, which is what makes this the cheap half
+# of the ladder to turn: NAP_SETBACK_COUNT, the "1, 2, 3 or 4 of the 6"
+# setup line and the Tier I split prose all read the Setback column and
+# none of them had to change.
+LEVELS = {"Easy": (3, 1), "Standard": (4, 2), "Hard": (5, 3), "Nobulous": (6, 4)}
 # End of Day burns one card off the Assignment deck, text ignored.
 # rules/nap.html prints it under "End of Day" - "Reveal and discard the top
 # card of the Assignment deck. Ignore all of its text, effects and Skulls" -

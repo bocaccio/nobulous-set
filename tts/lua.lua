@@ -72,7 +72,7 @@ BAT_DIFF = { Easy = {5, 12}, Standard = {7, 10}, Hard = {7, 9}, Nobulous = {8, 8
 -- LEAST ONE SETBACK, which is what keeps Tier I's one-for-one swap from
 -- simply adding three cards to a rung that had none - see LEVELS in
 -- simulation/nap.py for the measurement and for what Standard pays for it.
-NAP_DIFF = { Easy = {4, 1}, Standard = {5, 2}, Hard = {6, 3}, Nobulous = {7, 4} }
+NAP_DIFF = { Easy = {3, 1}, Standard = {4, 2}, Hard = {5, 3}, Nobulous = {6, 4} }
 -- NAP's second dial, from rules/nap.html: Increase 1-3 shuffles that
 -- many of the 3 FINF cards INTO the Assignment deck, Reduce 1-3 lays
 -- them out face-up to spend. Standard is Reduce 1. The two directions
@@ -733,10 +733,16 @@ function tableOut(label)
   return mat
 end
 
--- An Apprentice starts at 2 HP / 2 STR / 2 REC - printed on every one
+-- An Apprentice starts at 2 HP / 2 STR / 3 REC - printed on every one
 -- of the six sides, from the single literal in generator/build_nap.py -
 -- and the three dice say so in a row UNDER the card rather than in a
 -- column beside it.
+--
+-- REC ROSE TO 3 ON 2026-11-25. It is what pays for the Special
+-- Recovery age rule - the recovery now happens at the END of a Time
+-- Slot, before the dice you used in it are exhausted, so what you
+-- spend in a slot does not come straight back. Two starting values
+-- now, which is why NAP_REC_START exists beside NAP_START.
 --
 -- The Apprentice and FINF are both landscape and NAP_GAP apart, so the
 -- clear band between them is NAP_GAP minus a card's short side, and
@@ -747,6 +753,7 @@ end
 --
 -- The Chip starts in the circle beside Morning, reading 1.
 NAP_START = 2
+NAP_REC_START = 3
 -- The FINF space, one row under the Apprentice. Named because three
 -- things now want it: the setup that lays the cards there, the snap
 -- point under them, and the mat box the template draws from the snap.
@@ -2893,7 +2900,7 @@ function setupNAP()
     local sx = statRow(NAP_CHAR_X)
     setMarker('Health', sx[1], STAT_Z, NAP_START)
     setMarker('Strategy', sx[2], STAT_Z, NAP_START)
-    setMarker('Recovery', sx[3], STAT_Z, NAP_START)
+    setMarker('Recovery', sx[3], STAT_Z, NAP_REC_START)
   end)
   -- THE PANEL'S CHOICE, DEALT. The stack came out a step ago; this
   -- leaves the one the Apprentice button is showing on the table and
@@ -2908,7 +2915,7 @@ function setupNAP()
         ' shuffled: 26 Tasks + 6 Opportunities + ' .. held .. ' Setbacks' ..
         (STATE.tier >= 1 and (' (3 Following and ' .. base .. ' base)') or '') ..
         '. ' .. charOf('NAP').name ..
-        ' is out at 2 HP / 2 STR / 2 REC -- press Apprentice for another.' ..
+        ' is out at 2 HP / 2 STR / 3 REC -- press Apprentice for another.' ..
         ' Take all 17 dice and work the Morning Time Slot first.' ..
         ' The Final Exams stay in the bag until you reach them.' ..
         (STATE.tier >= 2 and ' TIER II: the 4 Imposter Tasks are in, and one Credit Task of each subject came out.' or '') ..

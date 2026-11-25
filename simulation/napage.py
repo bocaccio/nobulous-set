@@ -69,6 +69,19 @@ GAMES = 3000        # per Apprentice on a four-rung row
 LADDER_GAMES = 2000  # per Apprentice per tier on the candidate ladders
 GRID_GAMES = 2500   # per cell on the Prodigy-only difficulty surface
 
+# THE READING EVERY "shipped" ROW BELOW WAS MEASURED AGAINST, and which
+# stopped being nap.py's default on 2026-11-25 when Jon chose candidate A.
+# Pinned here so this file still reproduces its own output: dial() applies
+# it underneath whatever a caller names, and SHIPPED_LEVELS is the ladder
+# that went with it.
+SHIPPED = dict(SPECIAL_RECOVERY_AGE=False, SPECIAL_RECOVERY_AGE_ALLOW=0,
+               SPECIAL_RECOVERY_AGE_SLOTS=(0, 1, 2), SPECIAL_RECOVERY_CAP=0,
+               HP_START=2, STR_START=2, REC_START=2,
+               EXAM_NEED="commit", EXAM_WAIVER_COST=0,
+               EXAM_WAIVER_SCOPE="need")
+SHIPPED_LEVELS = {"Easy": (4, 1), "Standard": (5, 2),
+                  "Hard": (6, 3), "Nobulous": (7, 4)}
+
 AGE = dict(SPECIAL_RECOVERY_AGE=True)
 # The package the re-peg is measured under: the age rule in full, a third
 # die at End of Day to pay for it, and "must contribute" read as the card
@@ -92,6 +105,8 @@ SETBACKS = (0, 1, 2, 3, 4)
 
 
 def dial(**dials):
+    """Set dials on top of the SHIPPED reading, not on top of today's."""
+    dials = dict(SHIPPED, **dials)
     old = dict((k, getattr(nap, k)) for k in dials)
     for k, v in dials.items():
         setattr(nap, k, v)
@@ -112,7 +127,7 @@ def ladder(levels=None, games=None, tier="none", **dials):
         out = []
         for name in LEVELS:
             nap.CREDITS_TO_LEAVE, nap.SETBACKS_IN_DECK = (
-                levels or nap.LEVELS)[name]
+                levels or SHIPPED_LEVELS)[name]
             out.append(100.0 * sum(nap.run(a, "-1", games, tier=tier)
                                    for a in APPS) / len(APPS))
         return out
@@ -123,7 +138,7 @@ def ladder(levels=None, games=None, tier="none", **dials):
 def standard(**dials):
     """The Standard rung alone, 5 Credits and 2 Setbacks."""
     old, keep = dial(**dials), (nap.CREDITS_TO_LEAVE, nap.SETBACKS_IN_DECK)
-    nap.CREDITS_TO_LEAVE, nap.SETBACKS_IN_DECK = nap.LEVELS["Standard"]
+    nap.CREDITS_TO_LEAVE, nap.SETBACKS_IN_DECK = SHIPPED_LEVELS["Standard"]
     try:
         return 100.0 * sum(nap.run(a, "-1", GAMES, tier="none")
                            for a in APPS) / len(APPS)
@@ -333,7 +348,7 @@ def section_repeg(base_l):
     print("   %-24s" % "" + "".join("%10s" % ("tier " + t)
                                     for t in ("0", "I", "II", "III")))
     for name, dials, levels in (
-            ("SHIPPED", {}, nap.LEVELS),) + tuple(CANDIDATES):
+            ("SHIPPED", {}, SHIPPED_LEVELS),) + tuple(CANDIDATES):
         print("   " + name)
         cols = [ladder(levels=levels, games=LADDER_GAMES, tier=t, **dials)
                 for t in ("none", "I", "II", "III")]
@@ -420,7 +435,7 @@ def section_economy():
     print()
     print("   %-30s %7s %7s %7s %7s %7s %7s"
           % ("", "dice", "<=3", "<=1", ">=8", "slots", "refill"))
-    rows = [("as shipped, 5 Cr / 2 sb", nap.LEVELS, {})]
+    rows = [("as shipped, 5 Cr / 2 sb", SHIPPED_LEVELS, {})]
     for name, dials, levels in CANDIDATES:
         goal, sb = levels["Standard"]
         rows.append(("%s, %d Cr / %d sb" % (name.split()[0], goal, sb),
@@ -457,19 +472,103 @@ def section_decoration():
     print("   %-14s %19s %19s" % ("", "shipped", "candidate A"))
     print("   %-14s %9s %9s %9s %9s"
           % ("ability", "Standard", "worth", "Standard", "worth"))
-    a, b = ability_worth(nap.LEVELS), ability_worth(levels, **dials)
+    a, b = ability_worth(SHIPPED_LEVELS), ability_worth(levels, **dials)
     for app in APPS:
         print("   %-14s %8.1f%% %+9.1f %8.1f%% %+9.1f"
               % (app, a[app][0], a[app][1], b[app][0], b[app][1]))
     print()
     print("   %-14s %19s %19s" % ("FINF", "shipped", "candidate A"))
-    fa, fb = finf_worth(nap.LEVELS), finf_worth(levels, **dials)
+    fa, fb = finf_worth(SHIPPED_LEVELS), finf_worth(levels, **dials)
     for s in ("-1", "-2", "-3", "+1", "+2", "+3"):
         label = ("Reduce " if s[0] == "-" else "Increase ") + s[1]
         print("   %-14s %18.1f%% %18.1f%%" % (label, fa[s], fb[s]))
 
 
+# ----------------------------------------------------------------------
+# the confirmation run, once a candidate is chosen
+# ----------------------------------------------------------------------
+CONFIRM_GAMES = 20000       # per cell, which is table.py's convention
+# The shipped grid, python table.py 20000 run 2026-11-12, out of
+# simulation/RESULTS.txt - quoted rather than re-measured, so the comparison
+# is at matching precision without paying for it twice.
+SHIPPED_GRID = {
+    "Easy": (58.1, 47.6, 34.9, 43.9),
+    "Standard": (49.0, 41.1, 29.0, 38.8),
+    "Hard": (37.0, 35.1, 22.9, 33.7),
+    "Nobulous": (26.3, 24.5, 16.8, 25.7),
+}
+TIERS = ("none", "I", "II", "III")
+
+
+def confirm():
+    """Candidate A at table.py's own precision, 20,000 games a cell.
+
+    Jon chose A on 2026-11-25: the age rule in full, the Credit goals one
+    lower, the Setback counts as printed. "I think I prefer A. The rule is
+    simpler. B also still lets you game the system (just not as much)" - so
+    the allowance is out on purpose and this run does not measure it.
+
+    THE SHIPPING CONFIGURATION DOES NOT INCLUDE contribute = succeed. That
+    reading, and the price of the exam waiver, are still open - so the
+    ladder is pitched without them, and the second block prices what
+    adopting the cheap one would cost on the new ladder.
+    """
+    name, _, levels = CANDIDATES[0]
+    ship = dict(SPECIAL_RECOVERY_AGE=True, REC_START=3)
+    each = CONFIRM_GAMES // len(APPS)
+    print("CANDIDATE A CONFIRMED, %d games a cell (%d an Apprentice),"
+          % (CONFIRM_GAMES, each))
+    print("six Apprentices averaged: the age rule in full, REC 3, and the")
+    print("Credit goals one lower with the Setback counts as printed.")
+    print()
+    print("The shipped grid quoted under each rung is python table.py 20000")
+    print("of 2026-11-12, out of RESULTS.txt.")
+    print()
+    for label, dials in (("AS IT WOULD SHIP", ship),
+                         ("...and contribute = succeed, still undecided",
+                          dict(ship, EXAM_NEED="success"))):
+        print(label)
+        print("  %-24s" % "" + "".join(
+            "%10s" % ("no NRJ" if t == "none" else "Tier " + t)
+            for t in TIERS))
+        cols = [ladder(levels=levels, games=each, tier=t, **dials)
+                for t in TIERS]
+        for i, level in enumerate(LEVELS):
+            goal, sb = levels[level]
+            print("  %-24s" % ("%-9s %d Cr / %d Sb" % (level, goal, sb))
+                  + "".join("%9.1f%%" % col[i] for col in cols))
+            print("  %-24s" % "    shipped today"
+                  + "".join("%9.1f%%" % v for v in SHIPPED_GRID[level]))
+        steps = [cols[0][i] - cols[0][i + 1] for i in range(3)]
+        print("  %-24s   %s" % ("solo steps",
+                                "  ".join("%.1f" % s for s in steps)))
+        band = cols[0][1]
+        print("  %-24s   Standard is %s" % (
+            "", ("IN the 47-57 band at %.1f%%" % band) if 47 <= band <= 57
+            else ("OUT of the band at %.1f%%" % band)))
+        print()
+    print("EVERY APPRENTICE AT STANDARD, 4 Credits and 2 Setbacks, %d games"
+          % CONFIRM_GAMES)
+    print("each - the per-Apprentice band check the set applies.")
+    old, keep = dial(**ship), (nap.CREDITS_TO_LEAVE, nap.SETBACKS_IN_DECK)
+    nap.CREDITS_TO_LEAVE, nap.SETBACKS_IN_DECK = levels["Standard"]
+    try:
+        out = [(a, 100.0 * nap.run(a, "-1", CONFIRM_GAMES, tier="none"))
+               for a in APPS]
+    finally:
+        restore(old, keep)
+    for a, v in out:
+        print("  %-14s %6.1f%%   %s"
+              % (a, v, "in band" if 47 <= v <= 57 else
+                 ("ABOVE the band" if v > 57 else "BELOW the band")))
+    lo, hi = min(v for _, v in out), max(v for _, v in out)
+    print("  %-14s %6.1f    spread, %.1f to %.1f" % ("", hi - lo, lo, hi))
+
+
 if __name__ == "__main__":
+    if "confirm" in sys.argv:
+        confirm()
+        sys.exit(0)
     print(__doc__.strip().split("\n\n")[0])
     print()
     base_std = section_knob()

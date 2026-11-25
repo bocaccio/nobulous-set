@@ -258,7 +258,7 @@ print("Final Exams", render_deck('NAP_FinalExams', cards, 'NAP', LANDSCAPE, back
 def appcard(n, when, ability):
     return C(n, "Apprentice",
              '<div class="txt c" style="font-size:9.4pt;font-weight:bold;margin-top:.6mm">'
-             'HP 2 &nbsp;|&nbsp; STR 2 &nbsp;|&nbsp; REC 2</div>'
+             'HP 2 &nbsp;|&nbsp; STR 2 &nbsp;|&nbsp; REC 3</div>'
              '<div class="sub" style="margin-top:3.4mm">%s</div>'
              '<div class="txt" style="margin-top:.6mm">%s</div>' % (when, ability),
              'Choose one Apprentice card and one side at setup.')
