@@ -2,7 +2,9 @@ from gen import render_deck, render_duplex, make_back, elements, hdr_fit, title_
 
 # The shape of the cards being built, for header measurement.
 CARD_SIZE = PORTRAIT
-from aos import ROUTINE, SPECIALIZED, UNSTABLE, ADVANCED, REQ_MAP, FLAVOR, LIMITATIONS
+from aos import (ROUTINE, SPECIALIZED, UNSTABLE, ASSEMBLIES, ASSEMBLY_FLAVOR,
+                 COVERT, REQ_MAP, FLAVOR, LIMITATIONS)
+from aos_faces import ASSEMBLY_CSS, assembly_back, assembly_front
 
 REWARD = {'hp1': 'Gain 1 HP',
           'rec3': 'Recover 3 exhausted dice',
@@ -13,15 +15,20 @@ REWARD = {'hp1': 'Gain 1 HP',
 
 # "or exhaust 2 misses on them" is scoped to the HEALTH LOSS alone. In aos.py
 # the save sits inside `if failed >= 2:` and only skips `self.hp -= 1`, while
-# `overheated = failed >= 2` is computed outside it - so a negated
-# Catastrophic Failure still overheats the next Advanced Program, which is
-# why ADV_FTR says "either way".
+# the flip to Overheated is computed outside it - so a negated Catastrophic
+# Failure still costs the Program its face. The half of this that used to
+# matter MOST, a negated failure still overheating the next ADVANCED Program,
+# is gone with the Advanced deck (2026-11-24); the scoping itself still
+# decides what these two footers mean.
 STABLE_FTR = ('1 failed element: this Program Overheats. '
               '2+ (Catastrophic Failure): lose 1 HP, or exhaust 2 misses on them.')
 OVER_FTR = ('1 failed element: this Program is set aside. '
             '2+ (Catastrophic Failure): lose 1 HP, or exhaust 2 misses on them.')
-ADV_FTR = ('2+ failed elements: lose 1 HP, or exhaust 2 misses on them; either way the next '
-           'Advanced Program Overheats. 0-1: it stays Stable. Recover between Advanced Programs.')
+# NO ADV_FTR ANY MORE. The eight standalone Advanced Programs are gone, and
+# with them the Overheated-carryover rule they printed: the finale is now three
+# Assembly BACKS resolved as one Program, scored on one failed element across
+# the whole sequence, so there is no next-Program state left to carry. The
+# Assembly back's own footer is aos_faces.BACK_FTR.
 
 
 DECK_ACCENT = {'Routine': '#315c49', 'Specialized': '#4c4a75', 'Unstable': '#7a3838',
@@ -62,7 +69,10 @@ def program(name, targets, mark, reward, deck, overheated):
         body += ('<div class="spacer"></div><div class="sub">Program Reward</div>'
                  '<div class="txt" style="margin-top:.4mm">%s</div>' % reward)
     sub = '%s &middot; %s' % (deck, 'Overheated' if overheated else 'Stable')
-    ftr = (OVER_FTR if overheated else STABLE_FTR) if reward else ADV_FTR
+    # Every caller passes a reward now: the Advanced deck was the only
+    # rewardless one and the Assemblies replaced it.
+    assert reward, '%s: a Program with no reward is no longer a card' % name
+    ftr = OVER_FTR if overheated else STABLE_FTR
     return C(name, sub, body, ftr, warn=True, acc=DECK_ACCENT[deck], flavor=flavor)
 
 
@@ -76,9 +86,35 @@ make_back('CardBack_AoS_Limitation', 'AoS', 'Limitation', '#2f5966')
 make_back('CardBack_AoS_ElementMat', 'AoS', 'Element mat', '#555555', PORTRAIT)
 print("card backs done")
 
-stable = [program(n, t, m, None, 'Advanced', False) for n, t, m in ADVANCED]
-over = [program(n, t, m, None, 'Advanced', True) for n, t, m in ADVANCED]
-print('Advanced', render_duplex('AoS_Advanced', stable, over, 'AoS', PORTRAIT, BIG), 'two-sided')
+# THE EIGHT ASSEMBLIES, replacing the eight standalone Advanced Programs.
+# Front is the recipe built during the game, back is the finale stage it
+# becomes - two different jobs on one piece of card, which is why the faces
+# share nothing but the accent colour. The ninth, the Covert Sensor Array, is
+# printed in NRJ's print-and-play because it is offered only in a Tier III
+# setup; build_nrj.py builds it from these same two functions.
+ACC = DECK_ACCENT['Advanced']
+fronts = [assembly_front(n, rec, els, ASSEMBLY_FLAVOR[n][0], C, ACC)
+          for n, rec, _, els in ASSEMBLIES]
+backs = [assembly_back(bn, els, ASSEMBLY_FLAVOR[n][1], C, ACC)
+         for n, _, bn, els in ASSEMBLIES]
+print('Assemblies', render_duplex('AoS_Assemblies', fronts, backs, 'AoS', PORTRAIT,
+                                  BIG + ASSEMBLY_CSS), 'two-sided')
+
+# THE NINTH ASSEMBLY SHIPS IN NRJ'S PRINT-AND-PLAY but is built here, in AoS's
+# own stylesheet and header style, so all nine are one card format. That is not
+# tidiness: the recipe side's Advanced colors line is what a player reads to
+# plan a build, and a ninth card that presented it differently would be a
+# different promise. It carries no NRJ tag for the same reason.
+#
+# The deck NAME is what files it: pack.py lists NRJ_* under NRJ, so this lands
+# in the NRJ booklet and the NRJ box beside the Backdoor Routines, which are
+# also AoS cards printed by the campaign.
+_cn, _crec, _cbn, _cels = COVERT
+print('Covert Sensor Array',
+      render_duplex('NRJ_AoS_CovertAssembly',
+                    [assembly_front(_cn, _crec, _cels, ASSEMBLY_FLAVOR[_cn][0], C, ACC)],
+                    [assembly_back(_cbn, _cels, ASSEMBLY_FLAVOR[_cn][1], C, ACC)],
+                    'AoS', PORTRAIT, BIG + ASSEMBLY_CSS), 'two-sided')
 
 LIM_FTR = ('Reveal before committing required-color dice. '
            'Withheld dice cannot be used in this Program.')
@@ -89,7 +125,7 @@ print('Limitations', render_deck('AoS_Limitations', cards, 'AoS', PORTRAIT, BIG,
 TECHS = [
     ("Architect", "Reconfigure", "Once per Program, before rolling an element, move up to 2 allocated dice between unresolved elements."),
     ("Debugger", "Debug", "Once per Program, before rolling an element, swap 1 of its dice for a die from your available pool."),
-    ("Optimizer", "Optimize", "Once per cycle and once in Advanced Programming, Target +1 successes may count as Optimal Implementation."),
+    ("Optimizer", "Optimize", "Once per round and once in the finale, Target +1 successes may count as Optimal Implementation."),
     ("Engineer", "Redundancy", "For up to 2 elements per Program, the allocation cap is Target +2 instead of Target +1."),
     ("Operator", "Workaround", "When a non-Red Limitation would withhold 2 dice, you may withhold 1 of those dice as another non-Red color instead."),
     ("Compiler", "Compile", "When spending an additional STR roll, reroll any number of dice on that element while keeping the others."),

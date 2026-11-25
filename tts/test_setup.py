@@ -1761,9 +1761,11 @@ def in_the_bag_assertions():
     what it does NOT name must not be sitting there forgotten.
     """
     bagged = sorted(str(v) for v in g_in_the_bag())
-    want("four decks are declared as staying in the bag", bagged,
-         ["Advanced Programs", "Final Exams",
-          "Tyrant Attacks", "Wake-Up"])
+    # THREE, NOT FOUR, since 2026-11-24: the Advanced Programs deck is
+    # gone and the Assemblies that replaced it are dealt at setup - six of
+    # the eight, face up, for the whole game.
+    want("three decks are declared as staying in the bag", bagged,
+         ["Final Exams", "Tyrant Attacks", "Wake-Up"])
     for which, tier in (("BAT", 0), ("BAT", 3), ("NAP", 0), ("NAP", 3),
                         ("AoS", 0), ("AoS", 3)):
         w, g = start("Standard", tier, Panel())
@@ -2201,24 +2203,51 @@ def aos_assertions():
           if abs(float(b.x) - float(g.aosCol(5))) < 0.05
           and abs(float(b.z) - float(g.AOS_ROW1)) < 0.05], [])
 
-    # THE ADVANCED PROGRAMS STAY IN THE BAG - they are the endgame -
-    # but their space is still drawn, because they come out onto it.
-    want("the Advanced Programs are not on the table",
-         "Advanced Programs" in by, False)
-    want("...and their space is still drawn",
-         any(abs(float(b.x) - (float(g.AOS_RIGHT) - float(g.AOS_COL))) < 0.05
-             and abs(float(b.z) - float(g.AOS_ROW1)) < 0.05
-             for b in g.aosBoxes().values()), True)
+    # THE ASSEMBLY OFFER TOOK THE MIDDLE ROW and the element mats moved
+    # down to ROW3; the space the Advanced Programs used to come out onto
+    # holds the Backdoor Routine stack. Six of the eight Assemblies are
+    # face up for the whole game and the other two are in the box, which
+    # is a rule and not a convenience: their backs are Targets the player
+    # must not have seen.
+    # THIS TABLE IS DEALT AT TIER III, so one of the six is the Covert
+    # Sensor Array and is NOT named "Assembly N" - it is a card of its own
+    # from the NRJ box. Counting only the base cards finds five and reads
+    # as a missing Assembly, which is what the first version of this did.
+    def offered(o):
+        return o.name.startswith("Assembly") or o.name == "Covert Sensor Array"
+
+    asm = sorted(o.pos[0] for o in w.table.values() if offered(o))
+    want("six Assemblies are dealt, evenly across the middle row",
+         [round(x, 2) for x in asm],
+         [round(float(g.aosMid(k, int(g.AOS_OFFER))), 2)
+          for k in range(1, int(g.AOS_OFFER) + 1)])
+    want("...all on the Assembly row",
+         sorted(set(round(o.pos[2], 2) for o in w.table.values()
+                    if offered(o))),
+         [round(float(g.AOS_ROW2), 2)])
+    want("...all recipe side up",
+         sorted(set(o.is_face_down for o in w.table.values() if offered(o))),
+         [False])
+    # THE TIER III SWAP, which is the whole reason this card exists: the
+    # Covert Sensor Array is always offered and the standard Sensor Array -
+    # 'Assembly 4', its index in aos.ASSEMBLIES - never is.
+    want("...the Covert Sensor Array among them at Tier III",
+         bool([o for o in w.table.values()
+               if o.name == "Covert Sensor Array"]), True)
+    want("...and the standard Sensor Array nowhere on the table",
+         [o.name for o in w.table.values() if o.name == "Assembly 4"], [])
+    want("...and no deck is left standing on an Assembly space",
+         [o.name for o in w.table.values() if o.name == "Assemblies"], [])
     mats = sorted(o.pos[0] for o in w.table.values()
                   if o.name.startswith("Element Mat"))
-    want("the five element mats are a row across the middle",
+    want("the five element mats are a row across the lower half",
          [round(x, 2) for x in mats],
          [round(float(g.aosMid(k, int(g.AOS_MATS))), 2)
           for k in range(1, int(g.AOS_MATS) + 1)])
     want("...all on the same row",
          sorted(set(round(o.pos[2], 2) for o in w.table.values()
                     if o.name.startswith("Element Mat"))),
-         [round(float(g.AOS_ROW2), 2)])
+         [round(float(g.AOS_ROW3), 2)])
     want("AoS prints nothing in red", w.errors[:2], [])
 
 
@@ -3007,7 +3036,7 @@ def finale_assertions():
     """
     FIN = {"NAP": ("Start the Final Exam", "setupNAP"),
            "BAT": ("Start the Tyrant Battle", "setupBAT"),
-           "AoS": ("Start Advanced Programming", "setupAoS")}
+           "AoS": ("Start the Finale", "setupAoS")}
 
     def pressed(pan):
         return [b for b in pan.buttons if b["fn"] == "btnFinale"]
@@ -3039,8 +3068,12 @@ def finale_assertions():
         # in btnFinale passed it: the button is gone from the panel
         # either way, and a second press deals a second set of Final
         # Exams onto the first.
+        # AoS DEALS NOTHING AT ITS FINALE any more - the three stages are
+        # the Assemblies the player built, which have been on the table
+        # since setup. So the number here is the six dealt at setup, and
+        # what it asserts is that the finale's sweep leaves them alone.
         dealt = {"NAP": ("Final Exams", 3), "BAT": ("Tyrant Attacks", 7),
-                 "AoS": ("Advanced Programs", 3)}[game]
+                 "AoS": ("Assemblies", 6)}[game]
         want("%s: the finale deals %d %s" % (game, dealt[1], dealt[0]),
              out(w, dealt[0]), dealt[1])
 
@@ -3235,22 +3268,28 @@ def finale_assertions():
           and abs(o.pos[2]
                   - float(g.batRowZ(int(g.BAT_TRASH_ROW)))) < 1.0], [])
 
-    # ---- AoS: three of the eight, and the Limitations stay -----------
+    # ---- AoS: the finale deals nothing, and takes nothing away --------
+    # The three stages are the Assemblies the player built, and the script
+    # never saw an install happen - which three they are is a fact about
+    # the cards. So the finale's whole job here is the sweep, and the test
+    # that matters is what it does NOT sweep.
     w, g = start("Standard", 0, Panel())
     g.setupAoS()
     drain(w)
-    want("AoS deals no Advanced Programs during setup",
-         out(w, "Advanced Programs"), 0)
+    want("AoS deals six Assemblies during setup", out(w, "Assemblies"), 6)
     g.btnFinale()
     drain(w)
-    want("Advanced Programming deals 3 of the 8", out(w, "Advanced Programs"), 3)
-    want("...and the other 5 go back in the box",
-         inbag(w, "AoS", "Advanced Program"), 5)
-    want("...face down on their own space",
-         [(o.is_face_down, round(o.pos[0], 2))
-          for o in w.table.values()
-          if o.name.startswith(names_of("Advanced Programs"))],
-         [(True, round(float(g.AOS_RIGHT) - float(g.AOS_COL), 2))])
+    want("the finale deals no further Assemblies", out(w, "Assemblies"), 6)
+    want("...and leaves every one of them where it was",
+         sorted(round(o.pos[0], 2) for o in w.table.values()
+                if o.name.startswith("Assembly")),
+         [round(float(g.aosMid(k, int(g.AOS_OFFER))), 2)
+          for k in range(1, int(g.AOS_OFFER) + 1)])
+    want("...still recipe side up, for the player to turn by hand",
+         sorted(set(o.is_face_down for o in w.table.values()
+                    if o.name.startswith("Assembly"))), [False])
+    want("...and the element mats, which every stage still needs",
+         out(w, "Element Mats"), 5)
     want("...with the Program deck put away",
          [o.name for o in w.table.values()
           if o.name.startswith("Specialized Program")

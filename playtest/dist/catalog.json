@@ -854,8 +854,8 @@
     "backLabel": "Unstable Program · Overheated side"
    },
    {
-    "title": "Advanced Programs",
-    "sheet": "AoS_Advanced_TTS.png",
+    "title": "Assemblies",
+    "sheet": "AoS_Assemblies_TTS.png",
     "cols": 8,
     "rows": 1,
     "landscape": false,
@@ -867,41 +867,49 @@
     "hdr": "aos",
     "cards": [
      {
-      "name": "Rapid Approach",
-      "kind": "Advanced Program · Stable side"
+      "name": "Drive Train",
+      "kind": "Assembly · recipe side",
+      "backName": "Rapid Approach"
      },
      {
-      "name": "Unobserved Entry",
-      "kind": "Advanced Program · Stable side"
+      "name": "Control Array",
+      "kind": "Assembly · recipe side",
+      "backName": "Correct a Heading"
      },
      {
-      "name": "Subject Acquisition",
-      "kind": "Advanced Program · Stable side"
+      "name": "Balance Gyro",
+      "kind": "Assembly · recipe side",
+      "backName": "Recover from a Stumble"
      },
      {
-      "name": "Difficult Extraction",
-      "kind": "Advanced Program · Stable side"
+      "name": "Sensor Array",
+      "kind": "Assembly · recipe side",
+      "backName": "Unobserved Entry"
      },
      {
-      "name": "Autonomous Infiltration",
-      "kind": "Advanced Program · Stable side"
+      "name": "Load Frame",
+      "kind": "Assembly · recipe side",
+      "backName": "Carry a Moving Load"
      },
      {
-      "name": "Controlled Restraint",
-      "kind": "Advanced Program · Stable side"
+      "name": "Power Regulator",
+      "kind": "Assembly · recipe side",
+      "backName": "Sustain Peak Output"
      },
      {
-      "name": "Adaptive Pursuit",
-      "kind": "Advanced Program · Stable side"
+      "name": "Articulated Arm",
+      "kind": "Assembly · recipe side",
+      "backName": "Place a Fragile Load"
      },
      {
-      "name": "Council Extraction Protocol",
-      "kind": "Advanced Program · Stable side"
+      "name": "Traction Module",
+      "kind": "Assembly · recipe side",
+      "backName": "Cross Broken Ground"
      }
     ],
-    "back": "AoS_Advanced_TTS_back.png",
+    "back": "AoS_Assemblies_TTS_back.png",
     "backIsSheet": true,
-    "backLabel": "Advanced Program · Overheated side"
+    "backLabel": "Advanced Program · finale stage"
    },
    {
     "title": "Limitations",
@@ -1382,6 +1390,29 @@
     "back": "CardBack_NRJ_BackdoorRoutine.png",
     "backIsSheet": false,
     "backLabel": "Card back"
+   },
+   {
+    "title": "AoS Covert Sensor Array",
+    "sheet": "NRJ_AoS_CovertAssembly_TTS.png",
+    "cols": 1,
+    "rows": 1,
+    "landscape": false,
+    "cell": [
+     750,
+     1050
+    ],
+    "gutter": 24,
+    "hdr": "",
+    "cards": [
+     {
+      "name": "Covert Sensor Array",
+      "kind": "Assembly · recipe side",
+      "backName": "Erase the Audit Trail"
+     }
+    ],
+    "back": "NRJ_AoS_CovertAssembly_TTS_back.png",
+    "backIsSheet": true,
+    "backLabel": "Advanced Program · finale stage"
    },
    {
     "title": "Imposter Scenarios",

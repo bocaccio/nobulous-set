@@ -336,8 +336,12 @@ ga = py_tables("generator/aos.py")
 sa = py_tables("simulation/aos.py")
 jpt = js_literal("playtest/dist/app.js", "PROGRAM_TARGETS")
 jpm = js_literal("playtest/dist/app.js", "PROGRAM_MARKS")
+# THREE DECKS, NOT FOUR, since 2026-11-24: the Advanced Programs were
+# replaced by the Assemblies, whose backs are checked further down against
+# a different shape - they have one set of Targets and no overheat ring,
+# so none of the three assertions in this loop is even meaningful for them.
 for deck, key in (("Routine", "ROUTINE"), ("Specialized", "SPECIALIZED"),
-                  ("Unstable", "UNSTABLE"), ("Advanced", "ADVANCED")):
+                  ("Unstable", "UNSTABLE")):
     src = ga[key]
     rows("aos.py %s vs PROGRAM_TARGETS front" % deck,
          src, jpt[deck]["front"], {"targets": (G(1), lambda r: r)})
@@ -351,6 +355,129 @@ for deck, key in (("Routine", "ROUTINE"), ("Specialized", "SPECIALIZED"),
     rows("%s back == front +1 at the mark" % deck,
          want, jpt[deck]["back"], {"targets": (lambda r: r, lambda r: r)})
 
+# ---- Assemblies: one card, two faces, and four owners ----------------
+# The front conceals the back on purpose, so the two must NOT be derivable
+# from each other - except the Advanced colors line, which IS derived from
+# the back and is the one thing that must never be stored twice.
+_gasm = ga["ASSEMBLIES"] + [ga["COVERT"]]
+_sasm = sa["ASSEMBLIES"] + [sa["COVERT"]]
+check("generator and model hold the same nine Assemblies",
+      _gasm == _sasm, "%r" % ([a for a, b in zip(_gasm, _sasm) if a != b][:2],))
+check("...and there are nine of them, eight base and one Tier III",
+      len(ga["ASSEMBLIES"]) == 8 and ga["COVERT"][0] == "Covert Sensor Array",
+      "%d base, ninth is %r" % (len(ga["ASSEMBLIES"]), ga["COVERT"][0]))
+
+# EVERY BACK IS TWO COLOURS ACROSS TWO OR THREE ELEMENTS, which is what
+# makes the Advanced colors line short enough to print and vague enough to
+# conceal the element count.
+_badback = [a[0] for a in _gasm
+            if len({c for c, _ in a[3]}) != 2 or not 2 <= len(a[3]) <= 3]
+check("every Assembly back is two colours over two or three elements",
+      not _badback, "%r" % (_badback,))
+
+# A DOUBLED COLOUR IS THE FLEXIBLE RECIPE, measured in aosbuild.py: a
+# recipe asking three DISTINCT colours is three chances to be blocked
+# where two is two, and respeccing them that way made dead setups WORSE
+# (23.4% against 15.4%). So every Build recipe is two colours too.
+_badbuild = [a[0] for a in _gasm if len(set(a[1])) != 2]
+check("...and every Build recipe asks exactly two colours",
+      not _badbuild, "%r" % (_badbuild,))
+
+# THE LAB READS THE GENERATED FILE, so this is the export agreeing with
+# its source rather than a fourth transcription.
+# Read as JSON rather than through js_literal: the exporter writes a
+# window.* assignment of plain JSON, which js_literal's const/let/var
+# pattern does not match and does not need to - there is nothing
+# JavaScript-shaped in the file to tolerate.
+_asmsrc = text("playtest/dist/aos_assemblies.js")
+_jsasm = json.loads(_asmsrc[_asmsrc.index("=") + 1:].strip().rstrip(";"))
+_LONGA = {"P": "purple", "B": "blue", "G": "green", "Y": "yellow"}
+_asmbad = []
+if len(_jsasm) != len(_gasm):
+    _asmbad.append(("count", len(_jsasm), len(_gasm)))
+for row, a in zip(_jsasm, _gasm):
+    want_cols = []
+    for c, _ in a[3]:
+        if _LONGA[c] not in want_cols:
+            want_cols.append(_LONGA[c])
+    for field, got, wanted in (
+            ("name", row["name"], a[0]),
+            ("build", row["build"], [_LONGA[c] for c in a[1]]),
+            ("backName", row["backName"], a[2]),
+            ("backColors", row["backColors"], [_LONGA[c] for c, _ in a[3]]),
+            ("backTargets", row["backTargets"], [t for _, t in a[3]]),
+            ("advancedColors", row["advancedColors"], want_cols)):
+        if got != wanted:
+            _asmbad.append((a[0], field, got, wanted))
+check("playtest/dist/aos_assemblies.js matches generator/aos.py",
+      not _asmbad, "%r" % (_asmbad[:3],))
+
+# THE ADVANCED COLORS LINE IS DERIVED, and the point of saying so here is
+# that four of the nine print a FRONT recipe in colours their own back
+# never asks for. That is the concealment working. If this ever came out
+# as nine, somebody had derived one face from the other.
+_hidden = [a[0] for a in _gasm
+           if {_LONGA[c] for c in a[1]} != {_LONGA[c] for c, _ in a[3]}]
+check("four Assemblies build in colours their own back never asks",
+      len(_hidden) == 4, "%r" % (_hidden,))
+
+# THE MOD DROPS 'Assembly 4' AT TIER III, because a card's nickname is its
+# index in this table and the standard Sensor Array is the card the Covert
+# one replaces. Reordering ASSEMBLIES has to fail here, not at the table.
+check("the Sensor Array is the fourth Assembly, which tts/lua.lua drops by index",
+      ga["ASSEMBLIES"][3][0] == "Sensor Array",
+      "fourth is %r" % (ga["ASSEMBLIES"][3][0],))
+check("...and lua.lua still drops that index at Tier III",
+      "dropCard(asm, 'Assembly 4')" in text("tts/lua.lua"))
+
+# ONE NAME IS SHARED BY TWO CARDS THAT ARE BOTH IN PLAY. The Assembly back
+# "Carry a Moving Load" is also a Specialized Program, and both are on the
+# table in the same game. It is deliberate - the handed-over mockup names
+# it - but a SECOND collision would be a mistake, and name-keyed tables
+# like REQ_MAP and FLAVOR would swallow it silently.
+_progs = {r[0] for k in ("ROUTINE", "SPECIALIZED", "UNSTABLE") for r in ga[k]}
+_collide = sorted(a[2] for a in _gasm if a[2] in _progs)
+check("exactly one Assembly back shares a name with a Program still in play",
+      _collide == ["Carry a Moving Load"], "%r" % (_collide,))
+
+# THE SETUP NUMBERS, in the book, the lab and the model. Six offered and a
+# colour floor of two are not decoration: at the handed-over five with no
+# floor, 15.4% of Standard setups cannot build three Assemblies at all.
+check("the model offers six Assemblies and floors the colours at two",
+      sa["OFFER_SIZE"] == 6 and sa["COLOR_FLOOR"] == 2,
+      "offer %r floor %r" % (sa.get("OFFER_SIZE"), sa.get("COLOR_FLOOR")))
+check("...and the lab agrees",
+      "const OFFER_SIZE = 6;" in text("playtest/dist/app.js")
+      and "const COLOR_FLOOR = 2;" in text("playtest/dist/app.js"))
+# AGAINST THE RAW BOOK, not _RULES: that is built further down this file
+# and strips the tags these phrases are made of.
+_aoshtml = text("rules/aos.html")
+check("...and rules/aos.html prints both",
+      "reveal <b>6</b> of them" in _aoshtml
+      and "at least two</b> of your 8 Programs" in _aoshtml)
+
+# THE FINALE'S THRESHOLD, which is the whole endgame: at most one failed
+# element across three stages, and at least 1 Health.
+check("the model scores the finale on one failed element across all of it",
+      sa["FINALE_ALLOWED"] == 1 and sa["BUILD_TARGET"] == 3
+      and sa["ROUNDS"] == 3,
+      "allowed %r build %r rounds %r"
+      % (sa.get("FINALE_ALLOWED"), sa.get("BUILD_TARGET"), sa.get("ROUNDS")))
+check("...and rules/aos.html prints it that way round",
+      "At most one</b>, and <b>at least 1" in _aoshtml
+      and "loses the game outright</b>" in _aoshtml)
+check("...and the Assembly card's own footer says the same",
+      "A 2nd failed element across the finale loses the game."
+      in text("generator/aos_faces.py"))
+
+# THE OLD ENDGAME IS GONE EVERYWHERE, which is the check that would have
+# caught a book still telling a player to face three Advanced Programs.
+_ghosts = [w for w in ("Advanced Programming", "AoS_Advanced")
+           if w in _aoshtml or w in text("playtest/dist/app.js")]
+check("nothing still sends a player to Advanced Programming",
+      not _ghosts, "%r" % (_ghosts,))
+
+
 # Required-colour dots. simulation/aos.py's PROGRAM_REQS is GENERATED from
 # generator/aos.py's REQ_MAP, so the only way it goes wrong is someone
 # editing a dot on one side and not the other. Dot counts are NOT uniform
@@ -361,7 +488,7 @@ _req = ga["REQ_MAP"]
 _sim_req = sa["PROGRAM_REQS"]
 _wrong = []
 for deck, key in (("Routine", "ROUTINE"), ("Specialized", "SPECIALIZED"),
-                  ("Unstable", "UNSTABLE"), ("Advanced", "ADVANCED")):
+                  ("Unstable", "UNSTABLE")):
     for pid, row in enumerate(ga[key]):
         name, targets = row[0], row[1]
         want = [_LONG[d] if d else None
@@ -431,8 +558,12 @@ check("the lab re-rolls the corruption picks on every reveal",
 # The lab's dot table is generated from the same REQ_MAP as the model's.
 _jreq = js_literal("playtest/dist/app.js", "PROGRAM_REQS")
 _lab_wrong = []
+# THREE DECKS. The lab's Advanced entry is derived from the Assemblies
+# rather than transcribed from REQ_MAP - every element of an Assembly back
+# carries a colour, where a Program carries one or two - and it is checked
+# against generator/aos.py above, in the Assembly block.
 for deck, key in (("Routine", "ROUTINE"), ("Specialized", "SPECIALIZED"),
-                  ("Unstable", "UNSTABLE"), ("Advanced", "ADVANCED")):
+                  ("Unstable", "UNSTABLE")):
     for pid, row in enumerate(ga[key]):
         name, targets = row[0], row[1]
         want = [_LONG[d] if d else None
@@ -444,9 +575,12 @@ check("the lab's PROGRAM_REQS matches generator REQ_MAP",
       not _lab_wrong, "; ".join(_lab_wrong[:3]))
 
 # rules/aos.html must not claim a uniform dot count: three cards break it.
-check("rules/aos.html names the three dot-count exceptions",
-      all(n in _arules for n in ("Carry a Moving Load", "Rapid Approach",
-                                 "Unobserved Entry"))
+# ONE EXCEPTION NOW, NOT THREE. Rapid Approach and Unobserved Entry were
+# Advanced Programs and are gone; Carry a Moving Load is still a
+# Specialized Program carrying all four colours, and is still the only
+# card that breaks the per-deck dot count.
+check("rules/aos.html names the dot-count exception",
+      "Carry a Moving Load" in _arules
       and "carry two required&#8209;color dots; Routine" not in _arules)
 # Percentages in the supplement are model output and must say so.
 _nrules = text("rules/nrj.html")
@@ -462,20 +596,37 @@ check("no bare win-rate claim is left in rules/aos.html",
 # the one phrase that made the deliberate-failure route look open on paper.
 # Fixed 2026-11-03 in e812c7e; HANDOFF.md went on calling it open for five
 # days because nothing held the sentence to the model. This is that.
-check("rules/aos.html states survival, not completion, as the win condition",
-      "Work through all three with Health remaining to win AoS." in _arules
-      and "still counts as faced" in _arules
-      and "is the win condition" in _arules
-      and "Complete all three" not in _arules)
-check("simulation/aos.py wins on surviving the three Advanced Programs",
-      "return self.hp > 0" in _asrc
-      and "self.advanced_done += 1" in _asrc)
+# AND THE WIN CONDITION CHANGED AGAIN ON 2026-11-24, the other way. It is
+# no longer survival: the Assembly finale is scored on ONE failed element
+# across three stages, so a stage you fail twice does lose the game. The
+# old danger was a book that read as "succeed at all three" when surviving
+# was enough; the new one is a book that still says surviving is enough.
+check("rules/aos.html scores the finale on failed elements, not survival",
+      "At most one</b>, and <b>at least 1" in _aoshtml
+      and "loses the game outright</b>" in _aoshtml
+      and "Work through all three with Health remaining" not in _arules
+      and "still counts as faced" not in _arules)
+check("simulation/aos.py scores it the same way",
+      "self.finale_failed > FINALE_ALLOWED" in _asrc
+      and "return self.hp > 0 and self.finale_failed <= FINALE_ALLOWED" in _asrc)
+# THE DEADLINE IS THE OTHER HALF, and it is the half the measurement says
+# decides the game: 63.5% of Standard losses are reaching the end of round
+# three without three Assemblies built. A book that forgets to print it
+# leaves a player with no reason to hurry.
+check("rules/aos.html prints the three-round deadline",
+      "three rounds</b> to <b>build three Assemblies" in _aoshtml
+      and "without three Assemblies built" in _aoshtml)
+check("...and the model enforces it",
+      "if len(done) < BUILD_TARGET:" in _asrc)
 # And the brake that makes survival-as-the-rule safe to print: Health is
 # only ever regained by a Program Reward, and a Reward needs no failed
 # element, so dumping Programs forfeits the only healing in the game.
+# AGAINST THE RAW BOOK, so every phrase here has to be one the source
+# does not wrap across a line - _arules is text(), not _plain().
 check("rules/aos.html prints why failing on purpose is not a shortcut",
-      "only way to heal is to do the work" in _arules
-      and "The deck outlasts you." in _arules)
+      "only way to heal is the same work" in _arules
+      and "<em>and cannot be installed</em>" in _arules
+      and "empty frame" in _arules)
 
 # THE DECK MIX IS AoS'S DIFFICULTY DIAL and it had three unchecked copies:
 # simulation/aos.py's LEVELS, the lab's AOS_LEVELS and the printed table.
@@ -932,13 +1083,20 @@ check("rules/aos.html: Carry a Moving Load is the four-colour exception",
       sorted(_byDeck["Specialized"]) == [2, 2, 2, 2, 2, 2, 2, 4]
       and "requires all four colors" in _RULES["aos"],
       "%r" % (_byDeck["Specialized"],))
-check("rules/aos.html: the two Advanced three-dot exceptions are named "
-      "wherever it gives the Advanced count",
-      sorted(_byDeck["Advanced"]) == [2, 2, 2, 2, 2, 2, 3, 3]
-      and _RULES["aos"].count("Rapid Approach and Unobserved Entry") >= 2,
-      "%r, named %d time(s)"
-      % (_byDeck["Advanced"],
-         _RULES["aos"].count("Rapid Approach and Unobserved Entry")))
+# AND THE ASSEMBLY BACKS, which took the Advanced Programs' place: every
+# element of one carries a colour, so the count is the element count and
+# the old "each carries 2, except these two" question does not arise. What
+# can still go wrong is a back whose dots stop matching its own elements.
+# THE DOTS THEMSELVES ARE CHECKED IN THE ASSEMBLY BLOCK ABOVE, against
+# generator/aos.py, because the model and the lab both DERIVE them from
+# the Assemblies rather than transcribing them - there is no third copy
+# here to hold against a second. What is worth checking at this end is
+# that the book tells a player the rule at all: a finale element always
+# asks a colour, where a Program element usually does not, and a player
+# who does not know that plans the wrong dice.
+check("rules/aos.html tells a player every finale element asks a colour",
+      "every element carries a required color" in _RULES["aos"].lower(),
+      "the book never says the finale asks a colour per element")
 
 # -- NRJ and the finale ------------------------------------------------------
 _fin = py_tables("simulation/finale.py")
@@ -1155,7 +1313,12 @@ check("the lab prints the Technician abilities the cards print",
 # back to once per Program. The lab has to agree in CODE as well as in
 # card text, and the two cards want OPPOSITE answers at all three reset
 # sites, so each is checked on its own.
-CADENCE = "Once per cycle and once in Advanced Programming"
+# RENAMED WITH THE PHASE IT NAMED, 2026-11-24: a cycle is a round now and
+# Advanced Programming is the finale, so the card could not keep pointing
+# at either. The cadence itself - once per pass through the deck, and once
+# more at the end - is unchanged, which is why this is still one string
+# checked at every site rather than a new rule.
+CADENCE = "Once per round and once in the finale"
 _tech_txt = {_g[0]: _g[2] for _g in _gen_techs}
 check("the Optimizer card is the per-cycle wording",
       CADENCE in _tech_txt.get("Optimizer", ""),
@@ -1676,13 +1839,20 @@ print("FLAVOUR TEXT THE LAB KEEPS ITS OWN COPY OF")
 # walked by hand, which is the moment a copy goes stale. These checks are
 # cheap and would have caught it.
 _lab = "".join(text("playtest/dist/%s" % f)
-               for f in ("app.js", "bat_experiments.js", "suite.js", "bat.js"))
+               for f in ("app.js", "bat_experiments.js", "suite.js", "bat.js",
+                         "aos_assemblies.js"))
 _gb, _ga = py_tables("generator/build_bat.py"), py_tables("generator/aos.py")
 for _label, _lines in (
         ("BAT Experiments", [r[3] for r in _gb["EXPERIMENTS"]]),
         ("AoS Stable sides", [v[0] for v in _ga["FLAVOR"].values()]),
         ("AoS Overheated sides", [v[1] for v in _ga["FLAVOR"].values()]),
-        ("AoS Limitations", [r[2] for r in _ga["LIMITATIONS"]])):
+        ("AoS Limitations", [r[2] for r in _ga["LIMITATIONS"]]),
+        # Both faces of every Assembly: the recipe side's flavour and the
+        # Advanced Program's. These reach the lab through the generated
+        # aos_assemblies.js rather than a transcription, so what this
+        # catches is an export that was not re-run.
+        ("AoS Assembly fronts", [v[0] for v in _ga["ASSEMBLY_FLAVOR"].values()]),
+        ("AoS Assembly backs", [v[1] for v in _ga["ASSEMBLY_FLAVOR"].values()])):
     _stale = [t for t in _lines if t and t not in _lab]
     check("  the lab's %d %s lines match the generator" % (len(_lines), _label),
           not _stale, "%d stale, e.g. %r" % (len(_stale), _stale[:1]))
@@ -2313,8 +2483,16 @@ check("...and BAT no longer prints a reroll rule of its own",
 # coupon table to a book with about 10mm of blank paper left. Its style block
 # is unchanged and still earns its keep - it is buying the fourth page now
 # instead of the third, and loosening it costs a fifth.
+# AOS WENT TO FOUR ON 2026-11-24, and that is a budget rise too. The
+# Assembly redesign replaced the eight standalone Advanced Programs with
+# eight double-sided Assemblies and brought three sections the book did not
+# have: installing a Program in a Build slot, abandoning an unfinished
+# Assembly, and a finale scored on one failed element across three concealed
+# stages. It also rewrote setup and the whole endgame. Page 4 comes out about
+# three-fifths full of rules the game now has, not of slack: the alternative
+# to the fourth page was cutting a rule, not tightening a paragraph.
 _PAGES = {"BAT_Rulebook.pdf": 3, "NAP_Rulebook.pdf": 4,
-          "AoS_Rulebook.pdf": 3, "NRJ_Campaign_Supplement.pdf": 4}
+          "AoS_Rulebook.pdf": 4, "NRJ_Campaign_Supplement.pdf": 4}
 try:
     import pypdf
 except ImportError:
@@ -2349,7 +2527,7 @@ else:
           and "FOUR PAGES, NOT SIX" in text("rules/nrj.html")
           and "line-height: 1.25" in text("rules/bat.html")
           and "line-height: 1.30" in text("rules/nap.html")
-          and "line-height: 1.25" in text("rules/nrj.html"))
+          and "line-height: 1.24" in text("rules/nrj.html"))
     # AND THE CREDIT LINE IS IN THE BOOK ITSELF, which nothing had ever
     # asked. .foot spans both columns, and a full-width band needs room
     # under BOTH of them - so when NRJ was squeezed to four pages

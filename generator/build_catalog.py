@@ -213,9 +213,15 @@ for label, data in [('Routine Programs', aos_data.ROUTINE),
         deck(label, sheet, names(data), '%s · Stable side' % label[:-1],
              sheet.replace('_TTS.png', '_TTS_back.png'), '%s · Overheated side' % label[:-1]))
 CATALOG['aos']['decks'] += [
-    deck('Advanced Programs', 'AoS_Advanced_TTS.png', names(aos_data.ADVANCED),
-         'Advanced Program · Stable side', 'AoS_Advanced_TTS_back.png',
-         'Advanced Program · Overheated side'),
+    # AN ASSEMBLY'S TWO FACES ARE TWO DIFFERENT CARDS' WORTH OF JOB, so the
+    # back list is the Advanced Program names rather than the same names
+    # again: the recipe side says "Drive Train" and its back says "Rapid
+    # Approach", which is the one deck in the set where that is true.
+    deck('Assemblies', 'AoS_Assemblies_TTS.png',
+         [a[0] for a in aos_data.ASSEMBLIES],
+         'Assembly · recipe side', 'AoS_Assemblies_TTS_back.png',
+         'Advanced Program · finale stage',
+         [a[2] for a in aos_data.ASSEMBLIES]),
     deck('Limitations', 'AoS_Limitations_TTS.png', names(aos_data.LIMITATIONS),
          'Limitation card', 'CardBack_AoS_Limitation.png'),
     deck('Technicians', 'AoS_Technicians_TTS.png', names(build_aos.TECHS[0::2]),
@@ -252,6 +258,13 @@ CATALOG['nrj']['decks'] += [
          'Corrupted Limitation · AoS', 'CardBack_AoS_Limitation.png'),
     deck('AoS Backdoor Routines', 'NRJ_AoS_BackdoorRoutines_TTS.png', names(build_nrj.BACKDOOR),
          'Backdoor Routine · AoS', 'CardBack_NRJ_BackdoorRoutine.png'),
+    # The ninth Assembly, printed in NRJ's booklet because it is offered
+    # only at Tier III, but built by build_aos.py in AoS's own stylesheet
+    # so all nine present their recipe side identically.
+    deck('AoS Covert Sensor Array', 'NRJ_AoS_CovertAssembly_TTS.png',
+         [aos_data.COVERT[0]], 'Assembly · recipe side',
+         'NRJ_AoS_CovertAssembly_TTS_back.png',
+         'Advanced Program · finale stage', [aos_data.COVERT[2]]),
     deck('Imposter Scenarios', 'NRJ_ImposterScenarios_TTS.png', names(build_nrj.SCEN),
          lambda n, i: 'Council Test · %s' % build_nrj.SCEN[i][1], 'CardBack_NRJ_CouncilTest.png'),
     deck('Imposters', 'NRJ_Imposters_TTS.png', names(build_nrj.IMPOSTERS[0::2]),

@@ -649,6 +649,22 @@ AOS_DISCARD_Z = AOS_ROW2
 AOS_MATS = 5
 AOS_BACKDOORS = 6
 
+-- THE ASSEMBLY OFFER TOOK THE MIDDLE ROW, 2026-11-24, because it is what
+-- the game is now about: six recipes face-up for the whole game, with the
+-- Programs you run installed onto them. Six portrait cards need a row, and
+-- the table has no fourth one - ROW3's cards reach -11.07 and the
+-- exhausted dice start at -14.08, which is 3.0 of clearance for a card
+-- 8.21 deep. So the row had to come from the three that exist.
+--
+-- The element mats moved DOWN to ROW3 and the Backdoor Routines came UP to
+-- a single face-up STACK on the space the Advanced Programs never used.
+-- That is the Technician idiom already in this file - one stack, take the
+-- one you want - and it is the right shape for six reference cards you
+-- read once and claim at most two of, where it was the wrong shape for
+-- five mats you put dice on every single Program.
+AOS_OFFER = 6
+AOS_BACKDOOR_X = AOS_RIGHT - AOS_COL
+
 -- The NAP Time Slot column, down the left. It has to clear the dice at
 -- -26.5 on one side and the Assignment deck, which reaches -14.07, on
 -- the other; a landscape card is 8.71 across, so there is exactly one
@@ -697,8 +713,7 @@ ASSIGN_SLOTS = 4
 --
 -- Named here so that "every deck a setup can reach" stays a real check
 -- rather than one that quietly stopped covering a deck.
-IN_THE_BAG = { 'Final Exams', 'Tyrant Attacks',
-               'Wake-Up', 'Advanced Programs' }
+IN_THE_BAG = { 'Final Exams', 'Tyrant Attacks', 'Wake-Up' }
 
 -- The printed layout under the cards. One per game, each its own tile
 -- in its own bag, which is what lets them be different felts.
@@ -2168,11 +2183,11 @@ function aosBoxes()
   box(AOS_TECH_X, AOS_ROW1 + AOS_WIDE_LIFT, AOS_WIDE_HW, AOS_WIDE_HD)
   for k = 1, 4 do box(aosCol(k), AOS_ROW1) end
   box(AOS_DISCARD_X, AOS_DISCARD_Z)      -- above the banished dice
-  box(AOS_RIGHT - AOS_COL, AOS_ROW1)     -- Advanced Programs, for the finale
+  box(AOS_BACKDOOR_X, AOS_ROW1)          -- the Backdoor Routine stack
   box(AOS_RIGHT, AOS_ROW1)               -- what a tier deals face-up
-  for k = 1, AOS_MATS do box(aosMid(k, AOS_MATS), AOS_ROW2) end
+  for k = 1, AOS_OFFER do box(aosMid(k, AOS_OFFER), AOS_ROW2) end
   box(AOS_TECH_X, AOS_ROW3)              -- Programs finished with
-  for k = 1, AOS_BACKDOORS do box(aosMid(k, AOS_BACKDOORS), AOS_ROW3) end
+  for k = 1, AOS_MATS do box(aosMid(k, AOS_MATS), AOS_ROW3) end
   box(AOS_RIGHT, AOS_ROW3)               -- banished dice
   return out
 end
@@ -2954,12 +2969,61 @@ function setupAoS()
     lim = deckOut('Limitations', {aosCol(AOS_LIMITS), 3, AOS_ROW1})
     if STATE.tier >= 2 then lim = merge(lim, deckOut('Corrupted Limitations', pad(2))) end
     if lim then lim.shuffle() end
-    -- THE ADVANCED PROGRAMS STAY IN THE BAG. They are the endgame -
-    -- three of the eight, after the third cycle - so nothing touches
-    -- them for most of a game, and a deck on the table that nothing
-    -- touches is a deck in the way. Their space is still drawn.
-    spread(deckOut('Element Mats', {0, 3, AOS_ROW2}, FACEUP), AOS_MATS,
-           AOS_ROW2, FACEUP, AOS_COL)
+    spread(deckOut('Element Mats', {0, 3, AOS_ROW3}, FACEUP), AOS_MATS,
+           AOS_ROW3, FACEUP, AOS_COL)
+  end)
+  -- THE ASSEMBLY OFFER. Six of the eight, recipe side up, there for the
+  -- whole game: the other two go back in the bag UNTURNED, because their
+  -- backs are Targets a player must not have seen.
+  --
+  -- TIER III SWAPS THE SENSOR ARRAY and guarantees the Covert one a place,
+  -- so it cannot be dealt by cutting a shuffled nine: the standard Sensor
+  -- Array leaves, five of the remaining seven are cut to, and the Covert
+  -- card is merged in afterwards. 'Assembly 4' is the Sensor Array because
+  -- the nickname is its index in aos.ASSEMBLIES; check_app_sync.py holds
+  -- that position so a reordered table fails here rather than at the table.
+  --
+  -- DEALT CARD BY CARD AND THE REST SENT HOME, rather than cut down and
+  -- spread. cutTo + spread leaves the deck object itself holding the last
+  -- card and standing on the first space, which is a stack of one where
+  -- the player expects a card - and it reads to test_setup as two objects
+  -- on one space, which is exactly what it is. Taking six out and putting
+  -- the remainder away is also what the rule says happens: "return the
+  -- other 2 to the box without turning them over".
+  --
+  -- A REAL PAD, AND NOT OFF, for the staging: every takeObject in this
+  -- script drops its card at OFF on the way to somewhere, so a deck parked
+  -- there is a deck being rained on, and AoS has made that mistake before
+  -- with the Specialized Programs. BAND_PADS IS 4, so a fifth pad is not a
+  -- slot at all but bare felt below the table, and a deck left there is
+  -- stranded. Both pads used here were freed by earlier steps.
+  -- (Naming the out-of-range call literally here would trip the check in
+  -- check_app_sync.py that reads these calls out of the text.)
+  step(function()
+    local asm = deckOut('Assemblies', pad(2), FACEUP)
+    if not asm then say('No Assemblies in the AoS box.') return end
+    -- Tier III guarantees the Covert Sensor Array a place, so it cannot be
+    -- left to a shuffle: the standard Sensor Array leaves the deck and the
+    -- Covert card takes the first space outright. 'Assembly 4' is the
+    -- Sensor Array because a card's nickname is its index in
+    -- aos.ASSEMBLIES; check_app_sync.py holds that position, so reordering
+    -- the table fails there rather than at the table.
+    local first = 1
+    if STATE.tier >= 3 then
+      dropCard(asm, 'Assembly 4')
+      local cov = deckOut('Covert Sensor Array', pad(4), FACEUP)
+      if cov then
+        cov.setPosition({aosMid(1, AOS_OFFER), 3, AOS_ROW2})
+        cov.setRotation(FACEUP)
+      end
+      first = 2
+    end
+    asm.shuffle()
+    for k = first, AOS_OFFER do
+      asm.takeObject({position = {aosMid(k, AOS_OFFER), 3, AOS_ROW2},
+                      rotation = FACEUP, smooth = false})
+    end
+    putHome(asm)
   end)
   if STATE.tier >= 1 then
     step(function()
@@ -2968,8 +3032,9 @@ function setupAoS()
   end
   if STATE.tier >= 3 then
     step(function()
-      spread(deckOut('Backdoor Routines', {0, 3, AOS_ROW3}, FACEUP),
-             AOS_BACKDOORS, AOS_ROW3, FACEUP, AOS_COL)
+      -- One face-up stack, not a spread: ROW3 belongs to the element mats
+      -- now, and six cards you read once belong in a pile you can fan.
+      deckOut('Backdoor Routines', {AOS_BACKDOOR_X, 3, AOS_ROW1}, FACEUP)
     end)
   end
 
@@ -3981,15 +4046,22 @@ function startBattle()
 end
 
 -- ---------------------------------------------------------------- AoS
--- "After the third cycle -- or as soon as the deck is empty -- go to
--- Advanced Programming." What is left of the Program deck, the Program
--- on the table and both piles are finished with.
+-- THE FINALE IS THE THREE ASSEMBLIES YOU BUILT, turned over. Reached by
+-- building the third, or by the end of round three - and reaching the end
+-- of round three without three built is a loss, which is why this button
+-- does not check: a player who presses it has built them.
 --
--- THE LIMITATIONS STAY. An Advanced Program is run by the ordinary
--- rule - "Reveal exactly 1 Limitation per Program", and the model runs
--- the finale through the same run_program - so the Limitation deck and
--- the card it has revealed are still in play. The element mats, the
--- Backdoor Routines and whatever a tier laid face-up all stay too.
+-- WHAT THIS BUTTON CANNOT DO is pick the three up. They are on the table
+-- with Programs installed on them, and which three are built is a fact
+-- about the cards rather than about STATE - the script never saw an
+-- install happen. So the turning over, the randomizing and the concealing
+-- are by hand, said in chat, the way the rest of this mod says the steps
+-- it cannot take. The one thing it can do is clear the construction away.
+--
+-- THE LIMITATIONS STAY. A stage is run by the ordinary rule - "Reveal
+-- exactly 1 Limitation per stage" - so the Limitation deck and the card
+-- it has revealed are still in play. The element mats, the Backdoor
+-- Routines and whatever a tier laid face-up all stay too.
 function aosAdvancedBoxes()
   local out = {}
   local function box(x, z)
@@ -4005,29 +4077,26 @@ end
 function startAdvanced()
   step(function() clearBoxes(aosAdvancedBoxes()) end)
   step(function()
-    -- "Select 3 Advanced Programs." Eight are shuffled and set aside
-    -- at setup and only three are ever faced; cutTo shuffles, keeps
-    -- three and sends the other five back to the box. They go on the
-    -- space the mat has always drawn for them.
-    local d = cutTo(deckOut('Advanced Programs', pad(1)), 3)
-    if not d then say('No Advanced Programs in the AoS box.') return end
-    d.setPosition({AOS_RIGHT - AOS_COL, 3, AOS_ROW1})
-    d.setRotation(FACEDOWN)
-  end)
-  step(function()
-    say('ADVANCED PROGRAMMING. What is left of the Program deck, the' ..
-        ' Program it last revealed and both piles are back in the box.' ..
-        ' 3 of the 8 Advanced Programs are face-down on their own' ..
-        ' space; the other 5 are back in the box. The Limitation deck' ..
-        ' stays -- reveal exactly 1 per Program, as always. They are' ..
-        ' longer, 4 or 5 elements, and carry 2 required-colour dots,' ..
-        ' except Rapid Approach and Unobserved Entry, which carry 3.' ..
-        ' Recover between them. The first begins Stable; each next one' ..
-        ' begins Overheated if the one before ended in Catastrophic' ..
-        ' Failure. Catastrophic Failure does not stop Advanced' ..
-        ' Programming unless Health reaches 0. Work through all three' ..
-        ' with at least 1 Health and you have won AoS, whether or not' ..
-        ' you completed them.')
+    say('THE FINALE. What is left of the Program deck, the Program it' ..
+        ' last revealed and both piles are back in the box. Your three' ..
+        ' built Assemblies stay where they are, and the unbuilt ones go' ..
+        ' back in the box now.' ..
+        '\n\nBY HAND, because the table knows which Assemblies you' ..
+        ' built and this script does not: turn the three over, shuffle' ..
+        ' them face down WITHOUT looking at the Targets, lay them in a' ..
+        ' row, and reveal one at a time. Numbering them 1-2-3 and' ..
+        ' shuffling the numbers works just as well.' ..
+        '\n\nThe three backs are three STAGES of ONE Advanced Program.' ..
+        ' Each stage is one Program for Limitation, Strategy and' ..
+        ' Recovery: reveal exactly 1 Limitation per stage and Recover' ..
+        ' between stages, and once more before the first. Every element' ..
+        ' carries a required colour, and a colour you cannot supply' ..
+        ' costs 1 Health AND fails every element in that stage.' ..
+        '\n\nWIN with AT MOST ONE failed element across all three' ..
+        ' stages and at least 1 Health. The second failed element is a' ..
+        ' Catastrophic Failure on that one Program and loses the game' ..
+        ' outright -- so exhausting 2 misses, which only ever bought off' ..
+        ' Health, saves nothing here.')
   end)
   run()
 end
@@ -4038,7 +4107,7 @@ end
 FINALE = {
   NAP = {'Start the Final Exam', startExam, {0.42, 0.25, 0.55}},
   BAT = {'Start the Tyrant Battle', startBattle, {0.17, 0.37, 0.29}},
-  AoS = {'Start Advanced Programming', startAdvanced, {0.54, 0.24, 0.18}},
+  AoS = {'Start the Finale', startAdvanced, {0.54, 0.24, 0.18}},
 }
 
 -- ONCE. Pressing it twice would deal a second set of Final Exams onto

@@ -82,8 +82,14 @@ DECKS = [
          game='AoS', label='Specialized Programs', card='Specialized Program'),
     dict(key='AoS_Unstable', count=8, w=8, h=1, back='unique', land=False,
          game='AoS', label='Unstable Programs', card='Unstable Program'),
-    dict(key='AoS_Advanced', count=8, w=8, h=1, back='unique', land=False,
-         game='AoS', label='Advanced Programs', card='Advanced Program'),
+    # THE ASSEMBLIES ARE NOT A DECK YOU DRAW FROM. Six are revealed at
+    # setup recipe side up and stay there; the back is the finale stage
+    # the built Assembly becomes, which is why this is 'unique' backs and
+    # not a shared one. The card nickname is 'Assembly N' in the order of
+    # aos.ASSEMBLIES, and setupAoS drops 'Assembly 4' - the standard
+    # Sensor Array - at Tier III; check_app_sync.py holds that index.
+    dict(key='AoS_Assemblies', count=8, w=8, h=1, back='unique', land=False,
+         game='AoS', label='Assemblies', card='Assembly'),
     dict(key='AoS_Limitations', count=6, w=6, h=1, back='CardBack_AoS_Limitation',
          land=False, game='AoS', label='Limitations', card='Limitation'),
     dict(key='AoS_ElementMats', count=5, w=5, h=1, back='CardBack_AoS_Limitation',
@@ -107,6 +113,12 @@ DECKS = [
          land=False, game='NRJ', label='Corrupted Limitations', card='Corrupted Limitation'),
     dict(key='NRJ_AoS_BackdoorRoutines', count=6, w=6, h=1, back='CardBack_NRJ_BackdoorRoutine',
          land=False, game='NRJ', label='Backdoor Routines', card='Backdoor Routine'),
+    # The ninth Assembly. Printed in AoS's own stylesheet so all nine are
+    # one card format - see generator/build_aos.py - but it ships with the
+    # campaign, so it is an NRJ deck here.
+    dict(key='NRJ_AoS_CovertAssembly', count=1, w=1, h=1, back='unique',
+         land=False, game='NRJ', label='Covert Sensor Array',
+         card='Covert Sensor Array'),
     dict(key='NRJ_ImposterScenarios', count=24, w=10, h=3, back='CardBack_NRJ_CouncilTest',
          land=False, game='IMP', label='Exhibits', card='Exhibit'),
     dict(key='NRJ_Imposters', count=5, w=5, h=1, back='unique', land=True,

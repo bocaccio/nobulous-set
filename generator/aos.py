@@ -79,6 +79,12 @@ REQ_MAP = {
     "Council Extraction Protocol": ["Y", None, "P", None, None],
 }
 
+# THE EIGHT ADVANCED PROGRAMS LEFT THIS TABLE on 2026-11-24 with the deck
+# itself. Six of those cards no longer exist; the two names that survive as
+# Assembly backs - Rapid Approach and Unobserved Entry - carry their flavour
+# in ASSEMBLY_FLAVOR, beside the recipe side's. check_app_sync.py holds every
+# line here against the lab's copy, and a dead entry here is a line the lab
+# has nowhere to match.
 FLAVOR = {
     "Maintain Balance": ("The shale frame holds steady while Nobulous adds one unnecessary clipboard.", "The frame still balances, provided nobody breathes near it."),
     "Lift a Heavy Object": ("The test mass rises smoothly, with Nobulous still standing on it.", "The test mass rises. The floor follows."),
@@ -104,14 +110,6 @@ FLAVOR = {
     "Adapt to Changing Terrain": ("The gait rewrites itself as the ground changes.", "The gait keeps rewriting after the ground stops."),
     "Execute a Complex Route": ("It takes a turn missing from the diagram. Nobulous pencils it in.", "The sequence remains flawless; the surrounding architecture does not."),
     "Operate Autonomously": ("Nobulous leaves it to work and returns to find his instructions followed exactly.", "It completes a different objective with alarming confidence."),
-    "Rapid Approach": ("It reaches the target before the warning can become an alarm.", "It reaches the target before the warning—and most of the doorway."),
-    "Unobserved Entry": ("Locks open, cameras loop, and the corridor never learns it was occupied.", "Locks open, cameras loop, and the corridor becomes difficult to explain."),
-    "Subject Acquisition": ("Only the designated subject is inconvenienced. Nobulous checks the designation twice.", "It secures the subject, several bystanders, and the room's structural supports."),
-    "Difficult Extraction": ("It carries the subject through the least impossible route.", "The route becomes less impossible as walls become optional."),
-    "Autonomous Infiltration": ("The observer at the controls has nothing to do but look essential.", "Silence is maintained because it has stopped accepting instructions."),
-    "Controlled Restraint": ("“Can you breathe?” “Unfortunately,” says the subject.", "The threshold remains documented, if no longer especially relevant."),
-    "Adaptive Pursuit": ("It learns each evasion and closes the next escape before it begins.", "It learns too quickly; every movement becomes evidence of escape."),
-    "Council Extraction Protocol": ("The automaton escorts the Councilor out beneath a veil of perfect procedure.", "The Councilor is extracted. The Council chamber is now an open-plan space."),
 }
 
 LIMITATIONS = [
@@ -122,3 +120,83 @@ LIMITATIONS = [
     ("Diversity Protocol", "Withhold 2 dice of different non-Red colors.", "Nobulous removes two components to demonstrate how little you needed them."),
     ("Red Quarantine", "Withhold the Red die.", "The emergency die is perfectly safe inside the locked cabinet."),
 ]
+
+
+# ---------------------------------------------------------------------------
+# Assembly cards (2026-11-24), which REPLACE the eight standalone Advanced
+# Programs. One card, two faces, and the faces are not the same card's two
+# moods the way a Program's Stable/Overheated faces are:
+#
+#   FRONT  the recipe you build during the game - BUILD slots, every slot
+#          including repeats, each filled by one cleanly-run Program that
+#          counts as ONE of its printed required colours.
+#   BACK   the Advanced Program that Assembly becomes in the finale, as
+#          (colour, Target) elements.
+#
+# THE FRONT'S "ADVANCED COLORS" LINE IS DERIVED, NOT STORED - advanced_colors()
+# below reads it off the back. It is there to tell a player which colours the
+# finale will ask of this Assembly while concealing how many elements it has
+# and what the Targets are, so a stored copy could only ever drift out of
+# agreement with the thing it describes. Four of the nine print a front recipe
+# in different colours from their own back (Balance Gyro, Sensor Array,
+# Traction Module, Covert Sensor Array); that is the concealment working, not
+# a transcription error, and it is why nothing may derive one from the other.
+#
+# Keyed by the ASSEMBLY name, never by the Advanced Program name: "Carry a
+# Moving Load" is also a Specialized Program, and REQ_MAP and FLAVOR are
+# name-keyed dicts that would silently overwrite each other. See
+# check_app_sync.py, which asserts the two stay distinct cards.
+ASSEMBLIES = [
+    ("Drive Train",     ["P", "Y"],      "Rapid Approach",         [("P", 3), ("Y", 3)]),
+    ("Control Array",   ["B", "G"],      "Correct a Heading",      [("B", 2), ("G", 4)]),
+    ("Balance Gyro",    ["P", "G"],      "Recover from a Stumble", [("B", 3), ("Y", 3)]),
+    ("Sensor Array",    ["B", "Y"],      "Unobserved Entry",       [("P", 4), ("G", 2)]),
+    ("Load Frame",      ["P", "P", "Y"], "Carry a Moving Load",    [("P", 3), ("P", 2), ("Y", 3)]),
+    ("Power Regulator", ["B", "B", "G"], "Sustain Peak Output",     [("B", 3), ("B", 2), ("G", 2)]),
+    ("Articulated Arm", ["P", "G", "G"], "Place a Fragile Load",   [("P", 2), ("G", 3), ("G", 2)]),
+    ("Traction Module", ["B", "Y", "Y"], "Cross Broken Ground",    [("P", 3), ("B", 3)]),
+]
+
+# The ninth Assembly, printed in the NRJ supplement and offered only in a
+# Tier III setup, where it replaces the standard Sensor Array. Same Build
+# recipe as the card it displaces, so Tier III's build problem is the base
+# game's; only the finale stage it becomes differs.
+COVERT = ("Covert Sensor Array", ["B", "Y"], "Erase the Audit Trail",
+          [("P", 2), ("G", 3), ("G", 2)])
+
+ALL_ASSEMBLIES = ASSEMBLIES + [COVERT]
+
+COLOR_NAME = {"P": "Purple", "B": "Blue", "G": "Green", "Y": "Yellow"}
+
+
+def advanced_colors(elements):
+    """The front's Advanced colors line: each colour of the back once, in
+    order of first appearance. Count and Targets stay concealed."""
+    out = []
+    for c, _ in elements:
+        if c not in out:
+            out.append(c)
+    return out
+
+
+ASSEMBLY_FLAVOR = {
+    # (front - the parts on the bench, back - the Program it can now run)
+    "Drive Train": ("Two housings, a shaft, and a note reading &lsquo;DO NOT OVER-TIGHTEN&rsquo; in Nobulous&rsquo; hand.",
+                    "It reaches the target before the warning can become an alarm."),
+    "Control Array": ("A lattice of linkages that answers the wrong lever twice before settling.",
+                      "The heading corrects itself so smoothly that nobody admits it was wrong."),
+    "Balance Gyro": ("It spins up quietly and stays level while the bench does not.",
+                     "The stumble is absorbed on the second step. The first step is still under review."),
+    "Sensor Array": ("Lenses, whiskers and one component Nobulous insists is a sensor.",
+                     "Locks open, cameras loop, and the corridor never learns it was occupied."),
+    "Load Frame": ("Ribs and crossmembers, rated for a mass Nobulous has not disclosed.",
+                   "The crate arrives upright, having objected throughout."),
+    "Power Regulator": ("A governor, two reservoirs, and a gauge that only reads &lsquo;ADEQUATE&rsquo;.",
+                        "Output holds flat for the full duration, which surprises the gauge."),
+    "Articulated Arm": ("Three joints, each tested by Nobulous handing it something fragile.",
+                        "It sets the vessel down without a sound and waits to be told it may let go."),
+    "Traction Module": ("Treads, grousers, and a spare set because the first set is &lsquo;learning&rsquo;.",
+                        "The broken ground is crossed. Some of it is carried along."),
+    "Covert Sensor Array": ("The same array, with the indicator lamps quietly omitted.",
+                            "The ledger agrees with itself again. It never agreed with anything else."),
+}

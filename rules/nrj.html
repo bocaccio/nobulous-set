@@ -26,15 +26,28 @@ tr { break-inside: avoid; }
 /* AND THE AIR BETWEEN THINGS, not the type: this is the longest book
    of the four and the one with the most headings, so a millimetre off
    each gap is most of a column back and the text stays the set's own
-   8.6pt. Leading does the rest at 1.28 - BAT is at 1.34 and NAP at
+   8.6pt. Leading does the rest at 1.24 - BAT is at 1.25 and NAP at
    1.30 - and the margin follows NAP's 11mm.
 
    IT IS A TIGHT FIT, by about 19mm of blank paper under the last
    line, call it four lines of room in one column. check_app_sync.py
    holds the book to four pages, so the next section anybody adds
-   fails there rather than quietly buying a fifth page. */
+   fails there rather than quietly buying a fifth page.
+
+   AND IT DID, 2026-11-24. The AoS Assembly redesign added a ninth
+   Assembly to Tier III - one components entry, one clause in the AoS
+   module's Tier III row, and the Research Pool's AoS card column now
+   naming two kinds of card - and the book went to five. Six passes of
+   trimming the new text did not bring it back, which is the measure
+   of how little room was left rather than of how much was added:
+   HEAD's own nrj.html still builds to four, and the additions come to
+   about three lines.
+
+   So the leading bought it, the same lever the rest of this block
+   pulls: 1.25 -> 1.24, measured, with 1.23 also four pages and 1.25
+   five. The type is still the set's 8.6pt and nothing else moved. */
 @page { margin: 10mm; }
-body { line-height: 1.25; }
+body { line-height: 1.24; }
 h2 { margin: 2.6mm 0 1.4mm; }
 h3 { margin: 2.4mm 0 .8mm; }
 p { margin: 0 0 1.6mm; }
@@ -73,8 +86,8 @@ li { margin-bottom: .8mm; }
       6 Research Notes</li>
   <li>14 NRJ cards for NAP &mdash; 4 Following Setbacks, 4 Imposter Tasks,
       6 Devious Opportunities</li>
-  <li>18 NRJ cards for AoS &mdash; 6 Nobulous Interference, 6 Corrupted Limitations,
-      6 Backdoor Routines</li>
+  <li>19 NRJ cards for AoS &mdash; 6 Nobulous Interference, 6 Corrupted Limitations,
+      6 Backdoor Routines, 1 Covert Sensor Array</li>
   <li>24 Council Test cards, printed as <b>Exhibits</b></li>
   <li><b>From 20 Strong:</b> the 17 unit dice &mdash;
       <span class="dice"><span class="sw P"></span>4 Purple, <span class="sw B"></span>4 Blue,
@@ -161,14 +174,16 @@ one.</p>
   most recently completed <b>Credit</b> Task, and resolves after any Credit Tasks finishing on the same roll.</p>
 </div>
 
-<h2>Automaton of Shale (AoS) module &mdash; 18 cards</h2>
+<h2>Automaton of Shale (AoS) module &mdash; 19 cards</h2>
 <table>
   <tr><th>Tier</th><th>Add</th></tr>
   <tr><td>I</td><td>Draw 1 of the 6 <b>Nobulous Interference</b> cards at setup.</td></tr>
   <tr><td>II</td><td>Shuffle the 6 <b>Corrupted Limitations</b> into the Limitation deck.</td></tr>
   <tr><td>III</td><td>Lay the 6 <b>Backdoor Routines</b> face&#8209;up near the table. Each prints a claim
       condition and a later one&#8209;shot use. <b>You may claim at most 2 per game</b> &mdash; once you have
-      claimed 2 you cannot claim more, even if you meet the other conditions.</td></tr>
+      claimed 2 you cannot claim more, even if you meet the other conditions.<br>
+      Also take the <b>Covert Sensor Array</b>: it replaces the standard Sensor Array, is always
+      offered, and is <b>earned</b> &mdash; build it and run its stage clean.</td></tr>
 </table>
 <p>Corrupted Limitations are revealed before required&#8209;color dice are committed, exactly like native
 Limitations, and withhold 2 dice of a <em>randomly selected</em> color on top of their printed corruption.
@@ -203,8 +218,9 @@ charged you for taking it.</p>
   <tr><th>Game</th><th>Carry at most</th><th>Card</th><th>Answers</th></tr>
   <tr><td>NAP</td><td><b>3</b></td><td>Devious Opportunity</td><td>Knowledge</td></tr>
   <tr><td>BAT</td><td><b>2</b></td><td>Research Note</td><td>Physical</td></tr>
-  <tr><td>AoS</td><td><b>2</b></td><td>Backdoor Routine</td><td>Cover&#8209;Up</td></tr>
+  <tr><td>AoS</td><td><b>2</b></td><td>Routine / Covert Array</td><td>Cover&#8209;Up</td></tr>
 </table>
+
 <p>You claim an Opportunity by working it like an Assignment, in place of a Credit Task. You claim a
 Research Note or a Backdoor Routine by meeting the condition printed on it and giving up the next Upgrade
 a completed Experiment earns, or the next Program Reward.</p>

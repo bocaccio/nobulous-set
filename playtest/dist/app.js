@@ -4,24 +4,42 @@
   const ASSET = "assets/";
   const ASSET_VERSION = "hdrfit";
   const MAX_ELEMENTS = 5; // the allocation board always shows five Element slots
+
+  // ---- Assemblies ---------------------------------------------------
+  // GENERATED, in aos_assemblies.js, from generator/aos.py - the lab does
+  // not keep its own transcription of these. An Assembly's two faces are
+  // two different cards' worth of job: the front is the recipe you build
+  // during the game, the back is the finale stage it becomes. Four of the
+  // nine print a recipe in colours their own back never asks for, so
+  // NOTHING here may derive one face from the other.
+  const ASSEMBLIES = window.AOS_ASSEMBLIES || [];
+  const ASM_BASE = ASSEMBLIES.filter(a => !a.tier3);
+  const ASM_COVERT = ASSEMBLIES.find(a => a.tier3) || null;
+  const asmIndex = a => ASSEMBLIES.indexOf(a);
+  // SIX OFFERED AND A COLOUR FLOOR ON THE DECK, both measured. At five
+  // offered with no floor, 15.4% of Standard setups could not build three
+  // Assemblies at all before a die was rolled - an invisible loss dealt at
+  // setup. Six takes that to 4.7%, the floor alone to 7.5%, and the two
+  // together to 0.6%. See simulation/aosbuild.py, which is the measurement.
+  const OFFER_SIZE = 6;
+  const COLOR_FLOOR = 2;
+  const COLOR_KEYS = ["purple", "blue", "green", "yellow"];
+
   const DECKS = {
     Routine: { front: "AoS_Routine_TTS.png", back: "AoS_Routine_TTS_back.png", count: 8 },
     Specialized: { front: "AoS_Specialized_TTS.png", back: "AoS_Specialized_TTS_back.png", count: 8 },
     Unstable: { front: "AoS_Unstable_TTS.png", back: "AoS_Unstable_TTS_back.png", count: 8 },
-    Advanced: { front: "AoS_Advanced_TTS.png", back: "AoS_Advanced_TTS_back.png", count: 8 }
   };
   const ELEMENT_COUNTS = {
     Routine: [3, 3, 3, 3, 3, 4, 3, 4],
     Specialized: [3, 4, 3, 4, 3, 4, 4, 4],
-    Unstable: [4, 4, 4, 4, 4, 4, 4, 4],
-    Advanced: [5, 4, 5, 4, 5, 4, 5, 5]
+    Unstable: [4, 4, 4, 4, 4, 4, 4, 4]
   };
   // Which element carries the printed overheat ring, per deck (generator/aos.py).
   const PROGRAM_MARKS = {
     Routine: [0, 1, 0, 1, 2, 1, 2, 2],
     Specialized: [1, 0, 1, 3, 0, 2, 1, 2],
-    Unstable: [0, 3, 2, 1, 0, 3, 1, 1],
-    Advanced: [2, 1, 3, 0, 2, 2, 1, 1],
+    Unstable: [0, 3, 2, 1, 0, 3, 1, 1]
   };
   // Difficulty is how many Programs come from each deck, not which deck you
   // pick. All three carry the same reward multiset, so mixing them changes
@@ -74,10 +92,6 @@
     Unstable: {
       front: [[3,2,3,2],[2,3,2,3],[3,2,3,2],[2,3,3,2],[3,2,2,3],[2,3,2,3],[3,3,2,3],[3,2,3,2]],
       back: [[4,2,3,2],[2,3,2,4],[3,2,4,2],[2,4,3,2],[4,2,2,3],[2,3,2,4],[3,4,2,3],[3,3,3,2]]
-    },
-    Advanced: {
-      front: [[2,3,3,3,2],[3,3,3,3],[2,3,3,3,3],[3,3,3,2],[3,2,3,2,3],[3,3,3,3],[2,3,3,3,2],[3,3,3,3,3]],
-      back: [[2,3,4,3,2],[3,4,3,3],[2,3,3,4,3],[4,3,3,2],[3,2,4,2,3],[3,3,4,3],[2,4,3,3,2],[3,4,3,3,3]]
     }
   };
   const PROGRAM_REWARDS = {
@@ -120,17 +134,30 @@
       { name:"Execute a Complex Route", front:"It takes a turn missing from the diagram. Nobulous pencils it in.", back:"The sequence remains flawless; the surrounding architecture does not." },
       { name:"Operate Autonomously", front:"Nobulous leaves it to work and returns to find his instructions followed exactly.", back:"It completes a different objective with alarming confidence." }
     ],
-    Advanced: [
-      { name:"Rapid Approach", front:"It reaches the target before the warning can become an alarm.", back:"It reaches the target before the warning—and most of the doorway." },
-      { name:"Unobserved Entry", front:"Locks open, cameras loop, and the corridor never learns it was occupied.", back:"Locks open, cameras loop, and the corridor becomes difficult to explain." },
-      { name:"Subject Acquisition", front:"Only the designated subject is inconvenienced. Nobulous checks the designation twice.", back:"It secures the subject, several bystanders, and the room's structural supports." },
-      { name:"Difficult Extraction", front:"It carries the subject through the least impossible route.", back:"The route becomes less impossible as walls become optional." },
-      { name:"Autonomous Infiltration", front:"The observer at the controls has nothing to do but look essential.", back:"Silence is maintained because it has stopped accepting instructions." },
-      { name:"Controlled Restraint", front:"“Can you breathe?” “Unfortunately,” says the subject.", back:"The threshold remains documented, if no longer especially relevant." },
-      { name:"Adaptive Pursuit", front:"It learns each evasion and closes the next escape before it begins.", back:"It learns too quickly; every movement becomes evidence of escape." },
-      { name:"Council Extraction Protocol", front:"The automaton escorts the Councilor out beneath a veil of perfect procedure.", back:"The Councilor is extracted. The Council chamber is now an open-plan space." }
-    ]
   };
+
+  // ---- the finale's tables, DERIVED from the Assemblies ---------------
+  // Attached here rather than written into the literals above, for two
+  // reasons that point the same way: check_app_sync.py reads those literals
+  // as JSON and a computed entry makes them unreadable, and a finale stage
+  // is not a deck the lab transcribes - it is an Assembly's back, and the
+  // only honest way to hold it is to read it off the Assembly.
+  //
+  // Indexed by position in ASSEMBLIES, so the Covert Sensor Array is 8.
+  DECKS.Advanced = { front: "AoS_Assemblies_TTS_back.png",
+                     back: "AoS_Assemblies_TTS_back.png", count: ASSEMBLIES.length };
+  ELEMENT_COUNTS.Advanced = ASSEMBLIES.map(a => a.backTargets.length);
+  // NO OVERHEAT RING, and ONE set of Targets on both faces: an Assembly
+  // back has no Overheated side, so nothing escalates inside the finale.
+  PROGRAM_MARKS.Advanced = ASSEMBLIES.map(() => -1);
+  PROGRAM_TARGETS.Advanced = { front: ASSEMBLIES.map(a => a.backTargets),
+                               back: ASSEMBLIES.map(a => a.backTargets) };
+  // EVERY element of a back carries a required colour - that is what the
+  // front's Advanced colors line has been promising all game.
+  PROGRAM_REQS.Advanced = ASSEMBLIES.map(a => a.backColors);
+  PROGRAM_FLAVOR.Advanced = ASSEMBLIES.map(a => ({ name: a.backName,
+                                                  front: a.flavorBack,
+                                                  back: a.flavorBack }));
   // --- NRJ module cards ----------------------------------------------
   const AOS_INTERFERENCE = [
     ["I Don't Have Time for This","Begin all Programs Overheated. The first time each already-Overheated Program fails, cycle it to the bottom of its deck instead of setting it aside."],
@@ -148,8 +175,7 @@
   const PROGRAM_REQS = {
     Routine: [["green",null,null], ["purple",null,null], [null,null,"yellow"], [null,"blue",null], ["green",null,null], [null,null,"purple",null], ["yellow",null,null], [null,null,"blue",null]],
     Specialized: [["purple",null,"yellow"], ["green",null,"blue",null], [null,"yellow","purple"], ["blue",null,null,"green"], ["purple","yellow",null], [null,"green",null,"blue"], ["yellow",null,"purple",null], ["yellow","purple","blue","green"]],
-    Unstable: [["purple",null,null,null], [null,null,"yellow",null], [null,"blue",null,null], [null,null,"green",null], ["yellow",null,null,null], [null,null,null,"purple"], [null,"green",null,null], [null,null,"blue",null]],
-    Advanced: [["purple",null,"green","yellow",null], ["yellow","green",null,"blue"], ["yellow",null,null,"purple",null], [null,"blue",null,"green"], ["green",null,null,"yellow",null], [null,"purple",null,"blue"], ["blue",null,null,"green",null], ["yellow",null,"purple",null,null]],
+    Unstable: [["purple",null,null,null], [null,null,"yellow",null], [null,"blue",null,null], [null,null,"green",null], ["yellow",null,null,null], [null,null,null,"purple"], [null,"green",null,null], [null,null,"blue",null]]
   };
   // Corrupted Limitations sit in the Limitation deck. Each withholds 2 dice
   // of a randomly chosen color THE PROGRAM DOES NOT REQUIRE, on top of the
@@ -169,7 +195,7 @@
     ["Resource Fork","Claim after completing a Program while committing no more than Target + 1 dice in total beyond its summed Targets. Claiming gives up the next Program Reward you would claim.","Later, recover 2 exhausted dice."],
     ["Packet Sniffer","Claim after completing a Program with Crits on at least two different elements. Claiming gives up the next Program Reward you would claim.","Later, look at the next Limitation before selecting a Program."],
     ["Garbage Collection","Claim after completing a Program while at least 4 dice are exhausted. Claiming gives up the next Program Reward you would claim.","Later, recover one die of each of two different colors."],
-    ["Root Access","Claim after completing a Program with Optimal Implementation on at least two elements. Claiming gives up the next Program Reward you would claim.","During Advanced Programming, treat one failed element as successful."],
+    ["Root Access","Claim after completing a Program with Optimal Implementation on at least two elements. Claiming gives up the next Program Reward you would claim.","In the finale, treat one failed element as successful."],
   ];
   const aosTier = () => window.NOBULOUS_TIER ? window.NOBULOUS_TIER.forGame("aos") : "0";
   const LIMITATION_FLAVOR = [
@@ -183,7 +209,7 @@
   const TECHS = [
     { name: "Architect", side: "front", index: 0, ability: "Reconfigure — Once per Program, before rolling an element, move up to 2 allocated dice between unresolved elements." },
     { name: "Debugger", side: "back", index: 0, ability: "Debug — Once per Program, before rolling an element, swap 1 of its dice for a die from your available pool." },
-    { name: "Optimizer", side: "front", index: 1, ability: "Optimize — Once per cycle and once in Advanced Programming, Target +1 successes may count as Optimal Implementation." },
+    { name: "Optimizer", side: "front", index: 1, ability: "Optimize — Once per round and once in the finale, Target +1 successes may count as Optimal Implementation." },
     { name: "Engineer", side: "back", index: 1, ability: "Redundancy — For up to 2 elements per Program, the allocation cap is Target +2 instead of Target +1." },
     { name: "Operator", side: "front", index: 2, ability: "Workaround — When a non-Red Limitation would withhold 2 dice, you may withhold 1 of those dice as another non-Red color instead." },
     { name: "Compiler", side: "back", index: 2, ability: "Compile — When spending an additional STR roll, reroll any number of dice on that element while keeping the others." }
@@ -228,14 +254,59 @@
     const t=aosTier();
     return (t==="1"||t==="2"||t==="3") ? Math.floor(Math.random()*AOS_INTERFERENCE.length) : null;
   }
+  // What colours a Program can be installed as: its printed dots, deduped.
+  function programColors(src, pid){
+    return [...new Set((PROGRAM_REQS[src] || [])[pid]?.filter(Boolean) || [])];
+  }
+  // "Each of the four colors must appear on at least two of the 8 Programs."
+  // Setup redraws until it holds - about half a reshuffle a game, and
+  // without it roughly one setup in seven cannot be built at all.
+  function colorSupply(programs){
+    const n = {}; COLOR_KEYS.forEach(c => n[c] = 0);
+    programs.forEach(p => programColors(p.src, p.pid).forEach(c => { n[c] += 1; }));
+    return n;
+  }
   function aosFreshPrograms(level){
     const comp = AOS_LEVELS[level] || AOS_LEVELS.Standard;
-    const picks = [];
-    AOS_DECK_NAMES.forEach((name, k) => {
-      shuffle([...Array(8).keys()]).slice(0, comp[k]).forEach(pid => picks.push({ src: name, pid }));
-    });
-    return shuffle(picks).map((p, id) => ({ id, src: p.src, pid: p.pid, status: "stable" }));
+    const deal = () => {
+      const picks = [];
+      AOS_DECK_NAMES.forEach((name, k) => {
+        shuffle([...Array(8).keys()]).slice(0, comp[k]).forEach(pid => picks.push({ src: name, pid }));
+      });
+      return shuffle(picks).map((p, id) => ({ id, src: p.src, pid: p.pid, status: "stable" }));
+    };
+    // Bounded, because a mix that could never satisfy the floor must not
+    // hang the lab: 200 tries is astronomically more than the ~0.5 the
+    // measurement says it takes, and the last deal is still a legal game.
+    let programs = deal();
+    for (let i = 0; i < 200; i++) {
+      if (Math.min(...Object.values(colorSupply(programs))) >= COLOR_FLOOR) break;
+      programs = deal();
+    }
+    return programs;
   }
+  // The Assembly offer: six of the eight, recipe side up, for the whole
+  // game. Tier III swaps the Covert Sensor Array in for the standard Sensor
+  // Array and guarantees it a place.
+  function aosFreshOffer(){
+    if (!ASSEMBLIES.length) return [];
+    if (aosTier() === "3" && ASM_COVERT) {
+      const rest = ASM_BASE.filter(a => a.name !== "Sensor Array");
+      return shuffle([ASM_COVERT, ...shuffle(rest).slice(0, OFFER_SIZE - 1)])
+        .map(asmIndex);
+    }
+    return shuffle([...ASM_BASE]).slice(0, OFFER_SIZE).map(asmIndex);
+  }
+  // Build slots, per offered Assembly: null, or the Program installed and
+  // the single colour it was installed as.
+  function aosFreshSlots(offer){
+    const out = {};
+    offer.forEach(ix => { out[ix] = ASSEMBLIES[ix].build.map(() => null); });
+    return out;
+  }
+  const slotsOf = ix => (state.slots && state.slots[ix]) || [];
+  const isBuilt = ix => slotsOf(ix).length > 0 && slotsOf(ix).every(x => x);
+  const builtCount = () => (state.offer || []).filter(isBuilt).length;
   function aosFreshBackdoors(){
     return aosTier()==="3" ? AOS_BACKDOOR.map(()=>({claimed:false,spent:false})) : [];
   }
@@ -268,6 +339,45 @@
     }
     save();render();
   }
+  // The offer, its Build slots, and what can go in them right now.
+  function renderAssemblies(){
+    const host = document.getElementById("aosAssemblies");
+    if (!host) return;
+    const offer = state.offer || [];
+    host.classList.toggle("hidden", !state.started || !offer.length);
+    if (!state.started || !offer.length) return;
+    const can = installable();
+    const inFinale = state.mode === "advanced";
+    const stage = inFinale && state.current ? state.current.id : null;
+    host.innerHTML = `<p class="kicker">Assemblies &middot; ${builtCount()} of 3 built`
+      + (inFinale ? " &middot; finale" : ` &middot; round ${state.cycle} of 3`) + `</p>`
+      + `<div class="bat-note-grid">` + offer.map(ix => {
+      const a = ASSEMBLIES[ix], built = isBuilt(ix), cells = slotsOf(ix);
+      // THE BACK STAYS HIDDEN until its stage is revealed. All the player
+      // ever sees before that is the Advanced colors line, which is what
+      // the printed card shows and the whole basis for planning.
+      const reveal = inFinale && stage === ix;
+      const slots = a.build.map((need, k) => {
+        const cell = cells[k];
+        const label = cell ? PROGRAM_FLAVOR[state.programs[cell.id].src][state.programs[cell.id].pid].name : need;
+        const open = can.filter(o => o.ix === ix && o.slot === k).length;
+        return `<button class="aos-slot ${cell ? "filled" : ""} c-${need}"`
+          + (open && !cell ? ` data-aos-install="${ix}:${k}"` : " disabled")
+          + ` title="${need} slot">${cell ? "\u2714 " : ""}${label}</button>`;
+      }).join("");
+      return `<article class="bat-note ${built ? "claimed" : ""}">`
+        + `<strong>${a.name}${a.tier3 ? " &middot; Tier III" : ""}</strong>`
+        + `<small><b>Build:</b></small><div class="aos-slots">${slots}</div>`
+        + `<small><b>Advanced colors:</b> ${a.advancedColors.join(", ")}</small>`
+        + (reveal
+            ? `<small><b>${a.backName}:</b> ${a.backColors.map((c, i) => `${c} ${a.backTargets[i]}`).join(", ")}</small>`
+            : `<small class="hint">${built ? "Built \u2014 back concealed until its stage" : "Back concealed"}</small>`)
+        + (!built && !inFinale && cells.some(Boolean)
+            ? `<button data-aos-abandon="${ix}">Abandon (1 HP)</button>` : "")
+        + `</article>`;
+    }).join("") + `</div>`;
+  }
+
   function renderAOSModules(){
     const host=document.getElementById("aosModules");
     if(!host)return;
@@ -305,6 +415,10 @@
     tier: aosTier(), interference: aosDrawInterference(), backdoors: aosFreshBackdoors(), corruptColor: null, corruptElement: null,
     currentFace: "front", currentCompleted: false, lastResultFailed: false, limitation: null, limitationRevealed: false, limitationResolved: false, limitationQueue: aosLimitationQueue(), banishedLimitations: [],
     advancedQueue: [], nextAdvancedOverheated: false, advancedDone: 0, dice: freshDice(), elements: [], elementCount: 3,
+    // The Assembly offer and its Build slots. A slot is null or
+    // { id, color }: the Program installed and the ONE colour it was
+    // installed as, chosen from its printed dots and fixed from then on.
+    offer: [], slots: {}, abandonReturns: [], finaleFailed: 0,
     rerollsUsed: 0, recoveryCredits: 0, recoverySource: "", architectUsed: false, architectMode: false, debuggerUsed: false, debugMode: false, optimizerUsed: false, rewardApplied: false,
     targetsVersion: 1, metrics: freshMetrics(), notes: "", log: [], finished: false
   });
@@ -483,8 +597,12 @@
     const deck = $("deckSelect").value;
     const tech = Number($("techSelect").value);
     state = freshState(deck); state.started = true; state.tech = tech; aosApplyInterferenceSetup();
+    state.offer = aosFreshOffer(); state.slots = aosFreshSlots(state.offer);
     state.queue = shuffle(state.programs.map(p => p.id)); ensureElements();
     log(`${deck} playtest started with ${TECHS[tech].name}.`);
+    const supply = colorSupply(state.programs);
+    log(`Program deck colors - ${COLOR_KEYS.map(c => `${c} ${supply[c]}`).join(", ")}.`);
+    log(`Assemblies offered: ${state.offer.map(ix => ASSEMBLIES[ix].name).join(", ")}.`);
     drawProgram();
   }
   function drawProgram() {
@@ -492,19 +610,35 @@
     if (state.current && !state.currentCompleted) { toast("Complete the active Program first."); return; }
     if (recoveryPending()) { toast("Recover your dice before revealing the next Program."); return; }
     if (state.mode === "program" && state.queue.length === 0) {
-      const active = state.programs.filter(p => p.status !== "aside" && p.status !== "removed").map(p => p.id);
-      if (state.cycle < 3 && active.length) { state.cycle += 1; state.queue = shuffle(active); state.optimizerUsed = false; state.discard=state.discard.filter(name=>name.startsWith("Limitation:")); log(`Cycle ${state.cycle} began with ${active.length} Programs.`); }
+      // A ROUND BOUNDARY IS WHERE ABANDONED PROGRAMS COME BACK, which is
+      // the whole cost of abandoning: they are not available again until
+      // the next round, so abandoning in round three returns nothing in
+      // time to use.
+      const returning = state.abandonReturns || [];
+      if (state.cycle < 3 && returning.length) {
+        returning.forEach(id => {
+          const pr = state.programs[id];
+          if (pr && pr.status === "returning") pr.status = "overheated";
+        });
+        log(`${returning.length} Program${returning.length === 1 ? "" : "s"} returned from an abandoned Assembly, Overheated.`);
+        state.abandonReturns = [];
+      }
+      const active = state.programs.filter(p => p.status !== "aside" && p.status !== "removed"
+                                             && p.status !== "installed" && p.status !== "returning").map(p => p.id);
+      if (state.cycle < 3 && active.length) { state.cycle += 1; state.queue = shuffle(active); state.optimizerUsed = false; state.discard=state.discard.filter(name=>name.startsWith("Limitation:")); log(`Round ${state.cycle} began with ${active.length} Programs.`); }
       else { beginAdvanced(); return; }
     }
-    if (state.mode === "advanced" && state.advancedQueue.length === 0) { finishGame(true); return; }
+    if (state.mode === "advanced" && state.advancedQueue.length === 0) {
+      finishGame((state.finaleFailed || 0) <= 1 && state.hp > 0); return;
+    }
     const id = state.mode === "advanced" ? state.advancedQueue.shift() : state.queue.shift();
     const program = state.mode === "advanced" ? null : state.programs[id];
     state.current = { id, mode: state.mode };
     state.currentFace = state.mode === "advanced" ? (state.nextAdvancedOverheated ? "back" : "front") : (program.status === "overheated" ? "back" : "front");
     state.currentCompleted = false; state.lastResultFailed = false; state.limitationRevealed = true; state.limitationResolved = false; state.rerollsUsed = 0; state.recoveryCredits = 0;
     // state.optimizerUsed is deliberately NOT reset here. Optimize is once
-    // per CYCLE and once more during Advanced Programming, so it is cleared
-    // at the cycle boundary above and in beginAdvanced(), not per Program.
+    // per ROUND and once more in the finale, so it is cleared at the round
+    // boundary above and in beginAdvanced(), not per Program.
     // Reconfigure and Debug are both once per Program, so they reset here.
     state.architectUsed = false; state.architectMode = false; state.rewardApplied = false;
     state.debuggerUsed = false; state.debugMode = false;
@@ -521,12 +655,38 @@
     selectedDice.clear(); log(`${state.mode === "advanced" ? "Advanced" : (state.programs.find(x=>x.id===id)||{}).src || state.deck} Program ${id + 1} and Limitation ${state.limitation + 1} revealed (${state.elementCount} elements).`); render();
   }
   function beginAdvanced() {
-    state.mode = "advanced"; state.advancedQueue = shuffle([0,1,2,3,4,5,6,7]).slice(0,3); state.nextAdvancedOverheated = false; state.current = null;state.optimizerUsed = false;state.discard=state.discard.filter(name=>name.startsWith("Limitation:"));
-    log("Advanced Programming began."); toast("Advanced Programming"); drawProgram();
+    // THE DEADLINE. Three rounds to build three Assemblies; reaching the
+    // end of round three without them is a loss, and it is a loss the
+    // player can see coming, which is the point of the offer being face
+    // up all game.
+    const built = (state.offer || []).filter(isBuilt);
+    if (built.length < 3) {
+      log(`Round three ended with ${built.length} of 3 Assemblies built.`, "bad");
+      finishGame(false); return;
+    }
+    // The three stages, in an order the player does not know. The lab
+    // conceals them the way the table does: you know WHICH three you
+    // built, never which comes when, and you have never seen a Target.
+    state.mode = "advanced";
+    state.advancedQueue = shuffle(built).slice(0, 3);
+    state.nextAdvancedOverheated = false; state.current = null; state.optimizerUsed = false;
+    state.finaleFailed = 0;
+    state.discard = state.discard.filter(name => name.startsWith("Limitation:"));
+    log("The finale began: three stages of one Advanced Program, order concealed.");
+    toast("The finale"); drawProgram();
   }
   function markRequiredMiss() {
     if (!state.current || state.currentCompleted) return;
     state.hp = Math.max(0, state.hp - 1); state.metrics.requiredMisses += 1;
+    // IN THE FINALE A SKIPPED STAGE FAILS EVERY ELEMENT IT HAS, which is
+    // two at least - so a colour you cannot supply there is not a 1 HP
+    // tax, it is the game.
+    if (state.mode === "advanced") {
+      const n = currentElementCount();
+      log(`Required color could not be supplied; lost 1 HP and all ${n} elements of this stage count as failed.`, "bad");
+      completeProgram(true, n);
+      return;
+    }
     log("Required color could not be supplied; lost 1 HP.", "bad");
     completeProgram(true);
   }
@@ -586,11 +746,11 @@
     el.successes = dice.reduce((sum, d) => sum + value(d.face), 0); el.rolled = true;
     log(`${reroll ? "Rerolled" : "Rolled"} Element ${i + 1}: ${tallyText(rollTally(dice))}.`); render();
   }
-  function completeProgram(forcedFailure = false) {
+  function completeProgram(forcedFailure = false, forcedFailedCount = 1) {
     if (!state.current || state.currentCompleted) return;
     if (!forcedFailure && state.elements.some(e => !e.resolved)) { toast("Resolve every visible element first."); return; }
     if (recoveryPending()) { toast("Recover your dice first."); return; }
-    const failed = forcedFailure ? 1 : state.elements.filter(e => e.failed).length;
+    const failed = forcedFailure ? forcedFailedCount : state.elements.filter(e => e.failed).length;
     state.metrics.programs += 1; state.metrics.failedElements += failed;
     if (!forcedFailure && failed >= 2) {
       state.metrics.catastrophes += 1;
@@ -614,7 +774,13 @@
       const p = state.programs[state.current.id];
       if (failed > 0) p.status = p.status === "stable" ? "overheated" : "aside";
     } else {
-      state.advancedDone += 1; state.nextAdvancedOverheated = failed >= 2;
+      // THE THREE STAGES ARE ONE PROGRAM, so failed elements are counted
+      // across all of them and nothing carries forward from one stage to
+      // the next - there is no Overheated side to carry onto.
+      state.advancedDone += 1;
+      state.finaleFailed = (state.finaleFailed || 0) + failed;
+      log(`Finale: ${state.finaleFailed} failed element${state.finaleFailed === 1 ? "" : "s"} so far, across ${state.advancedDone} stage${state.advancedDone === 1 ? "" : "s"}.`,
+          state.finaleFailed >= 2 ? "bad" : "");
     }
     // state.deck is the DIFFICULTY ("Standard"), not a deck name, so
     // PROGRAM_FLAVOR[state.deck] was always undefined and finishing
@@ -625,9 +791,22 @@
     if(state.limitation !== null)state.discard.push(`Limitation: ${limitationName(state.limitation)}`);
     state.currentCompleted = true; state.lastResultFailed = failed > 0;
     log(`Program completed with ${failed} failed element${failed === 1 ? "" : "s"}.`);
-    if (state.hp <= 0) finishGame(false); else render();
+    if (state.hp <= 0) { finishGame(false); return; }
+    // AT MOST ONE FAILED ELEMENT ACROSS THE WHOLE FINALE. The second is a
+    // Catastrophic Failure on that one Program and ends the game there -
+    // it does not wait for the last stage, and no Health is lost for it.
+    if (state.current.mode === "advanced" && (state.finaleFailed || 0) >= 2) {
+      log("A second failed element in the finale: Catastrophic Failure on the final Program.", "bad");
+      finishGame(false); return;
+    }
+    render();
   }
-  function finishGame(won) { state.finished = true; state.currentCompleted = true; log(won ? "AoS completed — Technician survived." : "AoS ended — Technician was knocked out.", won ? "good" : "bad"); render(); toast(won ? "Playtest won" : "Playtest lost"); }
+  function finishGame(won) {
+    state.finished = true; state.currentCompleted = true;
+    log(won ? `AoS won — the automaton runs, with ${state.finaleFailed || 0} failed element${(state.finaleFailed || 0) === 1 ? "" : "s"} and ${state.hp} Health.`
+            : "AoS lost.", won ? "good" : "bad");
+    render(); toast(won ? "Playtest won" : "Playtest lost");
+  }
 
   function applyReward(kind = currentReward()?.kind) {
     if (!state.currentCompleted || state.lastResultFailed || state.current?.mode !== "program") return;
@@ -640,7 +819,67 @@
     if (kind === "banish") { if (!state.banishedLimitations.includes(state.limitation)) state.banishedLimitations.push(state.limitation); state.limitationQueue = state.limitationQueue.filter(x => x !== state.limitation); }
     state.rewardApplied = true; log(`Program Reward applied: ${REWARDS[kind]}.`); render();
   }
-  function markCurrentRemoved() { if (state.current?.mode === "program") state.programs[state.current.id].status = "removed"; }
+  function markCurrentRemoved() {
+    // A PERMANENT REWARD DOES NOT BOX A CARD YOU INSTALLED. +1 REC and
+    // +1 STR normally remove their Program from the deck; installed, it
+    // goes to the slot instead and the stat is still taken, once.
+    if (state.current?.mode !== "program") return;
+    const pr = state.programs[state.current.id];
+    if (pr && pr.status !== "installed") pr.status = "removed";
+  }
+
+  // ---- installing -----------------------------------------------------
+  // A clean run fills ONE slot and counts as ONE colour, chosen now from
+  // the Program's printed dots. Two Purple slots need two Programs.
+  function installable(){
+    if (!state.currentCompleted || state.lastResultFailed) return [];
+    if (state.current?.mode !== "program" || state.mode === "advanced") return [];
+    const pr = state.programs[state.current.id];
+    if (!pr || pr.status === "installed") return [];
+    const colors = programColors(pr.src, pr.pid);
+    const out = [];
+    (state.offer || []).forEach(ix => {
+      if (isBuilt(ix)) return;
+      ASSEMBLIES[ix].build.forEach((need, slot) => {
+        if (!slotsOf(ix)[slot] && colors.includes(need)) out.push({ ix, slot, color: need });
+      });
+    });
+    return out;
+  }
+  function installCurrent(ix, slot){
+    const ok = installable().some(o => o.ix === ix && o.slot === slot);
+    if (!ok) { toast("That slot does not take this Program."); return; }
+    const pr = state.programs[state.current.id];
+    state.slots[ix][slot] = { id: pr.id, color: ASSEMBLIES[ix].build[slot] };
+    pr.status = "installed";
+    log(`${PROGRAM_FLAVOR[pr.src][pr.pid].name} installed on ${ASSEMBLIES[ix].name} as ${ASSEMBLIES[ix].build[slot]}.`, "good");
+    if (isBuilt(ix)) {
+      log(`${ASSEMBLIES[ix].name} is built. (${builtCount()} of 3.)`, "good");
+      toast(`${ASSEMBLIES[ix].name} built`);
+    }
+    // THE THIRD ASSEMBLY GOES STRAIGHT TO THE FINALE, whatever is left in
+    // the deck - the rulebook is explicit, and it is the reward for
+    // building fast rather than a technicality.
+    if (builtCount() >= 3) { save(); beginAdvanced(); return; }
+    save(); render();
+  }
+  // ---- abandoning -----------------------------------------------------
+  function abandonAssembly(ix){
+    if (state.mode === "advanced" || state.finished) return;
+    if (isBuilt(ix)) { toast("A built Assembly is locked."); return; }
+    const held = slotsOf(ix).filter(Boolean);
+    if (!held.length) { toast("That Assembly holds no Programs."); return; }
+    state.hp = Math.max(0, state.hp - 1);
+    held.forEach(cell => {
+      const pr = state.programs[cell.id];
+      // Overheated, and not back in the deck until the next round.
+      if (pr) { pr.status = "returning"; (state.abandonReturns ||= []).push(pr.id); }
+    });
+    state.slots[ix] = ASSEMBLIES[ix].build.map(() => null);
+    log(`${ASSEMBLIES[ix].name} abandoned: lost 1 HP, ${held.length} Program${held.length === 1 ? "" : "s"} return Overheated at the next round boundary.`, "bad");
+    if (state.hp <= 0) { finishGame(false); return; }
+    save(); render();
+  }
   function adjustStat(stat, delta) { state[stat] = Math.max(stat === "hp" ? 0 : 1, Math.min(6, state[stat] + delta)); render(); }
   function assignSelected(i) {
     if (state.architectMode) { moveArchitectDice(i); return; }
@@ -774,7 +1013,7 @@
     const hints = {
       Architect: "Use Reconfigure, select up to 2 allocated dice from unresolved elements, then tap Move selected here on their destination.",
       Debugger: "Use Debug, select 1 die on an element that has not rolled and 1 from your available pool, then tap Swap selected here. Once per Program.",
-      Optimizer: "After rolling Target +1, choose Count as optimal on that element. Usable once per cycle, and once more during Advanced Programming.",
+      Optimizer: "After rolling Target +1, choose Count as optimal on that element. Usable once per round, and once more in the finale.",
       Engineer: "Choose Safe T+2 before rolling on up to 2 elements per Program.",
       Operator: "Apply Workaround manually by selecting the substitute non-Red die and using Withhold.",
       Compiler: "After a roll, tap the dice you want to reroll, then choose Extra roll. With none selected, all dice reroll."
@@ -868,6 +1107,7 @@
     $("eventLog").innerHTML = state.log.map(e => `<div class="log-entry"><b>${e.at}</b> · ${e.message}</div>`).join("") || "<div class='log-entry'>The playtest log will appear here.</div>";
   }
   function render() {
+    renderAssemblies();
     renderAOSModules();
     ensureElements();
     $("deckSelect").value = state.level || state.deck; $("techSelect").value = String(state.tech); $("elementCount").textContent = String(state.elementCount);
@@ -875,7 +1115,7 @@
     $("drawPile").textContent = state.started ? (state.mode === "advanced" ? state.advancedQueue.length : state.queue.length) : "—";
     $("programsDone").textContent = state.metrics.programs;
     $("recoveryCredits").textContent = state.recoveryCredits; $("rerolls").textContent = `${state.rerollsUsed} / ${Math.max(0,state.str-1)}`;
-    $("runState").textContent = !state.started ? "Choose a deck and Technician, then draw the first Program." : state.finished ? (state.hp > 0 ? "Playtest complete: survived Advanced Programming." : "Playtest complete: Health reached 0.") : `${state.deck} · ${TECHS[state.tech].name} · ${state.programs.filter(p=>p.status==="aside").length} set aside`;
+    $("runState").textContent = !state.started ? "Choose a deck and Technician, then draw the first Program." : state.finished ? (state.hp > 0 && (state.finaleFailed || 0) <= 1 && state.mode === "advanced" ? "Playtest complete: the automaton runs." : "Playtest complete: AoS lost.") : `${state.deck} · ${TECHS[state.tech].name} · ${state.programs.filter(p=>p.status==="aside").length} set aside`;
     $("drawBtn").disabled = (!!state.current && !state.currentCompleted) || state.finished; $("drawBtn").textContent = !state.started ? "Start playtest" : state.mode === "advanced" ? "Next Advanced" : "Draw program";
     $("flipBtn").disabled = !state.current || state.currentCompleted;
     $("programControls").classList.toggle("hidden", !state.current || state.currentCompleted); $("rewardBar").classList.toggle("hidden", !state.currentCompleted || state.finished || state.lastResultFailed || state.rewardApplied || state.current?.mode !== "program");
@@ -941,6 +1181,13 @@
       if (claim) return aosClaimBackdoor(Number(claim.dataset.aosBackdoorClaim), false);
       const use = event.target.closest?.("[data-aos-backdoor-spend]");
       if (use) return aosClaimBackdoor(Number(use.dataset.aosBackdoorSpend), true);
+      const put = event.target.closest?.("[data-aos-install]");
+      if (put) {
+        const [ix, slot] = String(put.dataset.aosInstall).split(":").map(Number);
+        return installCurrent(ix, slot);
+      }
+      const drop = event.target.closest?.("[data-aos-abandon]");
+      if (drop) return abandonAssembly(Number(drop.dataset.aosAbandon));
     });
     window.addEventListener("nobulous-tier", () => {
       if (aosTier() === (state.tier || "0")) return render();

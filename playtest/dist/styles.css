@@ -791,3 +791,27 @@ button.attention{animation:attention-pulse 1.1s ease-in-out 2}
 .nrj-imp-meta{margin:0;color:var(--muted);font-size:.82rem}
 .nrj-imp-meta strong{color:#f0d69d}
 @media(max-width:700px){.nrj-imposter{flex-direction:column}.nrj-imp-card{flex-basis:auto;width:100%;max-width:280px}}
+
+/* --- AoS Assembly offer (2026-11-24) ------------------------------------
+   A Build slot is a button so it can be pressed to install, and it is
+   coloured by the colour it demands rather than by what is in it: an empty
+   Purple slot and a filled one are the same requirement, and the tick is
+   what says which. Disabled is the normal state - a slot only opens in the
+   moment a cleanly-run Program is on the table. */
+.aos-slots { display: flex; flex-wrap: wrap; gap: .3rem; margin: .25rem 0 .4rem; }
+.aos-slot { font-size: .72rem; padding: .18rem .45rem; border-radius: .5rem;
+            border: 2px solid currentColor; background: transparent;
+            cursor: pointer; text-transform: capitalize; }
+.aos-slot[disabled] { cursor: default; opacity: .62; }
+.aos-slot.filled { background: currentColor; }
+.aos-slot.filled::first-line { color: inherit; }
+.aos-slot.c-purple { color: #8d5bb0; }
+.aos-slot.c-blue   { color: #4a86c8; }
+.aos-slot.c-green  { color: #4f9c62; }
+.aos-slot.c-yellow { color: #b8901f; }
+.aos-slot.filled.c-purple, .aos-slot.filled.c-blue,
+.aos-slot.filled.c-green, .aos-slot.filled.c-yellow { color: #fff; }
+.aos-slot.filled.c-purple { background: #8d5bb0; border-color: #8d5bb0; }
+.aos-slot.filled.c-blue   { background: #4a86c8; border-color: #4a86c8; }
+.aos-slot.filled.c-green  { background: #4f9c62; border-color: #4f9c62; }
+.aos-slot.filled.c-yellow { background: #b8901f; border-color: #b8901f; }

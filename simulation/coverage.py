@@ -73,6 +73,45 @@ def catalog():
     return out
 
 
+def _aos_assembly_sides():
+    """Both faces of the eight base Assemblies, counted only where the
+    model actually reaches for that face.
+
+    NOT len(ASSEMBLIES), which is the mistake this file exists to catch -
+    a table of nine names satisfies a count of nine whether or not one
+    line of code ever reads it. The predicate here is call sites: the
+    recipe side counts when install() reads an Assembly's Build slots AND
+    writes a Program into one of them, and the back counts when the
+    finale runs it through run_program and adds its failures to the
+    total the game is scored on. Remove either and this drops to 8.
+    """
+    src = inspect.getsource(aos)
+    builds = ("def install" in src
+              and "build_slots(ix)" in src
+              and "self.slots[ix][k] = prog[\"id\"]" in src)
+    backs = ('self.run_program("Advanced", pid, "front")' in src
+             and "self.finale_failed += failed" in src)
+    n = len(aos.ASSEMBLIES)
+    return (n if builds else 0) + (n if backs else 0)
+
+
+def _aos_covert_sides():
+    """The ninth Assembly's two faces.
+
+    Its recipe side is the standard Sensor Array's, so what makes it a
+    card rather than a reskin is the Tier III swap that puts it in the
+    offer; its back is a finale stage like any other, which is true only
+    while the Advanced tables are built from ALL_ASSEMBLIES rather than
+    from the eight.
+    """
+    src = inspect.getsource(aos)
+    offered = ('tier == "III"' in src
+               and 'ALL_ASSEMBLIES[i][0] != "Sensor Array"' in src)
+    runs = (len(aos.PROGRAM_TARGETS["Advanced"]["front"])
+            == len(aos.ALL_ASSEMBLIES))
+    return (1 if offered else 0) + (1 if runs else 0)
+
+
 def fires(module, template, keys):
     """How many of `keys` have at least one firing site in the live source.
 
@@ -374,11 +413,15 @@ CLAIMS = [
           lambda: paid("Specialized")),
     Claim("AoS", "Unstable Programs", 8,
           lambda: paid("Unstable")),
-    Claim("AoS", "Advanced Programs", 8,
-          lambda: len(aos.ELEMENT_COUNTS["Advanced"]),
-          note="they print no reward, which is why they are absent from "
-               "PROGRAM_REWARDS; the Targets are modelled and three are "
-               "faced every game"),
+    Claim("AoS", "Assemblies", 16, _aos_assembly_sides,
+          note="both faces of all eight: the recipe side is modelled only "
+               "if install() reads its Build slots and writes a Program "
+               "into one, and the back only if the finale runs it through "
+               "run_program's Advanced tables and counts its failures"),
+    Claim("NRJ", "AoS Covert Sensor Array", 2, _aos_covert_sides,
+          note="the ninth Assembly: offered only when a Tier III setup "
+               "displaces the standard Sensor Array, and run as a finale "
+               "stage from the same tables as the other eight"),
     Claim("AoS", "Limitations", 6,
           lambda: len(aos.LIMITATIONS),
           note="all six distinct in withhold_for - four colour shortages, "

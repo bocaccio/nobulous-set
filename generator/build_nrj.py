@@ -394,7 +394,7 @@ BACKDOOR = [
  ("Resource Fork", "Claim after completing a Program while committing no more than Target + 1 dice in total beyond its summed Targets. Claiming gives up the next Program Reward you would claim.", "Later, recover 2 exhausted dice."),
  ("Packet Sniffer", "Claim after completing a Program with Crits on at least two different elements. Claiming gives up the next Program Reward you would claim.", "Later, look at the next Limitation before selecting a Program."),
  ("Garbage Collection", "Claim after completing a Program while at least 4 dice are exhausted. Claiming gives up the next Program Reward you would claim.", "Later, recover one die of each of two different colors."),
- ("Root Access", "Claim after completing a Program with Optimal Implementation on at least two elements. Claiming gives up the next Program Reward you would claim.", "During Advanced Programming, treat one failed element as successful."),
+ ("Root Access", "Claim after completing a Program with Optimal Implementation on at least two elements. Claiming gives up the next Program Reward you would claim.", "In the finale, treat one failed element as successful."),
 ]
 intf = [C(n, "NRJ &middot; Nobulous Interference", '<div class="sub">Draw 1 at setup</div>' + T(e),
            'Tier I &mdash; Agenda.', acc=AOS_H) for n, e in INTF]

@@ -6,19 +6,91 @@ verbatim from playtest/dist/app.js, which carries the canonical tables.
 A Program shows several Elements, each with a printed Target. Dice are
 allocated to Elements up front, then each Element is rolled. An Element that
 misses its Target fails; two failed Elements in one Program is a Catastrophic
-Failure and costs 1 HP. Reach the end of Advanced Programming with HP left
-to win.
+Failure and costs 1 HP.
+
+ASSEMBLIES, 2026-11-24. A clean run - no failed element - also lets you
+INSTALL that Program in a Build slot on one of six revealed Assemblies, and
+the game is won by building three of them within three rounds and then
+running their backs as three stages of one final Program, with at most one
+failed element across the whole of it.
+
+An installed Program is held out of the deck, so success shrinks the pool it
+came from. That is the whole shape of the thing, and it is why the spec as
+handed over measures 2.7% at Standard where the AoS it replaced measured
+52.0%: three rounds have to yield six to nine clean runs out of a deck that
+gets shorter and worse every time one lands. simulation/aosdeadline.py is
+the measurement and prices each lever; ROUNDS, BUILD_TARGET, FINALE_ALLOWED
+and KEEP_INSTALLED are the dials.
 """
 import collections
+import itertools
 import random
 
 from dice import COLORS, EV, FACES, policy_value, roll
+
+# ASSEMBLIES (2026-11-24), replacing the eight standalone Advanced
+# Programs. One card, two faces, two different jobs: the front is the
+# recipe built during the game - BUILD slots filled by cleanly-run
+# Programs - and the back is the finale stage it becomes.
+#
+# (name, build slots, Advanced Program name, [(colour, Target), ...])
+#
+# The Covert Sensor Array is the ninth, offered only at Tier III, where it
+# replaces the standard Sensor Array. check_app_sync.py holds this table
+# against generator/aos.py, which is where the cards are printed from.
+ASSEMBLIES = [
+    ("Drive Train",     ["P", "Y"],      "Rapid Approach",         [("P", 3), ("Y", 3)]),
+    ("Control Array",   ["B", "G"],      "Correct a Heading",      [("B", 2), ("G", 4)]),
+    ("Balance Gyro",    ["P", "G"],      "Recover from a Stumble", [("B", 3), ("Y", 3)]),
+    ("Sensor Array",    ["B", "Y"],      "Unobserved Entry",       [("P", 4), ("G", 2)]),
+    ("Load Frame",      ["P", "P", "Y"], "Carry a Moving Load",    [("P", 3), ("P", 2), ("Y", 3)]),
+    ("Power Regulator", ["B", "B", "G"], "Sustain Peak Output",    [("B", 3), ("B", 2), ("G", 2)]),
+    ("Articulated Arm", ["P", "G", "G"], "Place a Fragile Load",   [("P", 2), ("G", 3), ("G", 2)]),
+    ("Traction Module", ["B", "Y", "Y"], "Cross Broken Ground",    [("P", 3), ("B", 3)]),
+]
+COVERT = ("Covert Sensor Array", ["B", "Y"], "Erase the Audit Trail",
+          [("P", 2), ("G", 3), ("G", 2)])
+ALL_ASSEMBLIES = ASSEMBLIES + [COVERT]
+_LONGC = {"P": "purple", "B": "blue", "G": "green", "Y": "yellow"}
+
+# SIX OFFERED AND A COLOUR FLOOR ON THE DECK, both measured in
+# simulation/aosbuild.py. At the handed-over five with no floor, 15.4% of
+# Standard setups could not build three Assemblies AT ALL before a die was
+# rolled. Six takes that to 4.7%, the floor alone to 7.5%, the two together
+# to 0.6%. Set OFFER_SIZE to 5 and COLOR_FLOOR to 0 to reproduce the spec
+# as written.
+OFFER_SIZE = 6
+COLOR_FLOOR = 2
+
+# Which Assembly the next clean Program goes into. "greedy" finishes the
+# nearest-to-done first, which is what a player does and what the deadline
+# rewards; "scarce" fills the slot fewest remaining Programs can answer.
+# "none" installs nothing, which is the old game and loses every time.
+INSTALL_POLICY = "greedy"
+
+# THE FOUR DIALS THE ASSEMBLY RULES TURN ON, each shipping at what the
+# handed-over spec says and each able to restore a different reading of
+# it. simulation/aosdeadline.py prices them one at a time; they exist
+# because the spec as written measures 2.7% at Standard and the question
+# of which lever to pull is a design question, not a modelling one.
+#
+#   ROUNDS          how many passes through the deck before the deadline.
+#   BUILD_TARGET    Assemblies needed, and so stages in the finale.
+#   FINALE_ALLOWED  failed elements the finale forgives, across all of it.
+#   KEEP_INSTALLED  False holds an installed Program out of the deck, as
+#                   printed. True leaves it in, which is the single
+#                   biggest lever: it stops the deck shrinking every time
+#                   a clean run lands and keeps rounds 2 and 3 from being
+#                   made entirely of the Programs that failed.
+ROUNDS = 3
+BUILD_TARGET = 3
+FINALE_ALLOWED = 1
+KEEP_INSTALLED = False
 
 ELEMENT_COUNTS = {
     "Routine": [3, 3, 3, 3, 3, 4, 3, 4],
     "Specialized": [3, 4, 3, 4, 3, 4, 4, 4],
     "Unstable": [4, 4, 4, 4, 4, 4, 4, 4],
-    "Advanced": [5, 4, 5, 4, 5, 4, 5, 5],
 }
 
 PROGRAM_TARGETS = {
@@ -33,10 +105,6 @@ PROGRAM_TARGETS = {
     "Unstable": {
         "front": [[3,2,3,2],[2,3,2,3],[3,2,3,2],[2,3,3,2],[3,2,2,3],[2,3,2,3],[3,3,2,3],[3,2,3,2]],
         "back":  [[4,2,3,2],[2,3,2,4],[3,2,4,2],[2,4,3,2],[4,2,2,3],[2,3,2,4],[3,4,2,3],[3,3,3,2]],
-    },
-    "Advanced": {
-        "front": [[2,3,3,3,2],[3,3,3,3],[2,3,3,3,3],[3,3,3,2],[3,2,3,2,3],[3,3,3,3],[2,3,3,3,2],[3,3,3,3,3]],
-        "back":  [[2,3,4,3,2],[3,4,3,3],[2,3,3,4,3],[4,3,3,2],[3,2,4,2,3],[3,3,4,3],[2,4,3,3,2],[3,3,4,3,3]],
     },
 }
 
@@ -81,17 +149,28 @@ PROGRAM_REQS = {
         [None, "green", None, None],                 # Execute a Complex Route
         [None, None, "blue", None],                  # Operate Autonomously
     ],
-    "Advanced": [
-        ["purple", None, "green", "yellow", None],   # Rapid Approach
-        ["yellow", "green", None, "blue"],           # Unobserved Entry
-        ["yellow", None, None, "purple", None],      # Subject Acquisition
-        [None, "blue", None, "green"],               # Difficult Extraction
-        ["green", None, None, "yellow", None],       # Autonomous Infiltration
-        [None, "purple", None, "blue"],              # Controlled Restraint
-        ["blue", None, None, "green", None],         # Adaptive Pursuit
-        ["yellow", None, "purple", None, None],      # Council Extraction Protocol
-    ],
 }
+
+# THE FINALE'S TABLES, DERIVED from the Assemblies and attached after the
+# literals above rather than written into them. Two reasons, one answer:
+# check_app_sync.py reads those literals with ast.literal_eval and a
+# comprehension inside one makes the whole table unreadable - the check
+# then stops covering it and says nothing - and a finale stage is not a
+# deck this file transcribes. It is an Assembly's back, and the only
+# honest way to hold it is to read it off the Assembly.
+#
+# Indexed by position in ALL_ASSEMBLIES, so the Covert Sensor Array is 8.
+# ONE SET OF TARGETS on both faces: an Assembly back has no Overheated
+# side, so nothing escalates inside the finale.
+ELEMENT_COUNTS["Advanced"] = [len(e) for _, _, _, e in ALL_ASSEMBLIES]
+PROGRAM_TARGETS["Advanced"] = {
+    "front": [[t for _, t in e] for _, _, _, e in ALL_ASSEMBLIES],
+    "back":  [[t for _, t in e] for _, _, _, e in ALL_ASSEMBLIES],
+}
+# EVERY element of a back carries a required colour - exactly what the
+# front's Advanced colors line has been promising all game.
+PROGRAM_REQS["Advanced"] = [[_LONGC[c] for c, _ in e]
+                            for _, _, _, e in ALL_ASSEMBLIES]
 
 # Every element must receive at least this many dice, so an element cannot
 # be given up for nothing. 0 is the printed rule, under which a bare element
@@ -955,6 +1034,67 @@ NEG_USED = [0]
 NEGATE_STATS = None
 
 
+def program_colors(deck, pid):
+    """What a Program may be installed as: its printed dots, deduped."""
+    return sorted({c for c in PROGRAM_REQS[deck][pid] if c})
+
+
+def build_slots(ix):
+    """An Assembly's Build slots as COLOUR NAMES.
+
+    ASSEMBLIES stores them as the single letters the card art uses and
+    PROGRAM_REQS stores colour names, so the two cannot be compared
+    directly - and comparing them anyway finds no match ever, which reads
+    as "no trio is buildable" rather than as a bug.
+    """
+    return [_LONGC[c] for c in ALL_ASSEMBLIES[ix][1]]
+
+
+def _match(slots, programs):
+    """Is there a perfect matching of these slots to distinct Programs?
+
+    The same question simulation/aosbuild.py asks of a setup, asked here
+    of a candidate trio: one Program per slot, an edge wherever it prints
+    that slot's colour.
+    """
+    pairing = {}
+
+    def augment(si, seen):
+        for pi, cs in enumerate(programs):
+            if slots[si] in cs and pi not in seen:
+                seen.add(pi)
+                if pi not in pairing or augment(pairing[pi], seen):
+                    pairing[pi] = si
+                    return True
+        return False
+
+    return all(augment(si, set()) for si in range(len(slots)))
+
+
+def choose_trio(offer, programs, rng):
+    """Which three of the offer to go for.
+
+    FEWEST SLOTS FIRST, among the trios that can actually be built: every
+    slot is a Program that has to be run clean, and three rounds is not
+    many. Ties broken at random so the model does not always build the
+    same machine. None when no trio is buildable, which the colour floor
+    and the offer of six make rare - 0.6% of setups - but not impossible.
+    """
+    cols = [set(program_colors(p["deck"], p["pid"])) for p in programs]
+    best = []
+    for trio in itertools.combinations(offer, BUILD_TARGET):
+        slots = [x for ix in trio for x in build_slots(ix)]
+        if len(slots) > len(programs):
+            continue
+        if not _match(slots, cols):
+            continue
+        best.append((len(slots), trio))
+    if not best:
+        return None
+    fewest = min(n for n, _ in best)
+    return list(rng.choice([t for n, t in best if n == fewest]))
+
+
 def fresh_dice():
     return [c for c in COLORS for _ in range(4)] + ["red"]
 
@@ -992,6 +1132,42 @@ class Game(object):
         self.composition = composition
         self.programs = [{"id": i, "deck": d, "pid": p, "status": "stable"}
                          for i, (d, p) in enumerate(picks)]
+        # THE COLOUR FLOOR IS A SETUP RULE, not a convenience: without it
+        # about one setup in seven cannot build three Assemblies at all,
+        # and nothing at the table would say so. Redealt until it holds,
+        # bounded so a mix that could never satisfy it cannot hang.
+        if COLOR_FLOOR and composition is not None:
+            for _ in range(200):
+                have = {c: 0 for c in ("purple", "blue", "green", "yellow")}
+                for pr in self.programs:
+                    for c in program_colors(pr["deck"], pr["pid"]):
+                        have[c] += 1
+                if min(have.values()) >= COLOR_FLOOR:
+                    break
+                picks = []
+                for name, n in zip(DECKS, composition):
+                    picks += [(name, i) for i in
+                              self.rng.sample(range(8), min(n, 8))]
+                self.rng.shuffle(picks)
+                self.programs = [{"id": i, "deck": d, "pid": p, "status": "stable"}
+                                 for i, (d, p) in enumerate(picks)]
+        # THE ASSEMBLY OFFER. Six of the eight recipe side up for the whole
+        # game; Tier III swaps the Covert Sensor Array in for the standard
+        # Sensor Array and guarantees it a place.
+        base = list(range(len(ASSEMBLIES)))
+        if tier == "III":
+            rest = [i for i in base if ALL_ASSEMBLIES[i][0] != "Sensor Array"]
+            self.offer = [len(ASSEMBLIES)] + self.rng.sample(rest, OFFER_SIZE - 1)
+        else:
+            self.offer = self.rng.sample(base, OFFER_SIZE)
+        self.rng.shuffle(self.offer)
+        # slot -> the Program id installed in it, or None.
+        self.slots = {ix: [None] * len(ALL_ASSEMBLIES[ix][1])
+                      for ix in self.offer}
+        self.plan = choose_trio(self.offer, self.programs, self.rng)
+        self.returning = []
+        self.finale_failed = 0
+        self.installed = 0
         self.queue = [p["id"] for p in self.programs]
         self.rng.shuffle(self.queue)
         self.advanced_done = 0
@@ -2088,6 +2264,94 @@ class Game(object):
                 while worst in self.lim_queue:
                     self.lim_queue.remove(worst)
 
+    def install(self, prog):
+        """Put a cleanly-run Program into a Build slot, if one takes it.
+
+        ONE SLOT AND ONE COLOUR, chosen now from the Program's printed
+        dots: two Purple slots need two separate Programs, and the choice
+        cannot be revisited. Returns True if it went somewhere.
+        """
+        if INSTALL_POLICY == "none" or not self.plan:
+            return False
+        colors = program_colors(prog["deck"], prog["pid"])
+        if not colors:
+            return False
+        best = None
+        for ix in self.plan:
+            cells = self.slots[ix]
+            if all(cells):
+                continue
+            want = build_slots(ix)
+            for k, need in enumerate(want):
+                if cells[k] is not None or need not in colors:
+                    continue
+                if INSTALL_POLICY == "scarce":
+                    # How many Programs still in play could answer this
+                    # slot: the fewest, the sooner it has to be taken.
+                    rank = sum(1 for q in self.programs
+                               if q["status"] in ("stable", "overheated")
+                               and need in program_colors(q["deck"], q["pid"]))
+                else:
+                    # "greedy": finish the nearest-to-done Assembly first,
+                    # because three rounds is the whole game and a part-built
+                    # Assembly is worth nothing at the end of it.
+                    rank = sum(1 for c in cells if c is None)
+                if best is None or rank < best[0]:
+                    best = (rank, ix, k)
+        if best is None:
+            return False
+        _, ix, k = best
+        self.slots[ix][k] = prog["id"]
+        if not KEEP_INSTALLED:
+            prog["status"] = "installed"
+        self.installed += 1
+        return True
+
+    def replan(self):
+        """Re-aim at a trio the remaining Programs can still finish.
+
+        A plan made at setup stops being a plan the moment the cards it
+        needed are set aside, and a player would switch rather than keep
+        running at a slot nothing left can fill. Assemblies already
+        STARTED are kept where they can still be finished - the Programs
+        in them are spent either way, and clearing one costs a Health.
+        """
+        if not self.plan:
+            return
+        live = [p for p in self.programs
+                if p["status"] in ("stable", "overheated", "returning")]
+        cols = [set(program_colors(p["deck"], p["pid"])) for p in live]
+
+        def finishable(ix):
+            need = [c for c, cell in zip(build_slots(ix), self.slots[ix])
+                    if cell is None]
+            return _match(need, cols) if need else True
+
+        if all(finishable(ix) for ix in self.plan):
+            return
+        started = [ix for ix in self.plan if any(self.slots[ix])]
+        spare = [ix for ix in self.offer if ix not in started]
+        best = None
+        for a in range(len(spare)):
+            for b in range(a + 1, len(spare) + 1):
+                pick = started + spare[a:a + (3 - len(started))]
+                if len(pick) != 3:
+                    continue
+                need = [c for ix in pick
+                        for c, cell in zip(build_slots(ix), self.slots[ix])
+                        if cell is None]
+                if len(need) > len(live) or not _match(need, cols):
+                    continue
+                if best is None or len(need) < best[0]:
+                    best = (len(need), list(pick))
+                break
+        if best:
+            self.plan = best[1]
+
+    def built(self):
+        return [ix for ix in self.offer
+                if self.slots[ix] and all(c is not None for c in self.slots[ix])]
+
     def play(self):
         guard = 0
         while self.hp > 0 and guard < 200:
@@ -2098,9 +2362,18 @@ class Game(object):
             if KEEP_LAST and len(self.queue) == 1:
                 self.queue = []
             if not self.queue:
+                # A ROUND BOUNDARY IS WHERE AN ABANDONED ASSEMBLY'S
+                # PROGRAMS COME BACK - that delay is the whole cost of
+                # abandoning, and in round three it is total.
+                for rid in self.returning:
+                    if self.programs[rid]["status"] == "returning":
+                        self.programs[rid]["status"] = "overheated"
+                self.returning = []
+                self.replan()
                 active = [p for p in self.programs
-                          if p["status"] not in ("aside", "removed")]
-                if self.cycle < 3 and active:
+                          if p["status"] not in ("aside", "removed",
+                                                 "installed", "returning")]
+                if self.cycle < ROUNDS and active:
                     self.cycle += 1
                     self.negates_left = NEGATES_PER_CYCLE or -1
                     if self.tech in OPT_CYCLE_TECHS:
@@ -2118,6 +2391,12 @@ class Game(object):
             face = "back" if prog["status"] == "overheated" else "front"
             failed = self.run_program(prog["deck"], prog["pid"], face,
                                       slot=pid)
+            # A CLEAN RUN IS ALSO AN INSTALL, and the install is how the
+            # game is won: the Reward and the slot come off the same run.
+            if failed == 0 and self.install(prog):
+                if len(self.built()) >= BUILD_TARGET:
+                    break           # the last Assembly ends the rounds at once
+                continue
             retry = False
             if failed < 0:
                 # A declared abandon. Under RETRY_IMMEDIATE it buys nothing
@@ -2150,10 +2429,16 @@ class Game(object):
                     prog["status"] = "aside"
         if self.hp <= 0:
             return False
-        # "Select 3 Advanced Programs." Eight are shuffled and set aside at
-        # setup, but only three are ever faced - running all eight made the
-        # finale nearly three times as long as the rules call for.
-        adv = self.rng.sample(range(8), 3)
+        # THE DEADLINE. Three rounds to build three Assemblies, and
+        # reaching the end of round three without them loses the game -
+        # there is no finale to reach.
+        done = self.built()
+        if len(done) < BUILD_TARGET:
+            return False
+        # The three stages, in an order the player does not know and has
+        # never seen the Targets of.
+        adv = list(done[:BUILD_TARGET])
+        self.rng.shuffle(adv)
         # Advanced Programming is its own stretch, so it gets its own
         # allowance rather than inheriting whatever the third cycle left.
         self.negates_left = NEGATES_PER_CYCLE or -1
@@ -2168,14 +2453,24 @@ class Game(object):
             # The reroll variant that prints the Optimizer's cadence.
             # dbg_cycle_strict is the bare reading and gets nothing here.
             self._dbg_long = False
-        overheated = False
+        # ONE PROGRAM IN THREE STAGES. Failed elements are counted across
+        # all three together and nothing carries from one to the next:
+        # there is no Overheated side to carry onto, so every stage is run
+        # on its only face. The second failed element is a Catastrophic
+        # Failure on that one Program and ends the game there - which also
+        # retires the exhaust-2-misses save, since what it buys off is
+        # Health and the second failure no longer costs Health.
         for pid in adv:
             if self.hp <= 0:
                 return False
-            failed = self.run_program("Advanced", pid, "back" if overheated else "front")
-            overheated = failed >= 2
+            failed = self.run_program("Advanced", pid, "front")
+            if failed < 0:
+                failed = len(PROGRAM_TARGETS["Advanced"]["front"][pid])
+            self.finale_failed += failed
             self.advanced_done += 1
-        return self.hp > 0
+            if self.finale_failed > FINALE_ALLOWED:
+                return False
+        return self.hp > 0 and self.finale_failed <= FINALE_ALLOWED
 
 
 def run(deck="Standard", games=20000, seed=20, tier="none", tech=None):

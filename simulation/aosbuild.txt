@@ -1,0 +1,44 @@
+AoS Assembly setup gate - % of setups with NO buildable trio
+(no dice rolled; this is winnable-at-all, not win rate)
+
+slot budget 8 - the Programs a player can get installed clean
+                                                 Easy Standard     Hard Nobulous
+as handed over: 5 offered, no deck check       15.61%   15.38%   12.81%    9.45%
+6 offered                                       4.88%    4.70%    3.48%    1.83%
+5 offered + colour floor 2                      7.40%    7.47%    6.49%    4.71%
+PRINTED: 6 offered + colour floor 2             0.60%    0.59%    0.43%    0.12%
+
+slot budget 7 - the Programs a player can get installed clean
+                                                 Easy Standard     Hard Nobulous
+as handed over: 5 offered, no deck check       23.18%   23.09%   20.62%   17.12%
+6 offered                                       6.80%    6.76%    5.24%    3.00%
+5 offered + colour floor 2                     14.42%   14.96%   14.03%   11.66%
+PRINTED: 6 offered + colour floor 2             1.19%    1.11%    0.82%    0.20%
+
+cost of the colour floor, in reshuffles per setup:
+   Easy      0.507
+   Standard  0.509
+   Hard      0.430
+   Nobulous  0.300
+
+choice left on the table - mean buildable trios of the 20 offered:
+   Easy      6.26
+   Standard  6.27
+   Hard      6.40
+   Nobulous  6.79
+
+Tier III, Covert Sensor Array guaranteed a place in the offer:
+   Easy      dead  0.54%  mean buildable trios 6.63
+   Standard  dead  0.54%  mean buildable trios 6.63
+   Hard      dead  0.34%  mean buildable trios 6.80
+   Nobulous  dead  0.00%  mean buildable trios 7.17
+
+how often each Assembly can be part of a buildable trio, Standard:
+   Drive Train        2 slots  4.13 buildable trios per offer
+   Control Array      2 slots  4.12 buildable trios per offer
+   Balance Gyro       2 slots  4.04 buildable trios per offer
+   Sensor Array       2 slots  4.04 buildable trios per offer
+   Load Frame         3 slots  2.12 buildable trios per offer
+   Power Regulator    3 slots  2.00 buildable trios per offer
+   Articulated Arm    3 slots  2.29 buildable trios per offer
+   Traction Module    3 slots  2.35 buildable trios per offer

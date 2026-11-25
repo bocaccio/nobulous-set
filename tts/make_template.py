@@ -435,7 +435,7 @@ def draw_aos(d, lua):
     label(d, "LIMITATION\nDECK", col(int(g.AOS_LIMITS)), r1, fit=fit)
     label(d, "PROGRAM", col(int(g.AOS_PROGRAM)), r1, fit=fit)
     label(d, "LIMITATION", col(int(g.AOS_LIMIT)), r1, fit=fit)
-    label(d, "ADVANCED", float(g.AOS_RIGHT) - float(g.AOS_COL), r1, fit=fit)
+    label(d, "BACKDOOR\nROUTINES", float(g.AOS_BACKDOOR_X), r1, fit=fit)
     # The space a tier lays its one face-up card on, which is empty
     # and unexplained at tier 0.
     label(d, "TIER CARD", float(g.AOS_RIGHT), r1, fit=fit)
@@ -443,6 +443,14 @@ def draw_aos(d, lua):
           fit=fit)
     label(d, "SET ASIDE", float(g.AOS_TECH_X), r3, fit=fit)
     label(d, "BANISHED\nDICE", float(g.AOS_RIGHT), r3, fit=fit)
+    # THE SIX ASSEMBLY SPACES ARE LABELLED, unlike the five element mats
+    # below them, which say what they are on the card. An Assembly space
+    # holds a recipe card AND the Programs installed into it, so the label
+    # is there for the empty table and for the moment a built Assembly is
+    # turned over and the recipe stops being what is on show.
+    r2 = float(g.AOS_ROW2)
+    for _k in range(1, int(g.AOS_OFFER) + 1):
+        label(d, "ASSEMBLY", float(g.aosMid(_k, int(g.AOS_OFFER))), r2, fit=fit)
 
 
 def draw_imp(d, lua):

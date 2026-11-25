@@ -344,7 +344,7 @@ DECK SHEETS AND BACKS
   and build_bat.py, pack.py, build_catalog.py and tts/decks.py stopped making
   it the day after. The sections below that still describe it are HISTORY.
   DECK                           GRID    ORIENT     BACK
-  AoS_Advanced                   8x1     portrait   AoS_Advanced_TTS_back.png  (Unique Backs)
+  AoS_Assemblies                 8x1     portrait   AoS_Assemblies_TTS_back.png  (Unique Backs)
   AoS_ElementMats                5x1     portrait   (none - mats)
   AoS_Limitations                6x1     portrait   CardBack_AoS_Limitation
   AoS_Routine                    8x1     portrait   AoS_Routine_TTS_back.png  (Unique Backs)
@@ -365,6 +365,7 @@ DECK SHEETS AND BACKS
                                                     (two TTS decks over one sheet: NAP_Slots cells 1-3, NAP_FINF cells 4-6)
   NAP_Tasks                      9x3     landscape  CardBack_NAP_Assignment
   NRJ_AoS_BackdoorRoutines       6x1     portrait   CardBack_NRJ_BackdoorRoutine
+  NRJ_AoS_CovertAssembly         1x1     portrait   NRJ_AoS_CovertAssembly_TTS_back.png  (Unique Backs)
   NRJ_AoS_CorruptedLimitations   6x1     portrait   CardBack_AoS_Limitation
   NRJ_AoS_Interference           6x1     portrait   CardBack_NRJ_Interference
   NRJ_BAT_Modifications          6x1     portrait   CardBack_BAT_Upgrade
