@@ -39,13 +39,27 @@ installed - every install needs a clean run - so 8 is the optimistic bound
 and 7 the planning figure. Both are reported.
 """
 import collections
+import importlib.util
 import itertools
+import os
 import random
-import sys
 
-sys.path.insert(0, "../generator")
-sys.path.insert(0, "generator")
-from aos import ALL_ASSEMBLIES, ASSEMBLIES, COVERT, REQ_MAP, ROUTINE, SPECIALIZED, UNSTABLE
+# LOADED BY PATH, NOT BY NAME. There are two modules called `aos` in this
+# repository - the card data in generator/ and the model in simulation/ -
+# and a plain `import aos` gets whichever reached sys.modules first. From
+# this file's own command line that was the generator's; imported from
+# another script in simulation/ it is the model's, which has no REQ_MAP,
+# and the failure is an ImportError three frames away from the cause.
+_GEN = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                    os.pardir, "generator", "aos.py")
+_spec = importlib.util.spec_from_file_location("aos_card_data", _GEN)
+_cards = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_cards)
+ALL_ASSEMBLIES = _cards.ALL_ASSEMBLIES
+ASSEMBLIES = _cards.ASSEMBLIES
+COVERT = _cards.COVERT
+REQ_MAP = _cards.REQ_MAP
+ROUTINE, SPECIALIZED, UNSTABLE = _cards.ROUTINE, _cards.SPECIALIZED, _cards.UNSTABLE
 
 DECKS = {"Routine": ROUTINE, "Specialized": SPECIALIZED, "Unstable": UNSTABLE}
 # A Program's Build eligibility is exactly its printed required-colour dots.
