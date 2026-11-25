@@ -11,7 +11,12 @@ Read `HANDOFF.md` and `README.md` before making changes.
   They are 20.8 MB, jsdelivr refuses a package over 50 MB, and nothing in
   the mod or the lab loads them. Rebuild them rather than looking for them;
   do not add them back to the tree or publish them anywhere.
-- The browser playtest interface lives in `playtest/dist/`.
+- The browser playtest lab lives in `playtest/dist/`. IT IS FROZEN as of
+  2026-11-25 and is NOT an owner of any rule. Do not update it when a rule,
+  a card or a ladder changes, and do not bump its `?v=` token. The table is
+  where the game is played now; keeping a fourth interface current for every
+  rule was work for something nobody used. It still runs, and what it plays
+  is the game as it stood that day.
 - `images/` and the card/rule copies under `playtest/dist/assets/` are generated
   or deployment output. Do not treat copied assets as masters.
 
@@ -21,15 +26,17 @@ Read `HANDOFF.md` and `README.md` before making changes.
   numbers were simulation-calibrated; raise suspected design errors first.
 - Preserve unrelated user edits and create a Git checkpoint before substantial
   work.
-- For browser-interface work, run `python playtest/serve.py` from the
-  repository root and verify the affected game flow. Do NOT use
-  `python -m http.server`: it sends no cache headers, so the browser caches
-  `index.html`, and since that file is what names every `?v=` token a cached
-  copy pins you to an old build however often you bump them. The symptom is a
-  feature that is simply absent with no error, which reads exactly like code
-  that was never written.
-- Keep BAT, NAP, AoS and NRJ card data synchronized with the authoritative
-  generator and rule sources.
+- Keep BAT, NAP, AoS and NRJ card data synchronized across the three owners
+  that are still live: the generators, the rule sources and the TTS mod.
+- IF YOU EVER DO UNFREEZE THE LAB, serve it with `python playtest/serve.py`
+  from the repository root and never with `python -m http.server`: that
+  sends no cache headers, so the browser caches `index.html`, and since
+  that file names every `?v=` token a cached copy pins you to an old build
+  however often you bump them. The symptom is a feature that is simply
+  absent with no error, which reads exactly like code that was never
+  written. The same trap caught a real bug on 2026-11-25, from the other
+  side: the AoS lab had been throwing on load for days because a `const`
+  was read above its own declaration, and nothing said so.
 - THE MOD LOADS ITS ART FROM jsdelivr, so a rebuilt asset is broken for the
   table until it is pushed. The table overlays are named by content hash, so
   regenerating one RENAMES it and the mod then asks for a file that is not on
@@ -61,9 +68,6 @@ Read `HANDOFF.md` and `README.md` before making changes.
 ## Useful commands
 
 ```bash
-# Local playtest lab (sends honest cache headers; see above)
-python playtest/serve.py
-
 # Rebuild rule PDFs after editing rules HTML
 cd rules && python build.py
 
@@ -77,7 +81,8 @@ python pack.py
 cd generator
 python deploy.py --prune --release
 
-# Check the playtest lab still matches the generators (exit code = failures)
+# Check the generators, the rules and the mod still agree
+# (exit code = failures; the lab was dropped from it on 2026-11-25)
 cd generator && python check_app_sync.py
 python check_cards.py
 

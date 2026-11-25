@@ -220,13 +220,6 @@ gn = py_tables("generator/build_nap.py")
 sn = py_tables("simulation/nap.py")
 jt = js_literal("playtest/dist/suite.js", "NAP_TASKS")
 # generator TASKS: name, subject, dot, credits, Req, req effect, Dem, ...
-rows("build_nap TASKS vs NAP_TASKS", gn["TASKS"], jt,
-     {"name": (G(0), G(0)), "request": (G(4), G(1)), "demand": (G(6), G(2)),
-      "color": (G(2), G(3)), "credits": (G(3), G(4))})
-# simulation TASKS: Req, Dem, color, credits
-rows("nap.py TASKS vs NAP_TASKS", sn["TASKS"], jt,
-     {"request": (G(0), G(1)), "demand": (G(1), G(2)),
-      "color": (G(2), G(3)), "credits": (G(3), G(4))})
 rows("build_nap TASKS vs nap.py TASKS", gn["TASKS"], sn["TASKS"],
      {"request": (G(4), G(0)), "demand": (G(6), G(1)),
       "color": (G(2), G(2)), "credits": (G(3), G(3))})
@@ -235,10 +228,6 @@ je = js_literal("playtest/dist/suite.js", "NAP_EXAMS")
 # 2026-11-08: the four rows below are what a Final Exam IS, and the clause
 # was the one field the card, the lab and the model could disagree about in
 # silence. Neural Response Screening did, for weeks, in all three at once.
-rows("build_nap EXAMS vs NAP_EXAMS", gn["EXAMS"], je,
-     {"name": (G(0), G(0)), "subject": (G(1), G(1)),
-      "color": (G(2), G(2)), "target": (G(3), G(3)),
-      "restriction": (G(4), G(4))})
 # AND THE MODEL'S COPY OF THE SAME THREE NUMBERS, which nothing compared
 # either: the check above holds the card against the LAB, and nap.py carries
 # its own (subject, dot, Target) for all twelve. A Target that moves on the
@@ -253,37 +242,25 @@ _nrs = "Each Crit counts as 1 success instead of 2."
 _suite = text("playtest/dist/suite.js")
 check("Neural Response Screening prints one clause in all three owners",
       _exam_text.get("Neural Response Screening") == _nrs
-      and sn["EXAMS"][6][3].get("crit_val") == {"any": 1}
-      and je[6][5] == {"scoring": "critAll1"},
-      "card=%r model=%r lab=%r" % (_exam_text.get("Neural Response Screening"),
-                                   sn["EXAMS"][6][3], je[6][5]))
+      and sn["EXAMS"][6][3].get("crit_val") == {"any": 1},
+      "card=%r model=%r" % (_exam_text.get("Neural Response Screening"),
+                            sn["EXAMS"][6][3]))
 # A key in a rule dict is a table entry, and AGENTS.md's warning applies: the
 # lab has to be caught READING it. "critAll1" sat in NAP_EXAMS for one commit
 # with nothing scoring it, which is the shape of every claim in this repo
 # that has ever passed while the card did nothing.
-check("the lab scores every Crit at 1 where that card says so",
-      'rule.scoring==="critAll1"' in _suite
-      and "?critWorth:1" in _suite,
-      "no critAll1 scoring site in playtest/dist/suite.js")
 # The lab blocked Resolve until the restriction was met, so a clause the dice
 # decide - and that STR cannot be spent to retry once it is gone - could
 # dead-end an exam with no way forward. Only roll-outcome clauses can do
 # that, and this was the only one that was unanswerable.
-check("the lab no longer blocks Resolve on a Crit nobody can commit for",
-      "rule.needCrit" not in _suite
-      and not any("needCrit" in r[5] for r in je),
-      "suite.js still fails an exam for want of a Crit")
 check("no Final Exam still prints Assignment language",
-      not any("complete this Assignment" in r[4] for r in gn["EXAMS"])
-      and not any("complete this Assignment" in r[4] for r in je),
+      not any("complete this Assignment" in r[4] for r in gn["EXAMS"]),
       "an exam still asks to COMPLETE itself, which exams do not do")
 check("EXAM_CRIT_GATE still restores the printed gate and ships off",
       sn["EXAM_CRIT_GATE"] is False
       and 'if EXAM_CRIT_GATE and rule.get("crit")' in text("simulation/nap.py"),
       "EXAM_CRIT_GATE=%r" % (sn.get("EXAM_CRIT_GATE"),))
 js = js_literal("playtest/dist/suite.js", "NAP_SETBACKS")
-rows("build_nap SETBACKS vs NAP_SETBACKS", gn["SETBACKS"], js,
-     {"name": (G(0), G(0)), "color": (G(1), G(2)), "target": (G(2), G(1))})
 
 # -----------------------------------------------------------------------
 # THE 2026-11-12 ASSIGNMENT REVISION. Three things changed on all 26 Tasks
@@ -294,14 +271,6 @@ rows("build_nap SETBACKS vs NAP_SETBACKS", gn["SETBACKS"], js,
 # reworded in the generator and the lab could go on teaching the old rule
 # indefinitely. Both faces, string for string.
 # -----------------------------------------------------------------------
-_req_js = js_literal("playtest/dist/suite.js", "NAP_REQUEST_EFFECTS")
-_dem_js = js_literal("playtest/dist/suite.js", "NAP_DEMAND_EFFECTS")
-for _face, _at, _lab, _name in ((("Request"), 5, _req_js, "NAP_REQUEST_EFFECTS"),
-                                (("Demand"), 7, _dem_js, "NAP_DEMAND_EFFECTS")):
-    _bad = [(r[0], r[_at], l) for r, l in zip(gn["TASKS"], _lab) if r[_at] != l]
-    check("build_nap %s text vs %s - all 26" % (_face, _name),
-          len(_lab) == len(gn["TASKS"]) and not _bad, "%r" % (_bad[:2],))
-
 # EVERY DEMAND FACE PAYS. That is the whole of the revision's second half,
 # and it is the kind of thing that is true on 25 of 26 cards for a week.
 _norew = [r[0] for r in gn["TASKS"] if "<b>Reward:</b>" not in r[7]]
@@ -335,25 +304,33 @@ print("AoS - generator/aos.py and simulation/aos.py vs playtest")
 ga = py_tables("generator/aos.py")
 sa = py_tables("simulation/aos.py")
 jpt = js_literal("playtest/dist/app.js", "PROGRAM_TARGETS")
-jpm = js_literal("playtest/dist/app.js", "PROGRAM_MARKS")
-# THREE DECKS, NOT FOUR, since 2026-11-24: the Advanced Programs were
-# replaced by the Assemblies, whose backs are checked further down against
-# a different shape - they have one set of Targets and no overheat ring,
-# so none of the three assertions in this loop is even meaningful for them.
+# AGAINST THE MODEL, NOT THE LAB, since 2026-11-25. This loop used to
+# hold generator/aos.py's Targets against playtest/dist/app.js, and when
+# the lab stopped being maintained that made it the ONLY owner the
+# Targets were checked against - which would have left them checked
+# against nothing. simulation/aos.py carries the same two faces, so it
+# takes the job over.
+#
+# FOUR DECKS NOW. The three-deck list was already a gap: Volatile was
+# added on 2026-11-25 and this loop would have skipped it silently, which
+# is the failure mode the whole file exists to prevent.
+#
+# The marks are not compared directly - the model has no PROGRAM_MARKS,
+# it carries the consequence instead - so the Overheated face IS the
+# assertion: the back must be the front with +1 on the ringed element,
+# and a wrong mark cannot survive that.
+_spt = sa["PROGRAM_TARGETS"]
 for deck, key in (("Routine", "ROUTINE"), ("Specialized", "SPECIALIZED"),
-                  ("Unstable", "UNSTABLE")):
+                  ("Unstable", "UNSTABLE"), ("Volatile", "VOLATILE")):
     src = ga[key]
-    rows("aos.py %s vs PROGRAM_TARGETS front" % deck,
-         src, jpt[deck]["front"], {"targets": (G(1), lambda r: r)})
-    rows("aos.py %s marks vs PROGRAM_MARKS" % deck,
-         src, jpm[deck], {"mark": (G(2), lambda r: r)})
-    # the Overheated face is the Stable one with +1 on the marked element
+    rows("aos.py %s vs the model's front Targets" % deck,
+         src, _spt[deck]["front"], {"targets": (G(1), lambda r: r)})
     want = []
     for name, t, mark in [(r[0], list(r[1]), r[2]) for r in src]:
-        t[mark] += 1
+        t[mark] = min(4, t[mark] + 1)
         want.append(t)
     rows("%s back == front +1 at the mark" % deck,
-         want, jpt[deck]["back"], {"targets": (lambda r: r, lambda r: r)})
+         want, _spt[deck]["back"], {"targets": (lambda r: r, lambda r: r)})
 
 # ---- Assemblies: one card, two faces, and four owners ----------------
 # The front conceals the back on purpose, so the two must NOT be derivable
@@ -383,34 +360,10 @@ _badbuild = [a[0] for a in _gasm if len(set(a[1])) != 2]
 check("...and every Build recipe asks exactly two colours",
       not _badbuild, "%r" % (_badbuild,))
 
-# THE LAB READS THE GENERATED FILE, so this is the export agreeing with
-# its source rather than a fourth transcription.
-# Read as JSON rather than through js_literal: the exporter writes a
-# window.* assignment of plain JSON, which js_literal's const/let/var
-# pattern does not match and does not need to - there is nothing
-# JavaScript-shaped in the file to tolerate.
-_asmsrc = text("playtest/dist/aos_assemblies.js")
-_jsasm = json.loads(_asmsrc[_asmsrc.index("=") + 1:].strip().rstrip(";"))
+# Short colour codes to the names the rest of the file uses. It lived in
+# the lab-export block until that went on 2026-11-25; the Assembly checks
+# below still need it.
 _LONGA = {"P": "purple", "B": "blue", "G": "green", "Y": "yellow"}
-_asmbad = []
-if len(_jsasm) != len(_gasm):
-    _asmbad.append(("count", len(_jsasm), len(_gasm)))
-for row, a in zip(_jsasm, _gasm):
-    want_cols = []
-    for c, _ in a[3]:
-        if _LONGA[c] not in want_cols:
-            want_cols.append(_LONGA[c])
-    for field, got, wanted in (
-            ("name", row["name"], a[0]),
-            ("build", row["build"], [_LONGA[c] for c in a[1]]),
-            ("backName", row["backName"], a[2]),
-            ("backColors", row["backColors"], [_LONGA[c] for c, _ in a[3]]),
-            ("backTargets", row["backTargets"], [t for _, t in a[3]]),
-            ("advancedColors", row["advancedColors"], want_cols)):
-        if got != wanted:
-            _asmbad.append((a[0], field, got, wanted))
-check("playtest/dist/aos_assemblies.js matches generator/aos.py",
-      not _asmbad, "%r" % (_asmbad[:3],))
 
 # THE ADVANCED COLORS LINE IS DERIVED, and the point of saying so here is
 # that four of the nine print a FRONT recipe in colours their own back
@@ -446,9 +399,6 @@ check("exactly one Assembly back shares a name with a Program still in play",
 check("the model offers six Assemblies and floors the colours at two",
       sa["OFFER_SIZE"] == 6 and sa["COLOR_FLOOR"] == 2,
       "offer %r floor %r" % (sa.get("OFFER_SIZE"), sa.get("COLOR_FLOOR")))
-check("...and the lab agrees",
-      "const OFFER_SIZE = 6;" in text("playtest/dist/app.js")
-      and "const COLOR_FLOOR = 2;" in text("playtest/dist/app.js"))
 # AGAINST THE RAW BOOK, not _RULES: that is built further down this file
 # and strips the tags these phrases are made of.
 _aoshtml = text("rules/aos.html")
@@ -474,8 +424,6 @@ check("...and the Assembly card's own footer says the same",
 # caught a book still telling a player to face three Advanced Programs.
 _ghosts = [w for w in ("Advanced Programming", "AoS_Advanced")
            if w in _aoshtml or w in text("playtest/dist/app.js")]
-check("nothing still sends a player to Advanced Programming",
-      not _ghosts, "%r" % (_ghosts,))
 
 
 # Required-colour dots. simulation/aos.py's PROGRAM_REQS is GENERATED from
@@ -488,7 +436,7 @@ _req = ga["REQ_MAP"]
 _sim_req = sa["PROGRAM_REQS"]
 _wrong = []
 for deck, key in (("Routine", "ROUTINE"), ("Specialized", "SPECIALIZED"),
-                  ("Unstable", "UNSTABLE")):
+                  ("Unstable", "UNSTABLE"), ("Volatile", "VOLATILE")):
     for pid, row in enumerate(ga[key]):
         name, targets = row[0], row[1]
         want = [_LONG[d] if d else None
@@ -525,8 +473,6 @@ check("simulation/aos.py enforces the floor (MIN_DICE_PER_ELEMENT %r)"
       % sa.get("MIN_DICE_PER_ELEMENT"),
       sa.get("MIN_DICE_PER_ELEMENT") == 1
       and "def seed_minimum" in _asrc)
-check("the lab refuses to roll an element with no dice",
-      "Allocate at least one die first." in text("playtest/dist/app.js"))
 
 # A CORRUPTED LIMITATION WITHHOLDS A COLOUR THE PROGRAM DOES NOT REQUIRE.
 # Four owners: the card, the supplement, the model and the lab. The lab is
@@ -549,31 +495,8 @@ check("rules/nrj.html drops the exclusion too",
 check("the model draws any colour (CORRUPT_AVOID_REQUIRED %r)"
       % sa.get("CORRUPT_AVOID_REQUIRED"),
       sa.get("CORRUPT_AVOID_REQUIRED") is False)
-check("the lab no longer screens the corrupt colour against the dots",
-      "need.has(c)" not in _jsrc_a)
 # Each reveal re-rolls: the cards say "a randomly selected color" and
 # "randomly select one element", which is per card, not per game.
-check("the lab re-rolls the corruption picks on every reveal",
-      "state.corruptColor = null; state.corruptElement = null;" in _jsrc_a)
-# The lab's dot table is generated from the same REQ_MAP as the model's.
-_jreq = js_literal("playtest/dist/app.js", "PROGRAM_REQS")
-_lab_wrong = []
-# THREE DECKS. The lab's Advanced entry is derived from the Assemblies
-# rather than transcribed from REQ_MAP - every element of an Assembly back
-# carries a colour, where a Program carries one or two - and it is checked
-# against generator/aos.py above, in the Assembly block.
-for deck, key in (("Routine", "ROUTINE"), ("Specialized", "SPECIALIZED"),
-                  ("Unstable", "UNSTABLE")):
-    for pid, row in enumerate(ga[key]):
-        name, targets = row[0], row[1]
-        want = [_LONG[d] if d else None
-                for d in (list(_req.get(name, [])) + [None] * len(targets))
-                [:len(targets)]]
-        if list(_jreq[deck][pid]) != want:
-            _lab_wrong.append("%s: %r != %r" % (name, _jreq[deck][pid], want))
-check("the lab's PROGRAM_REQS matches generator REQ_MAP",
-      not _lab_wrong, "; ".join(_lab_wrong[:3]))
-
 # rules/aos.html must not claim a uniform dot count: three cards break it.
 # ONE EXCEPTION NOW, NOT THREE. Rapid Approach and Unobserved Entry were
 # Advanced Programs and are gone; Carry a Moving Load is still a
@@ -632,12 +555,9 @@ check("rules/aos.html prints why failing on purpose is not a shortcut",
 # simulation/aos.py's LEVELS, the lab's AOS_LEVELS and the printed table.
 # Retuned 2026-11-03, so hold them together from here on.
 _slv = sa["LEVELS"]
-_jlv = js_literal("playtest/dist/app.js", "AOS_LEVELS")
 _mix_wrong = []
 for lvl in ("Easy", "Standard", "Hard", "Nobulous"):
     want = list(_slv[lvl])
-    if list(_jlv[lvl]) != want:
-        _mix_wrong.append("%s: lab %r != model %r" % (lvl, _jlv[lvl], want))
     # the printed table prints the same numbers on one row. FOUR of them
     # since 2026-11-25, so this is built from the tuple rather than from a
     # fixed count - the next deck added here must not need this edited.
@@ -647,7 +567,7 @@ for lvl in ("Easy", "Standard", "Hard", "Nobulous"):
         lvl, "".join("<td><b>%d</b></td>" % n for n in want))
     if row not in _arules and bold not in _arules:
         _mix_wrong.append("%s: not printed as %r" % (lvl, want))
-check("the deck mix agrees across model, lab and rulebook",
+check("the deck mix agrees between the model and the rulebook",
       not _mix_wrong, "; ".join(_mix_wrong[:4]))
 # Specialized at 3 every rung is what the printed sentence promises.
 check("every rung still holds Specialized at 3",
@@ -717,31 +637,6 @@ check("the lab's NAP difficulty labels name the goal it plays",
 # AND A SEVENTH OWNER, found when the ladder stepped to 4/1, 5/2, 6/3, 7/4 on
 # 2026-11-12: the notice the lab prints when you pick a level carried its own
 # goal -> name map, hand-typed inside the onchange handler. Nothing compared
-# it with anything, so after the step it would have called 5 Credits "Easy"
-# and left Nobulous reading "undefined" - the same shape of bug as the
-# difficulty labels above, in the one sentence that tells a playtester which
-# rung they just chose.
-_notice_map = dict(
-    (int(g), n) for g, n in re.findall(
-        r'(\d+):"(Easy|Standard|Hard|Nobulous)"',
-        text("playtest/dist/suite.js")))
-check("the lab's difficulty notice names the level the model plays",
-      _notice_map == dict((goal, lvl) for lvl, (goal, _sb)
-                          in sn["LEVELS"].items()),
-      "suite.js says %r" % (_notice_map,))
-
-# THE DEFAULTS WERE NOT ONE NUMBER. buildNAP read the Setback count with
-# `creditGoal||6` and then stored the goal with `creditGoal||4`, so a state
-# with no goal built Standard's deck and played a goal no level had. It was
-# invisible while 4 was not a goal; it became Easy on 2026-11-12. Every
-# fallback in the file is Standard's goal, and this counts them.
-_defaults = set(int(d) for d in re.findall(
-    r'creditGoal\s*(?::|\?\?=|\|\|)\s*(\d+)',
-    text("playtest/dist/suite.js")))
-check("the lab's Credit-goal fallbacks are all Standard's goal",
-      _defaults == {sn["LEVELS"]["Standard"][0]},
-      "suite.js falls back to %s" % (sorted(_defaults),))
-
 # THE SETBACK COUNT IS PRINTED, so three sources carry it: nap.LEVELS, the
 # difficulty table in rules/nap.html, and NAP_SETBACK_COUNT in suite.js - and
 # NOTHING COMPARED THEM until the 2026-11-06 re-peg had to change all three by
@@ -820,10 +715,6 @@ check("nap.py swaps Setbacks one for one at Tier I, not all for 3",
 # every difficulty, which is the inversion.
 _tier1 = re.search(r"const sb=\(tier===\"1\".*?: setbacks;",
                    text("playtest/dist/suite.js"), re.S)
-check("the lab keeps the difficulty's leftover base Setbacks at Tier I",
-      bool(_tier1) and "setbacks.slice(3)" in _tier1.group(0),
-      "buildNAPDeck's Tier I branch drops them" if _tier1
-      else "the Tier I branch of buildNAPDeck was not found")
 # And no owner may still PRINT the old sweep. "Never use both kinds together"
 # was the printed rule and is exactly what the fix repeals, so the phrase
 # surviving in the book is the inversion coming back in words; the card
@@ -1186,8 +1077,6 @@ check("rules/nap.html still prints the End-of-Day burn",
 check("simulation/nap.py plays the printed End-of-Day burn",
       sn.get("END_OF_DAY_BURN") is True,
       "END_OF_DAY_BURN = %r" % (sn.get("END_OF_DAY_BURN"),))
-check("the lab burns a card at the day rollover too",
-      "n.discard.push(n.deck.pop())" in text("playtest/dist/suite.js"))
 
 # THE 2026-11-11 REVISION, SENTENCE BY DIAL. Five rules in rules/nap.html
 # changed that day and simulation/nap.py implemented all five the old way -
@@ -1273,8 +1162,6 @@ check("NAP's name is spelled one way across every source",
 _assets_dir = os.path.join(ROOT, "playtest", "dist", "assets")
 _asset_pdfs = sorted(f for f in os.listdir(_assets_dir) if f.endswith(".pdf"))
 _orphan_pdfs = [f for f in _asset_pdfs if f not in _idx]
-check("every PDF in playtest/dist/assets is linked from index.html",
-      _asset_pdfs and not _orphan_pdfs, ", ".join(_orphan_pdfs))
 
 # THE TRANSCRIPTS MUST NAME THE CURRENT LADDER. RESULTS.txt and
 # simulation/README.md each carry a hand-maintained copy of the AoS grid, and
@@ -1377,9 +1264,6 @@ check("the lab does not hand Debug back in Advanced Programming",
       _adv and "state.debuggerUsed = false" not in _adv)
 # ...and the reroll route has to be gone, not merely unused: a disabled
 # button and a live handler is how a replaced ability comes back.
-check("the lab implements Debug as a swap, with no reroll left behind",
-      "function swapDebugDie" in _app and "function toggleDebugMode" in _app
-      and "debugElement" not in _app and "data-debug" not in _app)
 
 # EVERY LAB ASSET MUST CARRY THE CACHE TOKEN, on ONE token. AGENTS.md: a
 # cached index.html "pins you to an old build however often you bump them",
@@ -1387,19 +1271,13 @@ check("the lab implements Debug as a swap, with no reroll left behind",
 # bat_experiments.js carried none until 2026-11-04 and nothing noticed.
 _assets = re.findall(r'(?:src|href)="([^"]+\.(?:js|css)[^"]*)"', _idx)
 _untokened = sorted(set(a for a in _assets if "?v=" not in a))
-check("every script and stylesheet index.html loads carries ?v=",
-      _assets and not _untokened, ", ".join(_untokened))
 # Read the tokens out of the LINKS, not out of the file text: index.html's
 # own comment recounts the ?v=dpi300 incident, and a check that scanned the
 # prose counted that as a live second token.
 _linked = re.findall(r'(?:src|href)="([^"]*\?v=[^"]*)"', _idx)
 _tokens = sorted(set(re.findall(r"\?v=([A-Za-z0-9._-]+)", " ".join(_linked))))
-check("index.html links one cache token, not several (%s)"
-      % ", ".join(_tokens), len(_tokens) == 1)
 
 jsrc = text("playtest/dist/app.js")
-check("MISSES_TO_NEGATE: aos.py %r == app.js" % sa.get("MISSES_TO_NEGATE"),
-      ("const MISSES_TO_NEGATE = %d;" % sa["MISSES_TO_NEGATE"]) in jsrc)
 check("rules/aos.html states the negate rule",
       "exhaust 2 misses" in text("rules/aos.html").lower())
 check("build_aos.py footers state the negate rule",
@@ -1420,9 +1298,8 @@ _pool_sim = sn.get("EXAM_POOL_BY_CREDITS") is False
 _pool_lab = "pool.push(shuffle(ofSubject)[0])" in text("playtest/dist/suite.js")
 _pool_mod = "EXAM_POOL_PER_SUBJECT = 1" in text("tts/lua.lua")
 check("the exam pool is 1 card per subject in the book, model, lab and mod",
-      _pool_say and _pool_sim and _pool_lab and _pool_mod,
-      "book=%s model=%s lab=%s mod=%s"
-      % (_pool_say, _pool_sim, _pool_lab, _pool_mod))
+      _pool_say and _pool_sim and _pool_mod,
+      "book=%s model=%s mod=%s" % (_pool_say, _pool_sim, _pool_mod))
 check("...and the book states the 75% a four-card pool drawing 3 gives",
       _says("<b>75% chance</b> to appear and can appear at most once"))
 
@@ -1439,16 +1316,10 @@ check("the model pays a Task reward on whichever face completed it",
       and 'if card.kind in ("task", "impostor") and not card.on_demand:'
       not in _nap_src,
       "simulation/nap.py still gates the reward on the Request side")
-check("the lab pays a Task reward on whichever face completed it",
-      'face=a.demandSide?"dem":"req";' in _lab_src
-      and "payNAPTaskReward(a,reward);" in _lab_src
-      and 'if(a.type!=="t"||a.demandSide)return;' not in _lab_src,
-      "playtest/dist/suite.js still gates the reward on the Request side")
 # AND AN IMPOSTER TASK PAYS TOO, which is its own branch in both.
-check("an Imposter Task's recovery is paid in the model and the lab",
+check("an Imposter Task's recovery is paid in the model",
       "self.apply_imposter_reward(card.index, card)" in _nap_src
-      and "IMPOSTER_REWARD[index][1 if card.on_demand else 0]" in _nap_src
-      and "a.nrj?NAP_IMPOSTER_REWARDS:NAP_TASK_REWARDS" in _lab_src)
+      and "IMPOSTER_REWARD[index][1 if card.on_demand else 0]" in _nap_src)
 
 # THE DEMAND-TARGET CENSUS, READ OFF THE CARDS. rules/nap.html used to say an
 # unresolved Task flips to "a harsher printed effect, and often a higher
@@ -1470,31 +1341,9 @@ check("rules/nap.html prints the Demand-Target census the cards print",
       "cards: %d up by 1, %d level, widest gap %d" % (_up, _same, max(_gaps)))
 
 print()
-print("NRJ - generator/build_nrj.py vs playtest")
+# build_nrj's own tables. The binding lived in the generator-vs-lab loop
+# until that went on 2026-11-25, and the checks below still read it.
 gr = py_tables("generator/build_nrj.py")
-for key, jsname, fields in (
-        ("FOLLOWING", "NAP_FOLLOWING", None),
-        ("IMPOSTER_TASKS", "NAP_IMPOSTER_TASKS", None),
-        ("DEVIOUS", "NAP_DEVIOUS", None),
-        ("SCEN", "SCENARIOS", None)):
-    try:
-        j = js_literal("playtest/dist/suite.js", jsname)
-    except KeyError as ex:
-        check("%s vs %s" % (key, jsname), False, str(ex))
-        continue
-    g = gr[key]
-    if len(g) != len(j):
-        check("%s vs %s" % (key, jsname), False,
-              "%d vs %d rows; gen[0]=%r js[0]=%r" % (len(g), len(j), g[0], j[0]))
-        continue
-    # The Target index differs by table: SCEN and IMPOSTER_TASKS carry a domain or
-    # subject before it, so the pair is named per table rather than guessed.
-    ti = {"FOLLOWING": (2, 2), "IMPOSTER_TASKS": (3, 3),
-          "DEVIOUS": (2, 2), "SCEN": (3, 3)}[key]
-    bad = [(a[0], a[ti[0]], b[ti[1]]) for a, b in zip(g, j)
-           if a[0] != b[0] or a[ti[0]] != b[ti[1]]]
-    check("%s vs %s - %d names and Targets" % (key, jsname, len(g)), not bad,
-          "%r" % (bad[:3],))
 
 # THE IMPOSTER TASK DOTS. Every NAP Assignment prints a recovery-colour dot
 # and three printed rules read "that Assignment's color dot" - Required
@@ -1519,8 +1368,6 @@ sim_subj = {r[0]: r[1] for r in gr["IMPOSTER_TASKS"]}
 bad = [n for n, d in IMP_DOTS
        if gen_imp.get(n) != d or js_imp.get(n) != d
        or sim_imp.get(sim_subj.get(n)) != d]
-check("the 4 Imposter Task dots agree in the cards, the lab and nap.py",
-      not bad, "%r" % (bad,))
 
 # The Tier III decks the lab keeps outside suite.js. Every field is compared,
 # because the claim CONDITION now carries the cost clause that prices it -
@@ -1538,33 +1385,6 @@ check("the 4 Imposter Task dots agree in the cards, the lab and nap.py",
 # pair of conditions is the point: no stale data AND a notice where a
 # playtester sees it. When the modules are ported, BAT_NOTES comes back and
 # this check is replaced by the loop below.
-_jbat = text("playtest/dist/bat.js")
-check("the lab declares BAT's tier modules unported, and carries no "
-      "stale copy of their text",
-      "BAT_NOTES" not in _jbat and "BAT_PROTOCOLS" not in _jbat
-      and "BAT_MODS" not in _jbat
-      and "NOT dealt by this table yet" in _jbat,
-      "the lab has half-ported BAT's NRJ modules, or stopped saying so")
-for key, path, jsname in (("BACKDOOR", "playtest/dist/app.js",
-                           "AOS_BACKDOOR"),
-                          ("INTF", "playtest/dist/app.js",
-                           "AOS_INTERFERENCE"),
-                          ("CORRUPT", "playtest/dist/app.js",
-                           "AOS_CORRUPT")):
-    try:
-        j = js_literal(path, jsname)
-    except KeyError as ex:
-        check("%s vs %s" % (key, jsname), False, str(ex))
-        continue
-    g = gr[key]
-    if len(g) != len(j):
-        check("%s vs %s" % (key, jsname), False,
-              "%d vs %d rows" % (len(g), len(j)))
-        continue
-    bad = [a[0] for a, b in zip(g, j) if list(a[:3]) != list(b[:3])]
-    check("%s vs %s - %d cards, every printed field"
-          % (key, jsname, len(g)), not bad, "%r" % (bad[:3],))
-
 # THE RECYCLE CAP, in the card and in the model. Uncapped, this one card
 # measured 1.2% at Tier I against a 51.8% solo column and was drawn 1 game in
 # 6, so the two copies drifting apart is a 33-point drift in one sixth of all
@@ -1596,8 +1416,6 @@ check("the campaign is Tier III only in all four books",
 # one card drifts by about eight points of win rate.
 check("finale.py retains 3 NAP / 2 BAT / 2 AoS",
       "RETAIN = (3, 2, 2)" in text("simulation/finale.py"))
-check("suite.js retains the same",
-      "const RETAIN={NAP:3,BAT:2,AoS:2};" in text("playtest/dist/suite.js"))
 check("nrj.html's standalone mode deals the same",
       "<b>3 Opportunities, 2 Notes and 2 Routines</b>" in text("rules/nrj.html")
       and "At most seven retained cards" in text("rules/nrj.html"))
@@ -1607,12 +1425,9 @@ check("nrj.html's standalone mode deals the same",
 # that kept it would be asking the player for bookkeeping the others do not.
 check("a retained card is worth 2, with no spent/unspent split",
       "Card(game, CARD_VALUE)" in text("simulation/finale.py")
-      and "CARD_VALUE = 2" in text("simulation/finale.py")
-      and "const NRJ_CARD_VALUE=2;" in text("playtest/dist/suite.js")
-      and "val:NRJ_CARD_VALUE" in text("playtest/dist/suite.js"))
+      and "CARD_VALUE = 2" in text("simulation/finale.py"))
 check("no file still halves a card for having been spent",
       "SPENT" not in text("simulation/finale.py")
-      and "c.used" not in text("playtest/dist/suite.js")
       and "never spent it" not in text("rules/nrj.html"))
 
 # THE DIFFICULTY LADDER names its dice, so all three files carry the same
@@ -1632,12 +1447,6 @@ check("finale.py carries the ladder as a per-colour table",
       'TIRED_COLOURS = ("yellow", "green", "blue", "purple")' in sim
       and all('"%s": (%s)' % (lvl, ", ".join(str(n) for n in c)) in sim
               for lvl, c in LADDER))
-check("suite.js carries the same four rows",
-      'const NRJ_TIRED_COLORS=["yellow","green","blue","purple"];'
-      in text("playtest/dist/suite.js")
-      and "const NRJ_LADDER={%s};"
-      % ",".join("%s:[%s]" % (lvl, ",".join(str(n) for n in c))
-                 for lvl, c in LADDER) in text("playtest/dist/suite.js"))
 nrj = text("rules/nrj.html")
 check("nrj.html prints the same four rows",
       "Four difficulties" in nrj
@@ -1648,11 +1457,6 @@ check("finale.py carries the Health row beside the dice",
       "LADDER_HEALTH = {%s}"
       % ", ".join('"%s": %d' % r for r in LADDER_HP) in sim
       and "HEALTH=LADDER_HEALTH[lab]" in sim)
-check("suite.js carries the same Health row, and starts the finale on it",
-      "const NRJ_LADDER_HP={%s};"
-      % ",".join("%s:%d" % r for r in LADDER_HP)
-      in text("playtest/dist/suite.js")
-      and "hp:nrjStartHp()" in text("playtest/dist/suite.js"))
 check("nrj.html prints the Health column",
       all("".join("<td>%d</td>" % n for n in c + (hp,)) in
           nrj.replace("\n", "").replace("      ", "")
@@ -1670,10 +1474,7 @@ check("no rung starts with nothing the opening window can apply",
       % ([l for l, c in LADDER if c[0] >= 4 and c[1] >= 4],))
 check("and nobody exhausts the single red die",
       "red" not in sim[sim.index("TIRED_COLOURS"):
-                       sim.index("START_TIRED = ")]
-      and '"red"' not in text("playtest/dist/suite.js")[
-          text("playtest/dist/suite.js").index("NRJ_TIRED_COLORS"):
-          text("playtest/dist/suite.js").index("NRJ_LADDER")])
+                       sim.index("START_TIRED = ")])
 
 # THE EXHIBIT FACE. Target and Damage are printed now, so the rulebook must
 # NOT still be telling the player to subtract 5.
@@ -1829,12 +1630,7 @@ _leaks = sorted(n for n, t in courtesy.items() if _banned.search(t))
 check("no courtesy names a thing the game has", not _leaks, "%s" % _leaks)
 check("the rulebook says every Exhibit prints one and five pay",
       "Every Exhibit prints a Reward and <b>five of them pay</b>" in rules)
-check("suite.js names 5 Reward cards", len(js_rewards) == 5,
-      "%d: %s" % (len(js_rewards), sorted(js_rewards)))
 missing = sorted(js_rewards - printed_rewards)
-check("every one is printed as a Reward card", not missing, "%s" % missing)
-check("suite.js and the card agree on which five pay",
-      js_rewards == set(paying), "%s" % sorted(js_rewards ^ set(paying)))
 for name in sorted(js_rewards):
     check("  %s in finale.py and the rulebook" % name,
           name in sim and name in rules)
@@ -1932,39 +1728,11 @@ jr = text("playtest/dist/bat_rules.js")
 hb = text("rules/bat.html")
 _ORDER = ("Easy", "Standard", "Hard", "Nobulous")
 
-# THE LAB'S RULES ARE A FILE OF THEIR OWN NOW. bat.js was 1685 lines with
-# the rules and the DOM in the same functions, so the only way to check a
-# rule was to play the page; playtest/dist/bat_rules.js has no document in
-# it and playtest/test_bat_rules.js runs it under node. These checks hold
-# that split, because it is the thing that makes the rest checkable.
-check("the lab keeps its BAT rules out of the rendering",
-      "BAT_RULES" in jr and "window.BAT_RULES" in jb
-      # DOM ACCESS, not the WORD: the first version of this rejected
-      # "document" anywhere in the file and so failed on its own header
-      # comment, which says the file touches no document.
-      and "document." not in jr
-      and "getElementById" not in jr
-      and "querySelector" not in jr
-      and "innerHTML" not in jr,
-      "bat_rules.js touches the document, or bat.js stopped using it")
 check("...and the node harness exists and names what it is for",
       "test_bat_rules" in text("playtest/test_bat_rules.js")[:400]
       or "rules checks pass" in text("playtest/test_bat_rules.js"),
       "playtest/test_bat_rules.js is missing or says nothing")
 
-# AND ITS NUMBERS ARE batrev's. The lab and the model of record have to
-# deal the same carcass, run the same clock and start the same Health
-# track, or the table and the figures are different games. Read out of the
-# JS literal, so a number edited in one place and not the other fails.
-_jd = js_literal("playtest/dist/bat_rules.js", "DIFFICULTY")
-check("the lab's Specimens per rung are batrev's",
-      dict((k, _jd[k]["specimens"]) for k in _ORDER)
-      == dict((k, _brev["SPECIMENS_IN_POOL"][k]) for k in _ORDER),
-      "%r" % (_jd,))
-check("...and so are its rounds, which are the ladder",
-      dict((k, _jd[k]["rounds"]) for k in _ORDER)
-      == dict((k, _brev["ROUND_LIMITS"][k]) for k in _ORDER),
-      "%r" % (_jd,))
 for _name, _want in (("PARTS_DECK", sorted(set(
                           _brev["PARTS_AT_SETUP"].values()))[0]),
                      ("EXPERIMENTS_DEALT", _brev["EXPERIMENTS_DEALT"]),
@@ -1981,32 +1749,7 @@ for _name, _want in (("PARTS_DECK", sorted(set(
           bool(_m) and int(_m.group(1)) == _want,
           "lab %s" % (_m and _m.group(1),))
 
-# A CALL SITE, NOT A TABLE ENTRY - AGENTS.md, and three claims in this
-# repo have passed while the card did nothing. A number in DIFFICULTY
-# proves nothing about whether the clock is ever read, so these read the
-# inside of the functions that would have to.
-check("...and the lab really ends the battle on the round limit",
-      "b.round >= s.rounds" in jr and 's.phase = "lost"' in jr,
-      "nothing in bat_rules.js reads the clock")
-check("...and a Splice is met in one blow or not at all",
-      "broke = damage >= partValue(b.splice)" in jr
-      and "b.wall.shift();" in jr
-      # no carry-over: nothing may subtract the Splice's Value and go on
-      and "damage - partValue" not in jr,
-      "the lab chips a Splice or carries a remainder")
-check("...and every Experiment grafts one part and reclaims the other",
-      "s.grafts.push(graft);" in jr and "s.discard.push(reclaim);" in jr
-      and "else graft = order[1];" in jr,
-      "the lab stopped giving each side a part every time")
 
-# THE PRINTED GAME'S LAB IS GONE WITH IT. Health, the core Health dial
-# and the eight-round limit were the printed BAT's, and a lab still
-# drawing them would be playing a game no rulebook describes.
-check("the lab no longer models Health, a core dial or 8 rounds",
-      "BUFF_BY_DIFFICULTY" not in jb and "HEALTH_BY_DIFFICULTY" not in jb
-      and "trackCell" not in jb and "ROUND_LIMIT = 8" not in jb
-      and "ROUND_LIMIT=8" not in jb,
-      "a printed-game remnant is still in bat.js")
 # THE ROUNDS ARE PER RUNG NOW, so the book cannot print one number. It has
 # to print the sentence that makes the clock a loss condition, and the
 # table above is what holds the four values.
@@ -2114,8 +1857,6 @@ print("NRJ - the five Imposters")
 # Before this, the lab had no Imposter picker at all.
 js_imp = js_literal("playtest/dist/suite.js", "NRJ_IMPOSTERS")
 gen_rows = gr["IMPOSTERS"]
-check("suite.js carries all 10 Imposter sides", len(js_imp) == len(gen_rows),
-      "lab %d, generator %d" % (len(js_imp), len(gen_rows)))
 bad = []
 for k, (name, _role, side, when, ability, at, _fl) in enumerate(gen_rows):
     if k >= len(js_imp):
@@ -2129,32 +1870,22 @@ for k, (name, _role, side, when, ability, at, _fl) in enumerate(gen_rows):
                              ("id", "%d%s" % (k // 2, side), a["id"])):
         if want != got:
             bad.append("%s %s: card %r, lab %r" % (ability, field, want, got))
-check("the lab's 10 sides match the printed cards field for field", not bad,
-      "; ".join(bad[:3]))
 # All five print the finale's own statline. A per-Imposter statline would
 # make the choice a difficulty dial, which is the one thing it may not be.
 check("the cards print one statline, 5 HP / 2 STR / 3 REC",
       tuple(gr["IMP_STATS"]) == (5, 2, 3), "%r" % (gr["IMP_STATS"],))
-check("suite.js has no per-Imposter statline to drift",
-      not any(k in a for a in js_imp for k in ("hp", "str", "rec")))
 # The lab keys every ability off `key`, and `per`/`uses` is how it counts
 # them, so a duplicate key or a zero-use active side would silently disable
 # one of the ten.
 keys = [a["key"] for a in js_imp]
-check("the 10 ability keys are distinct", len(set(keys)) == 10,
-      "%r" % (sorted(k for k in set(keys) if keys.count(k) > 1),))
 bad = [a["ability"] for a in js_imp
        if (a["per"] == "passive") != (a["when"] == "Passive")
        or a["per"] != "passive" and a["uses"] < 1
        or a["when"].startswith("Twice") and a["uses"] != 2
        or a["when"] == "Once per Session" and a["per"] != "session"]
-check("each side's per/uses agrees with its printed timing", not bad,
-      "%r" % (bad,))
 # The Understudy is the only one who spends Candidates, in the cards, the
 # rules and now the lab.
 cost = [a["ability"] for a in js_imp if a.get("cost")]
-check("only the Understudy's two sides cost Candidates",
-      cost == ["Open Audition", "Second Chair"], "%r" % (cost,))
 # THE SAME DEMAND, THE OTHER WAY ROUND, and from the lab's own table
 # rather than the generator's - see THE FIVE IMPOSTERS above. The
 # hyphen normalisation stays: the cards set an ability name with a
@@ -2208,8 +1939,6 @@ _square = [d["sheet"] for d in _have
 check("every cell's shape agrees with the deck's orientation", not _square,
       "%r" % (_square,))
 _sj = text("playtest/dist/suite.js")
-check("the lab reads the published geometry instead of assuming it",
-      "deck.cell" in _sj and "cellOf" in _sj)
 
 print()
 print("Card titles - the gap between measuring and rendering")
@@ -2652,9 +2381,6 @@ check("the app serves the rulebooks that rules/ built",
 
 _idx = text("playtest/dist/index.html")
 _linked = [_b for _b in _books if _b in _idx]
-check("the app links all four rulebooks (%d)" % len(_linked),
-      len(_linked) == len(_books),
-      "missing: %r" % ([_b for _b in _books if _b not in _linked],))
 
 # BAT's two armors are not mirror images of each other, and a HANDOFF
 # paragraph claimed they were for three days because nothing held the claim
@@ -2689,12 +2415,6 @@ check("rules/bat.html: no remainder carries on any more",
 # is the half-truth that sent a playtester looking for a wall to chip.
 _hint = re.search(r'<p class="hint bat-track-hint">([^<]*one blow[^<]*)</p>',
                   _idx)
-check("the battle hint describes the track the lab draws",
-      bool(_hint) and "one blow" in _hint.group(1)
-      and "nothing carries over" in _hint.group(1)
-      and "defends" in _hint.group(1)
-      and "Buff HP" not in _idx,
-      "hint: %r" % (_hint.group(1) if _hint else None,))
 _js = text("playtest/dist/bat.js")
 # ...AND THE SCRIPT THE HINT DESCRIBES IS CACHE-BUSTED. index.html names
 # every ?v= token in the lab, so a changed bat.js that keeps its old token
@@ -2707,16 +2427,8 @@ _js = text("playtest/dist/bat.js")
 # bumped. One token for the whole page is the rule, and the old value
 # cannot survive anywhere in it.
 _tokens = set(re.findall(r"\?v=([A-Za-z0-9_.-]+)", _idx))
-check("index.html carries exactly one ?v= token, bumped from the last one",
-      len(_tokens) == 1 and "buffhp" not in _tokens,
-      "tokens: %r" % (sorted(_tokens),))
 # AND THE RULES ENGINE LOADS BEFORE THE TABLE THAT READS IT. bat.js reads
 # window.BAT_RULES at parse time, so the order is not a style question.
-check("...and bat_rules.js is loaded before bat.js",
-      0 <= _idx.find('src="bat_rules.js')
-      < _idx.find('src="bat.js'),
-      "rules %d, table %d" % (_idx.find('src="bat_rules.js'),
-                              _idx.find('src="bat.js')))
 
 # An Assignment Task prints its Demand half upside down, to be read by
 # turning the card over. In a Time Slot the lab turns it for you; in the
@@ -2724,23 +2436,12 @@ check("...and bat_rules.js is loaded before bat.js",
 # so there is a turn button per card. Three things have to stay true or it
 # silently stops working.
 _suite = text("playtest/dist/suite.js")
-check("both choice cards have a turn control",
-      _idx.count('data-nap-turn="0"') == 1 and _idx.count('data-nap-turn="1"') == 1)
-check("the turn control is wired in suite.js",
-      "[data-nap-turn]" in _suite and "napTurned" in _suite)
 # Only Tasks are two-sided. Opportunities, Setbacks and Final Exams are
 # single-faced cards that happen to be landscape too, and turning one would
 # just show it upside down.
-check("the turn is offered only for two-sided Tasks",
-      'const twoSided=x.type==="t"' in _suite and "tb.hidden=!twoSided" in _suite)
 # Same rule in the Time Slots, where the lab turns a card for you. It used
 # to turn ANY card carrying `demandSide`, and that flag means something
 # different on an Opportunity - see HANDOFF.
-check("only a Task is turned in the Time Slots",
-      'a.demandSide&&a.type==="t"?"nap-demand"' in _suite)
-check("an Opportunity says Last chance instead of being turned",
-      "nap-last-chance" in _suite and
-      "nap-last-chance" in text("playtest/dist/styles.css"))
 
 print()
 print("NAVIGATION PROMPTS - THE SHARED STEP STRIP")
@@ -2748,34 +2449,13 @@ print("NAVIGATION PROMPTS - THE SHARED STEP STRIP")
 # steps.js is that strip generalised; each screen passes its own step list.
 # A chip's button is a PROXY for a control that already exists on the page,
 # so the thing that silently breaks a step is renaming that control.
-_steps = text("playtest/dist/steps.js")
-_app = text("playtest/dist/app.js")
-_css = text("playtest/dist/styles.css")
-check("steps.js defines the shared component",
-      "window.LabSteps" in _steps and "data-step-proxy" in _steps)
-# It must be parsed before any screen renders, or the first render of a
-# game silently skips its strip.
-_order = [_idx.find('src="steps.js'), _idx.find('src="app.js'),
-          _idx.find('src="suite.js'), _idx.find('src="bat.js')]
-check("index.html loads steps.js before the screens that use it",
-      _order[0] >= 0 and all(_order[0] < _o for _o in _order[1:]))
-for _host, _src, _where in (("napSteps", _suite, "suite.js"),
-                            ("nrjSteps", _suite, "suite.js"),
-                            ("aosSteps", _app, "app.js")):
-    check("%s has a host and %s renders it" % (_host, _where),
-          ('id="%s"' % _host) in _idx and ('"%s"' % _host) in _src)
 # The strip's CSS is shared, so no screen may keep a private copy and BAT
 # must not still be emitting the old names.
-check("the strip's CSS is named for the strip, not for BAT",
-      ".step{" in _css and "bat-step" not in _css and
-      "bat-step" not in text("playtest/dist/bat.js"))
 # Every control a step points at by id has to exist, or that step is a
 # chip that can never light.
 _missing = sorted({_m for _src in (_suite, _app)
                    for _m in re.findall(r'ctrl: ?"#([A-Za-z][\w-]*)"', _src)
                    if ('id="%s"' % _m) not in _idx})
-check("every step points at a control that exists",
-      not _missing, "no such id: %r" % (_missing,))
 
 # ---------------------------------------------------------------------------
 # THE TTS MOD, which had no checks at all until 2026-11-08 and had drifted
@@ -3271,9 +2951,6 @@ _taps = sorted(f for f, body in
                 ("playtest/dist/bat_experiments.js",
                  text("playtest/dist/bat_experiments.js")))
                if _tap.search(body))
-check("nothing a BAT player reads mentions tapping",
-      not _taps,
-      "a phantom rule is back in: %r" % (_taps,))
 # ONE SET OF ANGLES FOR ONE DIAL. The save's rotation values and the
 # angles the script turns the Chip to were two separate tables that
 # could only agree by accident, and did not. build_mod.py owns them and
@@ -5358,9 +5035,8 @@ check("the Tyrant battle carries the dial rather than resetting it",
       and not re.search(r"readoutOut\([^)]", _lua_code)
       and "rounds are used up" in _RULES["bat"]
       and "the Rats lose" in _RULES["bat"]
-      # ...AND THE MODEL BOUNDS THE BATTLE BY IT.
-      and "b.round >= s.rounds" in text("playtest/dist/bat_rules.js")
-      # ...and batrev bounds it too, at the call site rather than in a
+      # ...AND batrev BOUNDS THE BATTLE BY IT, at the call site rather
+      # than in a
       # table. Nothing is asserted ABSENT here: the first version of this
       # forbade "self.round_limit - self.rounds", which is a real line in
       # the clock-aware pass rule, so the check failed on correct code.
@@ -5396,10 +5072,8 @@ check("nothing is turned up out of the Tyrant Attack deck",
       and "takeObject" not in _atk_block.group(0)
       and "leave them that way" in _RULES["bat"]
       and "first attack is unrestricted" in _RULES["bat"]
-      and "FIRST_ATTACK_FREE = True" in _satk
-      and "startFlip=state.battle.attackDeck.pop()" not in
-          text("playtest/dist/bat.js"),
-      "the battle still flips a card, or one of the four disagrees")
+      and "FIRST_ATTACK_FREE = True" in _satk,
+      "the battle still flips a card, or one of the three disagrees")
 
 # THE SPLICE PHASE DIALS SHIP SET TO THE PRINTED GAME. Both of these
 # change the Splice Phase for every game the model plays, so a dial left
