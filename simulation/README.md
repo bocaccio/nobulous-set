@@ -592,6 +592,15 @@ Specimens are the Value-5 cards).
 
 ### AoS - Program deck x NRJ tier
 
+> **SUPERSEDED 2026-11-25.** The table below is the EIGHT-card AoS with a
+> clean-run install rule, and is kept as the evidence for the Tier I repair
+> the prose under it analyses. The ladder that ships is ten cards over four
+> decks - Easy `4/3/3/0`, Standard `2/3/5/0`, Hard `0/3/7/0`, Nobulous
+> `0/3/5/2`, the last dealing two of the new Volatile deck - and installing
+> now needs at most one failed element rather than a clean run. It reads
+> 62.4 / 52.5 / 44.7 / 36.6 solo; `RESULTS.txt` carries the full grid and
+> says why it was measured apart from the rest of that file.
+
 Measured 2026-11-06, 20,000 games a cell, `ALLOC_MODE = sacrifice_short`.
 
 | difficulty | no NRJ | Tier I | Tier II | Tier III |

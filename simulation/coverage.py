@@ -413,6 +413,12 @@ CLAIMS = [
           lambda: paid("Specialized")),
     Claim("AoS", "Unstable Programs", 8,
           lambda: paid("Unstable")),
+    Claim("AoS", "Volatile Programs", 8,
+          lambda: paid("Volatile"),
+          note="the fourth deck, printed 2026-11-25 and dealt at Nobulous "
+               "only. It pays the same six Rewards as Unstable, so this is "
+               "the same predicate: a Reward with no branch in Game.reward "
+               "does not count, however many names the table holds"),
     Claim("AoS", "Assemblies", 16, _aos_assembly_sides,
           note="both faces of all eight: the recipe side is modelled only "
                "if install() reads its Build slots and writes a Program "

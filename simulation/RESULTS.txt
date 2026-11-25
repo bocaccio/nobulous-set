@@ -242,13 +242,44 @@ BAT  Build-a-Tyrant
 ==================================================================
 AoS  Automaton of Shale
 ==================================================================
-  difficulty = the Routine/Specialized/Unstable mix
+  NOT FROM THE RUN AT THE TOP OF THIS FILE.  Measured on its own,
+  2026-11-25, 20,000 games a cell, mean of the six Technicians, the
+  same shape table.py builds.  table.py could not be run whole: it
+  still imports the retired simulation/bat.py for the BAT grid above,
+  which would have overwritten that grid - and the warning standing
+  over it - with fresh figures for a game that no longer exists.
+
+  THE LADDER CHANGED UNDER IT, three ways, on 2026-11-25.  Installing
+  a Program now needs at most ONE failed element rather than a clean
+  run; the Program deck is TEN cards, not eight, because eight could
+  not cover four colours and 15.4% of Standard deals could not build
+  three Assemblies at all; and a fourth deck, Volatile, deals at
+  Nobulous only.  simulation/aosdeck.py and simulation/aosclass.py
+  are the measurements that chose each.
+
+  difficulty = the Routine/Specialized/Unstable/Volatile mix
 
                             no NRJ    Tier I   Tier II  Tier III
-  Easy  3/3/2                59.1%     48.4%     43.4%     47.1%
-  Standard  2/3/3            50.7%     39.8%     34.4%     38.7%
-  Hard  1/3/4                42.5%     31.6%     27.2%     30.7%
-  Nobulous  0/3/5            34.9%     24.4%     20.8%     23.1%
+  Easy  4/3/3/0              62.4%     51.9%     46.3%     45.1%
+  Standard  2/3/5/0          52.5%     40.1%     35.1%     36.1%
+  Hard  0/3/7/0              44.7%     31.6%     28.1%     28.3%
+  Nobulous  0/3/5/2          36.6%     24.9%     21.2%     22.0%
+
+    Against the 59.1 / 50.7 / 42.5 / 34.9 this replaces, every solo
+    rung is 1.7 to 3.3 points higher and Tiers I and II are within
+    about a point throughout - a much smaller move than the size of
+    the change suggests, because the deck grew and the install rule
+    loosened in one direction while Volatile and the harder mixes
+    pulled the other.
+
+    TIER III NO LONGER CLEARS TIER II AT EASY: 45.1% against 46.3%.
+    Everywhere else it still does, and only just at Hard (28.3 over
+    28.1).  The rule this file states for the campaign axis is that
+    Tier III beats Tier II and stays under solo, so Easy now breaks
+    it.  Tier III hands tools back - 6 Backdoor Routines, at most 2
+    claimed - and at Easy there is least to repair, which is the
+    likely reading, but it is NOT measured and should not be
+    believed until it is.
   
     20,000 games a cell.  The solo and Tier I columns are the
     same measurement they always were - nothing that changed on

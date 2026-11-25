@@ -207,7 +207,8 @@ CATALOG['nap']['decks'] += [
 # ---- AoS -------------------------------------------------------------------
 for label, data in [('Routine Programs', aos_data.ROUTINE),
                     ('Specialized Programs', aos_data.SPECIALIZED),
-                    ('Unstable Programs', aos_data.UNSTABLE)]:
+                    ('Unstable Programs', aos_data.UNSTABLE),
+                    ('Volatile Programs', aos_data.VOLATILE)]:
     sheet = 'AoS_%s_TTS.png' % label.split()[0]
     CATALOG['aos']['decks'].append(
         deck(label, sheet, names(data), '%s · Stable side' % label[:-1],

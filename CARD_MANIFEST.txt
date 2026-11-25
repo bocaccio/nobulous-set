@@ -334,7 +334,7 @@ TWO-SIDED CARDS
       BAT_Rats          4 cards   Side A face / Side B back
       NAP_Apprentices   3 cards   two Apprentices per card
       AoS_Technicians   3 cards   two Technicians per card
-      AoS_Routine / Specialized / Unstable / Advanced
+      AoS_Routine / Specialized / Unstable / Volatile
                         8 cards each   Stable face / Overheated back
 
 DECK SHEETS AND BACKS
@@ -351,6 +351,7 @@ DECK SHEETS AND BACKS
   AoS_Specialized                8x1     portrait   AoS_Specialized_TTS_back.png  (Unique Backs)
   AoS_Technicians                3x1     landscape  AoS_Technicians_TTS_back.png  (Unique Backs)
   AoS_Unstable                   8x1     portrait   AoS_Unstable_TTS_back.png  (Unique Backs)
+  AoS_Volatile                   8x1     portrait   AoS_Volatile_TTS_back.png  (Unique Backs)
   BAT_Encounters                 10x2    portrait   CardBack_BAT_Encounter
   BAT_WakeUp                     1x1     portrait   CardBack_BAT_Encounter
   BAT_Rats                       4x1     landscape  BAT_Rats_TTS_back.png  (Unique Backs)

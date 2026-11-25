@@ -416,9 +416,14 @@ def audit_aos(games):
         if dead:
             # Read the mix from aos.LEVELS; this used to print the
             # literal "4/3/1", which went stale at the 2026-11-03 retune.
-            print("    NOTE: %d of 8 never run at this mix (Standard is"
-                  " %d/%d/%d, so whole decks are thinned)"
-                  % ((dead,) + tuple(aos.LEVELS["Standard"])))
+            # Length-generic since 2026-11-25: the mix is four numbers
+            # now that Volatile exists, and "%d/%d/%d" raised TypeError
+            # rather than printing one short. The deck count is read too,
+            # for the same reason "8" was wrong the moment it was typed.
+            print("    NOTE: %d of %d never run at this mix (Standard is"
+                  " %s, so whole decks are thinned)"
+                  % (dead, sum(aos.LEVELS["Standard"]),
+                     "/".join(str(n) for n in aos.LEVELS["Standard"])))
 
     print()
     print("  AoS - Limitations (%d cards)" % len(aos.LIMITATIONS))

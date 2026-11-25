@@ -151,7 +151,8 @@ def main(games=DEFAULT):
     aos_cells = grid(
         "AoS  Automaton of Shale",
         "difficulty = the Routine/Specialized/Unstable mix",
-        [("%s  %d/%d/%d" % ((k,) + aos.LEVELS[k]), k) for k in aos.LEVEL_NAMES],
+        [("%s  %s" % (k, "/".join(str(n) for n in aos.LEVELS[k])), k)
+         for k in aos.LEVEL_NAMES],
         aos_level,
         games,
         notes=("",
