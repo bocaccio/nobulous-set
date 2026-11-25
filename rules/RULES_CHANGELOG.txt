@@ -1,3 +1,65 @@
+2026-11-25  NAP: A FINAL EXAM RESTRICTION YOU CANNOT MEET IS WAIVED, FREE
+Jon sat a Fine Motor Assessment with no Blue die in hand and asked what
+happens.  The book had no answer.  It waived Required Effort "only if no
+legal commitment/assignment is possible" and extended that to nothing
+else, so the one place a player can be physically unable to obey a printed
+clause was the one place the rules went quiet.
+
+WHAT THE BOOK NOW SAYS, closing the exam section in rules/nap.html:
+"Honor as much of a restriction as your dice allow: one you cannot meet is
+waived at no cost."  That is the whole of it in the book, and the brevity
+was forced - see the page budget below.
+
+THE REASONING GOES IN THE MOD AND THE MODEL, which have room for it.  The
+rule is obvious rather than generous once it is said: A RESTRICTION
+CONSTRAINS WHICH DICE YOU CHOOSE, AND WITH NO CHOICE THERE IS NOTHING TO
+CONSTRAIN.  And the two kinds of clause settle differently, which is the
+half that keeps a free waiver honest.  A clause naming a COLOR that must
+contribute costs you nothing when you have none of it.  A clause demanding
+a COUNT - "commit at least 4 dice", "at least 3 colors" - prices itself:
+dice you cannot commit are successes you do not get, and the Health rule
+already takes one per success below the Target.  So only the first kind is
+really being forgiven, and the second needed no rule at all.  Both
+paragraphs are in the NAP quick reference in tts/build_mod.py and beside
+nap.EXAM_WAIVER_COST, and check_app_sync.py holds the mod to them.
+
+THE SENTENCE PAID FOR ITSELF, and that is worth recording because the
+alternative was a fifth page.  NAP's book was four pages with its last
+column full to the line: one wrapped line anywhere in the exam section
+spills the footer onto a page of its own, and five sheets whose last holds
+a footer is not a rulebook.  Four separate attempts at the wording - a
+box, a longer step 2, a shorter step 2, a one-line tail - all read 5
+pages, at char counts BELOW the four-page original, because the layout is
+columnar and the cost is a line and not a character.  What paid for it was
+retiring "and you never know which exam is next" from the exam-draw
+paragraph, which the paragraph directly above it already says as "turning
+each over only as you come to it".  No rule was cut to make room.
+
+A PRICE WAS MEASURED AND REJECTED, which is why "free" is a decision and
+not a default.  simulation/napharder.txt, 20,004 games a cell: 1 Health on
+the color-contribution clauses alone is -7.5 points at Standard, and -21.6
+with the commitment counts included.  simulation/napage.txt read the same
+two levers at -8.0 and -24.3 on the ladder before the Setback re-peg, and
+counted what they would be charging: A COLOR-CONTRIBUTION CLAUSE IS
+PRINTED ON 24.5% OF SITTINGS and is unmeetable in 15.4% of them, while
+SOME clause or other is unmeetable in 48.1% of all sittings.  So a price
+is not a corner case and it is not a clarification - it is difficulty
+arriving at random, firing on whichever color you happened to run out of
+rather than on anything you decided.  That is the opposite of the
+complaint it would have been answering.
+
+THREE OWNERS CARRY IT NOW and check_app_sync.py holds them together: the
+box in rules/nap.html, nap.EXAM_WAIVER_COST = 0, and the NAP quick
+reference in tts/build_mod.py.  The model had always waived silently, so
+before today the three agreed BY ACCIDENT on a rule none of them printed -
+the same shape as the End of Day burn, where two sources played a rule and
+the one publishing the figures did not.  A second check pins the
+self-pricing sentence, because a rewrite that drops it leaves the waiver
+reading more generous than it is.
+
+NO PUBLISHED FIGURE MOVES.  EXAM_WAIVER_COST was already 0 in every NAP
+grid ever measured; what changed is that the book now says so.
+
 2026-11-25  NAP: ONE MORE SETBACK AT EVERY RUNG - 2 / 3 / 4 / 5
 Jon asked whether there was any way to make NAP harder, hours after the
 entry below took its Standard rung UP.  That is the whole shape of this

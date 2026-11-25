@@ -1327,6 +1327,49 @@ _pool_mod = "EXAM_POOL_PER_SUBJECT = 1" in text("tts/lua.lua")
 check("the exam pool is 1 card per subject in the book, model, lab and mod",
       _pool_say and _pool_sim and _pool_mod,
       "book=%s model=%s mod=%s" % (_pool_say, _pool_sim, _pool_mod))
+
+# A RESTRICTION THE POOL CANNOT ANSWER, printed 2026-11-25. Jon sat a Fine
+# Motor Assessment with no Blue in hand and the book had no answer: it
+# waived Required Effort "only if no legal commitment/assignment is
+# possible" and said nothing about the exams. The model had always waived
+# silently, so the three owners agreed by accident on a rule none of them
+# printed - which is the same shape as the End-of-Day burn, where two
+# sources played a rule and the one publishing the figures did not.
+#
+# THE FREE WAIVER IS THE CLAIM, not merely the waiver. A price was
+# measured and rejected: 1 Health on the colour-contribution clauses reads
+# -7.5 points at Standard and -21.6 with the commitment counts added
+# (simulation/napharder.txt), which is difficulty arriving at random -
+# whether it fires depends on which colour you ran out of. So
+# EXAM_WAIVER_COST must be 0 for the book to be telling the truth, and the
+# check reads the DIAL rather than the prose that explains it.
+_waive_say = _says("<b>one you cannot meet is waived at no cost.</b>")
+_waive_sim = sn.get("EXAM_WAIVER_COST") == 0
+_waive_mod = ("A RESTRICTION YOU CANNOT MEET is waived for free"
+              in text("tts/build_mod.py"))
+check("an unmeetable exam restriction is waived free in the book, "
+      "the model and the mod",
+      _waive_say and _waive_sim and _waive_mod,
+      "book=%s model=%s (cost=%r) mod=%s"
+      % (_waive_say, _waive_sim, sn.get("EXAM_WAIVER_COST"), _waive_mod))
+# AND THE BOOK PRINTS THE RULE, NOT THE REASONING, because NAP's book has
+# no room for the reasoning. It was four pages with its last column full to
+# the line: one wrapped line anywhere in the exam section spills the footer
+# onto a fifth page, and a fifth page holding a footer is not a rulebook.
+# The sentence paid for itself by retiring "and you never know which exam
+# is next" from the draw paragraph, which the paragraph above it already
+# says as "turning each over only as you come to it". No rule was cut.
+#
+# SO WHICH KIND OF CLAUSE PAYS FOR ITSELF lives in the mod's quick
+# reference and beside EXAM_WAIVER_COST, and this holds the mod to it: a
+# count of dice or colours charges itself in successes the Health rule
+# already takes, so only the colour-contribution clauses are really
+# forgiven. Dropping it would leave the free waiver reading more generous
+# than it is, in the one owner that has the space to say otherwise.
+check("the mod says a clause demanding a COUNT needs no waiver",
+      "needs no" in text("tts/build_mod.py")
+      and "dice you cannot commit are successes you do" in
+          text("tts/build_mod.py"))
 check("...and the book states the 75% a four-card pool drawing 3 gives",
       _says("<b>75% chance</b> to appear and can appear at most once"))
 

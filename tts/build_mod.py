@@ -1638,7 +1638,14 @@ def notebook():
          "subject, and you lose 1 Health per success short. Honor the printed\n"
          "restriction, then Special Recover on that exam card's own color dot\n"
          "before the next one. All three are mandatory; survive all three\n"
-         "with at least 1 Health to win."),
+         "with at least 1 Health to win.\n"
+         "A RESTRICTION YOU CANNOT MEET is waived for free. With no Blue\n"
+         "available and a Blue asked to contribute, commit what you can of\n"
+         "the clause and sit the exam anyway - a restriction constrains\n"
+         "which dice you CHOOSE, and with no choice there is nothing to\n"
+         "constrain. A clause demanding a COUNT of dice or colors needs no\n"
+         "waiver of its own: dice you cannot commit are successes you do\n"
+         "not get, and the Health rule above already charges those."),
         ("AoS quick reference",
          "RUNNING A PROGRAM. This order matters more than anything else in\n"
          "the game:\n"

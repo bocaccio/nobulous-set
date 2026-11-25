@@ -492,10 +492,35 @@ def crit_worth(rule):
 # each demanded colour where the pool holds one - see exam_commit.
 EXAM_NEED = "commit"
 # What a restriction the POOL CANNOT SATISFY costs: no Blue dice anywhere,
-# so no legal commitment exists. 0 is the silent waiver this model shipped.
-# rules/nap.html waives Required Effort "only if no legal
-# commitment/assignment is possible" and says nothing about exams; this is
-# that waiver extended to the exam with a price on it.
+# so no legal commitment exists. 0 is the silent waiver this model has
+# always played, and AS OF 2026-11-25 IT IS ALSO PRINTED - rules/nap.html
+# now carries "A restriction you cannot meet" under the exam sequence,
+# saying to commit what you can and sit the exam anyway, at no extra cost.
+#
+# IT WAS AN UNANSWERED QUESTION FOR A DAY. Jon hit it at the table on a
+# Fine Motor Assessment with no Blue in hand, and the book said nothing:
+# it waived Required Effort "only if no legal commitment/assignment is
+# possible" and extended that to nothing else. This model waived silently,
+# the lab and the mod did their own thing, and the three could not be held
+# together on a rule none of them printed.
+#
+# A PRICE WAS MEASURED AND REJECTED, which is why 0 is not merely the
+# default. 1 Health on the colour-contribution clauses alone reads -7.5
+# points at Standard (napharder.txt) and on the commitment counts as well
+# it reads -21.6. Neither is a clarification: whether the clause fires
+# depends on which colour you happened to run out of, not on a decision
+# you made, so it is difficulty arriving at random. The book says the
+# waiver is free and gives the reason - a restriction constrains which
+# dice you CHOOSE, and where there is no choice there is nothing to
+# constrain.
+#
+# AND THE TWO KINDS OF CLAUSE SETTLE DIFFERENTLY, which is what makes the
+# free waiver safe rather than generous. A `need` or `among` clause names
+# a colour and costs nothing when you have none of it. A `dice` or
+# `colors` clause demands a COUNT, and running short of dice is already
+# charged: exam_commit commits fewer dice, which is fewer successes, and
+# the Health rule takes one per success below the Target. So only the
+# first kind is really being forgiven.
 EXAM_WAIVER_COST = 0
 # Which unsatisfiable clauses the waiver price is charged on. "need" is the
 # colour-contribution clauses alone, which is the case Jon hit; "all" adds
