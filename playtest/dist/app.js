@@ -170,9 +170,6 @@
   PROGRAM_MARKS.Advanced = ASSEMBLIES.map(() => -1);
   PROGRAM_TARGETS.Advanced = { front: ASSEMBLIES.map(a => a.backTargets),
                                back: ASSEMBLIES.map(a => a.backTargets) };
-  // EVERY element of a back carries a required colour - that is what the
-  // front's Advanced colors line has been promising all game.
-  PROGRAM_REQS.Advanced = ASSEMBLIES.map(a => a.backColors);
   PROGRAM_FLAVOR.Advanced = ASSEMBLIES.map(a => ({ name: a.backName,
                                                   front: a.flavorBack,
                                                   back: a.flavorBack }));
@@ -196,6 +193,14 @@
     Unstable: [["purple",null,null,null], [null,null,"yellow",null], [null,"blue",null,null], [null,null,"green",null], ["yellow",null,null,null], [null,null,null,"purple"], [null,"green",null,null], [null,null,"blue",null]],
     Volatile: [["purple",null,null,null], [null,"blue",null,null], [null,null,"green",null], [null,null,null,"yellow"], [null,null,"purple",null], ["blue",null,null,null], [null,"green",null,null], [null,null,"yellow",null]]
   };
+  // EVERY element of an Assembly back carries a required colour - what the
+  // front's Advanced colors line has been promising all game. ATTACHED
+  // HERE, BELOW THE LITERAL, not up with the other derived tables: these
+  // are `const`, so reading PROGRAM_REQS before this line is a temporal
+  // dead zone throw, and it took the whole AoS lab down with it on load -
+  // silently, because index.html loads app.js without a handler. That is
+  // the "feature simply absent, no error" failure AGENTS.md warns about.
+  PROGRAM_REQS.Advanced = ASSEMBLIES.map(a => a.backColors);
   // Corrupted Limitations sit in the Limitation deck. Each withholds 2 dice
   // of a randomly chosen color THE PROGRAM DOES NOT REQUIRE, on top of the
   // printed corruption - a withheld color cannot answer a required dot, so
