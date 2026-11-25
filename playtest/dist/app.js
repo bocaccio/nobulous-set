@@ -29,17 +29,20 @@
     Routine: { front: "AoS_Routine_TTS.png", back: "AoS_Routine_TTS_back.png", count: 8 },
     Specialized: { front: "AoS_Specialized_TTS.png", back: "AoS_Specialized_TTS_back.png", count: 8 },
     Unstable: { front: "AoS_Unstable_TTS.png", back: "AoS_Unstable_TTS_back.png", count: 8 },
+    Volatile: { front: "AoS_Volatile_TTS.png", back: "AoS_Volatile_TTS_back.png", count: 8 },
   };
   const ELEMENT_COUNTS = {
     Routine: [3, 3, 3, 3, 3, 4, 3, 4],
     Specialized: [3, 4, 3, 4, 3, 4, 4, 4],
-    Unstable: [4, 4, 4, 4, 4, 4, 4, 4]
+    Unstable: [4, 4, 4, 4, 4, 4, 4, 4],
+    Volatile: [4, 4, 4, 4, 4, 4, 4, 4]
   };
   // Which element carries the printed overheat ring, per deck (generator/aos.py).
   const PROGRAM_MARKS = {
     Routine: [0, 1, 0, 1, 2, 1, 2, 2],
     Specialized: [1, 0, 1, 3, 0, 2, 1, 2],
-    Unstable: [0, 3, 2, 1, 0, 3, 1, 1]
+    Unstable: [0, 3, 2, 1, 0, 3, 1, 1],
+    Volatile: [0, 2, 1, 3, 0, 3, 1, 2]
   };
   // Difficulty is how many Programs come from each deck, not which deck you
   // pick. All three carry the same reward multiset, so mixing them changes
@@ -60,12 +63,12 @@
   // rules/aos.html; check_app_sync.py holds all three together, and the
   // labels in index.html are a fourth copy it also checks.
   const AOS_LEVELS = {
-    Easy:     [3, 3, 2],
-    Standard: [2, 3, 3],
-    Hard:     [1, 3, 4],
-    Nobulous: [0, 3, 5],
+    Easy:     [4, 3, 3, 0],
+    Standard: [2, 3, 5, 0],
+    Hard:     [0, 3, 7, 0],
+    Nobulous: [0, 3, 5, 2],
   };
-  const AOS_DECK_NAMES = ["Routine", "Specialized", "Unstable"];
+  const AOS_DECK_NAMES = ["Routine", "Specialized", "Unstable", "Volatile"];
   // A Program knows which deck it came from, so every per-deck lookup goes
   // through here rather than through one deck name for the whole game.
   function programSource(c) {
@@ -92,12 +95,17 @@
     Unstable: {
       front: [[3,2,3,2],[2,3,2,3],[3,2,3,2],[2,3,3,2],[3,2,2,3],[2,3,2,3],[3,3,2,3],[3,2,3,2]],
       back: [[4,2,3,2],[2,3,2,4],[3,2,4,2],[2,4,3,2],[4,2,2,3],[2,3,2,4],[3,4,2,3],[3,3,3,2]]
+    },
+    Volatile: {
+      front: [[3,3,3,2],[3,3,2,3],[3,2,3,3],[2,3,3,3],[3,3,2,3],[3,2,3,3],[3,3,3,2],[2,3,3,3]],
+      back: [[4,3,3,2],[3,3,3,3],[3,3,3,3],[2,3,3,4],[4,3,2,3],[3,2,3,4],[3,4,3,2],[2,3,4,3]]
     }
   };
   const PROGRAM_REWARDS = {
     Routine: ["hp", "recover", "rec", "unheat", "str", "banish", "recover", "unheat"],
     Specialized: ["hp", "str", "recover", "rec", "unheat", "banish", "recover", "unheat"],
-    Unstable: ["hp", "rec", "unheat", "str", "recover", "banish", "recover", "unheat"]
+    Unstable: ["hp", "rec", "unheat", "str", "recover", "banish", "recover", "unheat"],
+    Volatile: ["hp", "rec", "unheat", "str", "recover", "banish", "recover", "unheat"]
   };
   const REWARDS = {
     hp: "Gain 1 HP", recover: "Recover 3 exhausted dice", rec: "+1 REC; remove this Program",
@@ -133,6 +141,16 @@
       { name:"Adapt to Changing Terrain", front:"The gait rewrites itself as the ground changes.", back:"The gait keeps rewriting after the ground stops." },
       { name:"Execute a Complex Route", front:"It takes a turn missing from the diagram. Nobulous pencils it in.", back:"The sequence remains flawless; the surrounding architecture does not." },
       { name:"Operate Autonomously", front:"Nobulous leaves it to work and returns to find his instructions followed exactly.", back:"It completes a different objective with alarming confidence." }
+    ],
+    Volatile: [
+      { name:"Operate Past Tolerance", front:"Every gauge sits in the red. The automaton declines to comment.", back:"The gauges have stopped reporting, which it treats as good news." },
+      { name:"Arrest a Fall", front:"It catches itself one handspan from the floor, and waits there a moment for effect.", back:"It catches itself, the bench, and two apprentices who were not falling." },
+      { name:"Work Without Calibration", front:"Nobulous removes the reference block. The work continues, slightly to spite him.", back:"It calibrates against itself, and is now perfectly consistent and entirely wrong." },
+      { name:"Brace a Collapsing Frame", front:"Three tons of scaffold decide against collapsing today.", back:"The frame holds. Everything bolted to it does not." },
+      { name:"Continue Through Damage", front:"A shoulder plate is missing. The task list is not.", back:"It routes around the damage, then around the parts doing the routing." },
+      { name:"Act on Incomplete Data", front:"Half the sensors are dark. It commits anyway, and is right.", back:"It fills the gaps with confidence, which is cheaper than sensors." },
+      { name:"Run at Full Extension", front:"Every joint reaches its stop at once. Nothing breaks, which surprises the room.", back:"It finds a little more travel in each joint than the drawings allow." },
+      { name:"Stop Without Warning", front:"From full speed to perfectly still, with the dust arriving a moment later.", back:"It stops. The momentum continues on without it." }
     ],
   };
 
@@ -175,7 +193,8 @@
   const PROGRAM_REQS = {
     Routine: [["green",null,null], ["purple",null,null], [null,null,"yellow"], [null,"blue",null], ["green",null,null], [null,null,"purple",null], ["yellow",null,null], [null,null,"blue",null]],
     Specialized: [["purple",null,"yellow"], ["green",null,"blue",null], [null,"yellow","purple"], ["blue",null,null,"green"], ["purple","yellow",null], [null,"green",null,"blue"], ["yellow",null,"purple",null], ["yellow","purple","blue","green"]],
-    Unstable: [["purple",null,null,null], [null,null,"yellow",null], [null,"blue",null,null], [null,null,"green",null], ["yellow",null,null,null], [null,null,null,"purple"], [null,"green",null,null], [null,null,"blue",null]]
+    Unstable: [["purple",null,null,null], [null,null,"yellow",null], [null,"blue",null,null], [null,null,"green",null], ["yellow",null,null,null], [null,null,null,"purple"], [null,"green",null,null], [null,null,"blue",null]],
+    Volatile: [["purple",null,null,null], [null,"blue",null,null], [null,null,"green",null], [null,null,null,"yellow"], [null,null,"purple",null], ["blue",null,null,null], [null,"green",null,null], [null,null,"yellow",null]]
   };
   // Corrupted Limitations sit in the Limitation deck. Each withholds 2 dice
   // of a randomly chosen color THE PROGRAM DOES NOT REQUIRE, on top of the
@@ -413,7 +432,7 @@
     started: false, deck: level, level, tech: 0, hp: 2, str: 2, rec: 3, cycle: 1, mode: "program",
     programs: aosFreshPrograms(level), queue: [], discard: [], current: null,
     tier: aosTier(), interference: aosDrawInterference(), backdoors: aosFreshBackdoors(), corruptColor: null, corruptElement: null,
-    currentFace: "front", currentCompleted: false, lastResultFailed: false, limitation: null, limitationRevealed: false, limitationResolved: false, limitationQueue: aosLimitationQueue(), banishedLimitations: [],
+    currentFace: "front", currentCompleted: false, lastResultFailed: false, lastFailedCount: 0, limitation: null, limitationRevealed: false, limitationResolved: false, limitationQueue: aosLimitationQueue(), banishedLimitations: [],
     advancedQueue: [], nextAdvancedOverheated: false, advancedDone: 0, dice: freshDice(), elements: [], elementCount: 3,
     // The Assembly offer and its Build slots. A slot is null or
     // { id, color }: the Program installed and the ONE colour it was
@@ -635,7 +654,7 @@
     const program = state.mode === "advanced" ? null : state.programs[id];
     state.current = { id, mode: state.mode };
     state.currentFace = state.mode === "advanced" ? (state.nextAdvancedOverheated ? "back" : "front") : (program.status === "overheated" ? "back" : "front");
-    state.currentCompleted = false; state.lastResultFailed = false; state.limitationRevealed = true; state.limitationResolved = false; state.rerollsUsed = 0; state.recoveryCredits = 0;
+    state.currentCompleted = false; state.lastResultFailed = false; state.lastFailedCount = 0; state.limitationRevealed = true; state.limitationResolved = false; state.rerollsUsed = 0; state.recoveryCredits = 0;
     // state.optimizerUsed is deliberately NOT reset here. Optimize is once
     // per ROUND and once more in the finale, so it is cleared at the round
     // boundary above and in beginAdvanced(), not per Program.
@@ -789,7 +808,7 @@
     const finished = programSource(state.current);
     state.discard.push(`${finished.deck}: ${PROGRAM_FLAVOR[finished.deck][state.current.id].name}`);
     if(state.limitation !== null)state.discard.push(`Limitation: ${limitationName(state.limitation)}`);
-    state.currentCompleted = true; state.lastResultFailed = failed > 0;
+    state.currentCompleted = true; state.lastResultFailed = failed > 0; state.lastFailedCount = failed;
     log(`Program completed with ${failed} failed element${failed === 1 ? "" : "s"}.`);
     if (state.hp <= 0) { finishGame(false); return; }
     // AT MOST ONE FAILED ELEMENT ACROSS THE WHOLE FINALE. The second is a
@@ -832,7 +851,10 @@
   // A clean run fills ONE slot and counts as ONE colour, chosen now from
   // the Program's printed dots. Two Purple slots need two Programs.
   function installable(){
-    if (!state.currentCompleted || state.lastResultFailed) return [];
+    // INSTALLING IS NOT THE REWARD, 2026-11-25. The Reward still needs a
+    // clean run; installing needs only that the Program survived, so one
+    // failed element is allowed here and two is a Catastrophic Failure.
+    if (!state.currentCompleted || (state.lastFailedCount || 0) > 1) return [];
     if (state.current?.mode !== "program" || state.mode === "advanced") return [];
     const pr = state.programs[state.current.id];
     if (!pr || pr.status === "installed") return [];

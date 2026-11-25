@@ -94,7 +94,15 @@ INSTALL_POLICY = "greedy"
 #             Catastrophic Failure. One failure already costs the Reward
 #             and flips the card to Overheated, so this is not free.
 #   "any"     finishing the Program at all, however it went.
-INSTALL_REQUIRES = "clean"
+#
+# ADOPTED "nocat" ON 2026-11-25. "clean" is what the handoff wrote and it
+# measured 2.7% at Standard against the 52.0% of the AoS it replaced - the
+# finale was never the problem (94% of the games reaching it win it),
+# three rounds simply cannot yield six to nine clean runs out of a pool
+# that shrinks every time one lands. No deck size rescues it: 8 through 14
+# cards never pass 22.7%. Charging the same failed element twice, once for
+# the Reward and once for the slot, was the whole of it.
+INSTALL_REQUIRES = "nocat"
 
 ROUNDS = 3
 BUILD_TARGET = 3
@@ -105,6 +113,7 @@ ELEMENT_COUNTS = {
     "Routine": [3, 3, 3, 3, 3, 4, 3, 4],
     "Specialized": [3, 4, 3, 4, 3, 4, 4, 4],
     "Unstable": [4, 4, 4, 4, 4, 4, 4, 4],
+    "Volatile": [4, 4, 4, 4, 4, 4, 4, 4],
 }
 
 PROGRAM_TARGETS = {
@@ -119,6 +128,13 @@ PROGRAM_TARGETS = {
     "Unstable": {
         "front": [[3,2,3,2],[2,3,2,3],[3,2,3,2],[2,3,3,2],[3,2,2,3],[2,3,2,3],[3,3,2,3],[3,2,3,2]],
         "back":  [[4,2,3,2],[2,3,2,4],[3,2,4,2],[2,4,3,2],[4,2,2,3],[2,3,2,4],[3,4,2,3],[3,3,3,2]],
+    },
+    # Three 3s where Unstable prints two, the multiset {3,3,3,2} permuted so
+    # no Volatile card is harder than another. Backs raise the ringed
+    # element by 1, as every AoS deck does.
+    "Volatile": {
+        "front": [[3,3,3,2],[3,3,2,3],[3,2,3,3],[2,3,3,3],[3,3,2,3],[3,2,3,3],[3,3,3,2],[2,3,3,3]],
+        "back":  [[4,3,3,2],[3,3,3,3],[3,3,3,3],[2,3,3,4],[4,3,2,3],[3,2,3,4],[3,4,3,2],[2,3,4,3]],
     },
 }
 
@@ -162,6 +178,16 @@ PROGRAM_REQS = {
         [None, None, None, "purple"],                # Adapt to Changing Terrain
         [None, "green", None, None],                 # Execute a Complex Route
         [None, None, "blue", None],                  # Operate Autonomously
+    ],
+    "Volatile": [
+        ["purple", None, None, None],                # Operate Past Tolerance
+        [None, "blue", None, None],                  # Arrest a Fall
+        [None, None, "green", None],                 # Work Without Calibration
+        [None, None, None, "yellow"],                # Brace a Collapsing Frame
+        [None, None, "purple", None],                # Continue Through Damage
+        ["blue", None, None, None],                  # Act on Incomplete Data
+        [None, "green", None, None],                 # Run at Full Extension
+        [None, None, "yellow", None],                # Stop Without Warning
     ],
 }
 
@@ -223,12 +249,13 @@ PROGRAM_REWARDS = {
     "Routine": ["hp", "recover", "rec", "unheat", "str", "banish", "recover", "unheat"],
     "Specialized": ["hp", "str", "recover", "rec", "unheat", "banish", "recover", "unheat"],
     "Unstable": ["hp", "rec", "unheat", "str", "recover", "banish", "recover", "unheat"],
+    "Volatile": ["hp", "rec", "unheat", "str", "recover", "banish", "recover", "unheat"],
 }
 # Every reward name must have a branch in Game.reward. check_rewards()
 # asserts it, and coverage.py calls that rather than counting names.
 REWARD_KINDS = ("hp", "rec", "str", "recover", "unheat", "banish")
 
-DECKS = ["Routine", "Specialized", "Unstable"]
+DECKS = ["Routine", "Specialized", "Unstable", "Volatile"]
 
 # Difficulty is the mix of the three decks, not a choice of one: (Routine,
 # Specialized, Unstable), summing to the 8 Programs you cycle.
@@ -270,11 +297,22 @@ ELEMENT_COST = 0         # dice exhausted per resolved element, win or lose:
 # funds everything. That is the intended shape: the band covers good play, and
 # funding every element when the pool cannot fill them is a mistake worth
 # about 8 points rather than the baseline the ladder is built on.
+# TEN CARDS AND A FOURTH CLASS, 2026-11-25. Eight cards could not supply the
+# Assembly rules: a third of eight-card decks leave some colour on fewer than
+# two Programs, and a colour nothing prints kills every Assembly asking for
+# it - 15.4% of Standard deals had no buildable trio. Ten fixes that at the
+# cause (0.53% without the colour floor, 0.00% with) and puts Standard back
+# in band; eight under these rules reads 40.8%, six points under it.
+#
+# The fourth entry is Volatile, and it deals at NOBULOUS ONLY. Ten cards are
+# enough cards that even an all-Unstable deck wins 41.4%, so the bottom rung
+# was unreachable by composition - see simulation/aosdeck.py for the deck
+# size and simulation/aosclass.py for the class.
 LEVELS = {
-    "Easy": (3, 3, 2),
-    "Standard": (2, 3, 3),
-    "Hard": (1, 3, 4),
-    "Nobulous": (0, 3, 5),
+    "Easy": (4, 3, 3, 0),
+    "Standard": (2, 3, 5, 0),
+    "Hard": (0, 3, 7, 0),
+    "Nobulous": (0, 3, 5, 2),
 }
 LEVEL_NAMES = ["Easy", "Standard", "Hard", "Nobulous"]
 

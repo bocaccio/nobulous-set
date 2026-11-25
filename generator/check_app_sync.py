@@ -454,7 +454,7 @@ check("...and the lab agrees",
 _aoshtml = text("rules/aos.html")
 check("...and rules/aos.html prints both",
       "reveal <b>6</b> of them" in _aoshtml
-      and "at least two</b> of your 8 Programs" in _aoshtml)
+      and "at least two</b> of your 10 Programs" in _aoshtml)
 
 # THE FINALE'S THRESHOLD, which is the whole endgame: at most one failed
 # element across three stages, and at least 1 Health.
@@ -638,11 +638,13 @@ for lvl in ("Easy", "Standard", "Hard", "Nobulous"):
     want = list(_slv[lvl])
     if list(_jlv[lvl]) != want:
         _mix_wrong.append("%s: lab %r != model %r" % (lvl, _jlv[lvl], want))
-    # the printed table prints the same three numbers on one row
-    row = "<tr><td>%s</td><td>%d</td><td>%d</td><td>%d</td></tr>" % (
-        lvl, want[0], want[1], want[2])
-    bold = ("<tr><td><b>%s</b></td><td><b>%d</b></td><td><b>%d</b></td>"
-            "<td><b>%d</b></td></tr>" % (lvl, want[0], want[1], want[2]))
+    # the printed table prints the same numbers on one row. FOUR of them
+    # since 2026-11-25, so this is built from the tuple rather than from a
+    # fixed count - the next deck added here must not need this edited.
+    row = "<tr><td>%s</td>%s</tr>" % (
+        lvl, "".join("<td>%d</td>" % n for n in want))
+    bold = "<tr><td><b>%s</b></td>%s</tr>" % (
+        lvl, "".join("<td><b>%d</b></td>" % n for n in want))
     if row not in _arules and bold not in _arules:
         _mix_wrong.append("%s: not printed as %r" % (lvl, want))
 check("the deck mix agrees across model, lab and rulebook",
@@ -651,8 +653,14 @@ check("the deck mix agrees across model, lab and rulebook",
 check("every rung still holds Specialized at 3",
       all(_slv[l][1] == 3 for l in _slv),
       "%r" % ({l: _slv[l] for l in _slv},))
-check("rules/aos.html still states the trade-one rule",
-      "each step up trades one Routine Program for one Unstable" in _arules)
+# THE TRADE RULE CHANGED SHAPE on 2026-11-25. Easy to Hard still trades a
+# Routine for an Unstable, but Hard has no Routine left, so the last step
+# brings in the fourth deck instead. Both halves are printed, and both are
+# checked, because a book that states only the first is wrong at Nobulous.
+check("rules/aos.html still states how each step up is paid for",
+      "Easy to Hard trades Routine for Unstable" in _arules
+      and "Volatile appears at" in _arules
+      and "Nobulous only" in _arules)
 
 # THE FOURTH COPY.  7f01a88 retuned the mix in three places and said there were
 # three; the <option> labels in index.html are a fourth, and they were missed,
@@ -677,7 +685,8 @@ def options(select_id):
 _lbl_wrong = []
 _aos_opts = dict(options("deckSelect"))
 for lvl in ("Easy", "Standard", "Hard", "Nobulous"):
-    want = "%s &middot; %d/%d/%d" % ((lvl,) + tuple(sa["LEVELS"][lvl]))
+    want = "%s &middot; %s" % (
+        lvl, "/".join(str(n) for n in sa["LEVELS"][lvl]))
     got = _aos_opts.get(lvl)
     if got != want:
         _lbl_wrong.append("AoS %s: label %r, model wants %r" % (lvl, got, want))
@@ -1274,7 +1283,7 @@ check("every PDF in playtest/dist/assets is linked from index.html",
 # be checked here, since they need a 20,000-game run, but the row LABELS can,
 # and a row labelled with a mix the model no longer has is the tell that the
 # numbers beside it are stale too.
-_aos_mixes = ["%d/%d/%d" % tuple(sa["LEVELS"][k])
+_aos_mixes = ["/".join(str(n) for n in sa["LEVELS"][k])
               for k in ("Easy", "Standard", "Hard", "Nobulous")]
 for _rel in ("simulation/RESULTS.txt", "simulation/README.md"):
     _missing = [m for m in _aos_mixes if m not in text(_rel)]
@@ -3492,7 +3501,7 @@ _nap_line = "   ".join("%s %d and %d" % (l, sn["LEVELS"][l][0],
 check("the TTS notebook prints NAP's Credit goal per difficulty",
       _nap_line in _mod, "wanted %r" % _nap_line)
 check("the TTS notebook prints AoS's Program mix",
-      ", ".join("%s %d-%d-%d" % ((l,) + tuple(sa["LEVELS"][l]))
+      ", ".join("%s %s" % (l, "-".join(str(n) for n in sa["LEVELS"][l]))
                 for l in _lvl) in _mod.replace("\\n\"\n         \"", " "))
 # The superseded finale's vocabulary must not come back anywhere in tts/.
 check("no tts/ file still describes the superseded finale",

@@ -33,6 +33,29 @@ UNSTABLE = [
     ("Operate Autonomously", [3, 2, 3, 2], 1, "unheat"),
 ]
 
+# THE FOURTH CLASS, 2026-11-25. Unstable is the hardest card AoS prints, and
+# ten cards is enough cards that an all-Unstable deck still wins 41.4% - so
+# the bottom rung could not be reached by composition at all. Hardening
+# Unstable was the wrong fix, because Unstable deals at EVERY rung and would
+# have lowered all four. Volatile deals only at Nobulous, so it moves only
+# Nobulous. See simulation/aosclass.py for the sweep that chose this profile
+# over four others; the three harsher ones overshoot by 5 to 13 points.
+#
+# ONE STEP HARDER THAN UNSTABLE IN EXACTLY ONE RESPECT: four elements like
+# Unstable, one colour dot like Unstable, the same six rewards in the same
+# order - and three 3s where Unstable prints two. Every card carries the
+# multiset {3,3,3,2}, permuted, so no card is harder than another.
+VOLATILE = [
+    ("Operate Past Tolerance", [3, 3, 3, 2], 0, "hp1"),
+    ("Arrest a Fall", [3, 3, 2, 3], 2, "rec_up_remove"),
+    ("Work Without Calibration", [3, 2, 3, 3], 1, "unheat"),
+    ("Brace a Collapsing Frame", [2, 3, 3, 3], 3, "str_up_remove"),
+    ("Continue Through Damage", [3, 3, 2, 3], 0, "rec3"),
+    ("Act on Incomplete Data", [3, 2, 3, 3], 3, "opt_placeholder"),
+    ("Run at Full Extension", [3, 3, 3, 2], 1, "rec3"),
+    ("Stop Without Warning", [2, 3, 3, 3], 2, "unheat"),
+]
+
 ADVANCED = [
     ("Rapid Approach", [2, 3, 3, 3, 2], 2),
     ("Unobserved Entry", [3, 3, 3, 3], 1),
@@ -69,6 +92,14 @@ REQ_MAP = {
     "Adapt to Changing Terrain": [None, None, None, "P"],
     "Execute a Complex Route": [None, "G", None, None],
     "Operate Autonomously": [None, None, "B", None],
+    "Operate Past Tolerance": ["P", None, None, None],
+    "Arrest a Fall": [None, "B", None, None],
+    "Work Without Calibration": [None, None, "G", None],
+    "Brace a Collapsing Frame": [None, None, None, "Y"],
+    "Continue Through Damage": [None, None, "P", None],
+    "Act on Incomplete Data": ["B", None, None, None],
+    "Run at Full Extension": [None, "G", None, None],
+    "Stop Without Warning": [None, None, "Y", None],
     "Rapid Approach": ["P", None, "G", "Y", None],
     "Unobserved Entry": ["Y", "G", None, "B"],
     "Subject Acquisition": ["Y", None, None, "P", None],
@@ -110,6 +141,14 @@ FLAVOR = {
     "Adapt to Changing Terrain": ("The gait rewrites itself as the ground changes.", "The gait keeps rewriting after the ground stops."),
     "Execute a Complex Route": ("It takes a turn missing from the diagram. Nobulous pencils it in.", "The sequence remains flawless; the surrounding architecture does not."),
     "Operate Autonomously": ("Nobulous leaves it to work and returns to find his instructions followed exactly.", "It completes a different objective with alarming confidence."),
+    "Operate Past Tolerance": ("Every gauge sits in the red. The automaton declines to comment.", "The gauges have stopped reporting, which it treats as good news."),
+    "Arrest a Fall": ("It catches itself one handspan from the floor, and waits there a moment for effect.", "It catches itself, the bench, and two apprentices who were not falling."),
+    "Work Without Calibration": ("Nobulous removes the reference block. The work continues, slightly to spite him.", "It calibrates against itself, and is now perfectly consistent and entirely wrong."),
+    "Brace a Collapsing Frame": ("Three tons of scaffold decide against collapsing today.", "The frame holds. Everything bolted to it does not."),
+    "Continue Through Damage": ("A shoulder plate is missing. The task list is not.", "It routes around the damage, then around the parts doing the routing."),
+    "Act on Incomplete Data": ("Half the sensors are dark. It commits anyway, and is right.", "It fills the gaps with confidence, which is cheaper than sensors."),
+    "Run at Full Extension": ("Every joint reaches its stop at once. Nothing breaks, which surprises the room.", "It finds a little more travel in each joint than the drawings allow."),
+    "Stop Without Warning": ("From full speed to perfectly still, with the dust arriving a moment later.", "It stops. The momentum continues on without it."),
 }
 
 LIMITATIONS = [

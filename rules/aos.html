@@ -19,8 +19,8 @@
 <h2>Components</h2>
 <ul>
   <li>6 Experimental Technician cards</li>
-  <li>24 Program cards (double&#8209;sided Stable / Overheated) in three decks of 8: Routine, Specialized,
-      Unstable</li>
+  <li>32 Program cards (double&#8209;sided Stable / Overheated) in four decks of 8: Routine, Specialized,
+      Unstable, Volatile</li>
   <li>8 Assembly cards &mdash; double&#8209;sided, <b>recipe</b> on the front and the
       <b>Advanced Program</b> it becomes on the back</li>
   <li>6 Limitation cards</li>
@@ -36,23 +36,26 @@
 <ol class="seq">
   <li>Choose a Technician. All six begin at <b>2 HP / 2 STR / 3 REC</b> and differ only in ability.</li>
   <li>Build your Program deck &mdash; this is your difficulty. Take the stated number of Programs at random
-    from each of the three decks, shuffle the <b>8</b> together, and return the rest to the box:
+    from each of the four decks, shuffle the <b>10</b> together, and return the rest to the box:
     <table>
-      <tr><th>Level</th><th>Routine</th><th>Specialized</th><th>Unstable</th></tr>
-      <tr><td>Easy</td><td>3</td><td>3</td><td>2</td></tr>
-      <tr><td><b>Standard</b></td><td><b>2</b></td><td><b>3</b></td><td><b>3</b></td></tr>
-      <tr><td>Hard</td><td>1</td><td>3</td><td>4</td></tr>
-      <tr><td>Nobulous</td><td>0</td><td>3</td><td>5</td></tr>
+      <tr><th>Level</th><th>Routine</th><th>Specialized</th><th>Unstable</th><th>Volatile</th></tr>
+      <tr><td>Easy</td><td>4</td><td>3</td><td>3</td><td>0</td></tr>
+      <tr><td><b>Standard</b></td><td><b>2</b></td><td><b>3</b></td><td><b>5</b></td><td><b>0</b></td></tr>
+      <tr><td>Hard</td><td>0</td><td>3</td><td>7</td><td>0</td></tr>
+      <tr><td>Nobulous</td><td>0</td><td>3</td><td>5</td><td>2</td></tr>
     </table>
     <b>Then check the colors.</b> Each of Purple, Blue, Green and Yellow must appear as a
-    required&#8209;color dot on <b>at least two</b> of your 8 Programs. If one does not, shuffle the three
-    decks back together and deal again. This costs about half a reshuffle a game and it is not optional:
-    without it, roughly one setup in seven cannot build three Assemblies <em>at all</em>, whatever you
-    roll, and nothing on the table would tell you.<br>
-    Specialized stays at 3 throughout; <b>each step up trades one Routine Program for one Unstable</b>.
+    required&#8209;color dot on <b>at least two</b> of your 10 Programs. If one does not, shuffle the
+    decks back together and deal again. At ten cards this almost never fires &mdash; about one deal in
+    two hundred &mdash; but it is cheap and it closes the one setup that cannot be played: a color no
+    Program prints kills every Assembly that asks for it, whatever you roll, and nothing on the table
+    would tell you.<br>
+    Specialized stays at 3 throughout. Easy to Hard trades Routine for Unstable; <b>Volatile appears at
+    Nobulous only</b>, because by Hard there is no Routine left to give up.
     Routine Programs ask for three elements at low Targets, Unstable ones four at high Targets, and
-    Specialized sits between. All three decks pay the same spread of rewards, so the mix changes the
-    workload and nothing else.</li>
+    Specialized sits between. Volatile asks for four at higher Targets still &mdash; three of its four
+    elements want 3 where Unstable wants two. All four decks pay the same spread of rewards, so the mix
+    changes the workload and nothing else.</li>
   <li>Shuffle the 6 Limitations into a face&#8209;down deck.</li>
   <li>Shuffle the 8 Assemblies and reveal <b>6</b> of them, <b>recipe side up</b>. That is your offer
       for the whole game. Return the other 2 to the box <em>without turning them over</em>.</li>
@@ -106,7 +109,7 @@ in the deck. Otherwise the third round is the last.</p>
   letting a Shortage do it for you &mdash; has a real cost.
 </div>
 
-<p>Routine and Unstable Programs carry one required&#8209;color dot and Specialized carry two, with one
+<p>Routine, Unstable and Volatile Programs carry one required&#8209;color dot and Specialized carry two, with one
 exception that asks for more: <em>Carry a Moving Load</em> requires all four colors. Read the card rather
 than the deck. The same required colors appear on both faces of a Program card &mdash; and those same dots
 are what decide which Build slots the Program can fill.</p>
@@ -156,16 +159,24 @@ then recover 2 &mdash; which may include dice you just exhausted.</p>
 </div>
 
 <h2>Program Rewards</h2>
-<p>Every Program in the Routine, Specialized and Unstable decks prints a <b>Program Reward</b>. Claim it when
-you complete that Program with <b>no failed elements at all</b> &mdash; one failure is enough to lose it, even
-though one failure costs no Health.</p>
+<p>Every Program in the Routine, Specialized, Unstable and Volatile decks prints a <b>Program Reward</b>.
+Claim it when you complete that Program with <b>no failed elements at all</b> &mdash; one failure is enough
+to lose it, even though one failure costs no Health.</p>
 <p>The reward is printed on the Program. Two of them &mdash; <b>+1 REC</b> and <b>+1 STR</b> &mdash; are
 permanent, and remove that Program from the deck when claimed. Assembly backs carry no reward.</p>
 
 <h2>Installing a Program</h2>
-<p>A clean run does two things, and the second is how the game is won. Finish a Program with <b>no failed
-elements</b> and you may <b>install</b> it in one open Build slot on one revealed Assembly. Same run, same
-condition as the Reward.</p>
+<p>Finishing a Program does two things, and the second is how the game is won. Complete one <b>without a
+Catastrophic Failure</b> &mdash; that is, with <b>at most one failed element</b> &mdash; and you may
+<b>install</b> it in one open Build slot on one revealed Assembly.</p>
+<div class="box">
+  <span class="lbl">Installing is not the Reward</span>
+  The two conditions are deliberately different. The <b>Reward</b> needs a clean run, no failed element at
+  all. <b>Installing</b> needs only that the Program survived &mdash; one failure costs you the Reward and
+  flips the card to Overheated, and that is already price enough. Charging the same failed element twice
+  makes the three&#8209;round deadline unreachable: the machine gets built out of work that went
+  <em>mostly</em> right, which is the whole idea.
+</div>
 <ul>
   <li>A Program fills <b>one slot</b> and counts as <b>one color</b>, chosen from its printed
       required&#8209;color dots as it goes in. A Program with a Purple dot and a Yellow dot can take a
@@ -173,7 +184,8 @@ condition as the Reward.</p>
   <li><b>Two Purple slots need two separate Programs.</b> No card ever fills more than one slot.</li>
   <li>An installed Program is held out of the deck while it stays there. Leave it physically in its slot,
       turned so the color it was installed as is the one on show.</li>
-  <li>Installing is optional. A clean run with nowhere useful to put it is still a clean run.</li>
+  <li>Installing is optional. A Program with nowhere useful to put it still pays its Reward, if the run
+      was clean.</li>
 </ul>
 <p>An Assembly with a Program in every slot is <b>built</b>. A built Assembly is locked: it cannot be
 dismantled, and its Programs are gone for the rest of the game.</p>
@@ -190,7 +202,7 @@ dismantled, and its Programs are gone for the rest of the game.</p>
 <p>You may give up an <em>unfinished</em> Assembly whenever you like. <b>Lose 1 Health</b> if it holds at
 least one Program &mdash; an empty one costs nothing &mdash; then clear its slots. Every Program that was
 in it flips to <b>Overheated</b> and returns to the deck <b>at the next round boundary</b>, not at once.</p>
-<p>A returned Program must pass a <em>new</em> clean run before it can be installed anywhere again, and may
+<p>A returned Program must survive a <em>new</em> run before it can be installed anywhere again, and may
 take either eligible color the second time. The Assembly stays in your offer and can be started over.</p>
 <p>The delay is the real cost. Abandon during round three and the Programs come back after the deadline
 has passed, which is to say they do not come back at all.</p>
@@ -240,12 +252,12 @@ finale will ask of you. What you have never seen is how many elements a stage ha
   <p>What it is not is free. Every element must hold a die, and a failed element exhausts every die on it, so
   each element you give up costs you one. And a Program with any failed element pays <b>no Program
   Reward</b>.</p>
-  <p>That last clause is what closes the door on failing your way through the game, and the Assemblies
-  shut it harder than the old rules did. There is no longer a version of this where attrition wins: a
-  Program with a failed element pays no Reward <em>and cannot be installed</em>, so a round spent writing
-  off elements builds nothing and heals nothing while the three&#8209;round deadline runs. Health is only
-  ever regained by a Reward, and an Assembly is only ever built by clean runs. Give up an element every
-  Program and you reach round three with an empty frame.</p>
+  <p>That last clause is what closes the door on failing your way through the game. Giving up <b>one</b>
+  element is a real option &mdash; the Program still installs. Giving up a <b>second</b> is not: that is a
+  Catastrophic Failure, and a Program that suffers one pays no Reward <em>and cannot be installed</em>, so
+  it costs a Health, builds nothing, and heals nothing while the three&#8209;round deadline runs. The
+  only way to heal is the same work that builds the machine. Write off two elements a Program and you
+  reach round three with an empty frame and no Health to show for it.</p>
   <p>Which is why the decision is sharper here than it reads. Giving up an element on a Program you were
   never going to install &mdash; one whose colors fit no open slot &mdash; costs you a die and nothing
   else. Giving up an element on the Program that was going to fill your last Purple slot costs you the

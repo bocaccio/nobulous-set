@@ -2,8 +2,8 @@ from gen import render_deck, render_duplex, make_back, elements, hdr_fit, title_
 
 # The shape of the cards being built, for header measurement.
 CARD_SIZE = PORTRAIT
-from aos import (ROUTINE, SPECIALIZED, UNSTABLE, ASSEMBLIES, ASSEMBLY_FLAVOR,
-                 COVERT, REQ_MAP, FLAVOR, LIMITATIONS)
+from aos import (ROUTINE, SPECIALIZED, UNSTABLE, VOLATILE, ASSEMBLIES,
+                 ASSEMBLY_FLAVOR, COVERT, REQ_MAP, FLAVOR, LIMITATIONS)
 from aos_faces import ASSEMBLY_CSS, assembly_back, assembly_front
 
 REWARD = {'hp1': 'Gain 1 HP',
@@ -32,6 +32,7 @@ OVER_FTR = ('1 failed element: this Program is set aside. '
 
 
 DECK_ACCENT = {'Routine': '#315c49', 'Specialized': '#4c4a75', 'Unstable': '#7a3838',
+               'Volatile': '#6b2d5c',
                'Advanced': '#8a5a20', 'Limitation': '#2f5966', 'Technician': '#3f5260',
                'Mat': '#555555'}
 
@@ -76,7 +77,8 @@ def program(name, targets, mark, reward, deck, overheated):
     return C(name, sub, body, ftr, warn=True, acc=DECK_ACCENT[deck], flavor=flavor)
 
 
-for deckname, data in [('Routine', ROUTINE), ('Specialized', SPECIALIZED), ('Unstable', UNSTABLE)]:
+for deckname, data in [('Routine', ROUTINE), ('Specialized', SPECIALIZED),
+                       ('Unstable', UNSTABLE), ('Volatile', VOLATILE)]:
     stable = [program(n, t, m, REWARD[r], deckname, False) for n, t, m, r in data]
     over = [program(n, t, m, REWARD[r], deckname, True) for n, t, m, r in data]
     print(deckname, render_duplex('AoS_%s' % deckname, stable, over, 'AoS', PORTRAIT, BIG), 'two-sided')
