@@ -1,3 +1,83 @@
+2026-11-25  ALL FOUR RULEBOOKS: THE RULES ONLY, WITH THE OPINING CUT
+Jon asked for the rules to tell a player how to play and how to resolve
+effects, and nothing else: no text about what specific cards do, no
+explanation of why a decision was made, no commentary on how one might play
+or on what a rule is worth.  Fifty-seven edits across the four books, 201
+lines net out of 1,480, and two books came down a page.
+
+WHAT WENT, by kind:
+
+  DESIGN RATIONALE.  Why the allocation floor exists; why Installing and the
+  Program Reward use different conditions; why the exclusion came off the
+  Corrupted Limitations; why Tier I's Setback swap became one for one, with
+  the date it was fixed; why the difficulty counts are spread across the
+  colors rather than taken off whole ones; why steps 2 to 4 of Resolve are
+  in that order.
+
+  STRATEGY AND PLAY ADVICE.  BAT's whole "Fine-tuning" section; the
+  recovery-pass gloss that passing "is never free"; AoS's "Giving up an
+  element is a decision, not a free move" box; "Root Access is worth
+  holding - and the advice flips at the finale"; NRJ's "The decision the
+  finale is built on", and the paragraph on which Exhibit to bury first;
+  "recover for the color that is coming, not the one in front of you".
+
+  MODEL OUTPUT AND IMPACT ESTIMATES.  The Imposter difficulty table's
+  "Model win rate" column and the "About the percentages" box that
+  disclosed it; BAT's borrow-table "Banish risk" column; "a round is worth
+  roughly a tenth of your chances"; "about one deal in two hundred";
+  "the whole of Tier II was worth a tenth of a point"; "a second Research
+  Note already costs the Rats about nine points in the model"; the Final
+  Exam pool's 75%; NAP's 10-of-26 Demand-Target census.
+
+  TEXT ABOUT SPECIFIC CARDS, which is what the cards are for.  NAP's "Six
+  rewards that need a ruling" table and its Completed Opportunities table;
+  the two named add-a-die effects, kept as a general rule for any effect of
+  that shape; the five paying Exhibits listed by name; the named rulings on
+  two Imposter Tasks and two Devious Opportunities; Carry a Moving Load as
+  the four-color exception; the Engineer as the cap-raiser; the Understudy
+  as the only Imposter that spends Candidates.
+
+WHAT STAYED.  Every rule, every setup step, every difficulty table, and the
+general resolution rules for classes of effect - what an added die may be,
+how a coupon that flips a Demand resolves, what happens when a required
+color cannot be supplied.  Where a rule generalized, it was reworded without
+the card's name rather than cut.  Component names a player has to identify
+to set up stayed: the Covert Sensor Array, the five Imposters, the FINF
+cards.
+
+PAGE COUNTS: BAT 3, NAP 4, AoS 4 to 3, NRJ 4 to 3.  NAP did not move because
+its last column was already full to the line - see the entry below, where one
+printed sentence cost a redundant clause to fit.
+
+SEVENTEEN CHECKS FAILED AND NONE WAS SIMPLY DELETED.  check_app_sync.py held
+a lot of this prose on purpose, so each was handled on what it was really
+protecting:
+
+  * five held a CARD FACT against a sentence about it - the Specialized dot
+    counts, the Demand-Target gaps, the five paying Exhibits.  The card half
+    stayed and the sentence half went.
+  * two were replaced by a check on the MECHANIC the prose argued for.  The
+    AoS brake now reads "a Reward needs no failed element" and "Health never
+    above 6" instead of the paragraph that explained why those two make
+    failing deliberately a bad idea.
+  * two were repointed because a phrase merely MOVED: "Hard and Nobulous
+    lower your Health instead" lost a line break, and AoS's "without a
+    Catastrophic Failure" moved onto one line when the paragraph above it got
+    shorter.  Both now read flattened text.  A check that fails on a reflowed
+    paragraph reports a rule change that did not happen, and both of these
+    carried comments insisting on the raw source.
+  * one was INVERTED, and it is the editorial rule made testable:
+    rules/nrj.html used to have to say where its percentages came from, and
+    now it must quote no rate at all.  The next figure pasted into the
+    supplement fails the suite.
+
+STILL INCONSISTENT, AND DELIBERATELY LEFT: the TTS mod's quick references
+carry the same kind of text, and one of them carries reasoning that was put
+there yesterday precisely because NAP's book had no room for it - see the
+entry below on the exam waiver.  The books are the authoritative rules and
+they are clean; the notebook is not, and a check now holds it to the
+reasoning it was given.
+
 2026-11-25  NAP: A FINAL EXAM RESTRICTION YOU CANNOT MEET IS WAIVED, FREE
 Jon sat a Fine Motor Assessment with no Blue die in hand and asked what
 happens.  The book had no answer.  It waived Required Effort "only if no

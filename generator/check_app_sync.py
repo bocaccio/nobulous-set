@@ -497,19 +497,29 @@ check("the model draws any colour (CORRUPT_AVOID_REQUIRED %r)"
       sa.get("CORRUPT_AVOID_REQUIRED") is False)
 # Each reveal re-rolls: the cards say "a randomly selected color" and
 # "randomly select one element", which is per card, not per game.
-# rules/aos.html must not claim a uniform dot count: three cards break it.
-# ONE EXCEPTION NOW, NOT THREE. Rapid Approach and Unobserved Entry were
-# Advanced Programs and are gone; Carry a Moving Load is still a
-# Specialized Program carrying all four colours, and is still the only
-# card that breaks the per-deck dot count.
-check("rules/aos.html names the dot-count exception",
-      "Carry a Moving Load" in _arules
+# rules/aos.html must not claim a uniform dot count: one card breaks it.
+# IT NO LONGER NAMES THE CARD, as of 2026-11-25, when the rulebooks were
+# stripped of text about specific cards. So the claim being held is the one
+# that is still a rules error if it goes wrong: the book must tell a player
+# to read the card, and must not assert a count the deck contradicts. The
+# count itself is checked against generator/aos.py further down.
+check("rules/aos.html does not claim a uniform dot count",
+      "some cards ask for more" in _arules
       and "carry two required&#8209;color dots; Routine" not in _arules)
-# Percentages in the supplement are model output and must say so.
+# PERCENTAGES ARE OUT OF THE SUPPLEMENT ENTIRELY, 2026-11-25. They used to
+# be allowed on condition the book said where they came from, and the
+# "About the percentages" box was that disclosure. The rulebooks no longer
+# carry model output, commentary on impact, or design rationale at all, so
+# the disclosure has nothing left to disclose and the check is inverted:
+# nothing in the supplement may quote a rate again. This is the editorial
+# rule made testable, and it fails on the next figure someone pastes in.
 _nrules = text("rules/nrj.html")
-check("rules/nrj.html says where its percentages come from",
-      "About the percentages" in _nrules
-      and "not from recorded play" in _nrules)
+_rates = [_p for _p in ("win rate", "about 1 in", "about 2 in", "about 3 in",
+                        "about 4 in", "in the model", "design simulation",
+                        "% chance", "points of win")
+          if _p in _nrules]
+check("rules/nrj.html quotes no model percentages",
+      not _rates, "still quotes: %r" % (_rates,))
 check("no bare win-rate claim is left in rules/aos.html",
       "points of win rate" not in _arules)
 # THE WIN CONDITION IS SURVIVAL, AND THE RULEBOOK HAS TO SAY SO. aos.play()
@@ -546,10 +556,22 @@ check("...and the model enforces it",
 # element, so dumping Programs forfeits the only healing in the game.
 # AGAINST THE RAW BOOK, so every phrase here has to be one the source
 # does not wrap across a line - _arules is text(), not _plain().
-check("rules/aos.html prints why failing on purpose is not a shortcut",
-      "only way to heal is the same work" in _arules
-      and "<em>and cannot be installed</em>" in _arules
-      and "empty frame" in _arules)
+# THE PROSE THAT ARGUED THIS IS GONE, 2026-11-25 - it was rationale, and
+# the rulebooks no longer carry any. What made the argument true is still
+# printed, and it is two card-facing conditions rather than a paragraph, so
+# those are what this holds now. If either stops being printed, failing
+# deliberately becomes a free move again and no other check would say so.
+# READ WHITESPACE-INSENSITIVELY, unlike the check it replaces. The old
+# one matched the raw source and carried a comment warning that every
+# phrase had to be one the book does not wrap across a line - which made
+# it a check on the typesetting as much as on the rule, and it broke the
+# moment the paragraph above it got shorter and the clause moved up onto
+# one line. 2026-11-25.
+_aflat = " ".join(_arules.split())
+check("rules/aos.html prints both halves of the failure price",
+      "no failed elements at all" in _aflat
+      and "never above 6" in _aflat
+      and "without a Catastrophic Failure" in _aflat)
 
 # THE DECK MIX IS AoS'S DIFFICULTY DIAL and it had three unchecked copies:
 # simulation/aos.py's LEVELS, the lab's AOS_LEVELS and the printed table.
@@ -573,14 +595,11 @@ check("the deck mix agrees between the model and the rulebook",
 check("every rung still holds Specialized at 3",
       all(_slv[l][1] == 3 for l in _slv),
       "%r" % ({l: _slv[l] for l in _slv},))
-# THE TRADE RULE CHANGED SHAPE on 2026-11-25. Easy to Hard still trades a
-# Routine for an Unstable, but Hard has no Routine left, so the last step
-# brings in the fourth deck instead. Both halves are printed, and both are
-# checked, because a book that states only the first is wrong at Nobulous.
-check("rules/aos.html still states how each step up is paid for",
-      "Easy to Hard trades Routine for Unstable" in _arules
-      and "Volatile appears at" in _arules
-      and "Nobulous only" in _arules)
+# THE TRADE RULE IS NO LONGER DESCRIBED IN PROSE, 2026-11-25: the sentence
+# explained what the difficulty table already shows, which is commentary on
+# what the mix does rather than a rule. The table is held against
+# simulation/aos.py by the check above, so the numbers cannot drift; what is
+# gone is only the paragraph about them.
 
 # THE FOURTH COPY.  7f01a88 retuned the mix in three places and said there were
 # three; the <option> labels in index.html are a fourth, and they were missed,
@@ -976,9 +995,12 @@ _byDeck = dict((d, [sum(1 for x in r if x) for r in rows])
 check("rules/aos.html: Routine and Unstable carry one dot each",
       set(_byDeck["Routine"]) == {1} and set(_byDeck["Unstable"]) == {1},
       "%r %r" % (_byDeck["Routine"], _byDeck["Unstable"]))
-check("rules/aos.html: Carry a Moving Load is the four-colour exception",
-      sorted(_byDeck["Specialized"]) == [2, 2, 2, 2, 2, 2, 2, 4]
-      and "requires all four colors" in _RULES["aos"],
+# THE BOOK NO LONGER NAMES IT, 2026-11-25, so only the deck is checked:
+# seven Specialized Programs carry two dots and exactly one carries four.
+# That is the fact the dropped sentence was reporting, and it is the half
+# that can actually break.
+check("generator/aos.py: one Specialized Program carries four colours",
+      sorted(_byDeck["Specialized"]) == [2, 2, 2, 2, 2, 2, 2, 4],
       "%r" % (_byDeck["Specialized"],))
 # AND THE ASSEMBLY BACKS, which took the Advanced Programs' place: every
 # element of one carries a colour, so the count is the element count and
@@ -1030,9 +1052,14 @@ check("rules/aos.html prints the Backdoor Routine claim cost, and aos.py "
       "costs the next Program Reward" in _RULES["aos"]
       and _aos["BACKDOOR_COSTS_REWARD"] is True,
       "BACKDOOR_COSTS_REWARD=%r" % (_aos.get("BACKDOOR_COSTS_REWARD"),))
-check("rules/nrj.html names both claim costs in one sentence",
-      "costs the next Upgrade a completed Experiment earns" in _RULES["nrj"]
-      and "a Backdoor Routine the next Program" in _RULES["nrj"])
+# THE SUPPLEMENT'S COPY OF THIS WENT WITH THE "Tier III is a loan" BOX on
+# 2026-11-25. Both costs are still printed where they are charged - in
+# rules/bat.html and rules/aos.html - and the two checks directly above hold
+# each of those against the model that charges it, which is the pairing that
+# matters. The supplement was a third copy of the same two facts.
+check("rules/nrj.html states the claim costs where it claims",
+      "giving up the next Upgrade" in _RULES["nrj"]
+      and "or the next Program Reward" in _RULES["nrj"])
 
 # AND THE CONDITION THE COST BUYS HAS TO BE ONE THE GAME CAN MEET.
 # Diagnostic Port printed "no element over-allocated" while rules/aos.html
@@ -1370,8 +1397,11 @@ check("the mod says a clause demanding a COUNT needs no waiver",
       "needs no" in text("tts/build_mod.py")
       and "dice you cannot commit are successes you do" in
           text("tts/build_mod.py"))
-check("...and the book states the 75% a four-card pool drawing 3 gives",
-      _says("<b>75% chance</b> to appear and can appear at most once"))
+# THE 75% IS GONE, 2026-11-25, with every other figure in the rulebooks.
+# The draw it described is still printed and still checked above; what the
+# figure added was the consequence, which is commentary.
+check("...and the book still prints the draw that gives it",
+      _says("Each subject can appear at most once"))
 
 # BOTH FACES PAY, in the model and in the lab. The model's call site was
 # gated on `not card.on_demand` and the lab's on `a.demandSide`, because a
@@ -1403,10 +1433,13 @@ check("an Imposter Task's recovery is paid in the model",
 _gaps = [r[6] - r[4] for r in gn["TASKS"]]
 _up = sum(1 for _g in _gaps if _g > 0)
 _same = sum(1 for _g in _gaps if _g == 0)
-check("rules/nap.html prints the Demand-Target census the cards print",
+# THE BOOK STOPPED PRINTING THE COUNTS on 2026-11-25 - a deck census is a
+# statement about what the cards do rather than a rule - so the two numeric
+# clauses are gone and the card-side invariant is what is left: no Demand
+# Target is more than 1 above its Request. That is the thing a reprint can
+# break. The book still has to promise no more than "sometimes".
+check("no Demand Target is more than 1 above its Request",
       _up + _same == len(_gaps) and max(_gaps) == 1
-      and ("<b>%d of the 26 Tasks</b>" % _up) in _nap_rules
-      and ("the other %d print" % _same) in _nap_rules
       and "sometimes a higher Target" in _nap_rules,
       "cards: %d up by 1, %d level, widest gap %d" % (_up, _same, max(_gaps)))
 
@@ -1531,7 +1564,11 @@ check("nrj.html prints the Health column",
       all("".join("<td>%d</td>" % n for n in c + (hp,)) in
           nrj.replace("\n", "").replace("      ", "")
           for (lvl, c), (_l2, hp) in zip(LADDER, LADDER_HP))
-      and "<b>Hard and Nobulous lower\nyour Health instead</b>" in nrj)
+      # WHITESPACE-INSENSITIVE since 2026-11-25: the sentence survived the
+      # editorial pass but its line break did not, and a check that fails
+      # on a reflowed paragraph reports a rule change that did not happen.
+      and "Hard and Nobulous lower your Health instead"
+      in " ".join(nrj.split()))
 # AND NO RUNG OPENS WITH NOTHING IT MAY APPLY. The attention starts on
 # Yellow with a Yellow+Green window, so a rung that exhausts all four
 # yellow AND all four green begins holding only the red die and session 1
@@ -1700,10 +1737,13 @@ _leaks = sorted(n for n, t in courtesy.items() if _banned.search(t))
 check("no courtesy names a thing the game has", not _leaks, "%s" % _leaks)
 check("the rulebook says every Exhibit prints one and five pay",
       "Every Exhibit prints a Reward and <b>five of them pay</b>" in rules)
+# THE SUPPLEMENT NO LONGER LISTS THEM BY NAME, 2026-11-25: five cards and
+# what each one does is card text, and the cards print it. So each is held
+# against finale.py alone - the model still has to implement the five the
+# generator prints, which is the half that was ever load-bearing.
 missing = sorted(js_rewards - printed_rewards)
 for name in sorted(js_rewards):
-    check("  %s in finale.py and the rulebook" % name,
-          name in sim and name in rules)
+    check("  %s in finale.py" % name, name in sim)
 
 print()
 print("FLAVOUR TEXT THE LAB KEEPS ITS OWN COPY OF")
@@ -2307,8 +2347,14 @@ check("...and BAT no longer prints a reroll rule of its own",
 # stages. It also rewrote setup and the whole endgame. Page 4 comes out about
 # three-fifths full of rules the game now has, not of slack: the alternative
 # to the fourth page was cutting a rule, not tightening a paragraph.
+# AoS AND NRJ CAME DOWN A PAGE EACH on 2026-11-25, which is a budget CUT
+# and the first one this file has recorded. Stripping design rationale,
+# strategy and card-by-card text took about a page out of each of those two;
+# BAT and NAP stayed where they were, NAP because its last column was full
+# to the line either way. A shrink still fails here, so the next section
+# that goes missing by accident is still caught.
 _PAGES = {"BAT_Rulebook.pdf": 3, "NAP_Rulebook.pdf": 4,
-          "AoS_Rulebook.pdf": 4, "NRJ_Campaign_Supplement.pdf": 4}
+          "AoS_Rulebook.pdf": 3, "NRJ_Campaign_Supplement.pdf": 3}
 try:
     import pypdf
 except ImportError:
@@ -5224,7 +5270,10 @@ check("the borrow table still reads off the borrower's Upgrades",
 check("rules/bat.html's borrow table reads the Prototyrant's grafts, and "
       "batrev does too",
       "Grafts held" in _RULES["bat"]
-      and "The bigger your Prototyrant has grown" in _RULES["bat"]
+      # REWORDED 2026-11-25: the old lead-in explained WHY the table
+      # narrows, which is rationale. What has to stay is that the book
+      # reads the Prototyrant's grafts and not something else.
+      and "how many grafts the Prototyrant holds" in _RULES["bat"]
       and "3 or more" in _RULES["bat"]
       and "return min(3, len(self.grafts))" in _satr
       and "Upgrades held" not in _RULES["bat"],
