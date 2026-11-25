@@ -1,0 +1,45 @@
+Measured 2026-11-25. The per-lever sizing this selects from is in
+napharder.txt. The reference peg is rules/bat.html's own pegged
+ladder, 63.7 / 52.8 / 37.8 / 25.8.
+
+NAP ladders, 20004 games a rung, mean of the six Apprentices,
+FINF Reduce 1. Band is 47-57% on the solo column.
+
+                              no NRJ  Tier III
+  AS SHIPPED, for the step sizes
+    Easy         3 Cr / 1 Sb     68.9%     51.6%
+    Standard     4 Cr / 2 Sb     55.4%     40.9%
+    Hard         5 Cr / 3 Sb     40.0%     33.5%
+    Nobulous     6 Cr / 4 Sb     28.0%     26.7%
+
+  1. ONE MORE SETBACK IN THE DECK at every rung
+    Easy         3 Cr / 2 Sb     64.5%     51.6%
+    Standard     4 Cr / 3 Sb     50.0%     40.9%
+    Hard         5 Cr / 4 Sb     35.4%     30.2%
+    Nobulous     6 Cr / 5 Sb     25.7%     23.4%
+
+  2. THE PRE-A CREDIT GOALS back (4/5/6/7)
+    Easy         4 Cr / 1 Sb     61.6%     40.9%
+    Standard     5 Cr / 2 Sb     46.2%     33.5%
+    Hard         6 Cr / 3 Sb     32.1%     29.6%
+    Nobulous     7 Cr / 4 Sb     22.9%     23.9%
+
+  3. AN UNMEETABLE CONTRIBUTION CLAUSE COSTS 1 HEALTH
+    Easy         3 Cr / 1 Sb     60.8%     44.9%
+    Standard     4 Cr / 2 Sb     47.9%     34.4%
+    Hard         5 Cr / 3 Sb     33.2%     27.6%
+    Nobulous     6 Cr / 4 Sb     22.7%     21.4%
+
+  4. CONTRIBUTE = SUCCEED, the decision already open
+    Easy         3 Cr / 1 Sb     66.2%     50.2%
+    Standard     4 Cr / 2 Sb     53.4%     39.5%
+    Hard         5 Cr / 3 Sb     38.8%     32.3%
+    Nobulous     6 Cr / 4 Sb     27.0%     25.6%
+
+  5. ONE MORE SETBACK *and* contribute = succeed
+    Easy         3 Cr / 2 Sb     62.8%     50.2%
+    Standard     4 Cr / 3 Sb     48.8%     39.5%
+    Hard         5 Cr / 4 Sb     34.3%     29.6%
+    Nobulous     6 Cr / 5 Sb     24.9%     23.1%
+
+  Finished in 667s.

@@ -1,0 +1,35 @@
+Measured 2026-11-25, after candidate A shipped. Jon asked whether
+there is any way to make NAP harder; the four-rung ladders for the
+survivors are in napladder.txt.
+
+NAP - levers that make Standard harder. 20004 games a cell,
+mean of the six Apprentices, FINF Reduce 1.
+
+                                                 no NRJ  Tier III
+  AS SHIPPED  (4 Cr / 2 Sb, REC 3, age rule)       55.4%     40.9%
+
+  TAKING BACK THE PAYMENT FOR CANDIDATE A
+  Credit goal back to 5 (the pre-A ladder)         46.2%     33.5%
+  REC back to 2                                    38.2%     26.7%
+  Setbacks 3 instead of 2                          50.0%     40.9%
+
+  THE TWO EXAM DECISIONS STILL OPEN
+  contribute = succeed                             53.4%     39.5%
+  contribute = succeed, 1 Health not the card      54.8%     40.1%
+  unmeetable clause costs 1 Health (need only)     47.9%     34.4%
+  unmeetable clause costs 1 Health (all clauses)   33.8%     23.0%
+
+  PRINTED-CARD LEVERS
+  every Assignment Target +1                       39.6%     34.4%
+  Setback bleed unconditional                      54.2%     40.9%
+  Final Exam pool weighted by Credits again        65.9%     49.2%
+
+  COMBINATIONS worth a look
+  Credit goal 5 + contribute = succeed             45.1%     32.3%
+  Credit goal 5 + unmeetable costs 1 (need)        38.6%     27.6%
+  contribute = succeed + unmeetable costs 1 (need)   46.4%     33.6%
+
+  Shipped control reads 55.4% solo / 40.9% Tier III;
+  napage_confirm.txt has 55.4% / 40.9% at 20,000.
+  The 47-57% band is on the solo column.
+  Finished in 380s.
