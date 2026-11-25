@@ -1,23 +1,32 @@
 # -*- coding: utf-8 -*-
-"""Draw the save thumbnail Tabletop Simulator shows in its Saves list.
+"""The save thumbnail Tabletop Simulator shows in its Saves list.
 
-    python3 make_cover.py            -> tts/cover.png
+    python3 make_cover.py            -> tts/cover.png, from cover_src.png
+    python3 make_cover.py --draw     -> ...from the drawn cover instead
     python3 make_cover.py --install  -> ...and into the Saves folder
 
 TTS SHOWS THE PNG SITTING BESIDE THE SAVE. Every save in the folder
 has one - NobulousSet.json and NobulousSet.png - and TTS writes its
 own 256x256 grab of the table whenever you save over it. Ours is
-drawn instead, so the mod is recognisable in a list of saves before
-anything has been set up, and so it says which four games are in it.
+supplied instead, so the mod is recognisable in a list of saves
+before anything has been set up.
 
-It is deliberately NOT a picture of the table. A 256px screenshot of
-a table this wide is twenty illegible rectangles; the card backs in
-this set are type on flat colour and nothing else, so the cover is
-the same thing.
+THE ARTWORK WINS FROM 2026-11-25. Jon drew a cover - gears on felt
+under the set's name - and `tts/cover_src.png` is it, committed so
+this is reproducible from the tree rather than from a file on one
+machine. It arrived as NobulousSetBackground2.png at the repo root,
+627x627; the root copy is a working file and is not the source this
+reads. Drop a new square PNG on cover_src.png to change the cover.
 
-The gears are the unit dice's own, drawn by make_dice, in the five
-die colours and carrying each colour's real tooth count - so the
-cover states the ladder that the dice state: yellow 2 through red 6.
+THE DRAWN COVER IS STILL HERE, behind --draw, and the reasoning for
+it still holds if it is ever wanted back: a 256px screenshot of a
+table this wide is twenty illegible rectangles, the card backs in
+this set are type on flat colour and nothing else, so the drawn
+cover was the same thing. Its gears are the unit dice's own, from
+make_dice, in the five die colours and carrying each colour's real
+tooth count - so it states the ladder that the dice state: yellow 2
+through red 6. The artwork says none of that and does not need to;
+it is a cover, and the Notebook is where the set explains itself.
 """
 import io
 import os
@@ -197,8 +206,29 @@ def cover():
     return im.convert("RGB")
 
 
+def artwork():
+    """Jon's cover, scaled to the thumbnail TTS wants.
+
+    SQUARE IN, SQUARE OUT. TTS shows the file at 256x256 whatever it
+    is, so anything else arrives stretched rather than cropped - and
+    a cover with type across it shows that at once. A source that is
+    not square is centre-cropped to the largest square it holds
+    before the scale, which is the one thing that cannot be left to
+    TTS. RGB because the save list has nothing to composite against
+    and the alpha would be thrown away anyway.
+    """
+    src = os.path.join(HERE, "cover_src.png")
+    im = Image.open(src)
+    w, h = im.size
+    if w != h:
+        s = min(w, h)
+        im = im.crop(((w - s) // 2, (h - s) // 2,
+                      (w - s) // 2 + s, (h - s) // 2 + s))
+    return im.convert("RGB").resize((SIDE, SIDE), Image.LANCZOS)
+
+
 def main():
-    im = cover()
+    im = cover() if "--draw" in sys.argv else artwork()
     out = os.path.join(HERE, "cover.png")
     im.save(out)
     print("  wrote %s  %dx%d" % (os.path.relpath(out, ROOT), *im.size))
