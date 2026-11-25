@@ -82,6 +82,8 @@ DECKS = [
          game='AoS', label='Specialized Programs', card='Specialized Program'),
     dict(key='AoS_Unstable', count=8, w=8, h=1, back='unique', land=False,
          game='AoS', label='Unstable Programs', card='Unstable Program'),
+    dict(key='AoS_Volatile', count=8, w=8, h=1, back='unique', land=False,
+         game='AoS', label='Volatile Programs', card='Volatile Program'),
     # THE ASSEMBLIES ARE NOT A DECK YOU DRAW FROM. Six are revealed at
     # setup recipe side up and stay there; the back is the finale stage
     # the built Assembly becomes, which is why this is 'unique' backs and

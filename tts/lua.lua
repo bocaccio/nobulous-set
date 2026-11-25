@@ -82,7 +82,10 @@ FINF_SET = { {'Increase', 1}, {'Increase', 2}, {'Increase', 3},
              {'Reduce', 1}, {'Reduce', 2}, {'Reduce', 3} }
 -- AoS: the 8-Program mix, Routine / Specialized / Unstable. Each step up
 -- trades one Routine for one Unstable; Specialized stays at 3.
-AOS_MIX = { Easy = {3, 3, 2}, Standard = {2, 3, 3}, Hard = {1, 3, 4}, Nobulous = {0, 3, 5} }
+-- FOUR DECKS SINCE 2026-11-25, and the fourth is 0 at every rung but
+-- Nobulous. Ten cards, not eight: eight could not cover four colours.
+AOS_MIX = { Easy = {4, 3, 3, 0}, Standard = {2, 3, 5, 0},
+            Hard = {0, 3, 7, 0}, Nobulous = {0, 3, 5, 2} }
 -- The finale: dice that START exhausted, Yellow / Green / Blue / Purple.
 -- Red is never one of them - session 5 allows only Red and Yellow.
 IMP_TIRED = { Easy = {3, 3, 3, 3}, Standard = {3, 3, 4, 4},
@@ -2957,6 +2960,18 @@ function setupAoS()
     prog = cutTo(deckOut('Specialized Programs', pad(3)), mix[2])
     moveN(deckOut('Routine Programs', pad(1)), prog, mix[1])
     moveN(deckOut('Unstable Programs', pad(4)), prog, mix[3])
+  end)
+  -- VOLATILE IN A STEP OF ITS OWN, and put away again in the same one.
+  -- BAND_PADS is 4 and the other three are occupied for good by the
+  -- remainders above, so this borrows the one pad that is reused later -
+  -- the Corrupted Limitations take it at Tier II - and must hand it back
+  -- before that step runs. Dealt at all only when the rung asks for it.
+  step(function()
+    if mix[4] and mix[4] > 0 then
+      local vol = deckOut('Volatile Programs', pad(2))
+      moveN(vol, prog, mix[4])
+      putHome(vol)
+    end
   end)
   step(function()
     if prog then
