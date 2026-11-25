@@ -1,0 +1,58 @@
+NAP - is the commitment a one-time deal, and what does the
+Final Exam setup rule cost? Mean of the six Apprentices,
+3000 games each, FINF Reduce 1, no NRJ tier.
+
+                                                 Easy Standard     Hard Nobulous   vs shipped
+AS SHIPPED                                      58.3%    48.9%    37.0%    26.1%
+published, 20k games                            58.1%    49.0%    37.0%    26.3%
+
+THE SETBACK BLEED - 'commit every time you want it quiet'
+must have worked it THIS slot                   58.3%    49.0%    37.1%    26.3%    +0.0  +0.2  +0.1  +0.2
+the bleed is unconditional                      58.0%    47.9%    35.8%    26.0%    -0.3  -0.9  -1.2  -0.1
+  Worth nothing, because a base Setback locks the row: you
+  clear it promptly whether or not it is bleeding.
+
+THE FINAL EXAM ON THE TIME SLOT - does it cost a space?
+rows of 3, not 4                                58.0%    48.3%    36.9%    26.8%    -0.3  -0.5  -0.1  +0.8
+  Also near nothing, and that is worth knowing: the row is not
+  the binding constraint on NAP, Strategy rolls are.
+
+SPECIAL RECOVERY, capped. 'Recover ALL exhausted dice of the
+queued color' is the largest single refill in NAP, and the
+suspect for a Standard that wins on the last die and still
+never asks for a hard decision.
+at most 3 of the queued color                   31.4%    24.1%    15.4%     9.1%   -26.9 -24.8 -21.6 -17.0
+at most 2 of the queued color                    7.1%     4.4%     2.0%     0.9%   -51.2 -44.5 -35.0 -25.2
+at most 1 of the queued color                    0.5%     0.1%     0.0%     0.0%   -57.9 -48.7 -36.9 -26.0
+  Capping the SIZE of the refill does not make NAP tense, it
+  ends it. Dice are the whole economy and Special Recovery is
+  most of the income.
+
+THE TIMING INSTEAD OF THE SIZE. The real complaint was not that
+the refill is big, it is that it is CERTAIN: the Primary's dot
+names the next slot's colour, so once purple is queued you
+spend every purple you have. Making the recovery reach only
+dice that were already exhausted when the slot began takes the
+certainty away and leaves the size alone.
+only PREVIOUS slots' dice come back             43.9%    31.8%    20.2%    13.2%   -14.4 -17.1 -16.8 -12.8
+...and capped at 3 as well                      23.3%    15.3%     8.8%     5.0%   -35.0 -33.6 -28.2 -21.1
+  Right in kind and still too strong in degree: -17 at Standard
+  puts it under the 47-57% band, and EASY lands at 43.7%, below
+  where Standard should be. The ladder would have to be
+  re-pegged under it - and both its dials are already at their
+  soft end on the Easy rung, 4 Credits and 1 Setback, so the
+  re-peg needs a rung below the one that exists today.
+
+AND WHICH EXAMS YOU SIT - the half of the rule that is not free.
+  one per subject, 3 of 4    a subject repeats   0.0% of games
+                               Anat 75%  Engi 75%  Proc 75%  Theo 75%
+  any 3 of the 12            a subject repeats  50.9% of games
+                               Anat 62%  Engi 62%  Proc 62%  Theo 62%
+  Drawing from all 12 repeats a subject in half of all games,
+  and drops each subject's appearance from 75% to 62%. Credits
+  reduce the Target of THAT subject's exam, so a repeat doubles
+  the value of one specialism and strands the other three. To
+  keep the shipped draw, select 1 per subject, shuffle the four
+  face down, deal 3 to the Time Slots and box the fourth unseen
+  - that is the current rule with a new table position, and it
+  moves nothing.

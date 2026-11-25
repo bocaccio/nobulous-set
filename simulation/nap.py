@@ -116,7 +116,35 @@ DEMAND_PENALTY = [1, -1, 2, -1, 1, 1, -1, 1, -1, 1, 2, -1, 1, -1,
 # 1 available die", and while one is on the row "No other Assignment may be
 # worked until this Setback is resolved."
 SETBACKS = [(6, "Y"), (6, "G"), (7, "G"), (7, "B"), (8, "B"), (8, "P")]
-OPPORTUNITIES = [(4, "Y"), (4, "Y"), (5, "Y"), (5, "Y"), (4, "G"), (5, "G")]
+# IS THE COMMITMENT A ONE-TIME DEAL? The printed clause tests whether the
+# card HOLDS stored dice, so one die parked on a Setback switches its bleed
+# off for the rest of the game - you never have to come back to it, and the
+# die is not spent, only locked. That is the sharpest instance in NAP of a
+# commitment bought once and kept, which is what Jon raised on 2026-11-25.
+#   "stored"  printed: no bleed while the card holds any stored die
+#   "always"  the bleed is unconditional; parking buys nothing
+#   "slot"    the bleed is paid unless dice were committed THIS slot, which
+#             is the "commit every time you work it again" reading
+# "stored" is the shipped rule and every published NAP figure.
+SETBACK_UPKEEP = "stored"
+# How many dice one Special Recovery returns. 0 is the printed rule, "all
+# exhausted dice of the queued recovery color", and every published NAP
+# figure. A number caps it - see recover_color, and napcommit.py for what
+# each setting is worth.
+SPECIAL_RECOVERY_CAP = 0
+# THE QUEUE IS VISIBLE A SLOT AHEAD, and that is the exploit Jon played into
+# on 2026-11-25: the Primary's dot sets the NEXT slot's recovery colour, so
+# once you know purple is coming back you may as well spend every purple
+# now. The dice stop being a cost and become a loan already granted, which
+# is why a Standard that wins on the last die can still never ask for a
+# hard decision.
+#
+# True makes a Special Recovery reach only dice that were ALREADY exhausted
+# when the slot began: what you spend this slot is gone until a later cycle.
+# A timing change, not a quantity one - it takes away the certainty without
+# touching the size of the refill, which is what capping it at 2 does.
+SPECIAL_RECOVERY_AGE = False
+OPPORTUNITIES =[(4, "Y"), (4, "Y"), (5, "Y"), (5, "Y"), (4, "G"), (5, "G")]
 
 # What a Crit scores on Neural Response Screening, the one exam that reprices
 # every colour's Crit: 1 as of 2026-11-08, when the card was reworded into the
@@ -917,7 +945,7 @@ class Card(object):
     __slots__ = ("kind", "subject", "target", "demand", "dot", "skulls",
                  "on_demand", "rotated", "free", "stored", "stored_dice",
                  "penalty", "upkeep", "devious", "slot", "index", "ignored",
-                 "away", "effect")
+                 "away", "effect", "worked")
 
     def __init__(self, kind, target, demand, dot, skulls=0, subject=None,
                  penalty=1):
@@ -934,6 +962,7 @@ class Card(object):
         self.free = False           # added by FINF/skull: Skulls ignored
         self.stored = 0             # successes banked on the card
         self.stored_dice = []       # locked to the card until it resolves
+        self.worked = False         # dice committed here THIS slot
         self.penalty = penalty      # printed Demand penalty; -1 = 1 Health
         self.upkeep = 0             # Following Setback: dice per slot
         # The card's own printed effect, for the decks that print one per
@@ -977,6 +1006,7 @@ class Game(object):
         self.rows = [[], [], []]
         self._row = []
         self.queued = None          # color dot queued for Special Recovery
+        self._exh_old = collections.Counter()   # SPECIAL_RECOVERY_AGE
 
         # FINF: three cards numbered for the Time Slots (0 Morning .. 2 Evening).
         # The setting is how many of them you take, at random.
@@ -1120,8 +1150,13 @@ class Game(object):
     NEIGHBOURS = {"purple": ("yellow", "blue"), "blue": ("purple", "green"),
                   "green": ("blue", "yellow"), "yellow": ("green", "purple")}
 
-    def recover_color(self, color):
-        """Special Recovery: recover ALL exhausted dice of one color."""
+    def recover_color(self, color, limit=None):
+        """Special Recovery: recover ALL exhausted dice of one color.
+
+        `limit` is SPECIAL_RECOVERY_AGE's doing: the number of dice of this
+        colour that were already exhausted when the slot began, so the ones
+        spent during it are out of reach.
+        """
         # WHERE DID I PUT THAT?, as reworded 2026-11-12: "While unresolved,
         # Special Recovery at the start of each Time Slot leaves 1 die of the
         # queued color exhausted."
@@ -1140,9 +1175,23 @@ class Game(object):
                 self.exhausted.remove(color)
                 held = color
         keep = []
+        # SPECIAL_RECOVERY_CAP: 0 is the printed "all", any other number is
+        # the most dice one Special Recovery may return. Raised 2026-11-25,
+        # when a Standard playtest finished with no dice left and still felt
+        # like it was never asking for a hard decision - "recover all" is
+        # the biggest refill in NAP and the suspect for that.
+        back = 0
+        # None is "no cap". A limit of 0 means nothing of this colour was
+        # exhausted before the slot began, so NOTHING comes back - which is
+        # the whole point of the age rule and would read as "unlimited" if
+        # this used 0 as the sentinel the way SPECIAL_RECOVERY_CAP does.
+        cap = SPECIAL_RECOVERY_CAP if SPECIAL_RECOVERY_CAP else None
+        if limit is not None:
+            cap = limit if cap is None else min(cap, limit)
         for c in self.exhausted:
-            if c == color:
+            if c == color and (cap is None or back < cap):
                 self.available.append(c)
+                back += 1
             else:
                 keep.append(c)
         self.exhausted = keep
@@ -1443,6 +1492,9 @@ class Game(object):
             take = self.commit_for(card)
             if not take:
                 return False
+            # Dice went onto this card in this slot. Only SETBACK_UPKEEP
+            # "slot" reads it, and the end-of-slot bleed clears it.
+            card.worked = True
             # NOBULOUS NEEDS THIS NOW: "the first die you commit to another
             # Assignment each Time Slot must match that Assignment's
             # recovery-color dot." commit_for already leads with the dot when
@@ -2084,7 +2136,15 @@ class Game(object):
         if self.ability in ("discard", "morning_discard"):
             self.use_daily_ability()
         if self.queued:
-            self.recover_color(DOT_COLOR[self.queued])
+            # SPECIAL_RECOVERY_AGE: only dice that were already exhausted
+            # when the PREVIOUS slot began are in reach, so what was spent
+            # during it has to wait another cycle.
+            limit = (self._exh_old.get(DOT_COLOR[self.queued], 0)
+                     if SPECIAL_RECOVERY_AGE else None)
+            self.recover_color(DOT_COLOR[self.queued], limit=limit)
+        # The pool as THIS slot begins, which is what the next recovery may
+        # reach. Taken after the recovery, so a die cannot come back twice.
+        self._exh_old = collections.Counter(self.exhausted)
         if not REC_AT_END_OF_DAY:
             self.recover(self.rec)
         # A Setback with no stored dice exhausts 1 available die each slot.
@@ -2104,10 +2164,15 @@ class Game(object):
             # upkeep of its own, and it is unconditional.
             if card.effect:
                 cost = card.upkeep
+            elif SETBACK_UPKEEP == "always":
+                cost = 1
+            elif SETBACK_UPKEEP == "slot":
+                cost = 0 if card.worked else 1
             else:
                 cost = 0 if card.stored_dice else 1
             for _ in range(cost):
                 self.spend_die(DOT_COLOR.get(card.dot))
+            card.worked = False
         while self.finf_due[self.slot] > 0:
             self.finf_due[self.slot] -= 1
             self.draw_into_row(free=True)   # Skulls ignored on FINF cards
