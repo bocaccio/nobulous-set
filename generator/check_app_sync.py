@@ -2157,25 +2157,33 @@ check("all four families print flavour through the class",
 
 print()
 print("THE RULEBOOKS THE APP SERVES, AND THE RULES IT RESTATES")
-# The lab links the rulebook PDFs out of playtest/dist/assets/, which are
-# deployment copies of rules/*.pdf, which are built from rules/*.html. A
-# player reading "Full BAT rules" in the lab and a player reading the PDF
-# have to be reading the same document, and nothing checked that.
+# THE RULEBOOK NAMES, kept because two checks further down read them: the
+# PDF ladder check just below and the lab's index.html link list.
 #
-# This does NOT check rules/*.pdf against rules/*.html - that needs
-# WeasyPrint and a full rebuild. `cd rules && python build.py` is the test:
-# the build is byte reproducible, so if it rewrites nothing, the PDFs are
-# current. Verified that way on 2026-11-03.
+# WHAT USED TO BE HERE was the lab's deployment copies of these PDFs held
+# against rules/*.pdf, and it was dropped on 2026-11-25 with the other 70
+# lab checks. It outlived them by a few hours for a reason worth writing
+# down: IT CAN ONLY FAIL ONCE A RULEBOOK IS REBUILT, and none had been
+# rebuilt that day, so it passed the cull by being quiet rather than by
+# being live. The first `cd rules && python build.py` after the freeze
+# failed it on three books at once.
+#
+# It cannot come back while the lab is frozen: it asks the frozen
+# interface to track every rules edit, which is the one thing the freeze
+# says not to do. The ?v= content-hash check near the end of this file is
+# NOT the same check - its _books comes out of the mod's save JSON and
+# holds the TTS notebook's URLs against the bytes on disk, which is live
+# and stays.
+#
+# AND IT CAUGHT ONE REAL THING ON ITS WAY OUT. rules/AoS_Rulebook.pdf was
+# 907 bytes short of its own HTML: the AoS install rule went into
+# rules/aos.html earlier on 2026-11-25 and `rules/build.py` was never run
+# after it, so the shipped AoS PDF - and the copy the mod serves - printed
+# the old "no failed elements" rule. Nothing else checks a PDF against its
+# HTML; the comment that used to sit here said so, and said the test is to
+# run the build and see whether it rewrites anything. It is still the test.
 _books = ("BAT_Rulebook.pdf", "NAP_Rulebook.pdf", "AoS_Rulebook.pdf",
           "NRJ_Campaign_Supplement.pdf")
-_stale = []
-for _b in _books:
-    _src = os.path.join(ROOT, "rules", _b)
-    _dst = os.path.join(ROOT, "playtest", "dist", "assets", _b)
-    if not os.path.exists(_dst):
-        _stale.append(_b + " (not deployed)")
-    elif io.open(_src, "rb").read() != io.open(_dst, "rb").read():
-        _stale.append(_b)
 # THE TWO REROLLS THAT ARE NOT THE BASE GAME'S, AND ARE MEANT.
 #
 # 20 Strong rerolls MISSES. BAT printed a sentence saying otherwise and
@@ -2353,6 +2361,34 @@ else:
                 max(0, sn["LEVELS"][l][1] - 3)
                 for l in ("Easy", "Standard", "Hard", "Nobulous")),
         ],
+        # ADDED 2026-11-25, because this book had been stale for hours and
+        # nothing here could see it. Only NAP's ladder and NRJ's split were
+        # ever extracted from a shipped PDF, so AoS's book was checked for
+        # its page count and its fonts and for nothing it says. The install
+        # rule had changed in rules/aos.html that morning and the PDF - and
+        # the copy the mod serves - still printed the old one.
+        #
+        # TWO CLAIMS, both derived rather than typed: the deck mix out of
+        # simulation/aos.py's LEVELS, which is the four-column table the
+        # rules print, and the install condition out of INSTALL_REQUIRES.
+        #
+        # THE INSTALL CLAIM QUOTES THE WIN SENTENCE, not the phrase on its
+        # own, and that is the whole point of its shape. "no failed
+        # elements" is not a wording this rule ever had to itself - the
+        # Program REWARD genuinely requires a clean run and says so in
+        # three places - so a "clean" predicate looking for that phrase
+        # alone would pass on prose about a different rule, in the book
+        # that had just gone stale. AGENTS.md says to write a claim a NAME
+        # cannot satisfy; this is the same trap one step along.
+        "AoS_Rulebook.pdf": [
+            " ".join(
+                ("%s " % l) + " ".join(str(n) for n in sa["LEVELS"][l])
+                for l in ("Easy", "Standard", "Hard", "Nobulous")),
+            "Come out of the finale with %s and at least 1 Health"
+            % {"nocat": "at most one failed element",
+               "clean": "no failed elements",
+               "any": "any elements failed"}[sa["INSTALL_REQUIRES"]],
+        ],
     }
     for _b, _wants in sorted(_want_pdf.items()):
         _f = os.path.join(ROOT, "rules", _b)
@@ -2402,9 +2438,6 @@ for _g in ("bat", "nap", "aos", "nrj"):
     _shape += ["%s.html: %s" % (_g, b) for b in _lp.bad]
 check("no rulebook nests a list item or strands text in a list",
       not _shape, "; ".join(_shape[:3]))
-
-check("the app serves the rulebooks that rules/ built",
-      not _stale, "differ from rules/: %r" % (_stale,))
 
 _idx = text("playtest/dist/index.html")
 _linked = [_b for _b in _books if _b in _idx]

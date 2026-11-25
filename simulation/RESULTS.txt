@@ -18,44 +18,94 @@ NAP  Nobulous Apprenticeship Program
 ==================================================================
   difficulty = Credit goal / Setbacks in the deck; FINF at Reduce 1
 
+  THIS GRID IS NOT FROM THE RUN AT THE TOP OF THIS FILE.  It was
+  measured on 2026-11-25 by simulation/napgrid.py, which rebuilds
+  the NAP third cell for cell the way table.py builds it - the mean
+  of the six Apprentices at FINF Reduce 1, four tiers, 20,004 games
+  a cell.  table.py cannot be run whole: it measures BAT with
+  simulation/bat.py, retired on 2026-11-20 in favour of batrev.py,
+  which still reads 87% at Standard against a published 53.2%, so
+  running it would overwrite the BAT third with figures for a game
+  that no longer exists.  THE BAT AND AoS THIRDS BELOW ARE THEIR
+  OWN RUNS and are each marked where they differ.
+
                             no NRJ    Tier I   Tier II  Tier III
-  Easy (4 Cr, 1 Sb)          58.1%     47.6%     34.9%     43.9%
-  Standard (5 Cr, 2 Sb) *     49.0%     41.1%     29.0%     38.8%
-  Hard (6 Cr, 3 Sb)          37.0%     35.1%     22.9%     33.7%
-  Nobulous (7 Cr, 4 Sb)      26.3%     24.5%     16.8%     25.7%
-  
+  Easy (3 Cr, 2 Sb)          64.5%     58.8%     46.4%     51.6%
+  Standard (4 Cr, 3 Sb) *     50.0%     48.1%     34.2%     40.9%
+  Hard (5 Cr, 4 Sb)          35.4%     33.3%     23.4%     30.2%
+  Nobulous (6 Cr, 5 Sb)      25.7%     24.1%     16.5%     23.4%
+
     * Standard difficulty. Mean of the six Apprentices.
-    THE LADDER STEPPED A CREDIT DOWN AND A SETBACK UP on
-    2026-11-12: Easy 4 Cr / 1 Sb, Standard 5 / 2, Hard 6 / 3,
-    Nobulous 7 / 4, replacing 5/0, 6/1, 7/2, 8/4 from earlier the
-    same day and 6/3, 7/3, 8/4, 9/5 before that.  Both dials still
-    move one step a rung, so it is the same diagonal shifted.
-    rules/RULES_CHANGELOG.txt carries the decision.
+    TWO RE-PEGS LANDED ON 2026-11-25, and the grid this replaced -
+    58.1 / 49.0 / 37.0 / 26.3 solo on 4/5/6/7 Credits and 1/2/3/4
+    Setbacks - was never re-measured for the first of them, so this
+    file carried a ladder NAP had already stopped playing.
+      FIRST, THE CREDIT GOALS WENT DOWN ONE to 3/4/5/6, paying for
+    the Special Recovery age rule: a Special Recovery now reaches
+    only dice that were already exhausted when the Time Slot began,
+    which is worth -17.1 at Standard on its own.  REC also went 2
+    to 3 on all six Apprentice cards.  That took Standard UP, to
+    55.4%, because the two payments together overpaid - and Jon
+    played that game and reported it never asked for a hard
+    decision.
+      SECOND, THE SETBACK COUNTS WENT UP ONE to 2/3/4/5, which is
+    this grid.  It takes back the half of the payment that costs no
+    printed rule at all: the Credit goals stay where the first
+    re-peg put them and no card is reprinted, because the count has
+    never been on a card.  napharder.txt sizes all eleven levers
+    that were considered and napladder.txt has the five ladders.
 
-    STANDARD IS BACK IN THE BAND at 49.0%, near the floor rather
-    than centred, and it is the hardest Standard in the set: BAT
-    53.2, AoS 50.7, NAP 49.0.  There is no cell between 5 Cr / 1 Sb
-    (55.1 at 4000 games) and 5 / 2, so its own Setback count cannot
-    move it a little.
+    STANDARD IS MID-BAND at 50.0%, which is the first time it has
+    been: it has been 49.0 near the floor and 55.4 near the ceiling
+    and nothing in between, because its own Setback count was the
+    only dial fine enough and the ladder would invert if that moved
+    alone.  Moving every rung together is what made the cell
+    reachable.
 
-    NOBULOUS IS WHERE THE STEP PAID, against the pegged ladder in
-    rules/bat.html - 63.7 / 52.8 / 37.8 / 25.8, the one ladder in
-    the set aimed at the community band on purpose.  7 Cr / 4 Sb
-    reads 26.3 against that 25.8, half a point out, where 8 / 4
-    read 22.5 and was 3.3 out.  Hard is 37.0 against 37.8, which is
-    the 0.8 it already was.  Note BAT MEASURES 40.1 AND 28.1 ON THE
-    GRID ABOVE rather than its own pegged 37.8 and 25.8: that gap
-    is BAT's and predates this, and the peg is what the set has
-    always been compared with.
+    BUT ONE APPRENTICE IS OUT OF BAND, and it is the other end from
+    last time.  At Standard, 20,004 games each: Prodigy 50.1,
+    Slacker 46.5, Technician 51.0, Savant 49.9, Opportunist 51.3,
+    Lab Rat 51.0 - spread 4.8.  SLACKER IS 0.5 BELOW THE 47% FLOOR
+    where the ladder this replaces had Opportunist 0.3 ABOVE the
+    57% ceiling at 57.3.  The spread tightened from 5.6, and the
+    two are not the same complaint: a rung too hard for one
+    Apprentice is one nobody has made about NAP.
+      AND IT IS NOT THAT THIS CHANGE HITS SLACKER HARDEST.  The
+    six lost -5.6 / -5.3 / -4.4 / -6.5 / -6.0 / -5.9 against a
+    mean of -5.4, so Slacker lost slightly LESS than average; it
+    is out because it was already the lowest of the six by 3.6
+    points, at 51.8 where the next was 55.4.  That gap is its
+    own and predates both re-pegs.  A Setback in the deck is
+    worth about the same to every Apprentice.
 
-    AND TIER III IS BELOW ITS OWN SOLO CELL AT EVERY RUNG now -
-    43.9 / 38.8 / 33.7 / 25.7 against 58.1 / 49.0 / 37.0 / 26.3.
-    Nobulous was level with its solo cell under the old ladder,
-    and a tier may not make the game easier than no campaign.
+    AGAINST THE PEGGED LADDER in rules/bat.html - 63.7 / 52.8 /
+    37.8 / 25.8, the one ladder in the set aimed at the community
+    band on purpose - this is +0.8 / -2.8 / -2.4 / -0.1.  The two
+    ENDS are the closest they have ever been and the middle is
+    2 to 3 points under.  The solo steps are 14.6 / 14.6 / 9.7
+    against 13.5 / 15.4 / 12.0 before: the first step WIDENED by
+    1.1, because Standard gave up 5.4 points and Easy only 4.4,
+    and the top step compressed to 9.7 because Nobulous was
+    already within 0.1 of its peg and had nowhere to go.
 
-    TIER II IS STILL THE WEAKEST CELL ON THE BOARD, 34.9 / 29.0 /
-    22.9 / 16.8, and the previous edition of this file flagged it
-    as not looked at.  It still has not been.  It moved with the
+    THE CAMPAIGN DID NOT MOVE AT EASY OR STANDARD.  Nine of the
+    twelve NRJ cells are byte for byte what the first re-peg
+    measured, because Tier I swaps one base Setback out per
+    Following card in, floored at none: a base count below 3 is
+    swamped either way, so Easy and Standard both arrive at exactly
+    3 Setbacks before and after.  Only Hard and Nobulous feel this,
+    and they are the two rungs that keep 1 and 2 base Setbacks of
+    their own.
+
+    TIER III IS BELOW ITS OWN SOLO CELL AT EVERY RUNG - 51.6 /
+    40.9 / 30.2 / 23.4 against 64.5 / 50.0 / 35.4 / 25.7 - which is
+    the one shape a tier must have.  IT IS STILL ABOVE TIER II AT
+    EVERY RUNG TOO, by 5.2 / 6.7 / 6.8 / 6.9, and that is not new;
+    Tier III's Devious Opportunities are a net help.
+
+    TIER II IS STILL THE WEAKEST CELL ON THE BOARD, 46.4 / 34.2 /
+    23.4 / 16.5, and three editions of this file have flagged it as
+    not looked at.  It still has not been.  It moved with the
     ladder rather than for any reason of its own.
 
     WHAT THE 2026-11-11 RUN SAID.  The rules revision in
@@ -1046,11 +1096,20 @@ CALIBRATION - published 20 Strong titles, community-recorded
 
   Source: 20 Strong Community Game Stats, read 2026-09-20.
   A finished game in this system sits near 50%. These four
-  lines are COMPUTED from the grids above - 20000 games a cell -
-  so they cannot drift from them:
+  lines WERE COMPUTED from the grids above - 20000 games a cell -
+  and could not drift from them while table.py was the only thing
+  that wrote this file.  IT IS NOT ANY MORE.  table.py cannot be
+  run whole since simulation/bat.py was retired on 2026-11-20, so
+  the NAP and AoS grids above are now regenerated one at a time by
+  napgrid.py and aosgrid.py and pasted in, and these verdicts are
+  RETYPED BY HAND to match.  The BAT and NRJ lines are the last
+  computed ones.  A re-run of table.py, once it is ported to
+  batrev.py, is what makes them computed again.
     BAT  Standard in band (53.2% solo), Easy above the band.
-    NAP  Standard in band (49.0% solo, 38.8% at Tier III)
-         since every Target rose by 1; Hard below the band.
+    NAP  Standard in band (50.0% solo, 40.9% at Tier III) as of
+         the 2026-11-25 Setback re-peg - mid-band for the first
+         time; Hard and Nobulous below the band, and SLACKER 0.5
+         below the floor at 46.5% on its own.
     AoS  Standard in band on its OWN column (50.7%) since the
          2026-11-05 re-pitch onto the strongest allocation
          line the printed rules allow (ALLOC_MODE = sacrifice_short);

@@ -648,8 +648,8 @@ FINF_REDUCE_ANY_CARD = False
 # one so demanding more refunds itself, and above about 8 the Credits earned
 # flatline because the deck runs out. The deck is the other half, which is
 # what BAT (Specimens added) and AoS (deck mix) already use.
-#   Easy 1, Standard 2, Hard 3, Nobulous 4 - see LEVELS below
-SETBACKS_IN_DECK = 2
+#   Easy 2, Standard 3, Hard 4, Nobulous 5 - see LEVELS below
+SETBACKS_IN_DECK = 3
 OPPORTUNITIES_IN_DECK = 6
 
 # Opportunity levers, all printed-card changes:
@@ -999,11 +999,73 @@ CREDITS_TO_LEAVE = 4      # Easy 3, Standard 4, Hard 5, Nobulous 6
 # used to have. Adopting "contribute means succeed" at the Final Exams -
 # still undecided, see EXAM_NEED - takes it to about 53 and centres it.
 #
-# THE SETBACK COUNTS DID NOT MOVE, which is what makes this the cheap half
-# of the ladder to turn: NAP_SETBACK_COUNT, the "1, 2, 3 or 4 of the 6"
-# setup line and the Tier I split prose all read the Setback column and
-# none of them had to change.
-LEVELS = {"Easy": (3, 1), "Standard": (4, 2), "Hard": (5, 3), "Nobulous": (6, 4)}
+# THE SETBACK COUNTS DID NOT MOVE THAT DAY, which is what made it the cheap
+# half of the ladder to turn - and that is no longer true of the table
+# below, so the sentence is kept only to date the one that replaced it.
+#
+# RE-PEGGED AGAIN 2026-11-25, one Setback ON every rung: 1/2/3/4 became
+# 2/3/4/5 and the Credit goals stayed 3/4/5/6. This is the other half of
+# the same decision as the paragraph above. Candidate A took Standard UP,
+# 49.0% to 55.4%, because REC 3 and a Credit goal one lower overpaid for a
+# rule that costs -17.1 on its own; Jon played that game and said it never
+# asked for a hard decision. This takes back the half of the payment that
+# costs no printed rule at all.
+#
+# MEASURED, 20,004 games a cell, six Apprentices, napgrid.txt:
+#
+#     level        goal/sb   solo   tier I  tier II  tier III
+#     Easy          3 / 2    64.5    58.8     46.4     51.6
+#     Standard      4 / 3    50.0    48.1     34.2     40.9
+#     Hard          5 / 4    35.4    33.3     23.4     30.2
+#     Nobulous      6 / 5    25.7    24.1     16.5     23.4
+#
+# Against rules/bat.html's deliberately pegged 63.7 / 52.8 / 37.8 / 25.8
+# that is +0.8 / -2.8 / -2.4 / -0.1, the closest the solo column has been
+# at the two ends. THE LADDER CAME DOWN 4.4 / 5.4 / 4.6 / 2.3, so Standard
+# moved most and Nobulous least, and the solo steps are 14.6 / 14.6 / 9.7
+# against 13.5 / 15.4 / 12.0 before. The first step did NOT narrow - it
+# widened by 1.1, because Standard gave up more than Easy did - and the
+# TOP step is the one that compressed, to 9.7. Nobulous is close enough to
+# its own peg that there is little room left above it.
+#
+# AND ONE APPRENTICE IS OUT, by less than the one that was out before.
+# Standard reads Prodigy 50.1, Slacker 46.5, Technician 51.0, Savant 49.9,
+# Opportunist 51.3, Lab Rat 51.0 - spread 4.8, against 5.6. SLACKER IS 0.5
+# BELOW THE 47% FLOOR where Opportunist was 0.3 ABOVE the 57% ceiling at
+# 57.3, so this trades one marginal Apprentice for another and tightens
+# the spread. Not a wash in kind: a rung that is too easy for one
+# Apprentice and a rung that is too hard for one are different
+# complaints, and the second is the one Jon has not made.
+#
+# WHY THE DECK AND NOT THE CREDIT GOAL, which was the other candidate.
+# A Credit is now worth 9.2 points, not the 4.2-5.2 recorded above - the
+# age rule changed what one costs - so reverting the pre-A goals lands
+# Standard at 46.2%, BELOW the 47% floor, and at Nobulous it reads 22.9%
+# solo against 23.9% at Tier III. That last figure disqualifies it
+# outright: it is the campaign making the game easier, which is the one
+# thing a tier may never do. napharder.txt sizes all eleven levers.
+#
+# AND IT DOES NOT MOVE THE CAMPAIGN AT THE TOP TWO RUNGS AT ALL. The swap
+# is one base Setback out per Following card in, floored at none, so a base
+# count below 3 is swamped either way: Easy and Standard both reach Tier I
+# with 0 base Setbacks before and after this change, and their nine NRJ
+# cells are byte for byte the figures candidate A measured. Only Hard and
+# Nobulous feel it, which is also why the campaign axis keeps the shape it
+# had. Tier III standing ABOVE Tier II at Easy (51.6 against 46.4) is not
+# new either - it reads that way in napage_confirm.txt too, because Tier
+# III's Devious Opportunities are a net help on a rung that can afford to
+# cash them.
+#
+# FOUR LIVE SOURCES CARRY THE COUNT and all four moved with this table:
+# the difficulty table in rules/nap.html and the setup step above it,
+# NAP_DIFF in tts/lua.lua and the NAP quick reference in tts/build_mod.py.
+# NAP_SETBACK_COUNT in playtest/dist/suite.js did NOT: the lab is frozen as
+# of 2026-11-25 and was dropped from check_app_sync.py the same day, so it
+# still keys off the pre-2026-11-25 Credit goals and plays the game as it
+# stood. "Every level plays with at least one" is now at least TWO, and the
+# mod's note that below 3 the tier ADDS rather than swaps describes only
+# Easy now, where it used to describe all but Nobulous.
+LEVELS = {"Easy": (3, 2), "Standard": (4, 3), "Hard": (5, 4), "Nobulous": (6, 5)}
 # End of Day burns one card off the Assignment deck, text ignored.
 # rules/nap.html prints it under "End of Day" - "Reveal and discard the top
 # card of the Assignment deck. Ignore all of its text, effects and Skulls" -

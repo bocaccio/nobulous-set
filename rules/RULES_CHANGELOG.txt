@@ -1,3 +1,84 @@
+2026-11-25  NAP: ONE MORE SETBACK AT EVERY RUNG - 2 / 3 / 4 / 5
+Jon asked whether there was any way to make NAP harder, hours after the
+entry below took its Standard rung UP.  That is the whole shape of this
+change: the Special Recovery age rule costs -17.1 points on its own, REC 3
+and a Credit goal one lower paid for it, and together they OVERPAID.
+Standard went from 49.0% to 55.4% - the top of the 47-57% band, and the
+easiest Standard in the set - while the game underneath it was the one Jon
+had just called too easy.  So the question was not what new rule would make
+NAP harder.  It was which half of the payment to take back.
+
+THE DECK, NOT THE CREDIT GOAL, and the measurement is what decided it.
+simulation/napharder.py sized eleven levers at Standard, 20,004 games a
+cell, six Apprentices averaged, with the shipped control reproducing
+napage_confirm.txt exactly.  A CREDIT IS NOW WORTH 9.2 POINTS, not the
+4.2-5.2 that nap.LEVELS recorded - the age rule changed what one costs -
+so simply reverting the pre-age-rule goals lands Standard at 46.2%, BELOW
+the floor.  Worse, at Nobulous it reads 22.9% solo against 23.9% at
+Tier III: the campaign making the game EASIER, which is the one thing a
+tier may never do.  A Setback is worth 5.4, and the Setback column had not
+moved in the entry below, so it was the half of the payment still on the
+table.
+
+  Easy 1 -> 2, Standard 2 -> 3, Hard 3 -> 4, Nobulous 4 -> 5.  The Credit
+  goals stay 3 / 4 / 5 / 6.  No card is reprinted: the count has never
+  been on a card.  "Every level plays with at least one" is now at least
+  TWO.
+
+MEASURED, 20,004 games a cell, simulation/napgrid.txt:
+
+    level        goal/sb   solo   tier I  tier II  tier III
+    Easy          3 / 2    64.5    58.8     46.4     51.6
+    Standard      4 / 3    50.0    48.1     34.2     40.9
+    Hard          5 / 4    35.4    33.3     23.4     30.2
+    Nobulous      6 / 5    25.7    24.1     16.5     23.4
+
+STANDARD IS MID-BAND FOR THE FIRST TIME, at 50.0%.  It had been 49.0 near
+the floor and 55.4 near the ceiling and nothing in between, because its own
+Setback count was the only dial fine enough to move it and the ladder would
+invert if that moved alone.  Moving every rung together is what made the
+cell reachable at all.  Against the pegged ladder in rules/bat.html -
+63.7 / 52.8 / 37.8 / 25.8 - this is +0.8 / -2.8 / -2.4 / -0.1, the closest
+the two ENDS have ever been.
+
+AND ONE APPRENTICE IS OUT, at the opposite end from last time.  Slacker
+reads 46.5% at Standard, 0.5 below the floor, where the ladder this
+replaces had Opportunist 0.3 ABOVE the ceiling at 57.3; the spread
+tightened from 5.6 to 4.8.  IT IS NOT THAT THIS CHANGE HITS SLACKER
+HARDEST - the six lost 5.6 / 5.3 / 4.4 / 6.5 / 6.0 / 5.9 against a mean of
+5.4, so Slacker lost slightly less than average.  It is out because it was
+already the lowest of the six by 3.6 points.  That gap predates both
+re-pegs and has not been looked at.
+
+THE CAMPAIGN DID NOT MOVE AT EASY OR STANDARD, and that is the floor doing
+its job rather than an oversight.  Tier I swaps one base Setback out per
+Following card in, floored at none, so a base count below 3 is swamped
+either way: Easy and Standard both arrive at exactly the 3 Following
+Setbacks before and after this, and nine of the twelve NRJ cells are
+unchanged.  Only Hard and Nobulous keep base Setbacks of their own - 1 and
+2 now - and only they feel this.  The per-rung split sentence in
+rules/nrj.html is derived from nap.LEVELS by check_app_sync.py, so it moved
+with the table; the paragraph under the Tier I table had ALSO been wrong
+since 2026-11-12, claiming Easy and Standard "play 3 Setbacks anyway", and
+that is corrected here.
+
+WHAT WAS CONSIDERED AND REJECTED, all in simulation/napladder.txt:
+"contribute means succeed" at the Final Exams reads 53.4% at Standard and
+is still open as a question of its own; pricing an unmeetable contribution
+clause at 1 Health reads 47.9%, out of band and crude - whether it fires
+depends on which color you happened to run out of, not on a decision you
+made; raising every Assignment Target by 1 reads 39.6%; and the Setback
+bleed made unconditional is worth 1.2, because a base Setback locks its row
+and is cleared promptly whether or not it is bleeding.
+
+AND ONE THING THE SUITE CAUGHT ON ITS WAY PAST.  rules/AoS_Rulebook.pdf was
+907 bytes short of its own HTML: the AoS install rule went into
+rules/aos.html earlier the same day and rules/build.py was never run after
+it, so the shipped AoS book - and the copy the mod serves - still printed
+the old "no failed elements" rule.  Only the ladder is extracted from a
+shipped PDF and checked, and AoS's install rule is not the ladder, so
+nothing read it.  The rebuild is in this change.
+
 2026-11-25  NAP: THE SPECIAL RECOVERY HAPPENS LAST, REC IS 3, AND THE CREDIT
             GOALS DROP TO 3 / 4 / 5 / 6
 Jon played a Standard game, won it on the last die, and said it had never

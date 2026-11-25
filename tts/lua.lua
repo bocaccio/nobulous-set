@@ -65,14 +65,18 @@ LEVELS = { 'Easy', 'Standard', 'Hard', 'Nobulous' }
 -- rounds printed BAT used to give everybody.
 BAT_DIFF = { Easy = {5, 12}, Standard = {7, 10}, Hard = {7, 9}, Nobulous = {8, 8} }
 -- NAP: the Credit goal, and how many Setbacks are in the Assignment deck.
--- (Credit goal, Setbacks shuffled in).  Stepped one Credit down and one
--- Setback up 2026-11-12: 58.1 / 49.0 / 37.0 / 26.3 solo, six Apprentices,
--- 20,000 games a cell, against BAT's pegged 63.7 / 52.8 / 37.8 / 25.8.
--- EVERY RUNG CARRIES AT
--- LEAST ONE SETBACK, which is what keeps Tier I's one-for-one swap from
--- simply adding three cards to a rung that had none - see LEVELS in
--- simulation/nap.py for the measurement and for what Standard pays for it.
-NAP_DIFF = { Easy = {3, 1}, Standard = {4, 2}, Hard = {5, 3}, Nobulous = {6, 4} }
+-- (Credit goal, Setbacks shuffled in).  One Setback ON every rung
+-- 2026-11-25: 64.5 / 50.0 / 35.4 / 25.7 solo, six Apprentices, 20,004
+-- games a cell, against BAT's pegged 63.7 / 52.8 / 37.8 / 25.8 - the
+-- closest the column has been at the two ends. It takes back the half of
+-- the Special Recovery age rule's payment that costs no printed rule, so
+-- the Credit goals stay 3/4/5/6 and the whole ladder comes down 4 to 5
+-- points with Standard moving most.
+-- EVERY RUNG NOW CARRIES AT LEAST TWO SETBACKS, which is what keeps
+-- Tier I's one-for-one swap from simply adding three cards to a rung that
+-- had none - see LEVELS in simulation/nap.py for the measurement and for
+-- why the deck moved rather than the Credit goal.
+NAP_DIFF = { Easy = {3, 2}, Standard = {4, 3}, Hard = {5, 4}, Nobulous = {6, 5} }
 -- NAP's second dial, from rules/nap.html: Increase 1-3 shuffles that
 -- many of the 3 FINF cards INTO the Assignment deck, Reduce 1-3 lays
 -- them out face-up to spend. Standard is Reduce 1. The two directions
@@ -2813,7 +2817,8 @@ function setupNAP()
   -- deck came out right because moveN(-1) moves nothing, so the only thing
   -- that showed was the setup message in chat announcing "-1 base". The
   -- model (max(0, ...)) and the lab (slice(3) on a list of 2) have always
-  -- floored it.
+  -- floored it. The floor only bites at EASY as of 2026-11-25, where the
+  -- count is 2; Standard now asks for exactly the 3 that leave.
   local base = (STATE.tier >= 1) and math.max(0, sb - 3) or sb
   -- AND THE DECK CAN HOLD MORE SETBACKS THAN THE DIFFICULTY ASKS FOR. Three
   -- Following cards arrive and only `sb` base ones can leave, so at sb < 3

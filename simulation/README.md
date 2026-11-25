@@ -240,13 +240,30 @@ That sweep landed on 5/0, 6/1, 7/2, 8/4 and Standard at 52.1%. The ladder
 was then stepped one Credit down and one Setback up, at Jon's ask - the same
 diagonal, shifted, so each dial still moves one step a rung:
 
-> **SUPERSEDED 2026-11-25.** The ladder below is the one that shipped until
-> the Special Recovery age rule landed. The Credit goals are 3 / 4 / 5 / 6 now
-> and REC starts at 3, and the current grid is `napage_confirm.txt`:
-> 68.9 / 55.4 / 40.0 / 28.0 solo, Standard 4 Cr / 2 Sb at the TOP of the band
-> rather than near its floor. `RESULTS.txt` has not been regenerated - see
-> `rules/RULES_CHANGELOG.txt` for why and for the two exam questions still
-> open. Everything under this note is history.
+> **SUPERSEDED TWICE ON 2026-11-25, and `RESULTS.txt` now carries the
+> current grid.** The ladder below is the one that shipped until the Special
+> Recovery age rule landed. That rule took the Credit goals down one, to
+> 3 / 4 / 5 / 6, and REC up to 3, which overpaid: Standard went to 55.4%, the
+> top of the band, and played as a game that never asked for a hard decision.
+> The Setback counts then went up one, to **2 / 3 / 4 / 5**, taking back the
+> half of the payment that costs no printed rule. The current grid is
+> `napgrid.txt`, and it is the NAP third of `RESULTS.txt`:
+>
+> | difficulty | goal / Setbacks | solo | Tier I | Tier II | Tier III |
+> | --- | --- | --- | --- | --- | --- |
+> | Easy | 3 / 2 | 64.5% | 58.8% | 46.4% | 51.6% |
+> | **Standard** | **4 / 3** | **50.0%** | 48.1% | 34.2% | 40.9% |
+> | Hard | 5 / 4 | 35.4% | 33.3% | 23.4% | 30.2% |
+> | Nobulous | 6 / 5 | 25.7% | 24.1% | 16.5% | 23.4% |
+>
+> **Standard is mid-band for the first time**, and against BAT's pegged
+> 63.7 / 52.8 / 37.8 / 25.8 the two ends are the closest they have been
+> (+0.8 and -0.1). One Apprentice is out: Slacker reads 46.5%, 0.5 below the
+> floor, where this ladder's predecessor had Opportunist 0.3 above the
+> ceiling. `napharder.txt` sizes all eleven levers that were considered and
+> `napladder.txt` has the five ladders; see `rules/RULES_CHANGELOG.txt` for
+> the decision and for the two exam questions still open. Everything under
+> this note is history.
 
 | difficulty | goal / Setbacks | solo | Tier I | Tier II | Tier III |
 | --- | --- | --- | --- | --- | --- |
