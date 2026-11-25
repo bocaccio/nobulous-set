@@ -62,14 +62,24 @@ with the table; the paragraph under the Tier I table had ALSO been wrong
 since 2026-11-12, claiming Easy and Standard "play 3 Setbacks anyway", and
 that is corrected here.
 
-WHAT WAS CONSIDERED AND REJECTED, all in simulation/napladder.txt:
-"contribute means succeed" at the Final Exams reads 53.4% at Standard and
-is still open as a question of its own; pricing an unmeetable contribution
-clause at 1 Health reads 47.9%, out of band and crude - whether it fires
-depends on which color you happened to run out of, not on a decision you
-made; raising every Assignment Target by 1 reads 39.6%; and the Setback
-bleed made unconditional is worth 1.2, because a base Setback locks its row
-and is cleared promptly whether or not it is bleeding.
+WHAT WAS CONSIDERED AND REJECTED, all in simulation/napladder.txt, and
+every figure here is at the 1/2/3/4 Setback counts this change replaces:
+pricing an unmeetable contribution clause at 1 Health reads 47.9%, out of
+band and crude - whether it fires depends on which color you happened to
+run out of, not on a decision you made; raising every Assignment Target by
+1 reads 39.6%; and the Setback bleed made unconditional is worth 1.2,
+because a base Setback locks its row and is cleared promptly whether or
+not it is bleeding.
+
+AND "CONTRIBUTE MEANS SUCCEED" IS STILL OPEN, as a question of its own
+rather than a rejected lever.  It reads 53.4% at Standard on the ladder
+this change replaces, which is the figure quoted in the entry below and is
+now the WRONG one to decide it by: on the counts above it reads 48.8%
+(62.8 / 48.8 / 34.3 / 24.9 solo, napladder.txt candidate 5).  So it was a
+way to CENTRE a Standard sitting at the ceiling, and on this ladder it
+would take a centred Standard back toward the floor.  It has to be decided
+against the figures for the game it would ship in, not against the ones
+that made the case for it.
 
 AND ONE THING THE SUITE CAUGHT ON ITS WAY PAST.  rules/AoS_Rulebook.pdf was
 907 bytes short of its own HTML: the AoS install rule went into
