@@ -106,8 +106,23 @@ def main():
          [survey(l, KEEP_INSTALLED=True, ROUNDS=4, FINALE_ALLOWED=2)
           for l in LEVELS])
     print()
+    print("  AND THE ONE WORD THAT DECIDES ALL OF IT: what \"complete a")
+    print("  Program\" has to mean before it can be installed. The handoff")
+    print("  says \"after a clean run\", and clean is AoS's own word for the")
+    print("  Program Reward - no failed element at all. Charging the same")
+    print("  failure twice, once for the Reward and once for the slot, is")
+    print("  the whole difference between a broken game and a good one:")
+    print("%-38s %8s %8s %8s %8s" % ("", *LEVELS))
+    for label, req in (("no failed element (as written)", "clean"),
+                       ("at most one failed element", "nocat"),
+                       ("just finishing the Program", "any")):
+        line(label, [survey(l, INSTALL_REQUIRES=req) for l in LEVELS])
+    print()
     print("  For reference, the AoS this replaced measured 60.6 / 52.0 /")
-    print("  43.6 / 35.6 for a player who triages.")
+    print("  43.6 / 35.6 for a player who triages. \"At most one failed")
+    print("  element\" lands just under it with the spread intact, and")
+    print("  leaves all three failure modes live: at Standard, 29.9% lose")
+    print("  to the deadline, 23.4% to Health, 4.8% in the finale.")
 
 
 if __name__ == "__main__":

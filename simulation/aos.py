@@ -82,6 +82,20 @@ INSTALL_POLICY = "greedy"
 #                   biggest lever: it stops the deck shrinking every time
 #                   a clean run lands and keeps rounds 2 and 3 from being
 #                   made entirely of the Programs that failed.
+# WHAT "COMPLETE A PROGRAM" HAS TO MEAN BEFORE IT CAN BE INSTALLED. The
+# handoff says "after a clean run", and "clean" is the word AoS already
+# uses for the Program Reward: NO failed element at all. But the Reward is
+# a bonus and a slot is the whole game, so the same bar in both places is
+# worth pricing rather than assuming.
+#
+#   "clean"   no failed element - the handoff as written, and the Reward's
+#             own condition.
+#   "nocat"   at most one failed element: the Program did not suffer a
+#             Catastrophic Failure. One failure already costs the Reward
+#             and flips the card to Overheated, so this is not free.
+#   "any"     finishing the Program at all, however it went.
+INSTALL_REQUIRES = "clean"
+
 ROUNDS = 3
 BUILD_TARGET = 3
 FINALE_ALLOWED = 1
@@ -2393,7 +2407,10 @@ class Game(object):
                                       slot=pid)
             # A CLEAN RUN IS ALSO AN INSTALL, and the install is how the
             # game is won: the Reward and the slot come off the same run.
-            if failed == 0 and self.install(prog):
+            _ok = (failed == 0 if INSTALL_REQUIRES == "clean"
+                   else failed <= 1 if INSTALL_REQUIRES == "nocat"
+                   else failed >= 0)
+            if _ok and self.install(prog):
                 if len(self.built()) >= BUILD_TARGET:
                     break           # the last Assembly ends the rounds at once
                 continue
