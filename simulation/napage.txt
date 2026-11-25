@@ -1,0 +1,196 @@
+THE SPECIAL RECOVERY AGE RULE, RE-PEGGED. Measured 2026-11-25, at Jon's ask.
+
+1. THE AGE RULE IS A KNOB. At the Standard rung, 5 Credits and
+   2 Setbacks, six Apprentices averaged, 3000 games each.
+
+as shipped - no age rule                       48.9%
+
+   AN ALLOWANCE: '...plus up to N of the dice you spent this
+   slot'. 4 is the whole of a colour, so it is the printed rule
+   back, and that it lands on the shipped figure is the check
+   that both ends are the same rule.
+   allowance 0, every slot                     31.8%   -17.1
+   allowance 1, every slot                     37.3%   -11.6
+   allowance 2, every slot                     41.8%    -7.1
+   allowance 3, every slot                     46.1%    -2.8
+   allowance 4, every slot                     48.9%    +0.0
+   allowance half, every slot                  39.7%    -9.1
+
+   OR THE RULE ON SOME TIME SLOTS ONLY, no allowance.
+   Morning only                                45.9%    -3.0
+   Afternoon only                              38.7%   -10.2
+   Evening only                                42.5%    -6.4
+   all but Morning                             33.1%   -15.8
+   all but Evening                             35.2%   -13.7
+
+   The allowance is the dial that behaves - it runs smoothly from
+   the hard rule back to the printed one. Slot subsets are not a
+   softener of the same kind: Morning is the recovery the Day has
+   already paid for, so exempting it changes almost nothing while
+   exempting the other two leaves the exploit exactly where Jon
+   found it, at the end of the Afternoon.
+
+2. WHAT PAYS FOR IT. The rule takes dice income away, so look at
+   the other income first. REC and STR are 2 on all six
+   Apprentice cards and so is HP. Same rung, same games, the hard
+   age rule on throughout.
+
+age rule, nothing paid back                    31.8%   -17.1
+   ...and REC 3, a third die each End of Day   46.2%    -2.7
+   ...and REC 4                                57.2%    +8.3
+   ...and STR 3, a third Strategy roll         45.1%    -3.8
+   ...and HP 3                                 42.5%    -6.4
+   ...and REC 3 and STR 3                      61.8%   +12.9
+
+   REC fits the hole the rule makes. +1 REC is worth about what
+   the age rule costs, and it buys dice back WITHOUT buying the
+   certainty back: an End of Day recovery is one choice of
+   colours a day, not a colour you can see coming and dump into.
+   STR 3 costs nearly as much and does hand the certainty back,
+   because a spare Strategy roll is what the dumped dice are
+   spent on; HP 3 pays at the exams, which is not where the
+   decision was missing.
+
+3. THE TWO EXAM QUESTIONS, settled 2026-11-25. Fine Motor
+   Assessment prints 'At least 1 Yellow and 1 Blue die must
+   contribute' and Jon sat it holding no Blue. The three owners
+   disagreed: the lab BLOCKS the roll and offers no way on, this
+   model added nothing and scored the exam free, the mod printed
+   a reminder. Jon's answers were that contribute means SUCCEED,
+   and that a restriction the pool cannot answer is waived for
+   1 Health.
+
+                                                 Easy Standard     Hard Nobulous   vs shipped
+AS SHIPPED - commit only, waived free           58.3%    48.9%    37.0%    26.1%
+contribute = SUCCEED, unmet scores nothing      56.3%    47.2%    35.9%    25.5%    -2.0  -1.6  -1.0  -0.6
+...unmet costs 1 Health, successes stand        57.4%    48.3%    36.2%    25.9%    -1.0  -0.6  -0.8  -0.2
+waiver 1 Health, contribute clauses only        49.9%    40.9%    30.7%    20.9%    -8.4  -8.0  -6.3  -5.2
+waiver 1 Health, every clause                   31.2%    24.6%    17.3%    11.0%   -27.1 -24.3 -19.7 -15.1
+
+   SUCCEED IS CHEAP AND THE WAIVER IS NOT, and one fact about
+   NAP explains both: you arrive at the exams having spent nearly
+   everything, so the pool usually cannot answer the card at all.
+
+   24616 exam sittings, six Apprentices:
+     need printed                        24.5%
+     need UNMEETABLE                     13.7%
+     among printed                        8.5%
+     among UNMEETABLE                     1.7%
+     colors printed                      50.7%
+     colors UNMEETABLE                   32.7%
+     dice printed                        25.6%
+     dice UNMEETABLE                      0.2%
+     a CONTRIBUTE clause unmeetable      15.4%
+     any clause unmeetable               48.1%
+   dice available as an exam begins:
+     3: 0%  4: 3%  5: 8%  6: 59%  7: 18%  8: 9%  9+9: 4%
+
+   So a restriction you cannot meet is the exam's ORDINARY
+   resolution, not a dead end: a colour clause is printed on a
+   quarter of all sittings and unmeetable in over half of those.
+   A Health each time, against a starting 2, costs more than a
+   rung of the ladder does - and the dead end Jon hit is already
+   answered by waiving it, which is what this model has always
+   done. The price is the part to decide; the waiver itself is
+   not in question.
+
+4. THE LADDER. The package is the age rule in full, REC 3 to pay
+   for it, and contribute = succeed.
+
+                                                 Easy Standard     Hard Nobulous   vs shipped
+AS SHIPPED                                      58.3%    48.9%    37.0%    26.1%
+published, 20k games                            58.1%    49.0%    37.0%    26.3%
+BAT, the ladder pegged deliberately             63.7%    52.8%    37.8%    25.8%
+the package on the SHIPPED rungs                59.4%    45.1%    30.5%    22.9%    +1.1  -3.8  -6.5  -3.2
+
+   the surface under the package (Prodigy, 2500 games a cell)
+   goal      0 sb     1 sb     2 sb     3 sb     4 sb
+   3        70.6%    65.5%    63.2%    58.6%    54.1%
+   4        63.4%    59.0%    53.4%    48.0%    43.3%
+   5        58.0%    54.1%    45.8%    38.2%    34.7%
+   6        53.9%    46.2%    37.4%    30.3%    26.4%
+   7        50.0%    39.6%    31.8%    23.8%    21.7%
+
+   ...and the same cells as shipped (Prodigy, 2500 games a cell)
+   goal      0 sb     1 sb     2 sb     3 sb     4 sb
+   3        64.6%    61.5%    56.4%    55.2%    50.2%
+   4        64.0%    58.5%    52.9%    50.4%    44.3%
+   5        62.1%    55.3%    49.0%    45.9%    39.6%
+   6        59.4%    52.8%    44.6%    37.5%    33.8%
+   7        58.8%    49.8%    38.1%    33.2%    26.7%
+
+   THE THREE CANDIDATES, 2000 games an Apprentice a tier, six
+   Apprentices averaged.
+
+                               tier 0    tier I   tier II  tier III
+   SHIPPED
+     Easy      4 Cr / 1 sb      58.0%     47.8%     34.5%     43.1%
+     Standard  5 Cr / 2 sb      48.4%     40.5%     29.1%     38.4%
+     Hard      6 Cr / 3 sb      36.8%     35.4%     23.3%     33.5%
+     Nobulous  7 Cr / 4 sb      26.1%     23.8%     16.6%     25.5%
+     solo steps               9.6  11.5  10.7
+   A  goals one lower, Setbacks as printed
+     Easy      3 Cr / 1 sb      66.1%     57.7%     44.5%     50.3%
+     Standard  4 Cr / 2 sb      53.1%     46.9%     33.1%     39.8%
+     Hard      5 Cr / 3 sb      39.0%     37.5%     25.8%     32.6%
+     Nobulous  6 Cr / 4 sb      26.7%     25.6%     18.9%     25.5%
+     solo steps               13.1  14.1  12.2
+   B  one die of this slot back, ladder as printed
+     Easy      4 Cr / 1 sb      64.6%     52.1%     38.9%     45.4%
+     Standard  5 Cr / 2 sb      51.3%     43.4%     32.1%     39.5%
+     Hard      6 Cr / 3 sb      37.9%     35.3%     25.9%     34.2%
+     Nobulous  7 Cr / 4 sb      27.3%     26.2%     19.8%     28.6%
+     solo steps               13.4  13.4  10.6
+   C  Setbacks one lower, goals as printed
+     Easy      4 Cr / 0 sb      63.9%     46.9%     33.1%     39.8%
+     Standard  5 Cr / 1 sb      52.2%     37.5%     25.8%     32.6%
+     Hard      6 Cr / 2 sb      37.8%     29.8%     20.3%     27.7%
+     Nobulous  7 Cr / 3 sb      25.5%     24.6%     17.3%     25.6%
+     solo steps               11.8  14.4  12.3
+
+5. THE DICE ECONOMY, which is the part a win rate cannot answer.
+   Measured at each ladder's own Standard rung: the pool in front
+   of the player when a Time Slot's work begins, and the size of
+   the Special Recovery that filled it.
+
+                                     dice     <=3     <=1     >=8   slots  refill
+   as shipped, 5 Cr / 2 sb          6.91   17.9%    7.0%   31.4%   9.42   3.21
+   A, 4 Cr / 2 sb                   6.05   33.0%   15.0%   26.1%   8.62   2.41
+   B, 5 Cr / 2 sb                   6.16   28.8%   11.4%   26.1%   9.92   2.63
+   C, 5 Cr / 1 sb                   5.92   32.8%   14.2%   24.4%   9.59   2.41
+
+   THE REFILL COLUMN IS WHERE THIS DIFFERS FROM A CAP. A cap
+   shrinks the refill and leaves the certainty exactly where it
+   was, which is why capping at 2 read 4.4% and still answered
+   nothing Jon raised. Some income does go with the age rule all
+   the same - a die exhausted during a slot waits for its colour
+   to come round again, and a colour that never comes round
+   again never returns it - and that is what REC 3 pays back.
+   The first four columns are the part he asked for: the pool in
+   front of the player is smaller and tight far more often, so a
+   die spent is a die missed.
+
+6. DOES THE RULE RE-PRICE WHAT FELT LIKE DECORATION? Jon never
+   used his Apprentice's ability and never used FINF at Reduce 1,
+   and measurement agreed with him - the abilities are worth +1.0
+   to +3.2 and a Reduce card about a point. Both are dice-timing
+   effects and the age rule is a dice-timing rule, so both should
+   move. Each measured at its own ladder's Standard rung, under
+   candidate A.
+
+                              shipped         candidate A
+   ability         Standard     worth  Standard     worth
+   Prodigy            49.0%      +1.8     53.2%      +0.5
+   Slacker            47.3%      +0.2     50.6%      -2.1
+   Technician         48.7%      +1.5     52.6%      -0.1
+   Savant             48.6%      +1.5     52.3%      -0.4
+   Opportunist        49.7%      +2.6     54.9%      +2.2
+   Lab Rat            50.0%      +2.8     55.9%      +3.2
+
+   FINF                       shipped         candidate A
+   Reduce 1                     48.9%               53.3%
+   Reduce 2                     49.8%               54.5%
+   Reduce 3                     50.8%               55.3%
+   Increase 1                   47.0%               51.7%
+   Increase 2                   44.8%               49.6%
+   Increase 3                   43.7%               49.3%

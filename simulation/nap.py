@@ -144,6 +144,22 @@ SPECIAL_RECOVERY_CAP = 0
 # A timing change, not a quantity one - it takes away the certainty without
 # touching the size of the refill, which is what capping it at 2 does.
 SPECIAL_RECOVERY_AGE = False
+# AND THE AGE RULE IS A KNOB, NOT A SWITCH. On its own it is worth -17 at
+# Standard (napcommit.txt), which is right in kind and far too strong in
+# degree, so these two soften it. Both are inert while
+# SPECIAL_RECOVERY_AGE is False, and their defaults are the hard reading
+# napcommit.py measured, so that file still reproduces.
+#
+# How many of the dice exhausted DURING the slot the recovery may still
+# reach. 0 is the hard rule - nothing you spent comes back. An integer is
+# an allowance: "...plus up to N exhausted during it". "half" is half of
+# what you spent this slot, rounded up.
+SPECIAL_RECOVERY_AGE_ALLOW = 0
+# Which Time Slots the age rule applies to, 0 Morning / 1 Afternoon /
+# 2 Evening. (0, 1, 2) is every slot. Dropping Morning out of the set is
+# "the Day gives everything back, a slot does not", which is the variant
+# that reads closest to what REC already does at the end of the Day.
+SPECIAL_RECOVERY_AGE_SLOTS = (0, 1, 2)
 OPPORTUNITIES =[(4, "Y"), (4, "Y"), (5, "Y"), (5, "Y"), (4, "G"), (5, "G")]
 
 # What a Crit scores on Neural Response Screening, the one exam that reprices
@@ -431,6 +447,67 @@ def crit_worth(rule):
     return EXAM_CRIT_VALUE
 
 
+# WHAT "MUST CONTRIBUTE" MEANS, and what happens when the pool cannot
+# answer the card at all. Jon hit both at the table on 2026-11-25, on Fine
+# Motor Assessment - "At least 1 Yellow and 1 Blue die must contribute",
+# and he held no Blue - and the three owners disagreed: the lab BLOCKS the
+# roll and offers no way on, this model tried to add a Blue, found none and
+# scored the exam with no penalty, and the mod printed a reminder.
+#
+#   "commit"        a die of the colour must be committed. What this model
+#                   has always done and what every published NAP figure was
+#                   measured through - strictly more generous than the card,
+#                   the same way the Assignment colour rule was until
+#                   COLOR_RULE_ON_SUCCESS.
+#   "success"       the die must SUCCEED, and an exam whose requirement went
+#                   unmet scores nothing - the Assignment colour rule's own
+#                   reading ("the successes you apply must include..."),
+#                   applied to the exam.
+#   "success_soft"  the die must succeed, and an unmet requirement costs
+#                   1 Health instead of the whole card. The successes stand.
+#
+# Yellow is the expensive one: it misses 4 faces in 6, so a single Yellow
+# thrown at a requirement fails 44% of the time even with the STR-2 reroll.
+# Under either success reading the policy therefore throws a SECOND die of
+# each demanded colour where the pool holds one - see exam_commit.
+EXAM_NEED = "commit"
+# What a restriction the POOL CANNOT SATISFY costs: no Blue dice anywhere,
+# so no legal commitment exists. 0 is the silent waiver this model shipped.
+# rules/nap.html waives Required Effort "only if no legal
+# commitment/assignment is possible" and says nothing about exams; this is
+# that waiver extended to the exam with a price on it.
+EXAM_WAIVER_COST = 0
+# Which unsatisfiable clauses the waiver price is charged on. "need" is the
+# colour-contribution clauses alone, which is the case Jon hit; "all" adds
+# the commitment counts - "commit at least 4 dice", "at least 3 colours" -
+# which you also cannot answer with three dice left in the pool. Measured
+# 2026-11-25: the second set fires on most exams, because you arrive at the
+# exams having spent nearly everything, so pricing it is a difficulty
+# change and not a corner case. See napage.txt.
+EXAM_WAIVER_SCOPE = "need"
+
+
+def exam_need_met(rule, used, values, waived=()):
+    """Are the restriction's CONTRIBUTE clauses met by successful dice?
+
+    Only `need` and `among` are contribution clauses. `colors`, `dice` and
+    `no_red` are printed as commitments and the lab checks them that way.
+    A clause in `waived` is one the pool could not answer at all, which is
+    the waiver's business and not the gate's.
+    """
+    ok = [c for c, v in zip(used, values) if v]
+    for want in rule.get("need", ()):
+        if "need:" + want in waived:
+            continue
+        if want not in ok:
+            return False
+    count, cols = rule.get("among", (0, ()))
+    if count and "among" not in waived:
+        if sum(1 for c in ok if c in cols) < count:
+            return False
+    return True
+
+
 def exam_commit(available, target, rule, rng):
     """The dice a Final Exam's printed restriction makes you commit.
 
@@ -466,8 +543,20 @@ def exam_commit(available, target, rule, rng):
                 return spare.pop(j)
         return None
 
+    # `waived` is a clause the POOL cannot answer - the Blue that is not
+    # there - as against one that is committed and then misses, which is a
+    # roll going badly and not a waiver.
+    waived = set()
+    insure = EXAM_NEED in ("success", "success_soft")
     for want in rule.get("need", ()):
         if want not in used:
+            c = grab(lambda x, w=want: x == w)
+            if c:
+                used.append(c)
+            else:
+                waived.add("need:" + want)
+        if insure:
+            # A second die of the colour, because one has to SUCCEED.
             c = grab(lambda x, w=want: x == w)
             if c:
                 used.append(c)
@@ -475,16 +564,25 @@ def exam_commit(available, target, rule, rng):
     while sum(1 for c in used if c in cols) < count:
         c = grab(lambda x: x in cols)
         if c is None:
+            waived.add("among")
             break
         used.append(c)
+    if insure and count:
+        c = grab(lambda x: x in cols)
+        if c:
+            used.append(c)
     while len(set(used)) < rule.get("colors", 0):
         c = grab(lambda x: x not in used)
         if c is None:
+            waived.add("colors")
             break
         used.append(c)
-    while len(used) < rule.get("dice", 0) and spare:
+    while len(used) < rule.get("dice", 0):
+        if not spare:
+            waived.add("dice")
+            break
         used.append(spare.pop(0))
-    return used
+    return used, waived
 
 
 def pick_order(seq, rng=None):
@@ -779,6 +877,14 @@ ABILITIES = {"Prodigy": "wild_one", "Slacker": "discard",
 # 2026-11-06 was measured through.
 COLOR_RULE_ON_SUCCESS = True
 
+# STARTING STATS, printed on every Apprentice card and the same 2/2/2 for
+# all six. Dials because the Special Recovery age rule of 2026-11-25 takes
+# dice INCOME away, and REC is the other income in the game: they are the
+# compensation to measure before reaching for the difficulty ladder.
+HP_START = 2
+STR_START = 2
+REC_START = 2
+
 CREDITS_TO_LEAVE = 5      # Easy 4, Standard 5, Hard 6, Nobulous 7
 # Difficulty is the pair (Credit goal, Setbacks in the deck).
 #
@@ -991,9 +1097,9 @@ class Game(object):
         self.rng = rng or random.Random()
         self.apprentice = apprentice
         self.tier = tier
-        self.hp = 2
-        self.str_ = 2
-        self.rec = 2
+        self.hp = HP_START
+        self.str_ = STR_START
+        self.rec = REC_START
         self.credits = dict((s, 0) for s in SUBJECT_LIST)
         self.credit_total = 0
         self.available = fresh_dice()
@@ -1205,6 +1311,26 @@ class Game(object):
             for near in self.NEIGHBOURS[color]:
                 if self.recover_one(near):
                     break
+
+    def age_limit(self, color):
+        """How many dice of `color` this slot's Special Recovery may reach.
+
+        None is no limit, which is the printed rule. Under
+        SPECIAL_RECOVERY_AGE the reach is what was already exhausted when
+        the slot began - `_exh_old`, taken after the last recovery - plus
+        whatever SPECIAL_RECOVERY_AGE_ALLOW grants back out of the dice
+        spent since.
+        """
+        if not SPECIAL_RECOVERY_AGE:
+            return None
+        if self.slot not in SPECIAL_RECOVERY_AGE_SLOTS:
+            return None
+        old = self._exh_old.get(color, 0)
+        allow = SPECIAL_RECOVERY_AGE_ALLOW
+        if allow == "half":
+            fresh = max(0, self.exhausted.count(color) - old)
+            return old + (fresh + 1) // 2
+        return old + allow
 
     def commit_for(self, card):
         """Pick dice for one Assignment, honoring the color rule.
@@ -2139,8 +2265,7 @@ class Game(object):
             # SPECIAL_RECOVERY_AGE: only dice that were already exhausted
             # when the PREVIOUS slot began are in reach, so what was spent
             # during it has to wait another cycle.
-            limit = (self._exh_old.get(DOT_COLOR[self.queued], 0)
-                     if SPECIAL_RECOVERY_AGE else None)
+            limit = self.age_limit(DOT_COLOR[self.queued])
             self.recover_color(DOT_COLOR[self.queued], limit=limit)
         # The pool as THIS slot begins, which is what the next recovery may
         # reach. Taken after the recovery, so a die cannot come back twice.
@@ -2310,7 +2435,8 @@ class Game(object):
                         self.exhausted.remove(c)
                         self.available.append(c)
                         seen.add(c)
-            used = exam_commit(self.available, target, rule, self.rng)
+            used, waived = exam_commit(self.available, target, rule,
+                                       self.rng)
             for c in used:
                 self.available.remove(c)
             values = [roll(c, self.rng) for c in used]
@@ -2340,6 +2466,16 @@ class Game(object):
             # interfere - see the note on EXAMS.
             if gate and not had_crit:
                 total = 0
+            # "At least 1 Yellow and 1 Blue die must CONTRIBUTE": under
+            # EXAM_NEED "success" an unmet clause costs the whole card, and
+            # under "success_soft" one Health. See EXAM_NEED.
+            soft = 0
+            if EXAM_NEED in ("success", "success_soft") and not exam_need_met(
+                    rule, used, values, waived):
+                if EXAM_NEED == "success":
+                    total = 0
+                else:
+                    soft = 1
             self.exhausted += used
             if total < target:
                 loss = target - total
@@ -2348,6 +2484,13 @@ class Game(object):
                 self.hp -= loss
                 if self.hp <= 0:
                     return False
+            # The waiver and the soft miss are not shortfall, so Lab Rat's
+            # soak does not reach them.
+            billable = (waived if EXAM_WAIVER_SCOPE == "all" else
+                        [w for w in waived if w.startswith(("need", "among"))])
+            self.hp -= soft + (EXAM_WAIVER_COST if billable else 0)
+            if self.hp <= 0:
+                return False
             self.recover_color(DOT_COLOR[dot])
             self.recover(self.rec)
         return self.hp > 0
