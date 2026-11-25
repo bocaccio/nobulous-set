@@ -1,49 +1,49 @@
 window.BAT_EXPERIMENTS = [
   {
     "name": "Baseline Calibration",
-    "target": 3,
+    "target": 2,
     "effect": "Flip the active Lab Rat to its other side. That side remains active until another effect flips it.",
     "flavor": "Nobulous checks your pulse, then marks the equipment fit for use."
   },
   {
     "name": "Fine Motor Trial",
-    "target": 3,
+    "target": 2,
     "effect": "A Yellow die must be committed to this Experiment. If unable to do so, increase the Target by 1.",
     "flavor": "Tiny claws. Tiny screws. Absolutely no margin for error."
   },
   {
     "name": "Structural Stress Trial",
-    "target": 4,
+    "target": 2,
     "effect": "Reveal 1 additional Splice for this Experiment. Resolve the normal graft choice using all revealed options.",
     "flavor": "Nobulous calls the third prototype a control. Nobody asks what it controls."
   },
   {
     "name": "Contaminated Tissue",
-    "target": 4,
+    "target": 2,
     "effect": "Discard the revealed Splices and reveal 2 new Splices. These become the Splices for this Experiment.",
     "flavor": "The sample was sterile until Nobulous explained his definition of sterile."
   },
   {
     "name": "Performance Trial",
-    "target": 4,
+    "target": 3,
     "effect": "Discard the top 2 cards of the Experiment deck face down without resolving them.",
     "flavor": "The schedule has been accelerated by removing the parts involving caution."
   },
   {
     "name": "Load-Bearing Trial",
-    "target": 4,
+    "target": 3,
     "effect": "A Purple die must be committed to this Experiment. If unable to do so, discard this Experiment and draw another one, replacing any revealed Splices.",
     "flavor": "Add weight until something fails. Preferably not the researcher."
   },
   {
     "name": "Diagnostic Trial",
-    "target": 4,
+    "target": 3,
     "effect": "If you commit a Blue die to this Experiment, you may look at the next Experiment and return it to the top of the deck.",
     "flavor": "The instruments say everything is fine. The smoke has submitted a dissenting report."
   },
   {
     "name": "Rapid Response Trial",
-    "target": 4,
+    "target": 3,
     "effect": "A Green die must be committed to this Experiment. If unable to do so, discard the stronger revealed Splice and continue the Experiment.",
     "flavor": "There is no time to do it right, only time to make it testable."
   },
@@ -73,19 +73,19 @@ window.BAT_EXPERIMENTS = [
   },
   {
     "name": "Resource Depletion Study",
-    "target": 4,
+    "target": 5,
     "effect": "During your second Strategy phase, you may commit no additional dice.",
     "flavor": "There was a second prototype. Past tense."
   },
   {
     "name": "Reliability Trial",
-    "target": 4,
+    "target": 5,
     "effect": "Hits and Crits on Purple and Blue dice in the first Strategy phase must be rerolled.",
     "flavor": "It only fails when you need it, which is remarkably consistent."
   },
   {
     "name": "Reagent Exclusion Trial",
-    "target": 4,
+    "target": 5,
     "effect": "Randomly select one available die belonging to the active Rat. That die cannot be committed to this Experiment.",
     "flavor": "Science advances rapidly once you stop checking the labels."
   },
@@ -97,25 +97,25 @@ window.BAT_EXPERIMENTS = [
   },
   {
     "name": "Endurance Trial",
-    "target": 5,
+    "target": 6,
     "effect": "STR is 1 for this Experiment.",
     "flavor": "The experiment is repeatable. Unfortunately, so is the overtime."
   },
   {
     "name": "Field Retrofit Trial",
-    "target": 5,
+    "target": 6,
     "effect": "If successful, you may swap one of the active Rat's grafts with one of the revealed Splices. Specimens cannot be swapped.",
     "flavor": "The replacement fits perfectly once you stop asking what it replaced."
   },
   {
     "name": "Methodological Optimization",
-    "target": 5,
+    "target": 6,
     "effect": "Reduce the Target to 0. The old Tyrant reclaims the stronger revealed Splice and your Prototyrant grafts the weaker. If tied, you choose which it takes.",
     "flavor": "Why test both prototypes when the Prototyrant can test the better one?"
   },
   {
     "name": "Degraded Tissue Study",
-    "target": 5,
+    "target": 6,
     "effect": "If successful, raise the Prototyrant's Health by 2.",
     "flavor": "The tissue tears neatly along the dotted line Nobulous insists he did not draw."
   }

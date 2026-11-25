@@ -22,44 +22,44 @@ SPEC_FTR = ('Target = the two revealed Splices&rsquo; combined Value minus this 
 # If tapping is ever wanted, it belongs in the rulebook first.
 
 EXPERIMENTS = [
-    ("Baseline Calibration", 3, "Flip the active Lab Rat to its other side. That side remains active until another effect flips it.", "Nobulous checks your pulse, then marks the equipment fit for use."),
-    ("Fine Motor Trial", 3, "A Yellow die must be committed to this Experiment. If unable to do so, increase the Target by 1.", "Tiny claws. Tiny screws. Absolutely no margin for error."),
-    ("Structural Stress Trial", 4, "Reveal 1 additional Splice for this Experiment. Resolve the normal graft choice using all revealed options.", "Nobulous calls the third prototype a control. Nobody asks what it controls."),
-    ("Contaminated Tissue", 4, "Discard the revealed Splices and reveal 2 new Splices. These become the Splices for this Experiment.", "The sample was sterile until Nobulous explained his definition of sterile."),
-    ("Performance Trial", 4, "Discard the top 2 cards of the Experiment deck face down without resolving them.", "The schedule has been accelerated by removing the parts involving caution."),
-    ("Load-Bearing Trial", 4, "A Purple die must be committed to this Experiment. If unable to do so, discard this Experiment and draw another one, replacing any revealed Splices.", "Add weight until something fails. Preferably not the researcher."),
-    ("Diagnostic Trial", 4, "If you commit a Blue die to this Experiment, you may look at the next Experiment and return it to the top of the deck.", "The instruments say everything is fine. The smoke has submitted a dissenting report."),
-    ("Rapid Response Trial", 4, "A Green die must be committed to this Experiment. If unable to do so, discard the stronger revealed Splice and continue the Experiment.", "There is no time to do it right, only time to make it testable."),
+    ("Baseline Calibration", 2, "Flip the active Lab Rat to its other side. That side remains active until another effect flips it.", "Nobulous checks your pulse, then marks the equipment fit for use."),
+    ("Fine Motor Trial", 2, "A Yellow die must be committed to this Experiment. If unable to do so, increase the Target by 1.", "Tiny claws. Tiny screws. Absolutely no margin for error."),
+    ("Structural Stress Trial", 2, "Reveal 1 additional Splice for this Experiment. Resolve the normal graft choice using all revealed options.", "Nobulous calls the third prototype a control. Nobody asks what it controls."),
+    ("Contaminated Tissue", 2, "Discard the revealed Splices and reveal 2 new Splices. These become the Splices for this Experiment.", "The sample was sterile until Nobulous explained his definition of sterile."),
+    ("Performance Trial", 3, "Discard the top 2 cards of the Experiment deck face down without resolving them.", "The schedule has been accelerated by removing the parts involving caution."),
+    ("Load-Bearing Trial", 3, "A Purple die must be committed to this Experiment. If unable to do so, discard this Experiment and draw another one, replacing any revealed Splices.", "Add weight until something fails. Preferably not the researcher."),
+    ("Diagnostic Trial", 3, "If you commit a Blue die to this Experiment, you may look at the next Experiment and return it to the top of the deck.", "The instruments say everything is fine. The smoke has submitted a dissenting report."),
+    ("Rapid Response Trial", 3, "A Green die must be committed to this Experiment. If unable to do so, discard the stronger revealed Splice and continue the Experiment.", "There is no time to do it right, only time to make it testable."),
     ("Full-Spectrum Trial", 4, "Committed dice must include 3 different colors.", "Nobulous requested versatility. The equipment requested mercy."),
     ("Workspace Efficiency Study", 4, "You may only commit two dice to this Experiment.", "Four researchers. One bench. Zero lessons learned."),
     ("Restricted Materials Trial", 4, "Place the Red die on the active Rat. Red cannot be used for this Experiment.", "The best reagent is unavailable for reasons marked administrative."),
     ("Independent Performance Trial", 4, "You cannot borrow a die during this Experiment.", "Your colleagues may observe from behind the glass. Nobulous has disconnected the intercom."),
-    ("Resource Depletion Study", 4, "During your second Strategy phase, you may commit no additional dice.", "There was a second prototype. Past tense."),
-    ("Reliability Trial", 4, "Hits and Crits on Purple and Blue dice in the first Strategy phase must be rerolled.", "It only fails when you need it, which is remarkably consistent."),
-    ("Reagent Exclusion Trial", 4, "Randomly select one available die belonging to the active Rat. That die cannot be committed to this Experiment.", "Science advances rapidly once you stop checking the labels."),
+    ("Resource Depletion Study", 5, "During your second Strategy phase, you may commit no additional dice.", "There was a second prototype. Past tense."),
+    ("Reliability Trial", 5, "Hits and Crits on Purple and Blue dice in the first Strategy phase must be rerolled.", "It only fails when you need it, which is remarkably consistent."),
+    ("Reagent Exclusion Trial", 5, "Randomly select one available die belonging to the active Rat. That die cannot be committed to this Experiment.", "Science advances rapidly once you stop checking the labels."),
     ("Containment Failure", 5, "You may choose to reduce the Target by 2. If you do, before committing, roll a Yellow die. On a hit or Crit, banish one available Blue die. Otherwise, banish that Yellow die.", "The blast shield performed exactly as specified. The blast did not."),
-    ("Endurance Trial", 5, "STR is 1 for this Experiment.", "The experiment is repeatable. Unfortunately, so is the overtime."),
-    ("Field Retrofit Trial", 5, "If successful, you may swap one of the active Rat's grafts with one of the revealed Splices. Specimens cannot be swapped.", "The replacement fits perfectly once you stop asking what it replaced."),
-    ("Methodological Optimization", 5, "Reduce the Target to 0. The old Tyrant reclaims the stronger revealed Splice and your Prototyrant grafts the weaker. If tied, you choose which it takes.", "Why test both prototypes when the Prototyrant can test the better one?"),
-    ("Degraded Tissue Study", 5, "If successful, raise the Prototyrant's Health by 2.", "The tissue tears neatly along the dotted line Nobulous insists he did not draw."),
+    ("Endurance Trial", 6, "STR is 1 for this Experiment.", "The experiment is repeatable. Unfortunately, so is the overtime."),
+    ("Field Retrofit Trial", 6, "If successful, you may swap one of the active Rat's grafts with one of the revealed Splices. Specimens cannot be swapped.", "The replacement fits perfectly once you stop asking what it replaced."),
+    ("Methodological Optimization", 6, "Reduce the Target to 0. The old Tyrant reclaims the stronger revealed Splice and your Prototyrant grafts the weaker. If tied, you choose which it takes.", "Why test both prototypes when the Prototyrant can test the better one?"),
+    ("Degraded Tissue Study", 6, "If successful, raise the Prototyrant's Health by 2.", "The tissue tears neatly along the dotted line Nobulous insists he did not draw."),
 ]
 
 UPGRADES = [
     ("Serrated Claws", "P1 - Power", 2, "+1 damage from each Blue or Green basic hit you apply during this attack.", "Fine motor control was sacrificed for a more persuasive handshake."),
     ("Reinforced Jaw", "P2 - Power", 3, "Add +2 damage to this attack if at least one Purple hit is applied.", "The bite test ended when the test fixture stopped existing."),
     ("Capacitor Muscles", "P3 - Power", 3, "Commit one exhausted Purple or Blue die to the current attack. It remains exhausted afterward.", "Why rest a muscle when you can overvolt it?"),
-    ("Piercing Horn", "P4 - Power", 4, "Add +2 damage. If you roll a Yellow hit or Crit, bypass one Defense Upgrade when assigning this attack.", "Evolution took millennia. Nobulous used a drill press."),
+    ("Piercing Horn", "P4 - Power", 3, "Add +2 damage. If you roll a Yellow hit or Crit, bypass one Defense Upgrade when assigning this attack.", "Evolution took millennia. Nobulous used a drill press."),
     ("Spring-Loaded Legs", "M1 - Mobility", 2, "Roll 1 exhausted Green die. It must match a color already committed to the attack; exhaust it afterward.", "The landing remains an unsolved engineering problem."),
-    ("Prehensile Tail", "M2 - Mobility", 2, "Roll 1 exhausted Yellow die. It must match a color already committed to the attack; exhaust it afterward.", "Another limb means another place to hold something dangerous."),
+    ("Prehensile Tail", "M2 - Mobility", 3, "Roll 1 exhausted Yellow die. It must match a color already committed to the attack; exhaust it afterward.", "Another limb means another place to hold something dangerous."),
     ("Tripwire Tendons", "M3 - Mobility", 3, "Opponent exhausts one Green die; if unable, one Yellow die, if able.", "The first demonstration trips the observer."),
     ("Evasive Reflexes", "M4 - Mobility", 3, "Remove 1 success from the opponent's next attack.", "The nervous system now reacts several moments before good judgment."),
-    ("Thickened Hide", "D1 - Defense", 2, "Reduce incoming damage by 1.", "Subtle? No. Puncture-resistant? Increasingly."),
+    ("Thickened Hide", "D1 - Defense", 3, "Reduce incoming damage by 1.", "Subtle? No. Puncture-resistant? Increasingly."),
     ("Layered Carapace", "D2 - Defense", 3, "Reduce incoming damage by 2.", "Nobulous adds another layer and orders wider doorways."),
     ("Chromatic Plating", "D3 - Defense", 3, "Reduce damage dealt by Blue and Green dice by 1 each. Yellow dice are unaffected.", "Color-coded armor saves Nobulous the trouble of remembering what he installed."),
     ("Reactive Shell", "D4 - Defense", 4, "Reduce damage dealt by Purple and Yellow dice by 1 each.", "It hardens on impact. It also hardens when startled."),
-    ("Acute Hearing", "S1 - Senses", 2, "+1 STR during your next turn.", "You can hear the Tyrant coming. You can also hear Nobulous chewing."),
+    ("Acute Hearing", "S1 - Senses", 3, "+1 STR during your next turn.", "You can hear the Tyrant coming. You can also hear Nobulous chewing."),
     ("Predatory Focus", "S2 - Senses", 3, "+1 STR for the current attack.", "Everything unnecessary disappears, including most ethical concerns."),
-    ("Rapid Metabolism", "S3 - Senses", 2, "Recover 1 additional die this turn.", "Calories in. Violence out. The lab has charts."),
+    ("Rapid Metabolism", "S3 - Senses", 3, "Recover 1 additional die this turn.", "Calories in. Violence out. The lab has charts."),
     ("Neural Overclock", "S4 - Senses", 4, "Recover 2 additional dice this turn.", "It solves the problem before Nobulous finishes explaining why it cannot be solved."),
 ]
 
@@ -178,7 +178,7 @@ print("Splices", render_deck('BAT_Upgrades', cards, 'BAT', back='CardBack_BAT_Up
 cards = [C(n, s,
            '<div style="background:%s;color:#fff;font-size:6.4pt;font-weight:bold;letter-spacing:.2em;'
            'text-transform:uppercase;text-align:center;padding:.9mm;margin:-2.4mm -2.4mm 0">Specimen</div>'
-           '<div class="big" style="margin-top:2mm">5</div><div class="biglbl">Value</div>'
+           '<div class="big" style="margin-top:2mm">4</div><div class="biglbl">Value</div>'
            '<div class="txt">%s</div>' % (SPEC_GOLD, e),
            'Specimen. At most 1 may be retained for the Imposter Research Pool.',
            acc=CAT[s.split(' ')[0]], tint='#faf5e8', flavor=f) for n, s, e, f in SPECIMENS]

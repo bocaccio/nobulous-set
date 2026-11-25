@@ -117,7 +117,7 @@ RAT_REC = [2, 2, 1, 1]
 STR_PHASES = 2
 
 # Upgrade Values and categories in deck order, from build_bat.py UPGRADES.
-UPGRADE_VALUES = [2, 3, 3, 4, 2, 2, 3, 3, 2, 3, 3, 4, 2, 3, 2, 4]
+UPGRADE_VALUES = [2, 3, 3, 3, 2, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3, 4]
 UPGRADE_CATS = ["Power", "Power", "Power", "Power",
                 "Mobility", "Mobility", "Mobility", "Mobility",
                 "Defense", "Defense", "Defense", "Defense",
@@ -134,7 +134,7 @@ SPECIMEN_NAMES = ["Titanium-Toothed Mole", "Voltaic Mantis", "Blink Hare",
 MOD_NAMES = ["Extra Limbs", "Secondary Brain", "Adrenal Gland",
              "Bone Plating", "Redundant Organs", "Hypermetabolism"]
 
-SPECIMEN_VALUE = 5
+SPECIMEN_VALUE = 4
 SPECIMEN_CATS = ["Power", "Power", "Mobility", "Mobility",
                  "Defense", "Defense", "Senses", "Senses"]
 
@@ -183,7 +183,7 @@ UNMODELLED_EXP = {
 # authoritative text. The model used to keep a base table of its own and add
 # TARGET_DELTA = 1 to it; when that rise was adopted and printed onto the
 # cards, seven Experiments ended up charged for it twice.
-EXPERIMENT_TARGETS = [3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5]
+EXPERIMENT_TARGETS = [2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6]
 
 # difficulty -> (Specimens shuffled into the Upgrade deck, Buff HP)
 # (Specimens shuffled into the Upgrade deck, the Tyrant's starting Buff HP).

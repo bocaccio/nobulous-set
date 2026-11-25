@@ -18,16 +18,16 @@
   // the same way simulation/bat.py transcribes them.
   var UPGRADES = [
     ["Serrated Claws", 2], ["Reinforced Jaw", 3], ["Capacitor Muscles", 3],
-    ["Piercing Horn", 4], ["Spring-Loaded Legs", 2], ["Prehensile Tail", 2],
-    ["Tripwire Tendons", 3], ["Evasive Reflexes", 3], ["Thickened Hide", 2],
+    ["Piercing Horn", 3], ["Spring-Loaded Legs", 2], ["Prehensile Tail", 3],
+    ["Tripwire Tendons", 3], ["Evasive Reflexes", 3], ["Thickened Hide", 3],
     ["Layered Carapace", 3], ["Chromatic Plating", 3], ["Reactive Shell", 4],
-    ["Acute Hearing", 2], ["Predatory Focus", 3], ["Rapid Metabolism", 2],
+    ["Acute Hearing", 3], ["Predatory Focus", 3], ["Rapid Metabolism", 3],
     ["Neural Overclock", 4]
   ];
   var SPECIMENS = ["Titanium-Toothed Mole", "Voltaic Mantis", "Blink Hare",
     "Ghost Gecko", "Ironback Beetle", "Prismatic Tortoise", "Echo Bat",
     "Regenerator Newt"];
-  var SPECIMEN_VALUE = 5;
+  var SPECIMEN_VALUE = 4;
 
   // ---- the ladder. Difficulty sets the Specimens in the carcass and the
   // ROUNDS the Rats get; the parts deck is 13 on every rung, because a deck
