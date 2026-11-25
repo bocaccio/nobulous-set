@@ -60,7 +60,15 @@ h1 {
   margin: .4mm 0 0;
 }
 .tagline { font-style: italic; font-size: 10pt; color: #5c554a; margin: 0; }
-.blurb { margin: 3mm 0 0; font-size: 8.8pt; max-width: 62%; }
+/* FULL WIDTH, Jon's call 2026-11-24. The blurb stopped at 62% of the
+   page and left the right third of every cover empty; it now runs the
+   full measure, like the tagline above it. It can only make a cover
+   SHORTER - the same words in fewer lines - so no book grows on this
+   change, but style.css is shared and a book that shrinks fails
+   check_app_sync's page budget just as loudly as one that grows. All
+   four were re-counted after the rebuild: BAT 3, NAP 4, AoS 3, NRJ 4,
+   unmoved. */
+.blurb { margin: 3mm 0 0; font-size: 8.8pt; }
 
 .body { column-count: 2; column-gap: 7mm; }
 h2 {

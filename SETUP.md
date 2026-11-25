@@ -82,10 +82,16 @@ game cannot change under a player mid-session.
 From the repository root:
 
 ```bash
-python -m http.server 8000 -d playtest/dist
+python playtest/serve.py
 ```
 
-Open `http://localhost:8000/`. On Windows, `Start_Playtest.bat` performs the
-same command, recognizes common Miniforge install locations, and opens the
+**Not `python -m http.server`.** That server sends no cache headers, so the
+browser caches `index.html`, the one file that names every `?v=` token, and a
+cached copy pins you to an old build however often they are bumped - a new
+feature then reads as code that was never written. `serve.py` is the same
+static server with headers that tell the truth.
+
+Open `http://localhost:8000/`. On Windows, `Start_Playtest.bat` runs the
+same script, recognizes common Miniforge install locations, and opens the
 browser automatically. If it cannot start, it keeps the window open and shows
 the error. Press Ctrl+C to stop the server.

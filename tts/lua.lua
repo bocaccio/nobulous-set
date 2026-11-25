@@ -3615,15 +3615,23 @@ function startExam()
     -- and snapFirst is here for the same reason it is there: taking
     -- the second-to-last card destroys the deck and TTS respawns the
     -- last one near where the deck was rather than on it.
+    -- FACE-DOWN, AND TURNED OVER ONE AT A TIME. The row used to go
+    -- down face-up, so the whole exam was visible before the first
+    -- roll and a player could plan three exams' worth of coupons and
+    -- colours against it. simulation/nap.py never could: it resolves
+    -- the drawn exams in order and decides every coupon inside the
+    -- exam it is sitting, with no lookahead at all, so the face-up
+    -- row was an easier game than the one every published NAP figure
+    -- was measured through. rules/nap.html prints the reveal now.
     exams.shuffle()
     local x1 = DECK_X + ASSIGN_PITCH
     exams.setPosition({x1, 3, ROW_CHAR})
-    exams.setRotation(FACEUP)
+    exams.setRotation(FACEDOWN)
     for k = EXAM_DRAW, 2, -1 do
       exams.takeObject({position = {DECK_X + k * ASSIGN_PITCH, 3, ROW_CHAR},
-                        rotation = FACEUP, smooth = false})
+                        rotation = FACEDOWN, smooth = false})
     end
-    snapFirst(CARD_NAME['Final Exams'] or 'Final Exam', x1, ROW_CHAR, FACEUP)
+    snapFirst(CARD_NAME['Final Exams'] or 'Final Exam', x1, ROW_CHAR, FACEDOWN)
   end)
   step(function()
     say('FINAL EXAM. The Assignment deck, the Time Slots and FINF are' ..
@@ -3632,8 +3640,8 @@ function startExam()
         ' record of what you studied and the pool was built from it,' ..
         ' and so do your unspent coupons.' ..
         ' POOL, Credits->cards by subject: ' .. line .. ' = ' .. pool ..
-        ' cards, of which ' .. EXAM_DRAW .. ' are drawn face-up on the' ..
-        ' row above. BY HAND: discard unresolved Assignments and exhaust their' ..
+        ' cards, of which ' .. EXAM_DRAW .. ' are dealt FACE-DOWN on the' ..
+        ' row above -- turn each one over only when you come to it. BY HAND: discard unresolved Assignments and exhaust their' ..
         ' stored dice; short of ' .. goal .. ' Credits, exhaust 1' ..
         ' available die per missing Credit in the order Red, Purple,' ..
         ' Blue, Green, Yellow, looping as needed. Then recover 1 die,' ..

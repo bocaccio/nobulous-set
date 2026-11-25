@@ -173,6 +173,17 @@ NAP  Nobulous Apprenticeship Program
 ==================================================================
 BAT  Build-a-Tyrant
 ==================================================================
+  THIS GRID AND EVERY BAT NOTE BELOW IT MEASURE THE RETIRED
+  PRINTED BATTLE.  rules/bat.html adopted the scavenged-Tyrant
+  design on 2026-11-20 and simulation/batrev.py is BAT's model of
+  record; bat.py, which table.py runs for this column, models the
+  game that design replaced.  The ladder that ships is thirds by
+  the Prototyrant's graft Value at Wake-Up, not an overall win
+  rate - Standard's great third, 46.5%, is the figure the design
+  is pegged to.  Run `python batrev.py batch`; read batrev.py's
+  docstring for the working.  Left in place as the recorded
+  evidence for the fixes measured against it.
+
   difficulty = Specimens added / Tyrant Health; random Rat sides
 
                             no NRJ    Tier I   Tier II  Tier III

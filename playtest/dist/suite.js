@@ -526,7 +526,7 @@
     n.exam.stage="exam";
     n.exam.index=0;
     n.rollsUsed=0;
-    n.notice=`${note?note.trim()+" ":""}Exam pool: 1 card from each of the ${pool.length} subjects; three drawn. FINF is not used during the Final Exam.`;
+    n.notice=`${note?note.trim()+" ":""}Exam pool: 1 card from each of the ${pool.length} subjects; three drawn face-down and turned over one at a time. FINF is not used during the Final Exam.`;
   }
   function examTarget(){
     const n=state.nap,e=NAP_EXAMS[n.exam.drawn[n.exam.index]];

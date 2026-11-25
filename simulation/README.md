@@ -6,8 +6,15 @@ Balance models for all four Nobulous Set games, written 2026-09-20.
 python table.py              # the full cross-tab, 20,000 games per cell, ~3min
 python table.py 4000         # quicker pass
 python run_all.py            # same thing; kept as the documented entry point
-python bat.py                # one game on its own
+python batrev.py one         # BAT AS IT SHIPS: one seeded playthrough, named cards
+python batrev.py batch       # BAT as it ships: the four-rung ladder
+python bat.py                # the RETIRED printed BAT - one game on its own
 ```
+
+**BAT's model of record is `batrev.py`.** `bat.py`, and therefore the BAT
+column of `table.py` and of `RESULTS.txt`, models the printed game that the
+scavenged-Tyrant revision replaced on 2026-11-20. See the Files table below
+and the dated note over the BAT results.
 
 `RESULTS.txt` holds the last full run.
 
@@ -32,7 +39,8 @@ figures. Read the fidelity notes before quoting anything here.
 |---|---|
 | `dice.py` | the shared 20 Strong dice; face distributions taken verbatim from the playtest engines |
 | `cards.py` | hero rosters and the NRJ tier modules - the axes a balance table gets asked for |
-| `bat.py` | Build-a-Tyrant: Splice Phase and Tyrant Battle |
+| `batrev.py` | **Build-a-Tyrant, the scavenged-Tyrant design that ships: BAT'S MODEL OF RECORD.** Experiments that graft and reclaim, the Wake-Up clock, the battle against the old Tyrant's wall |
+| `bat.py` | RETIRED - the PRINTED Build-a-Tyrant that preceded the 2026-11-20 revision: Splice Phase and the old Tyrant Battle. Still the source of the transcribed card tables `check_app_sync.py` holds against `generator/build_bat.py`, and nothing else in it describes BAT any more |
 | `nap.py` | Apprenticeship: the Assignment row, Demand penalties, the Final Exam |
 | `aos.py` | Automaton of Shale: Element allocation, Programs, cycles, Advanced |
 | `finale.py` | **the Imposter finale that ships**: the Dossier, the attention dial, the pace against the clock |
@@ -49,7 +57,7 @@ figures. Read the fidelity notes before quoting anything here.
 | `proto/fix.py` | candidate repairs for the finale, and which of them do nothing |
 | `supply.py` | whether the campaign's 18 cards can actually be banked, and whether standalone matches |
 | `protocols.py` | per-Protocol tuning sweep for BAT's NRJ Tier I |
-| `proto/` | a proposed rewrite of the BAT battle, kept out of the shipping model - see `proto/README.md` |
+| `proto/` | HISTORY - the earlier proposed rewrite of the OLD BAT battle, kept out of the shipping model at the time; `batrev.py` settled the question it was asking - see `proto/README.md` |
 
 Card data is transcribed from canonical sources, never retyped from memory:
 Program targets and Element counts from `playtest/dist/app.js`; NAP Tasks,
@@ -337,6 +345,35 @@ table holds the Credit goal at 6 and moves only the FINF dial, while the
 cross-tab moves the goal and the Setback count together.
 
 ### BAT - difficulty x NRJ tier
+
+> **THESE FIGURES MEASURE THE RETIRED PRINTED BATTLE.** `rules/bat.html`
+> adopted the scavenged-Tyrant design on 2026-11-20 and `simulation/batrev.py`
+> is BAT's model of record; everything in this section, including the two
+> `####` subsections under it, describes the game that design replaced. It is
+> kept as the recorded evidence for the modelling fixes measured against it.
+>
+> The ladder that ships is not an overall win rate. BAT is judged on thirds
+> split by the Prototyrant's total graft Value at Wake-Up, because a GREAT lab
+> should still be a fight and a POOR one close to hopeless - `batrev.py batch`,
+> 2000 games a rung:
+>
+> | rung | Specimens | rounds | overall | poor lab | great lab |
+> |---|---|---|---|---|---|
+> | Easy | 5 | 12 | 37.8% | 14.3% | 65.0% |
+> | **Standard** | 7 | 10 | 23.4% | 5.1% | **46.5%** |
+> | Hard | 7 | 9 | 16.5% | 1.4% | 37.1% |
+> | Nobulous | 8 | 8 | 8.9% | 0.5% | 21.6% |
+>
+> Difficulty is Specimens AND ROUNDS now; Prototyrant Health is a flat 12 on
+> every rung and Buff HP does not exist. **Standard's great third, 46.5%, is
+> the figure the design is pegged to.** The NRJ tiers against that structure,
+> great-lab, 1200 games a cell, read none / I / II / III: Easy 65.5 / 60.2 /
+> 56.2 / 56.2, Standard 47.5 / 45.5 / 28.0 / 28.0, Hard 36.0 / 35.0 / 20.2 /
+> 20.2, Nobulous 21.8 / 17.5 / 7.8 / 7.8. Tier III equals Tier II by
+> construction, because only the Research Note's price is modelled and not its
+> reward, so every Tier III figure is a lower bound. `batrev.py`'s own
+> docstring carries the working and the open questions; `HANDOFF.md` section
+> `## 9a000000000` carries the design.
 
 Difficulty is **Specimens added to the Upgrade deck / the Tyrant's Health**.
 The track is the five Splices in random order, then the Health dial; damage

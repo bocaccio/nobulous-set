@@ -2210,6 +2210,15 @@ class Game(object):
             else:
                 pool.append(self.rng.choice(subject_exams))
         self.rng.shuffle(pool)
+        # ONE AT A TIME, AND UNSEEN UNTIL IT IS TURNED OVER. This loop has
+        # never looked ahead: every coupon is spent, and every die
+        # committed, inside the exam being sat, against a Target this
+        # policy cannot know in advance. That is now what the book prints -
+        # rules/nap.html, 2026-11-24, where the four selected cards are
+        # shuffled face-down and turned over as they come. So no figure
+        # measured here moves on that change; what moved is the mod, which
+        # dealt the row face-up and was the one owner playing an easier
+        # game than this.
         for subject, dot, base, printed in pool[:3]:
             target = max(1, base - self.credits[subject])
             rule = printed if EXAM_RESTRICTIONS else {}

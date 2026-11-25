@@ -20,6 +20,15 @@ cards, and it claimed finale.py had no hero code after the ten Imposter
 sides went in. coverage.py holds those same claims as PREDICATES over the
 live modules and exits non-zero when one stops being true, which is the only
 form of the claim that has ever stayed correct.
+
+AND THE BAT COLUMN MODELS A RETIRED GAME. rules/bat.html adopted the
+scavenged-Tyrant design on 2026-11-20 and simulation/batrev.py is BAT's model
+of record; the `bat` module this file imports is the PRINTED battle that
+design replaced, kept for its transcribed card tables and for the evidence
+already measured through it. Nothing here was re-pointed, because BAT's ladder
+is no longer an overall win rate a cross-tab cell can hold: it is thirds split
+by the Prototyrant's graft Value at Wake-Up. `python batrev.py batch` prints
+it, and HANDOFF.md section 9a000000000 carries the design.
 """
 import sys
 import time

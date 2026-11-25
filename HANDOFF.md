@@ -50,9 +50,14 @@ CONTENT_NOTICE.md fan-content disclaimer — keep it
 ```
 
 The browser interface runs from the repository root with
-`python -m http.server 8000 -d playtest/dist`. Its HTML, CSS and JavaScript are
-editable source files; the card sheets and rule PDFs copied into its `assets/`
-folder are deployment copies, not the authoritative masters.
+`python playtest/serve.py`, then `http://localhost:8000/`. **Not `python -m
+http.server`**: it sends no cache headers, so the browser caches `index.html`,
+the one file that names every `?v=` token, and a cached copy pins you to an
+old build however often they are bumped. The symptom is a feature that is
+simply absent with no error, which reads exactly like code that was never
+written. The lab's HTML, CSS and JavaScript are editable source files; the
+card sheets and rule PDFs copied into its `assets/` folder are deployment
+copies, not the authoritative masters.
 
 `images/` is **build output**, not hand-edited. Never edit a PNG directly.
 
@@ -365,7 +370,10 @@ expires.
 
 ## 9. Things that will look like bugs and are not
 
-- **The BAT Buff HP card is a one-card deck and a mat, not a playing card.** It
+- **The BAT Buff HP card is a one-card deck and a mat, not a playing card.**
+  *SUPERSEDED 2026-11-20: no Buff HP card is in the live game, and the Health
+  track card that followed it left the print on 2026-11-23 - nothing in this
+  bullet is on the table any more. See `## 9a000000000`.* It
   is a 15-space track laid out 5 rows by 3 columns with square spaces, so a die
   sits on it as the marker. It is never shuffled or drawn. Difficulty only
   chooses the starting space, so re-tuning the dial never changes the card.
@@ -442,7 +450,111 @@ of these were live bugs, found and fixed together:
   send it home. `c.phase === 0` used to stand in for "not yet thrown" and is
   wrong as soon as a die can be borrowed between rolls.
 
+## 9a000000000. BAT ships the scavenged-Tyrant design (2026-11-20)
+
+**Every section below this one that describes BAT's battle describes a game
+that no longer ships.** `rules/bat.html` adopted the scavenged-Tyrant design
+on 2026-11-20, and the cards, the lab and the mod followed it the same week.
+If you are reading this file to learn what BAT IS, read this section and then
+`rules/bat.html`. The sections below are how it got here; the ones the
+revision overtook now say so at their head.
+
+THE DESIGN. The four Lab Rats scavenge an abandoned Tyrant that failed
+because it could not be controlled, and build a **Prototyrant** they can
+direct. Every Experiment **grafts** one part onto the Prototyrant and
+**reclaims** one for the old Tyrant, win or lose - success only decides WHO
+CHOOSES. So the lab phase's stake is WHICH parts, not how many, and the old
+Tyrant's wall is its starting parts minus the grafts: its size set by
+difficulty, its composition by how the lab went. The clock is the Experiment
+deck rather than a Splice count - six dealt cards, then a three-card packet
+holding the **Wake-Up**, so six, seven or eight Experiments resolve at equal
+odds. In the battle a graft's Value CAPS the dice the Rats may commit and a
+Splice's Value is the damage Target, so one lost Experiment hands the Rats a
+smaller cap and the Tyrant a higher threshold.
+
+A card out of the carcass is a **SPLICE** - not an Upgrade, not a Part. That
+is the name in all five places a player meets it, and `check_app_sync.py`
+asks all five at once.
+
+**THE MODEL OF RECORD IS `simulation/batrev.py`** (8387a2c).
+
+- `simulation/bat.py` models the PRINTED game that preceded the revision and
+  is **retired**. It is still the source of the transcribed card tables that
+  `check_app_sync.py` holds against `generator/build_bat.py`, and nothing
+  else in it describes BAT any more.
+- `simulation/proto/` was the earlier proposed rewrite of the old battle, and
+  is history for the same reason: `batrev.py` settled the question it asked.
+- `simulation/RESULTS.txt` and `simulation/table.py` still carry the retired
+  battle's BAT figures. Both now say so at the head of their BAT material.
+
+THE DIALS, read out of `batrev.py`:
+
+| | in `batrev.py` | value |
+|---|---|---|
+| Splices dealt at setup | `PARTS_AT_SETUP` | **13 on every rung** |
+| Specimens in the pool | `SPECIMENS_IN_POOL` | 5 / 7 / 7 / 8 |
+| Round limit | `ROUND_LIMITS` | 12 / 10 / 9 / 8 |
+| Prototyrant Health | `SHARED_HP_START` | **12, flat** |
+| Grafts revealed | `GRAFT_REVEAL` | 2 |
+| Experiments dealt | `EXPERIMENTS_DEALT` / `WAKEUP_PACKET` | 8 / 3 |
+
+**Difficulty is Specimens AND ROUNDS now.** Health is the same 12 on every
+rung and Buff HP does not exist, so the two-number difficulty the sections
+below describe is gone. `rules/bat.html` prints Easy 5/12, Standard 7/10,
+Hard 7/9, Nobulous 8/8.
+
+THE LADDER, AND THE BRIEF THAT CHANGED WITH IT. BAT is no longer judged on an
+overall win rate. The figures are split into thirds by the Prototyrant's
+total graft Value at Wake-Up, because a GREAT lab should still be a fight and
+a POOR one close to hopeless - 2000 games a rung:
+
+| rung | overall | poor lab | great lab |
+|---|---|---|---|
+| Easy | 37.8% | 14.3% | 65.0% |
+| **Standard** | 23.4% | 5.1% | **46.5%** |
+| Hard | 16.5% | 1.4% | 37.1% |
+| Nobulous | 8.9% | 0.5% | 21.6% |
+
+**Standard's great third, 46.5%, is the figure the design is pegged to**, and
+it is mid-band. Do not read the overall column against the old band: that
+band was set for an overall win rate and this ladder is not one. `near%` -
+losses with one Splice still standing - runs 17.9 to 28.0%, so the clock
+stays a visible threat rather than a formality.
+
+THE NRJ TIERS against this structure, great-lab win rate, 1200 games a cell:
+
+| rung | none | I | II | III |
+|---|---|---|---|---|
+| Easy | 65.5% | 60.2% | 56.2% | 56.2% |
+| Standard | 47.5% | 45.5% | 28.0% | 28.0% |
+| Hard | 36.0% | 35.0% | 20.2% | 20.2% |
+| Nobulous | 21.8% | 17.5% | 7.8% | 7.8% |
+
+Every rung steps down, which is the rule a tier must obey. Tier III EQUALS
+Tier II BY CONSTRUCTION, because only the Research Note's price is modelled
+and not its reward, so **every Tier III figure there is a lower bound**.
+
+WHAT THE REVISION RETIRED:
+
+- **Buff HP is gone.** Not folded and not optional: the card, the dial and
+  the second difficulty number are all out of the live game.
+- **The Health track card left the print entirely on 2026-11-23** - out of
+  `build_bat.py`, `pack.py`, `build_catalog.py`, `tts/decks.py`, both live
+  `CARD_MANIFEST.txt` tables and `coverage.py`. The Prototyrant's Health is a
+  number you keep, on paper or any counter.
+
+The four things still open are in section 10.
+
 ## 9a00000000. Four difficulties, and the files that outlived Brutal
+
+> **SUPERSEDED IN PART 2026-11-20 by the scavenged-Tyrant design - see
+> `## 9a000000000` above.** The four difficulty NAMES still stand. The table
+> below, its win rates and "difficulty is TWO numbers" do not: difficulty is
+> Specimens and ROUNDS now, Prototyrant Health is a flat 12, and Buff HP does
+> not exist. The ladder that ships is in that section. The five-places
+> warning still names the right places, but item 1 is now
+> `simulation/batrev.py`: `bat.py` is retired and is the authority for nothing
+> but the transcribed card tables.
 
 BAT had five difficulty levels; the other three games had four. BAT now has
 the same four as everything else - **Easy / Standard / Hard / Nobulous**.
@@ -560,6 +672,13 @@ no-carryover is the Rat's. Only the last row is true of both. Health is the
 one thing in the battle that chips.
 
 ## 9a000000. The Buff HP card shows its die
+
+> **SUPERSEDED 2026-11-20: there is no Buff HP in the live game** - card, dial
+> and difficulty number all went with the scavenged-Tyrant design, and the
+> Health track card that briefly replaced it left the print on 2026-11-23.
+> Every rule in this section describes the retired printed battle, the die
+> showing REMAINING and walking card to card included. Kept because it records
+> Jon's rulings and the app code it describes. See `## 9a000000000`.
 
 The Buff HP card is the one component in BAT with a physical tracker on it -
 15 square spaces, 3 across and 5 down - and the app showed only "4 / 4" in a
@@ -956,6 +1075,42 @@ When changing this flow, play a full Experiment through to the Battle phase.
 Each of these only appears a few turns in.
 
 ## 10. Known open items
+
+- **BAT'S POOR LAB IS WORTH 5.1% AT STANDARD, and whether that is the design
+  is open.** The brief wants a poor lab grim, and it is - but it is grim from
+  Wake-Up, not from round 8. Seven battle-side dials were priced (R22-R29 in
+  `simulation/batrev.py`) and **every one lifted the strong build more than
+  the weak one**, because capability is worth more to whoever already has it.
+  Conservation is why: the wall is the complement of the grafts, so a poor lab
+  faces a BIGGER wall with a WEAKER Prototyrant and the battle cannot repair
+  the lab. If a poor lab should be live at 10-15%, the mechanism has to narrow
+  what a bad lab COSTS, inside the lab phase. Nothing in the battle will do
+  it.
+
+- **BAT's NRJ Tier II is a 17-point step at Standard** - 45.5% to 28.0%,
+  great-lab, the biggest single thing in the tier table. Partly real: the
+  Modifications inflate Splice Value, and Value is the damage Target AND the
+  old Tyrant's attack dice, so one card does two jobs. Partly a modelling
+  floor: that inflation reaches the old Tyrant in full while the
+  Modifications' benefits to the Rats are flattened into damage and soak
+  numbers. **Tier II is the next thing worth pricing properly.**
+
+- **BAT's Tier III Research Note reward is unmodelled**, so Tier III reads
+  equal to Tier II by construction and every Tier III figure is a lower
+  bound. The open question is how a Note should be PAID for:
+  `batrev_final.txt` holds the two candidate arms, "both" and "choice",
+  against the 6 points and 9 more that the rulebooks advertise. The
+  `batrev_*.txt` logs in the repository root are untracked working notes, not
+  committed results.
+
+- **Three printed BAT strings still say "Upgrade" for the card on the Rats'
+  side that soaks a hit**: Piercing Horn (a Power Splice), Predatory Instinct
+  and Crushing Blow (both Tyrant Attacks). They are stale **rules**, not stale
+  vocabulary - the printed game let a Rat hold Upgrades and attacked Rats,
+  while here the Prototyrant holds grafts and one exposed graft defends
+  whether or not its effect was used. **Each needs a battle decision rather
+  than a rename**, and a check in `check_app_sync.py` pins that decision so it
+  is not quietly undone as tidying.
 
 - **NAP'S SETBACK COUNTS CAME DOWN ONE AT EVERY RUNG on 2026-11-06: 4/4/5/6
   became 3/3/4/5.** The Credit goals did not move and no card was reprinted —
@@ -2553,7 +2708,11 @@ Not your job to fix, but worth knowing if Jon raises them:
   `write_pnp` used reportlab's default canvas, which stamps a `/CreationDate`
   and a fresh document ID per run. With `invariant=1` two packs of identical
   input produce byte-identical PDFs, verified for all four games.
-- **The BAT Tyrant battle was rewritten.** Jon played the old one and found
+- **The BAT Tyrant battle was rewritten.** *SUPERSEDED 2026-11-20: this is
+  the OCTOBER rewrite, and the scavenged-Tyrant design has since replaced the
+  battle it produced - see `## 9a000000000`. Its closing line calls promoting
+  `proto/bat.py` the outstanding job; `simulation/batrev.py` settled that
+  instead, and `bat.py` was retired rather than updated.* Jon played the old one and found
   it tedious, and the simulation agreed: the correct play was to commit only
   what recovery returned, so the dice pool was a per-round income rather than
   a budget, and the fight ran 9.1 rounds and ended with 7.1 of about 10 dice

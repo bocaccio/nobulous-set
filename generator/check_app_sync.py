@@ -795,11 +795,22 @@ check("rules/bat.html prints batrev's Specimens and rounds per rung",
 # pool', which is ordinary English, so this cannot ask for the string to
 # be absent - it asks that the five places that NAMED the thing name a
 # Splice, and that the section heading is not Parts any more.
+#
+# ANCHORED ON THE NAME, NOT THE SENTENCE AROUND IT (2026-11-24). Three of
+# the five phrases this used to match died in one editing pass that renamed
+# nothing: the reveal step now says 'from the Carcass deck', the Target line
+# was rewritten as 'Splice A value + Splice B value - Experiment value', and
+# the box says 'Thirteen Splices on the carcass'. All three still called the
+# card a Splice, so the check failed on prose while the rule it guards held -
+# exactly what its own 'A COUNT, NOT A SPELLING' note above warns against.
+# Each anchor is now the NAME plus the one word that places it, and the count
+# carries the rest of the book (49 at the time of writing).
 check("rules/bat.html calls a card out of the carcass a Splice",
-      "Reveal 2 Splices from the old Tyrant" in _RULES["bat"]
-      and "the two Splices' combined Value" in _RULES["bat"]
-      and "both Splices leave the deck" in _RULES["bat"]
-      and "Thirteen Splices go in" in _RULES["bat"]
+      "2 Splices from the" in _RULES["bat"]          # revealing a pair
+      and "Splice A value" in _RULES["bat"]          # working out the Target
+      and "Splices leave the deck" in _RULES["bat"]  # resolving the Experiment
+      and "Thirteen Splices" in _RULES["bat"]        # the conservation box
+      and _RULES["bat"].count("Splice") >= 30        # ...and everywhere else
       and "<h2>Splices</h2>" in text("rules/bat.html")
       and "<h2>Parts</h2>" not in text("rules/bat.html"),
       "the book half-renamed the thing both halves of the table hold")
@@ -2754,6 +2765,22 @@ check("...and draws as many Final Exams as the book says",
       _draw is not None
       and ("EXAM_DRAW = %s" % _draw.group(1)) in _lua,
       "book %r" % (_draw and _draw.group(1),))
+# ...AND YOU DO NOT SEE THEM COMING, 2026-11-24. The mod dealt the
+# three drawn exams FACE-UP in a row, so the whole exam was on the
+# table before the first roll and a player could plan three exams'
+# worth of coupons and colours against it. simulation/nap.py never
+# could - final_exam resolves the drawn exams in order and spends
+# every coupon inside the exam it is sitting - so the face-up row
+# was an easier game than the one every published NAP figure was
+# measured through, and nothing compared the two. The lab already
+# rendered one exam at a time; what this holds together is the book
+# and the mod, each read for what it does rather than for a word.
+check("the exams are turned over one at a time, in the book and the mod",
+      _says("turning each over only as you come to it")
+      and "are dealt FACE-DOWN on the" in _lua
+      and "rotation = FACEDOWN, smooth = false" in _lua
+      and "snapFirst(CARD_NAME['Final Exams'] or 'Final Exam', x1, ROW_CHAR,"
+          " FACEDOWN)" in _lua)
 # AND THE POOL IS BUILT FROM THE PILE, not from a count the script
 # kept for itself. STATE.credits is a total and the pool is per
 # subject, so reading it would quietly build the same pool for a
@@ -3847,7 +3874,14 @@ check("...and the plate is named for the number it carries",
 # it moves - and the second check holds those two against each other, so
 # the cross-check this had before the move survives the move.
 _bat_html = text("rules/bat.html")
-_marks = re.search(r"put the <b>(\w+) die</b> on it", _bat_html)
+# THE VERB IS NOT THE RULE (2026-11-24). This read 'put the <b>X die</b>
+# on it' and went None the moment the Splice Phase step was reworded to
+# 'place', which took both checks below down with it and reported the
+# rulebook as naming no die at all - a scary failure for a line that still
+# names the Recovery die as plainly as before. Only the die name is the
+# claim, so either verb is accepted; the battle's own sentence (checked
+# just below) is what holds the two halves of the book together.
+_marks = re.search(r"(?:put|place) the <b>(\w+) die</b> on it", _bat_html)
 _mark_src = re.search(r"setMarker\('(\w+)', batMarkX\(1\), batMarkZ\(\)[,)]",
                       _lua)
 check("the mod marks the active Rat with the die rules/bat.html names",
