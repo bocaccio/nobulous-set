@@ -1690,7 +1690,7 @@ def notebook():
          "time.\n\n"
          "DIFFICULTY is the 10-card Program mix, Routine / Specialized /\n"
          "Unstable / Volatile: Easy 4-3-3-0, Standard 2-3-5-0, Hard\n"
-         "0-3-7-0, Nobulous 0-3-5-2. CHECK THE COLORS after dealing\n"
+         "0-4-4-2, Nobulous 0-3-3-4. CHECK THE COLORS after dealing\n"
          "it: each of the four must be a required-color dot on at least\n"
          "two of the 10 Programs, or reshuffle and deal again.\n\n"
          "THE OBJECT is to build THREE Assemblies within THREE rounds. Build\n"

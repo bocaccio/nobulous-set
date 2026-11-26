@@ -311,9 +311,52 @@ AoS  Automaton of Shale
 
                             no NRJ    Tier I   Tier II  Tier III
   Easy  4/3/3/0              62.4%     51.9%     46.3%     45.1%
-  Standard  2/3/5/0          52.5%     40.1%     35.1%     36.1%
-  Hard  0/3/7/0              44.7%     31.6%     28.1%     28.3%
-  Nobulous  0/3/5/2          36.6%     24.9%     21.2%     22.0%
+  Standard  2/3/5/0          52.3%     40.1%     35.1%     36.1%
+  Hard  0/4/4/2              38.2%     26.2%     22.9%     23.3%
+  Nobulous  0/3/3/4          29.1%     19.0%     16.3%     16.5%
+
+  WHICH CELLS ARE FROM WHICH RUN, because this table is now two.
+  SPECIALIZED CAME OFF ITS PIN later on 2026-11-25 and Volatile
+  reaches two rungs - see the note on aos.LEVELS, and aosvol.txt for
+  the 101-mix sweep.  Hard and Nobulous moved, so all eight of their
+  cells are from that measurement (simulation/aosvol.py, 20,000 games
+  a cell, the same shape).  Easy and Standard did not move, so their
+  Tier columns are carried over unchanged from the run above them.
+  Their SOLO cells were re-measured as a control: Easy reproduced
+  62.4 exactly and Standard read 52.3 against a published 52.5, which
+  is the figure printed here.  A control that reproduces is the only
+  reason to trust the six new cells beside it.
+
+  AoS IS NO LONGER THE OUTLIER AT THE BOTTOM, which is what the
+  retune was for.  rules/bat.html prints 63.7 / 52.8 / 37.8 / 25.8
+  and NAP was re-pegged to it the same day; AoS was 6.9 points easier
+  than that peg at Hard and 10.8 at Nobulous, which made Nobulous AoS
+  the easiest Nobulous in the set.  It now reads -1.3 / -0.5 / +0.4 /
+  +3.3.  Hard lands on the peg.  NOBULOUS DOES NOT, and cannot by
+  composition: the floor over EVERY four-Volatile mix is 0/1/5/4 at
+  27.5% and over every three-Volatile mix 30.6%, so the last three
+  points need a rule or a harder card.  Five Volatile does reach it,
+  and is better on every axis measured: 0/3/2/5 reads 26.2 / 16.7 /
+  14.3 / 14.7 across the four tiers, so it is +0.4 on the peg rather
+  than +3.3, it re-deals LESS often than the shipped rung (14.3%
+  against 16.8%, because the fifth Volatile replaces an Unstable and
+  not the Specialized that carries the colour dots), and it clears the
+  campaign axis by 0.4 rather than 0.2.  It was measured rather than
+  shipped because the ask was three or four, and it is four table rows
+  if it is wanted.
+  THE CAMPAIGN AXIS STILL HOLDS at both new rungs, which is the check
+  that mattered most: Tier III beats Tier II and stays under solo.
+  Hard 23.3 over 22.9, Nobulous 16.5 over 16.3.  Both are narrow, and
+  Nobulous is 0.2 - narrow enough that it should not be called a
+  margin until it is measured again at a different seed.
+  AND THE DEAL-AGAIN RATE CHOSE NOBULOUS, not the win rate.  The
+  colour floor re-deals a setup that leaves a colour on fewer than
+  two Programs, and Specialized carries two required-colour dots
+  where the other three classes carry one, so cutting Specialized
+  raises the re-deal rate: 0/3/3/4 16.8%, 0/2/4/4 27.3%, 0/1/5/4
+  38.7%, against 4.5-16.8% on every rung that ever shipped.  0/2/4/4
+  wins 1.2 points of difficulty for 10.5 points of re-deal and was
+  refused on that.
 
     Against the 59.1 / 50.7 / 42.5 / 34.9 this replaces, every solo
     rung is 1.7 to 3.3 points higher and Tiers I and II are within

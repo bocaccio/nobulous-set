@@ -591,10 +591,50 @@ for lvl in ("Easy", "Standard", "Hard", "Nobulous"):
         _mix_wrong.append("%s: not printed as %r" % (lvl, want))
 check("the deck mix agrees between the model and the rulebook",
       not _mix_wrong, "; ".join(_mix_wrong[:4]))
-# Specialized at 3 every rung is what the printed sentence promises.
-check("every rung still holds Specialized at 3",
-      all(_slv[l][1] == 3 for l in _slv),
-      "%r" % ({l: _slv[l] for l in _slv},))
+# THE PIN ON SPECIALIZED CAME OFF on 2026-11-25. This used to read "every
+# rung still holds Specialized at 3", which was the printed sentence's
+# promise - and that sentence went the same day, as commentary, in eb35114.
+# Jon then asked for Volatile at two rungs, which the pin made impossible:
+# with S fixed and Routine already 0 by Hard, the only cards a bottom rung
+# had left to spend were Unstable ones and Unstable is capped at 8 printed.
+# So the shape this holds is the shape that is still TRUE of every rung,
+# rather than a count that is now a design choice per rung:
+#
+#   the deck is ten cards, because aosdeck.py chose ten; and
+#   no rung asks for more of a class than the 8 that are PRINTED, which is
+#   the one way this table can name a deal nobody can physically make.
+#
+# A rung's own counts are free, and aosvol.py is what measures them.
+_deck_wrong = []
+for _l, _mix in _slv.items():
+    if sum(_mix) != 10:
+        _deck_wrong.append("%s deals %d cards, not 10" % (_l, sum(_mix)))
+    for _d, _n in zip(("Routine", "Specialized", "Unstable", "Volatile"),
+                      _mix):
+        if _n > 8:
+            _deck_wrong.append("%s asks for %d %s, and 8 are printed"
+                               % (_l, _n, _d))
+check("every rung deals ten Programs and no more of a class than is printed",
+      not _deck_wrong, "; ".join(_deck_wrong[:4]))
+# AND THE MOD CAN STILL DEAL IT. tts/lua.lua builds the Program deck by
+# cutting ONE class down and moving the others into it, so the class it
+# starts from has to be a real Deck - two cards at least, since a one-card
+# "deck" in TTS is a loose card and cutTo(0) is nothing at all. While
+# Specialized was pinned at 3 the Lua could name it outright and the
+# comment there said so. It now picks the largest count at runtime, which
+# only works if SOME class is at 2 or more on every rung - true of any
+# ten-card split, but checked rather than assumed, because the sweep's own
+# floor at Nobulous was 0/1/5/4 and that mix would have been dealt as a
+# single Specialized card.
+# VOLATILE IS EXCLUDED, the same way the Lua excludes it: pad(2) is the one
+# pad the Corrupted Limitations borrow back at Tier II, and a base deck's
+# remainder stays out for the rest of the game. So this reads the first
+# three counts only - which matters at Nobulous, where Volatile is 4 and the
+# largest count of all, and reading max() over the whole tuple would pass a
+# rung the mod cannot deal.
+check("...and every rung leaves the mod a class of 2 or more to deal from",
+      all(max(_mix[:3]) >= 2 for _mix in _slv.values()),
+      "%r" % ({_l: _slv[_l] for _l in _slv},))
 # THE TRADE RULE IS NO LONGER DESCRIBED IN PROSE, 2026-11-25: the sentence
 # explained what the difficulty table already shows, which is commentary on
 # what the mix does rather than a rule. The table is held against
@@ -621,16 +661,19 @@ def options(select_id):
                        m.group(1), re.S)]
 
 
-_lbl_wrong = []
-_aos_opts = dict(options("deckSelect"))
-for lvl in ("Easy", "Standard", "Hard", "Nobulous"):
-    want = "%s &middot; %s" % (
-        lvl, "/".join(str(n) for n in sa["LEVELS"][lvl]))
-    got = _aos_opts.get(lvl)
-    if got != want:
-        _lbl_wrong.append("AoS %s: label %r, model wants %r" % (lvl, got, want))
-check("the lab's AoS difficulty labels name the mix it builds",
-      len(_aos_opts) == 4 and not _lbl_wrong, "; ".join(_lbl_wrong[:4]))
+# AND THE AoS ARM CAME OUT ON 2026-11-25 TOO, a few hours after NAP's and
+# for the same reason - see the note directly below, which is the one this
+# check should have been retired alongside. It compared the frozen page's
+# deckSelect labels with aos.LEVELS, so releasing the pin on Specialized
+# failed it with nothing to fix: the lab is frozen, it is not an owner of
+# any rule, and AGENTS.md says not to update it when a ladder changes. Two
+# lab checks have now outlived the cull by being quiet rather than by being
+# live, and both were found by a ladder moving under them.
+#
+# THE MIX HAS THREE LIVE OWNERS and all three are checked: aos.LEVELS above,
+# the printed table in rules/aos.html above that, and AOS_MIX in
+# tts/lua.lua further down. The options() helper stays because the NRJ arm
+# below still uses it.
 
 # THE NAP DIFFICULTY LABELS IN THE LAB WERE CHECKED HERE UNTIL 2026-11-25,
 # against a derived "Easy - 4 Cr, 1 Setback" string. The lab is frozen and is

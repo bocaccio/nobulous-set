@@ -257,8 +257,12 @@ REWARD_KINDS = ("hp", "rec", "str", "recover", "unheat", "banish")
 
 DECKS = ["Routine", "Specialized", "Unstable", "Volatile"]
 
-# Difficulty is the mix of the three decks, not a choice of one: (Routine,
-# Specialized, Unstable), summing to the 8 Programs you cycle.
+# Difficulty is the MIX of the four decks, not a choice of one: (Routine,
+# Specialized, Unstable, Volatile), summing to the 10 Programs you cycle.
+# Both numbers in this sentence were wrong until 2026-11-25 - it still said
+# three decks and eight Programs, a fortnight after the deck grew and the
+# fourth class was added. It is a stray copy of the real note on LEVELS
+# below, which is where the ladder lives.
 # ---- dice-economy levers, all defaulting to the printed rules ----------
 # AoS's pool never runs short: a Program costs 0.45 dice net. These exist to
 # measure what would change that. See dicetension.py.
@@ -272,13 +276,15 @@ ELEMENT_COST = 0         # dice exhausted per resolved element, win or lose:
                          # the printed rules explicitly say it is not
 
 
-# (Routine, Specialized, Unstable), summing to the 8 Programs you cycle.
-# Specialized is held at 3 and each step up trades one Routine Program for
-# one Unstable, so the ladder is a single substitution repeated.
+# (Routine, Specialized, Unstable, Volatile), summing to the 10 Programs you
+# cycle. THE SINGLE-SUBSTITUTION LADDER IS HISTORY as of 2026-11-25 - see the
+# note above LEVELS - and the three paragraphs that follow are the record of
+# how the rungs were pitched while it held, kept because the ALLOC_MODE
+# argument in them is still the reason the band covers the strong line.
 # Retuned 2026-11-03 one rung harder, and AGAIN on 2026-11-05 for the reason
-# under ALLOC_MODE below. Specialized stays at 3 and each rung trades one
-# Routine Program for one Unstable, which is what rules/aos.html prints, so
-# the ladder is a single substitution repeated and 0/3/5 is just its last
+# under ALLOC_MODE below. Specialized stayed at 3 and each rung traded one
+# Routine Program for one Unstable, which is what rules/aos.html printed, so
+# the ladder was a single substitution repeated and 0/3/5 just its last
 # rung - the re-pitch needed no new rules sentence, only a new table row.
 #
 # TWO LADDERS, because the pitch depends on how the dice are allocated and
@@ -308,11 +314,51 @@ ELEMENT_COST = 0         # dice exhausted per resolved element, win or lose:
 # enough cards that even an all-Unstable deck wins 41.4%, so the bottom rung
 # was unreachable by composition - see simulation/aosdeck.py for the deck
 # size and simulation/aosclass.py for the class.
+#
+# SPECIALIZED IS NO LONGER PINNED AT 3, and Volatile reaches two rungs.
+# 2026-11-25, same day. Jon read the ladder off and asked the right
+# question: everything above is tuned around Specialized 3, so Volatile
+# existed at one rung because that was the only rung with room for it, not
+# because the class is a Nobulous idea. With S pinned and R already 0 by
+# Hard, the only cards Nobulous had left to spend were Unstable ones, and
+# Unstable is capped at the 8 printed. simulation/aosvol.py sweeps 101 mixes
+# with the pin off; aosvol.txt is the grid and aosvol_finals.txt confirms the
+# shortlist at 20,000 games a cell.
+#
+# AND SPECIALIZED IS NOT SIMPLY THE EASIER CARD, which aosclass.txt says and
+# which is true only in its own neighbourhood (0/4/6 43.4 against 0/3/7
+# 41.4, so about +1 a card). Across the full range difficulty bottoms out
+# around S 1-2 and comes back UP at 0:
+#   0/2/6/2 34.8   0/1/7/2 35.0   0/0/8/2 35.6
+#   0/1/6/3 30.6   0/0/7/3 31.5
+#   5/2/3/0 65.9   5/1/4/0 67.4   5/0/5/0 69.9
+# PROGRAM_REQS above is why: Specialized carries TWO required-colour dots,
+# and Carry a Moving Load four, while Routine, Unstable and Volatile carry
+# one. So Specialized is the harder card on colour supply and the easier one
+# on Targets, and the two cross over. The pin was holding a colour-pressure
+# dial still, not a difficulty dial.
+#
+# WHICH IS WHY THE DEAL-AGAIN RATE CHOSE NOBULOUS, not the win rate. The
+# COLOR_FLOOR above re-deals a setup that leaves a colour on fewer than two
+# Programs, and fewer Specialized means fewer dots to satisfy it:
+#   0/3/3/4 16.8%   0/2/4/4 27.3%   0/1/5/4 38.7%
+# against 4.5-16.8% on every rung that ever shipped. 0/2/4/4 reads 27.9% and
+# 0/3/3/4 29.1%, so cutting the third Specialized buys 1.2 points of
+# difficulty for 10.5 points of re-deal - one setup in four, and the worst
+# setup in the game by a wide margin. It was refused on that.
+#
+# THE BOTTOM RUNG STILL DOES NOT REACH THE PEG. rules/bat.html prints
+# 63.7 / 52.8 / 37.8 / 25.8 and NAP was re-pegged to it the same day; Hard
+# lands on it at +0.4 and Nobulous is +3.3. The floor over EVERY V=4 mix is
+# 0/1/5/4 at 27.5% and over every V=3 mix 30.6%, so four Volatile cannot
+# reach 25.8 by composition at all - that last 3 points needs a rule or a
+# harder card, and neither was in scope here. Easy and Standard did not move:
+# Standard was already on the peg at 52.3% and no cell in the sweep beat it.
 LEVELS = {
     "Easy": (4, 3, 3, 0),
     "Standard": (2, 3, 5, 0),
-    "Hard": (0, 3, 7, 0),
-    "Nobulous": (0, 3, 5, 2),
+    "Hard": (0, 4, 4, 2),
+    "Nobulous": (0, 3, 3, 4),
 }
 LEVEL_NAMES = ["Easy", "Standard", "Hard", "Nobulous"]
 

@@ -1,3 +1,111 @@
+2026-11-25  AoS: VOLATILE AT TWO RUNGS, AND SPECIALIZED OFF ITS PIN
+Jon read the ladder off and asked the right question: the whole thing was
+tuned around Specialized 3, so Volatile existed at one rung because that
+was the only rung with room for it - not because the class is a Nobulous
+idea.  He asked for 1 or 2 Volatile at Hard and 3 or 4 at Nobulous, with
+Specialized free to move.  The ladder is now
+
+  Easy 4/3/3/0   Standard 2/3/5/0   Hard 0/4/4/2   Nobulous 0/3/3/4
+
+reading 62.4 / 52.3 / 38.2 / 29.1 solo against 62.4 / 52.5 / 44.7 / 36.6.
+Easy and Standard did not move: Standard was already on the peg and no cell
+in the 101-mix sweep beat it.  NO RULE AND NO CARD CHANGED - four rows of a
+table, in simulation/aos.py, rules/aos.html, tts/lua.lua and the mod's
+notebook.  The sentence that would have had to change, "Specialized stays
+at 3 throughout", went hours earlier in the editorial pass below, as
+commentary.
+
+WHY THE PIN WAS LOAD-BEARING.  With Specialized fixed and Routine already 0
+by Hard, the only cards a bottom rung had left to spend were Unstable ones,
+and Unstable is capped at the 8 that are printed.  That is the whole reason
+Volatile was a Nobulous-only deck.  simulation/aosvol.py sweeps the space
+with the pin off; aosvol.txt is the grid and aosvol_finals.txt confirms the
+shortlist at 20,000 games a cell, with the four shipped rungs as a control
+(Easy reproduced 62.4 exactly, Standard 52.3 against a published 52.5).
+
+AND SPECIALIZED IS NOT SIMPLY THE EASIER CARD, which aosclass.txt says and
+which is true only in its own neighbourhood.  Across the full range
+difficulty bottoms out around Specialized 1-2 and climbs again at 0:
+0/2/6/2 34.8, 0/1/7/2 35.0, 0/0/8/2 35.6.  PROGRAM_REQS is why - Specialized
+carries TWO required-colour dots, and Carry a Moving Load four, while the
+other three classes carry one - so Specialized is the harder card on colour
+supply and the easier one on Targets.  The pin was holding a colour-pressure
+dial still, not a difficulty dial.
+
+WHICH IS WHY THE DEAL-AGAIN RATE CHOSE NOBULOUS AND NOT THE WIN RATE.  The
+printed colour floor re-deals a setup that leaves a colour on fewer than two
+of the 10 Programs, and fewer Specialized means fewer dots to satisfy it:
+0/3/3/4 16.8%, 0/2/4/4 27.3%, 0/1/5/4 38.7%, against 4.5-16.8% on every rung
+that ever shipped.  0/2/4/4 buys 1.2 points of difficulty for 10.5 points of
+re-dealing - one setup in four, and much the worst setup in the game - so it
+was refused.
+
+NOBULOUS DOES NOT REACH THE PEG and cannot by composition.  rules/bat.html
+prints 63.7 / 52.8 / 37.8 / 25.8; the new ladder is -1.3 / -0.5 / +0.4 /
++3.3, so Hard lands on it and Nobulous is three points over.  The floor
+across EVERY four-Volatile mix is 0/1/5/4 at 27.5% and across every
+three-Volatile mix 30.6%.  Five Volatile does reach it, and is better
+on every axis measured: 0/3/2/5 reads 26.2 / 16.7 / 14.3 / 14.7, so +0.4 on
+the peg rather than +3.3; it re-deals LESS often than the shipped rung,
+14.3% against 16.8%, because the fifth Volatile replaces an Unstable and not
+the Specialized that carries the colour dots; and it clears the campaign
+axis by 0.4 rather than 0.2.  Measured rather than shipped because the ask
+was three or four.  It is four table rows if it is wanted.
+
+THE CAMPAIGN AXIS HOLDS AT BOTH NEW RUNGS, which is the check that mattered
+most: Tier III beats Tier II and stays under solo.  Hard 26.2 / 22.9 / 23.3,
+Nobulous 19.0 / 16.3 / 16.5.  Nobulous clears by 0.2, which is narrow enough
+that it should not be called a margin until it is measured at another seed.
+
+AND THE RETUNE FOUND THREE BUGS IN THE MOD, none of them about difficulty.
+
+  A STRANDED CARD AT HARD.  moveN's own comment says "anything new that
+  calls this with count - n == 1 strands a card", and the shipped Hard was
+  0/3/7/0 - 7 of the 8 printed Unstable, a remainder of exactly one.  The
+  new ladder has no count of 7 at any rung, so it goes by construction.
+
+  CARDS MERGED INTO A FALLING DECK.  Volatile was gathered into the Program
+  deck while it still sat in the staging band at y 14.  tts/test_setup.py's
+  World.midair exists for exactly this and had been failing at Nobulous
+  since Volatile was added.  The deck is set down in the step that
+  assembles it now, which fixes Nobulous as well as the new Hard.
+
+  AND THE LUA COULD NO LONGER NAME ITS BASE DECK.  It cut Specialized down
+  and moved the other two in, on the strength of Specialized being 3
+  everywhere; cutTo() returns the deck UNTOUCHED when asked for fewer than
+  2, so a rung dealing 1 of a class would have shuffled in all 8 and said
+  nothing.  It picks the largest of the three at runtime now, Volatile
+  excluded because its pad is the one Tier II borrows back.
+
+WHY NONE OF THAT HAD BEEN SEEN: test_setup.py had been red for a fortnight.
+41 failures, of which 16 read "AoS Program deck: got 10, want 8" - stale
+since the deck grew to ten - and 16 were NAP's stat dice expecting REC 2
+after the re-peg made it 3.  Both now derive from the script's own
+constants, so neither can go stale again, and the suite reads 5: four are
+artefacts of a --local build having no ?v=, and the fifth was the test being
+wrong rather than the mod.  It asserted NAP's three Final Exams come out
+FACE UP; rules/nap.html prints "turning each over only as you come to it",
+and the mod has always dealt them down.
+
+CHECKS: one retired, two added, one repaired.  "every rung still holds
+Specialized at 3" was the constraint itself and is gone, replaced by what is
+still true of every rung - ten cards, no class above the 8 printed, and a
+class of 2 or more left for the mod to deal from, which is what would have
+caught 0/1/5/4 reaching the table as a single loose card.  The lab's AoS
+difficulty-label check is retired the way NAP's was earlier the same day:
+the lab is frozen and is not an owner, and this was the second one the
+removal pass missed, both found by a ladder moving under them.  And a first
+cut of the Lua held the deck names in a table, which cost three decks their
+only check - check_app_sync.py reads this file for deckOut('...') to prove
+every deck is dealt by some setup, and reported Routine, Specialized and
+Unstable as "neither dealt nor declared".  AGENTS.md's rule that a check a
+rename can satisfy is not a check cuts both ways: so can a refactor.  The
+names are literal inside their deckOut calls again.
+
+ALSO REPAIRED: simulation/aosmix.py, which still enumerated splits of 8
+across three decks and so offered nothing but mixes the model cannot deal,
+with its derived CURRENT matching no rung at all.
+
 2026-11-25  THE TTS NOTEBOOK TAKES THE SAME PASS
 The entry below left the mod's six quick-reference tabs carrying exactly
 the kind of text the four books had just been stripped of, which was named

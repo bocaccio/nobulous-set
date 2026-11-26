@@ -1,0 +1,15 @@
+THE SHORTLIST at 20000 games per Technician, mean of the six.
+Published  Easy 62.4  Standard 52.5  Hard 44.7  Nobulous 36.6
+Peg (BAT)  Easy 63.7  Standard 52.8  Hard 37.8  Nobulous 25.8
+
+rung       R/S/U/V         win   vs pub   vs peg   why
+------------------------------------------------------------------------------------------------
+Easy       4/3/3/0       62.4%     -0.0     -1.3   shipped, unchanged - the control
+Easy       4/4/2/0       64.8%     +2.4     +1.1   closest to the peg, one Unstable traded for a Specialized
+Standard   2/3/5/0       52.3%     -0.2     -0.5   shipped, and already on the peg - no candidate beat it
+Hard       0/4/4/2       38.2%     -6.5     +0.4   the peg ladder: Volatile 2, paid for in Unstable
+Hard       2/3/3/2       44.9%     +0.2     +7.1   the published ladder: Volatile 2, paid for in Routine
+Nobulous   0/2/4/4       27.9%     -8.7     +2.1   the peg ladder, Specialized 2 so the mod can still deal it
+Nobulous   0/3/3/4       29.1%     -7.5     +3.3   the same one Specialized milder
+Nobulous   0/1/5/4       27.5%     -9.1     +1.7   the sweep's floor, and Specialized 1 - see tts/lua.lua
+Nobulous   2/2/2/4       36.1%     -0.5    +10.3   the published ladder: Volatile 4, paid for in Routine

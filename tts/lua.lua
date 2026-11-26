@@ -84,12 +84,15 @@ NAP_DIFF = { Easy = {3, 2}, Standard = {4, 3}, Hard = {5, 4}, Nobulous = {6, 5} 
 -- with them, so the direction is stored rather than a signed number.
 FINF_SET = { {'Increase', 1}, {'Increase', 2}, {'Increase', 3},
              {'Reduce', 1}, {'Reduce', 2}, {'Reduce', 3} }
--- AoS: the 8-Program mix, Routine / Specialized / Unstable. Each step up
--- trades one Routine for one Unstable; Specialized stays at 3.
--- FOUR DECKS SINCE 2026-11-25, and the fourth is 0 at every rung but
--- Nobulous. Ten cards, not eight: eight could not cover four colours.
+-- AoS: the 10-Program mix, Routine / Specialized / Unstable / Volatile.
+-- FOUR DECKS SINCE 2026-11-25, and ten cards rather than eight: eight
+-- could not cover four colours. No count here is fixed any more - the
+-- single-substitution ladder and the pin on Specialized both came off the
+-- same day, so Volatile deals at TWO rungs and Specialized moves. Every
+-- rung is measured in simulation/aosvol.py; aos.LEVELS is the owner and
+-- check_app_sync.py holds this against it.
 AOS_MIX = { Easy = {4, 3, 3, 0}, Standard = {2, 3, 5, 0},
-            Hard = {0, 3, 7, 0}, Nobulous = {0, 3, 5, 2} }
+            Hard = {0, 4, 4, 2}, Nobulous = {0, 3, 3, 4} }
 -- The finale: dice that START exhausted, Yellow / Green / Blue / Purple.
 -- Red is never one of them - session 5 allows only Red and Yellow.
 IMP_TIRED = { Easy = {3, 3, 3, 3}, Standard = {3, 3, 4, 4},
@@ -1957,8 +1960,11 @@ end
 -- gets is AoS's Limitations at 6, then BAT's Splices at 10 and NAP's
 -- Assignment at 22 - never the single card that gets replaced. What
 -- keeps it that way is the difficulty tables, which is not a thing
--- this function can see: AOS_MIX's Routine cut is to exactly one at
--- Nobulous, and that is the kind of number that moves.
+-- this function can see: AOS_MIX's smallest non-zero count is the kind
+-- of number that moves, and on 2026-11-25 it moved twice in one day -
+-- the pin on Specialized came off, so no count in that table is fixed.
+-- check_app_sync.py now holds every rung to leaving a class of 2 or
+-- more for the Program deal to start from.
 function merge(a, b)
   if a and b then return gatherInto(a, b) end
   return a
@@ -2962,16 +2968,67 @@ function setupAoS()
     setMarker('Strategy', sx[2], sz, 2)
     setMarker('Recovery', sx[3], sz, 3)
   end)
-  -- The Program deck is the difficulty: a MIX of all three decks, not a
-  -- choice between them. Routine can be 0 at Nobulous, which is why the
-  -- deck the other two are merged into is whichever one survives.
+  -- The Program deck is the difficulty: a MIX of all four decks, not a
+  -- choice between them. Routine can be 0, which is why the deck the
+  -- others are merged into is whichever one the rung deals most of.
   step(function()
-    -- Specialized is 3 at every difficulty, so it is the only one of the
-    -- three that can be cut without any risk of reaching a single card
-    -- and going stale. The other two move INTO it.
-    prog = cutTo(deckOut('Specialized Programs', pad(3)), mix[2])
-    moveN(deckOut('Routine Programs', pad(1)), prog, mix[1])
-    moveN(deckOut('Unstable Programs', pad(4)), prog, mix[3])
+    -- SPECIALIZED IS NO LONGER 3 AT EVERY RUNG, 2026-11-25, so this can
+    -- no longer name the deck it cuts. It used to, and the comment here
+    -- said Specialized was "the only one of the three that can be cut
+    -- without any risk of reaching a single card and going stale" - which
+    -- stopped being true the moment the pin came off. The failure would
+    -- have been SILENT: cutTo() returns the deck untouched when asked for
+    -- fewer than 2, so a rung dealing 1 of a class shuffles in all 8 of
+    -- it and nothing says so.
+    --
+    -- VOLATILE IS NEVER THE BASE, even where the rung deals most of it -
+    -- Nobulous deals 4 against 3 and 3 - because pad(2) is the one pad
+    -- borrowed back by the Corrupted Limitations at Tier II, and a base
+    -- deck's remainder stays out for the rest of the game. The list order
+    -- is the preference on a tie, which Hard needs at 4 and 4.
+    -- AND THE NAMES STAY LITERAL INSIDE THE deckOut CALLS. A first cut
+    -- of this held them in a table and handed deckOut a variable, which
+    -- parses fine and cost three decks their only check:
+    -- check_app_sync.py reads this file for deckOut('...') to prove
+    -- every deck decks.py defines is actually dealt by some setup, and
+    -- it reported Routine, Specialized and Unstable as "neither dealt
+    -- nor declared". AGENTS.md's rule - a check a rename can satisfy is
+    -- not a check - cuts both ways: so can a refactor.
+    local function progDeck(i)
+      if i == 1 then return deckOut('Routine Programs', pad(1)) end
+      if i == 2 then return deckOut('Specialized Programs', pad(3)) end
+      return deckOut('Unstable Programs', pad(4))
+    end
+    -- Specialized first, then Unstable, then Routine: the order is the
+    -- preference on a tie, which Hard needs at 4 and 4.
+    local ORDER = {2, 3, 1}
+    local pick = ORDER[1]
+    for _, i in ipairs(ORDER) do
+      if mix[i] > mix[pick] then pick = i end
+    end
+    prog = cutTo(progDeck(pick), mix[pick])
+    -- THE RETURN IS TAKEN NOW. moveN hands back the deck the cards went
+    -- into and can hand back a different object than it was given, and
+    -- these three calls used to throw it away - latent while no rung
+    -- asked for all 8 of a class, since that is the only branch that
+    -- gathers rather than moves card by card.
+    for _, i in ipairs(ORDER) do
+      if i ~= pick then prog = moveN(progDeck(i), prog, mix[i]) end
+    end
+    -- AND IT IS SET DOWN IN THIS STEP, before the Volatile merge below.
+    -- A deck in the staging band at y 14 is still falling, and cards
+    -- gathered into a falling deck look right to every positional
+    -- assertion and come out wrong at the table - tts/test_setup.py's
+    -- World.midair is the half a resting place cannot show. The Routine
+    -- and Unstable merges above are safe because they happen in the
+    -- frame the deck was placed in; Volatile is a step later and was
+    -- not, so Nobulous has been merging 2 cards into a falling deck
+    -- since Volatile was added on 2026-11-25. Grounding it here fixes
+    -- that rung as well as the new Hard.
+    if prog then
+      prog.setPosition({aosCol(AOS_PROGRAMS), 3, AOS_ROW1})
+      prog.setRotation(FACEDOWN)
+    end
   end)
   -- VOLATILE IN A STEP OF ITS OWN, and put away again in the same one.
   -- BAND_PADS is 4 and the other three are occupied for good by the
@@ -2981,7 +3038,7 @@ function setupAoS()
   step(function()
     if mix[4] and mix[4] > 0 then
       local vol = deckOut('Volatile Programs', pad(2))
-      moveN(vol, prog, mix[4])
+      prog = moveN(vol, prog, mix[4])
       putHome(vol)
     end
   end)

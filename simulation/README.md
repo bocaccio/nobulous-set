@@ -612,11 +612,23 @@ Specimens are the Value-5 cards).
 > **SUPERSEDED 2026-11-25.** The table below is the EIGHT-card AoS with a
 > clean-run install rule, and is kept as the evidence for the Tier I repair
 > the prose under it analyses. The ladder that ships is ten cards over four
-> decks - Easy `4/3/3/0`, Standard `2/3/5/0`, Hard `0/3/7/0`, Nobulous
-> `0/3/5/2`, the last dealing two of the new Volatile deck - and installing
-> now needs at most one failed element rather than a clean run. It reads
-> 62.4 / 52.5 / 44.7 / 36.6 solo; `RESULTS.txt` carries the full grid and
-> says why it was measured apart from the rest of that file.
+> decks - Easy `4/3/3/0`, Standard `2/3/5/0`, Hard `0/4/4/2`, Nobulous
+> `0/3/3/4` - and installing now needs at most one failed element rather
+> than a clean run. It reads 62.4 / 52.3 / 38.2 / 29.1 solo; `RESULTS.txt`
+> carries the full grid and says which cells come from which run.
+>
+> **VOLATILE REACHES TWO RUNGS** as of later the same day, and Specialized
+> is no longer pinned at 3. The pin was why Volatile had existed at one
+> rung only: with it fixed and Routine already 0 by Hard, the only cards a
+> bottom rung had left to spend were Unstable ones, and Unstable is capped
+> at the 8 printed. `aosvol.py` sweeps 101 mixes with the pin off.
+> Specialized turns out not to be simply the easier card - it carries two
+> required-colour dots where the other three classes carry one, so it is
+> the harder card on colour supply and the easier one on Targets, and
+> difficulty bottoms out around Specialized 1-2 and climbs again at 0.
+> That is also what chose Nobulous: fewer Specialized means a higher
+> deal-again rate against the colour floor, and `0/2/4/4` bought 1.2
+> points of difficulty for 10.5 points of re-dealing.
 
 Measured 2026-11-06, 20,000 games a cell, `ALLOC_MODE = sacrifice_short`.
 

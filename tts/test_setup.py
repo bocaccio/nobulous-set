@@ -1386,8 +1386,20 @@ def layout_assertions():
                          (round(az - ahd - zs[0], 3) > 0.6,
                           round(zs[0] - (fz + fhd), 3) > 0.6),
                          (True, True))
-                    want(t + " stat dice read 2, which is what the card"
-                         " prints", [o.value for o in three], [2, 2, 2])
+                    # DERIVED FROM THE SCRIPT'S OWN CONSTANTS since
+                    # 2026-11-25. This read [2, 2, 2] and had been
+                    # failing on all four rungs and all four tiers since
+                    # NAP's re-peg raised REC from 2 to 3 on every
+                    # Apprentice card - sixteen red lines that said
+                    # nothing was wrong, and they are part of why a real
+                    # AoS bug sat in this file unnoticed for a fortnight.
+                    # A literal here has to be edited by whoever reprints
+                    # the cards; NAP_START and NAP_REC_START cannot drift
+                    # from what the setup actually lays down.
+                    want(t + " stat dice read what the card prints",
+                         [o.value for o in three],
+                         [int(g.NAP_START), int(g.NAP_START),
+                          int(g.NAP_REC_START)])
                     # And the Chip in the circle beside Morning, turned
                     # to 1 EXACTLY AS TYPING 1 TURNS IT - the calibrated
                     # colour angle, colour side up. It used to be turned
@@ -2163,11 +2175,16 @@ def aos_assertions():
     want("...level with the decks beside it",
          round(techs[0].pos[2] + float(g.CARD_W) / 2, 2) if techs else None,
          round(float(g.AOS_ROW1) + float(g.CARD_L) / 2, 2))
+    # THE DECK IS NAMED AFTER WHICHEVER CLASS THE RUNG DEALS MOST OF, as
+    # of 2026-11-25, so this can no longer list the two names it used to
+    # allow. The pin that held Specialized at 3 came off and the Lua now
+    # picks its base deck at runtime: at Standard it is Unstable, which
+    # this read as the Program deck missing from its space altogether.
+    # Any of the four is right, and it is the SPACE being checked.
     want("the Program deck and the Limitations are on their spaces",
-         (at("Specialized Programs", float(g.aosCol(int(g.AOS_PROGRAMS))),
-             float(g.AOS_ROW1))
-          or at("Routine Programs", float(g.aosCol(int(g.AOS_PROGRAMS))),
-                float(g.AOS_ROW1)),
+         (any(at(_n + " Programs", float(g.aosCol(int(g.AOS_PROGRAMS))),
+                 float(g.AOS_ROW1))
+              for _n in ("Routine", "Specialized", "Unstable", "Volatile")),
           at("Limitations", float(g.aosCol(int(g.AOS_LIMITS))),
              float(g.AOS_ROW1))),
          (True, True))
@@ -3168,10 +3185,17 @@ def finale_assertions():
          coupon is not None and coupon.guid in w.table, True)
     want("the Final Exam draws 3 exams and no more",
          out(w, "Final Exams"), 3)
-    want("...all three face up", sorted(o.is_face_down
-         for o in w.table.values()
-         if o.name.startswith(names_of("Final Exams"))),
-         [False, False, False])
+    # ...AND ALL THREE FACE DOWN, which is the opposite of what this
+    # asserted until 2026-11-25. rules/nap.html prints "draw 3 Final
+    # Exams one at a time, turning each over only as you come to it",
+    # so a face-up row is the rule broken and the mod has always dealt
+    # them down. The expectation was simply wrong, and being wrong in
+    # the direction of a passing-looking failure is why it survived.
+    want("...all three face down, turned over only as you come to one",
+         sorted(o.is_face_down
+                for o in w.table.values()
+                if o.name.startswith(names_of("Final Exams"))),
+         [True, True, True])
     # ON THE THREE PRINTED SPACES, which is the part a count cannot
     # see. The row the day revealed into is where they go, and the
     # third of them is the old discard space - the draw is laid out at
@@ -4632,7 +4656,16 @@ def main():
             a = run(lvl, tier, "AoS")
             prog = [o for o in a.table.values()
                     if o.name.endswith("Programs") and o.name != "Advanced Programs"]
-            want(t + " AoS Program deck", sum(len(p.kids) for p in prog), 8)
+            # DERIVED FROM AOS_MIX, not the 8 this used to read. The
+            # Program deck went to TEN cards on 2026-11-25 - eight could
+            # not cover four colours - and this assertion stayed at 8,
+            # failing on every rung and tier for a fortnight. Summing the
+            # rung's own mix means the next deck-size change cannot
+            # outrun it, and a mix that does not add up fails in
+            # check_app_sync.py instead, where it belongs.
+            _mix = a.lua.globals().AOS_MIX[lvl]
+            want(t + " AoS Program deck", sum(len(p.kids) for p in prog),
+                 sum(int(_mix[i]) for i in range(1, 5)))
             want(t + " AoS Limitation deck", len(deck(a, "Limitations").kids),
                  12 if tier >= 2 else 6)
             want(t + " AoS Corrupted in it",
