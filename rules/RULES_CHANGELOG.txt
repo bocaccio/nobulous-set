@@ -1,3 +1,68 @@
+2026-11-25  THE TTS NOTEBOOK TAKES THE SAME PASS
+The entry below left the mod's six quick-reference tabs carrying exactly
+the kind of text the four books had just been stripped of, which was named
+as a deliberate inconsistency rather than defended.  Jon asked for the mod
+too.  Twenty-six edits, and the notebook is a quarter shorter in two tabs.
+
+WHAT WENT, the same four kinds:
+
+  DESIGN RATIONALE.  Why the borrow table narrows as the Prototyrant
+  grows; why Volatile deals at Nobulous only; why the campaign is Tier III
+  only; why a restriction you cannot meet is waived (the worked example
+  with no Blue in hand, and that a restriction constrains which dice you
+  CHOOSE); the whole of the 2026-11-25 slot-order change, which the
+  notebook was still narrating as a change.
+
+  STRATEGY AND PLAY ADVICE.  "a pass is never free"; the armor simile that
+  closed BAT's tab; "an element you have already given up on is worth
+  loading rather than leaving bare"; "failing your way through the deck
+  gives up every Reward ... The deck outlasts you"; "Abandon in round
+  three and they come back too late to use"; "recover for the color that
+  is coming"; and the Imposter tab's closing paragraph on pacing the
+  clock, which was advice from first word to last.
+
+  FIGURES AND IMPACT.  The Final Exam pool's 75%, the last figure left in
+  any owner a player reads; "At ten cards this almost never fires"; "seven
+  retained against fifteen Exhibits ... answers under half the Dossier";
+  "Four of the five are Target 3 as dealt, so the cheapest evidence is
+  also the evidence that pays"; Tier II "is the pressure peak"; NAP's
+  10-of-26 Demand-Target census.
+
+  TEXT ABOUT SPECIFIC CARDS.  The six NAP coupons with what each one does;
+  Sharpen the Surgical Implements as the second add-a-die effect; Carry a
+  Moving Load as the four-color exception; the five paying Exhibits by
+  name; the Understudy as the only Imposter that spends a Candidate.
+
+WHAT STAYED, AND WHAT WAS GENERALIZED.  The coupon table was replaced by
+the general coupon rules rules/nap.html keeps - a granted reroll costs no
+Strategy roll, a Crit a card has repriced is not a Crit, a flip back to
+Request keeps its stored progress and can finish on the spot - so no
+ruling was lost with the six rows, only the six cards.  The per-rung
+reading of Tier I's Setback swap ("only EASY is below 3") became the split
+the supplement prints: Easy 3 and 0, Standard 3 and 0, Hard 3 and 1,
+Nobulous 3 and 2.  The exam waiver kept its RULING on a clause demanding a
+count, which is how a class of clause resolves, and lost the argument for
+it.
+
+NO CHECK FAILED, which is the difference from the books.  Seventeen broke
+there; here, nothing.  Every check that reads the notebook was pointed at
+a HEADER or at a line derived from a table - "4 SPECIAL RECOVERY LAST",
+"MUST RECEIVE AT LEAST ONE", "Nothing on the table counts", the Specimens
+and rounds line, the Credit-goal line, the Program mix - and not one at
+the prose around them.  The books were held to their commentary because
+each paragraph had been argued for once; the notebook never was.  One
+comment beside the waiver check went stale and was rewritten: it claimed
+the mod was "the one owner that has the space to say otherwise", and the
+argument now lives only beside EXAM_WAIVER_COST in simulation/nap.py.
+
+TWO DROPPED FRAGMENTS RESTORED, which are not editorial.  The notebook
+read "install it in one open Build slot on one of the six slot and counts
+as ONE of its printed required colors", missing "revealed Assemblies.  A
+Program fills exactly ONE slot"; and "must survive a new run to be
+installed, may take either eligible color", missing the "and".  Both were
+restored word for word from rules/aos.html, so no rule moved.  They had
+been sitting in a player-facing tab.
+
 2026-11-25  ALL FOUR RULEBOOKS: THE RULES ONLY, WITH THE OPINING CUT
 Jon asked for the rules to tell a player how to play and how to resolve
 effects, and nothing else: no text about what specific cards do, no

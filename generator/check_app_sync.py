@@ -1392,7 +1392,16 @@ check("an unmeetable exam restriction is waived free in the book, "
 # count of dice or colours charges itself in successes the Health rule
 # already takes, so only the colour-contribution clauses are really
 # forgiven. Dropping it would leave the free waiver reading more generous
-# than it is, in the one owner that has the space to say otherwise.
+# than it is.
+#
+# WHAT THE NOTEBOOK NO LONGER CARRIES, as of 2026-11-25, is the ARGUMENT
+# for that ruling - the worked example with no Blue in hand, and that a
+# restriction constrains which dice you choose. The notebook took the
+# same pass the four books took and is prose about how to play, not about
+# why. The ruling itself is how a class of clause RESOLVES, so it stayed,
+# and this check is pointed at it rather than at the paragraph that used
+# to defend it. The argument survives beside EXAM_WAIVER_COST in
+# simulation/nap.py, which no player reads.
 check("the mod says a clause demanding a COUNT needs no waiver",
       "needs no" in text("tts/build_mod.py")
       and "dice you cannot commit are successes you do" in
