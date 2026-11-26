@@ -2989,11 +2989,14 @@ function setupAoS()
     -- AND THE NAMES STAY LITERAL INSIDE THE deckOut CALLS. A first cut
     -- of this held them in a table and handed deckOut a variable, which
     -- parses fine and cost three decks their only check:
-    -- check_app_sync.py reads this file for deckOut('...') to prove
-    -- every deck decks.py defines is actually dealt by some setup, and
-    -- it reported Routine, Specialized and Unstable as "neither dealt
-    -- nor declared". AGENTS.md's rule - a check a rename can satisfy is
-    -- not a check - cuts both ways: so can a refactor.
+    -- check_app_sync.py scans this file for the quoted label inside
+    -- each deckOut call, to prove every deck decks.py defines is
+    -- actually dealt by some setup, and it reported Routine,
+    -- Specialized and Unstable as "neither dealt nor declared".
+    -- AGENTS.md's rule - a check a rename can satisfy is not a check -
+    -- cuts both ways: so can a refactor. Nor can this comment SPELL
+    -- that call out, with a placeholder in the quotes: the scanner read
+    -- the placeholder as a fourth deck and failed on it.
     local function progDeck(i)
       if i == 1 then return deckOut('Routine Programs', pad(1)) end
       if i == 2 then return deckOut('Specialized Programs', pad(3)) end
