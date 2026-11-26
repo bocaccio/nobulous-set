@@ -113,7 +113,7 @@ REQ_MAP = {
 # THE EIGHT ADVANCED PROGRAMS LEFT THIS TABLE on 2026-11-24 with the deck
 # itself. Six of those cards no longer exist; the two names that survive as
 # Assembly backs - Rapid Approach and Unobserved Entry - carry their flavour
-# in ASSEMBLY_FLAVOR, beside the recipe side's. check_app_sync.py holds every
+# in ASSEMBLY_FLAVOR, beside the Build side's. check_app_sync.py holds every
 # line here against the lab's copy, and a dead entry here is a line the lab
 # has nowhere to match.
 FLAVOR = {
@@ -164,9 +164,9 @@ LIMITATIONS = [
 # ---------------------------------------------------------------------------
 # Assembly cards (2026-11-24), which REPLACE the eight standalone Advanced
 # Programs. One card, two faces, and the faces are not the same card's two
-# moods the way a Program's Stable/Overheated faces are:
+# moods the way a Program's Regulated/Overheated faces are:
 #
-#   FRONT  the recipe you build during the game - BUILD slots, every slot
+#   FRONT  the Build side you fill during the game - BUILD slots, every slot
 #          including repeats, each filled by one cleanly-run Program that
 #          counts as ONE of its printed required colours.
 #   BACK   the Advanced Program that Assembly becomes in the finale, as
@@ -176,7 +176,7 @@ LIMITATIONS = [
 # below reads it off the back. It is there to tell a player which colours the
 # finale will ask of this Assembly while concealing how many elements it has
 # and what the Targets are, so a stored copy could only ever drift out of
-# agreement with the thing it describes. Four of the nine print a front recipe
+# agreement with the thing it describes. Four of the nine print front slots
 # in different colours from their own back (Balance Gyro, Sensor Array,
 # Traction Module, Covert Sensor Array); that is the concealment working, not
 # a transcription error, and it is why nothing may derive one from the other.
@@ -198,7 +198,7 @@ ASSEMBLIES = [
 
 # The ninth Assembly, printed in the NRJ supplement and offered only in a
 # Tier III setup, where it replaces the standard Sensor Array. Same Build
-# recipe as the card it displaces, so Tier III's build problem is the base
+# Build side as the card it displaces, so Tier III's build problem is the base
 # game's; only the finale stage it becomes differs.
 COVERT = ("Covert Sensor Array", ["B", "Y"], "Erase the Audit Trail",
           [("P", 2), ("G", 3), ("G", 2)])

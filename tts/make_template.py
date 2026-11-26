@@ -445,9 +445,9 @@ def draw_aos(d, lua):
     label(d, "BANISHED\nDICE", float(g.AOS_RIGHT), r3, fit=fit)
     # THE SIX ASSEMBLY SPACES ARE LABELLED, unlike the five element mats
     # below them, which say what they are on the card. An Assembly space
-    # holds a recipe card AND the Programs installed into it, so the label
+    # holds an Assembly card AND the Programs installed into it, so the label
     # is there for the empty table and for the moment a built Assembly is
-    # turned over and the recipe stops being what is on show.
+    # turned over and the Build side stops being what is on show.
     r2 = float(g.AOS_ROW2)
     for _k in range(1, int(g.AOS_OFFER) + 1):
         label(d, "ASSEMBLY", float(g.aosMid(_k, int(g.AOS_OFFER))), r2, fit=fit)

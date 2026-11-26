@@ -9,7 +9,7 @@ from aos_faces import ASSEMBLY_CSS, assembly_back, assembly_front
 REWARD = {'hp1': 'Gain 1 HP',
           'rec3': 'Recover 3 exhausted dice',
           'rec_up_remove': '+1 REC; remove this Program',
-          'unheat': 'Return 1 Overheated Program to Stable',
+          'unheat': 'Return 1 Overheated Program to Regulated',
           'str_up_remove': '+1 STR; remove this Program',
           'opt_placeholder': 'Banish 1 Limitation from the game.'}
 
@@ -20,7 +20,7 @@ REWARD = {'hp1': 'Gain 1 HP',
 # matter MOST, a negated failure still overheating the next ADVANCED Program,
 # is gone with the Advanced deck (2026-11-24); the scoping itself still
 # decides what these two footers mean.
-STABLE_FTR = ('1 failed element: this Program Overheats. '
+REGULATED_FTR = ('1 failed element: this Program Overheats. '
               '2+ (Catastrophic Failure): lose 1 HP, or exhaust 2 misses on them.')
 OVER_FTR = ('1 failed element: this Program is set aside. '
             '2+ (Catastrophic Failure): lose 1 HP, or exhaust 2 misses on them.')
@@ -69,19 +69,19 @@ def program(name, targets, mark, reward, deck, overheated):
     if reward:
         body += ('<div class="spacer"></div><div class="sub">Program Reward</div>'
                  '<div class="txt" style="margin-top:.4mm">%s</div>' % reward)
-    sub = '%s &middot; %s' % (deck, 'Overheated' if overheated else 'Stable')
+    sub = '%s &middot; %s' % (deck, 'Overheated' if overheated else 'Regulated')
     # Every caller passes a reward now: the Advanced deck was the only
     # rewardless one and the Assemblies replaced it.
     assert reward, '%s: a Program with no reward is no longer a card' % name
-    ftr = OVER_FTR if overheated else STABLE_FTR
+    ftr = OVER_FTR if overheated else REGULATED_FTR
     return C(name, sub, body, ftr, warn=True, acc=DECK_ACCENT[deck], flavor=flavor)
 
 
 for deckname, data in [('Routine', ROUTINE), ('Specialized', SPECIALIZED),
                        ('Unstable', UNSTABLE), ('Volatile', VOLATILE)]:
-    stable = [program(n, t, m, REWARD[r], deckname, False) for n, t, m, r in data]
+    reg = [program(n, t, m, REWARD[r], deckname, False) for n, t, m, r in data]
     over = [program(n, t, m, REWARD[r], deckname, True) for n, t, m, r in data]
-    print(deckname, render_duplex('AoS_%s' % deckname, stable, over, 'AoS', PORTRAIT, BIG), 'two-sided')
+    print(deckname, render_duplex('AoS_%s' % deckname, reg, over, 'AoS', PORTRAIT, BIG), 'two-sided')
 
 # Card backs first: the deck PnPs interleave them behind the fronts.
 make_back('CardBack_AoS_Limitation', 'AoS', 'Limitation', '#2f5966')
@@ -89,7 +89,7 @@ make_back('CardBack_AoS_ElementMat', 'AoS', 'Element mat', '#555555', PORTRAIT)
 print("card backs done")
 
 # THE EIGHT ASSEMBLIES, replacing the eight standalone Advanced Programs.
-# Front is the recipe built during the game, back is the finale stage it
+# Front is the Build side filled during the game, back is the finale stage it
 # becomes - two different jobs on one piece of card, which is why the faces
 # share nothing but the accent colour. The ninth, the Covert Sensor Array, is
 # printed in NRJ's print-and-play because it is offered only in a Tier III
@@ -104,7 +104,7 @@ print('Assemblies', render_duplex('AoS_Assemblies', fronts, backs, 'AoS', PORTRA
 
 # THE NINTH ASSEMBLY SHIPS IN NRJ'S PRINT-AND-PLAY but is built here, in AoS's
 # own stylesheet and header style, so all nine are one card format. That is not
-# tidiness: the recipe side's Advanced colors line is what a player reads to
+# tidiness: the Build side's Advanced colors line is what a player reads to
 # plan a build, and a ninth card that presented it differently would be a
 # different promise. It carries no NRJ tag for the same reason.
 #

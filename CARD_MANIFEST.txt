@@ -302,13 +302,13 @@ EARLIER (rev 15)
       Exhibits                                   colored by domain: Knowledge purple,
                                                  Physical green, Cover-Up rust
     Every NRJ card names its tier in the footer.
-  - The four AoS Program decks are now genuinely two-sided: Stable on the face,
+  - The four AoS Program decks are now genuinely two-sided: Regulated on the face,
     the matching Overheated on the back of the same card.
       TTS  : tick "Unique Backs" in the Custom Deck dialog and load
              <deck>_TTS.png as the face and <deck>_TTS_back.png as the back.
       Print: each deck's PnP pages alternate front page / back page with the
              back columns mirrored, so duplex printing on long-edge flip puts
-             Overheated behind its own Stable face.
+             Overheated behind its own Regulated face.
   - Every NRJ card carries a solid #1f4e6b band along its foot reading NOBULOUS
     RESEARCH JOURNAL.  Face-up, the module cards can be riffled out of any base
     deck in one pass.
@@ -335,7 +335,7 @@ TWO-SIDED CARDS
       NAP_Apprentices   3 cards   two Apprentices per card
       AoS_Technicians   3 cards   two Technicians per card
       AoS_Routine / Specialized / Unstable / Volatile
-                        8 cards each   Stable face / Overheated back
+                        8 cards each   Regulated face / Overheated back
 
 DECK SHEETS AND BACKS
   BAT_HealthTrack LEFT THIS TABLE on 2026-11-23. It was a 15-space grid with

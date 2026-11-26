@@ -30,7 +30,7 @@ from dice import COLORS, EV, FACES, policy_value, roll
 
 # ASSEMBLIES (2026-11-24), replacing the eight standalone Advanced
 # Programs. One card, two faces, two different jobs: the front is the
-# recipe built during the game - BUILD slots filled by cleanly-run
+# Build side filled during the game - BUILD slots filled by cleanly-run
 # Programs - and the back is the finale stage it becomes.
 #
 # (name, build slots, Advanced Program name, [(colour, Target), ...])
@@ -385,7 +385,7 @@ INTERFERENCE = [
 # 1 of 6 setup draws. The -50 is entirely THIS clause and not the "begin all
 # Programs Overheated" one: with the recycle off the card reads 52.1%, ABOVE
 # the solo column. The mechanism is the interaction and it is invisible on the
-# card. Normal escalation is stable -> overheated -> aside; clause one starts
+# card. Normal escalation is regulated -> overheated -> aside; clause one starts
 # every Program at the SECOND step, so clause two replaces the THIRD and
 # nothing can ever leave the deck. A Program you cannot beat comes back until
 # it kills you, and the clause that reads as mercy is the trap.
@@ -994,7 +994,7 @@ NEGATES_PER_CYCLE = 0
 # DELIBERATE FAILURE. "dump" abandons every element but one, which fails the
 # Program on purpose: two failures is one Catastrophic Failure costing 1
 # Health, and the negate rule above may wipe even that. The point of failing
-# is that it SHORTENS THE DECK - a Stable Program flips to Overheated and an
+# is that it SHORTENS THE DECK - a Regulated Program flips to Overheated and an
 # Overheated one is set aside - and an empty deck goes straight to Advanced
 # Programming, which is won by surviving three Programs rather than by
 # completing them. DUMP_DICE is how many dice are left on the one element
@@ -1066,7 +1066,7 @@ NEGATES_PER_CYCLE = 0
 ALLOC_MODE = "sacrifice_short"
 DUMP_DICE = 3
 DUMP_DECKS = ("Unstable",)
-# A Catastrophic Failure sets the Program ASIDE at once, instead of a Stable
+# A Catastrophic Failure sets the Program ASIDE at once, instead of a Regulated
 # card flipping to Overheated and only the second failure retiring it. This
 # halves the cost of burning the deck down - 8 failures rather than 16 - so
 # it is the lever that decides whether deliberate failure can be a real
@@ -1228,7 +1228,7 @@ class Game(object):
                           self.rng.sample(range(8), min(n, 8))]
             self.rng.shuffle(picks)
         self.composition = composition
-        self.programs = [{"id": i, "deck": d, "pid": p, "status": "stable"}
+        self.programs = [{"id": i, "deck": d, "pid": p, "status": "regulated"}
                          for i, (d, p) in enumerate(picks)]
         # THE COLOUR FLOOR IS A SETUP RULE, not a convenience: without it
         # about one setup in seven cannot build three Assemblies at all,
@@ -1247,9 +1247,9 @@ class Game(object):
                     picks += [(name, i) for i in
                               self.rng.sample(range(8), min(n, 8))]
                 self.rng.shuffle(picks)
-                self.programs = [{"id": i, "deck": d, "pid": p, "status": "stable"}
+                self.programs = [{"id": i, "deck": d, "pid": p, "status": "regulated"}
                                  for i, (d, p) in enumerate(picks)]
-        # THE ASSEMBLY OFFER. Six of the eight recipe side up for the whole
+        # THE ASSEMBLY OFFER. Six of the eight Build side up for the whole
         # game; Tier III swaps the Covert Sensor Array in for the standard
         # Sensor Array and guarantees it a place.
         base = list(range(len(ASSEMBLIES)))
@@ -1855,14 +1855,14 @@ class Game(object):
             if missing:
                 # "Do not execute the Program. Lose 1 Health. Return any
                 # withheld dice, discard the Limitation, and treat the
-                # Program as failed for Stable/Overheated progression."
+                # Program as failed for Regulated/Overheated progression."
                 for held in locked:
                     self.available += held
                 self.available += withheld
                 self.hp -= 1
                 self.completed += 1
                 REQ_SHORT[0] += 1
-                return 1        # one failure: flips Stable, no Catastrophic
+                return 1        # one failure: flips Regulated, no Catastrophic
 
         if self.tech == "optimize" and targets:
             worst = max(range(len(targets)), key=lambda i: targets[i])
@@ -2339,7 +2339,7 @@ class Game(object):
         elif kind == "unheat":
             for p in self.programs:
                 if p["status"] == "overheated":
-                    p["status"] = "stable"
+                    p["status"] = "regulated"
                     break
         elif kind == "banish":
             # "Banish 1 Limitation from the game." The Limitation deck is
@@ -2387,7 +2387,7 @@ class Game(object):
                     # How many Programs still in play could answer this
                     # slot: the fewest, the sooner it has to be taken.
                     rank = sum(1 for q in self.programs
-                               if q["status"] in ("stable", "overheated")
+                               if q["status"] in ("regulated", "overheated")
                                and need in program_colors(q["deck"], q["pid"]))
                 else:
                     # "greedy": finish the nearest-to-done Assembly first,
@@ -2417,7 +2417,7 @@ class Game(object):
         if not self.plan:
             return
         live = [p for p in self.programs
-                if p["status"] in ("stable", "overheated", "returning")]
+                if p["status"] in ("regulated", "overheated", "returning")]
         cols = [set(program_colors(p["deck"], p["pid"])) for p in live]
 
         def finishable(ix):
@@ -2509,9 +2509,9 @@ class Game(object):
                     prog["status"] = "aside"
             elif failed > 0:
                 if failed >= 2 and CF_SETS_ASIDE:
-                    # Catastrophic: retired on the spot, Stable or not.
+                    # Catastrophic: retired on the spot, Regulated or not.
                     prog["status"] = "aside"
-                elif prog["status"] == "stable":
+                elif prog["status"] == "regulated":
                     prog["status"] = "overheated"
                     retry = RETRY_IMMEDIATE
                 elif self.intf == "all_overheated" and self.may_recycle(prog):

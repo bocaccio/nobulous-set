@@ -660,7 +660,7 @@ AOS_MATS = 5
 AOS_BACKDOORS = 6
 
 -- THE ASSEMBLY OFFER TOOK THE MIDDLE ROW, 2026-11-24, because it is what
--- the game is now about: six recipes face-up for the whole game, with the
+-- the game is now about: six Build sides face-up for the whole game, with the
 -- Programs you run installed onto them. Six portrait cards need a row, and
 -- the table has no fourth one - ROW3's cards reach -11.07 and the
 -- exhausted dice start at -14.08, which is 3.0 of clearance for a card
@@ -3059,7 +3059,7 @@ function setupAoS()
     spread(deckOut('Element Mats', {0, 3, AOS_ROW3}, FACEUP), AOS_MATS,
            AOS_ROW3, FACEUP, AOS_COL)
   end)
-  -- THE ASSEMBLY OFFER. Six of the eight, recipe side up, there for the
+  -- THE ASSEMBLY OFFER. Six of the eight, Build side up, there for the
   -- whole game: the other two go back in the bag UNTURNED, because their
   -- backs are Targets a player must not have seen.
   --

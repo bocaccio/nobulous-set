@@ -4,7 +4,7 @@ This is the human-readable reference for every flavor line printed on the AoS ca
 
 ## Routine Programs
 
-| Program | Stable | Overheated |
+| Program | Regulated | Overheated |
 | --- | --- | --- |
 | Maintain Balance | The shale frame holds steady while Nobulous adds one unnecessary clipboard. | The frame still balances, provided nobody breathes near it. |
 | Lift a Heavy Object | The automaton raises the test mass with reassuring precision. | The test mass rises. The floor follows. |
@@ -17,7 +17,7 @@ This is the human-readable reference for every flavor line printed on the AoS ca
 
 ## Specialized Programs
 
-| Program | Stable | Overheated |
+| Program | Regulated | Overheated |
 | --- | --- | --- |
 | Traverse Difficult Terrain | The chassis reads the terrain and places each step where the ground will hold. | It reads the terrain correctly, then challenges every conclusion. |
 | Move Without Detection | Noise dampers reduce a stone machine to a passing draft. | The dampers hold; the footprints still resemble impact craters. |
@@ -30,7 +30,7 @@ This is the human-readable reference for every flavor line printed on the AoS ca
 
 ## Unstable Programs
 
-| Program | Stable | Overheated |
+| Program | Regulated | Overheated |
 | --- | --- | --- |
 | Navigate Without Guidance | The automaton builds a route from landmarks and quiet inference. | It builds several routes and attempts all of them at once. |
 | Evade Observation | Timing and cover reduce a stone chassis to a rumor. | It avoids every observer except the ones staring at the new hole. |
@@ -43,7 +43,7 @@ This is the human-readable reference for every flavor line printed on the AoS ca
 
 ## Advanced Programs
 
-| Program | Stable | Overheated |
+| Program | Regulated | Overheated |
 | --- | --- | --- |
 | Rapid Approach | It reaches the target before the warning can become an alarm. | It reaches the target before the warning—and most of the doorway. |
 | Unobserved Entry | Locks open, cameras loop, and the corridor never learns it was occupied. | Locks open, cameras loop, and the corridor becomes difficult to explain. |

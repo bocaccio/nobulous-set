@@ -1,3 +1,70 @@
+2026-11-26  REGULATED, NOT STABLE; NO MORE RECIPES; AND THE PnP HAD BEEN
+            MISSING A WHOLE DECK
+Three of Jon's, and the first was not a wording problem at all.
+
+VOLATILE WAS NEVER IN THE PRINT-AND-PLAY.  build_aos.py has rendered the
+deck since Volatile was added, deploy.py has promoted its sheets, the mod
+deals it and the lab lists it - but pack.py's GAMES['AoS'] never named
+AoS_Volatile, so the 8 cards went to every owner except the one a player
+prints.  Fixed by one line.  WHAT HID IT: the AoS booklet was 12 pages
+before and is 12 pages now, because the Volatile cards exactly filled a
+last page that had been carrying a single Element mat.  Nothing about the
+page count looked wrong, and PNP_CONTENTS.txt is the only place that said
+so - in a line nobody reads unless they are counting decks.
+
+STABLE IS NOW REGULATED, on the card, in the book, in the mod's notebook
+and in the model's own status field.  Jon read "Unstable . Stable" on a
+Volatile-era Program card and called it what it is: a contradiction in
+two words, printed as a subtitle.  Regulated says the same thing about
+the face - this is the one running within limits - without claiming the
+deck is something it is not.  The flip is still to Overheated.
+simulation/aos.py's status string moved with it, because that set is
+compared only inside that file and leaving it as "stable" would have
+been the model and the card disagreeing in the one place a reader checks
+first; Hard reproduced 38.2% exactly after the rename and Standard
+52.4% against 52.3, so it cost nothing.
+
+AND "RECIPE" IS GONE.  These are Assemblies, so the front subtitle now
+reads just that, where it used to read "Assembly . Recipe".  The rules
+needed a name for the face, and the card already prints one - BUILD,
+over the slots - so the book now reveals six Assemblies BUILD SIDE UP.
+That is a term a player can point at on the card, which "recipe" never
+was.
+
+NOT RENAMED, DELIBERATELY: simulation/aosbuild.py and aosdeck.py still
+call the colour patterns RECIPES internally.  That is a measurement
+script's own vocabulary for a thing it varies, not a claim about what is
+printed, and renaming it would have touched the figures' provenance for
+nothing.
+
+A CHECK THAT HAD NOT HEARD OF VOLATILE, found while reading past it.
+check_app_sync.py guards the one deliberate name collision in the set -
+the Assembly back "Carry a Moving Load" is also a Specialized Program -
+and builds the set of Programs in play from ROUTINE, SPECIALIZED and
+UNSTABLE.  Volatile was never added, so a second collision involving a
+Volatile Program would have passed silently, and name-keyed tables like
+REQ_MAP and FLAVOR would have swallowed it.  The tuple has four entries
+now, and the check still reports exactly one collision.
+
+AND A STALE QUOTE LEFT ALONE: simulation/supply.py's docstring quotes
+rules/aos.html as "Advanced Program 1 begins Stable.  The next begins
+Overheated if this one ended in Catastrophic Failure, and Stable
+otherwise."  The book now prints the opposite - "An Assembly back has
+ONE set of Targets.  There is no Overheated side" - so supply.py, pool.py,
+nrj.py and table.py are all reasoning about a face the finale no longer
+has.  That is a model question and not a wording one, so none of them was
+repainted in the new word: a stale claim in fresh vocabulary is worse
+than a stale claim that still reads as old.  RAISED, NOT FIXED.
+
+ALSO MEASURED, answering a question rather than changing anything:
+0/3/5/2, the mix that was Nobulous until yesterday, read as a HARD
+candidate.  36.6% solo at 20,000 games a Technician - reproducing the
+figure the previous run published for it as Nobulous - with Tier I 24.8,
+II 21.4, III 21.9, and a deal-again rate of 14.0%, level with Standard's
+14.2%.  Against Hard's 37.8 peg that is -1.2 where the shipped 0/4/4/2
+is +0.4, so it is 1.6 points harder and clears the campaign axis by 0.5.
+Not shipped: nothing asked for it.
+
 2026-11-25  AoS: VOLATILE AT TWO RUNGS, AND SPECIALIZED OFF ITS PIN
 Jon read the ladder off and asked the right question: the whole thing was
 tuned around Specialized 3, so Volatile existed at one rung because that

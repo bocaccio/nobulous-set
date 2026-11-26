@@ -1,6 +1,6 @@
 """The two faces of an Assembly card, shared by build_aos.py and build_nrj.py.
 
-An Assembly is not a Program with two moods. A Program's Stable/Overheated
+An Assembly is not a Program with two moods. A Program's Regulated/Overheated
 faces are the same card read twice; an Assembly's faces are two different
 jobs, and the front deliberately conceals most of the back:
 
@@ -11,7 +11,7 @@ jobs, and the front deliberately conceals most of the back:
     BACK    the Advanced Program the built Assembly becomes in the finale:
             one (colour, Target) element per slot of the real thing.
 
-Four of the nine print a front recipe in colours the back never asks for.
+Four of the nine print front slots in colours the back never asks for.
 That is the concealment doing its job, so NOTHING here may derive one face
 from the other - except the Advanced colors line, which is derived FROM the
 back on purpose, because a stored copy could only drift.
@@ -59,9 +59,9 @@ BACK_FTR = ('Reveal 1 Limitation. Recover before the next stage. '
             'A 2nd failed element across the finale loses the game.')
 
 
-def assembly_front(name, recipe, back_elements, flavor, card, accent):
-    """The recipe side: what to build, and which colours it will later ask."""
-    slots = ''.join('<div class="slot" style="--c:%s"></div>' % DOT[c] for c in recipe)
+def assembly_front(name, build, back_elements, flavor, card, accent):
+    """The Build side: what to build, and which colours it will later ask."""
+    slots = ''.join('<div class="slot" style="--c:%s"></div>' % DOT[c] for c in build)
     cols = ''.join('<span><i style="background:%s"></i>%s</span>' % (DOT[c], COLOR_NAME[c])
                    for c in advanced_colors(back_elements))
     body = ('<div class="sub">Build</div>'
@@ -69,7 +69,7 @@ def assembly_front(name, recipe, back_elements, flavor, card, accent):
             '<div class="txt c slothint">Install a cleanly&#8209;run Program in each slot.</div>'
             '<div class="sub" style="margin-top:3.4mm">Advanced colors</div>'
             '<div class="advcols">%s</div>' % (slots, cols))
-    return card(name, 'Assembly &middot; Recipe', body, FRONT_FTR, warn=False,
+    return card(name, 'Assembly', body, FRONT_FTR, warn=False,
                 acc=accent, flavor=flavor)
 
 

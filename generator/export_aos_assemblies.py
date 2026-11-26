@@ -4,12 +4,12 @@ The lab used to carry its own transcription of every AoS table. For the
 Assemblies it reads this file instead, because an Assembly holds two things
 that must not drift apart and one that must not be stored twice:
 
-  * the Build recipe, which decides what the lab will let you install;
+  * the Build slots, which decide what the lab will let you install;
   * the back's (colour, Target) elements, which the lab must conceal until
     the stage is revealed;
   * the Advanced colors line, which is DERIVED from the back by
     aos.advanced_colors and is exported alongside it only so the lab does
-    not have to re-derive it. Four of the nine Assemblies print a recipe in
+    not have to re-derive it. Four of the nine Assemblies print slots in
     colours their own back never asks for, so a lab that guessed one from
     the other would show the player the wrong promise.
 
@@ -28,11 +28,11 @@ from aos import ALL_ASSEMBLIES, ASSEMBLY_FLAVOR, COVERT, advanced_colors
 LONG = {"P": "purple", "B": "blue", "G": "green", "Y": "yellow"}
 
 cards = []
-for name, recipe, back_name, elements in ALL_ASSEMBLIES:
+for name, build, back_name, elements in ALL_ASSEMBLIES:
     cards.append(dict(
         name=name,
         tier3=(name == COVERT[0]),
-        build=[LONG[c] for c in recipe],
+        build=[LONG[c] for c in build],
         advancedColors=[LONG[c] for c in advanced_colors(elements)],
         backName=back_name,
         # One entry per element of the finale stage, in printed order.

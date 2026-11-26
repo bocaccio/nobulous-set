@@ -352,12 +352,12 @@ _badback = [a[0] for a in _gasm
 check("every Assembly back is two colours over two or three elements",
       not _badback, "%r" % (_badback,))
 
-# A DOUBLED COLOUR IS THE FLEXIBLE RECIPE, measured in aosbuild.py: a
-# recipe asking three DISTINCT colours is three chances to be blocked
+# A DOUBLED COLOUR IS THE FLEXIBLE PATTERN, measured in aosbuild.py: a
+# Build side asking three DISTINCT colours is three chances to be blocked
 # where two is two, and respeccing them that way made dead setups WORSE
-# (23.4% against 15.4%). So every Build recipe is two colours too.
+# (23.4% against 15.4%). So every Build side is two colours too.
 _badbuild = [a[0] for a in _gasm if len(set(a[1])) != 2]
-check("...and every Build recipe asks exactly two colours",
+check("...and every Build side asks exactly two colours",
       not _badbuild, "%r" % (_badbuild,))
 
 # Short colour codes to the names the rest of the file uses. It lived in
@@ -366,7 +366,7 @@ check("...and every Build recipe asks exactly two colours",
 _LONGA = {"P": "purple", "B": "blue", "G": "green", "Y": "yellow"}
 
 # THE ADVANCED COLORS LINE IS DERIVED, and the point of saying so here is
-# that four of the nine print a FRONT recipe in colours their own back
+# that four of the nine print FRONT slots in colours their own back
 # never asks for. That is the concealment working. If this ever came out
 # as nine, somebody had derived one face from the other.
 _hidden = [a[0] for a in _gasm
@@ -388,7 +388,8 @@ check("...and lua.lua still drops that index at Tier III",
 # table in the same game. It is deliberate - the handed-over mockup names
 # it - but a SECOND collision would be a mistake, and name-keyed tables
 # like REQ_MAP and FLAVOR would swallow it silently.
-_progs = {r[0] for k in ("ROUTINE", "SPECIALIZED", "UNSTABLE") for r in ga[k]}
+_progs = {r[0] for k in ("ROUTINE", "SPECIALIZED", "UNSTABLE", "VOLATILE")
+          for r in ga[k]}
 _collide = sorted(a[2] for a in _gasm if a[2] in _progs)
 check("exactly one Assembly back shares a name with a Program still in play",
       _collide == ["Carry a Moving Load"], "%r" % (_collide,))
@@ -1811,10 +1812,10 @@ _lab = "".join(text("playtest/dist/%s" % f)
 _gb, _ga = py_tables("generator/build_bat.py"), py_tables("generator/aos.py")
 for _label, _lines in (
         ("BAT Experiments", [r[3] for r in _gb["EXPERIMENTS"]]),
-        ("AoS Stable sides", [v[0] for v in _ga["FLAVOR"].values()]),
+        ("AoS Regulated sides", [v[0] for v in _ga["FLAVOR"].values()]),
         ("AoS Overheated sides", [v[1] for v in _ga["FLAVOR"].values()]),
         ("AoS Limitations", [r[2] for r in _ga["LIMITATIONS"]]),
-        # Both faces of every Assembly: the recipe side's flavour and the
+        # Both faces of every Assembly: the Build side's flavour and the
         # Advanced Program's. These reach the lab through the generated
         # aos_assemblies.js rather than a transcription, so what this
         # catches is an export that was not re-run.

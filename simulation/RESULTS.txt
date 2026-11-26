@@ -344,6 +344,13 @@ AoS  Automaton of Shale
   campaign axis by 0.4 rather than 0.2.  It was measured rather than
   shipped because the ask was three or four, and it is four table rows
   if it is wanted.
+  0/3/5/2 AS A HARD CANDIDATE, measured 2026-11-26 because it was
+  asked about: 36.6% solo, Tier I 24.8, II 21.4, III 21.9, deal-again
+  14.0%.  The solo cell reproduces what the run above published for
+  the same mix as Nobulous, which is the control for the other three.
+  Against Hard's 37.8 peg it is -1.2 where 0/4/4/2 is +0.4, so it is
+  1.6 points HARDER than the shipped rung, and it clears the campaign
+  axis by 0.5 against 0.4.  Not shipped: nothing asked for it.
   THE CAMPAIGN AXIS STILL HOLDS at both new rungs, which is the check
   that mattered most: Tier III beats Tier II and stays under solo.
   Hard 23.3 over 22.9, Nobulous 16.5 over 16.3.  Both are narrow, and

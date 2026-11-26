@@ -354,7 +354,7 @@ CARD_SIZE = PORTRAIT
 # measured 1.2% at Tier I against a 51.8% solo column - a loss rather than a
 # difficulty setting, drawn 1 game in 6. The clause is the whole of it: with
 # the recycle off the card reads 52.1%, ABOVE the solo column, so this wants
-# capping and not cutting. Normal escalation is stable -> overheated ->
+# capping and not cutting. Normal escalation is regulated -> overheated ->
 # aside; "begin all Programs Overheated" starts every Program at the SECOND
 # step, so the clause replaced the THIRD and nothing could ever leave the
 # deck. "The first time each" gives every Program one reprieve and reads
