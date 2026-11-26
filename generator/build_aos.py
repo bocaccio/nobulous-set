@@ -89,7 +89,7 @@ make_back('CardBack_AoS_ElementMat', 'AoS', 'Element mat', '#555555', PORTRAIT)
 print("card backs done")
 
 # THE EIGHT ASSEMBLIES, replacing the eight standalone Advanced Programs.
-# Front is the Build side filled during the game, back is the finale stage it
+# Front is the design filled during the game, back is the finale stage it
 # becomes - two different jobs on one piece of card, which is why the faces
 # share nothing but the accent colour. The ninth, the Covert Sensor Array, is
 # printed in NRJ's print-and-play because it is offered only in a Tier III
@@ -104,7 +104,7 @@ print('Assemblies', render_duplex('AoS_Assemblies', fronts, backs, 'AoS', PORTRA
 
 # THE NINTH ASSEMBLY SHIPS IN NRJ'S PRINT-AND-PLAY but is built here, in AoS's
 # own stylesheet and header style, so all nine are one card format. That is not
-# tidiness: the Build side's Advanced colors line is what a player reads to
+# tidiness: the design's Advanced colors line is what a player reads to
 # plan a build, and a ninth card that presented it differently would be a
 # different promise. It carries no NRJ tag for the same reason.
 #

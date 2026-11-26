@@ -60,7 +60,7 @@ BACK_FTR = ('Reveal 1 Limitation. Recover before the next stage. '
 
 
 def assembly_front(name, build, back_elements, flavor, card, accent):
-    """The Build side: what to build, and which colours it will later ask."""
+    """The design: what to build, and which colours it will later ask."""
     slots = ''.join('<div class="slot" style="--c:%s"></div>' % DOT[c] for c in build)
     cols = ''.join('<span><i style="background:%s"></i>%s</span>' % (DOT[c], COLOR_NAME[c])
                    for c in advanced_colors(back_elements))

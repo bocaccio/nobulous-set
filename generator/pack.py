@@ -48,7 +48,7 @@ GAMES = {
         ('AoS_Specialized', 'Specialized Programs'),
         ('AoS_Unstable', 'Unstable Programs'),
         ('AoS_Volatile', 'Volatile Programs'),
-        ('AoS_Assemblies', 'Assemblies (Build / Advanced Program)'),
+        ('AoS_Assemblies', 'Assemblies (design / Advanced Program)'),
         ('AoS_Technicians', 'Technicians (2 per card)'),
         ('AoS_ElementMats', 'Element mats'),
     ],

@@ -353,13 +353,18 @@ def draw_bat(d, lua):
           rz(deck_row), fit=half * 1.8)
     label(d, "TYRANT DICE", float(g.BAT_TRAY_X), float(g.batTrayZ()),
           fit=float(g.BAT_TRAY_HW) * 1.6)
-    # "...the reclaimed Splice goes to the old Tyrant's discard, where
-    # it waits to be shuffled back in and revealed again." At Wake-Up
-    # it is combined with the undrawn carcass above it to make the
-    # wall. Named for what lies here rather than for whose half it is
-    # on - Jon's call, 2026-11-23 - because the half is obvious and
-    # the word SPLICE is the one the battle uses.
-    label(d, "RECLAIMED\nSPLICE", float(g.batTyrantDeckX()), rz(trash_row),
+    # RETAINED, NOT RECLAIMED, since 2026-11-26. This used to quote the
+    # book - "the reclaimed Splice goes to the old Tyrant's discard,
+    # where it waits to be shuffled back in and revealed again" - and
+    # that sentence is gone: a SUCCESS now returns the card the Rats did
+    # not graft to the BOTTOM OF THE CARCASS above this pile, so the only
+    # cards that reach here are the ones a FAILURE hands over for good.
+    # Nothing in this pile ever goes back, which is the whole point of
+    # the word. At Wake-Up it is still combined with the undrawn carcass
+    # to make the wall. Named for what lies here rather than for whose
+    # half it is on - Jon's call, 2026-11-23 - because the half is
+    # obvious and the word SPLICE is the one the battle uses.
+    label(d, "RETAINED\nSPLICE", float(g.batTyrantDeckX()), rz(trash_row),
           fit=half * 1.8)
 
     # ---- AND ONE NUMBER ON TWO FACES, under the battle pool: the disc
@@ -447,7 +452,7 @@ def draw_aos(d, lua):
     # below them, which say what they are on the card. An Assembly space
     # holds an Assembly card AND the Programs installed into it, so the label
     # is there for the empty table and for the moment a built Assembly is
-    # turned over and the Build side stops being what is on show.
+    # turned over and the design stops being what is on show.
     r2 = float(g.AOS_ROW2)
     for _k in range(1, int(g.AOS_OFFER) + 1):
         label(d, "ASSEMBLY", float(g.aosMid(_k, int(g.AOS_OFFER))), r2, fit=fit)

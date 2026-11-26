@@ -2242,7 +2242,7 @@ def aos_assertions():
          sorted(set(round(o.pos[2], 2) for o in w.table.values()
                     if offered(o))),
          [round(float(g.AOS_ROW2), 2)])
-    want("...all Build side up",
+    want("...all design side up",
          sorted(set(o.is_face_down for o in w.table.values() if offered(o))),
          [False])
     # THE TIER III SWAP, which is the whole reason this card exists: the
@@ -3309,7 +3309,7 @@ def finale_assertions():
                 if o.name.startswith("Assembly")),
          [round(float(g.aosMid(k, int(g.AOS_OFFER))), 2)
           for k in range(1, int(g.AOS_OFFER) + 1)])
-    want("...still Build side up, for the player to turn by hand",
+    want("...still design side up, for the player to turn by hand",
          sorted(set(o.is_face_down for o in w.table.values()
                     if o.name.startswith("Assembly"))), [False])
     want("...and the element mats, which every stage still needs",

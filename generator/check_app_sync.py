@@ -353,11 +353,11 @@ check("every Assembly back is two colours over two or three elements",
       not _badback, "%r" % (_badback,))
 
 # A DOUBLED COLOUR IS THE FLEXIBLE PATTERN, measured in aosbuild.py: a
-# Build side asking three DISTINCT colours is three chances to be blocked
+# design asking three DISTINCT colours is three chances to be blocked
 # where two is two, and respeccing them that way made dead setups WORSE
-# (23.4% against 15.4%). So every Build side is two colours too.
+# (23.4% against 15.4%). So every design is two colours too.
 _badbuild = [a[0] for a in _gasm if len(set(a[1])) != 2]
-check("...and every Build side asks exactly two colours",
+check("...and every design asks exactly two colours",
       not _badbuild, "%r" % (_badbuild,))
 
 # Short colour codes to the names the rest of the file uses. It lived in
@@ -919,7 +919,11 @@ check("rules/bat.html prints batrev's Specimens and rounds per rung",
 check("rules/bat.html calls a card out of the carcass a Splice",
       "2 Splices from the" in _RULES["bat"]          # revealing a pair
       and "Splice A value" in _RULES["bat"]          # working out the Target
-      and "Splices leave the deck" in _RULES["bat"]  # resolving the Experiment
+      # RE-ANCHORED 2026-11-26: this was "Splices leave the deck", and
+      # that sentence went when a success started returning one of them
+      # to the bottom of the deck. The resolution step still has to
+      # name the card, so it anchors on the choice itself.
+      and "Splices to graft" in _RULES["bat"]        # resolving the Experiment
       and "Thirteen Splices" in _RULES["bat"]        # the conservation box
       and _RULES["bat"].count("Splice") >= 30        # ...and everywhere else
       and "<h2>Splices</h2>" in text("rules/bat.html")
@@ -930,7 +934,13 @@ check("rules/bat.html calls a card out of the carcass a Splice",
 _tmpl_bat = text("tts/make_template.py")
 check("...and so does the overlay",
       '"REVEALED\\nSPLICES"' in _tmpl_bat
-      and '"RECLAIMED\\nSPLICE"' in _tmpl_bat
+      # RETAINED since 2026-11-26: a success returns the card the Rats
+      # did not graft to the bottom of the carcass, so the only cards
+      # that reach the lower pile are kept for good. The book has to
+      # use the same word, and the old one must be gone from both.
+      and '"RETAINED\\nSPLICE"' in _tmpl_bat
+      and '"RECLAIMED\\nSPLICE"' not in _tmpl_bat
+      and "Retained Splices" in _RULES["bat"]
       and '"REVEALED\\nPARTS"' not in _tmpl_bat
       and '"TYRANT\\nRECLAIMED"' not in _tmpl_bat,
       "the felt and the book disagree about what a card is called")
@@ -1815,7 +1825,7 @@ for _label, _lines in (
         ("AoS Regulated sides", [v[0] for v in _ga["FLAVOR"].values()]),
         ("AoS Overheated sides", [v[1] for v in _ga["FLAVOR"].values()]),
         ("AoS Limitations", [r[2] for r in _ga["LIMITATIONS"]]),
-        # Both faces of every Assembly: the Build side's flavour and the
+        # Both faces of every Assembly: the design's flavour and the
         # Advanced Program's. These reach the lab through the generated
         # aos_assemblies.js rather than a transcription, so what this
         # catches is an export that was not re-run.
@@ -5327,8 +5337,21 @@ check("rules/bat.html's borrow table reads the Prototyrant's grafts, and "
       # narrows, which is rationale. What has to stay is that the book
       # reads the Prototyrant's grafts and not something else.
       and "how many grafts the Prototyrant holds" in _RULES["bat"]
-      and "3 or more" in _RULES["bat"]
-      and "return min(3, len(self.grafts))" in _satr
+      # BANDED 2026-11-26, two grafts to a row. The old table saturated
+      # at "3 or more" while the Prototyrant finishes the lab holding
+      # six to eight, so the rule spent most of every game on its bottom
+      # row. ALL FOUR BOUNDARIES ARE CHECKED, because the bands ARE the
+      # rule now - a book that printed three of them and dropped one
+      # would still contain "6 or more" and pass a laxer predicate.
+      # &ndash; resolves to "-" in _plain, so these are what a player reads.
+      and all(_b in _RULES["bat"]
+              for _b in ("0-1", "2-3", "4-5", "6 or more"))
+      and "3 or more" not in _RULES["bat"]
+      # The model reads the band, and the dial that restores the old
+      # reading ships OFF - every BAT figure published before the band
+      # was measured with it off, and BAT is the peg NAP and AoS use.
+      and "return min(3, n // 2 if BORROW_BANDS else n)" in _satr
+      and "BORROW_BANDS = True" in _satr
       and "Upgrades held" not in _RULES["bat"],
       "the book and batrev no longer agree on what narrows a borrow")
 
@@ -5428,20 +5451,53 @@ check("a volunteered Splice still ticks the clock",
       "the volunteer dial ships on, is half-wired, or the clock and the "
       "top-up stopped counting the track the same way")
 
-# THE QUESTION THE VOLUNTEER DIAL PRICED DOES NOT EXIST ANY MORE. It asked
-# what it should cost to hand the Tyrant a card you were allowed to keep,
-# and in this design EVERY Experiment grafts one part and reclaims the
-# other whether you win or lose - success only decides who picks. So the
-# clock is the Experiment deck and the book must not print a Splice count
-# that wakes anything, while batrev must graft on BOTH branches.
-check("every Experiment grafts a part, so there is no Splice clock left",
+# THE SPLICE ROUTING SPLIT IN TWO on 2026-11-26. Until then every
+# Experiment grafted one card and the old Tyrant reclaimed the other, win or
+# lose, and its pile reshuffled into the deck on demand - so the deck could
+# not run out and the Experiment deck was the only clock. Jon split the
+# branches: a SUCCESS returns the card the Rats did not take to the BOTTOM
+# of the Carcass deck, where it can be revealed again, and only a FAILURE
+# retains one for good. The deck therefore loses one card on a success and
+# two on a failure, it CAN run dry, and running it dry is the old Tyrant
+# waking EARLY. An unattended Experiment grafts nothing at all.
+#
+# THE SPLICE COUNT STILL WAKES NOTHING - the first two clauses are the old
+# check's and stay, because the clock is a deck running out and not a
+# number on the table. What is new is that the book has to print all four
+# routings and batrev has to implement all four.
+#
+# THE DIAL PREDICATES ARE CALL SITES, not names. Each of the three dials is
+# checked where it reaches the cards, because a dial declared beside a
+# hard-coded append would satisfy a check that only read the declaration -
+# which is how R9 came to duplicate a card the day this shipped: it knew
+# how to pull a swapped-in part out of the Tyrant's pile and not out of the
+# deck, and conservation broke in about one game in sixty.
+check("the carcass can run dry, and the book and batrev route a Splice the "
+      "same way",
       "Five Splices and it wakes up" not in _RULES["bat"]
       and "awakens the moment it reaches" not in _RULES["bat"]
-      and "both Splices leave the deck" in _RULES["bat"]
+      # the book, all four routings
+      and "bottom of the Carcass deck" in _RULES["bat"]
+      and "Retained Splices" in _RULES["bat"]
+      and "No Splice is grafted onto the Prototyrant" in _RULES["bat"]
+      and "wakes early" in _RULES["bat"]
+      # the model: the dials ship on...
+      and "RETAIN_NO_RESHUFFLE = True" in _satr
+      and "BOTTOM_ON_SUCCESS = True" in _satr
+      and "ZERO_DICE_NO_GRAFT = True" in _satr
+      # ...and each reaches the cards
+      and "if RETAIN_NO_RESHUFFLE or not self.tyrant_discard:" in _satr
+      and "if BOTTOM_ON_SUCCESS and ok:" in _satr
+      and "self.tyrant_deck.insert(0, p)" in _satr
+      and "def wake_early(self, parts):" in _satr
+      and "self.early_wake = True" in _satr
+      # R9's swap has to look in the deck, or it duplicates the card
+      and "if best in self.tyrant_deck:" in _satr
+      # and an ordinary Experiment still grafts on both branches
       and "self.grafts.append(Part(graft))" in _satr
       and "graft = order[-1]" in _satr
       and "graft = max(parts, key=graft_score)" in _satr,
-      "the book or batrev stopped giving each side a part every time")
+      "the book or batrev disagree about where a Splice goes")
 
 check("Red still comes back free, as the printed rule has it",
       "RED_COSTS_REC = False" in _satk

@@ -30,7 +30,7 @@ from dice import COLORS, EV, FACES, policy_value, roll
 
 # ASSEMBLIES (2026-11-24), replacing the eight standalone Advanced
 # Programs. One card, two faces, two different jobs: the front is the
-# Build side filled during the game - BUILD slots filled by cleanly-run
+# design filled during the game - BUILD slots filled by cleanly-run
 # Programs - and the back is the finale stage it becomes.
 #
 # (name, build slots, Advanced Program name, [(colour, Target), ...])
@@ -1249,7 +1249,7 @@ class Game(object):
                 self.rng.shuffle(picks)
                 self.programs = [{"id": i, "deck": d, "pid": p, "status": "regulated"}
                                  for i, (d, p) in enumerate(picks)]
-        # THE ASSEMBLY OFFER. Six of the eight Build side up for the whole
+        # THE ASSEMBLY OFFER. Six of the eight design side up for the whole
         # game; Tier III swaps the Covert Sensor Array in for the standard
         # Sensor Array and guarantees it a place.
         base = list(range(len(ASSEMBLIES)))

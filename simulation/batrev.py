@@ -961,6 +961,44 @@ PROTOCOL_NAMES = ["Cross-Contamination", "Shared Equipment Budget",
 # revealed, so the Rats choose from a fresh pair but the best card is
 # already gone. Conservation holds, because the reclaimed part goes to the
 # old Tyrant's discard like any other.
+# TWO GRAFTS TO A BORROW ROW, 2026-11-26. The table narrows as the
+# Prototyrant fills up, but it ran out of rows at three grafts and the
+# machine finishes the lab holding six to eight - so from the fourth
+# graft on it said Yellow only, for most of every game, and the rule
+# had stopped responding to anything. Banding it over 0-1 / 2-3 / 4-5 /
+# 6+ spends the same four rows across the whole range.
+#
+# OFF IS EVERY BAT FIGURE PUBLISHED BEFORE THAT DATE: the borrow
+# restriction is the most valuable rule in this game (the POLICY alone
+# measured 10 to 12 points on 2026-11-18), so loosening it moves the
+# ladder BAT pegs - and NAP and AoS are pegged to BAT. Set this False
+# to reproduce 63.7 / 52.8 / 37.8 / 25.8.
+BORROW_BANDS = True
+
+# THE SPLICE ECONOMY, 2026-11-26. Before this every Experiment took BOTH
+# revealed cards out of the Carcass deck and the Tyrant's pile reshuffled
+# back in on demand (R4), so the deck never ran out and a card the Tyrant
+# had reclaimed could be extracted again later. Three changes, all Jon's:
+#
+#   RETAIN_NO_RESHUFFLE  the Tyrant's pile is RETAINED - it never returns
+#                        to the deck, so the deck can run dry
+#   BOTTOM_ON_SUCCESS    on a SUCCESS the card the Rats did not graft goes
+#                        to the BOTTOM of the Carcass deck instead, so a
+#                        success costs the deck one card and a failure two
+#   ZERO_DICE_NO_GRAFT   an unattended Experiment grafts NOTHING; the
+#                        Tyrant retains the better card and the other goes
+#                        to the bottom. It is a way to buy a recovery.
+#
+# AND RUNNING THE DECK DRY IS THE OLD TYRANT WAKING EARLY: the lab ends
+# where it stands. lab_turn already returned False when it could not
+# reveal two cards, so that path existed and R4's reshuffle was the only
+# thing keeping it unreachable. self.early_wake records which wake it was,
+# because the ladder is pegged to the NORMAL one.
+#
+# ALL THREE OFF IS EVERY BAT FIGURE PUBLISHED BEFORE THIS DATE.
+RETAIN_NO_RESHUFFLE = True
+BOTTOM_ON_SUCCESS = True
+ZERO_DICE_NO_GRAFT = True
 CONTAM_PICKS = 3
 METHOD_FLOOR = 5           # Experiment number at which it fires
 PROTOCOL_EFFECTS = True    # off measures the tier as pool changes alone
@@ -1114,6 +1152,7 @@ class Game(object):
         # Experiments instead of the 6-8 window, and as 0.15 of a part
         # missing from the conservation check.
         self.reclaimed = 0         # count only, for reporting
+        self.unattended = 0       # zero-dice Experiments, which graft nothing
         self.grafts = []           # the Prototyrant's installed parts
 
         # ---- the Experiment clock
@@ -1124,6 +1163,9 @@ class Game(object):
         self.exp_reserve = [i for i in range(20) if i not in deal]   # R3
         self.rng.shuffle(self.exp_reserve)
         self.wakeup_at = None
+        # True when the lab ended because the Carcass deck could not
+        # show two Splices. The ladder is pegged to the normal wake.
+        self.early_wake = False
         self.experiments = 0
 
         self.last_active = None
@@ -1210,14 +1252,36 @@ class Game(object):
         return ex
 
     def draw_part(self):
-        """R4: never fail to reveal a part."""
+        """R4, as revised: the Carcass deck can run out.
+
+        Under RETAIN_NO_RESHUFFLE the Tyrant's pile is RETAINED and never
+        comes back, so returning None here is the old Tyrant waking early
+        rather than an error - lab_turn ends the lab on it.
+        """
         if not self.tyrant_deck:
-            if not self.tyrant_discard:
+            if RETAIN_NO_RESHUFFLE or not self.tyrant_discard:
                 return None
             self.tyrant_deck = self.tyrant_discard
             self.tyrant_discard = []
             self.rng.shuffle(self.tyrant_deck)
         return self.tyrant_deck.pop()
+
+    def wake_early(self, parts):
+        """The Carcass deck could not show two Splices.
+
+        Jon's ruling: that IS the old Tyrant waking up, early, and the lab
+        ends where it stands. Any card already drawn goes back so that
+        conservation holds - it is still on the carcass, and the wall is
+        built from the deck and the Retained pile together.
+        """
+        for p in parts:
+            self.tyrant_deck.insert(0, p)
+        self.early_wake = True
+        self.wakeup_at = self.experiments
+        self.say("  the carcass is down to %d Splice(s) - the old Tyrant "
+                 "wakes EARLY after %d Experiments.",
+                 len(self.tyrant_deck), self.experiments)
+        return False
 
     def next_experiment(self):
         """R3: replacements come from the undealt twelve."""
@@ -1247,13 +1311,13 @@ class Game(object):
         parts = [p for p in (self.draw_part() for _ in range(count))
                  if p is not None]
         if len(parts) < 2:
-            return False
+            return self.wake_early(parts)
         if eff == "rereveal":                             # Contaminated Tissue
             self.tyrant_discard += parts
             parts = [p for p in (self.draw_part() for _ in range(count))
                      if p is not None]
             if len(parts) < 2:
-                return False
+                return self.wake_early(parts)
 
         # R33: Questionable Methodology, re-expressed. The old Tyrant
         # reclaims the stronger revealed part at once and a replacement is
@@ -1270,7 +1334,7 @@ class Game(object):
                 parts.append(fresh)
             self.say("  Questionable Methodology: the old Tyrant takes %s [%d] at once (R33).", part_name(taken), part_value(taken))
             if len(parts) < 2:
-                return False
+                return self.wake_early(parts)
 
         rat = self.choose_rat()
         if rat is None:
@@ -1461,8 +1525,19 @@ class Game(object):
         return len(pick)
 
     def borrow_row(self):
-        """R10: the restriction reads the Prototyrant's graft count."""
-        return min(3, len(self.grafts))
+        """R10: the restriction reads the Prototyrant's graft count.
+
+        BANDED 2026-11-26. One row per graft saturated at three, and the
+        Prototyrant finishes the lab holding six, seven or eight - so the
+        table was on its bottom row for most of every game and had
+        stopped being a dial at all. Two grafts to a row spreads the same
+        four colour rows over the range the count really covers:
+        0-1 any colour, 2-3 no Purple, 4-5 no Purple or Blue, 6+ Yellow.
+        BORROW_BANDS restores the one-per-graft reading that every BAT
+        figure published before this date was measured through.
+        """
+        n = len(self.grafts)
+        return min(3, n // 2 if BORROW_BANDS else n)
 
     def borrow_for(self, rat, need):
         if PROTOCOL_EFFECTS and self.holds_mod(MOD_NO_BORROW):
@@ -1551,6 +1626,9 @@ class Game(object):
                  len(committed), " + Red" if used_red else "",
                  " + borrow" if borrowed else "", successes, target)
         self.last_used_red = used_red        # R35 claim condition
+        # ZERO_DICE_NO_GRAFT needs to tell an unattended Experiment from
+        # one that was attempted and missed. Red counts as attending.
+        self.last_committed = len(committed) + (1 if used_red else 0)
         return successes >= target
 
     def resolve_borrow(self, lender, die, rat):
@@ -1620,6 +1698,21 @@ class Game(object):
                     "%s [%d]" % (part_name(q), part_value(q))
                     for q in parts))
         order = sorted(parts, key=part_value, reverse=True)
+        # AN UNATTENDED EXPERIMENT GRAFTS NOTHING. The Tyrant retains the
+        # better card and the other goes back to the bottom of the deck, so
+        # the Rats lose the graft but not the card. It is the last-ditch
+        # move: you spend an Experiment to buy a recovery.
+        if ZERO_DICE_NO_GRAFT and not ok and not self.last_committed \
+                and len(parts) >= 2 and eff != "methodology":
+            self.reclaimed += 1
+            self.tyrant_discard.append(order[0])
+            for p in order[1:]:
+                self.tyrant_deck.insert(0, p)
+            self.unattended += 1
+            self.say("    unattended: the old Tyrant retains %s [%d], "
+                     "nothing is grafted.", part_name(order[0]),
+                     part_value(order[0]))
+            return
         if eff == "methodology":                           # R8
             graft = order[-1]
         elif ok:
@@ -1631,11 +1724,18 @@ class Game(object):
         self.grafts.append(Part(graft))
         if rest:
             claim = max(rest, key=part_value)
-            self.reclaimed += 1
-            self.tyrant_discard.append(claim)
-            for p in rest:
-                if p is not claim:
-                    self.tyrant_discard.append(p)          # R6 leftover
+            # ON A SUCCESS the card the Rats did not take is not reclaimed
+            # at all - it goes to the BOTTOM of the Carcass deck and can be
+            # revealed again. Only a FAILURE retains one permanently.
+            if BOTTOM_ON_SUCCESS and ok:
+                for p in rest:
+                    self.tyrant_deck.insert(0, p)
+            else:
+                self.reclaimed += 1
+                self.tyrant_discard.append(claim)
+                for p in rest:
+                    if p is not claim:
+                        self.tyrant_discard.append(p)      # R6 leftover
         self.say("    graft -> Prototyrant: %s [%d]%s", part_name(graft),
                  part_value(graft),
                  ("   reclaimed by the old Tyrant: %s [%d]"
@@ -1653,10 +1753,17 @@ class Game(object):
                     self.grafts.append(Part(best))
                     self.tyrant_discard.append(worst.card)
                     # The swapped-IN part was already placed above -
-                    # reclaimed or discarded - so it has to leave
-                    # there or the card is duplicated and the wall
-                    # gains 0.08 of a Splice a game.
-                    if best in self.tyrant_discard:
+                    # reclaimed, discarded, or (since 2026-11-26, on a
+                    # success) returned to the BOTTOM OF THE CARCASS DECK -
+                    # so it has to leave there or the card is duplicated
+                    # and the wall gains 0.08 of a Splice a game. R9 only
+                    # fires on a success, which is precisely the branch
+                    # that now routes to the deck, so the deck is checked
+                    # FIRST and this was measured breaking conservation in
+                    # about 1 game in 60 before it was.
+                    if best in self.tyrant_deck:
+                        self.tyrant_deck.remove(best)
+                    elif best in self.tyrant_discard:
                         self.tyrant_discard.remove(best)
                     else:
                         self.reclaimed -= 1
@@ -1730,6 +1837,7 @@ class Game(object):
         self.attack_color = ATTACK_COLORS[self.attack_deck[-1]]   # seed
         self.rounds = 0
         self.passes = 0
+        self.last_committed = 0
         self.forced_passes = 0
         self.regained = 0
         self.pass_graft_lived = 0

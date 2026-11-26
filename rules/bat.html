@@ -105,8 +105,8 @@ ol.seq li { margin-bottom: 0.95mm; }
   <p class="tagline">Four scientists, one scrapped monster, and not enough of it to go around.</p>
   <p class="blurb">An earlier Tyrant failed because nobody could control it. Four Lab Rats are stripping the
   carcass for <b>Splices</b> and building a <b>Prototyrant</b> they can direct. Every Experiment grafts one
-  Splice onto their machine and lets the old Tyrant reclaim the other &mdash; so the question is never how
-  many you get, it is <em>which</em>. Then the old thing wakes up, and you find out whether you built enough.</p>
+  Splice onto their creation but leaves another in place &mdash; the question is never how
+  many you get, it is <em>which ones</em>. Then the old thing wakes up, and you find out whether you built enough.</p>
 </div>
 
 <div class="body">
@@ -147,14 +147,14 @@ ol.seq li { margin-bottom: 0.95mm; }
   <li>Build the <b>Experiment deck</b>: shuffle the 20 Experiments and deal <b>8</b>. Take the last two of
       those eight, shuffle the <b>Wake&#8209;Up</b> card in with them, and put these three cards
       underneath the first six. You will resolve <b>six, seven or eight</b> Experiments based on
-      the location of the Wake&#8209;Up card.</li>
-  <li>Leave room for the <b>Prototyrant&rsquo;s grafts</b>, the old Tyrant&rsquo;s <b>discard</b>, and the
-      <b>Tyrant Attack deck</b>.</li>
+      the location of the Wake&#8209;Up card &mdash; or fewer, if the carcass runs out before it.</li>
+  <li>Leave room for the <b>Prototyrant&rsquo;s grafts</b>, the old Tyrant&rsquo;s <b>Retained Splices</b>,
+      and the <b>Tyrant Attack deck</b>.</li>
 </ol>
 
 <h2>Object of the game</h2>
 <p>The game is split into the <b>Lab Phase</b> and the <b>Tyrant Battle</b>. In the lab you will remove Splices
-from the carcass&mdash;one Splice each per Experiment&mdash;and graft them onto the Prototyrant. Splices left in the 
+from the carcass&mdash;one Splice each per Experiment&mdash;and graft them onto the Prototyrant. Splices left on the 
 carcass when the Wake&#8209;Up card is revealed form the version of the old Tyrant that the Prototyrant must face in
 battle. However, the Prototyrant can only last so many rounds before fatigue sets in. Destroy the old Tyrant&rsquo;s last 
 Splice before the rounds run out to win.</p>
@@ -166,10 +166,11 @@ Splice before the rounds run out to win.</p>
 
 <h2>The Lab Phase (an Experiment)</h2>
 <ol class="seq">
-  <li>Reveal the next Experiment card. If it is the <b>Wake&#8209;Up</b> card the lab ends at once &mdash; go
+  <li>Reveal the next Experiment card. If it is the <b>Wake&#8209;Up</b> card the lab ends immediately &mdash; go
       to <em>Wake&#8209;Up</em>.</li>
-  <li>Reveal <b>2 Splices</b> from the Carcass deck. If it is empty, shuffle the Retained Splices to make a
-      new Carcass deck.</li>
+  <li>Reveal <b>2 Splices</b> from the Carcass deck. If it holds fewer than <b>2</b>, the old Tyrant
+      <b>wakes early</b> &mdash; the lab ends at once, any card you did turn stays on the carcass, and you
+      go to <em>Wake&#8209;Up</em>. You did not get through the work, and it woke up anyway.</li>
   <li>Determine the <b>Target Value</b>: Splice A value + Splice B value &minus; Experiment value,
       <b>minimum 1</b>. Experiments run from <b>2</b> to <b>6</b>.</li>
   <li>Choose one Rat to be the active rat and place the <b>Recovery die</b> on it. Do this <em>after</em> revealing the Experiment
@@ -188,20 +189,19 @@ borrowed die. Hits and Crits count toward the Target.</p>
 <div class="box">
   <span class="lbl">Success</span>
   Roll successes greater than or equal to the Target and satisfy any printed restriction. <b>You choose</b>
-  which of the two Splices your Prototyrant grafts. The old Tyrant reclaims the other.
+  which of the two Splices to graft onto the Prototyrant. The old Tyrant retains the other &mdash; place it at the 
+  <b>bottom of the Carcass deck</b>, where it can be revealed again.
 </div>
 <div class="box warn">
   <span class="lbl">Failure</span>
-  <b>The old Tyrant chooses</b>, and it takes the higher&#8209;Value Splice. Your Prototyrant grafts the other
-  one. If the two are equal in Value, you choose which it takes.
+  The old Tyrant retains the higher&#8209;Value Splice (set the card aside in a Retained Splices pile). The Prototyrant 
+  grafts the other one. If the two are equal in Value, you choose which one it takes.
 </div>
-<p>Either way <b>both Splices leave the deck</b>: the graft goes face&#8209;up with your Prototyrant and stays
-there, and the reclaimed Splice goes to the old Tyrant&rsquo;s <b>discard</b>, where it waits to be shuffled
-back in and revealed again.</p>
 
 <h3>Zero&#8209;dice Experiments</h3>
-<p>A Rat may be selected and commit nothing. The Experiment fails automatically and the old Tyrant takes the
-better Splice. Recovery still happens. It gives no bonus.</p>
+<p>A Rat may be selected and commit nothing &mdash; an unattended experiment. The Experiment fails automatically and the 
+old Tyrant retains the better Splice. <b>No Splice is grafted onto the Prototyrant</b>, and the other goes to the
+<b>bottom of the Carcass deck</b>. Recovery still happens, which is the whole reason to do it.</p>
 
 <h2>Splices</h2>
 <p>Every Splice &mdash; ordinary or Specimen &mdash; has a <b>category</b> (Power, Mobility, Defense or
@@ -224,10 +224,10 @@ what its Value means:</p>
 roll. Which colors it may take depends on how many grafts the Prototyrant holds:</p>
 <table>
   <tr><th>Grafts held</th><th>May borrow</th></tr>
-  <tr><td>0</td><td>Purple, Blue, Green or Yellow</td></tr>
-  <tr><td>1</td><td>Blue, Green or Yellow</td></tr>
-  <tr><td>2</td><td>Green or Yellow</td></tr>
-  <tr><td>3 or more</td><td>Yellow only</td></tr>
+  <tr><td>0&ndash;1</td><td>Purple, Blue, Green or Yellow</td></tr>
+  <tr><td>2&ndash;3</td><td>Blue, Green or Yellow</td></tr>
+  <tr><td>4&ndash;5</td><td>Green or Yellow</td></tr>
+  <tr><td>6 or more</td><td>Yellow only</td></tr>
 </table>
 <p>After the Experiment resolves, roll the borrowed die by itself. On a miss it is <b>banished</b> &mdash;
 removed from the game permanently. On a hit or Crit it returns to its owner exhausted. <b>Put a banished die
@@ -249,11 +249,13 @@ pooled die; and it <b>exhausts</b> like any other committed die, so it comes bac
 to a non&#8209;active Rat at the end of each round either way.</p>
 
 <h2>Wake&#8209;Up</h2>
-<p>The Wake&#8209;Up card ends the lab the instant it is turned, wherever you are in the deck. Nothing about
-the split changes: what you grafted is yours and what the old Tyrant reclaimed is its wall.</p>
+<p>The Wake&#8209;Up card ends the lab the instant it is turned, wherever you are in the deck &mdash; and so does a
+carcass too thin to reveal two Splices. Nothing about the split changes either way: what you grafted is yours and
+what is left on the carcass, drawn or retained, is its wall.</p>
 <ol class="seq">
-  <li>Combine the old Tyrant&rsquo;s <b>undrawn deck and its discard</b>, shuffle them, and stand them up as
-      its <b>Splices</b> &mdash; its wall, five to eight cards deep depending on how the lab went.</li>
+  <li>Combine the old Tyrant&rsquo;s <b>undrawn Carcass deck and its Retained Splices</b>, shuffle them, and
+      stand them up as its <b>Splices</b> &mdash; its wall, five to eight cards deep depending on how the lab
+      went.</li>
   <li>Shuffle your <b>grafts</b> into the Prototyrant&rsquo;s own face&#8209;down pile.</li>
   <li>Start the Prototyrant&rsquo;s <b>Health</b> at <b>12</b>, on paper or any counter you like. All
       four Rats share it &mdash; damage nothing absorbs comes off this one number, and at 0 the Rats

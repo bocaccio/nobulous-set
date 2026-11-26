@@ -216,11 +216,11 @@ for label, data in [('Routine Programs', aos_data.ROUTINE),
 CATALOG['aos']['decks'] += [
     # AN ASSEMBLY'S TWO FACES ARE TWO DIFFERENT CARDS' WORTH OF JOB, so the
     # back list is the Advanced Program names rather than the same names
-    # again: the Build side says "Drive Train" and its back says "Rapid
+    # again: the design says "Drive Train" and its back says "Rapid
     # Approach", which is the one deck in the set where that is true.
     deck('Assemblies', 'AoS_Assemblies_TTS.png',
          [a[0] for a in aos_data.ASSEMBLIES],
-         'Assembly · Build side', 'AoS_Assemblies_TTS_back.png',
+         'Assembly · design side', 'AoS_Assemblies_TTS_back.png',
          'Advanced Program · finale stage',
          [a[2] for a in aos_data.ASSEMBLIES]),
     deck('Limitations', 'AoS_Limitations_TTS.png', names(aos_data.LIMITATIONS),
@@ -261,9 +261,9 @@ CATALOG['nrj']['decks'] += [
          'Backdoor Routine · AoS', 'CardBack_NRJ_BackdoorRoutine.png'),
     # The ninth Assembly, printed in NRJ's booklet because it is offered
     # only at Tier III, but built by build_aos.py in AoS's own stylesheet
-    # so all nine present their Build side identically.
+    # so all nine present their design identically.
     deck('AoS Covert Sensor Array', 'NRJ_AoS_CovertAssembly_TTS.png',
-         [aos_data.COVERT[0]], 'Assembly · Build side',
+         [aos_data.COVERT[0]], 'Assembly · design side',
          'NRJ_AoS_CovertAssembly_TTS_back.png',
          'Advanced Program · finale stage', [aos_data.COVERT[2]]),
     deck('Imposter Scenarios', 'NRJ_ImposterScenarios_TTS.png', names(build_nrj.SCEN),

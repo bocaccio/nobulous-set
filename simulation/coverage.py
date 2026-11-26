@@ -80,7 +80,7 @@ def _aos_assembly_sides():
     NOT len(ASSEMBLIES), which is the mistake this file exists to catch -
     a table of nine names satisfies a count of nine whether or not one
     line of code ever reads it. The predicate here is call sites: the
-    Build side counts when install() reads an Assembly's Build slots AND
+    design counts when install() reads an Assembly's Build slots AND
     writes a Program into one of them, and the back counts when the
     finale runs it through run_program and adds its failures to the
     total the game is scored on. Remove either and this drops to 8.
@@ -98,7 +98,7 @@ def _aos_assembly_sides():
 def _aos_covert_sides():
     """The ninth Assembly's two faces.
 
-    Its Build side is the standard Sensor Array's, so what makes it a
+    Its design is the standard Sensor Array's, so what makes it a
     card rather than a reskin is the Tier III swap that puts it in the
     offer; its back is a finale stage like any other, which is true only
     while the Advanced tables are built from ALL_ASSEMBLIES rather than
@@ -420,7 +420,7 @@ CLAIMS = [
                "the same predicate: a Reward with no branch in Game.reward "
                "does not count, however many names the table holds"),
     Claim("AoS", "Assemblies", 16, _aos_assembly_sides,
-          note="both faces of all eight: the Build side is modelled only "
+          note="both faces of all eight: the design is modelled only "
                "if install() reads its Build slots and writes a Program "
                "into one, and the back only if the finale runs it through "
                "run_program's Advanced tables and counts its failures"),

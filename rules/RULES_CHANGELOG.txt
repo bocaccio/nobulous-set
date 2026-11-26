@@ -1,3 +1,96 @@
+2026-11-26  BAT: WHERE A SPLICE GOES, AND A BORROW TABLE THAT REACHES
+            THE WHOLE GAME
+Jon rewrote the Splice economy in rules/bat.html and asked for the borrow
+restriction to be rebanded.  Three rule changes and two rulings.
+
+THE SPLICE ECONOMY.  Until today every Experiment took BOTH revealed cards
+out of the Carcass deck, the old Tyrant's pile reshuffled into the deck on
+demand, and a card it had reclaimed could be extracted again later.  Now:
+
+  SUCCESS   the Rats graft one; the other goes to the BOTTOM of the Carcass
+            deck, where it can be revealed again.
+  FAILURE   the old Tyrant RETAINS the higher-Value one, for good; the Rats
+            graft the other.
+  UNATTENDED  a zero-dice Experiment grafts NOTHING.  The Tyrant retains the
+            better card, the other goes to the bottom, and Recovery still
+            happens - which is the whole reason to do it.
+
+So the deck loses one card on a success and two on a failure, and nothing
+ever goes back into it.  THE DECK CAN THEREFORE RUN DRY, and Jon's ruling is
+that this is the old Tyrant WAKING EARLY: the lab ends where it stands.  "You
+didn't do a great job in the lab and now the tyrant is awake."
+
+THE MODEL ALREADY DID THIS.  lab_turn has always returned False when it could
+not reveal two cards; R4's reshuffle was the only thing that made the path
+unreachable.  Removing the reshuffle switched it on, and wake_early() now
+records which wake it was, because the ladder is pegged to the normal one.
+Three dials - RETAIN_NO_RESHUFFLE, BOTTOM_ON_SUCCESS, ZERO_DICE_NO_GRAFT -
+restore the reading every BAT figure published before today was measured
+through.
+
+TWO LADDERS, 3000 games a rung, seed 20, because difficulty is pegged mostly
+to the normal wake:
+
+  rung       NORMAL wake   share   EARLY wake   share   before today
+  Easy          41.8%      96.3%      16.1%      3.7%      45.3%
+  Standard      23.7%      95.5%       9.6%      4.5%      27.6%
+  Hard          15.8%      95.3%       0.0%      4.7%      18.1%
+  Nobulous       8.5%      95.0%       0.0%      5.0%       9.2%
+
+THE EARLY WAKE IS NOT A PUNISHMENT AT THE TOP TWO RUNGS, IT IS A LOSS.  Zero
+wins in the ~141 Hard and ~150 Nobulous games that ended that way.  Raised;
+Jon is keeping it while he playtests, and will change it if it plays too hard.
+The whole economy costs -3.5 / -3.9 / -2.3 / -0.7.
+
+THE BORROW TABLE IS BANDED, two grafts to a row: 0-1 any colour, 2-3 no
+Purple, 4-5 no Purple or Blue, 6+ Yellow only.  It saturated at "3 or more"
+before, and the Prototyrant finishes the lab holding six to eight, so from
+the fourth graft on the table said Yellow and nothing else - for most of
+every game.  Worth +0.5 / +0.2 / +1.6 / -0.0, which is to say nearly
+nothing: the borrow POLICY measured 10 to 12 points on 2026-11-18, but the
+battle clock became the ladder on 2026-11-20 and the lab's borrow colour
+barely reaches the result any more.  BORROW_BANDS restores one row a graft.
+
+AND THE ZERO-DICE RULE IS UNMEASURABLE AS THE MODEL STANDS: 0.00 unattended
+Experiments a game.  choose_rat never picks a Rat with nothing to commit and
+attempt commits whatever is available, so a deliberate zero-dice pass is not
+a move batrev knows how to make.  The rule is printed, the branch is
+implemented, and the simulation is silent on whether buying a recovery that
+way is ever right.  Same shape as AoS's abandon rule.
+
+A CONSERVATION BUG, MINE, CAUGHT BY THE COMMENT THAT PREDICTED IT.  Routing
+the non-grafted card to the bottom of the deck on a success meant R9's Field
+Retrofit - which only fires on a success - was still looking for the
+swapped-in card in the Tyrant's pile.  It grafted the card without removing
+it and the wall gained one, in about one game in sixty.  The comment beside
+that code already said "or the card is duplicated and the wall gains 0.08 of
+a Splice a game"; it had simply never been told about a third pile.  R9 reads
+the deck first now.  batrev.one()'s conservation assertion is what found it,
+and the new measurement asserts it on EVERY game at every rung.
+
+CHECKS: two rewritten, not relaxed.  "every Experiment grafts a part, so
+there is no Splice clock left" asserted the exact invariant the unattended
+rule breaks, and was anchored on "both Splices leave the deck" - a sentence
+that had to go when a success started returning one of them.  It is now "the
+carcass can run dry, and the book and batrev route a Splice the same way",
+checking all four routings in the book and EACH DIAL AT ITS CALL SITE rather
+than at its declaration, which is exactly the distinction the R9 bug
+exploited.  The naming check lost the same anchor and reads "Splices to
+graft" instead.
+
+AND THE FELT SAYS RETAINED.  make_template.py labelled the lower pile
+RECLAIMED SPLICE and its comment quoted the deleted sentence about cards
+waiting to be shuffled back in.  Nothing in that pile ever returns now.
+Regenerating it RENAMED the overlay - BAT_Table_f1005f14.jpg to
+BAT_Table_ad02a8f0.jpg - so the mod is rebuilt pinned to this commit.
+
+TWO ORDERING TRAPS WORTH WRITING DOWN.  make_template.py refuses to run while
+NobulousSet.json is older than lua.lua, so the mod has to be built before the
+overlay even though the overlay is what the mod then loads.  And deploy.py
+--prune prunes images/ against generator/out/, while make_template.py writes
+into images/ directly - so a freshly generated overlay looks like an orphan
+and --prune DELETES it.  Deploy first, draw the felt second.
+
 2026-11-26  REGULATED, NOT STABLE; NO MORE RECIPES; AND THE PnP HAD BEEN
             MISSING A WHOLE DECK
 Three of Jon's, and the first was not a wording problem at all.
