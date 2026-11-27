@@ -5,13 +5,28 @@
     python aosends.py 4000       # slower, tighter
 
 Re-pegging on 2026-11-26 (simulation/peg.py) found AoS's middle landing and
-its two ends out:
+its two ends out. THIS IS THE LADDER AS IT STOOD THAT DAY, which is what the
+sweep below was run against; the two ends stepped on 2026-11-27 and the note
+after the table says to what, so do not read this as the shipped mix.
 
     rung       shipped mix   win    target   off
     Easy        4/3/3/0     62.4     70.5   -8.1    eight points TOO HARD
     Standard    2/3/5/0     52.3     50.4   +1.9    lands
     Hard        0/4/4/2     38.2     38.5   -0.3    lands
     Nobulous    0/3/3/4     29.1     21.2   +7.9    eight points TOO EASY
+
+WHAT SHIPPED, 2026-11-27, AND IT IS NOT WHAT THIS FILE FOUND. The sweep's
+answers were Easy 4/6/0/0 at +0.0 and Nobulous 0/3/0/7 at +0.6, both of them
+re-dealing LESS often than the rungs they would replace. Neither shipped:
+each builds a rung from two classes and deals no Unstable Program at all,
+and Jon ruled that Specialized and Unstable must appear at all four rungs.
+The shipped ends are the nearest cells in the tables below that carry every
+class - Easy 5/2/3/0 and Nobulous 0/2/3/5 - and they are FURTHER from the
+target than the cells that do not, and re-deal MORE often, because
+Specialized is the colour carrier and holding Unstable at three leaves it as
+the only card either end has left to spend. simulation/aosgrid.py measures
+what shipped at the published sample; this file is the sizing it was chosen
+from.
 
 AoS's only ladder dial is COMPOSITION: which ten of the thirty-two printed
 Programs the rung is dealt from, eight per class and no count above eight.

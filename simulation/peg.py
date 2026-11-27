@@ -58,6 +58,12 @@ names: the GREAT third, on the games where the old Tyrant woke NORMALLY.
 Jon pegs difficulty mostly to the normal wake (2026-11-26), and the early
 wake is 4-5% of games and wins almost none of them at the top two rungs.
 
+MIND WHAT THE SAMPLES MEAN, because the two grids do not agree on it.
+NAP's 20,004 is the TOTAL for a cell - napgrid.py divides it by the six
+Apprentices - and AoS's 20,000 is PER TECHNICIAN, so an AoS cell is 120,000
+games and a NAP cell is 20,004. Both files used to say "20,000 games a cell"
+about samples six times apart.
+
 MIND WHAT KIND OF NUMBER IT IS. BAT's great third is a CONDITIONAL win rate
 - given a good lab - while NAP's and AoS's columns are unconditional. They
 are not the same quantity and this file does not pretend they are. The
@@ -93,8 +99,9 @@ LADDERS = {
             "20,000 games a rung, seed 20, great third on the normal wake"),
     "NAP": ((64.5, 50.0, 35.4, 25.7), "simulation/napgrid.txt",
             "20,004 games a cell, six Apprentices, overall"),
-    "AoS": ((62.4, 52.3, 38.2, 29.1), "simulation/RESULTS.txt",
-            "20,000 games a cell, six Technicians, overall"),
+    "AoS": ((66.4, 52.3, 38.2, 24.6), "simulation/aosgrid.txt",
+            "20,000 games a TECHNICIAN a cell - six of them, so 120,000 "
+            "games - overall"),
 }
 
 # BAT's OVERALL column, recorded so that the two can never be confused

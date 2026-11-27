@@ -41,6 +41,7 @@ figures. Read the fidelity notes before quoting anything here.
 | `batpeg.py` | measures the target from BAT as it ships - the great third on the normal wake, which is the column BAT's brief names - and asserts conservation on every game. Output in `batpeg.txt` |
 | `napends.py` | what it would cost to put NAP's two END rungs on the target - the whole menu is one Setback or one Credit at each end, because six Setback cards exist and every rung must keep one. Output in `napends.txt` |
 | `aosends.py` | the same question for AoS, whose only ladder dial is which ten of the thirty-two Programs a rung is dealt from. Reports the deal-again rate beside every win rate, since a mix that re-deals one setup in three is not a rung. Output in `aosends.txt` |
+| `aosgrid.py` | the whole AoS grid in ONE run - four rungs x four tiers, the mean of the six Technicians, 20,000 games a Technician a cell - with the deal-again rate published beside each win rate. Replaces the two merged runs the AoS third of `RESULTS.txt` used to be, and is the file `peg.py` names for AoS. Output in `aosgrid.txt` |
 | `dice.py` | the shared 20 Strong dice; face distributions taken verbatim from the playtest engines |
 | `cards.py` | hero rosters and the NRJ tier modules - the axes a balance table gets asked for |
 | `batrev.py` | **Build-a-Tyrant, the scavenged-Tyrant design that ships: BAT'S MODEL OF RECORD.** Experiments that graft and reclaim, the Wake-Up clock, the battle against the old Tyrant's wall |
@@ -622,10 +623,21 @@ Specimens are the Value-5 cards).
 > **SUPERSEDED 2026-11-25.** The table below is the EIGHT-card AoS with a
 > clean-run install rule, and is kept as the evidence for the Tier I repair
 > the prose under it analyses. The ladder that ships is ten cards over four
-> decks - Easy `4/3/3/0`, Standard `2/3/5/0`, Hard `0/4/4/2`, Nobulous
-> `0/3/3/4` - and installing now needs at most one failed element rather
-> than a clean run. It reads 62.4 / 52.3 / 38.2 / 29.1 solo; `RESULTS.txt`
-> carries the full grid and says which cells come from which run.
+> decks - Easy `5/2/3/0`, Standard `2/3/5/0`, Hard `0/4/4/2`, Nobulous
+> `0/2/3/5` - and installing now needs at most one failed element rather
+> than a clean run. It reads 66.4 / 52.3 / 38.2 / 24.6 solo, which is
+> -4.1 / +1.9 / -0.3 / +3.4 against `peg.py`. `aosgrid.txt` is the whole
+> grid in one run and `RESULTS.txt` carries a copy of it.
+>
+> **THE TWO ENDS STEPPED 2026-11-27**, so that Specialized AND Unstable both
+> deal at all four rungs: Easy `4/3/3/0` to `5/2/3/0` and Nobulous `0/3/3/4`
+> to `0/2/3/5`. The cells that LAND on the target were refused for dealing
+> no Unstable Program at all - Easy `4/6/0/0` at +0.0 and Nobulous `0/3/0/7`
+> at +0.6, both re-dealing less often than the rungs they would have
+> replaced - so the ends that shipped buy the class floor and pay for it in
+> setup: each throws away about one setup in four, 25.7% and 25.6% against
+> 16.6% and 16.8% before. Specialized is the colour carrier, and holding
+> Unstable at three leaves it as the only card either end can spend.
 >
 > **VOLATILE REACHES TWO RUNGS** as of later the same day, and Specialized
 > is no longer pinned at 3. The pin was why Volatile had existed at one

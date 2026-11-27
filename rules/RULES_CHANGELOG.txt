@@ -1,3 +1,95 @@
+2026-11-27  AoS'S TWO ENDS STEPPED SO EVERY CLASS DEALS AT EVERY RUNG,
+            AND THE PRICE IS ONE SETUP IN FOUR
+Jon ruled that Specialized AND Unstable must appear at all four rungs, and
+chose Easy 5/2/3/0 and Nobulous 0/2/3/5 out of the sizing in
+simulation/aosends.py.  Easy was 4/3/3/0 and Nobulous 0/3/3/4.  Standard
+and Hard did not move: they land on the target at +1.9 and -0.3.
+
+MEASURED WHOLE at 20,000 games per TECHNICIAN - six of them, so 120,000
+games a cell - by the new simulation/aosgrid.py, output in aosgrid.txt:
+
+                       no NRJ   Tier I  Tier II Tier III deal-again
+  Easy  5/2/3/0         66.4%    55.6%    50.5%    50.2%      25.7%
+  Standard  2/3/5/0     52.3%    39.9%    35.1%    36.1%      14.0%
+  Hard  0/4/4/2         38.2%    26.2%    22.9%    23.3%       8.0%
+  Nobulous  0/2/3/5     24.6%    15.1%    13.2%    13.5%      25.6%
+
+AGAINST THE TARGET, -4.1 / +1.9 / -0.3 / +3.4, where it read -8.1 / +1.9 /
+-0.3 / +7.9.  EACH END CLOSED ABOUT HALF ITS GAP and NEITHER LANDS.
+Standard stays in the community band at 52.3% and every one of the six
+Technicians is in band there, 50.0 to 55.1, a spread of 5.2 in a band ten
+points wide.
+
+THE CONTROL REPRODUCES, which is the only reason to trust the eight new
+cells.  Standard and Hard did not move, and a different script on a
+separate pass read seven of their eight cells identically and the eighth
+0.2 out.
+
+THE CELLS THAT LAND WERE REFUSED, and that is the decision this entry is
+really about.  aosends.py had found Easy 4/6/0/0 at 70.5% - dead on the
+target, never re-dealing at all - and Nobulous 0/3/0/7 at 21.8%, +0.6,
+re-dealing 4.5% against the old rung's 16.8%.  Both beat what shipped on
+EVERY axis measured.  Each builds a rung from two classes and deals no
+Unstable Program, so both were refused, and generator/check_app_sync.py
+now pins the floor: every rung must deal at least one Specialized and at
+least one Unstable.  Probed both ways.  Without that check the pair gets
+rediscovered by the next sweep and looks like a free win.
+
+WHAT THE FLOOR COSTS IS THE DEAL-AGAIN COLUMN, published in the grid from
+today for that reason.  COLOR_FLOOR re-deals any setup leaving a colour on
+fewer than two of the ten Programs, and Specialized carries TWO
+required-colour dots where the other three classes carry one - so it is the
+colour carrier, and holding Unstable at three leaves it as the only card
+either end has left to spend.  Both ends now throw away ABOUT ONE SETUP IN
+FOUR: 25.7% at Easy against 16.6%, and 25.6% at Nobulous against 16.8%.
+  THIS REVERSES A DECISION OF 2026-11-25.  Cutting the third Specialized at
+Nobulous was refused then on exactly this ground - 0/2/4/4 bought 1.2
+points of difficulty for 10.5 points of re-deal - and the note in aos.py
+that recorded the refusal is kept, with the reversal written under it,
+because the arithmetic was never wrong.  It was the price that was
+re-decided.
+
+THE SIZING SAMPLE WAS A POINT OUT AT BOTH ENDS, in opposite directions.
+aosends.py measured these two mixes at 1500 games a Technician and read
+65.5 and 23.5; the published run reads 66.4 and 24.6.  Easy is nearer the
+target than the sizing said and Nobulous further, and a point is larger
+than most of the gaps being tuned here.  check_app_sync.py now pins that
+aosgrid.py names its own sample and refuses to be mistaken for the
+published run when it is not one - peg.py already records the same trap on
+the BAT side, where a 2,000-game pilot read up to three points out.
+
+THE STEPS CAME OUT EVEN, which nobody asked for: 14.1 / 14.1 / 13.6 where
+the ladder used to step 10.1 / 14.1 / 9.1.  The TARGET does not - BAT's
+great third steps 20.1 / 11.9 / 17.3, because its rungs are the round limit
+12/10/9/8 and a round is not worth the same at every rung - so AoS is now a
+more regular ladder than the thing it is pegged to.  Whether the set wants
+BAT's SHAPE as well as its LEVEL has still not been asked.
+
+AoS IS NOW THE CLOSEST FAMILY TO THE TARGET: its worst rung is 4.1 points
+out where NAP's is 6.0.  NAP's two ends are still unstepped - the Easy
+choice there is a trade and not a number, and it is open.
+
+ONE RUN, NOT TWO.  The AoS third of RESULTS.txt had been assembled from two
+measurements with four paragraphs under it saying which cells came from
+which.  aosgrid.py measures all sixteen in one pass and reads the ladder out
+of aos.LEVELS, so there is nothing left to track and nothing to type.
+peg.py names aosgrid.txt as the AoS provenance file now, and a new check
+holds RESULTS.txt's pasted copy against it.
+
+AND A RULE THE MOD HAD BEEN TEACHING WRONG FOR A FORTNIGHT, found in the
+same passage.  tts/build_mod.py's notebook said "Routine and Unstable carry
+one required-color dot and Specialized two", omitting VOLATILE, which
+rules/aos.html has included since the fourth deck was added on 2026-11-25.
+Every existing check on that sentence was about the NUMBER of dots and none
+about WHICH CLASSES carry one, so nothing compared them.  Fixed, and pinned
+by a check that derives the one-dot classes from PROGRAM_REQS - the cards
+themselves - and requires both owners to name all of them.
+
+NO CARD CHANGED.  The mix is not printed on any card, so there is no
+generator rebuild and no deploy: the owners are aos.LEVELS, the table in
+rules/aos.html, AOS_MIX in tts/lua.lua and the notebook in
+tts/build_mod.py, and check_app_sync.py holds all four together.
+
 2026-11-27  SIZING THE TWO ENDS: BOTH REACH THE TARGET, AND AT AoS
             THEY COST SHAPE RATHER THAN DIFFICULTY
 Jon asked for the two ends to be sized after yesterday's re-peg found the

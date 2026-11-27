@@ -5641,7 +5641,8 @@ _copies = []
 for _rel, _name, _want in (
         ("simulation/nap_ladder.py", "LADDER", "nap.LEVELS[n]"),
         ("simulation/napends.py", "SHIPPED", "SHIPPED = dict(nap.LEVELS)"),
-        ("simulation/aosends.py", "SHIPPED", "SHIPPED = dict(aos.LEVELS)")):
+        ("simulation/aosends.py", "SHIPPED", "SHIPPED = dict(aos.LEVELS)"),
+        ("simulation/aosgrid.py", "ORDER", "ORDER = tuple(aos.LEVEL_NAMES)")):
     if py_tables(_rel).get(_name) is not None:
         _copies.append("%s types %s" % (_rel, _name))
     elif _want not in text(_rel):
@@ -5665,6 +5666,80 @@ check("batpeg.py asserts the shipped dials and takes its thirds from batrev",
       and "batrev.thirds_of(rows)" in _bp
       and "conservation broken" in _bp,
       "the peg measurement stopped pinning the game it measures")
+
+# EVERY AoS RUNG DEALS EVERY CLASS IT IS SUPPOSED TO, which is a ruling and
+# not a tuning preference. Jon settled on 2026-11-27 that Specialized AND
+# Unstable must appear at all four rungs, and the two ends were chosen under
+# it: simulation/aosends.py had found cells that land dead on the target -
+# Easy 4/6/0/0 at +0.0 and Nobulous 0/3/0/7 at +0.6, BOTH re-dealing less
+# often than the rungs they would replace - and neither shipped, because
+# each builds a rung from two classes and deals no Unstable Program at all.
+# So the shipped ends are the nearest cells that carry every class, and they
+# sit FURTHER from the target than the cells that do not. Without this check
+# nothing records why the better-looking pair was refused, and the next
+# person to chase the target by composition finds them again.
+_afloor = []
+for _lvl in sa["LEVEL_NAMES"]:
+    _s, _u = sa["LEVELS"][_lvl][1], sa["LEVELS"][_lvl][2]
+    if _s < 1 or _u < 1:
+        _afloor.append("%s deals %d Specialized and %d Unstable"
+                       % (_lvl, _s, _u))
+check("every AoS rung deals at least one Specialized and one Unstable",
+      not _afloor, "; ".join(_afloor))
+
+# AND THE GRID NAMES ITS OWN SAMPLE, because a pilot is what a published
+# figure goes wrong as. peg.py's docstring measures the cost: the 2,000-game
+# pilot of the BAT peg read 71.6 / 47.8 / 35.6 / 24.1 against the 20,000-game
+# 70.5 / 50.4 / 38.5 / 21.2 - up to three points out, which is larger than
+# most of the gaps anyone is tuning. AoS's published cell is 20,000 games per
+# TECHNICIAN, six of them, so 120,000 games; napgrid.py's 20,004 is the
+# total. Two files say "20,000 games a cell" about samples six times apart,
+# so aosgrid.py has to say which it means and refuse to be mistaken for the
+# published run when it is not one.
+_ag = text("simulation/aosgrid.py")
+check("aosgrid.py measures at the published sample and says so when it does "
+      "not",
+      "DEFAULT_GAMES = 20000" in _ag
+      and "THIS IS NOT THE PUBLISHED SAMPLE" in _ag
+      and "games per Technician per cell" in _ag,
+      "the AoS grid stopped naming its own sample size")
+
+# AND THE PASTED COPY CANNOT DRIFT FROM THE GENERATED ONE. peg.py names
+# simulation/aosgrid.txt, which a script writes; the grid in RESULTS.txt is
+# pasted in by hand, so it is the copy that goes stale - and it did, twice,
+# before 2026-11-05. The provenance check above covers the generated file;
+# this one covers the hand-made one.
+_rgone = ["%.1f" % v for v in _pegt["LADDERS"]["AoS"][0]
+          if ("%.1f" % v) not in text("simulation/RESULTS.txt")]
+check("RESULTS.txt still carries the AoS figures peg.py publishes",
+      not _rgone, "RESULTS.txt lost %s" % ", ".join(_rgone))
+
+
+# AND THE DOT RULE NAMES THE RIGHT CLASSES, derived from the cards rather
+# than from either sentence. Every check on this rule was about the NUMBER
+# of dots - two for Specialized, one for the rest - and none about WHICH
+# CLASSES carry one, so when Volatile was added on 2026-11-25 the book
+# picked it up and the mod's notebook did not: it taught "Routine and
+# Unstable carry one required-color dot" for two days short of a fortnight,
+# a rule rules/aos.html does not print. Found 2026-11-27 while the mix was
+# being stepped in the same passage. The one-dot classes are computed from
+# PROGRAM_REQS, so this cannot be satisfied by a list somebody retyped.
+_onedot = [_d for _d in sa["DECKS"]
+           if max(sum(1 for _c in _card if _c)
+                  for _card in sa["PROGRAM_REQS"][_d]) == 1]
+_dotwant = ", ".join(_onedot[:-1]) + " and " + _onedot[-1]
+_dotbad = []
+if (_dotwant + " carry one required-color dot"
+        not in _mod.replace(chr(92) + 'n"\n         "', " ")):
+    _dotbad.append("the mod notebook")
+if _dotwant + " Programs carry one required-color dot" not in _plain(
+        "rules/aos.html"):
+    _dotbad.append("rules/aos.html")
+check("the one-dot Program classes are named wherever the dot rule is "
+      "taught",
+      not _dotbad,
+      "%s does not say %r" % (" and ".join(_dotbad), _dotwant))
+
 
 print()
 if SKIPPED:

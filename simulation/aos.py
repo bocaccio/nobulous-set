@@ -346,6 +346,11 @@ ELEMENT_COST = 0         # dice exhausted per resolved element, win or lose:
 # 0/3/3/4 29.1%, so cutting the third Specialized buys 1.2 points of
 # difficulty for 10.5 points of re-deal - one setup in four, and the worst
 # setup in the game by a wide margin. It was refused on that.
+#   THAT REFUSAL WAS REVERSED ON 2026-11-27, and the paragraph is kept
+# because the reasoning is still correct - it is the PRICE that was
+# re-decided, not the arithmetic. Both ends now sit at one setup in four,
+# deliberately, to keep every class on every rung. See the bottom of this
+# note.
 #
 # THE BOTTOM RUNG STILL DOES NOT REACH THE PEG, AND BY MORE THAN THIS
 # PARAGRAPH SAID. It read "rules/bat.html prints 63.7 / 52.8 / 37.8 / 25.8
@@ -355,43 +360,76 @@ ELEMENT_COST = 0         # dice exhausted per resolved element, win or lose:
 # its GREAT THIRD - all three found on 2026-11-26. simulation/peg.py owns
 # the target now: 70.5 / 50.4 / 38.5 / 21.2, re-measured from BAT.
 #
-# AGAINST THE REAL TARGET this ladder is -8.1 / +1.9 / -0.3 / +7.9. HARD
-# STILL LANDS, at -0.3 where it read +0.4, and Standard reads +1.9 in band.
-# BOTH ENDS ARE OUT BY EIGHT POINTS, in opposite directions, and Easy was
-# the rung nobody was looking at - the old composite put it at 63.7 and
-# called it level.
+# THE LADDER THAT SHIPPED UNTIL 2026-11-27 read -8.1 / +1.9 / -0.3 / +7.9
+# against the real target. Hard landed at -0.3 where it had read +0.4, and
+# Standard read +1.9 in band, but BOTH ENDS WERE OUT BY EIGHT POINTS in
+# opposite directions - and Easy was the rung nobody was looking at, because
+# the old composite put it at 63.7 and called it level.
 #
-# AND BOTH ENDS ARE REACHABLE BY COMPOSITION, which corrects this note's
-# own first version. It said on 2026-11-26 that "the argument that
-# composition cannot close Nobulous is now much stronger", citing a floor
-# of 27.5% over every four-Volatile mix and 30.6% over every three. THAT
-# FLOOR WAS OVER THE MIXES THAT HAD BEEN SWEPT, not over the printed room:
-# aosvol.py's candidate groups stop at four Volatile, so SIX, SEVEN AND
-# EIGHT HAD NEVER BEEN MEASURED. simulation/aosends.py measures them, and
-# the claim does not survive:
+# BOTH ENDS ARE REACHABLE BY COMPOSITION, which corrected this note's own
+# first version. It said on 2026-11-26 that "the argument that composition
+# cannot close Nobulous is now much stronger", citing a floor of 27.5% over
+# every four-Volatile mix and 30.6% over every three. THAT FLOOR WAS OVER
+# THE MIXES THAT HAD BEEN SWEPT, not over the printed room: aosvol.py's
+# candidate groups stop at four Volatile, so SIX, SEVEN AND EIGHT HAD NEVER
+# BEEN MEASURED. simulation/aosends.py measured them and the claim did not
+# survive:
 #
-#   rung      shipped          nearest cell on the target    deal-again
+#   rung      was              cell ON the target            deal-again
 #   Easy      4/3/3/0 62.4%    4/6/0/0  70.5%  (+0.0)        0.0% vs 16.6%
 #   Nobulous  0/3/3/4 28.6%    0/3/0/7  21.8%  (+0.6)        4.5% vs 16.8%
 #
-# BOTH LAND AND BOTH RE-DEAL LESS THAN THE RUNG DOES NOW, which is the part
-# worth pausing on: the colour floor is satisfied by whatever carries the
-# colours, and at Easy that is SPECIALIZED rather than Routine. Specialized
+# BOTH OF THOSE LAND AND BOTH RE-DEAL LESS than the rungs they would have
+# replaced, because the colour floor is satisfied by whatever carries the
+# colours and at Easy that is SPECIALIZED rather than Routine. Specialized
 # is the non-monotonic class - two required-colour dots a card, so each card
 # is harder and each SETUP easier - and the Specialized arm beat the Routine
-# arm on both axes at Easy. 4/6/0/0 never re-deals at all.
+# arm on both axes. 4/6/0/0 never re-deals at all.
 #
-# WHAT IT WOULD COST IS SHAPE, NOT WIN RATE. 4/6/0/0 is Routine and
-# Specialized only, 0/3/0/7 is Specialized and Volatile only, and neither
-# rung would deal a single Unstable Program - so two of the four classes
-# would appear at two rungs instead of three. Whether a rung may be built
-# from two classes is a design question and not a measurement, which is why
-# nothing here moved. NEITHER END WAS RETUNED.
+# AND NEITHER SHIPPED. 4/6/0/0 is Routine and Specialized only and 0/3/0/7
+# is Specialized and Volatile only, so neither deals a single Unstable
+# Program, and Jon ruled on 2026-11-27 that SPECIALIZED AND UNSTABLE MUST
+# APPEAR AT ALL FOUR RUNGS. check_app_sync.py pins that floor, so the pair
+# cannot be rediscovered and shipped by somebody who does not know they
+# were already refused - which is the only record of the decision that a
+# future sweep will actually run into.
+#
+# SO THE ENDS BELOW ARE THE NEAREST CELLS THAT CARRY EVERY CLASS, and they
+# are further from the target than the cells that do not. Measured whole at
+# 20,000 games a Technician - 120,000 a cell - by simulation/aosgrid.py:
+#
+#   rung      was              now              off      deal-again
+#   Easy      4/3/3/0 62.4%    5/2/3/0 66.4%    -4.1     25.7% vs 16.6%
+#   Nobulous  0/3/3/4 29.1%    0/2/3/5 24.6%    +3.4     25.6% vs 16.8%
+#
+# EACH END CLOSED ABOUT HALF ITS GAP - Easy by 4.0 points and Nobulous by
+# 4.5 - AND NEITHER LANDS. What the class floor costs is the deal-again
+# column: holding Unstable at three leaves Specialized as the only card
+# either end has left to spend, and Specialized is the colour carrier, so
+# both ends now throw away ABOUT ONE SETUP IN FOUR. That is the price, it
+# was paid knowingly, and it reverses the 2026-11-25 refusal recorded
+# twenty lines above.
+#
+# MIND THE SIZING SAMPLE IF YOU COME BACK TO THIS. aosends.py measured
+# these same two mixes at 1500 games a Technician and read 65.5 and 23.5
+# where the published run reads 66.4 and 24.6 - about a point each, in
+# OPPOSITE directions, which is larger than most of the gaps anyone is
+# tuning here. The sizing is for choosing a cell; it is not the figure.
+#
+# AND THE STEPS CAME OUT EVEN, which nobody asked for: 14.1 / 14.1 / 13.6
+# where the old ladder stepped 10.1 / 14.1 / 9.1. The target does not -
+# BAT's great third steps 20.1 / 11.9 / 17.3, because its rungs are the
+# round limit 12/10/9/8 and a round is not worth the same at every rung. So
+# AoS is now a more regular ladder than the thing it is pegged to, and
+# whether the set wants BAT's SHAPE as well as its LEVEL has not been asked.
 LEVELS = {
-    "Easy": (4, 3, 3, 0),
+    # EASY AND NOBULOUS STEPPED 2026-11-27, holding Unstable at three on
+    # every rung - see the note above for what that costs. Standard and
+    # Hard are untouched: they land on the target at +1.9 and -0.3.
+    "Easy": (5, 2, 3, 0),
     "Standard": (2, 3, 5, 0),
     "Hard": (0, 4, 4, 2),
-    "Nobulous": (0, 3, 3, 4),
+    "Nobulous": (0, 2, 3, 5),
 }
 LEVEL_NAMES = ["Easy", "Standard", "Hard", "Nobulous"]
 

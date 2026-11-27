@@ -88,11 +88,15 @@ FINF_SET = { {'Increase', 1}, {'Increase', 2}, {'Increase', 3},
 -- FOUR DECKS SINCE 2026-11-25, and ten cards rather than eight: eight
 -- could not cover four colours. No count here is fixed any more - the
 -- single-substitution ladder and the pin on Specialized both came off the
--- same day, so Volatile deals at TWO rungs and Specialized moves. Every
--- rung is measured in simulation/aosvol.py; aos.LEVELS is the owner and
--- check_app_sync.py holds this against it.
-AOS_MIX = { Easy = {4, 3, 3, 0}, Standard = {2, 3, 5, 0},
-            Hard = {0, 4, 4, 2}, Nobulous = {0, 3, 3, 4} }
+-- same day, so Volatile deals at TWO rungs and Specialized moves.
+-- THE TWO ENDS STEPPED 2026-11-27 so that Specialized AND Unstable both
+-- deal at all four rungs: Easy 4/3/3/0 -> 5/2/3/0 and Nobulous 0/3/3/4 ->
+-- 0/2/3/5. Both ends are nearer the target and both re-deal more often,
+-- because Specialized is what satisfies the colour floor - the whole grid
+-- is simulation/aosgrid.py. aos.LEVELS is the owner and check_app_sync.py
+-- holds this against it.
+AOS_MIX = { Easy = {5, 2, 3, 0}, Standard = {2, 3, 5, 0},
+            Hard = {0, 4, 4, 2}, Nobulous = {0, 2, 3, 5} }
 -- The finale: dice that START exhausted, Yellow / Green / Blue / Purple.
 -- Red is never one of them - session 5 allows only Red and Yellow.
 IMP_TIRED = { Easy = {3, 3, 3, 3}, Standard = {3, 3, 4, 4},

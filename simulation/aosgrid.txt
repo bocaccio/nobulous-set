@@ -1,0 +1,28 @@
+AoS  Automaton of Shale - the whole grid, one run.
+20000 games per Technician per cell, mean of the six, seed 20 - so 120000 games
+a cell. Deal-again is 200000 analytic replays of the first deal, COLOR_FLOOR = 2.
+
+  difficulty = the Routine/Specialized/Unstable/Volatile mix
+
+                               no NRJ    Tier I   Tier II  Tier III  deal-again
+  Easy  5/2/3/0                  66.4%     55.6%     50.5%     50.2%       25.7%
+  Standard  2/3/5/0              52.3%     39.9%     35.1%     36.1%       14.0%
+  Hard  0/4/4/2                  38.2%     26.2%     22.9%     23.3%        8.0%
+  Nobulous  0/2/3/5              24.6%     15.1%     13.2%     13.5%       25.6%
+
+  target          70.5%     50.4%     38.5%     21.2%   simulation/peg.py, BAT's great third, normal wake
+  off             -4.1      +1.9      -0.3      +3.4 
+  steps           14.1      14.1      13.6    target steps 20.1 / 11.9 / 17.3
+  Standard against the community band: 52.3% (in band)
+  the solo ladder is monotone, which is the one shape it must have.
+
+  EVERY TECHNICIAN AT STANDARD, 20000 games each.
+    architect     53.2%   in band
+    debugger      55.1%   in band
+    optimizer     51.8%   in band
+    engineer      50.0%   in band
+    operator      52.7%   in band
+    compiler      51.2%   in band
+                   5.2    spread, 50.0 to 55.1
+
+  Finished in 3424s.

@@ -308,93 +308,131 @@ BAT  Build-a-Tyrant
 ==================================================================
 AoS  Automaton of Shale
 ==================================================================
-  NOT FROM THE RUN AT THE TOP OF THIS FILE.  Measured on its own,
-  2026-11-25, 20,000 games a cell, mean of the six Technicians, the
-  same shape table.py builds.  table.py could not be run whole: it
-  still imports the retired simulation/bat.py for the BAT grid above,
-  which would have overwritten that grid - and the warning standing
-  over it - with fresh figures for a game that no longer exists.
+  ONE RUN, 2026-11-27: simulation/aosgrid.py, all sixteen cells
+  together at 20,000 games per TECHNICIAN - six of them, so 120,000
+  games a cell - the mean of the six, the same shape table.py builds.
+  table.py still cannot be run whole: it imports the retired
+  simulation/bat.py for the BAT grid above, which would overwrite that
+  grid, and the warning standing over it, with fresh figures for a
+  game that no longer exists.
+    THIS TABLE USED TO BE TWO RUNS, with four paragraphs under it
+  saying which cells came from which, because Hard and Nobulous moved
+  on 2026-11-25 and Easy and Standard did not.  aosgrid.py exists so
+  that there is nothing to track: it reads the ladder out of
+  aos.LEVELS and measures every cell in one pass.
 
   THE LADDER CHANGED UNDER IT, three ways, on 2026-11-25.  Installing
   a Program now needs at most ONE failed element rather than a clean
   run; the Program deck is TEN cards, not eight, because eight could
   not cover four colours and 15.4% of Standard deals could not build
-  three Assemblies at all; and a fourth deck, Volatile, deals at
-  Nobulous only.  simulation/aosdeck.py and simulation/aosclass.py
-  are the measurements that chose each.
+  three Assemblies at all; and a fourth deck, Volatile, was added -
+  dealt at Nobulous alone at first, and at Hard and Nobulous once the
+  pin on Specialized came off later the same day.
+  simulation/aosdeck.py and simulation/aosclass.py are the
+  measurements that chose each.
+
+  AND THE TWO ENDS STEPPED ON 2026-11-27, so that Specialized AND
+  Unstable both deal at all four rungs: Easy 4/3/3/0 -> 5/2/3/0 and
+  Nobulous 0/3/3/4 -> 0/2/3/5.  What that cost is the deal-again
+  column, which is published here from the same date for that reason.
 
   difficulty = the Routine/Specialized/Unstable/Volatile mix
 
-                            no NRJ    Tier I   Tier II  Tier III
-  Easy  4/3/3/0              62.4%     51.9%     46.3%     45.1%
-  Standard  2/3/5/0          52.3%     40.1%     35.1%     36.1%
-  Hard  0/4/4/2              38.2%     26.2%     22.9%     23.3%
-  Nobulous  0/3/3/4          29.1%     19.0%     16.3%     16.5%
+                         no NRJ   Tier I  Tier II Tier III deal-again
+  Easy  5/2/3/0           66.4%    55.6%    50.5%    50.2%      25.7%
+  Standard  2/3/5/0       52.3%    39.9%    35.1%    36.1%      14.0%
+  Hard  0/4/4/2           38.2%    26.2%    22.9%    23.3%       8.0%
+  Nobulous  0/2/3/5       24.6%    15.1%    13.2%    13.5%      25.6%
 
-  WHICH CELLS ARE FROM WHICH RUN, because this table is now two.
-  SPECIALIZED CAME OFF ITS PIN later on 2026-11-25 and Volatile
-  reaches two rungs - see the note on aos.LEVELS, and aosvol.txt for
-  the 101-mix sweep.  Hard and Nobulous moved, so all eight of their
-  cells are from that measurement (simulation/aosvol.py, 20,000 games
-  a cell, the same shape).  Easy and Standard did not move, so their
-  Tier columns are carried over unchanged from the run above them.
-  Their SOLO cells were re-measured as a control: Easy reproduced
-  62.4 exactly and Standard read 52.3 against a published 52.5, which
-  is the figure printed here.  A control that reproduces is the only
-  reason to trust the six new cells beside it.
+  THE CONTROL REPRODUCES, and it is a strong one.  Standard and Hard
+  did not move, and this run - a different script, a separate pass -
+  reads them at 52.3 / 39.9 / 35.1 / 36.1 and 38.2 / 26.2 / 22.9 /
+  23.3 against a published 52.3 / 40.1 / 35.1 / 36.1 and 38.2 / 26.2 /
+  22.9 / 23.3.  Seven of those eight cells are identical and the
+  eighth is 0.2 out.  That is the only reason to trust the eight new
+  cells beside them.
 
-  AoS IS NO LONGER THE OUTLIER AT THE BOTTOM, which is what the
-  retune was for.  The target it was aimed at was 63.7 / 52.8 / 37.8 /
-  25.8, cited to rules/bat.html, which prints no percentage; it was
-  retired on 2026-11-26 for simulation/peg.py's 70.5 / 50.4 / 38.5 /
-  21.2.  AoS was 6.9 points easier than the old figure at Hard and
-  10.8 at Nobulous, which made Nobulous AoS the easiest Nobulous in
-  the set.  It now reads -1.3 / -0.5 / +0.4 / +3.3 against that, and
-  -8.1 / +1.9 / -0.3 / +7.9 against the real target: HARD STILL LANDS,
-  at -0.3, and the retune's conclusion holds on the rung it was aimed
-  at.  NOBULOUS DOES NOT, and the sentence that stood here said it
-  "cannot by composition: the floor over EVERY four-Volatile mix is
-  0/1/5/4 at 27.5% and over every three-Volatile mix 30.6%, so the
-  last three points need a rule or a harder card".
-    THAT WAS A FLOOR OVER THE MIXES THAT HAD BEEN SWEPT, NOT OVER THE
-  PRINTED ROOM, and it is withdrawn on 2026-11-27.  aosvol.py's
-  candidate groups stop at FOUR Volatile, so six, seven and eight had
-  never been measured at all; simulation/aosends.py measures them and
-  0/3/0/7 reads 21.8% against a target of 21.2 - +0.6 - at a 4.5%
-  deal-again rate against the shipped rung's 16.8%.  BOTH AoS ENDS
-  ARE REACHABLE: Easy's 4/6/0/0 reads 70.5% dead on the target and
-  never re-deals at all.  Neither was shipped, because both would
-  build a rung from two classes and deal no Unstable Program, which
-  is a design question and not a measurement.  See aosends.txt.
-    Five Volatile does reach the OLD figure,
-  and is better on every axis measured: 0/3/2/5 reads 26.2 / 16.7 /
-  14.3 / 14.7 across the four tiers, so it is +0.4 on the peg rather
-  than +3.3, it re-deals LESS often than the shipped rung (14.3%
-  against 16.8%, because the fifth Volatile replaces an Unstable and
-  not the Specialized that carries the colour dots), and it clears the
-  campaign axis by 0.4 rather than 0.2.  It was measured rather than
-  shipped because the ask was three or four, and it is four table rows
-  if it is wanted.
-  0/3/5/2 AS A HARD CANDIDATE, measured 2026-11-26 because it was
-  asked about: 36.6% solo, Tier I 24.8, II 21.4, III 21.9, deal-again
-  14.0%.  The solo cell reproduces what the run above published for
-  the same mix as Nobulous, which is the control for the other three.
-  Against Hard's 37.8 peg it is -1.2 where 0/4/4/2 is +0.4, so it is
-  1.6 points HARDER than the shipped rung, and it clears the campaign
-  axis by 0.5 against 0.4.  Not shipped: nothing asked for it.
-  THE CAMPAIGN AXIS STILL HOLDS at both new rungs, which is the check
-  that mattered most: Tier III beats Tier II and stays under solo.
-  Hard 23.3 over 22.9, Nobulous 16.5 over 16.3.  Both are narrow, and
-  Nobulous is 0.2 - narrow enough that it should not be called a
-  margin until it is measured again at a different seed.
-  AND THE DEAL-AGAIN RATE CHOSE NOBULOUS, not the win rate.  The
-  colour floor re-deals a setup that leaves a colour on fewer than
-  two Programs, and Specialized carries two required-colour dots
-  where the other three classes carry one, so cutting Specialized
-  raises the re-deal rate: 0/3/3/4 16.8%, 0/2/4/4 27.3%, 0/1/5/4
-  38.7%, against 4.5-16.8% on every rung that ever shipped.  0/2/4/4
-  wins 1.2 points of difficulty for 10.5 points of re-deal and was
-  refused on that.
+  AGAINST THE TARGET: -4.1 / +1.9 / -0.3 / +3.4, where the ladder this
+  replaces read -8.1 / +1.9 / -0.3 / +7.9.  The target is
+  simulation/peg.py - BAT's great third on the normal wake, 70.5 /
+  50.4 / 38.5 / 21.2.  BOTH ENDS CLOSED ABOUT HALF THEIR GAP, Easy by
+  4.0 points and Nobulous by 4.5, and NEITHER LANDS.  Standard is
+  +1.9 and in the community band at 52.3%, and Hard is -0.3.
+
+  AND THE SIZING SAMPLE WAS A POINT OUT AT BOTH ENDS, which is the
+  whole argument for paying for the big run.  simulation/aosends.py
+  measured these two mixes at 1500 games a Technician and read 65.5
+  and 23.5; this reads 66.4 and 24.6.  About a point each and in
+  OPPOSITE directions - Easy nearer the target than the sizing said
+  and Nobulous further - which is more than most of the gaps anyone
+  is tuning here.
+
+  THE CELLS THAT LAND WERE REFUSED, and that is a ruling and not a
+  measurement.  simulation/aosends.py found Easy 4/6/0/0 at 70.5%,
+  dead on the target and NEVER re-dealing at all, and Nobulous
+  0/3/0/7 at 21.8%, +0.6, re-dealing 4.5% against the old rung's
+  16.8%.  Both beat what shipped on every axis measured.  But each
+  builds a rung from two classes and neither deals a single Unstable
+  Program, and Jon ruled on 2026-11-27 that Specialized and Unstable
+  must appear at all four rungs.  generator/check_app_sync.py pins
+  that floor, so the pair cannot be found again and shipped by
+  somebody who does not know they were already refused.
+    The sentence that stood here before them claimed Nobulous "cannot
+  be reached by composition: the floor over EVERY four-Volatile mix is
+  0/1/5/4 at 27.5%".  THAT WAS A FLOOR OVER THE MIXES THAT HAD BEEN
+  SWEPT, not over the printed room - aosvol.py's candidate groups stop
+  at four Volatile, so six, seven and eight had never been measured at
+  all - and it is withdrawn.
+
+  WHAT THE RULING COSTS IS THE DEAL-AGAIN COLUMN.  The colour floor
+  re-deals any setup leaving a colour on fewer than two of the ten
+  Programs, and Specialized carries TWO required-colour dots where the
+  other three classes carry one, so it is the colour carrier.  Holding
+  Unstable at three leaves Specialized as the only card either end has
+  left to spend, and both ends now throw away about ONE SETUP IN FOUR:
+  25.7% at Easy against the old rung's 16.6%, and 25.6% at Nobulous
+  against 16.8%.
+    THIS REVERSES A DECISION TAKEN ON 2026-11-25 and should be read as
+  a reversal.  0/2/4/4 was refused then on exactly this ground - 1.2
+  points of difficulty for 10.5 points of re-deal - and the figures
+  above are what the class floor is worth instead.
+
+  THE STEPS CAME OUT EVEN, which nobody asked for and which is worth
+  noticing.  The solo ladder steps 14.1 / 14.1 / 13.6 where it used to
+  step 10.1 / 14.1 / 9.1, so the four rungs are now very nearly
+  equally spaced.  THE TARGET IS NOT: BAT's great third steps 20.1 /
+  11.9 / 17.3, because its rungs are the round limit 12/10/9/8 and a
+  round is not worth the same at every rung.  So AoS is now a more
+  regular ladder than the thing it is pegged to, and whether the set
+  wants BAT's SHAPE as well as its LEVEL has still not been asked.
+
+  EVERY TECHNICIAN IS IN BAND AT STANDARD, 20,000 games each:
+  engineer 50.0, compiler 51.2, optimizer 51.8, operator 52.7,
+  architect 53.2, debugger 55.1 - a spread of 5.2 inside a band ten
+  points wide.  No Technician carries the rung.
+
+  TIER III STILL BEATS TIER II AT THREE RUNGS AND NOT AT EASY: 36.1
+  over 35.1 at Standard, 23.3 over 22.9 at Hard, 13.5 over 13.2 at
+  Nobulous, and 50.2 UNDER 50.5 at Easy.  That is the shape the ladder
+  already had before the ends moved - Easy read 45.1 against 46.3 -
+  so stepping the rung neither caused it nor fixed it.  Tier III hands
+  tools back, 6 Backdoor Routines with at most 2 claimed, and at Easy
+  there is least to repair, which is the likely reading and is still
+  NOT measured.  The three margins that do hold are 1.0, 0.4 and 0.3,
+  which is narrow enough that none of them should be called a margin
+  until it is measured again at a different seed.
+
+  ALSO MEASURED AND NOT SHIPPED, both because nothing asked for them,
+  and both restated here against the real target rather than the
+  retired composite they were first written against.  0/3/2/5 as a
+  Nobulous candidate, 2026-11-26: 26.2% solo, Tier I 16.7, II 14.3,
+  III 14.7, deal-again 14.1% - so +5.0 on the target, and it re-deals
+  LESS than either the old rung or the new one, because the fifth
+  Volatile replaces an Unstable rather than the Specialized that
+  carries the colour dots.  0/3/5/2 as a HARD candidate, same date:
+  36.6% solo, Tier I 24.8, II 21.4, III 21.9, deal-again 14.0% - so
+  -1.9 against Hard's 38.5 where the shipped 0/4/4/2 is -0.3, making
+  it 1.6 points harder than the rung that ships.
 
     Against the 59.1 / 50.7 / 42.5 / 34.9 this replaces, every solo
     rung is 1.7 to 3.3 points higher and Tiers I and II are within
