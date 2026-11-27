@@ -733,6 +733,23 @@ check("rules/nap.html's setup step restates the same four counts",
           sn["LEVELS"][k][1]
           for k in ("Easy", "Standard", "Hard", "Nobulous"))
       in text("rules/nap.html"))
+# ...AND THE FOUR CREDIT GOALS IT NAMES IN THE SAME BREATH, which had no
+# check at all until 2026-11-27. Every check above reads the goals out of
+# the difficulty TABLE, where they key the Setback comparison, and the
+# prose step ABOVE that table names all four again - "Easy 3, Standard 4,
+# Hard 5 or Nobulous 6 Credits" - with nothing holding it to the model.
+# It sat because no goal had moved since the checks were written: the
+# 2026-11-25 re-peg and every one before it spent SETBACKS, which this
+# line does not carry. The 7-Credit Nobulous step is the first goal change
+# in the checked era and it exposed the gap at once. Same shape as the AoS
+# notebook's dot classes, found the day before: a second copy in prose,
+# beside a first copy that was checked.
+_ngoals = ("<b>Easy %d</b>, <b>Standard %d</b>, <b>Hard %d</b> or "
+           "<b>Nobulous %d</b> Credits." % tuple(
+               sn["LEVELS"][k][0]
+               for k in ("Easy", "Standard", "Hard", "Nobulous")))
+check("...and the setup step's four Credit goals as well",
+      _ngoals in text("rules/nap.html"), _ngoals)
 
 # THE TIER I SETBACK SWAP, and the count it must not change.
 #
@@ -5641,6 +5658,11 @@ _copies = []
 for _rel, _name, _want in (
         ("simulation/nap_ladder.py", "LADDER", "nap.LEVELS[n]"),
         ("simulation/napends.py", "SHIPPED", "SHIPPED = dict(nap.LEVELS)"),
+        # ADDED 2026-11-27. nap_ladder.py and napladder.py are different
+        # files one underscore apart, both had a typed SHIPPED, and the
+        # check written on 2026-11-26 caught only the first. The second was
+        # two re-pegs stale by the time anyone looked.
+        ("simulation/napladder.py", "SHIPPED", "SHIPPED = dict(nap.LEVELS)"),
         ("simulation/aosends.py", "SHIPPED", "SHIPPED = dict(aos.LEVELS)"),
         ("simulation/aosgrid.py", "ORDER", "ORDER = tuple(aos.LEVEL_NAMES)")):
     if py_tables(_rel).get(_name) is not None:
@@ -5704,14 +5726,22 @@ check("aosgrid.py measures at the published sample and says so when it does "
       and "games per Technician per cell" in _ag,
       "the AoS grid stopped naming its own sample size")
 
-# AND THE PASTED COPY CANNOT DRIFT FROM THE GENERATED ONE. peg.py names
-# simulation/aosgrid.txt, which a script writes; the grid in RESULTS.txt is
-# pasted in by hand, so it is the copy that goes stale - and it did, twice,
-# before 2026-11-05. The provenance check above covers the generated file;
-# this one covers the hand-made one.
-_rgone = ["%.1f" % v for v in _pegt["LADDERS"]["AoS"][0]
-          if ("%.1f" % v) not in text("simulation/RESULTS.txt")]
-check("RESULTS.txt still carries the AoS figures peg.py publishes",
+# AND THE PASTED COPY CANNOT DRIFT FROM THE GENERATED ONE. peg.py names a
+# grid file per family, each written by a script; the grids in RESULTS.txt
+# are pasted in by hand, so they are the copies that go stale - and they
+# did, twice, before 2026-11-05. The provenance check above covers the
+# generated files; this one covers the hand-made ones.
+#   ALL THREE FAMILIES, as of 2026-11-27. This was written for AoS alone the
+# day before, and the very next change was NAP's - so a stepped NAP rung
+# could have left RESULTS.txt publishing the old figure with every check
+# passing. The predicate was never AoS-specific; only the loop was.
+_results = text("simulation/RESULTS.txt")
+_rgone = []
+for _fam, (_figs, _, _) in sorted(_pegt["LADDERS"].items()):
+    for _v in _figs:
+        if ("%.1f" % _v) not in _results:
+            _rgone.append("%s %.1f" % (_fam, _v))
+check("RESULTS.txt still carries every figure peg.py publishes",
       not _rgone, "RESULTS.txt lost %s" % ", ".join(_rgone))
 
 

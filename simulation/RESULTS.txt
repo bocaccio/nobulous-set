@@ -29,7 +29,7 @@ NAP  Nobulous Apprenticeship Program
   difficulty = Credit goal / Setbacks in the deck; FINF at Reduce 1
 
   THIS GRID IS NOT FROM THE RUN AT THE TOP OF THIS FILE.  It was
-  measured on 2026-11-25 by simulation/napgrid.py, which rebuilds
+  measured on 2026-11-27 by simulation/napgrid.py, which rebuilds
   the NAP third cell for cell the way table.py builds it - the mean
   of the six Apprentices at FINF Reduce 1, four tiers, 20,004 games
   a cell.  table.py cannot be run whole: it measures BAT with
@@ -38,89 +38,147 @@ NAP  Nobulous Apprenticeship Program
   running it would overwrite the BAT third with figures for a game
   that no longer exists.  THE BAT AND AoS THIRDS BELOW ARE THEIR
   OWN RUNS and are each marked where they differ.
+    THE SAMPLE IS 20,004 GAMES A CELL IN TOTAL, 3,334 an
+  Apprentice.  The AoS third's 20,000 is PER TECHNICIAN, so an AoS
+  cell is six times this one.  Both grids said "20,000 games a
+  cell" until 2026-11-27 and meant samples six times apart;
+  simulation/peg.py now spells out which is which.
 
                             no NRJ    Tier I   Tier II  Tier III
   Easy (3 Cr, 2 Sb)          64.5%     58.8%     46.4%     51.6%
   Standard (4 Cr, 3 Sb) *     50.0%     48.1%     34.2%     40.9%
   Hard (5 Cr, 4 Sb)          35.4%     33.3%     23.4%     30.2%
-  Nobulous (6 Cr, 5 Sb)      25.7%     24.1%     16.5%     23.4%
+  Nobulous (7 Cr, 5 Sb)      21.8%     20.0%     14.1%     20.7%
 
     * Standard difficulty. Mean of the six Apprentices.
-    TWO RE-PEGS LANDED ON 2026-11-25, and the grid this replaced -
-    58.1 / 49.0 / 37.0 / 26.3 solo on 4/5/6/7 Credits and 1/2/3/4
-    Setbacks - was never re-measured for the first of them, so this
-    file carried a ladder NAP had already stopped playing.
-      FIRST, THE CREDIT GOALS WENT DOWN ONE to 3/4/5/6, paying for
-    the Special Recovery age rule: a Special Recovery now reaches
-    only dice that were already exhausted when the Time Slot began,
-    which is worth -17.1 at Standard on its own.  REC also went 2
-    to 3 on all six Apprentice cards.  That took Standard UP, to
-    55.4%, because the two payments together overpaid - and Jon
-    played that game and reported it never asked for a hard
-    decision.
-      SECOND, THE SETBACK COUNTS WENT UP ONE to 2/3/4/5, which is
-    this grid.  It takes back the half of the payment that costs no
-    printed rule at all: the Credit goals stay where the first
-    re-peg put them and no card is reprinted, because the count has
-    never been on a card.  napharder.txt sizes all eleven levers
-    that were considered and napladder.txt has the five ladders.
 
-    STANDARD IS MID-BAND at 50.0%, which is the first time it has
-    been: it has been 49.0 near the floor and 55.4 near the ceiling
-    and nothing in between, because its own Setback count was the
-    only dial fine enough and the ladder would invert if that moved
-    alone.  Moving every rung together is what made the cell
-    reachable.
+    NOBULOUS WENT UP ONE CREDIT ON 2026-11-27, 6 to 7, and it is
+    the only rung that moved.  Against the target in
+    simulation/peg.py - BAT's great third on the normal wake,
+    70.5 / 50.4 / 38.5 / 21.2 - it had read 25.7% and been 4.5
+    points TOO EASY; at 7 Credits it reads 21.8%, which is +0.6.
+    The ladder is now -6.0 / -0.4 / -3.1 / +0.6.
+      THE SETBACK COUNT DID NOT MOVE, so the sixth printed Setback
+    card is still unspent and nothing is reprinted.  The Credit
+    goal has never been on a card either: this step costs one table
+    and one sentence in rules/nap.html and two lines in the mod.
+    6/6 - spending the Setback instead - was the alternative at
+    +0.8, and it was not chosen.
 
-    BUT ONE APPRENTICE IS OUT OF BAND, and it is the other end from
-    last time.  At Standard, 20,004 games each: Prodigy 50.1,
+    THE CONTROL IS EXACT, which is the only reason to trust the
+    four cells that are new.  Easy, Standard and Hard came back
+    BYTE FOR BYTE IDENTICAL in all twelve of their cells, and so
+    did all six Apprentices at Standard.  Same seed, same dials,
+    one rung changed.  No other grid in this file has reproduced
+    that cleanly; the AoS step the day before matched seven of its
+    eight control cells and the eighth to 0.2.
+
+    AND THE SIZING AGREED THIS TIME, 21.7 against the published
+    21.8, where the AoS sizing of the day before was a full point
+    out at BOTH ends in opposite directions.  The reason is the
+    sample, and it is worth writing down because the two files read
+    as though they did the same thing: napends.py's candidate
+    ladders are the mean of six Apprentices at 3,000 games each, so
+    18,000 games a cell against a published 20,004 - essentially
+    the same measurement.  aosends.py's rows were 1,500 games a
+    Technician, 9,000 a cell, against a published 120,000.  A cheap
+    SURFACE for choosing a cell is not a cheap LADDER for
+    predicting one.
+
+    WHAT IS THIN IS THE SHAPE MARGIN AT NOBULOUS.  Tier III is
+    below its own solo cell at every rung - 51.6 / 40.9 / 30.2 /
+    20.7 against 64.5 / 50.0 / 35.4 / 21.8 - which is the one shape
+    a tier must have, but at Nobulous it clears by only 1.1 points
+    where it cleared by 2.3 before.  That is the narrowest margin
+    on the NAP board.  6/6 would have left 2.4 points of margin for
+    0.2 of a point more error against the target; the 7-Credit step
+    buys the closer number and keeps the sixth Setback card, and it
+    spends most of the room above Tier III to do it.  IT IS STILL
+    ABOVE TIER II AT EVERY RUNG - by 5.2 / 6.7 / 6.8 / 6.6 - and
+    that is not new; Tier III's Devious Opportunities are a net
+    help.
+
+    AND THE TOP STEP IS NO LONGER COMPRESSED.  The solo steps are
+    14.6 / 14.6 / 13.6 where they were 14.6 / 14.6 / 9.7, because
+    the rung that moved is the one the short step led to.  NAP is a
+    near-even ladder now, and so is AoS after its own step
+    (14.1 / 14.1 / 13.6) - while the TARGET is not even at all:
+    BAT's great third steps 20.1 / 11.9 / 17.3, since its rungs are
+    the round limit 12/10/9/8 and a round is not worth the same at
+    every rung.  Both tuned families are now MORE regular than the
+    thing they are pegged to, which nobody decided and nobody has
+    been asked about.  (peg.py steps the published rounded figures
+    and so reads NAP as 14.5 / 14.6 / 13.6; napgrid.py steps the
+    unrounded cells.  Compare families through peg.py, which does
+    all three the same way.)
+
+    EASY WAS LEFT ALONE and is 6.0 points too hard - the
+    worst-pegged rung in the set now that AoS's worst is 4.1.  Its
+    two candidates are measured and neither is only a number.  3/1
+    is nearest at -1.7, but its campaign columns are byte for byte
+    this rung's, because Tier I swaps one base Setback out per
+    Following card in and floors at none: it buys SOLO Easy alone
+    and takes Tier I's bite at Easy from 5.6 points to 9.9, near
+    the 10.5 the 2026-11-25 Setback step was made to fix.  2/2
+    overshoots to +2.0 and carries the campaign with it, 69.3 /
+    58.7 / 64.2, holding the bite at 3.2.  napends.txt has both and
+    HANDOFF.md holds the question.
+
+    ONE APPRENTICE IS OUT OF BAND at Standard, unchanged by this
+    step because Standard is: 20,004 games each, Prodigy 50.1,
     Slacker 46.5, Technician 51.0, Savant 49.9, Opportunist 51.3,
     Lab Rat 51.0 - spread 4.8.  SLACKER IS 0.5 BELOW THE 47% FLOOR
-    where the ladder this replaces had Opportunist 0.3 ABOVE the
-    57% ceiling at 57.3.  The spread tightened from 5.6, and the
-    two are not the same complaint: a rung too hard for one
+    where the ladder before 2026-11-25 had Opportunist 0.3 ABOVE
+    the 57% ceiling at 57.3.  The spread tightened from 5.6, and
+    the two are not the same complaint: a rung too hard for one
     Apprentice is one nobody has made about NAP.
-      AND IT IS NOT THAT THIS CHANGE HITS SLACKER HARDEST.  The
-    six lost -5.6 / -5.3 / -4.4 / -6.5 / -6.0 / -5.9 against a
-    mean of -5.4, so Slacker lost slightly LESS than average; it
-    is out because it was already the lowest of the six by 3.6
-    points, at 51.8 where the next was 55.4.  That gap is its
-    own and predates both re-pegs.  A Setback in the deck is
-    worth about the same to every Apprentice.
+      AND IT IS NOT THAT THE 2026-11-25 STEP HIT SLACKER HARDEST.
+    The six lost -5.6 / -5.3 / -4.4 / -6.5 / -6.0 / -5.9 against a
+    mean of -5.4, so Slacker lost slightly LESS than average; it is
+    out because it was already the lowest of the six by 3.6 points,
+    at 51.8 where the next was 55.4.  That gap is its own and
+    predates both re-pegs.  A Setback in the deck is worth about
+    the same to every Apprentice.
 
-    AGAINST THE PEGGED LADDER as it was then believed to be -
-    63.7 / 52.8 / 37.8 / 25.8, cited to rules/bat.html, which
-    prints no percentage - this is +0.8 / -2.8 / -2.4 / -0.1, and
-    the two ENDS looked like the closest they had ever been.
-    THAT COMPOSITE WAS RETIRED ON 2026-11-26 and the target is
-    now simulation/peg.py's 70.5 / 50.4 / 38.5 / 21.2, BAT's
-    great third on the normal wake.  AGAINST IT this ladder is
-    -6.0 / -0.4 / -3.1 / +4.5, so it is the MIDDLE that lands and
-    the two ends that are out - Easy 6 points too hard, Nobulous
-    4.5 too easy.  Nothing about NAP moved; the column it is read
-    against did.  The solo steps are 14.6 / 14.6 / 9.7
-    against 13.5 / 15.4 / 12.0 before: the first step WIDENED by
-    1.1, because Standard gave up 5.4 points and Easy only 4.4,
-    and the top step compressed to 9.7 because Nobulous was
-    already within 0.1 of its peg and had nowhere to go.
+    HOW STANDARD GOT WHERE IT IS, kept because it is the rung
+    nothing has had to touch since.  TWO RE-PEGS LANDED ON
+    2026-11-25.  FIRST, THE CREDIT GOALS WENT DOWN ONE to 3/4/5/6,
+    paying for the Special Recovery age rule: a Special Recovery
+    now reaches only dice that were already exhausted when the Time
+    Slot began, which is worth -17.1 at Standard on its own, and
+    REC went 2 to 3 on all six Apprentice cards.  That took
+    Standard UP, to 55.4%, because the two payments together
+    overpaid - and Jon played that game and reported it never asked
+    for a hard decision.  SECOND, THE SETBACK COUNTS WENT UP ONE to
+    2/3/4/5, taking back the half of the payment that costs no
+    printed rule at all.  STANDARD IS MID-BAND at 50.0%, which was
+    the first time it had been: it had been 49.0 near the floor and
+    55.4 near the ceiling and nothing in between, because its own
+    Setback count was the only dial fine enough and the ladder
+    would invert if that moved alone.  napharder.txt sizes all
+    eleven levers that were considered and napladder.txt has that
+    day's five ladders.
+      ONE THING IN napladder.py WAS WRONG THE WHOLE TIME, found on
+    2026-11-27: its "AS SHIPPED" ladder was a typed literal, two
+    re-pegs stale, reading 3/1 4/2 5/3 6/4.  The identical bug in
+    nap_ladder.py was pinned by check_app_sync.py on 2026-11-26 -
+    the two file names differ by one underscore and only the first
+    was looked at.  Both derive from nap.LEVELS now and both are in
+    the check.
 
-    THE CAMPAIGN DID NOT MOVE AT EASY OR STANDARD.  Nine of the
-    twelve NRJ cells are byte for byte what the first re-peg
-    measured, because Tier I swaps one base Setback out per
-    Following card in, floored at none: a base count below 3 is
-    swamped either way, so Easy and Standard both arrive at exactly
-    3 Setbacks before and after.  Only Hard and Nobulous feel this,
-    and they are the two rungs that keep 1 and 2 base Setbacks of
-    their own.
-
-    TIER III IS BELOW ITS OWN SOLO CELL AT EVERY RUNG - 51.6 /
-    40.9 / 30.2 / 23.4 against 64.5 / 50.0 / 35.4 / 25.7 - which is
-    the one shape a tier must have.  IT IS STILL ABOVE TIER II AT
-    EVERY RUNG TOO, by 5.2 / 6.7 / 6.8 / 6.9, and that is not new;
-    Tier III's Devious Opportunities are a net help.
+    THE CAMPAIGN STILL DOES NOT MOVE AT EASY OR STANDARD.  Tier I
+    swaps one base Setback out per Following card in, floored at
+    none, so a base count below 3 is swamped either way: Easy and
+    Standard both arrive at exactly 3 Setbacks whatever their own
+    count says.  Only Hard and Nobulous feel it, and they are the
+    two rungs that keep 1 and 2 base Setbacks of their own.  This
+    is also why the 7-Credit step DID move Nobulous's campaign -
+    the Credit goal is not swapped by anything - and its three NRJ
+    cells came down with it, 24.1 / 16.5 / 23.4 to 20.0 / 14.1 /
+    20.7.
 
     TIER II IS STILL THE WEAKEST CELL ON THE BOARD, 46.4 / 34.2 /
-    23.4 / 16.5, and three editions of this file have flagged it as
+    23.4 / 14.1, and four editions of this file have flagged it as
     not looked at.  It still has not been.  It moved with the
     ladder rather than for any reason of its own.
 

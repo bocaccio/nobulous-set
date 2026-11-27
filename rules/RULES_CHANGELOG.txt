@@ -1,3 +1,106 @@
+2026-11-27  NAP'S NOBULOUS RUNG GOES UP ONE CREDIT, 6 TO 7, AND LANDS
+Jon chose the Credit step over the Setback step out of the sizing in
+simulation/napends.py.  Nobulous was 6 Credits and 5 Setbacks, reading
+25.7% against the target in simulation/peg.py - BAT's great third on the
+normal wake, 70.5 / 50.4 / 38.5 / 21.2 - and so 4.5 points TOO EASY.  At
+7 Credits it reads 21.8%, which is +0.6.  Easy, Standard and Hard did not
+move.
+
+MEASURED WHOLE at 20,004 games a cell - 3,334 an Apprentice, six of them -
+by simulation/napgrid.py, output in napgrid.txt:
+
+                       no NRJ   Tier I  Tier II Tier III
+  Easy  3 Cr / 2 Sb     64.5%    58.8%    46.4%    51.6%
+  Standard  4 Cr / 3 Sb 50.0%    48.1%    34.2%    40.9%
+  Hard  5 Cr / 4 Sb     35.4%    33.3%    23.4%    30.2%
+  Nobulous  7 Cr / 5 Sb 21.8%    20.0%    14.1%    20.7%
+
+AGAINST THE TARGET, -6.0 / -0.4 / -3.1 / +0.6, where it read -6.0 / -0.4 /
+-3.1 / +4.5.  Standard is unchanged at 50.0% and in the community band,
+and all six Apprentices there are unchanged too.
+
+NO CARD CHANGED AND NO SETBACK WAS SPENT.  The Credit goal has never been
+printed on a card, and the Setback count did not move - six Setback cards
+exist, Nobulous runs five, and the sixth is still unspent.  The step costs
+the difficulty table in rules/nap.html, the setup sentence above it,
+NAP_DIFF in tts/lua.lua and the NAP quick reference in tts/build_mod.py.
+6/6 - spending the Setback instead of the Credit - was the alternative at
++0.8 and was not chosen.
+
+THE CONTROL IS EXACT, and no other grid in this repository has reproduced
+this cleanly.  Easy, Standard and Hard came back BYTE FOR BYTE IDENTICAL
+in all twelve of their cells, and so did all six Apprentices at Standard:
+same seed, same dials, one rung changed.  The AoS step of the day before
+matched seven of its eight control cells and the eighth to 0.2.
+
+AND THE SIZING AGREED TO A TENTH, 21.7 against 21.8, where the AoS sizing
+of 2026-11-26 was a full point out at both ends in opposite directions.
+The difference is the SAMPLE and the two files read as though they did the
+same thing: napends.py's candidate ladders are the mean of six Apprentices
+at 3,000 games each - 18,000 a cell against a published 20,004, so
+essentially the published measurement - while aosends.py's rows were 1,500
+games a Technician, 9,000 a cell, against a published 120,000.  A cheap
+SURFACE for choosing a cell is not a cheap LADDER for predicting one.
+Both files now say which of the two they are.
+
+WHAT THE STEP SPENDS IS SHAPE MARGIN AT NOBULOUS.  Tier III is below its
+own solo cell at every rung, which is the one shape a tier must have, but
+at Nobulous it now clears by 1.1 points where it cleared by 2.3 - the
+narrowest margin on the NAP board.  6/6 would have left 2.4 points for 0.2
+of a point more error against the target.  The 7-Credit step buys the
+closer number and keeps the sixth Setback card, and it spends most of the
+room above Tier III to do it.  Nobulous's three NRJ cells came down with
+the rung, 24.1 / 16.5 / 23.4 to 20.0 / 14.1 / 20.7, which the 2026-11-25
+Setback step could not have done: Tier I swaps base Setbacks out one for
+one and floors at none, and nothing swaps a Credit goal.
+
+AND THE TOP STEP IS NO LONGER COMPRESSED: the solo steps are 14.6 / 14.6 /
+13.6 where they were 14.6 / 14.6 / 9.7, because the rung that moved is the
+one the short step led to.  So NAP is a near-even ladder now, and so is AoS
+after its own step (14.1 / 14.1 / 13.6), while the TARGET is not even at
+all - BAT's great third steps 20.1 / 11.9 / 17.3, because its rungs are the
+round limit 12/10/9/8 and a round is not worth the same at every rung.
+BOTH TUNED FAMILIES ARE NOW MORE REGULAR THAN THE THING THEY ARE PEGGED
+TO, which nobody decided and nobody has been asked about.  It is the live
+question behind the one gap that is left.
+
+EASY IS THAT GAP, AND IT IS THE WORST-PEGGED RUNG IN THE SET at -6.0, now
+that AoS's worst is 4.1.  It was deliberately left alone, because neither
+of its two candidates is only a number: 3/1 is nearest at -1.7 but its
+campaign columns are byte for byte the shipped rung's - Tier I floors its
+Setback swap at none - so it buys SOLO Easy alone and takes Tier I's bite
+at Easy from 5.6 points to 9.9, near the 10.5 that the 2026-11-25 Setback
+step was made to fix; 2/2 overshoots to +2.0 and carries the campaign with
+it, 69.3 / 58.7 / 64.2, holding the bite at 3.2.  HANDOFF.md holds it.
+
+TWO THINGS THE CHECKS DID NOT COVER, both found by this step and both now
+checked.
+  THE RULEBOOK NAMED THE FOUR CREDIT GOALS TWICE and only one copy was
+held to the model.  Every check read the goals out of the difficulty
+TABLE, where they key the Setback comparison; the setup sentence above it
+names all four again - "Easy 3, Standard 4, Hard 5 or Nobulous 6
+Credits" - with nothing comparing it to anything.  It sat because no goal
+had moved since the checks were written: the 2026-11-25 re-peg and every
+one before it spent SETBACKS, which that sentence does not carry.  This is
+the first goal change in the checked era and it exposed the gap at once.
+  AND napladder.py'S "AS SHIPPED" LADDER WAS A TYPED LITERAL, two re-pegs
+stale, reading 3/1 4/2 5/3 6/4.  The identical bug in nap_ladder.py was
+found and pinned on 2026-11-26; the two file names differ by one
+underscore and only the first was looked at.  Both derive from nap.LEVELS
+now and both are in the check.
+  The pasted-grid check also covers all three families now rather than AoS
+alone - it was written the day before for AoS, and the very next change
+was NAP's.
+
+AND A STALE NUMBER IN TWO DESCRIPTIONS OF THE WIN CONDITION, unrelated to
+the ladder but in the files this touched.  simulation/nap.py's docstring
+and DESIGN_CONSULT.md both said "earning 6 Credits does NOT win", and
+nap.py cited two line numbers in rules/nap.html that point at a stylesheet
+and at "Attempting Assignments".  The goal is the difficulty dial, so it
+has been 4, 5, 6 and 7 at different rungs in different months; both now
+say "your Credit goal" and nap.py cites the two sections by name.  No rule
+changed.
+
 2026-11-27  AoS'S TWO ENDS STEPPED SO EVERY CLASS DEALS AT EVERY RUNG,
             AND THE PRICE IS ONE SETUP IN FOUR
 Jon ruled that Specialized AND Unstable must appear at all four rungs, and

@@ -1076,30 +1076,36 @@ Each of these only appears a few turns in.
 
 ## 10. Known open items
 
-- **NAP'S TWO ENDS ARE STILL SIX AND FOUR POINTS OFF THE TARGET, and the
-  Easy choice is a trade rather than a number.** The target is
-  `simulation/peg.py` - BAT's great third on the normal wake, 70.5 / 50.4 /
-  38.5 / 21.2 - and NAP reads -6.0 / -0.4 / -3.1 / +4.5. **AoS's two ends
-  were stepped on 2026-11-27** and it now reads -4.1 / +1.9 / -0.3 / +3.4,
-  so NAP is the family furthest out. `simulation/napends.py` sizes it.
+- **NAP'S EASY RUNG IS SIX POINTS TOO HARD, and the choice there is a trade
+  rather than a number.** The target is `simulation/peg.py` - BAT's great
+  third on the normal wake, 70.5 / 50.4 / 38.5 / 21.2 - and NAP now reads
+  -6.0 / -0.4 / -3.1 / +0.6. **Nobulous was stepped on 2026-11-27**, 6
+  Credits to 7, and lands at +0.6; Standard and Hard were already close.
+  **EASY IS THE ONLY RUNG LEFT OUT, and it is the worst-pegged rung in the
+  set** - AoS's worst is 4.1 and BAT is the peg. `simulation/napends.py`
+  sizes it.
 
-  **NAP's whole menu is one Setback or one Credit at each end**, because six
-  Setback cards are printed (Nobulous runs five) and every rung must keep one
-  for Tier I to swap out. `3/1 · 7/5` is the closest fit at -1.7 / +0.5, and
-  **Nobulous is solved either way** - 7/5 at +0.5 leaves the sixth Setback
-  unspent. But **Easy is a trade**: 3/1's campaign columns are byte for byte
-  the shipped rung's, because Tier I floors its swap at none, so it buys solo
-  Easy only and takes Tier I's bite there from 5.6 points to 9.9 - near the
-  10.5 the 2026-11-25 Setback step was made to fix. 2/2 overshoots to +2.0
-  and carries the campaign with it, holding the bite at 3.2. **Nothing has
-  been chosen.**
+  **Easy's whole menu is one Setback or one Credit**, because every rung must
+  keep at least one Setback for Tier I to swap out and Easy is at two. Both
+  were measured at 3,000 games a cell:
+    - `3/1` is the closest fit, -1.7, **but its campaign columns are byte for
+      byte the shipped rung's**, because Tier I floors its swap at none. So
+      it buys SOLO Easy only, and it takes Tier I's bite at Easy from 5.6
+      points to 9.9 - near the 10.5 that the 2026-11-25 Setback step was made
+      to fix in the first place.
+    - `2/2` overshoots to **+2.0** and carries the campaign with it (69.3 /
+      58.7 / 64.2 across the three tiers), holding the bite at 3.2.
+  **Nothing has been chosen**, and the two are not the same kind of answer:
+  one is nearer the number, the other moves the game the number is about.
 
-  **And the target's own shape is irregular**: BAT steps 20.1 / 11.9 / 17.3
-  because its rungs are the round limit (12/10/9/8) and a round is not worth
-  the same at every rung. NAP steps 14.5 / 14.6 / 9.7 and AoS, after the
-  2026-11-27 step, 14.1 / 14.1 / 13.6 - so AoS is now a MORE regular ladder
-  than the thing it is pegged to. Whether the set wants BAT's shape as well
-  as its level has not been asked.
+  **The two ladders are now near-even and the target is not**: NAP steps
+  14.5 / 14.6 / 13.6 and AoS 14.1 / 14.1 / 13.6 - both as `peg.py` steps
+  them, from the published figures - where BAT's great third
+  steps 20.1 / 11.9 / 17.3 - its rungs are the round limit (12/10/9/8) and a
+  round is not worth the same at every rung. So both tuned families are MORE
+  regular than the thing they are pegged to, which was nobody's decision.
+  **Whether the set wants BAT's shape as well as its level has still not
+  been asked**, and it is now the live question behind both remaining gaps.
 
 - **BAT'S POOR LAB IS WORTH 5.1% AT STANDARD, and whether that is the design
   is open.** The brief wants a poor lab grim, and it is - but it is grim from

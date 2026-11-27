@@ -6,10 +6,15 @@ Tasks, 6 Setbacks and 6 Opportunities from the NAP_TASKS / NAP_SETBACKS /
 NAP_OPPS tables in playtest/dist/suite.js, the 12 Final Exams from the EXAMS
 table in generator/build_nap.py.
 
-Win condition (rules/nap.html:43, :194): earning 6 Credits does NOT win. It
-ends the apprenticeship. You then sit three mandatory Final Exams and must
-finish all three with at least 1 Health. Arriving short of 6 Credits does not
-lose either - it costs dice and leaves the exam Targets unreduced.
+Win condition (rules/nap.html, "Object of the game" and "Leaving the
+apprenticeship"): reaching your CREDIT GOAL does NOT win. It ends the
+apprenticeship. You then sit three mandatory Final Exams and must finish all
+three with at least 1 Health. Arriving short of the goal does not lose
+either - it costs dice and leaves the exam Targets unreduced.
+  This said "earning 6 Credits" until 2026-11-27 and cited two line numbers
+that point at a stylesheet and at "Attempting Assignments". The goal is the
+difficulty dial - LEVELS below - so it has been 4, 5, 6 and 7 at different
+rungs and in different months; no fixed number belongs in this sentence.
 
 Difficulty is the Credit goal. FINF is a SECOND, independent dial - the
 three cards numbered 1 Morning, 2 Afternoon, 3 Evening - and Standard is
@@ -939,7 +944,7 @@ HP_START = 2
 STR_START = 2
 REC_START = 3
 
-CREDITS_TO_LEAVE = 4      # Easy 3, Standard 4, Hard 5, Nobulous 6
+CREDITS_TO_LEAVE = 4      # Easy 3, Standard 4, Hard 5, Nobulous 7
 # Difficulty is the pair (Credit goal, Setbacks in the deck).
 #
 # RE-PEGGED 2026-11-06, one Setback off every rung: 4/4/5/6 became 3/3/4/5.
@@ -1039,23 +1044,70 @@ CREDITS_TO_LEAVE = 4      # Easy 3, Standard 4, Hard 5, Nobulous 6
 # asked for a hard decision. This takes back the half of the payment that
 # costs no printed rule at all.
 #
-# MEASURED, 20,004 games a cell, six Apprentices, napgrid.txt:
+# MEASURED WHOLE, 20,004 games a cell, six Apprentices, napgrid.txt:
 #
 #     level        goal/sb   solo   tier I  tier II  tier III
 #     Easy          3 / 2    64.5    58.8     46.4     51.6
 #     Standard      4 / 3    50.0    48.1     34.2     40.9
 #     Hard          5 / 4    35.4    33.3     23.4     30.2
-#     Nobulous      6 / 5    25.7    24.1     16.5     23.4
+#     Nobulous      7 / 5    21.8    20.0     14.1     20.7
 #
-# Against the retired composite 63.7 / 52.8 / 37.8 / 25.8 - cited here to
-# rules/bat.html, which prints no percentage - that is +0.8 / -2.8 / -2.4 /
-# -0.1, "the closest the solo column has been at the two ends". AGAINST THE
-# TARGET THAT IS ACTUALLY IN FORCE, simulation/peg.py's 70.5 / 50.4 / 38.5 /
-# 21.2, it is -6.0 / -0.4 / -3.1 / +4.5: STANDARD IS THE CELL THAT LANDS, at
-# -0.4 and in band, and the two ENDS are the ones out - Easy 6 points too
-# hard and Nobulous 4.5 too easy, which is the opposite of what the composite
-# said about both. Neither end was re-tuned on this finding; it is recorded
-# so the next re-peg starts from the right column.
+# Against simulation/peg.py's 70.5 / 50.4 / 38.5 / 21.2 - BAT's great third
+# on the normal wake - that is -6.0 / -0.4 / -3.1 / +0.6.
+#
+# NOBULOUS WENT UP ONE CREDIT ON 2026-11-27, 6 to 7, and it is the ONLY rung
+# that moved. It read 25.7% and was 4.5 points too easy; it lands at +0.6.
+# The Setback count did not move, so the sixth printed Setback card is still
+# unspent and nothing is reprinted - the Credit goal has never been on a
+# card either, so this whole step costs one table in the rulebook and two
+# lines in the mod.
+#   THE CONTROL IS EXACT, which is the only reason to trust the four new
+# cells. Easy, Standard and Hard came back byte for byte identical in all
+# twelve of their cells, and so did all six Apprentices at Standard: same
+# seed, same dials, nothing touched but the one rung.
+#   AND THE SIZING WAS RIGHT THIS TIME, 21.7 against the published 21.8,
+# where the AoS sizing of the day before was a full point out at both ends.
+# The reason is the SAMPLE and it is worth writing down: napends.py's
+# candidate rows are the mean of six Apprentices at 3,000 games each, so
+# 18,000 games a cell against a published 20,004 - essentially the same
+# measurement. aosends.py's rows were 1,500 games a Technician, 9,000 a
+# cell, against a published 120,000. A cheap SURFACE for choosing a cell is
+# not the same thing as a cheap LADDER for predicting one.
+#   WHAT IS THIN IS THE SHAPE MARGIN. Tier III at Nobulous is 20.7 against
+# a solo 21.8, so it clears its own solo cell by 1.1 points - the narrowest
+# margin on the NAP board, and a tier standing ABOVE its solo cell is the
+# one shape a tier may never have. 6/6 - one more Setback instead of one
+# more Credit - was the alternative, and it would have left 2.4 points of
+# margin at a cost of +0.8 rather than +0.6. It was not chosen, and it
+# would have spent the sixth Setback card.
+#   AND THE TOP STEP IS NO LONGER COMPRESSED. The solo steps are
+# 14.6 / 14.6 / 13.6 where they were 14.6 / 14.6 / 9.7, because the step
+# that moved is the one that was short. (napgrid.py steps the unrounded
+# cells; peg.py steps the published rounded figures and so says
+# 14.5 / 14.6 / 13.6. Compare families through peg.py, which does all three
+# the same way.) That makes NAP a near-even ladder,
+# like AoS after its own step (14.1 / 14.1 / 13.6), and the TARGET is not
+# even: BAT's great third steps 20.1 / 11.9 / 17.3, since its rungs are the
+# round limit 12/10/9/8 and a round is not worth the same at every rung.
+# Whether the set wants BAT's SHAPE as well as its LEVEL has not been asked,
+# and it is now the question behind both families.
+#   EASY WAS NOT TOUCHED and is still 6 points too hard - the worst-pegged
+# rung in the set now that AoS's worst is 4.1. Its two candidates are
+# measured and neither is just a number: `3/1` is nearest at -1.7 but its
+# campaign columns are byte for byte this rung's, because Tier I floors its
+# Setback swap at none, so it buys solo Easy alone and takes Tier I's bite
+# there from 5.6 points to 9.9; `2/2` overshoots to +2.0 and carries the
+# campaign with it. HANDOFF.md holds the open question.
+#
+# THE PARAGRAPH THIS REPLACED read, of the ladder above with Nobulous at
+# 6/5, "neither end was re-tuned on this finding; it is recorded so the next
+# re-peg starts from the right column." That is what happened: the finding
+# was recorded on 2026-11-26 and acted on a day later, one rung at a time.
+# Against the retired composite 63.7 / 52.8 / 37.8 / 25.8 - cited to
+# rules/bat.html, which prints no percentage at all - the 6/5 ladder read
+# +0.8 / -2.8 / -2.4 / -0.1 and was called "the closest the solo column has
+# been at the two ends". It was not: the composite was wrong about which
+# end was which.
 # THE LADDER CAME DOWN 4.4 / 5.4 / 4.6 / 2.3, so Standard
 # moved most and Nobulous least, and the solo steps are 14.6 / 14.6 / 9.7
 # against 13.5 / 15.4 / 12.0 before. The first step did NOT narrow - it
@@ -1100,7 +1152,7 @@ CREDITS_TO_LEAVE = 4      # Easy 3, Standard 4, Hard 5, Nobulous 6
 # stood. "Every level plays with at least one" is now at least TWO, and the
 # mod's note that below 3 the tier ADDS rather than swaps describes only
 # Easy now, where it used to describe all but Nobulous.
-LEVELS = {"Easy": (3, 2), "Standard": (4, 3), "Hard": (5, 4), "Nobulous": (6, 5)}
+LEVELS = {"Easy": (3, 2), "Standard": (4, 3), "Hard": (5, 4), "Nobulous": (7, 5)}
 # End of Day burns one card off the Assignment deck, text ignored.
 # rules/nap.html prints it under "End of Day" - "Reveal and discard the top
 # card of the Assignment deck. Ignore all of its text, effects and Skulls" -

@@ -18,6 +18,20 @@ This sizes the two ends and nothing else.  Standard and Hard are not
 candidates here: they land, and the lesson of 2026-11-12 is that moving one
 rung on its own is what inverts a ladder.
 
+WHAT SHIPPED, 2026-11-27: NOBULOUS ONLY, at 7 Credits and 5 Setbacks.  The
+table above is the ladder as it stood when this file was written; Nobulous
+now reads 21.8% and +0.6 on the published sample, and simulation/napgrid.txt
+is the run.  THE 3,000-GAME ROWS WERE RIGHT TO A TENTH - this file read
+21.7 - because its candidate ladders are the mean of six Apprentices at
+3,000 games each, 18,000 a cell, against a published 20,004.  The SURFACE
+below is Prodigy alone and is not that; do not quote a surface cell as a
+figure.
+  EASY WAS NOT STEPPED.  Both of its candidates are in this file's output
+and the choice between them is not a number: 3/1 is nearer the target but
+its campaign columns are byte for byte the shipped rung's, so it buys solo
+Easy alone, and 2/2 overshoots but carries the campaign.  HANDOFF.md holds
+the question.
+
 TWO HARD LIMITS, both printed, and they bound the whole question:
 
   SIX SETBACK CARDS EXIST.  build_nap.py's SETBACKS has six entries, so

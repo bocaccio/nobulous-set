@@ -1,9 +1,32 @@
-Measured 2026-11-25 by napgrid.py, the NAP third of RESULTS.txt
-regenerated on its own: table.py cannot be run whole while it still
-imports the retired simulation/bat.py. The ladder is the 2026-11-25
-Setback re-peg, 2/3/4/5 with the Credit goals left at 3/4/5/6.
-napharder.txt sizes the levers this was chosen from and napladder.txt
-has the five candidate ladders.
+Measured 2026-11-27 by napgrid.py, which rebuilds the NAP third of
+RESULTS.txt cell for cell the way table.py builds it - the mean of the
+six Apprentices at FINF Reduce 1, four tiers.  table.py cannot be run
+whole while it still imports the retired simulation/bat.py.  The ladder
+is read from nap.LEVELS, so this cannot measure a table the model does
+not play.
+
+THE SAMPLE IS 20,004 GAMES A CELL IN TOTAL - 3,334 an Apprentice, six of
+them.  It is NOT 20,004 an Apprentice, and the AoS grid's 20,000 IS per
+Technician, so an AoS cell is six times this one.  Both files said
+"20,000 games a cell" until 2026-11-27; simulation/peg.py now spells out
+which is which.
+
+NOBULOUS WENT UP ONE CREDIT, 6 to 7, and it is the only rung that moved.
+It read 25.7% and was 4.5 points too easy against the target in
+simulation/peg.py - BAT's great third on the normal wake, 70.5 / 50.4 /
+38.5 / 21.2.  At 7 Credits it reads 21.8%, which is +0.6.  The whole
+ladder is now -6.0 / -0.4 / -3.1 / +0.6.  The Setback count did not move,
+so the sixth printed Setback card is still unspent.
+
+THE CONTROL IS EXACT.  Easy, Standard and Hard came back byte for byte
+identical in all twelve of their cells, and so did all six Apprentices at
+Standard - same seed, same dials, one rung changed.  That is the only
+reason to trust the four cells that are new.
+
+EASY IS STILL 6 POINTS TOO HARD and was deliberately left alone;
+napends.py sizes its two candidates and HANDOFF.md holds the question.
+simulation/napharder.txt sizes the eleven levers the 2026-11-25 step was
+chosen from and napladder.txt has that day's candidate ladders.
 
   difficulty = the Credit goal and the Setbacks in the deck
 
@@ -11,9 +34,9 @@ has the five candidate ladders.
   Easy  3 Cr / 2 Sb               64.5%     58.8%     46.4%     51.6%
   Standard  4 Cr / 3 Sb           50.0%     48.1%     34.2%     40.9%
   Hard  5 Cr / 4 Sb               35.4%     33.3%     23.4%     30.2%
-  Nobulous  6 Cr / 5 Sb           25.7%     24.1%     16.5%     23.4%
+  Nobulous  7 Cr / 5 Sb           21.8%     20.0%     14.1%     20.7%
 
-  solo steps  14.6  14.6  9.7
+  solo steps  14.6  14.6  13.6
 
   EVERY APPRENTICE AT STANDARD, 20004 games each - the
   per-Apprentice band check the set applies.
@@ -26,4 +49,4 @@ has the five candidate ladders.
                        4.8    spread, 46.5 to 51.3
 
   Mean of the six Apprentices, FINF Reduce 1.
-  20004 games a cell. Finished in 311s.
+  20004 games a cell. Finished in 354s.

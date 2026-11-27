@@ -65,18 +65,21 @@ LEVELS = { 'Easy', 'Standard', 'Hard', 'Nobulous' }
 -- rounds printed BAT used to give everybody.
 BAT_DIFF = { Easy = {5, 12}, Standard = {7, 10}, Hard = {7, 9}, Nobulous = {8, 8} }
 -- NAP: the Credit goal, and how many Setbacks are in the Assignment deck.
--- (Credit goal, Setbacks shuffled in).  One Setback ON every rung
--- 2026-11-25: 64.5 / 50.0 / 35.4 / 25.7 solo, six Apprentices, 20,004
--- games a cell, against BAT's pegged 63.7 / 52.8 / 37.8 / 25.8 - the
--- closest the column has been at the two ends. It takes back the half of
--- the Special Recovery age rule's payment that costs no printed rule, so
--- the Credit goals stay 3/4/5/6 and the whole ladder comes down 4 to 5
--- points with Standard moving most.
--- EVERY RUNG NOW CARRIES AT LEAST TWO SETBACKS, which is what keeps
--- Tier I's one-for-one swap from simply adding three cards to a rung that
--- had none - see LEVELS in simulation/nap.py for the measurement and for
--- why the deck moved rather than the Credit goal.
-NAP_DIFF = { Easy = {3, 2}, Standard = {4, 3}, Hard = {5, 4}, Nobulous = {6, 5} }
+-- (Credit goal, Setbacks shuffled in).  64.5 / 50.0 / 35.4 / 21.8 solo,
+-- six Apprentices, 20,004 games a cell, against the target in
+-- simulation/peg.py - BAT's great third on the normal wake, 70.5 / 50.4 /
+-- 38.5 / 21.2 - which is -6.0 / -0.4 / -3.1 / +0.6.
+-- NOBULOUS WENT UP ONE CREDIT ON 2026-11-27, 6 to 7, and it is the only
+-- rung that moved: it was 25.7% and 4.5 points too easy, and the step
+-- lands it at +0.6. The Setback count did NOT move, so the sixth printed
+-- Setback card is still unspent and no card is reprinted. The top ladder
+-- step was 9.7 points where the other two were 14.6, and it is now 13.6.
+-- EVERY RUNG CARRIES AT LEAST TWO SETBACKS, which is what keeps Tier I's
+-- one-for-one swap from simply adding three cards to a rung that had
+-- none - see LEVELS in simulation/nap.py.
+-- EASY IS STILL 6 POINTS TOO HARD and nothing has been chosen for it; it
+-- is the worst-pegged rung in the set now.
+NAP_DIFF = { Easy = {3, 2}, Standard = {4, 3}, Hard = {5, 4}, Nobulous = {7, 5} }
 -- NAP's second dial, from rules/nap.html: Increase 1-3 shuffles that
 -- many of the 3 FINF cards INTO the Assignment deck, Reduce 1-3 lays
 -- them out face-up to spend. Standard is Reduce 1. The two directions

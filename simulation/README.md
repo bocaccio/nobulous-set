@@ -259,16 +259,29 @@ diagonal, shifted, so each dial still moves one step a rung:
 > | Easy | 3 / 2 | 64.5% | 58.8% | 46.4% | 51.6% |
 > | **Standard** | **4 / 3** | **50.0%** | 48.1% | 34.2% | 40.9% |
 > | Hard | 5 / 4 | 35.4% | 33.3% | 23.4% | 30.2% |
-> | Nobulous | 6 / 5 | 25.7% | 24.1% | 16.5% | 23.4% |
+> | Nobulous | 7 / 5 | 21.8% | 20.0% | 14.1% | 20.7% |
 >
-> **Standard is mid-band for the first time.** The sentence that stood
-> here said that against BAT's pegged 63.7 / 52.8 / 37.8 / 25.8 the two
-> ends were the closest they had been (+0.8 and -0.1); **that target was
-> retired on 2026-11-26** - see `peg.py` - and against the one in force,
-> 70.5 / 50.4 / 38.5 / 21.2, this ladder is -6.0 / -0.4 / -3.1 / +4.5. So
-> it is **Standard that lands** and the two ends that are out, which is
-> the reverse of the claim it replaces. NAP itself did not move; the
-> column it was being read against did.
+> **NOBULOUS WENT UP ONE CREDIT ON 2026-11-27**, 6 to 7, and it is the only
+> rung that has moved since: it read 25.7% and was 4.5 points too easy
+> against `peg.py`'s 70.5 / 50.4 / 38.5 / 21.2, and at 7 Credits it reads
+> 21.8%, **+0.6**. The ladder is now **-6.0 / -0.4 / -3.1 / +0.6**. The
+> Setback count did not move, so the sixth printed Setback card is still
+> unspent and no card is reprinted. The control was exact - Easy, Standard
+> and Hard came back byte for byte identical in all twelve of their cells,
+> and so did all six Apprentices at Standard. What it spends is shape
+> margin: Tier III clears its own solo cell by 1.1 points at Nobulous where
+> it cleared by 2.3, the narrowest margin on the NAP board. And the top
+> ladder step stopped being compressed, 9.7 to 13.6, so NAP steps
+> 14.5 / 14.6 / 13.6 - a near-even ladder, like AoS, against a target that
+> steps 20.1 / 11.9 / 17.3.
+>
+> **Standard was mid-band for the first time** on this ladder, and still is.
+> The sentence that stood here said that against BAT's pegged
+> 63.7 / 52.8 / 37.8 / 25.8 the two ends were the closest they had been
+> (+0.8 and -0.1); **that target was retired on 2026-11-26** - see
+> `peg.py` - and it was Standard that landed and both ends that were out,
+> the reverse of the claim it replaced. **EASY IS STILL -6.0** and was
+> deliberately left alone; it is the worst-pegged rung in the set.
 > One Apprentice is out: Slacker reads 46.5%, 0.5 below the
 > floor, where this ladder's predecessor had Opportunist 0.3 above the
 > ceiling. `napharder.txt` sizes all eleven levers that were considered and

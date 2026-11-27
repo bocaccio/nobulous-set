@@ -104,10 +104,11 @@ visible clock ticking up during the phase, and it does nothing about (1).
 You work a row of **Assignment** cards across Time Slots (Morning /
 Afternoon / Evening) and Days, committing dice to meet Targets and earning
 **Credits** by subject. **Setbacks** lock the row until resolved;
-**Opportunities** give relief. Reaching 6 Credits does **not** win — it ends
-the apprenticeship. You then sit **three mandatory Final Exams** and must
-finish all three with at least 1 HP. Arriving short of 6 Credits doesn't lose
-either: it costs dice and leaves the exam Targets unreduced. You start with
+**Opportunities** give relief. Reaching your **Credit goal** does **not**
+win — it ends the apprenticeship. You then sit **three mandatory Final
+Exams** and must finish all three with at least 1 HP. Arriving short of the
+goal doesn't lose either: it costs dice and leaves the exam Targets
+unreduced. You start with
 **HP 2**.
 
 ### Designer's target
