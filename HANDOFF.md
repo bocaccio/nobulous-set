@@ -1076,36 +1076,42 @@ Each of these only appears a few turns in.
 
 ## 10. Known open items
 
-- **NAP'S EASY RUNG IS SIX POINTS TOO HARD, and the choice there is a trade
-  rather than a number.** The target is `simulation/peg.py` - BAT's great
-  third on the normal wake, 70.5 / 50.4 / 38.5 / 21.2 - and NAP now reads
-  -6.0 / -0.4 / -3.1 / +0.6. **Nobulous was stepped on 2026-11-27**, 6
-  Credits to 7, and lands at +0.6; Standard and Hard were already close.
-  **EASY IS THE ONLY RUNG LEFT OUT, and it is the worst-pegged rung in the
-  set** - AoS's worst is 4.1 and BAT is the peg. `simulation/napends.py`
-  sizes it.
+- **EVERY RUNG IN THE SET IS NOW WITHIN 4.1 POINTS OF THE TARGET, so what
+  is left is SHAPE - and nobody has been asked about it.** The target is
+  `simulation/peg.py`, BAT's great third on the normal wake. `python peg.py`
+  prints all of this; do not retype it.
 
-  **Easy's whole menu is one Setback or one Credit**, because every rung must
-  keep at least one Setback for Tier I to swap out and Easy is at two. Both
-  were measured at 3,000 games a cell:
-    - `3/1` is the closest fit, -1.7, **but its campaign columns are byte for
-      byte the shipped rung's**, because Tier I floors its swap at none. So
-      it buys SOLO Easy only, and it takes Tier I's bite at Easy from 5.6
-      points to 9.9 - near the 10.5 that the 2026-11-25 Setback step was made
-      to fix in the first place.
-    - `2/2` overshoots to **+2.0** and carries the campaign with it (69.3 /
-      58.7 / 64.2 across the three tiers), holding the bite at 3.2.
-  **Nothing has been chosen**, and the two are not the same kind of answer:
-  one is nearer the number, the other moves the game the number is about.
+  | family | Easy | Standard | Hard | Nobulous | steps |
+  | --- | --- | --- | --- | --- | --- |
+  | BAT (the target) | 70.5% | 50.4% | 38.5% | 21.2% | 20.1 / 11.9 / 17.3 |
+  | NAP | +2.0 | -0.4 | -3.1 | +0.6 | 22.5 / 14.6 / 13.6 |
+  | AoS | -4.1 | +1.9 | -0.3 | +3.4 | 14.1 / 14.1 / 13.6 |
 
-  **The two ladders are now near-even and the target is not**: NAP steps
-  14.5 / 14.6 / 13.6 and AoS 14.1 / 14.1 / 13.6 - both as `peg.py` steps
-  them, from the published figures - where BAT's great third
-  steps 20.1 / 11.9 / 17.3 - its rungs are the round limit (12/10/9/8) and a
-  round is not worth the same at every rung. So both tuned families are MORE
-  regular than the thing they are pegged to, which was nobody's decision.
-  **Whether the set wants BAT's shape as well as its level has still not
-  been asked**, and it is now the live question behind both remaining gaps.
+  **The level question is closed and the shape question is not.** BAT's
+  rungs are the round limit (12/10/9/8) and a round is not worth the same at
+  every rung, so the target steps unevenly; both tuned families step nearly
+  evenly. Summed over the three steps NAP is 8.8 points from the target's
+  shape and AoS 11.9 - and NAP only got there by accident, chasing the level
+  at both ends on 2026-11-27. **Whether the set wants BAT's shape as well as
+  its level has never been asked.** It is the live question, and answering
+  "no" closes this item outright.
+
+  **The four gaps that are left are each there for a reason**, so none is
+  simply a cell nobody has tried:
+    - **NAP Hard -3.1** has never been a candidate for anything. Moving one
+      middle rung alone is what inverted the ladder on 2026-11-12.
+    - **AoS Easy -4.1 and Nobulous +3.4** are the nearest cells that deal
+      every class. The cells that LAND were refused for dealing no Unstable
+      Program - see the class-floor check in `check_app_sync.py`.
+    - **NAP Easy +2.0** overshoots deliberately: the cell at -1.7 could not
+      reach the campaign, because Tier I floors its Setback swap at none.
+
+  **One thin margin and one Apprentice are the only other live numbers.**
+  NAP's Tier III at Nobulous clears its own solo cell by 1.1 points, the
+  narrowest on either board, and a tier above its solo cell is the one shape
+  a tier may never have - so treat Nobulous as having no room left above
+  Tier III. And Slacker reads 46.5% at Standard, 0.5 below the 47% band
+  floor, because it was already the lowest of the six by 3.6 points.
 
 - **BAT'S POOR LAB IS WORTH 5.1% AT STANDARD, and whether that is the design
   is open.** The brief wants a poor lab grim, and it is - but it is grim from

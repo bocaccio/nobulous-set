@@ -18,19 +18,27 @@ This sizes the two ends and nothing else.  Standard and Hard are not
 candidates here: they land, and the lesson of 2026-11-12 is that moving one
 rung on its own is what inverts a ladder.
 
-WHAT SHIPPED, 2026-11-27: NOBULOUS ONLY, at 7 Credits and 5 Setbacks.  The
-table above is the ladder as it stood when this file was written; Nobulous
-now reads 21.8% and +0.6 on the published sample, and simulation/napgrid.txt
-is the run.  THE 3,000-GAME ROWS WERE RIGHT TO A TENTH - this file read
-21.7 - because its candidate ladders are the mean of six Apprentices at
-3,000 games each, 18,000 a cell, against a published 20,004.  The SURFACE
-below is Prodigy alone and is not that; do not quote a surface cell as a
-figure.
-  EASY WAS NOT STEPPED.  Both of its candidates are in this file's output
-and the choice between them is not a number: 3/1 is nearer the target but
-its campaign columns are byte for byte the shipped rung's, so it buys solo
-Easy alone, and 2/2 overshoots but carries the campaign.  HANDOFF.md holds
-the question.
+WHAT SHIPPED, 2026-11-27: BOTH ENDS, AND THE CREDIT GOAL AT EACH.  Nobulous
+went to 7 Credits and 5 Setbacks and Easy to 2 and 2, in two runs an hour
+apart; the table above is the ladder as it stood when this file was written.
+On the published sample they read 21.8% (+0.6) and 72.5% (+2.0), and
+simulation/napgrid.txt is the run.  THE 3,000-GAME ROWS WERE RIGHT TO A
+TENTH AT BOTH ENDS - this file read 21.7 and 72.5 - because its candidate
+ladders are the mean of six Apprentices at 3,000 games each, 18,000 a cell,
+against a published 20,004.  The SURFACE below is Prodigy alone and is not
+that; do not quote a surface cell as a figure.
+  THE CREDIT WON AT BOTH ENDS AND THE SETBACK AT NEITHER, which this file
+sized but could not decide.  At Nobulous 6/6 was +0.8 against 7/5's +0.6 and
+would have spent the last printed Setback.  At Easy, 3/1 was NEARER the
+target - -1.7 against 2/2's +2.0 - and lost anyway, because Tier I swaps one
+base Setback out per Following card in and floors at none: 3/1's campaign
+columns are byte for byte the old rung's, so it buys SOLO Easy alone and
+takes Tier I's bite at Easy from 5.7 points to 9.9.  2/2 reaches the
+campaign because nothing swaps a Credit goal - Easy's three NRJ cells came
+up +10.4 / +12.5 / +12.5 and the bite fell to 3.3.
+  SO THE LESSON OF THIS FILE IS NOT ITS "off" COLUMN.  On the soft half the
+Setback count does nothing from Tier I upward, so a cell that is nearer the
+target can still be the worse rung.  Read the campaign columns beside it.
 
 TWO HARD LIMITS, both printed, and they bound the whole question:
 

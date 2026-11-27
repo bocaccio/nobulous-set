@@ -97,7 +97,7 @@ PEG_COLUMN = "great third, normal wake"
 LADDERS = {
     "BAT": ((70.5, 50.4, 38.5, 21.2), "simulation/batpeg.txt",
             "20,000 games a rung, seed 20, great third on the normal wake"),
-    "NAP": ((64.5, 50.0, 35.4, 21.8), "simulation/napgrid.txt",
+    "NAP": ((72.5, 50.0, 35.4, 21.8), "simulation/napgrid.txt",
             "20,004 games a cell TOTAL - 3,334 an Apprentice - overall"),
     "AoS": ((66.4, 52.3, 38.2, 24.6), "simulation/aosgrid.txt",
             "20,000 games a TECHNICIAN a cell - six of them, so 120,000 "
