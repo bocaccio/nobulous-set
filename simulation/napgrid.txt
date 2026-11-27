@@ -11,42 +11,84 @@ Technician, so an AoS cell is six times this one.  Both files said
 "20,000 games a cell" until 2026-11-27; simulation/peg.py now spells out
 which is which.
 
-BOTH ENDS WERE STEPPED ON 2026-11-27, in two separate runs an hour
-apart, and the Credit goal carried both: Nobulous 6 to 7, then Easy 3 to
-2.  Neither Setback count moved, so the sixth printed Setback card is
-still unspent and no card is reprinted.  Against the target in
-simulation/peg.py - BAT's great third on the normal wake, 70.5 / 50.4 /
-38.5 / 21.2 - the ladder was -6.0 / -0.4 / -3.1 / +4.5 before the two
-steps and is +2.0 / -0.4 / -3.1 / +0.6 after them.  NO RUNG IS MORE THAN
-3.1 POINTS OUT, and the rung that is, HARD, has never been a candidate
-for anything.
+THIS GRID IS THE LADDER 3/2, 4/3, 5/4, 7/5 AND IT WAS MEASURED ON
+2026-11-27 IN THE RUN THAT STEPPED NOBULOUS, not in a run of its own.
+EASY WENT TO 2 CREDITS LATER THAT DAY AND CAME BACK THE SAME EVENING, so
+these are the cells again rather than new ones.  NO RE-RUN WAS NEEDED
+AND THE CLAIM IS CHECKABLE: the commit that stepped Easy changed exactly
+two lines of model code, nap.LEVELS and the comment above
+CREDITS_TO_LEAVE, and the revert undoes both, so the model that produced
+the cells below is the model that plays this table.  A grid is only
+reusable on that condition; check it before reusing one.
 
-THE CONTROL IS EXACT, twice.  Standard and Hard came back byte for byte
-identical in all eight of their cells on both runs, and so did all six
-Apprentices at Standard; the Nobulous run also reproduced Easy's four
-cells exactly before Easy was stepped.  Same seed, same dials, one rung
-at a time.  That is the only reason to trust the cells that are new.
+NOBULOUS WENT UP ONE CREDIT, 6 to 7, in that run.  It read 25.7% and was
+4.5 points too easy against the target in simulation/peg.py - BAT's
+great third on the normal wake, 70.5 / 50.4 / 38.5 / 21.2.  At 7 Credits
+it reads 21.8%, which is +0.6.  The Setback count did not move, and no
+Setback count has moved since 2026-11-25, so the sixth printed Setback
+card is still unspent and no card is reprinted.  THE WHOLE LADDER IS
+-6.0 / -0.4 / -3.1 / +0.6.
 
-EASY'S CAMPAIGN MOVED, which is what choosing the Credit over the
-Setback bought.  Tier I swaps one base Setback out per Following card in
-and floors at none, so Easy's NRJ cells were insensitive to its Setback
-count - 3/1 would have left them byte for byte unchanged.  Nothing swaps
-a Credit goal, so they came up +10.4 / +12.5 / +12.5, and Tier I's bite
-at Easy fell from 5.7 points to 3.3.
+THE CONTROL IS EXACT.  Easy, Standard and Hard came back byte for byte
+identical in all twelve of their cells, and so did all six Apprentices at
+Standard - same seed, same dials, one rung changed.  That is the only
+reason to trust the four cells that were new.
+
+EASY'S -6.0 IS DELIBERATE AND simulation/peg.py NOW SAYS SO IN ITS
+DELIBERATE TABLE.  It is not a rung waiting to be fixed, and it was
+stepped twice in one day because nothing recorded that.  The target is a
+GUIDE AND NOT AN EQUIVALENCE - peg.py's own docstring says so - and it
+says least at EASY, where an unconditional NAP rate is read against
+BAT's BEST third.  BAT's Easy is 70.5% conditional on a good lab and
+40.4% overall, two numbers 30 points apart, and NAP's 64.5 sits between
+them; the community band, the only part of the target external to this
+repository, pins STANDARD and says nothing here.  AoS reads 66.4% at
+Easy, so at 3/2 the two even families agree there within 1.9 points and
+on shape within a tenth.
+
+WHAT 2 CREDITS DID AND WHY IT CAME BACK.  At 2/2 Easy read 72.5% solo,
++2.0 against the target and nearer it than this cell, and its three NRJ
+cells came up +10.4 / +12.5 / +12.5 to 69.2 / 58.9 / 64.1.  THAT IS THE
+PART THAT WAS WRONG: Easy's campaign went flat.  Tier I's bite there
+fell to 3.3 points, and Tier II held 81% of its own solo cell where
+Standard holds 68%, Hard 66% and Nobulous 65%.  AT 3/2 IT HOLDS 72%, in
+line with the rest.  A rung nearer the target had stopped behaving like a
+rung, and no column of the off table can show that.  Jon called it the
+same evening.
+
+AND THE SETBACK AXIS IS DEAD AT EASY, which is why 3/1 was not the
+answer either.  Tier I swaps one base Setback out per Following card in
+and floors at none, so Easy's NRJ cells are insensitive to its Setback
+count: 3/1 and 3/2 are THE SAME RUNG in campaign play, both 58.8 / 46.4
+/ 51.6, and differ only in solo, 68.8% against 64.5%.  Nothing swaps a
+Credit goal, so the Credit is the only axis that reaches the campaign on
+the soft half - and this time the campaign was where the answer was NOT
+wanted.  3/1 also takes Tier I's bite at Easy to 9.9 points against
+about 2 at every other rung, because a deck holding one base Setback can
+only swap one out.  3/2's bite is 5.7.
+
+WHAT IS STILL OPEN IS SHAPE, AND ONLY SHAPE.  The solo steps are
+14.6 / 14.6 / 13.6 where the target steps 20.1 / 11.9 / 17.3, because
+BAT's rungs are the round limit 12/10/9/8 and a round is not worth the
+same at every rung.  Summed over the three steps NAP is 12.0 points from
+the target's shape and AoS 11.9; 3/1 would have been 7.7 and 2/2 was
+8.8, so BOTH OF THE CELLS REFUSED TODAY WERE BETTER ON SHAPE THAN THIS
+ONE.  That is the trade Jon took, and the shape question has still not
+been put to him.
 
 simulation/napharder.txt sizes the eleven levers the 2026-11-25 step was
-chosen from, napends.txt sizes these two, and napladder.txt has that
-day's candidate ladders.
+chosen from, napends.txt sizes both ends and has all four Easy cells,
+and napladder.txt has that day's candidate ladders.
 
   difficulty = the Credit goal and the Setbacks in the deck
 
                               no NRJ    Tier I   Tier II  Tier III
-  Easy  2 Cr / 2 Sb               72.5%     69.2%     58.9%     64.1%
+  Easy  3 Cr / 2 Sb               64.5%     58.8%     46.4%     51.6%
   Standard  4 Cr / 3 Sb           50.0%     48.1%     34.2%     40.9%
   Hard  5 Cr / 4 Sb               35.4%     33.3%     23.4%     30.2%
   Nobulous  7 Cr / 5 Sb           21.8%     20.0%     14.1%     20.7%
 
-  solo steps  22.5  14.6  13.6
+  solo steps  14.6  14.6  13.6
 
   EVERY APPRENTICE AT STANDARD, 20004 games each - the
   per-Apprentice band check the set applies.
@@ -59,4 +101,4 @@ day's candidate ladders.
                        4.8    spread, 46.5 to 51.3
 
   Mean of the six Apprentices, FINF Reduce 1.
-  20004 games a cell. Finished in 281s.
+  20004 games a cell. Finished in 354s.

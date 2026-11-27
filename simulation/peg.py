@@ -97,7 +97,7 @@ PEG_COLUMN = "great third, normal wake"
 LADDERS = {
     "BAT": ((70.5, 50.4, 38.5, 21.2), "simulation/batpeg.txt",
             "20,000 games a rung, seed 20, great third on the normal wake"),
-    "NAP": ((72.5, 50.0, 35.4, 21.8), "simulation/napgrid.txt",
+    "NAP": ((64.5, 50.0, 35.4, 21.8), "simulation/napgrid.txt",
             "20,004 games a cell TOTAL - 3,334 an Apprentice - overall"),
     "AoS": ((66.4, 52.3, 38.2, 24.6), "simulation/aosgrid.txt",
             "20,000 games a TECHNICIAN a cell - six of them, so 120,000 "
@@ -108,6 +108,21 @@ LADDERS = {
 # again - and asserted to differ from the pegged column, because the whole
 # failure was one being read as the other.
 BAT_OVERALL = (40.4, 23.3, 15.4, 7.6)
+
+# RUNGS WHERE A GAP IS DELIBERATE, and the reason it is. The target is a
+# GUIDE AND NOT AN EQUIVALENCE - see the docstring - and it says least at
+# EASY, where an unconditional rate is read against BAT's BEST third and
+# the community band says nothing at all. So a family may sit well below
+# the target there on purpose, and without an entry here nothing records
+# that it did. NAP'S EASY RUNG WAS STEPPED TWICE IN ONE DAY FOR WANT OF
+# THIS TABLE: the gap read as a defect both times, because a bare -6.0 in
+# a printout looks like one.
+DELIBERATE = {
+    ("NAP", "Easy"): "Jon's call, 2026-11-27: 64.5% is the right solo feel "
+                     "for Easy, and this is the rung the target says least "
+                     "about. Stepped to 2/2 (+2.0) earlier the same day and "
+                     "reverted the same evening - the campaign went flat.",
+}
 
 # DERIVED, NEVER TYPED. This is the structural half of the fix: there is
 # nothing here for a hand to copy out of step.
@@ -129,10 +144,16 @@ def ladder_steps(figures):
 
     Worth printing beside the target because the two ends are chased on it.
     BAT's great third steps 20.1 / 11.9 / 17.3 where NAP steps 14.5 / 14.6 /
-    9.7 and AoS 10.1 / 14.1 / 9.1: BAT's rungs are set by the ROUND LIMIT
+    13.6 and AoS 14.1 / 14.1 / 13.6: BAT's rungs are set by the ROUND LIMIT
     (12/10/9/8) and a round is not worth the same at every rung, so the
     ladder it hands the other two to copy is an irregular one. Pegging a
     LEVEL to it is a different proposition from pegging a SHAPE to it.
+      NOBODY HAS BEEN ASKED WHICH OF THE TWO THE SET WANTS. Summed over the
+    three steps NAP is 12.0 points from the target's shape and AoS 11.9, and
+    both are nearly even ladders where the target is not. The figures above
+    were last wrong on 2026-11-27, when they still described ladders two
+    steps old; a stale step list in a docstring is the same failure this
+    file was written to end, one order of magnitude smaller.
     """
     return tuple(a - b for a, b in zip(figures, figures[1:]))
 
@@ -156,6 +177,13 @@ def provenance():
     """
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     bad = []
+    for fam, lvl in sorted(DELIBERATE):
+        if fam not in LADDERS:
+            bad.append("DELIBERATE names family %s, which has no ladder"
+                       % fam)
+        if lvl not in LEVELS:
+            bad.append("DELIBERATE names rung %s, which is not a level"
+                       % lvl)
     for name, (figs, rel, _how) in sorted(LADDERS.items()):
         path = os.path.join(root, rel.replace("/", os.sep))
         if not os.path.exists(path):
@@ -202,6 +230,13 @@ def main():
           "set for")
     print("  an overall rate, but not for a game split into thirds.")
     print("")
+    if DELIBERATE:
+        print("DELIBERATE GAPS - a number below is not a defect:")
+        for fam, lvl in sorted(DELIBERATE):
+            print("  %s %s, %+.1f: %s"
+                  % (fam, lvl, off(LADDERS[fam][0])[LEVELS.index(lvl)],
+                     DELIBERATE[(fam, lvl)]))
+        print("")
     print("Standard against the band: " + ", ".join(
         "%s %.1f%% (%s)" % (n, LADDERS[n][0][1], in_band(LADDERS[n][0][1]))
         for n in (PEG_FAMILY,) + tuple(sorted(set(LADDERS) - {PEG_FAMILY}))))

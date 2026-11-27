@@ -1590,7 +1590,7 @@ def notebook():
          "non-Final-Exam card from it, exhausting every die stored on it.\n"
          "FINF is not used during the Final Exam, in either direction.\n\n"
          "DIFFICULTY is the Credit goal and the Setbacks in the deck:\n"
-         "  Easy 2 and 2   Standard 4 and 3   Hard 5 and 4   Nobulous 7 and 5\n"
+         "  Easy 3 and 2   Standard 4 and 3   Hard 5 and 4   Nobulous 7 and 5\n"
          "EVERY LEVEL PLAYS WITH AT LEAST TWO SETBACKS, and the campaign adds\n"
          "more: Tier I deals 3 Following Setbacks whatever the difficulty\n"
          "says, swapping out one base Setback for each, floored at none. At your\n"

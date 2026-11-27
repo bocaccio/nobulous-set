@@ -18,27 +18,32 @@ This sizes the two ends and nothing else.  Standard and Hard are not
 candidates here: they land, and the lesson of 2026-11-12 is that moving one
 rung on its own is what inverts a ladder.
 
-WHAT SHIPPED, 2026-11-27: BOTH ENDS, AND THE CREDIT GOAL AT EACH.  Nobulous
-went to 7 Credits and 5 Setbacks and Easy to 2 and 2, in two runs an hour
-apart; the table above is the ladder as it stood when this file was written.
-On the published sample they read 21.8% (+0.6) and 72.5% (+2.0), and
-simulation/napgrid.txt is the run.  THE 3,000-GAME ROWS WERE RIGHT TO A
-TENTH AT BOTH ENDS - this file read 21.7 and 72.5 - because its candidate
-ladders are the mean of six Apprentices at 3,000 games each, 18,000 a cell,
-against a published 20,004.  The SURFACE below is Prodigy alone and is not
-that; do not quote a surface cell as a figure.
-  THE CREDIT WON AT BOTH ENDS AND THE SETBACK AT NEITHER, which this file
-sized but could not decide.  At Nobulous 6/6 was +0.8 against 7/5's +0.6 and
-would have spent the last printed Setback.  At Easy, 3/1 was NEARER the
-target - -1.7 against 2/2's +2.0 - and lost anyway, because Tier I swaps one
-base Setback out per Following card in and floors at none: 3/1's campaign
-columns are byte for byte the old rung's, so it buys SOLO Easy alone and
-takes Tier I's bite at Easy from 5.7 points to 9.9.  2/2 reaches the
-campaign because nothing swaps a Credit goal - Easy's three NRJ cells came
-up +10.4 / +12.5 / +12.5 and the bite fell to 3.3.
-  SO THE LESSON OF THIS FILE IS NOT ITS "off" COLUMN.  On the soft half the
-Setback count does nothing from Tier I upward, so a cell that is nearer the
-target can still be the worse rung.  Read the campaign columns beside it.
+WHAT SHIPPED, 2026-11-27: ONE END.  Nobulous went to 7 Credits and 5
+Setbacks and stands at +0.6.  EASY WENT TO 2 AND 2 THE SAME DAY AND CAME
+BACK THE SAME EVENING, so the shipped Easy row above is the shipped Easy row
+still, at -6.0, and simulation/peg.py's DELIBERATE table now records that
+gap as a choice rather than a defect.  THE 3,000-GAME ROWS WERE RIGHT TO A
+TENTH AT BOTH ENDS - this file read 21.7 and 72.5 against a published 21.8
+and 72.5 - because its candidate ladders are the mean of six Apprentices at
+3,000 games each, 18,000 a cell, against a published 20,004.  The SURFACE
+below is Prodigy alone and is not that; do not quote a surface cell as a
+figure.
+  SO THIS FILE'S SIZING WAS NOT THE PROBLEM.  Its "off" COLUMN WAS, AND IN
+BOTH DIRECTIONS AT ONCE.  2/2 was chosen over 3/1 because 3/1 could not
+reach the campaign: Tier I swaps one base Setback out per Following card in
+and floors at none, so Easy's NRJ cells are insensitive to its Setback count
+and 3/1's campaign columns are byte for byte 3/2's.  That reasoning was
+right and the conclusion was wrong, because reaching the campaign is not
+the same as improving it.  At 2/2 Easy's three NRJ cells came up
++10.4 / +12.5 / +12.5, Tier I's bite fell from 5.7 points to 3.3, and TIER
+II HELD 81% OF ITS OWN SOLO CELL where Standard holds 68%, Hard 66% and
+Nobulous 65%.  A rung nearer the target had stopped behaving like a rung.
+At 3/2 Tier II holds 72%, in line with the rest.
+  SO READ BOTH TABLES, IN EITHER DIRECTION.  A cell nearer the target can be
+the worse rung; a cell that moves the campaign can move it the wrong way.
+Neither the off column nor the campaign columns decides alone, and at EASY
+the off column decides least of all - see peg.py on what the target is
+worth at that rung.
 
 TWO HARD LIMITS, both printed, and they bound the whole question:
 

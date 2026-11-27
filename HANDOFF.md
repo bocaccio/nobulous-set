@@ -1076,35 +1076,48 @@ Each of these only appears a few turns in.
 
 ## 10. Known open items
 
-- **EVERY RUNG IN THE SET IS NOW WITHIN 4.1 POINTS OF THE TARGET, so what
-  is left is SHAPE - and nobody has been asked about it.** The target is
-  `simulation/peg.py`, BAT's great third on the normal wake. `python peg.py`
-  prints all of this; do not retype it.
+- **THE LEVEL QUESTION IS CLOSED AND THE SHAPE QUESTION IS NOT - and nobody
+  has been asked about shape.** The target is `simulation/peg.py`, BAT's
+  great third on the normal wake. `python peg.py` prints all of this,
+  including the deliberate gaps; do not retype it.
 
   | family | Easy | Standard | Hard | Nobulous | steps |
   | --- | --- | --- | --- | --- | --- |
   | BAT (the target) | 70.5% | 50.4% | 38.5% | 21.2% | 20.1 / 11.9 / 17.3 |
-  | NAP | +2.0 | -0.4 | -3.1 | +0.6 | 22.5 / 14.6 / 13.6 |
+  | NAP | -6.0 * | -0.4 | -3.1 | +0.6 | 14.5 / 14.6 / 13.6 |
   | AoS | -4.1 | +1.9 | -0.3 | +3.4 | 14.1 / 14.1 / 13.6 |
 
-  **The level question is closed and the shape question is not.** BAT's
-  rungs are the round limit (12/10/9/8) and a round is not worth the same at
-  every rung, so the target steps unevenly; both tuned families step nearly
-  evenly. Summed over the three steps NAP is 8.8 points from the target's
-  shape and AoS 11.9 - and NAP only got there by accident, chasing the level
-  at both ends on 2026-11-27. **Whether the set wants BAT's shape as well as
-  its level has never been asked.** It is the live question, and answering
-  "no" closes this item outright.
+  \* deliberate, and recorded in `peg.DELIBERATE`. Not a rung waiting to be
+  fixed.
 
-  **The four gaps that are left are each there for a reason**, so none is
-  simply a cell nobody has tried:
+  **BAT's rungs are the round limit (12/10/9/8) and a round is not worth the
+  same at every rung**, so the target steps unevenly where both tuned
+  families step nearly evenly. Summed over the three steps NAP is 12.0 points
+  from the target's shape and AoS 11.9. **Whether the set wants BAT's shape
+  as well as its level has never been asked.** It is the live question, and
+  answering "no" closes this item outright.
+
+  **Every gap that is left is there for a reason**, so none is simply a cell
+  nobody has tried:
+    - **NAP Easy -6.0** is Jon's call of 2026-11-27 on how Easy should feel,
+      and the rung the target says least about. It was stepped to 2 Credits
+      (+2.0) that morning and reverted that evening, because the nearer cell
+      flattened Easy's campaign - Tier II held 81% of its own solo cell
+      against 68 / 66 / 65 at the other three rungs. `peg.DELIBERATE` exists
+      because nothing recorded any of that the first time.
     - **NAP Hard -3.1** has never been a candidate for anything. Moving one
       middle rung alone is what inverted the ladder on 2026-11-12.
     - **AoS Easy -4.1 and Nobulous +3.4** are the nearest cells that deal
       every class. The cells that LAND were refused for dealing no Unstable
       Program - see the class-floor check in `check_app_sync.py`.
-    - **NAP Easy +2.0** overshoots deliberately: the cell at -1.7 could not
-      reach the campaign, because Tier I floors its Setback swap at none.
+
+  **THE TARGET IS A GUIDE AND NOT AN EQUIVALENCE, and it is weakest at the
+  soft end.** `peg.py` says so in its own docstring: BAT's great third is a
+  *conditional* win rate while NAP's and AoS's columns are unconditional, and
+  BAT's Easy is 70.5% given a good lab against 40.4% overall - two numbers 30
+  points apart. The community band, the only part of the target external to
+  this repository, pins **Standard** and says nothing at Easy. So read a gap
+  at Easy as a guide and a gap at Standard as a verdict.
 
   **One thin margin and one Apprentice are the only other live numbers.**
   NAP's Tier III at Nobulous clears its own solo cell by 1.1 points, the

@@ -45,44 +45,85 @@ NAP  Nobulous Apprenticeship Program
   simulation/peg.py now spells out which is which.
 
                             no NRJ    Tier I   Tier II  Tier III
-  Easy (2 Cr, 2 Sb)          72.5%     69.2%     58.9%     64.1%
+  Easy (3 Cr, 2 Sb)          64.5%     58.8%     46.4%     51.6%
   Standard (4 Cr, 3 Sb) *     50.0%     48.1%     34.2%     40.9%
   Hard (5 Cr, 4 Sb)          35.4%     33.3%     23.4%     30.2%
   Nobulous (7 Cr, 5 Sb)      21.8%     20.0%     14.1%     20.7%
 
     * Standard difficulty. Mean of the six Apprentices.
 
-    BOTH ENDS WERE STEPPED ON 2026-11-27, in two runs an hour
-    apart, and THE CREDIT GOAL CARRIED BOTH.  Against the target in
-    simulation/peg.py - BAT's great third on the normal wake,
-    70.5 / 50.4 / 38.5 / 21.2 - Nobulous had read 25.7% and been
-    4.5 points TOO EASY, so its goal went 6 to 7 and it lands at
-    +0.6; Easy had read 64.5% and been 6.0 TOO HARD, so its goal
-    went 3 to 2 and it lands at +2.0.  Standard and Hard did not
-    move.  The ladder was -6.0 / -0.4 / -3.1 / +4.5 and is now
-    +2.0 / -0.4 / -3.1 / +0.6.
-      NO RUNG IS MORE THAN 3.1 POINTS OUT, and the rung that is -
-    HARD - has never been a candidate for anything.  It was -3.1
-    before either step and is -3.1 now.
-      NEITHER SETBACK COUNT MOVED, so the sixth printed Setback
-    card is still unspent and nothing is reprinted.  The Credit
-    goal has never been on a card either: the two steps together
-    cost the difficulty table in rules/nap.html, the setup sentence
-    above it, NAP_DIFF in tts/lua.lua and the NAP quick reference
-    in tts/build_mod.py.
+    ONE END WAS STEPPED ON 2026-11-27 AND THE OTHER WAS STEPPED AND
+    PUT BACK.  Against the target in simulation/peg.py - BAT's great
+    third on the normal wake, 70.5 / 50.4 / 38.5 / 21.2 - NOBULOUS
+    had read 25.7% and been 4.5 points TOO EASY, so its Credit goal
+    went 6 to 7 and it lands at +0.6.  EASY went 3 Credits to 2 an
+    hour later, read 72.5% at +2.0, and CAME BACK THE SAME EVENING.
+    The ladder reads -6.0 / -0.4 / -3.1 / +0.6.
+      THESE CELLS COME FROM THE NOBULOUS RUN, not from a run of
+    their own, and the claim is checkable: the commit that stepped
+    Easy changed exactly two lines of model code - nap.LEVELS and
+    the comment above CREDITS_TO_LEAVE - and the revert undoes both,
+    so the model that produced these cells is the model that plays
+    this table.  A published grid is reusable on that condition and
+    on no other.
+      NEITHER SETBACK COUNT HAS MOVED SINCE 2026-11-25, so the
+    sixth printed Setback card is still unspent and nothing is
+    reprinted.  The Credit goal has never been on a card either, so
+    a goal step costs the difficulty table in rules/nap.html, the
+    setup sentence above it, NAP_DIFF in tts/lua.lua and the NAP
+    quick reference in tts/build_mod.py - four live owners and no
+    print run.
 
-    THE CONTROL IS EXACT, TWICE, and no other grid in this file has
-    reproduced this cleanly.  Standard and Hard came back BYTE FOR
-    BYTE IDENTICAL in all eight of their cells on BOTH runs, and so
-    did all six Apprentices at Standard; the Nobulous run also
-    reproduced Easy's four cells exactly, before Easy was stepped.
-    Same seed, same dials, one rung at a time.  The AoS step of the
-    day before matched seven of its eight control cells and the
-    eighth to 0.2.
+    EASY'S -6.0 IS DELIBERATE AND peg.DELIBERATE NOW SAYS SO.  It is
+    not a rung waiting to be fixed, and it was stepped twice in one
+    day because nothing recorded that: a bare -6.0 in a printout
+    reads as a defect.  THE TARGET IS A GUIDE AND NOT AN
+    EQUIVALENCE - peg.py's own docstring says so - AND IT SAYS LEAST
+    AT EASY, where an unconditional NAP rate is read against BAT's
+    BEST third.  BAT's Easy is 70.5% conditional on a good lab and
+    40.4% overall, two numbers 30 points apart, and NAP's 64.5 sits
+    between them.  The community band, the only part of the target
+    external to this repository, pins STANDARD and says nothing
+    here.  AoS reads 66.4% at Easy, so at 3/2 the two even families
+    agree there within 1.9 points and on shape within a tenth.
 
-    AND THE SIZING WAS RIGHT TO A TENTH AT BOTH ENDS - 21.7 against
-    21.8 and 72.5 against 72.5 - where the AoS sizing of the day
-    before was a full point out at both of its ends, in opposite
+    WHY 2 CREDITS CAME BACK, which is the finding of the day and the
+    reverse of what this third said for six hours.  At 2/2 Easy read
+    72.5% solo - NEARER the target than this cell - and its three
+    NRJ cells came up +10.4 / +12.5 / +12.5 to 69.2 / 58.9 / 64.1.
+    THE CAMPAIGN WENT FLAT.  Tier I's bite at Easy fell to 3.3
+    points, and - the figure that settles it - TIER II HELD 81% OF
+    ITS OWN SOLO CELL where Standard holds 68%, Hard 66% and
+    Nobulous 65%.  At 3/2 it holds 72%, in line with the rest.  A
+    rung nearer the target had stopped behaving like a rung, and no
+    column of the off table can show that.  Jon called it the same
+    evening.
+      AND THE SETBACK AXIS IS DEAD AT EASY, which is why 3/1 was not
+    the answer either.  Tier I swaps one base Setback out per
+    Following card in and FLOORS AT NONE, so Easy's NRJ cells are
+    insensitive to its Setback count: 3/1 AND 3/2 ARE THE SAME RUNG
+    IN CAMPAIGN PLAY, both 58.8 / 46.4 / 51.6, and differ only in
+    solo - 68.8% against 64.5%.  Nothing swaps a Credit goal, so the
+    Credit is the only axis that reaches the campaign on the soft
+    half; this time the campaign was where movement was NOT wanted,
+    so the axis that reaches it was the wrong one to touch.  3/1
+    also takes Tier I's bite at Easy to 9.9 points against about 2
+    at every other rung, because a deck holding one base Setback can
+    only swap one out.  3/2's bite is 5.7.
+      SO READ BOTH TABLES, IN EITHER DIRECTION.  A cell nearer the
+    target can be the worse rung, and a cell that moves the campaign
+    can move it the wrong way.  napends.py prints the campaign
+    columns beside the off column for exactly this reason, and at
+    EASY the off column decides least of all.
+
+    THE CONTROL IS EXACT.  Easy, Standard and Hard came back byte
+    for byte identical in all twelve of their cells, and so did all
+    six Apprentices at Standard - same seed, same dials, one rung
+    changed.  The AoS step of the day before matched seven of its
+    eight control cells and the eighth to 0.2.
+      AND THE SIZING WAS RIGHT TO A TENTH AT BOTH ENDS - 21.7
+    against 21.8 and 72.5 against 72.5 - where the AoS sizing of the
+    day before was a full point out at both of its ends, in opposite
     directions.  The reason is the sample, and it is worth writing
     down because the two files read as though they did the same
     thing: napends.py's candidate ladders are the mean of six
@@ -92,53 +133,32 @@ NAP  Nobulous Apprenticeship Program
     against a published 120,000.  A cheap SURFACE for choosing a
     cell is not a cheap LADDER for predicting one.
 
-    THE CREDIT WON AT BOTH ENDS AND THE SETBACK AT NEITHER, and at
-    EASY IT WON AGAINST THE NEARER NUMBER, which is the part of
-    this worth keeping.  3/1 was -1.7 where 2/2 is +2.0, so by the
-    off column alone 3/1 was the better cell.  IT WAS REFUSED FOR
-    WHAT IT CANNOT REACH: Tier I swaps one base Setback out per
-    Following card in and floors at none, so Easy's NRJ cells are
-    insensitive to its Setback count, and 3/1's campaign columns
-    were byte for byte the old rung's.  It buys SOLO Easy alone,
-    and it takes Tier I's bite at Easy from 5.7 points to 9.9 -
-    near the 10.5 that the 2026-11-25 Setback step was made to fix
-    in the first place.  NOTHING SWAPS A CREDIT GOAL, so 2/2
-    reached the campaign: Easy's three NRJ cells came up
-    +10.4 / +12.5 / +12.5 - 58.8 / 46.4 / 51.6 to 69.2 / 58.9 /
-    64.1 - and the bite fell to 3.3.
-      SO ON THE SOFT HALF A CELL NEARER THE TARGET CAN BE THE WORSE
-    RUNG.  Read napends.py's campaign columns beside its off
-    column, never the off column alone.  At Nobulous the same
-    choice was easier: 6/6 was +0.8 against 7/5's +0.6 and would
-    have spent the last printed Setback card.
+    WHAT IS THIN IS THE SHAPE MARGIN AT NOBULOUS, and it is the only
+    thin thing left on the board.  Tier III is below its own solo
+    cell at every rung - 51.6 / 40.9 / 30.2 / 20.7 against
+    64.5 / 50.0 / 35.4 / 21.8 - which is the one shape a tier must
+    have, but at Nobulous it clears by only 1.1 points.  The other
+    three margins are 12.9 / 9.1 / 5.2.  6/6 would have left 2.4
+    points there for 0.2 of a point more error against the target;
+    the 7-Credit step buys the closer number and keeps the Setback
+    card, and it spends most of the room above Tier III to do it.
+    TIER III IS STILL ABOVE TIER II AT EVERY RUNG - by 5.2 / 6.7 /
+    6.8 / 6.6 - and that is not new; Tier III's Devious
+    Opportunities are a net help.
 
-    WHAT IS THIN IS THE SHAPE MARGIN AT NOBULOUS, and it is the
-    only thin thing left on the board.  Tier III is below its own
-    solo cell at every rung - 64.1 / 40.9 / 30.2 / 20.7 against
-    72.5 / 50.0 / 35.4 / 21.8 - which is the one shape a tier must
-    have, but at Nobulous it clears by only 1.1 points where it
-    cleared by 2.3 before.  The other three margins are 8.4 / 9.1 /
-    5.2.  6/6 would have left 2.4 points there for 0.2 of a point
-    more error against the target; the 7-Credit step buys the
-    closer number and keeps the Setback card, and it spends most of
-    the room above Tier III to do it.  TIER III IS STILL ABOVE TIER
-    II AT EVERY RUNG - by 5.2 / 6.7 / 6.8 / 6.6 - and that is not
-    new; Tier III's Devious Opportunities are a net help.
+    AND SHAPE IS NOW THE ONLY OPEN QUESTION, with the level closed
+    by hand rather than by a number.  The solo steps are
+    14.6 / 14.6 / 13.6 where the TARGET steps 20.1 / 11.9 / 17.3,
+    because BAT's rungs are the round limit 12/10/9/8 and a round is
+    not worth the same at every rung.  Summed over the three steps
+    NAP is 12.0 points from the target's shape and AoS 11.9.  BOTH
+    OF THE CELLS REFUSED ON 2026-11-27 WERE BETTER ON SHAPE THAN THE
+    ONE THAT SHIPS - 3/1 would have been 7.7 and 2/2 was 8.8 - so
+    the trade was shape for feel, taken knowingly.  WHETHER THE SET
+    WANTS BAT'S SHAPE AS WELL AS ITS LEVEL HAS STILL NOT BEEN ASKED.
 
-    AND THE LADDER'S SHAPE IMPROVED BY ACCIDENT, which nobody aimed
-    at.  The solo steps are 22.5 / 14.6 / 13.6 where they were
-    14.6 / 14.6 / 9.7.  The TARGET is not even either - BAT's great
-    third steps 20.1 / 11.9 / 17.3, because its rungs are the round
-    limit 12/10/9/8 and a round is not worth the same at every
-    rung - so chasing the LEVEL at both ends moved NAP's first step
-    from 5.6 points away from the target's to 2.4.  Summed over the
-    three steps NAP is 8.8 points from the target's shape where it
-    was 12.0, and where AoS is 11.9.  WHETHER THE SET WANTS BAT'S
-    SHAPE AS WELL AS ITS LEVEL HAS STILL NOT BEEN ASKED, and it is
-    now the only open question about this ladder.
-
-    ONE APPRENTICE IS OUT OF BAND at Standard, unchanged by either
-    step because Standard is: 20,004 games each, Prodigy 50.1,
+    ONE APPRENTICE IS OUT OF BAND at Standard, unchanged by any of
+    this because Standard is: 20,004 games each, Prodigy 50.1,
     Slacker 46.5, Technician 51.0, Savant 49.9, Opportunist 51.3,
     Lab Rat 51.0 - spread 4.8.  SLACKER IS 0.5 BELOW THE 47% FLOOR
     where the ladder before 2026-11-25 had Opportunist 0.3 ABOVE
@@ -180,19 +200,18 @@ NAP  Nobulous Apprenticeship Program
     the check.
 
     THE CAMPAIGN STILL DOES NOT MOVE WITH A SETBACK COUNT AT EASY
-    OR STANDARD, which is the fact both of these steps turned on.
-    Tier I swaps one base Setback out per Following card in,
+    OR STANDARD, which is the fact every one of these steps turned
+    on.  Tier I swaps one base Setback out per Following card in,
     floored at none, so a base count below 3 is swamped either way:
     Easy and Standard both arrive at exactly 3 Setbacks whatever
     their own count says.  Only Hard and Nobulous feel a Setback
     step, and they are the two rungs that keep 1 and 2 base
     Setbacks of their own.  THE CREDIT GOAL HAS NO SUCH FLOOR, and
-    that is why both 2026-11-27 steps spent one: Nobulous's three
-    NRJ cells came down 24.1 / 16.5 / 23.4 to 20.0 / 14.1 / 20.7
-    and Easy's came up 58.8 / 46.4 / 51.6 to 69.2 / 58.9 / 64.1.
+    that is why the Nobulous step spent one: its three NRJ cells
+    came down 24.1 / 16.5 / 23.4 to 20.0 / 14.1 / 20.7.
 
-    TIER II IS STILL THE WEAKEST CELL AT EVERY RUNG, 58.9 / 34.2 /
-    23.4 / 14.1, and four editions of this file have flagged it as
+    TIER II IS STILL THE WEAKEST CELL AT EVERY RUNG, 46.4 / 34.2 /
+    23.4 / 14.1, and five editions of this file have flagged it as
     not looked at.  It still has not been.  It moved with the
     ladder rather than for any reason of its own.
 

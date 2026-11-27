@@ -256,39 +256,51 @@ diagonal, shifted, so each dial still moves one step a rung:
 >
 > | difficulty | goal / Setbacks | solo | Tier I | Tier II | Tier III |
 > | --- | --- | --- | --- | --- | --- |
-> | Easy | 2 / 2 | 72.5% | 69.2% | 58.9% | 64.1% |
+> | Easy | 3 / 2 | 64.5% | 58.8% | 46.4% | 51.6% |
 > | **Standard** | **4 / 3** | **50.0%** | 48.1% | 34.2% | 40.9% |
 > | Hard | 5 / 4 | 35.4% | 33.3% | 23.4% | 30.2% |
 > | Nobulous | 7 / 5 | 21.8% | 20.0% | 14.1% | 20.7% |
 >
-> **BOTH ENDS WERE STEPPED ON 2026-11-27** and the **Credit goal** carried
-> both: Nobulous 6 to 7 (it was 4.5 points too easy) and Easy 3 to 2 (6 too
-> hard). Against `peg.py`'s 70.5 / 50.4 / 38.5 / 21.2 the ladder was
-> -6.0 / -0.4 / -3.1 / +4.5 and is now **+2.0 / -0.4 / -3.1 / +0.6**: **no
-> rung is more than 3.1 points out**, and the rung that is - Hard - has
-> never been a candidate for anything. Neither Setback count moved, so the
-> sixth printed Setback card is still unspent and no card is reprinted. The
-> control was exact twice: Standard and Hard came back byte for byte
-> identical in all eight of their cells on both runs, and so did all six
-> Apprentices at Standard.
+> **NOBULOUS WENT 6 TO 7 CREDITS ON 2026-11-27 AND IT STANDS**: it was 4.5
+> points too easy and it lands at +0.6. **EASY WENT 3 TO 2 THE SAME DAY AND
+> CAME BACK THE SAME EVENING.** Against `peg.py`'s 70.5 / 50.4 / 38.5 / 21.2
+> the ladder reads **-6.0 / -0.4 / -3.1 / +0.6**. Neither Setback count has
+> moved since 2026-11-25, so the sixth printed Setback card is still unspent
+> and no card is reprinted. The control was exact: Easy, Standard and Hard
+> came back byte for byte identical in all twelve of their cells, and so did
+> all six Apprentices at Standard.
 >
-> **The Credit won at both ends, and at Easy it won against the nearer
-> number.** `3/1` was -1.7 where `2/2` is +2.0, but Tier I swaps one base
-> Setback out per Following card in and floors at none, so Easy's NRJ cells
-> are insensitive to its Setback count and `3/1`'s campaign columns were
-> byte for byte the old rung's - it buys *solo* Easy alone and takes Tier I's
-> bite there from 5.7 points to 9.9. Nothing swaps a Credit goal, so `2/2`
-> reached the campaign: Easy's three NRJ cells came up +10.4 / +12.5 / +12.5
-> and the bite fell to 3.3. **On the soft half a cell nearer the target can
-> be the worse rung.**
+> **Easy's -6.0 is deliberate, and `peg.DELIBERATE` now records it** - the
+> structural half of the fix, because the gap was stepped twice in one day
+> for want of an entry saying so. The target is a *guide and not an
+> equivalence*, as `peg.py`'s own docstring puts it, and it says least at
+> Easy: an unconditional NAP rate is read against BAT's **best** third, where
+> BAT's own Easy is 70.5% conditional on a good lab and 40.4% overall. NAP's
+> 64.5 sits between them, the community band pins only Standard, and AoS
+> reads 66.4% at Easy, so the two even families agree there within 1.9.
+>
+> **Why 2 Credits came back, which is the reverse of what this file said for
+> six hours.** At `2/2` Easy read 72.5% solo - *nearer* the target at +2.0 -
+> and its three NRJ cells came up +10.4 / +12.5 / +12.5 to 69.2 / 58.9 /
+> 64.1. The campaign went flat: Tier I's bite fell to 3.3 points, and **Tier
+> II held 81% of its own solo cell** where Standard holds 68%, Hard 66% and
+> Nobulous 65%. At `3/2` it holds 72%, in line with the rest. A rung nearer
+> the target had stopped behaving like a rung, and no column of the off table
+> shows that. `3/1` was not the answer either: the Setback swap floors at
+> none, so **`3/1` and `3/2` are the same rung in campaign play** and differ
+> only in solo, 68.8% against 64.5%. **Read both tables, in either
+> direction** - a cell nearer the target can be the worse rung, and a cell
+> that moves the campaign can move it the wrong way.
 >
 > What is thin is the **shape margin at Nobulous**: Tier III clears its own
-> solo cell by 1.1 points there where it cleared by 2.3, the narrowest on the
-> board (the others are 8.4 / 9.1 / 5.2). And the ladder's shape improved by
-> accident - the steps are 22.5 / 14.6 / 13.6 where they were
-> 14.6 / 14.6 / 9.7, and the target steps 20.1 / 11.9 / 17.3, so NAP is now
-> 8.8 points from the target's shape where it was 12.0 and where AoS is 11.9.
-> Nobody aimed at that.
+> solo cell by 1.1 points there, the narrowest on the board (the others are
+> 12.9 / 9.1 / 5.2). And **shape is the only open question left**, with the
+> level closed by hand rather than by a number: the steps are
+> 14.6 / 14.6 / 13.6 against a target that steps 20.1 / 11.9 / 17.3, so NAP
+> is 12.0 points from the target's shape where AoS is 11.9. Both of the cells
+> refused on 2026-11-27 were better on shape than the one that ships -
+> `3/1` would have been 7.7 and `2/2` was 8.8 - so that trade was taken
+> knowingly.
 >
 > **Standard was mid-band for the first time** on this ladder, and still is.
 > The sentence that stood here said that against BAT's pegged
