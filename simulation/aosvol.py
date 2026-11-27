@@ -73,6 +73,16 @@ def candidates():
     Routine is the easiest class, so a bottom rung carrying much of it is not
     a bottom rung; the Routine ceiling per group is what keeps this at about
     a hundred cells rather than the 286 splits of ten.
+
+    THESE GROUPS ARE NOT THE PRINTED ROOM AND A FLOOR TAKEN OVER THEM IS NOT
+    A FLOOR OVER THE GAME. Volatile stops at FOUR here, so five, six, seven
+    and eight are outside every sweep this file has ever run - and "the floor
+    over every four-Volatile mix is 27.5%, so Nobulous cannot reach the
+    target by composition" was written from exactly that, twice, and was
+    wrong both times. simulation/aosends.py sweeps Volatile to the printed
+    eight and finds 0/3/0/7 landing on the target. If a conclusion about what
+    the deck CANNOT do is wanted, take it from aosends.py or widen these
+    groups; do not take it from here.
     """
     groups = [
         # (label, Volatile count, Routine ceiling)

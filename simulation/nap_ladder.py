@@ -103,8 +103,16 @@ def confirm(ladder, games):
               + "".join("%9.1f%%" % v for v in cells))
 
 
-LADDER = [("Easy", (4, 1)), ("Standard", (5, 2)),
-          ("Hard", (6, 3)), ("Nobulous", (7, 4))]
+# WAS TYPED, AND WAS TWO RE-PEGS STALE: [("Easy", (4, 1)), ("Standard",
+# (5, 2)), ("Hard", (6, 3)), ("Nobulous", (7, 4))] - the ladder of
+# 2026-11-12, where nap.LEVELS has shipped 3/2, 4/3, 5/4, 6/5 since
+# 2026-11-25.  So `nap_ladder.py confirm` spent two weeks confirming a
+# ladder nobody plays, and nothing said so.  Found 2026-11-26 while the
+# difficulty peg was being given an owner, which was the same failure:
+# a number typed in two places goes stale in the copy nobody reads.
+# nap.LEVELS is the owner; check_app_sync.py pins this.
+LADDER = [(n, nap.LEVELS[n]) for n in
+          ("Easy", "Standard", "Hard", "Nobulous")]
 
 if __name__ == "__main__":
     _games = int(sys.argv[1]) if len(sys.argv) > 1 else 3000

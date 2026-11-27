@@ -117,6 +117,19 @@ def off(figures):
     return tuple(f - HOUSE[lvl] for f, lvl in zip(figures, LEVELS))
 
 
+def ladder_steps(figures):
+    """The three gaps between rungs - the SHAPE, as against the level.
+
+    Worth printing beside the target because the two ends are chased on it.
+    BAT's great third steps 20.1 / 11.9 / 17.3 where NAP steps 14.5 / 14.6 /
+    9.7 and AoS 10.1 / 14.1 / 9.1: BAT's rungs are set by the ROUND LIMIT
+    (12/10/9/8) and a round is not worth the same at every rung, so the
+    ladder it hands the other two to copy is an irregular one. Pegging a
+    LEVEL to it is a different proposition from pegging a SHAPE to it.
+    """
+    return tuple(a - b for a, b in zip(figures, figures[1:]))
+
+
 def in_band(pct):
     """Where one win rate sits against the community band."""
     lo, hi = BAND
@@ -171,6 +184,8 @@ def main():
                   % (("",) + off(figs) + (how,)))
         else:
             print("%-8s %-33s %s" % ("", "the target itself", how))
+        print("%-8s steps of %4.1f / %4.1f / %4.1f"
+              % (("",) + ladder_steps(figs)))
     print("")
     print("* the target. BAT's OVERALL column, which is NOT it, reads "
           "%s" % " / ".join("%.1f" % v for v in BAT_OVERALL))

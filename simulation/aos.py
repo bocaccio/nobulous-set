@@ -355,20 +355,38 @@ ELEMENT_COST = 0         # dice exhausted per resolved element, win or lose:
 # its GREAT THIRD - all three found on 2026-11-26. simulation/peg.py owns
 # the target now: 70.5 / 50.4 / 38.5 / 21.2, re-measured from BAT.
 #
-# AGAINST THE REAL TARGET this ladder is -8.1 / +1.9 / -0.3 / +7.9, so the
-# retune's two conclusions survive and one of them gets worse. HARD STILL
-# LANDS, at -0.3 where it read +0.4. NOBULOUS IS +7.9, not +3.3, and the
-# argument that composition cannot close it is now much stronger than when
-# it was made: the floor over EVERY V=4 mix is 0/1/5/4 at 27.5% and over
-# every V=3 mix 30.6%, against a target of 21.2. Five Volatile's 26.2% does
-# not reach it either. That rung needs a rule or a harder card, which is
-# what this note said with 3 points to find and still says with 6.
+# AGAINST THE REAL TARGET this ladder is -8.1 / +1.9 / -0.3 / +7.9. HARD
+# STILL LANDS, at -0.3 where it read +0.4, and Standard reads +1.9 in band.
+# BOTH ENDS ARE OUT BY EIGHT POINTS, in opposite directions, and Easy was
+# the rung nobody was looking at - the old composite put it at 63.7 and
+# called it level.
 #
-# AND EASY IS THE RUNG NOBODY WAS LOOKING AT: 62.4% against 70.5%, so -8.1
-# and the furthest-out cell in the set. The old composite put Easy at 63.7
-# and called it level. Easy and Standard did not move in this retune and
-# did not need to for Standard's sake - it reads +1.9, in band - but Easy
-# is now the open question here, not Hard.
+# AND BOTH ENDS ARE REACHABLE BY COMPOSITION, which corrects this note's
+# own first version. It said on 2026-11-26 that "the argument that
+# composition cannot close Nobulous is now much stronger", citing a floor
+# of 27.5% over every four-Volatile mix and 30.6% over every three. THAT
+# FLOOR WAS OVER THE MIXES THAT HAD BEEN SWEPT, not over the printed room:
+# aosvol.py's candidate groups stop at four Volatile, so SIX, SEVEN AND
+# EIGHT HAD NEVER BEEN MEASURED. simulation/aosends.py measures them, and
+# the claim does not survive:
+#
+#   rung      shipped          nearest cell on the target    deal-again
+#   Easy      4/3/3/0 62.4%    4/6/0/0  70.5%  (+0.0)        0.0% vs 16.6%
+#   Nobulous  0/3/3/4 28.6%    0/3/0/7  21.8%  (+0.6)        4.5% vs 16.8%
+#
+# BOTH LAND AND BOTH RE-DEAL LESS THAN THE RUNG DOES NOW, which is the part
+# worth pausing on: the colour floor is satisfied by whatever carries the
+# colours, and at Easy that is SPECIALIZED rather than Routine. Specialized
+# is the non-monotonic class - two required-colour dots a card, so each card
+# is harder and each SETUP easier - and the Specialized arm beat the Routine
+# arm on both axes at Easy. 4/6/0/0 never re-deals at all.
+#
+# WHAT IT WOULD COST IS SHAPE, NOT WIN RATE. 4/6/0/0 is Routine and
+# Specialized only, 0/3/0/7 is Specialized and Volatile only, and neither
+# rung would deal a single Unstable Program - so two of the four classes
+# would appear at two rungs instead of three. Whether a rung may be built
+# from two classes is a design question and not a measurement, which is why
+# nothing here moved. NEITHER END WAS RETUNED.
 LEVELS = {
     "Easy": (4, 3, 3, 0),
     "Standard": (2, 3, 5, 0),

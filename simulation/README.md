@@ -39,6 +39,8 @@ figures. Read the fidelity notes before quoting anything here.
 |---|---|
 | `peg.py` | **THE ONE OWNER of the difficulty target** every other ladder is read against, with each family's provenance. Run it to see the target and the three games against it; `check_app_sync.py` pins it |
 | `batpeg.py` | measures the target from BAT as it ships - the great third on the normal wake, which is the column BAT's brief names - and asserts conservation on every game. Output in `batpeg.txt` |
+| `napends.py` | what it would cost to put NAP's two END rungs on the target - the whole menu is one Setback or one Credit at each end, because six Setback cards exist and every rung must keep one. Output in `napends.txt` |
+| `aosends.py` | the same question for AoS, whose only ladder dial is which ten of the thirty-two Programs a rung is dealt from. Reports the deal-again rate beside every win rate, since a mix that re-deals one setup in three is not a rung. Output in `aosends.txt` |
 | `dice.py` | the shared 20 Strong dice; face distributions taken verbatim from the playtest engines |
 | `cards.py` | hero rosters and the NRJ tier modules - the axes a balance table gets asked for |
 | `batrev.py` | **Build-a-Tyrant, the scavenged-Tyrant design that ships: BAT'S MODEL OF RECORD.** Experiments that graft and reclaim, the Wake-Up clock, the battle against the old Tyrant's wall |

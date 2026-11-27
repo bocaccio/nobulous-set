@@ -5629,6 +5629,26 @@ check("no rulebook prints a measured win rate for anything to be pegged to",
       not _pct,
       "rules/%s.html now prints a percentage" % ", ".join(_pct))
 
+# AND NOBODY TYPES A SECOND COPY OF A SHIPPED LADDER EITHER, which is the
+# same failure one file over and was found the same day. nap_ladder.py's
+# LADDER read [("Easy", (4, 1)), ("Standard", (5, 2)), ("Hard", (6, 3)),
+# ("Nobulous", (7, 4))] - the ladder of 2026-11-12 - where nap.LEVELS has
+# shipped 3/2, 4/3, 5/4, 6/5 since 2026-11-25. So `nap_ladder.py confirm`
+# spent a fortnight confirming a ladder nobody plays. nap.LEVELS and
+# aos.LEVELS are the owners and the predicate is the same one the peg uses:
+# a constant py_tables can evaluate is a constant somebody typed.
+_copies = []
+for _rel, _name, _want in (
+        ("simulation/nap_ladder.py", "LADDER", "nap.LEVELS[n]"),
+        ("simulation/napends.py", "SHIPPED", "SHIPPED = dict(nap.LEVELS)"),
+        ("simulation/aosends.py", "SHIPPED", "SHIPPED = dict(aos.LEVELS)")):
+    if py_tables(_rel).get(_name) is not None:
+        _copies.append("%s types %s" % (_rel, _name))
+    elif _want not in text(_rel):
+        _copies.append("%s does not derive %s from LEVELS" % (_rel, _name))
+check("no sweep types its own copy of the ladder it is measuring against",
+      not _copies, "; ".join(_copies))
+
 # AND THE MEASUREMENT HAS TO BE OF THE GAME THAT SHIPS. batpeg.py asserts
 # every dial it could be wrong about rather than assuming it - the retired
 # composite was measured through four of them - and it reads the thirds from

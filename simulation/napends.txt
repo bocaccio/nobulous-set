@@ -1,0 +1,95 @@
+NAP'S TWO ENDS AGAINST THE PEG - BAT, great third, normal wake
+Target 70.5 / 50.4 / 38.5 / 21.2.  Shipped 3/2 / 4/3 / 5/4 / 6/5.
+
+THE SURFACE, Prodigy, 3000 games a cell. '-' is illegal: more Setbacks than
+the six printed, or none at all for Tier I to swap out.
+goal       0 sb     1 sb     2 sb     3 sb     4 sb     5 sb     6 sb
+1             -    78.6     75.8     75.1     74.6     74.3     70.8 
+2             -    73.9     71.7     67.3     66.7     63.7     60.1 
+3             -    67.4     65.4E    60.4     55.1     52.4     46.3 
+4             -    61.3     54.5     49.8S    45.2     39.2     36.0 
+5             -    51.4     45.6     39.2     35.3H    30.7     28.6 
+6             -    46.7     38.1     31.6     27.7     24.5N    21.2 
+7             -    42.3     34.1     25.8     23.2     20.8     16.5 
+8             -    36.6     28.8     22.1     20.1     18.3     14.3 
+
+The letter beside a cell is the rung that ships it.
+
+========================================================================
+THE SINGLE STEPS FROM EACH END - one Setback, or one Credit
+========================================================================
+rung       goal/sb     Prodigy      six   target   off
+------------------------------------------------------------------------
+Easy       3 / 2         65.4%    64.5%    70.5%    -6.0   SHIPPED
+Easy       3 / 1         67.4%    68.8%    70.5%    -1.7
+Easy       2 / 2         71.7%    72.5%    70.5%    +2.0
+Easy       2 / 1         73.9%    75.1%    70.5%    +4.6
+
+Nobulous   6 / 5         24.5%    25.6%    21.2%    +4.4   SHIPPED
+Nobulous   6 / 6         21.2%    22.0%    21.2%    +0.8
+Nobulous   7 / 5         20.8%    21.7%    21.2%    +0.5
+Nobulous   7 / 6         16.5%    18.2%    21.2%    -2.9
+
+========================================================================
+THE LADDERS, 3000 games a cell, six Apprentices averaged
+========================================================================
+
+AS IT SHIPS
+level      goal/sb      tier 0    tier I   tier II  tier III
+Easy       3 / 2         64.5%     58.9%     46.1%     51.5%
+Standard   4 / 3         49.9%     48.1%     34.3%     40.8%
+Hard       5 / 4         35.7%     33.2%     23.5%     30.1%
+Nobulous   6 / 5         25.6%     24.1%     16.6%     23.3%
+
+shipped                 -6.0   -0.5   -2.8   +4.4   against the target
+                        14.7   14.2   10.0    0.0   the three ladder steps
+                       Standard 49.9% (in band)
+  shape holds: monotone, and Tier III below solo at every rung.
+
+BOTH SETBACKS
+level      goal/sb      tier 0    tier I   tier II  tier III
+Easy       3 / 1         68.8%     58.9%     46.1%     51.5%
+Standard   4 / 3         49.9%     48.1%     34.3%     40.8%
+Hard       5 / 4         35.7%     33.2%     23.5%     30.1%
+Nobulous   6 / 6         22.0%     20.6%     13.1%     19.6%
+
+both setbacks           -1.7   -0.5   -2.8   +0.8   against the target
+                        18.9   14.2   13.7    0.0   the three ladder steps
+                       Standard 49.9% (in band)
+  shape holds: monotone, and Tier III below solo at every rung.
+
+BOTH CREDITS
+level      goal/sb      tier 0    tier I   tier II  tier III
+Easy       2 / 2         72.5%     69.3%     58.7%     64.2%
+Standard   4 / 3         49.9%     48.1%     34.3%     40.8%
+Hard       5 / 4         35.7%     33.2%     23.5%     30.1%
+Nobulous   7 / 5         21.7%     20.1%     14.0%     20.7%
+
+both credits            +2.0   -0.5   -2.8   +0.5   against the target
+                        22.6   14.2   14.0    0.0   the three ladder steps
+                       Standard 49.9% (in band)
+  shape holds: monotone, and Tier III below solo at every rung.
+
+SETBACK AT EASY, CREDIT AT NOBULOUS
+level      goal/sb      tier 0    tier I   tier II  tier III
+Easy       3 / 1         68.8%     58.9%     46.1%     51.5%
+Standard   4 / 3         49.9%     48.1%     34.3%     40.8%
+Hard       5 / 4         35.7%     33.2%     23.5%     30.1%
+Nobulous   7 / 5         21.7%     20.1%     14.0%     20.7%
+
+setback at easy, credit at nobulous  -1.7   -0.5   -2.8   +0.5   against the target
+                        18.9   14.2   14.0    0.0   the three ladder steps
+                       Standard 49.9% (in band)
+  shape holds: monotone, and Tier III below solo at every rung.
+
+CREDIT AT EASY, SETBACK AT NOBULOUS
+level      goal/sb      tier 0    tier I   tier II  tier III
+Easy       2 / 2         72.5%     69.3%     58.7%     64.2%
+Standard   4 / 3         49.9%     48.1%     34.3%     40.8%
+Hard       5 / 4         35.7%     33.2%     23.5%     30.1%
+Nobulous   6 / 6         22.0%     20.6%     13.1%     19.6%
+
+credit at easy, setback at nobulous  +2.0   -0.5   -2.8   +0.8   against the target
+                        22.6   14.2   13.7    0.0   the three ladder steps
+                       Standard 49.9% (in band)
+  shape holds: monotone, and Tier III below solo at every rung.

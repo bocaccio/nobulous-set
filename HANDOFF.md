@@ -1076,6 +1076,40 @@ Each of these only appears a few turns in.
 
 ## 10. Known open items
 
+- **BOTH ENDS OF NAP AND AoS ARE SIX TO EIGHT POINTS OFF THE TARGET, and
+  every fix is measured and none is applied.** The target is
+  `simulation/peg.py` - BAT's great third on the normal wake, 70.5 / 50.4 /
+  38.5 / 21.2 - and the middles land: NAP is -0.5 / -2.8 at Standard and
+  Hard, AoS +1.9 / -0.3. **Easy is too hard and Nobulous too easy in both
+  games**, which is the reverse of what the retired composite peg said.
+  `simulation/napends.py` and `simulation/aosends.py` size it.
+
+  **NAP's whole menu is one Setback or one Credit at each end**, because six
+  Setback cards are printed (Nobulous runs five) and every rung must keep one
+  for Tier I to swap out. `3/1 · 7/5` is the closest fit at -1.7 / +0.5. But
+  **Easy is a trade, not a number**: 3/1's campaign columns are byte for byte
+  the shipped rung's, because Tier I floors its swap at none, so it buys solo
+  Easy only and takes Tier I's bite there from 5.6 points to 9.9 - near the
+  10.5 the 2026-11-25 Setback step was made to fix. 2/2 overshoots to +2.0
+  and carries the campaign with it, holding the bite at 3.2.
+
+  **AoS reaches both ends by composition** - `4/6/0/0` lands on Easy at
+  +0.0 and `0/3/0/7` on Nobulous at +0.6 - which **withdraws the claim,
+  written twice, that Nobulous cannot be reached**: that floor was taken over
+  `aosvol.py`'s candidate groups, which stop at four Volatile, and six, seven
+  and eight had never been measured. Both candidates also **re-deal less often
+  than the shipped rungs do** (0.0% and 4.5% against 16.6% and 16.8%), because
+  Specialized is what satisfies the colour floor. **What they cost is shape:**
+  neither would deal a single Unstable Program, so two of the four classes
+  would appear at two rungs instead of three. That is a design question.
+
+  **And the target's own shape is irregular**: BAT steps 20.1 / 11.9 / 17.3
+  where NAP steps 14.5 / 14.6 / 9.7, because BAT's rungs are the round limit
+  (12/10/9/8) and a round is not worth the same at every rung. Whether the set
+  wants BAT's shape as well as its level has not been asked. AoS's cells are
+  at 1500 games a Technician - half a point a sigma - so anything that ships
+  wants the 20,000-game run first.
+
 - **BAT'S POOR LAB IS WORTH 5.1% AT STANDARD, and whether that is the design
   is open.** The brief wants a poor lab grim, and it is - but it is grim from
   Wake-Up, not from round 8. Seven battle-side dials were priced (R22-R29 in

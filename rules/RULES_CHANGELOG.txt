@@ -1,3 +1,108 @@
+2026-11-27  SIZING THE TWO ENDS: BOTH REACH THE TARGET, AND AT AoS
+            THEY COST SHAPE RATHER THAN DIFFICULTY
+Jon asked for the two ends to be sized after yesterday's re-peg found the
+middle of every ladder landing and both ends out by six to eight points.
+NOTHING SHIPPED.  Two new sweeps, simulation/napends.py and
+simulation/aosends.py, with their output beside them.
+
+NAP: EACH END HAS EXACTLY TWO MOVES AND THAT IS THE WHOLE MENU, because two
+printed limits bound the question.  SIX SETBACK CARDS EXIST (build_nap.py's
+SETBACKS has six entries) and Nobulous already runs five, so there is one
+Setback left in the game for the hard end.  AND EVERY RUNG MUST KEEP AT
+LEAST ONE, which is what the 2026-11-25 step bought: Tier I swaps one base
+Setback out per Following Setback in, floored at none, so a rung with none
+simply GAINS three cards.  Easy is at two, so there is one Setback to spend
+at the soft end too.  One Setback, or one Credit, at each end.
+
+  ladder            Easy   Nobulous   off target   1st step   Tier I at Easy
+  shipped 3/2 6/5   64.5%    25.6%    -6.0  +4.4     14.7          5.6
+  3/1  6/6          68.8%    22.0%    -1.7  +0.8     18.9          9.9
+  2/2  7/5          72.5%    21.7%    +2.0  +0.5     22.6          3.2
+  3/1  7/5          68.8%    21.7%    -1.7  +0.5     18.9          9.9
+  2/2  6/6          72.5%    22.0%    +2.0  +0.8     22.6          3.2
+
+3000 games a cell, six Apprentices, seed 20.  ALL FOUR CANDIDATES HOLD THE
+SHAPE - monotone, Tier III below its own solo cell at every rung - and
+Standard stays 49.9% and in band in all of them, because it does not move.
+THE CONTROL REPRODUCES: the shipped ladder read 64.5 / 49.9 / 35.7 / 25.6
+against the published 64.5 / 50.0 / 35.4 / 25.7, within 0.3 everywhere, which
+is the only reason to trust the twenty cells beside it.
+
+NOBULOUS IS SOLVED EITHER WAY and 7/5 is the cheaper: +0.5 against 6/6's
++0.8, and it leaves the sixth Setback card unspent.
+
+EASY IS A TRADE AND NOT A NUMBER, which is the finding worth keeping.  3/1
+is nearest on the solo column at -1.7, and its CAMPAIGN COLUMNS ARE
+IDENTICAL TO THE SHIPPED RUNG'S - 58.9 / 46.1 / 51.5, byte for byte -
+because Tier I floors the swap at none and base 2 and base 1 both arrive at
+0 base and 3 Following.  So it buys 4.3 points of solo Easy and nothing
+else, and TIER I'S BITE AT EASY GOES FROM 5.6 POINTS TO 9.9, which is back
+near the 10.5 the 2026-11-25 step was made to fix.  2/2 overshoots to +2.0
+but carries the campaign with it (69.3 / 58.7 / 64.2) and holds Tier I's
+bite at 3.2.  nap_ladder.py's docstring predicted exactly this: "the Credit
+goal is the ONLY lever that moves the campaign axis on the soft half of the
+ladder, and a ladder tuned on the solo column alone will be flat at Tier III
+wherever it leans on Setbacks."  So the Easy question is not 68.8 against
+72.5, it is whether the campaign should move with the rung.
+
+AoS: BOTH ENDS REACH THE TARGET, WHICH WITHDRAWS A CLAIM MADE TWICE.
+"Nobulous cannot reach it by composition: the floor over EVERY four-Volatile
+mix is 27.5%" was written into aos.py and RESULTS.txt on 2026-11-26 and
+repeated in the re-peg - and IT WAS A FLOOR OVER THE MIXES THAT HAD BEEN
+SWEPT, NOT OVER THE PRINTED ROOM.  aosvol.py's candidate groups stop at four
+Volatile, so SIX, SEVEN AND EIGHT HAD NEVER BEEN MEASURED AT ALL.  That
+module's docstring now says so, in the place the next floor would be taken
+from.
+
+  end        shipped          nearest on target        deal-again
+  Easy       4/3/3/0 62.4%    4/6/0/0  70.5%  (+0.0)   0.0% vs 16.6%
+  Nobulous   0/3/3/4 28.6%    0/3/0/7  21.8%  (+0.6)   4.5% vs 16.8%
+
+1500 games per Technician, mean of the six, and the deal-again rate from
+200,000 analytic replays of the first deal.  Both hold the tier shape: Easy
+4/6/0/0 reads 70.5 / 60.1 / 55.0 / 54.3 and Nobulous 0/3/0/7 reads 21.8 /
+12.7 / 11.2 / 11.6.
+
+AND BOTH RE-DEAL LESS OFTEN THAN THE RUNG DOES NOW, which is the opposite of
+what was expected.  The colour floor is satisfied by whatever carries the
+colours, and at the Easy end that is SPECIALIZED, not Routine - two
+required-colour dots a card, so each card is harder and each SETUP easier.
+The Specialized arm beat the Routine arm on both axes: 4/6/0/0 lands on the
+target and NEVER RE-DEALS, where the shipped Easy throws away one setup in
+six.  The first version of aosends.py's report() picked by deal-again among
+every cell that CROSSED the target and answered 8/2/0/0, fourteen points
+past it, which is not a ladder question; it picks by distance now and treats
+deal-again as the constraint it is.
+
+WHAT IT WOULD COST AT AoS IS SHAPE.  4/6/0/0 is Routine and Specialized
+only and 0/3/0/7 is Specialized and Volatile only, so NEITHER END WOULD DEAL
+A SINGLE UNSTABLE PROGRAM and two of the four classes would appear at two
+rungs instead of three.  Whether a rung may be built from two classes is a
+design question and not a measurement, which is why nothing moved.
+
+MIND THE SAMPLE BEFORE SHIPPING ANY OF THIS.  AoS is at 1500 games a
+Technician, so 9,000 a cell and about half a point a sigma: 4/6/0/0's "+0.0"
+is +0.0 plus or minus a point, and the published AoS ladder is measured at
+20,000.  NAP's cells are 18,000 games each and tighter at 0.34.  A rung that
+ships wants the big run.
+
+AND THE TARGET'S SHAPE IS IRREGULAR, which peg.py now prints beside it.  BAT
+steps 20.1 / 11.9 / 17.3 where NAP steps 14.5 / 14.6 / 9.7 and AoS 10.1 /
+14.1 / 9.1 - BAT's MIDDLE step is its narrowest, because its rungs are set by
+the round limit (12/10/9/8) and a round is not worth the same at every rung.
+Matching four levels means matching that pattern, so pulling both ends in
+takes NAP to 18.9 / 14.2 / 14.0 and AoS to 18.2 / 14.1 / 16.4.  Whether the
+set wants BAT's SHAPE as well as its LEVEL has not been asked yet.
+
+A CHECK, AND THE SAME FAILURE ONE FILE OVER.  nap_ladder.py's LADDER was
+typed - [("Easy", (4, 1)), ("Standard", (5, 2)), ("Hard", (6, 3)),
+("Nobulous", (7, 4))] - and two re-pegs stale, so `nap_ladder.py confirm`
+spent a fortnight confirming a ladder nobody plays with nothing to say so.
+It derives from nap.LEVELS now, both new sweeps derive their own SHIPPED
+from LEVELS, and check_app_sync.py pins all three on the predicate the peg
+check uses: a constant py_tables can evaluate is a constant somebody typed.
+Probed both ways, and it bites.
+
 2026-11-26  THE PEG WAS NOT WHAT IT SAID IT WAS, AND NOW IT HAS AN
             OWNER AND A CHECK
 Jon asked for the set's difficulty target to be re-pegged from BAT after
