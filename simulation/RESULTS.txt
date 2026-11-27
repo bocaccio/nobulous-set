@@ -13,6 +13,16 @@ the grid wins and the prose is what went stale.  Re-run rather than
 retyping: table.py computes its own calibration verdicts from the
 cells it measured.
 
+THE TARGET THE GRIDS ARE READ AGAINST IS simulation/peg.py, since
+2026-11-26, and before that it was 63.7 / 52.8 / 37.8 / 25.8 typed
+into eight files and attributed to rules/bat.html - which prints no
+percentage.  It was a composite of four cells from four
+configurations, and it was BAT's OVERALL column where BAT is judged
+on its GREAT THIRD.  The target is now 70.5 / 50.4 / 38.5 / 21.2,
+BAT's great third on the normal wake, 20,000 games a rung.  EVERY
+DELTA WRITTEN IN THIS FILE BEFORE THAT DATE is against the retired
+composite; the two that matter are corrected in place and say so.
+
 ==================================================================
 NAP  Nobulous Apprenticeship Program
 ==================================================================
@@ -78,11 +88,17 @@ NAP  Nobulous Apprenticeship Program
     own and predates both re-pegs.  A Setback in the deck is
     worth about the same to every Apprentice.
 
-    AGAINST THE PEGGED LADDER in rules/bat.html - 63.7 / 52.8 /
-    37.8 / 25.8, the one ladder in the set aimed at the community
-    band on purpose - this is +0.8 / -2.8 / -2.4 / -0.1.  The two
-    ENDS are the closest they have ever been and the middle is
-    2 to 3 points under.  The solo steps are 14.6 / 14.6 / 9.7
+    AGAINST THE PEGGED LADDER as it was then believed to be -
+    63.7 / 52.8 / 37.8 / 25.8, cited to rules/bat.html, which
+    prints no percentage - this is +0.8 / -2.8 / -2.4 / -0.1, and
+    the two ENDS looked like the closest they had ever been.
+    THAT COMPOSITE WAS RETIRED ON 2026-11-26 and the target is
+    now simulation/peg.py's 70.5 / 50.4 / 38.5 / 21.2, BAT's
+    great third on the normal wake.  AGAINST IT this ladder is
+    -6.0 / -0.4 / -3.1 / +4.5, so it is the MIDDLE that lands and
+    the two ends that are out - Easy 6 points too hard, Nobulous
+    4.5 too easy.  Nothing about NAP moved; the column it is read
+    against did.  The solo steps are 14.6 / 14.6 / 9.7
     against 13.5 / 15.4 / 12.0 before: the first step WIDENED by
     1.1, because Standard gave up 5.4 points and Easy only 4.4,
     and the top step compressed to 9.7 because Nobulous was
@@ -328,11 +344,15 @@ AoS  Automaton of Shale
   reason to trust the six new cells beside it.
 
   AoS IS NO LONGER THE OUTLIER AT THE BOTTOM, which is what the
-  retune was for.  rules/bat.html prints 63.7 / 52.8 / 37.8 / 25.8
-  and NAP was re-pegged to it the same day; AoS was 6.9 points easier
-  than that peg at Hard and 10.8 at Nobulous, which made Nobulous AoS
-  the easiest Nobulous in the set.  It now reads -1.3 / -0.5 / +0.4 /
-  +3.3.  Hard lands on the peg.  NOBULOUS DOES NOT, and cannot by
+  retune was for.  The target it was aimed at was 63.7 / 52.8 / 37.8 /
+  25.8, cited to rules/bat.html, which prints no percentage; it was
+  retired on 2026-11-26 for simulation/peg.py's 70.5 / 50.4 / 38.5 /
+  21.2.  AoS was 6.9 points easier than the old figure at Hard and
+  10.8 at Nobulous, which made Nobulous AoS the easiest Nobulous in
+  the set.  It now reads -1.3 / -0.5 / +0.4 / +3.3 against that, and
+  -8.1 / +1.9 / -0.3 / +7.9 against the real target: HARD STILL LANDS,
+  at -0.3, and the retune's conclusion holds on the rung it was aimed
+  at.  NOBULOUS DOES NOT, and cannot by
   composition: the floor over EVERY four-Volatile mix is 0/1/5/4 at
   27.5% and over every three-Volatile mix 30.6%, so the last three
   points need a rule or a harder card.  Five Volatile does reach it,

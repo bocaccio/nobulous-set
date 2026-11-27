@@ -37,6 +37,8 @@ figures. Read the fidelity notes before quoting anything here.
 
 | file | what it models |
 |---|---|
+| `peg.py` | **THE ONE OWNER of the difficulty target** every other ladder is read against, with each family's provenance. Run it to see the target and the three games against it; `check_app_sync.py` pins it |
+| `batpeg.py` | measures the target from BAT as it ships - the great third on the normal wake, which is the column BAT's brief names - and asserts conservation on every game. Output in `batpeg.txt` |
 | `dice.py` | the shared 20 Strong dice; face distributions taken verbatim from the playtest engines |
 | `cards.py` | hero rosters and the NRJ tier modules - the axes a balance table gets asked for |
 | `batrev.py` | **Build-a-Tyrant, the scavenged-Tyrant design that ships: BAT'S MODEL OF RECORD.** Experiments that graft and reclaim, the Wake-Up clock, the battle against the old Tyrant's wall |
@@ -256,9 +258,15 @@ diagonal, shifted, so each dial still moves one step a rung:
 > | Hard | 5 / 4 | 35.4% | 33.3% | 23.4% | 30.2% |
 > | Nobulous | 6 / 5 | 25.7% | 24.1% | 16.5% | 23.4% |
 >
-> **Standard is mid-band for the first time**, and against BAT's pegged
-> 63.7 / 52.8 / 37.8 / 25.8 the two ends are the closest they have been
-> (+0.8 and -0.1). One Apprentice is out: Slacker reads 46.5%, 0.5 below the
+> **Standard is mid-band for the first time.** The sentence that stood
+> here said that against BAT's pegged 63.7 / 52.8 / 37.8 / 25.8 the two
+> ends were the closest they had been (+0.8 and -0.1); **that target was
+> retired on 2026-11-26** - see `peg.py` - and against the one in force,
+> 70.5 / 50.4 / 38.5 / 21.2, this ladder is -6.0 / -0.4 / -3.1 / +4.5. So
+> it is **Standard that lands** and the two ends that are out, which is
+> the reverse of the claim it replaces. NAP itself did not move; the
+> column it was being read against did.
+> One Apprentice is out: Slacker reads 46.5%, 0.5 below the
 > floor, where this ladder's predecessor had Opportunist 0.3 above the
 > ceiling. `napharder.txt` sizes all eleven levers that were considered and
 > `napladder.txt` has the five ladders; see `rules/RULES_CHANGELOG.txt` for

@@ -979,9 +979,12 @@ CREDITS_TO_LEAVE = 4      # Easy 3, Standard 4, Hard 5, Nobulous 6
 #     Hard          6 / 3    37.0    35.1     22.9     33.7
 #     Nobulous      7 / 4    26.3    24.5     16.8     25.7
 #
-# WHAT IT BUYS AT THE HARD END, against the pegged ladder in rules/bat.html -
-# 63.7 / 52.8 / 37.8 / 25.8, the one in the set aimed at the community band on
-# purpose. NOBULOUS IS HALF A POINT OUT at 26.3 against 25.8, where 8/4 read
+# WHAT IT BUYS AT THE HARD END, against what was then believed to be the
+# pegged ladder - 63.7 / 52.8 / 37.8 / 25.8, cited to rules/bat.html, which
+# prints no percentage. The target is simulation/peg.py's 70.5 / 50.4 /
+# 38.5 / 21.2 since 2026-11-26; the reasoning below is kept as it was
+# measured, and the deltas in it are against the retired composite.
+# NOBULOUS IS HALF A POINT OUT at 26.3 against 25.8, where 8/4 read
 # 22.5 and was 3.3 out; Hard is 37.0 against 37.8, the 0.8 it already was. So
 # the step bought Nobulous and left Hard alone. EVERY RUNG ALSO PLAYS WITH AT
 # LEAST ONE SETBACK, which is what fixes the two things the previous ladder
@@ -1044,9 +1047,16 @@ CREDITS_TO_LEAVE = 4      # Easy 3, Standard 4, Hard 5, Nobulous 6
 #     Hard          5 / 4    35.4    33.3     23.4     30.2
 #     Nobulous      6 / 5    25.7    24.1     16.5     23.4
 #
-# Against rules/bat.html's deliberately pegged 63.7 / 52.8 / 37.8 / 25.8
-# that is +0.8 / -2.8 / -2.4 / -0.1, the closest the solo column has been
-# at the two ends. THE LADDER CAME DOWN 4.4 / 5.4 / 4.6 / 2.3, so Standard
+# Against the retired composite 63.7 / 52.8 / 37.8 / 25.8 - cited here to
+# rules/bat.html, which prints no percentage - that is +0.8 / -2.8 / -2.4 /
+# -0.1, "the closest the solo column has been at the two ends". AGAINST THE
+# TARGET THAT IS ACTUALLY IN FORCE, simulation/peg.py's 70.5 / 50.4 / 38.5 /
+# 21.2, it is -6.0 / -0.4 / -3.1 / +4.5: STANDARD IS THE CELL THAT LANDS, at
+# -0.4 and in band, and the two ENDS are the ones out - Easy 6 points too
+# hard and Nobulous 4.5 too easy, which is the opposite of what the composite
+# said about both. Neither end was re-tuned on this finding; it is recorded
+# so the next re-peg starts from the right column.
+# THE LADDER CAME DOWN 4.4 / 5.4 / 4.6 / 2.3, so Standard
 # moved most and Nobulous least, and the solo steps are 14.6 / 14.6 / 9.7
 # against 13.5 / 15.4 / 12.0 before. The first step did NOT narrow - it
 # widened by 1.1, because Standard gave up more than Easy did - and the

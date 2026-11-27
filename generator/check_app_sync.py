@@ -5541,6 +5541,111 @@ check("the overlay's box labels are all one size",
       and not re.search(r"label\(d, \"[A-Z][^\"]*\", [\d.]+, \w+\[\d\], \d\d",
                         _tmpl))
 
+# ------------------------------------------------------------------ THE PEG
+# WHY THIS SECTION EXISTS, and it is the plainest failure this file has ever
+# been added for. From 2026-11-12 to 2026-11-26 the target the three games
+# are tuned against was 63.7 / 52.8 / 37.8 / 25.8, typed by hand into eight
+# files and described in most of them as "the pegged ladder in
+# rules/bat.html". THREE THINGS ABOUT THAT WERE FALSE AT ONCE: no rulebook
+# has ever printed a percentage, no BAT run ever produced those four numbers
+# together (it is a composite of four cells from four configurations), and
+# it was BAT's OVERALL column when BAT's own brief pegs it to its GREAT
+# THIRD. NAP was re-pegged to it on 2026-11-25 and AoS was retuned at it on
+# 2026-11-26, both against a column that had meant nothing since 2026-11-20.
+#
+# NOTHING CAUGHT IT BECAUSE NOTHING WAS ASKED TO. There was no owner and no
+# check, and eight copies of a number cannot disagree with each other.
+# simulation/peg.py is the owner now and this is the check.
+_peg = text("simulation/peg.py")
+_pegt = py_tables("simulation/peg.py")
+
+# ONE OWNER, AND THE PREDICATE IS THAT py_tables CANNOT READ THE COPIES.
+# py_tables evaluates module-level LITERALS, so a target it can resolve is
+# one somebody typed - which is the whole failure in one line. The three
+# sweeps that compare against the target must therefore derive it.
+_typed = []
+for _rel, _name, _want in (
+        ("simulation/aosvol.py", "PEG", "PEG = dict(peg.HOUSE)"),
+        ("simulation/napage.py", "HOUSE", "HOUSE = peg.house_tuple()"),
+        ("simulation/nap_ladder.py", "TARGET", "TARGET = dict(peg.HOUSE)")):
+    if py_tables(_rel).get(_name) is not None:
+        _typed.append("%s types %s" % (_rel, _name))
+    elif _want not in text(_rel):
+        _typed.append("%s does not derive %s from peg.py" % (_rel, _name))
+check("the difficulty target has one owner and nobody types a second copy",
+      not _typed
+      # ...and the owner derives it too, from the ladder it names, so there
+      # is no literal anywhere for a hand to carry out of step.
+      and _pegt.get("HOUSE") is None
+      and "HOUSE = dict(zip(LEVELS, LADDERS[PEG_FAMILY][0]))" in _peg,
+      "; ".join(_typed) or "simulation/peg.py stopped deriving HOUSE")
+
+# THE PROVENANCE CHECK IS THE ANTI-ROT ONE: every ladder's four figures have
+# to be FINDABLE IN THE OUTPUT FILE IT NAMES. A comment cannot satisfy that
+# and neither can a rename - re-measure and the file changes, so the claim
+# fails until the claim is updated with it. This is deliberately NOT done by
+# calling peg.provenance(): a check that runs the code it is checking can be
+# satisfied by breaking the helper.
+_prov = []
+for _fam, (_figs, _rel, _how) in sorted(_pegt["LADDERS"].items()):
+    _path = os.path.join(ROOT, _rel.replace("/", os.sep))
+    if not os.path.exists(_path):
+        _prov.append("%s: %s is missing" % (_fam, _rel))
+        continue
+    _src = text(_rel)
+    _gone = ["%.1f" % v for v in _figs if ("%.1f" % v) not in _src]
+    if _gone:
+        _prov.append("%s: %s lost %s" % (_fam, _rel, ", ".join(_gone)))
+check("every ladder peg.py claims is findable in the file it was measured in",
+      not _prov, "; ".join(_prov))
+
+# AND THE COLUMN CANNOT BE SWAPPED BACK. BAT is pegged on its great third
+# and NOT on its overall win rate, which is about 23% at Standard; reading
+# one as the other is the mistake, so peg.py records both and they have to
+# differ at every rung. A file holding only one of them could drift into
+# being the other without anything noticing - which is what happened.
+_bat = _pegt["LADDERS"]["BAT"][0]
+check("peg.py says which BAT column the target is, and keeps the other one "
+      "beside it",
+      _pegt["PEG_COLUMN"] == "great third, normal wake"
+      and _pegt["PEG_FAMILY"] == "BAT"
+      and len(_bat) == len(_pegt["BAT_OVERALL"]) == 4
+      and all(a != b for a, b in zip(_bat, _pegt["BAT_OVERALL"]))
+      and all(a > b for a, b in zip(_bat, _pegt["BAT_OVERALL"]))
+      # py_tables normalises every sequence literal to a list, so compare
+      # as tuples rather than against the shape peg.py writes.
+      and tuple(_pegt["BAND"]) == (47.0, 57.0)
+      and _pegt["BAND"][0] <= _bat[1] <= _pegt["BAND"][1],
+      "the pegged column, its control or the band stopped being what peg.py "
+      "says")
+
+# NO RULEBOOK PRINTS A WIN RATE, which is the check whose absence let four
+# files cite rules/bat.html for a ladder it does not contain. The books
+# print difficulty tables, not measurements, and a decimal percentage in one
+# is a measurement by definition.
+_pct = [g for g in ("bat", "nap", "aos", "nrj")
+        if re.search(r"\d+\.\d\s*%", text("rules/%s.html" % g))]
+check("no rulebook prints a measured win rate for anything to be pegged to",
+      not _pct,
+      "rules/%s.html now prints a percentage" % ", ".join(_pct))
+
+# AND THE MEASUREMENT HAS TO BE OF THE GAME THAT SHIPS. batpeg.py asserts
+# every dial it could be wrong about rather than assuming it - the retired
+# composite was measured through four of them - and it reads the thirds from
+# batrev itself rather than re-splitting the games its own way.
+_bp = text("simulation/batpeg.py")
+check("batpeg.py asserts the shipped dials and takes its thirds from batrev",
+      "assert got == v" in _bp
+      and all(d in _bp for d in ("RETAIN_NO_RESHUFFLE=True",
+                                 "BOTTOM_ON_SUCCESS=True",
+                                 "ZERO_DICE_NO_GRAFT=True",
+                                 "BORROW_BANDS=True",
+                                 "CLOCK_AWARE_PASS=True",
+                                 "ROUND_LIMIT=0"))
+      and "batrev.thirds_of(rows)" in _bp
+      and "conservation broken" in _bp,
+      "the peg measurement stopped pinning the game it measures")
+
 print()
 if SKIPPED:
     print("%d check(s) COULD NOT RUN here:" % len(SKIPPED))

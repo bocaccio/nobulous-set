@@ -1,3 +1,131 @@
+2026-11-26  THE PEG WAS NOT WHAT IT SAID IT WAS, AND NOW IT HAS AN
+            OWNER AND A CHECK
+Jon asked for the set's difficulty target to be re-pegged from BAT after
+yesterday's work raised it as stale.  It was worse than stale.  THREE THINGS
+ABOUT 63.7 / 52.8 / 37.8 / 25.8 WERE FALSE AT THE SAME TIME.
+
+RULES/BAT.HTML PRINTS NO PERCENTAGE.  Not that ladder, not any: the file
+contains zero "%" characters and always has.  Four files cited a rulebook
+for a figure no rulebook has ever carried, in the words "the pegged ladder
+in rules/bat.html, the one ladder in the set aimed at the community band on
+purpose".
+
+NO BAT RUN EVER PRODUCED THOSE FOUR NUMBERS TOGETHER.  It is a composite of
+four cells from four configurations, assembled by hand:
+
+  Easy      63.7  supply.txt's BANKING table, whose Standard reads 56.1
+  Standard  52.8  batrev_batch.txt, GRAFT_REVEAL 2, DECKS 12/13/14/15
+  Hard      37.8  batrev.py's lab-quality table, and its attrition run
+  Nobulous  25.8  the HP sweep's deck-15 / HP-9 cell, which batrev.py's own
+                  docstring warns to "read as DECK SIZE ONLY"
+
+CARD_MANIFEST.txt attributed the same four numbers to a THIRD scheme again -
+"Easy 5/9, Standard 6/10, Hard 7/12, Nobulous 8/14... at 3000 games" - so the
+composite had been carried across at least three difficulty schemes without
+being measured once.
+
+AND IT WAS THE WRONG COLUMN, which is the part that matters.  On 2026-11-20
+BAT adopted the scavenged-Tyrant design and its BRIEF changed with it.
+HANDOFF.md has said so ever since, in as many words: "Standard's great
+third, 46.5%, is the figure the design is pegged to...  Do not read the
+overall column against the old band: that band was set for an overall win
+rate and this ladder is not one."  BAT is judged on its games split into
+thirds by graft Value at Wake-Up, because a GREAT lab should still be a
+fight and a POOR one close to hopeless.  Its OVERALL column is 23.3% at
+Standard - and NAP was re-pegged to a stale reading of that column on
+2026-11-25, and AoS retuned at it on 2026-11-26.
+
+THE TARGET RE-MEASURED, simulation/batpeg.py, 20,000 games a rung, seed 20,
+every shipped dial asserted rather than assumed and conservation checked on
+every game:
+
+  column                     Easy  Standard  Hard  Nobulous
+  GREAT third, normal wake   70.5     50.4    38.5    21.2   <- the target
+  great third, all games     69.8     49.3    37.5    20.3
+  overall                    40.4     23.3    15.4     7.6
+  the retired composite      63.7     52.8    37.8    25.8
+
+Difficulty is pegged mostly to the normal wake (Jon, 2026-11-26), so that is
+the column taken.  STANDARD READS 50.4% AND IS INSIDE THE 47-57% BAND, so
+BAT is still the band-anchored ladder the set was tuned to - it just has not
+been publishing that figure where anyone was reading.
+
+AND IT NEEDS THE BIG SAMPLE, which is new.  A third of the games is a third
+of the sample, so the great third at 20,000 games a rung is about 6,700 games
+a cell.  The 2,000-game pilot of the same measurement read 71.6 / 47.8 / 35.6
+/ 24.1 - up to 3 points out.  The overall column is stable at 2,000; this one
+is not.
+
+WHAT THE SET LOOKS LIKE AGAINST THE REAL TARGET.  Nothing about NAP or AoS
+moved; the column they are read against did.
+
+  family   Easy  Standard  Hard  Nobulous        against the target
+  TARGET   70.5     50.4   38.5     21.2
+  NAP      64.5     50.0   35.4     25.7    -6.0  -0.4  -3.1  +4.5
+  AoS      62.4     52.3   38.2     29.1    -8.1  +1.9  -0.3  +7.9
+
+THE MIDDLE IS WHERE THE WORK LANDED AND IT HELD.  Standard is -0.4 and +1.9,
+both in band, and Hard is -3.1 and -0.3.  Six days of tuning those two rungs
+was not wasted - they are the two the composite happened to be nearly right
+about, because Standard 52.8 really was a BAT measurement and Hard 37.8 was
+within 0.7 of one.
+
+THE TWO ENDS ARE OUT, AND IN OPPOSITE DIRECTIONS FROM WHAT WAS BELIEVED.
+EASY IS 6 TO 8 POINTS TOO HARD in both games, where the composite's 63.7 said
+it was level (NAP +0.8, AoS -1.3).  Easy was the rung nobody was looking at.
+NOBULOUS IS 4.5 TO 7.9 TOO EASY against 21.2, where the composite's 25.8 made
+NAP half a point out and AoS three.  The AoS note that four Volatile "cannot
+reach 25.8 by composition at all" is now a stronger argument, not a weaker
+one: the floor over every four-Volatile mix is 27.5% and over every
+three-Volatile mix 30.6%, and five Volatile's 26.2% does not reach 21.2
+either.  NEITHER END WAS RETUNED on this finding - that is a design decision
+and the ask was to fix the peg - but the next re-peg starts from the right
+column now.
+
+MIND WHAT KIND OF NUMBER THE TARGET IS, and peg.py says so rather than
+pretending otherwise: BAT's great third is a CONDITIONAL win rate, given a
+good lab, while NAP's and AoS's columns are unconditional.  They are not the
+same quantity.  The great third is used because it is the figure BAT's own
+design is pegged to and the only BAT column with a band-sized value in it,
+so the gap above is a guide and not an equivalence.
+
+ONE OWNER, simulation/peg.py, AND THE STRUCTURAL HALF OF THE FIX IS THAT
+HOUSE IS DERIVED AND NOT TYPED - dict(zip(LEVELS, LADDERS[PEG_FAMILY][0])).
+aosvol.py's PEG, napage.py's HOUSE and nap_ladder.py's TARGET were three
+live constants a sweep then compared against; all three now read the owner.
+Five more files stated it in prose and are corrected in place.
+
+FIVE CHECKS, AND NINE PROBES PROVING THEY BITE.  There was no check on the
+peg, which is the whole reason it rotted for fourteen days: eight copies of
+a number cannot disagree with each other.
+
+  ONE OWNER, and the predicate is that py_tables CANNOT READ THE COPIES.
+  py_tables evaluates module-level LITERALS, so a target it can resolve is
+  one somebody typed - the failure in one line.  Each of the three sweeps
+  must derive it, and peg.py must derive it too.
+  PROVENANCE, which is the anti-rot one: every ladder's four figures have to
+  be FINDABLE IN THE OUTPUT FILE IT NAMES.  Re-measure and the file changes,
+  so the claim fails until the claim is updated with it.  Deliberately not
+  done by calling peg.provenance() - a check that runs the code it checks
+  can be satisfied by breaking the helper.
+  THE COLUMN CANNOT BE SWAPPED BACK: peg.py records BAT's overall ladder
+  beside the pegged one, they must differ at every rung, the pegged one must
+  be the higher, and PEG_COLUMN must say which it is.
+  NO RULEBOOK PRINTS A MEASURED WIN RATE.  This is the check whose absence
+  let four files cite rules/bat.html for a ladder it does not contain.
+  THE MEASUREMENT IS OF THE GAME THAT SHIPS: batpeg.py must assert all six
+  dials and take its thirds from batrev rather than re-splitting its own way.
+
+Each was broken on purpose and the suite re-run - typing a literal back into
+napage.py, moving a figure off its measurement, pointing a ladder at a file
+that is not there, pegging BAT on its overall column, relabelling the column
+without moving it, printing a win rate in a rulebook, dropping a dial, and
+splitting the thirds by hand.  Nine probes, nine bites, no collateral
+failures, and the file restored byte for byte each time.
+
+NOTHING THE PLAYER TOUCHES CHANGED.  No card, no rule, no PDF, no mod, no
+image: this is the simulation's own bookkeeping about what it was aiming at.
+
 2026-11-26  BAT: WHERE A SPLICE GOES, AND A BORROW TABLE THAT REACHES
             THE WHOLE GAME
 Jon rewrote the Splice economy in rules/bat.html and asked for the borrow

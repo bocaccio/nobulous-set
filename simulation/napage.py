@@ -58,13 +58,16 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import nap
+import peg
 
 LEVELS = ("Easy", "Standard", "Hard", "Nobulous")
 APPS = ["Prodigy", "Slacker", "Technician", "Savant", "Opportunist", "Lab Rat"]
 PUBLISHED = (58.1, 49.0, 37.0, 26.3)
-# BAT's ladder, the one in the set pegged against the 20 Strong community
-# band deliberately, and the house style to aim at.
-HOUSE = (63.7, 52.8, 37.8, 25.8)
+# THE HOUSE STYLE TO AIM AT, owned by simulation/peg.py since 2026-11-26.
+# This was typed as (63.7, 52.8, 37.8, 25.8) and labelled "BAT's ladder,
+# the one in the set pegged against the 20 Strong community band
+# deliberately" - and the band part was the only true clause in it.
+HOUSE = peg.house_tuple()
 GAMES = 3000        # per Apprentice on a four-rung row
 LADDER_GAMES = 2000  # per Apprentice per tier on the candidate ladders
 GRID_GAMES = 2500   # per cell on the Prodigy-only difficulty surface
@@ -334,7 +337,7 @@ def section_repeg(base_l):
     head()
     row("AS SHIPPED", base_l)
     row("published, 20k games", PUBLISHED)
-    row("BAT, the ladder pegged deliberately", HOUSE)
+    row("BAT, %s" % peg.PEG_COLUMN, HOUSE)
     row("the package on the SHIPPED rungs", ladder(**PACKAGE), base_l)
     print()
     surface("the surface under the package", **PACKAGE)

@@ -32,11 +32,14 @@ TWO TARGETS, because they are different questions and the answer differs:
   20,000 games a cell). Holding this means Volatile reaches Hard without the
   rung getting harder, which it pays for in Specialized. A pure restructure.
 
-  THE PEG, 63.7 / 52.8 / 37.8 / 25.8 - BAT's ladder, which rules/bat.html
-  prints and which NAP was re-pegged to on 2026-11-25 (64.5 / 50.0 / 35.4 /
-  25.7). AoS is the outlier of the three: Hard is 6.9 points easier than the
-  peg and Nobulous 10.8. Hitting this is a re-pitch, not a restructure, and
-  it is a design decision rather than a measurement.
+  THE PEG, which simulation/peg.py owns and this module no longer types.
+  It was 63.7 / 52.8 / 37.8 / 25.8 when the sweep below was run, described
+  here as "BAT's ladder, which rules/bat.html prints". Every part of that
+  was wrong - see peg.py - and the figure moved when it was re-measured on
+  2026-11-26. THE CELLS IN aosvol.txt ARE UNCHANGED, because they are
+  measurements of AoS and nothing about AoS moved; only the column headed
+  "peg" means something different, so re-run this to compare against the
+  target that is actually in force.
 
 Both are reported for every cell so the choice can be made on the numbers.
 """
@@ -44,6 +47,7 @@ import statistics
 import sys
 
 import aos
+import peg
 
 # ONE OWNER for the shipped ladder, the same reason aosmix.py derives it: a
 # hand-copied mix labelled two rungs wrong for a fortnight after the
@@ -53,8 +57,11 @@ NAMES = aos.LEVEL_NAMES
 
 # RESULTS.txt, 2026-11-25, 20,000 games a cell, mean of the six Technicians.
 PUBLISHED = {"Easy": 62.4, "Standard": 52.5, "Hard": 44.7, "Nobulous": 36.6}
-# rules/bat.html's ladder, which NAP was re-pegged to the same day.
-PEG = {"Easy": 63.7, "Standard": 52.8, "Hard": 37.8, "Nobulous": 25.8}
+# THE SET'S TARGET HAS ONE OWNER, simulation/peg.py, since 2026-11-26.
+# Typed here before that, in napage.py, in nap_ladder.py and in prose in
+# four more files - eight hand copies of one number, which is how it went
+# fourteen days without anyone noticing it had stopped being true.
+PEG = dict(peg.HOUSE)
 
 CARDS = 10          # the Program deck, since aosdeck.py chose ten
 PRINTED = 8         # cards printed per class, so no count may exceed it

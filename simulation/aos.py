@@ -347,13 +347,28 @@ ELEMENT_COST = 0         # dice exhausted per resolved element, win or lose:
 # difficulty for 10.5 points of re-deal - one setup in four, and the worst
 # setup in the game by a wide margin. It was refused on that.
 #
-# THE BOTTOM RUNG STILL DOES NOT REACH THE PEG. rules/bat.html prints
-# 63.7 / 52.8 / 37.8 / 25.8 and NAP was re-pegged to it the same day; Hard
-# lands on it at +0.4 and Nobulous is +3.3. The floor over EVERY V=4 mix is
-# 0/1/5/4 at 27.5% and over every V=3 mix 30.6%, so four Volatile cannot
-# reach 25.8 by composition at all - that last 3 points needs a rule or a
-# harder card, and neither was in scope here. Easy and Standard did not move:
-# Standard was already on the peg at 52.3% and no cell in the sweep beat it.
+# THE BOTTOM RUNG STILL DOES NOT REACH THE PEG, AND BY MORE THAN THIS
+# PARAGRAPH SAID. It read "rules/bat.html prints 63.7 / 52.8 / 37.8 / 25.8
+# and NAP was re-pegged to it the same day; Hard lands on it at +0.4 and
+# Nobulous is +3.3". The book prints no percentage, that composite was never
+# one measurement, and it was BAT's OVERALL column where BAT is judged on
+# its GREAT THIRD - all three found on 2026-11-26. simulation/peg.py owns
+# the target now: 70.5 / 50.4 / 38.5 / 21.2, re-measured from BAT.
+#
+# AGAINST THE REAL TARGET this ladder is -8.1 / +1.9 / -0.3 / +7.9, so the
+# retune's two conclusions survive and one of them gets worse. HARD STILL
+# LANDS, at -0.3 where it read +0.4. NOBULOUS IS +7.9, not +3.3, and the
+# argument that composition cannot close it is now much stronger than when
+# it was made: the floor over EVERY V=4 mix is 0/1/5/4 at 27.5% and over
+# every V=3 mix 30.6%, against a target of 21.2. Five Volatile's 26.2% does
+# not reach it either. That rung needs a rule or a harder card, which is
+# what this note said with 3 points to find and still says with 6.
+#
+# AND EASY IS THE RUNG NOBODY WAS LOOKING AT: 62.4% against 70.5%, so -8.1
+# and the furthest-out cell in the set. The old composite put Easy at 63.7
+# and called it level. Easy and Standard did not move in this retune and
+# did not need to for Standard's sake - it reads +1.9, in band - but Easy
+# is now the open question here, not Hard.
 LEVELS = {
     "Easy": (4, 3, 3, 0),
     "Standard": (2, 3, 5, 0),

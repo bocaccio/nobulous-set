@@ -26,18 +26,26 @@ TWO THINGS MAKE THIS A SURFACE AND NOT TWO LINES.
   Tier III wherever it leans on Setbacks.
 
 The house style to aim at is BAT's, which is the one ladder in the set that
-was pegged against the 20 Strong community band deliberately: Easy 63.7,
-Standard 52.8, Hard 37.8, Nobulous 25.8. Standard inside 47-57 and the hard
-end outside it on purpose.
+was pegged against the 20 Strong community band deliberately - and
+simulation/peg.py owns the four numbers, which this file used to type. It
+read Easy 63.7, Standard 52.8, Hard 37.8, Nobulous 25.8 until 2026-11-26,
+when re-measuring BAT found that figure was a composite of four
+configurations and was taken from a column BAT's own brief had stopped
+publishing. Standard inside 47-57 and the hard end outside it on purpose is
+still the shape; peg.py says what the numbers are.
 """
 import sys
 
 sys.path.insert(0, '.')
 import nap  # noqa: E402
+import peg  # noqa: E402
 
 GOALS = (4, 5, 6, 7, 8)
 SETBACKS = (0, 1, 2, 3, 4, 5)
-TARGET = {"Easy": 63.0, "Standard": 53.0, "Hard": 38.0, "Nobulous": 26.0}
+# WAS {"Easy": 63.0, "Standard": 53.0, "Hard": 38.0, "Nobulous": 26.0} -
+# the composite peg rounded to whole points, which hid how little of it was
+# measured. peg.py owns it now, to one decimal and with its provenance.
+TARGET = dict(peg.HOUSE)
 
 
 def cell(goal, sb, tier="none", apprentice="Prodigy", games=3000):

@@ -1,0 +1,26 @@
+THE PEG RE-MEASURED - 20000 games a rung, seed 20, batch() shape.
+batrev.py as it ships: PARTS_AT_SETUP [13], SPECIMENS_IN_POOL [5, 7, 7, 8],
+ROUNDS [12, 10, 9, 8], GRAFT_REVEAL 2, WAKEUP_PACKET 3.  Thirds are split by graft Value
+at Wake-Up, by batrev.thirds_of, which is how BAT's own brief reads the game.
+
+rung       overall    poor     mid   GREAT GREAT|nml  early%   rnds   wall
+----------------------------------------------------------------------------
+Easy         40.4%   12.7%   38.8%   69.8%    70.5%    4.0% 11.09  6.05
+Standard     23.3%    3.1%   17.6%   49.3%    50.4%    4.6%  9.77  6.06
+Hard         15.4%    0.9%    7.9%   37.5%    38.5%    4.7%  8.91  6.04
+Nobulous      7.6%    0.0%    2.3%   20.3%    21.2%    5.1%  7.98  6.06
+
+BAT's GREAT third, normal wake: 70.5 / 50.4 / 38.5 / 21.2
+BAT's GREAT third, all games:   69.8 / 49.3 / 37.5 / 20.3
+BAT's OVERALL column:           40.4 / 23.3 / 15.4 / 7.6
+The composite this replaces:    63.7 / 52.8 / 37.8 / 25.8
+
+THE 20 STRONG COMMUNITY BAND is 47-57%, mean 53.0%, and it was set for an
+OVERALL win rate.  Standard reads:
+  great third, normal wake    50.4%   inside the band
+  great third, all games      49.3%   inside the band
+  overall                     23.3%   23.7 below the band
+
+THE SET'S OTHER TWO LADDERS, both overall win rates at 20,000 games:
+  NAP  64.5 / 50.0 / 35.4 / 25.7   napgrid.txt, six Apprentices
+  AoS  62.4 / 52.3 / 38.2 / 29.1   RESULTS.txt, six Technicians

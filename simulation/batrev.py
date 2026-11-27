@@ -971,8 +971,13 @@ PROTOCOL_NAMES = ["Cross-Contamination", "Shared Equipment Budget",
 # OFF IS EVERY BAT FIGURE PUBLISHED BEFORE THAT DATE: the borrow
 # restriction is the most valuable rule in this game (the POLICY alone
 # measured 10 to 12 points on 2026-11-18), so loosening it moves the
-# ladder BAT pegs - and NAP and AoS are pegged to BAT. Set this False
-# to reproduce 63.7 / 52.8 / 37.8 / 25.8.
+# ladder BAT pegs - and NAP and AoS are pegged to BAT.
+#   THIS NOTE USED TO SAY "set this False to reproduce 63.7 / 52.8 / 37.8 /
+# 25.8", AND IT COULD NOT HAVE. Those four numbers were a composite of four
+# configurations and three of them predate 2026-11-20, so no setting of any
+# dial in this file reproduces them; see simulation/peg.py. What this dial
+# does restore is the borrow table as it stood before 2026-11-26, which is
+# worth +0.5 / +0.2 / +1.6 / -0.0.
 BORROW_BANDS = True
 
 # THE SPLICE ECONOMY, 2026-11-26. Before this every Experiment took BOTH

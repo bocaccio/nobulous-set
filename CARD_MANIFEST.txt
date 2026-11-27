@@ -420,8 +420,13 @@ THE TYRANT, CURRENT
   and every Splice are gone.  The layer and the core are independent stats and
   neither is a slice of the other; rules/bat.html is the owner.
   Difficulty sets Specimens and core Health - Easy 5/9, Standard 6/10, Hard
-  7/12, Nobulous 8/14, for 63.7 / 52.8 / 37.8 / 25.8 percent at 3000 games,
-  no tier.  Standard is inside the 20 Strong community band on purpose.
+  7/12, Nobulous 8/14.  THIS PARAGRAPH IS THE SCHEME BAT REPLACED on
+  2026-11-20 and the win rates it carried - 63.7 / 52.8 / 37.8 / 25.8 "at
+  3000 games" - were never measured through it: that composite was assembled
+  from four other configurations and is retired.  simulation/peg.py owns the
+  target and names what measured it; rules/bat.html owns the live difficulty
+  table, which is Specimens and ROUNDS.  Standard is inside the 20 Strong
+  community band on purpose, and that part was always true.
   The OUTER LAYER IS 0 AT EVERY RUNG and is a fine-tuning dial the player
   raises; one point of it costs the Rats 4 to 8 points of win rate, so it is
   not a number to set casually.  simulation/price_buff.py prints the price
@@ -484,10 +489,12 @@ NAP DIFFICULTY, CURRENT
   count is the dial that would move it and there is no cell between the two -
   5/1 is 55.1 and 5/2 is 49.0 - and raising Standard alone is what inverted
   the ladder against Easy earlier the same day.
-  WHAT THE STEP BUYS IS NOBULOUS AND THE CAMPAIGN.  Against the pegged ladder
-  in rules/bat.html - 63.7 / 52.8 / 37.8 / 25.8 - Nobulous reads 26.3 against
-  25.8, half a point out, where 8/4 read 22.5 and was 3.3 out; Hard is 37.0
-  against 37.8, the 0.8 it already was.  Tier I now costs 10.5 / 7.9 / 1.9 /
+  WHAT THE STEP BUYS IS NOBULOUS AND THE CAMPAIGN.  Against the composite
+  then taken for the peg - 63.7 / 52.8 / 37.8 / 25.8, cited to rules/bat.html,
+  which prints no percentage - Nobulous reads 26.3 against 25.8, half a point
+  out, where 8/4 read 22.5 and was 3.3 out; Hard is 37.0 against 37.8, the
+  0.8 it already was.  simulation/peg.py replaced that composite on
+  2026-11-26 and the deltas here are against the retired one.  Tier I now costs 10.5 / 7.9 / 1.9 /
   1.8 instead of 21 and 2, and Tier III sits below its own solo cell at every
   rung instead of level with it at Nobulous.  Both of those followed from
   EVERY RUNG CARRYING AT LEAST ONE SETBACK: Tier I swaps one base Setback out
